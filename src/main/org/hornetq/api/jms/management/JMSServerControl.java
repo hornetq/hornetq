@@ -60,7 +60,7 @@ public interface JMSServerControl
 
    // Operations ----------------------------------------------------
    /**
-       * Creates a JMS Queue.
+       * Creates a durable JMS Queue.
        *
        * @return {@code true} if the queue was created, {@code false} else
        */
@@ -68,7 +68,7 @@ public interface JMSServerControl
       boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name) throws Exception;
 
    /**
-    * Creates a JMS Queue with the specified name and JNDI binding.
+    * Creates a durable JMS Queue with the specified name and JNDI binding.
     * 
     * @return {@code true} if the queue was created, {@code false} else
     */
@@ -77,7 +77,7 @@ public interface JMSServerControl
                        @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
 
    /**
-      * Creates a JMS Queue with the specified name and JNDI binding.
+      * Creates a durable JMS Queue with the specified name, JNDI binding and selector.
       *
       * @return {@code true} if the queue was created, {@code false} else
       */
@@ -85,6 +85,17 @@ public interface JMSServerControl
      boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
                          @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings,
                          @Parameter(name = "selector", desc = "the jms selector") String selector) throws Exception;
+
+     /**
+      * Creates a JMS Queue with the specified name, durability, selector and JNDI binding.
+      *
+      * @return {@code true} if the queue was created, {@code false} else
+      */
+     @Operation(desc = "Create a JMS Queue", impact = MBeanOperationInfo.ACTION)
+     boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
+                         @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings,
+                         @Parameter(name = "selector", desc = "the jms selector") String selector,
+                         @Parameter(name = "durable", desc = "durability of the queue") boolean durable) throws Exception;
 
 
    /**

@@ -253,7 +253,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final String discoveryAddress,
                                        final int discoveryPort,
                                        final String jndiBindings) throws Exception
-                                       {
+   {
       checkStarted();
 
       clearIO();
@@ -269,22 +269,24 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       {
          blockOnIO();
       }
-                                       }
-
-
-   public boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name) throws Exception
-   {
-      return createQueue(name, null, null);
    }
 
-
+   public boolean createQueue(String name) throws Exception
+   {
+      return createQueue(name, null, null, true);
+   }
 
    public boolean createQueue(final String name, final String jndiBindings) throws Exception
    {
-      return createQueue(name, jndiBindings, null);
+      return createQueue(name, jndiBindings, null, true);
    }
 
-   public boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name, @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings, @Parameter(name = "selector", desc = "the jms selector") String selector) throws Exception
+   public boolean createQueue(String name, String jndiBindings, String selector) throws Exception
+   {
+      return createQueue(name, jndiBindings, selector, true);
+   }
+   
+   public boolean createQueue(String name, String jndiBindings, String selector, boolean durable) throws Exception
    {
       checkStarted();
 
@@ -292,7 +294,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         boolean created = server.createQueue(true, name, selector, true, JMSServerControlImpl.toArray(jndiBindings));
+         boolean created = server.createQueue(true, name, selector, durable, JMSServerControlImpl.toArray(jndiBindings));
          if (created)
          {
             sendNotification(NotificationType.QUEUE_CREATED, name);
@@ -326,7 +328,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
    }
 
-   public boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name) throws Exception
+   public boolean createTopic(String name) throws Exception
    {
       return createTopic(name, null);
    }

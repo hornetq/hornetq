@@ -39,6 +39,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -226,6 +227,30 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[0]));
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[1]));
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(queueName).contains(bindings[2]));
+   }
+
+   public void testCreateNonDurableQueue() throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+      String binding = RandomUtil.randomString();
+      
+      UnitTestCase.checkNoBinding(context, binding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      JMSServerControl control = createManagementControl();
+      control.createQueue(queueName, binding, null, false);
+
+      Object o = UnitTestCase.checkBinding(context, binding);
+      Assert.assertTrue(o instanceof Queue);
+      Queue queue = (Queue)o;
+      Assert.assertEquals(queueName, queue.getQueueName());
+      QueueBinding queueBinding = (QueueBinding)server.getPostOffice().getBinding(new SimpleString("jms.queue." + queueName));
+      assertFalse(queueBinding.getQueue().isDurable());
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      // queue is not durable => not stored
+      Assert.assertNull(fakeJMSStorageManager.destinationMap.get(queueName));
+      Assert.assertNull(fakeJMSStorageManager.persistedJNDIMap.get(queueName));
    }
 
    public void testDestroyQueue() throws Exception
