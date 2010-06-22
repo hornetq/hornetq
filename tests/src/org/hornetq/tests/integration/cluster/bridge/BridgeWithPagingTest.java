@@ -206,7 +206,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       {
          System.out.println("<<< " + i);
          ClientMessage r1 = cons1.receive(1500);
-         Assert.assertNotNull("did not receive message n¡" + i, r1);
+         Assert.assertNotNull("did not receive message " + i, r1);
          Assert.assertEquals(i, r1.getObjectProperty(propKey));
          r1.acknowledge();
       }
