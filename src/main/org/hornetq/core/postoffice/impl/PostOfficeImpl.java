@@ -613,12 +613,18 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-         boolean depage = context.getTransaction().getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
+         Transaction tx = context.getTransaction();
+         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
 
          if (!depage && message.storeIsPaging())
          {
-            getPageOperation(context.getTransaction()).addMessageToPage(message);
-
+            
+            getPageOperation(tx).addMessageToPage(message);
+            if (startedTx)
+            {
+               tx.commit();
+            }
+            
             return;
          }
       }
