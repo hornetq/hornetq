@@ -1048,6 +1048,8 @@ public class SelectorTest extends HornetQServerTestCase
          assertEquals("VALUE1", tm.getStringProperty("PROP1"));
          assertEquals("VALUE2", tm.getStringProperty("PROP2"));
          
+         tm.acknowledge();
+         
       }
       finally
       {
