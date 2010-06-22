@@ -933,6 +933,124 @@ public class SelectorTest extends HornetQServerTestCase
          }
       }
    }
+   
+  
+   // Test case proposed by a customer on this user forum:
+   // http://community.jboss.org/thread/153426?tstart=0
+   public void under_investigation_testMultipleConsumers() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         
+         conn.setClientID("SomeClientID");
+
+         conn.start();
+
+         Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         MessageProducer msgProducer = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage tm;
+         /* Publish messages */
+         tm = session.createTextMessage();
+         tm.setText("1");
+         tm.setStringProperty("PROP1", "VALUE1");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+
+         tm = session.createTextMessage();
+         tm.setText("2");
+         tm.setStringProperty("PROP1", "VALUE1");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+
+         tm = session.createTextMessage();
+         tm.setText("3");
+         tm.setStringProperty("PROP2", "VALUE2");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+
+         tm = session.createTextMessage();
+         tm.setText("4");
+         tm.setStringProperty("PROP2", "VALUE2");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+
+         tm = session.createTextMessage();
+         tm.setText("5");
+         tm.setStringProperty("PROP1", "VALUE1");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+
+         tm = session.createTextMessage();
+         tm.setText("6");
+         tm.setStringProperty("PROP1", "VALUE1");
+         tm.setStringProperty("PROP2", "VALUE2");
+         msgProducer.send(tm);
+         System.out.println ("Sent message with id [" + tm.getJMSMessageID() + "]");
+         msgProducer.close();
+         msgProducer = null;
+         
+         
+         MessageConsumer msgConsumer = session.createConsumer(HornetQServerTestCase.queue1, "PROP2 = 'VALUE2'");
+         
+         tm = (TextMessage) msgConsumer.receive(5000);
+         
+         assertNotNull(tm);
+         
+         assertEquals("3", tm.getText());
+         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         
+         tm.acknowledge();
+         
+         conn.close(); // this should close the consumer, producer and session associated with the connection
+
+         
+         // Reopen the connection and consumer
+         
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+ 
+         session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+         
+         msgConsumer = session.createConsumer(HornetQServerTestCase.queue1);
+         
+         tm = (TextMessage)msgConsumer.receive(5000);
+         assertEquals("1", tm.getText());
+         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         
+         
+         tm = (TextMessage)msgConsumer.receive(5000);
+         assertEquals("2", tm.getText());
+         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         
+         tm = (TextMessage)msgConsumer.receive(5000);
+         assertEquals("4", tm.getText());
+         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         
+         
+         tm = (TextMessage)msgConsumer.receive(5000);
+         assertEquals("5", tm.getText());
+         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         
+         tm = (TextMessage)msgConsumer.receive(5000);
+         assertEquals("6", tm.getText());
+         assertEquals("VALUE1", tm.getStringProperty("PROP1"));
+         assertEquals("VALUE2", tm.getStringProperty("PROP2"));
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+      
+   }
 
    // Package protected ---------------------------------------------
 
