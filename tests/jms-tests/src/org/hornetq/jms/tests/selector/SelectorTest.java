@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -26,6 +27,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.HornetQServerTestCase;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
@@ -937,13 +939,18 @@ public class SelectorTest extends HornetQServerTestCase
   
    // Test case proposed by a customer on this user forum:
    // http://community.jboss.org/thread/153426?tstart=0
-   public void under_investigation_testMultipleConsumers() throws Exception
+   public void testMultipleConsumers() throws Exception
    {
       Connection conn = null;
 
       try
       {
-         conn = getConnectionFactory().createConnection();
+         ConnectionFactory factory = getConnectionFactory();
+         HornetQConnectionFactory hcf = (HornetQConnectionFactory) factory;
+         
+         hcf.setConsumerWindowSize(0);
+         
+         conn = hcf.createConnection();
          
          conn.setClientID("SomeClientID");
 
