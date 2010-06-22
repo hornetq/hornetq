@@ -139,8 +139,8 @@ public class BridgeWithPagingTest extends BridgeTestBase
       
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setRedeliveryDelay(0);
-      addressSettings.setMaxSizeBytes(10485760);
-      addressSettings.setPageSizeBytes(1048576);
+      addressSettings.setMaxSizeBytes(1048576);
+      addressSettings.setPageSizeBytes(104857);
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       
       server0.getConfiguration().getAddressesSettings().put("#", addressSettings);
@@ -185,7 +185,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       };
       t.start();
       
-      final int numMessages = 5000;
+      final int numMessages = 500;
 
       SimpleString propKey = new SimpleString("propkey");
 
@@ -206,8 +206,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
       {
          System.out.println("<<< " + i);
          ClientMessage r1 = cons1.receive(1500);
-         Assert.assertNotNull(r1);
+         Assert.assertNotNull("did not receive message n¡" + i, r1);
          Assert.assertEquals(i, r1.getObjectProperty(propKey));
+         r1.acknowledge();
       }
 
       session0.close();
