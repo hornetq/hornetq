@@ -119,6 +119,14 @@
                   <key>java.naming.factory.url.pkgs</key>
                   <value>org.jboss.naming:org.jnp.interfaces"</value>
                </entry>
+               <entry>
+                  <key>jnp.timeout</key>
+                  <value>5000</value>
+               </entry>
+               <entry>
+                  <key>jnp.sotimeout</key>
+                  <value>5000</value>
+               </entry>
             </map>
          </constructor>
       </bean>

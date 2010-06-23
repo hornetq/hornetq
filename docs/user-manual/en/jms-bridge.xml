@@ -172,6 +172,14 @@
                   &lt;key>java.naming.factory.url.pkgs&lt;/key>
                   &lt;value>org.jboss.naming:org.jnp.interfaces"&lt;/value>
                &lt;/entry>
+               &lt;entry>
+                  &lt;key>jnp.timeout&lt;/key>
+                  &lt;value>5000&lt;/value>
+               &lt;/entry>
+               &lt;entry>
+                  &lt;key>jnp.sotimeout&lt;/key>
+                  &lt;value>5000&lt;/value>
+               &lt;/entry>
             &lt;/map>
          &lt;/constructor>
       &lt;/bean>
@@ -403,6 +411,25 @@
                         your specific application.</para>
                 </note>
             </section>
+           <section>
+              <title>Time outs and the JMS bridge</title>
+              <para>There is a possibility that the target or source server will not be available at some point in time.
+              If this occurs then the bridge will try <literal>Max Retries</literal> to reconnect every
+              <literal>Failure Retry Interval</literal> milliseconds as specified in the JMS Bridge definition.</para>
+              <para>However since a third party JNDI is used, in this case the JBoss naming server, it is possible for the
+              JNDI lookup to hang if the network were to disappear during the JNDI lookup. To stop this occuring the JNDI
+              definition can be configured to time out if this occurs. To do this set the <literal>jnp.timeout</literal>
+               and the <literal>jnp.sotimeout</literal> on the Initial Context definition. The first sets the connection
+              timeout for the initial connection and the second the read timeout for the socket.</para>
+              <note>
+                 <para>Once the initial JNDI connection has succeeded all calls are made using RMI. If you want to control
+                    the timeouts for the RMI connections then this can be done via system properties. JBoss uses Sun's RMI
+                 and the properties can be found <ulink
+                            url="http://java.sun.com/j2se/1.5.0/docs/guide/rmi/sunrmiproperties.html">here</ulink>.
+                 The default connection timeout is 10 seconds and the default read timeout is 18 seconds.</para>
+              </note>
+              <para>If you implement your own factories for looking up JMS resources then you will have to bear in mind timeout issues.</para>
+           </section>
             <section>
                 <title>Examples</title>
                 <para>Please see <xref linkend="examples.javaee.jms-bridge"/> which shows how to configure
