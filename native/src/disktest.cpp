@@ -21,6 +21,31 @@ long getTime()
 
 }
 
+struct io_event *events;
+
+
+
+void checkEvents(int & result)
+{
+	    	  for (int errCheck = 0 ; errCheck < result; errCheck++)
+	    	  {
+	    		  long result = events[errCheck].res;
+	    		  if (result < 0)
+	    		  {
+	    			  fprintf (stderr, "error on writing AIO\n");
+	    			  exit(-1);
+	    		  }
+	    		  else
+	    		  {
+	    			  struct iocb * iocbp = events[errCheck].obj;
+	    			  delete iocbp;
+	    		  }
+	    	  }
+
+
+}
+
+
 /**
  * Authored by Clebert Suconic @ redhat . com
  * Licensed under LGPL
@@ -30,28 +55,46 @@ int main(int arg, char * param[])
    char * directory;
    int numberOfFiles;
    int fileSize = 10 * 1024 * 1024;
-   int bufferSize = 128 * 1024;
+   int bufferSize = 0;
    void * preAllocBuffer = 0;
+   int preAllocBufferSize = 128 * 1024;
+   void * buffer = 0;
 
    int maxAIO = 500;
 
 
-   if (arg != 3)
+   if (arg != 4)
    {
-       fprintf (stderr, "usage disktest <directory> <numberOfFiles>\n");
+       fprintf (stderr, "usage disktest <directory> <numberOfFiles> <bufferSize>\n");
        exit(-1);
    }
 
    directory = param[1];
    numberOfFiles = atoi(param[2]);
+   bufferSize = atoi(param[3]);
+   
+   if (bufferSize % 512 != 0)
+   {
+      fprintf (stderr, "Buffer size needs to be a multiple of 512\n");
+      exit(-1);
+   }
 
-   if (posix_memalign(&preAllocBuffer, 512, bufferSize))
+   if (posix_memalign(&preAllocBuffer, 512, preAllocBufferSize))
    {
        fprintf (stderr, "Error allocating buffer");
        exit(-1);
    }
 
-   memset(preAllocBuffer, 0, bufferSize);
+   memset(preAllocBuffer, 0, preAllocBufferSize);
+
+
+   if (posix_memalign(&buffer, 512, bufferSize))
+   {
+       fprintf (stderr, "Error allocating buffer");
+       exit(-1);
+   }
+
+   memset(buffer, 0, bufferSize);
 
    fprintf (stderr, "====================================================================================\n");
    fprintf (stderr, " Step 1: preAllocate files\n");
@@ -70,7 +113,7 @@ int main(int arg, char * param[])
 
       int handle = open (file, O_RDWR | O_CREAT | O_DIRECT, 0666);
 
-      for (long size = 0; size < fileSize ; size += bufferSize)
+      for (long size = 0; size < fileSize ; size += preAllocBufferSize)
       {
          if (write(handle, preAllocBuffer, bufferSize) < 0)
          {
@@ -83,7 +126,7 @@ int main(int arg, char * param[])
 
       long endfile = getTime();
 
-      fprintf (stderr, "Total time to allocate file = %ld milliseconds, Bytes/millisecond = %ld\n", (endfile - startfile), (fileSize / (endfile - startfile)));
+      fprintf (stderr, "Total time to allocate file = %ld milliseconds, Bytes/millisecond = %f\n", (endfile - startfile), ((float)fileSize / ((float)endfile - (float)startfile)));
 
    }
 
@@ -122,7 +165,7 @@ int main(int arg, char * param[])
 
       io_queue_init(maxAIO, &aioContext);
 
-      struct io_event *events = (struct io_event *)malloc (maxAIO * sizeof (struct io_event));
+      events = (struct io_event *)malloc (maxAIO * sizeof (struct io_event));
 
       int handle = open(file,  O_RDWR | O_CREAT | O_DIRECT, 0666);
 
@@ -130,49 +173,56 @@ int main(int arg, char * param[])
 
       long startAIO = getTime();
 
+      int writesReceived = 0;
+
       for (long position = 0 ; position < fileSize; position += bufferSize)
       {
-    		writes++;
+        writes++;
 		struct iocb * iocb = new struct iocb();
-		::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
+		::io_prep_pwrite(iocb, handle, buffer, bufferSize, position);
 		iocb->data = (void *)position;
 	
+	   
+	   
 		if (io_submit(aioContext, 1, &iocb) < 0)
 		{
-			fprintf (stderr, "Error on submitting AIO\n");
-			exit(-1);
+		    // the write queue is probably full, need to take out some events and try again
+			short passed = 0;
+		    for (int retry=0; retry < 10; retry++)
+		    {
+	    	  int result = io_getevents(aioContext, 1, maxAIO, events, 0);
+	
+	    	  writesReceived += result;
+
+                checkEvents(result);	
+
+		    	if (io_submit(aioContext, 1, &iocb) >= 0)
+		    	{
+		    	   passed = 1;
+		    	   break;
+		    	}
+		    }
+		    if (!passed)
+		    {
+		        fprintf (stderr,"Error on submitting AIO\n");
+		        exit(-1);
+		    }
 		}
       }
 
-      int writesReceived = 0;
 
       while (writesReceived < writes)
       {
     	  int result = io_getevents(aioContext, 1, maxAIO, events, 0);
 
     	  writesReceived += result;
-
-
-    	  for (int errCheck = 0 ; errCheck < result; errCheck++)
-    	  {
-    		  long result = events[i].res;
-    		  if (result < 0)
-    		  {
-    			  fprintf (stderr, "error on writing AIO\n");
-    			  exit(-1);
-    		  }
-    		  else
-    		  {
-    			  struct iocb * iocbp = events[errCheck].obj;
-    			  delete iocbp;
-    		  }
-    	  }
+          checkEvents(result);	
       }
 
       long endAIO = getTime();
 
 
-      fprintf (stderr, "Total time to write file = %ld milliseconds, Bytes/millisecond = %ld\n", (endAIO - startAIO), (fileSize / (endAIO - startAIO)));
+      fprintf (stderr, "Total time to write file = %ld milliseconds, Bytes/millisecond = %ld, Writes/Syncs per millisecond = %ld \n", (endAIO - startAIO), (fileSize / (endAIO - startAIO)), (writes / (endAIO - startAIO)));
 
 
       free (events);
