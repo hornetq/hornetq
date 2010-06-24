@@ -76,9 +76,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
    }
    
    // https://jira.jboss.org/browse/HORNETQ-382
-   public void _testReconnectWithPaging() throws Exception
+   public void testReconnectWithPaging() throws Exception
    {
-      final byte[] content = new byte[2048];
+      final byte[] content = new byte[2048]; // 2 kiB
       for (int i=0; i < content.length; ++i) {
           content[i] = (byte) i;
       }
@@ -108,7 +108,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = -1;
-      final int confirmationWindowSize = 1024;
+      final int confirmationWindowSize = 1024; // 1 kiB
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -139,8 +139,8 @@ public class BridgeWithPagingTest extends BridgeTestBase
       
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setRedeliveryDelay(0);
-      addressSettings.setMaxSizeBytes(1048576);
-      addressSettings.setPageSizeBytes(104857);
+      addressSettings.setMaxSizeBytes(10485760); // 1 MiB
+      addressSettings.setPageSizeBytes(1048576); // 100 kiB
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       
       server0.getConfiguration().getAddressesSettings().put("#", addressSettings);
@@ -159,6 +159,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       ClientSession session0 = csf0.createSession(false, true, true);
 
       ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(server1tc);
+      //csf1.setAckBatchSize(20480); // 20 kiB
       ClientSession session1 = csf1.createSession(false, true, true);
 
       ClientProducer prod0 = session0.createProducer(testAddress);
@@ -185,7 +186,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
       };
       t.start();
       
-      final int numMessages = 500;
+      final int numMessages = 5000;
 
       SimpleString propKey = new SimpleString("propkey");
 
@@ -194,6 +195,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
          ClientMessage message = session0.createMessage(false);
          message.putIntProperty(propKey, i);
          message.getBodyBuffer().writeBytes(content);
+         //message.setPriority((byte)3);
          prod0.send(message);
          System.out.println(">>>> " + i);
       }
