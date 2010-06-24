@@ -145,7 +145,7 @@ public class ManagementHelper
          paramString = null;
       }
 
-      message.getBodyBuffer().writeNullableString(paramString);
+      message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(paramString));
    }
 
    private static JSONArray toJSONArray(final Object[] array) throws Exception
@@ -303,7 +303,8 @@ public class ManagementHelper
     */
    public static Object[] retrieveOperationParameters(final Message message) throws Exception
    {
-      String jsonString = message.getBodyBuffer().readNullableString();
+      SimpleString sstring = message.getBodyBuffer().readNullableSimpleString();
+      String jsonString = (sstring == null) ? null : sstring.toString();
 
       if (jsonString != null)
       {
@@ -353,7 +354,7 @@ public class ManagementHelper
          resultString = null;
       }
 
-      message.getBodyBuffer().writeNullableString(resultString);
+      message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(resultString));
    }
 
    /**
@@ -364,8 +365,9 @@ public class ManagementHelper
     */
    public static Object[] getResults(final Message message) throws Exception
    {
-      String jsonString = message.getBodyBuffer().readNullableString();
-
+      SimpleString sstring = message.getBodyBuffer().readNullableSimpleString();
+      String jsonString = (sstring == null) ? null : sstring.toString();
+                                           ;
       if (jsonString != null)
       {
          JSONArray jsonArray = new JSONArray(jsonString);
