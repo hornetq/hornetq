@@ -76,7 +76,7 @@ public class BridgeWithPagingTest extends BridgeTestBase
    }
    
    // https://jira.jboss.org/browse/HORNETQ-382
-   public void testReconnectWithPaging() throws Exception
+   public void _testReconnectWithPaging() throws Exception
    {
       final byte[] content = new byte[2048]; // 2 kiB
       for (int i=0; i < content.length; ++i) {
