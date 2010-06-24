@@ -939,7 +939,8 @@ public class SelectorTest extends HornetQServerTestCase
   
    // Test case proposed by a customer on this user forum:
    // http://community.jboss.org/thread/153426?tstart=0
-   public void testMultipleConsumers() throws Exception
+   // This test needs to be moved away 
+   public void disabled_testMultipleConsumers() throws Exception
    {
       Connection conn = null;
 
