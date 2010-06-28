@@ -87,12 +87,12 @@ hello queue orders
              <para>Stomp基本上是一个基于文本的协议。为了使用更简单，我们的Stomp实现通过检查<literal>content-length</literal>的值
                来决定如何将一个Stomp消息映射成一个JMS消息或核心消息。
              </para>
-             <para>如果在Stomp消息中有<literal>content-length</literal>头，它将被映射为一个JMS的
+             <para>如果在Stomp消息中<emphasis>没有</emphasis><literal>content-length</literal>头，它将被映射为一个JMS的
                <emphasis>TextMessage</emphasis>，或者是一个核心消息，其消息体的缓存是一个SimpleString。</para>
-             <para>如果Stomp消息中没有<literal>content-length</literal>，则它被映射为一个JMS的
+             <para>如果Stomp消息中<emphasis>有</emphasis><literal>content-length</literal>，则它被映射为一个JMS的
                    <emphasis>BytesMessage</emphasis>，或者是一个核心消息，其消息体缓存中是一个字节数组byte[]。</para>
              <para>从一个JMS消息或核心消息映射为Stomp消息时遵从同样的逻辑。一个Stomp客户端可以通过检查
-                   <literal>content-length</literal>来决定消息体的类型（UTF－8字符串或字节）。</para>
+                   <literal>content-length</literal>来决定消息体的类型（字符串或字节）。</para>
           </section>
         </section>
         <section id="stomp.websockets">

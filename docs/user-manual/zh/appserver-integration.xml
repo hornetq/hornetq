@@ -23,6 +23,10 @@
           有关JCA适配器集成的说明来操作。</para>
     <para>JCA适配器的作用是控制消息流入到消息Bean（MDB），并控制消息从各种JEE模块中发出（如EJB和Servlet）。</para>
     <para>本章讲述这些JEE模块配置HornetQ的基本信息。</para>
+   <section>
+      <title>应用服务器集成所依赖的模块</title>
+      <para></para>
+   </section>
     <section>
         <title>配置消息Bean</title>
         <para>使用HornetQ向MDB传递消息，需要在文件<literal>ra.xml</literal>中配置JCA适配器。该文件在
@@ -248,6 +252,26 @@ public class MDBMessageSendTxExample implements MessageListener
         <para>在JBoss应用服务器的EJB（包括会话Bean, 实体Bean和消息Bean）、Servlet（包括jsp）我定制的MBean中
             都可以使用JMS的JCA适配器来发送消息。</para>
     </section>
+    <section>
+      <title>MDB与接收池的大小</title>
+      <para>包括JBoss在内的绝大多数应用服务器允许用户定义一个池中的MDB数量。在JBoss中这个参数名是<literal>MaxPoolSize</literal>，它在文件
+         ejb3-interceptors-aop.xml中配置。这个参数不影响实际创建的会话／接收者的数量。资源适配器不知道MDB的具体实现。所以即使你设置MDB池在大小
+         为1，仍然会有15个会话／接收者被创建（默认值）。如果你想改变会话／接收者创建的数量，你可以通过设置资源适配器的参数
+         <literal>maxSession</literal>实现。也可以通过设置MDB的激活配置参数来完成：</para>
+        <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "maxSession", propertyValue = "1")
+                     })
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
+public class MyMDB implements MessageListener
+{ ....}
+      </programlisting>
+   </section>
     <section>
         <title>配置JCA适配器</title>
         <para>通过JCA适配器可以将HornetQ集成到JEE兼容的模块中，如MDB和EJB。它的配置决定了这些模块如何接收和发送消息。</para>
@@ -747,9 +771,34 @@ private ConnectionFactory connectionFactory;</programlisting>
         </section>
        <section>
           <title>配置适配器访问单独的HornetQ服务器</title>
-          <para>在有的情况下，消息服务器与应用服务器运行在不同的机器上。</para>
-          <para>这时你需要同时配置内部和外部适配器。</para>
-          <para>为了使MDB能接收远程HornetQ服务器的消息，你需要配置ra.xml文件。这个文件的位置是<literal>deploy/hornet-ra.rar/META-INF</literal>。你需要配置一个netty连接器（不是invm连接器）及其传输参数。下面是一个配置的例子：</para>
+          <para>在有的情况下，消息服务器与应用服务器运行在不同的机器上。这时客户端只需要安装HornetQ的客户端的库文件。本节给出了具体的配置和所需要的jar文件。</para>
+          <section>
+          <para>你需要配置两个配置文件。一个是MDB所用的内部适配器，另一个是可以创建外部连接的外部适配器。</para>
+          <section>
+                <title>配置内部适配器</title>
+                <para>首先在<literal>deploy</literal>目录下创建一个以.rar为结尾的文件夹。
+                      在这里我们将其命名为<literal>hornetq-ra.rar</literal>。主注意这一点很重要，因为MDB和外部配置都需要引用
+                      该文件夹的名字。
+                   </literal>
+                </para>
+                <note>
+                   <para>在JBoss中该文件夹的默认名为<literal>jms-ra.rar</literal>。你可以直接使用这个名字。但是你可能需要避免
+                      与其它的通用适配器相冲突。
+                   </para>
+                </note>
+                <para>在文件夹
+                   <literal>hornetq-ra.rar</literal>
+                   下创建名为
+                   <literal>META-INF</literal>
+                   的文件夹，然后在些文件夹内创建一个
+                   <literal>ra.xml</literal>配置文件。在HornetQ发布包中
+                   有一个<literal>ra.xml</literal>模板文件供你使用。
+                </para>
+                <para>要配置MDB接收远程HornetQ服务器的消息，你需要修改<literal>deploy/hornet-ra.rar/META-INF</literal>下面的
+                   <literal>ra.xml</literal>文件，将传输层改为netty连接器（不要使用invm连接器）及其相应的参数。下面
+                   是一个配置的例子：
+                </para>
+
           <programlisting>
             &lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
               &lt;config-property&gt;
@@ -766,8 +815,15 @@ private ConnectionFactory connectionFactory;</programlisting>
               &lt;/config-property>
           </programlisting>
           <para>上面的配置中，适配器连接到一个运行在本机上端口为5446的服务器。</para>
-          <para>同时你还需要配置外部的连接，也连接到这个服务器。这需要配置<literal>deploy/hornetq.sar</literal>
-             下的jms-ds.xml文件，或者创建一个新的配置文件，文件名必须以-ds.xml结尾。</para>
+          </section>
+
+          <section>
+             <title>配置外部适配器</title>
+                <para>你还需要创建一个<literal>hornetq-ds.xml</literal>文件来配置外部连接。该文件需要放置在<literal>deploy</literal>
+                   下的任意一个文件夹中。在一相标准的安装中这个文件夹是<literal>horneq</literal> 或者 <literal>hornetq.sar</literal>。
+                   当然你可以选择其它文件夹。该文件的名字只要是以<literal>-ds.xml</literal>即可。在HornetQ的发布包中包含有一个模板文件，
+                   它的名字是<literal>jms-ds.xml</literal>，位置就在config文件夹下。
+                </para>
           <para>下面是一个配置的例子。</para>
           <programlisting>
              &lt;tx-connection-factory&gt;
@@ -782,7 +838,50 @@ private ConnectionFactory connectionFactory;</programlisting>
            &lt;/tx-connection-factory&gt;
           </programlisting>
           <para>这个配置同样是连接到运行在本机上的端口为5446的HornetQ服务器。JEE模块可以通过JNDI查找
-                <literal>java:/RemoteJmsXA</literal>来使用外部的服务了。</para>
+                <literal>java:/RemoteJmsXA</literal>（由<literal>jndi-name</literal>参数定义）。如上节所述，
+                资源适配器根据文件夹下的配置来创建外部连接。</para>
+             <section>
+                <title>依赖的jar文件</title>
+                <para>下面列出了HornetQ所需要的第三方jar文件</para>
+                <table frame="topbot" border="2">
+                    <title>Jar文件</title>
+                    <tgroup cols="3">
+                        <colspec colname="c1" colnum="1"/>
+                        <colspec colname="c2" colnum="2"/>
+                        <colspec colname="c3" colnum="3"/>
+                        <thead>
+                            <row>
+                                <entry>Jar文件名</entry>
+                                <entry>说明</entry>
+                                <entry>位置</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>hornetq-ra.jar</entry>
+                                <entry>HornetQ资源适配器文件</entry>
+                                <entry>deploy/hornetq-ra.rar或相应的位置</entry>
+                            </row>
+                            <row>
+                                <entry>hornetq-core-client.jar</entry>
+                                <entry>HornetQ核心客户类库</entry>
+                                <entry>在JBoss的default/lib下或者是$JBOSS_HOME/common/lib下。 </entry>
+                            </row>
+                            <row>
+                                <entry>hornetq-jms-client.jar</entry>
+                                <entry>HornetQ的JMS类</entry>
+                                <entry>同上</entry>
+                            </row>
+                            <row>
+                                <entry>netty.jar</entry>
+                                <entry>Netty类库</entry>
+                                <entry>同上</entry>
+                            </row>
+                        </tbody>
+                     </tgroup>
+                </table>
+             </section>
+          </section>
        </section>
     </section>
     <section>

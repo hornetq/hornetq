@@ -162,6 +162,14 @@
                   &lt;key>java.naming.factory.url.pkgs&lt;/key>
                   &lt;value>org.jboss.naming:org.jnp.interfaces"&lt;/value>
                &lt;/entry>
+               &lt;entry>
+                  &lt;key>jnp.timeout&lt;/key>
+                  &lt;value>5000&lt;/value>
+               &lt;/entry>
+               &lt;entry>
+                  &lt;key>jnp.sotimeout&lt;/key>
+                  &lt;value>5000&lt;/value>
+               &lt;/entry>
             &lt;/map>
          &lt;/constructor>
       &lt;/bean>
@@ -348,6 +356,22 @@
                         不错的选择。</para>
                 </note>
             </section>
+           <section>
+              <title>JMS bridge中的超时问题</title>
+              <para>有时候目标服务器或源服务器会连接不上，这里桥就会尝试重新连接。重新连接的次数由<literal>Max Retries</literal>
+              参数决定，两次重新连接的时间间隔由<literal>Failure Retry Interval</literal>定义。</para>
+              <para>在重新尝试时会进行JNDI的查找。HornetQ的JNDI使用的是JBoss的实现，如果在JNDI查找过程中网络出现故障，
+              查找的操作可能挂起。为了避免这种情况的发生，我们可以为JNDI设置适当的超时。这是通过定义初始上下文的
+              <literal>jnp.timeout</literal>参数和<literal>jnp.sotimeout</literal>参数来
+              实现的。第一个参数定义了初始连接的超时，第二个参数定义的是套接字的读取超时。</para>
+              <note>
+                 <para>一旦JNDI连接成功，所有调用都是通过RMI完成。如果你想要控制RMI连接的超时，你需要定义相应的系统变量。
+                 JBoss使用Sun的RMI实现，它的控制参数可以在<ulink
+                            url="http://java.sun.com/j2se/1.5.0/docs/guide/rmi/sunrmiproperties.html">这里</ulink>找到。
+                 默认的连接超时是10秒，默认的读超时是18秒。</para>
+              </note>
+              <para>如果你使用自己的实现来查找JMS资源，你需要注意超时问题。</para>
+           </section>
             <section>
                 <title>例子</title>
                 <para>参见<xref linkend="examples.javaee.jms-bridge"/>。这个例子展示了如何在JBoss应用服务器中配置并使用
