@@ -23,10 +23,6 @@
           有关JCA适配器集成的说明来操作。</para>
     <para>JCA适配器的作用是控制消息流入到消息Bean（MDB），并控制消息从各种JEE模块中发出（如EJB和Servlet）。</para>
     <para>本章讲述这些JEE模块配置HornetQ的基本信息。</para>
-   <section>
-      <title>应用服务器集成所依赖的模块</title>
-      <para></para>
-   </section>
     <section>
         <title>配置消息Bean</title>
         <para>使用HornetQ向MDB传递消息，需要在文件<literal>ra.xml</literal>中配置JCA适配器。该文件在
