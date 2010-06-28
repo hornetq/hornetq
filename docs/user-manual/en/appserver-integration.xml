@@ -28,10 +28,6 @@
         outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
-   <section>
-      <title>Dependencies for Application Server Integration</title>
-      <para></para>
-   </section>
     <section>
         <title>Configuring Message-Driven Beans</title>
         <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
