@@ -20,12 +20,19 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.AddressSettingsInfo;
+import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -499,6 +506,73 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
    }
 
+   public void testCreateAndDestroyDivert() throws Exception
+   {
+      String address = RandomUtil.randomString();
+      SimpleString name = RandomUtil.randomSimpleString();
+      String routingName = RandomUtil.randomString();
+      String forwardingAddress = RandomUtil.randomString();
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
+      
+      serverControl.createDivert(name.toString(), routingName, address, forwardingAddress, true, null, null);
+      
+      checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
+      DivertControl divertControl = ManagementControlHelper.createDivertControl(name.toString(), mbeanServer);
+      assertEquals(name.toString(), divertControl.getUniqueName());
+      assertEquals(address, divertControl.getAddress());
+      assertEquals(forwardingAddress, divertControl.getForwardingAddress());
+      assertEquals(routingName, divertControl.getRoutingName());
+      assertTrue(divertControl.isExclusive());
+      assertNull(divertControl.getFilter());
+      assertNull(divertControl.getTransformerClassName());
+      
+      // check that a message sent to the address is diverted exclusively
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSession session = csf.createSession();
+
+      String divertQueue = RandomUtil.randomString();
+      String queue = RandomUtil.randomString();
+      session.createQueue(forwardingAddress, divertQueue);
+      session.createQueue(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createMessage(false);
+      String text = RandomUtil.randomString();
+      message.putStringProperty("prop", text);
+      producer.send(message);
+      
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientConsumer divertedConsumer = session.createConsumer(divertQueue);
+      
+      session.start();
+
+      assertNull(consumer.receiveImmediate());
+      message = divertedConsumer.receive(5000);
+      assertNotNull(message);
+      assertEquals(text, message.getStringProperty("prop"));
+
+      serverControl.destroyDivert(name.toString());
+
+      // check that a message is no longer diverted
+      message = session.createMessage(false);
+      String text2 = RandomUtil.randomString();
+      message.putStringProperty("prop", text2);
+      producer.send(message);
+
+      assertNull(divertedConsumer.receiveImmediate());
+      message = consumer.receive(5000);
+      assertNotNull(message);
+      assertEquals(text2, message.getStringProperty("prop"));
+
+      session.close();
+      
+      
+      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

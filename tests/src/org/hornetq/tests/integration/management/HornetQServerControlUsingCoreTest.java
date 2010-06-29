@@ -526,6 +526,22 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
          }
+         
+         public void createDivert(String name,
+                                  String routingName,
+                                  String address,
+                                  String forwardingAddress,
+                                  boolean exclusive,
+                                  String filterString,
+                                  String transformerClassName) throws Exception
+         {
+            proxy.invokeOperation("createDivert", name, routingName, address, forwardingAddress, exclusive, filterString, transformerClassName);
+         }
+         
+         public void destroyDivert(String name) throws Exception
+         {
+            proxy.invokeOperation("destroyDivert", name);
+         }
       };
    }
    // Package protected ---------------------------------------------

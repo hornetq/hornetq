@@ -34,6 +34,7 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -1379,7 +1380,30 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          blockOnIO();
       }
    }
-
+   
+   public void createDivert(String name,
+                            String routingName,
+                            String address,
+                            String forwardingAddress,
+                            boolean exclusive,
+                            String filterString,
+                            String transformerClassName) throws Exception
+   {
+      DivertConfiguration config = new DivertConfiguration(name,
+                              routingName,
+                              address,
+                              forwardingAddress,
+                              exclusive,
+                              filterString,
+                              transformerClassName);
+      server.deployDivert(config);
+   }
+   
+   public void destroyDivert(String name) throws Exception
+   {
+      server.destroyDivert(SimpleString.toSimpleString(name));
+   }
+   
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

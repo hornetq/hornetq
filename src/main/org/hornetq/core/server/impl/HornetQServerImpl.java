@@ -1336,59 +1336,79 @@ public class HornetQServerImpl implements HornetQServer
    {
       for (DivertConfiguration config : configuration.getDivertConfigurations())
       {
-         if (config.getName() == null)
-         {
-            HornetQServerImpl.log.warn("Must specify a name for each divert. This one will not be deployed.");
-
-            return;
-         }
-
-         if (config.getAddress() == null)
-         {
-            HornetQServerImpl.log.warn("Must specify an address for each divert. This one will not be deployed.");
-
-            return;
-         }
-
-         if (config.getForwardingAddress() == null)
-         {
-            HornetQServerImpl.log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
-
-            return;
-         }
-
-         SimpleString sName = new SimpleString(config.getName());
-
-         if (postOffice.getBinding(sName) != null)
-         {
-            HornetQServerImpl.log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
-
-            continue;
-         }
-
-         SimpleString sAddress = new SimpleString(config.getAddress());
-
-         Transformer transformer = instantiateTransformer(config.getTransformerClassName());
-
-         Filter filter = FilterImpl.createFilter(config.getFilterString());
-
-         Divert divert = new DivertImpl(new SimpleString(config.getForwardingAddress()),
-                                        sName,
-                                        new SimpleString(config.getRoutingName()),
-                                        config.isExclusive(),
-                                        filter,
-                                        transformer,
-                                        postOffice,
-                                        storageManager);
-         // pagingManager,
-         // storageManager);
-
-         Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
-
-         postOffice.addBinding(binding);
-
-         managementService.registerDivert(divert, config);
+         deployDivert(config);
       }
+   }
+
+   public void deployDivert(DivertConfiguration config) throws Exception
+   {
+      if (config.getName() == null)
+      {
+         HornetQServerImpl.log.warn("Must specify a name for each divert. This one will not be deployed.");
+
+         return;
+      }
+
+      if (config.getAddress() == null)
+      {
+         HornetQServerImpl.log.warn("Must specify an address for each divert. This one will not be deployed.");
+
+         return;
+      }
+
+      if (config.getForwardingAddress() == null)
+      {
+         HornetQServerImpl.log.warn("Must specify an forwarding address for each divert. This one will not be deployed.");
+
+         return;
+      }
+
+      SimpleString sName = new SimpleString(config.getName());
+
+      if (postOffice.getBinding(sName) != null)
+      {
+         HornetQServerImpl.log.warn("Binding already exists with name " + sName + ", divert will not be deployed");
+
+         return;
+      }
+
+      SimpleString sAddress = new SimpleString(config.getAddress());
+
+      Transformer transformer = instantiateTransformer(config.getTransformerClassName());
+
+      Filter filter = FilterImpl.createFilter(config.getFilterString());
+
+      Divert divert = new DivertImpl(new SimpleString(config.getForwardingAddress()),
+                                     sName,
+                                     new SimpleString(config.getRoutingName()),
+                                     config.isExclusive(),
+                                     filter,
+                                     transformer,
+                                     postOffice,
+                                     storageManager);
+      // pagingManager,
+      // storageManager);
+
+      Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
+
+      postOffice.addBinding(binding);
+
+      managementService.registerDivert(divert, config);
+   }
+   
+   public void destroyDivert(SimpleString name) throws Exception
+   {
+      Binding binding = postOffice.getBinding(name);
+      if (binding == null)
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "No binding for divert " + name);
+      }
+      if (!(binding instanceof DivertBinding))
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Binding " + name + " is not a divert");
+      }
+
+      postOffice.removeBinding(name);
    }
 
    private synchronized void deployGroupingHandlerConfiguration(final GroupingHandlerConfiguration config) throws Exception

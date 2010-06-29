@@ -13,13 +13,10 @@
 
 package org.hornetq.api.core.management;
 
-import java.util.Set;
-
 import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.security.Role;
 
 /**
  * A HornetQServerControl is used to manage HornetQ servers.
@@ -524,4 +521,15 @@ public interface HornetQServerControl
    @Operation(desc = "returns the address settings as a JSON string for an address match", impact = MBeanOperationInfo.INFO)
    String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 
+   @Operation(desc= "Create a Divert", impact = MBeanOperationInfo.ACTION)
+   void createDivert(@Parameter(name="name", desc="Name of the divert") String name,
+                     @Parameter(name="routingName", desc="Routing name of the divert") String routingName,
+                     @Parameter(name="address", desc="Address to divert from") String address,
+                     @Parameter(name="forwardingAddress", desc="Adress to divert to") String forwardingAddress,
+                     @Parameter(name="exclusive", desc="Is the divert exclusive?") boolean exclusive,
+                     @Parameter(name="filterString", desc="Filter of the divert") String filterString,
+                     @Parameter(name="transformerClassName", desc="Class name of the divert's transformer") String transformerClassName) throws Exception;
+
+   @Operation(desc= "Destroy a Divert", impact = MBeanOperationInfo.ACTION)
+   void destroyDivert(@Parameter(name="name", desc="Name of the divert") String name) throws Exception;
 }

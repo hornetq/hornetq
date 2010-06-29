@@ -20,6 +20,7 @@ import javax.management.MBeanServer;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -143,4 +144,8 @@ public interface HornetQServer extends HornetQComponent
    ReplicationManager getReplicationManager();
 
    boolean checkActivate() throws Exception;
+
+   void deployDivert(DivertConfiguration config) throws Exception;
+
+   void destroyDivert(SimpleString name) throws Exception;
 }
