@@ -25,7 +25,9 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressSettingsInfo;
+import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -509,13 +511,14 @@ public class HornetQServerControlTest extends ManagementTestBase
    public void testCreateAndDestroyDivert() throws Exception
    {
       String address = RandomUtil.randomString();
-      SimpleString name = RandomUtil.randomSimpleString();
+      String name = RandomUtil.randomString();
       String routingName = RandomUtil.randomString();
       String forwardingAddress = RandomUtil.randomString();
 
       HornetQServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
+      assertEquals(0, serverControl.getDivertNames().length);
       
       serverControl.createDivert(name.toString(), routingName, address, forwardingAddress, true, null, null);
       
@@ -528,6 +531,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertTrue(divertControl.isExclusive());
       assertNull(divertControl.getFilter());
       assertNull(divertControl.getTransformerClassName());
+      String[] divertNames = serverControl.getDivertNames();
+      assertEquals(1, divertNames.length);
+      assertEquals(name, divertNames[0]);
       
       // check that a message sent to the address is diverted exclusively
       ClientSessionFactory csf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -556,6 +562,9 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       serverControl.destroyDivert(name.toString());
 
+      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
+      assertEquals(0, serverControl.getDivertNames().length);      
+
       // check that a message is no longer diverted
       message = session.createMessage(false);
       String text2 = RandomUtil.randomString();
@@ -567,12 +576,101 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertNotNull(message);
       assertEquals(text2, message.getStringProperty("prop"));
 
+      consumer.close();
+      divertedConsumer.close();
+      session.deleteQueue(queue);
+      session.deleteQueue(divertQueue);
       session.close();
       
-      
-      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(name));
    }
-   
+
+   public void testCreateAndDestroyBridge() throws Exception
+   {
+      String name = RandomUtil.randomString();
+      String sourceAddress = RandomUtil.randomString();
+      String sourceQueue = RandomUtil.randomString();
+      String targetAddress = RandomUtil.randomString();
+      String targetQueue = RandomUtil.randomString();
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      checkNoResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(name));
+      assertEquals(0, serverControl.getBridgeNames().length);
+
+      ClientSessionFactory csf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSession session = csf.createSession();
+
+      session.createQueue(sourceAddress, sourceQueue);
+      session.createQueue(targetAddress, targetQueue);
+
+      serverControl.createBridge(name,
+                                 sourceQueue,
+                                 targetAddress,
+                                 null,
+                                 null,
+                                 HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                 HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                 HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                                 HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                 false,
+                                 1,
+                                 HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                 connectorConfig.getName(),
+                                 null,
+                                 null,
+                                 null);
+
+      checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(name));
+      String[] bridgeNames = serverControl.getBridgeNames();
+      assertEquals(1, bridgeNames.length);
+      assertEquals(name, bridgeNames[0]);
+
+      BridgeControl bridgeControl = ManagementControlHelper.createBridgeControl(name, mbeanServer);
+      assertEquals(name, bridgeControl.getName());
+
+      // check that a message sent to the sourceAddress is put in the tagetQueue
+      ClientProducer producer = session.createProducer(sourceAddress);
+      ClientMessage message = session.createMessage(false);
+      String text = RandomUtil.randomString();
+      message.putStringProperty("prop", text);
+      producer.send(message);
+      
+      ClientConsumer sourceConsumer = session.createConsumer(sourceQueue);
+      ClientConsumer targetConsumer = session.createConsumer(targetQueue);
+      
+      session.start();
+
+      message = targetConsumer.receive(5000);
+      assertNotNull(message);
+      assertEquals(text, message.getStringProperty("prop"));
+      assertNull(sourceConsumer.receiveImmediate());
+
+      
+      serverControl.destroyBridge(name);
+
+      checkNoResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(name));
+      assertEquals(0, serverControl.getBridgeNames().length);
+
+      // check that a message is no longer diverted
+      message = session.createMessage(false);
+      String text2 = RandomUtil.randomString();
+      message.putStringProperty("prop", text2);
+      producer.send(message);
+
+      assertNull(targetConsumer.receiveImmediate());
+      message = sourceConsumer.receive(5000);
+      assertNotNull(message);
+      assertEquals(text2, message.getStringProperty("prop"));
+
+      sourceConsumer.close();
+      targetConsumer.close();
+      
+      session.deleteQueue(sourceQueue);
+      session.deleteQueue(targetQueue);
+      
+      session.close();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -583,7 +681,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       super.setUp();
 
       Map<String, Object> params = new HashMap<String, Object>();
-      params.put(RandomUtil.randomString(), RandomUtil.randomBoolean());
+      //params.put(RandomUtil.randomString(), RandomUtil.randomBoolean());
       connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                    params,
                                                    RandomUtil.randomString());
@@ -593,7 +691,6 @@ public class HornetQServerControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().clear();
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();

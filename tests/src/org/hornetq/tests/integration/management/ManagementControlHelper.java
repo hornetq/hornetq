@@ -80,7 +80,7 @@ public class ManagementControlHelper
 
    public static DivertControl createDivertControl(final String name, final MBeanServer mbeanServer) throws Exception
    {
-      return (DivertControl)ManagementControlHelper.createProxy(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(name)),
+      return (DivertControl)ManagementControlHelper.createProxy(ObjectNameBuilder.DEFAULT.getDivertObjectName(name),
                                                                 DivertControl.class,
                                                                 mbeanServer);
    }

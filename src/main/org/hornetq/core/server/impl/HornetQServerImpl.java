@@ -42,6 +42,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -1454,6 +1455,22 @@ public class HornetQServerImpl implements HornetQServer
          this.groupingHandler = groupingHandler;
 
          managementService.addNotificationListener(groupingHandler);
+      }
+   }
+   
+   public void deployBridge(BridgeConfiguration config) throws Exception
+   {
+      if (clusterManager != null)
+      {
+         clusterManager.deployBridge(config);
+      }
+   }
+   
+   public void destroyBridge(String name) throws Exception
+   {
+      if (clusterManager != null)
+      {
+         clusterManager.destroyBridge(name);
       }
    }
 

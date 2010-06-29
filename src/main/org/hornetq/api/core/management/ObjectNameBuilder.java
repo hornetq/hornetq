@@ -100,7 +100,7 @@ public class ObjectNameBuilder
     * 
     * @see DivertControl
     */
-   public ObjectName getDivertObjectName(final SimpleString name) throws Exception
+   public ObjectName getDivertObjectName(final String name) throws Exception
    {
       return createObjectName(ObjectNameBuilder.CORE_MODULE, "Divert", name.toString());
    }
@@ -132,7 +132,7 @@ public class ObjectNameBuilder
     */
    public ObjectName getBridgeObjectName(final String name) throws Exception
    {
-      return createObjectName(ObjectNameBuilder.CORE_MODULE, "JMSBridge", name);
+      return createObjectName(ObjectNameBuilder.CORE_MODULE, "Bridge", name);
    }
 
    /**

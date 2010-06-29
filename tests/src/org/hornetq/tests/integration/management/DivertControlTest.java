@@ -54,7 +54,7 @@ public class DivertControlTest extends ManagementTestBase
 
    public void testAttributes() throws Exception
    {
-      checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
+      checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(divertConfig.getName()));
 
       DivertControl divertControl = createManagementControl(divertConfig.getName());
 
@@ -120,7 +120,7 @@ public class DivertControlTest extends ManagementTestBase
    {
       service.stop();
 
-      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(divertConfig.getName()));
 
       service = null;
 

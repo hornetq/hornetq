@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
@@ -38,4 +39,8 @@ public interface ClusterManager extends HornetQComponent
    Set<BroadcastGroup> getBroadcastGroups();
 
    void activate();
+
+   void deployBridge(BridgeConfiguration config) throws Exception;
+
+   void destroyBridge(String name) throws Exception;
 }

@@ -357,7 +357,7 @@ public class ClusterManagerImpl implements ClusterManager
       group.start();
    }
 
-   private synchronized void deployBridge(final BridgeConfiguration config) throws Exception
+   public synchronized void deployBridge(final BridgeConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
@@ -503,6 +503,16 @@ public class ClusterManagerImpl implements ClusterManager
       bridge.start();
    }
 
+   public synchronized void destroyBridge(final String name) throws Exception
+   {
+      Bridge bridge = bridges.remove(name);
+      if (bridge != null)
+      {
+         bridge.stop();
+         managementService.unregisterBridge(name);
+      }
+   }
+   
    private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)

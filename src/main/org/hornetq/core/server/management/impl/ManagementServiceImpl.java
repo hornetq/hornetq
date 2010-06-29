@@ -282,7 +282,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void registerDivert(final Divert divert, final DivertConfiguration config) throws Exception
    {
-      ObjectName objectName = objectNameBuilder.getDivertObjectName(divert.getUniqueName());
+      ObjectName objectName = objectNameBuilder.getDivertObjectName(divert.getUniqueName().toString());
       DivertControl divertControl = new DivertControlImpl(divert, storageManager, config);
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
@@ -295,7 +295,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterDivert(final SimpleString name) throws Exception
    {
-      ObjectName objectName = objectNameBuilder.getDivertObjectName(name);
+      ObjectName objectName = objectNameBuilder.getDivertObjectName(name.toString());
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_DIVERT + name);
    }

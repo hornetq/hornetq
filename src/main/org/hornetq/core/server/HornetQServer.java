@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
@@ -151,4 +152,8 @@ public interface HornetQServer extends HornetQComponent
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;
+
+   void deployBridge(BridgeConfiguration config) throws Exception;
+
+   void destroyBridge(String name) throws Exception;
 }

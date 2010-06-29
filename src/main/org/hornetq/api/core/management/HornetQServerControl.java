@@ -521,6 +521,8 @@ public interface HornetQServerControl
    @Operation(desc = "returns the address settings as a JSON string for an address match", impact = MBeanOperationInfo.INFO)
    String getAddressSettingsAsJSON(@Parameter(desc="an address match", name="addressMatch") String addressMatch) throws Exception;
 
+   String[] getDivertNames();
+   
    @Operation(desc= "Create a Divert", impact = MBeanOperationInfo.ACTION)
    void createDivert(@Parameter(name="name", desc="Name of the divert") String name,
                      @Parameter(name="routingName", desc="Routing name of the divert") String routingName,
@@ -532,4 +534,44 @@ public interface HornetQServerControl
 
    @Operation(desc= "Destroy a Divert", impact = MBeanOperationInfo.ACTION)
    void destroyDivert(@Parameter(name="name", desc="Name of the divert") String name) throws Exception;
+
+   String[] getBridgeNames();
+   
+   @Operation(desc= "Create a Bridge using a pair of connectors", impact = MBeanOperationInfo.ACTION)
+   void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
+                     @Parameter(name="queueName", desc="Name of the source queue") String queueName,
+                     @Parameter(name="forwardingAddress", desc="Forwarding address") String forwardingAddress,
+                     @Parameter(name="filterString", desc="Filter of the brdige") String filterString,
+                     @Parameter(name="transformerClassName", desc="Class name of the bridge transformer") String transformerClassName,
+                     @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
+                     @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
+                     @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
+                     @Parameter(name="failoverOnServerShutdown", desc="Failover when the server shuts down?") boolean failoverOnServerShutdown,
+                     @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
+                     @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
+                     @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
+                     @Parameter(name="liveConnector", desc="Name of the connector to the live server") String liveConnector,
+                     @Parameter(name="backupConnector", desc="Name of the connector to the backup server") String backupConnector,
+                     @Parameter(name="user", desc="User name") String user,
+                     @Parameter(name="password", desc="User password") String password) throws Exception;
+
+   @Operation(desc= "Create a Bridge using a discovery group", impact = MBeanOperationInfo.ACTION)
+   void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
+                     @Parameter(name="queueName", desc="Name of the source queue") String queueName,
+                     @Parameter(name="forwardingAddress", desc="Forwarding address") String forwardingAddress,
+                     @Parameter(name="filterString", desc="Filter of the brdige") String filterString,
+                     @Parameter(name="transformerClassName", desc="Class name of the bridge transformer") String transformerClassName,
+                     @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
+                     @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
+                     @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
+                     @Parameter(name="failoverOnServerShutdown", desc="Failover when the server shuts down?") boolean failoverOnServerShutdown,
+                     @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
+                     @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
+                     @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
+                     @Parameter(name="name", desc="Name of the discovery group") String discoveryGroupName,
+                     @Parameter(name="user", desc="User name") String user,
+                     @Parameter(name="password", desc="User password") String password) throws Exception;
+
+   @Operation(desc= "Destroy a bridge", impact = MBeanOperationInfo.ACTION)
+   void destroyBridge(@Parameter(name="name", desc="Name of the bridge") String name) throws Exception;
 }

@@ -13,7 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
-import org.hornetq.api.core.SimpleString;
+import java.util.Set;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -24,11 +25,6 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
-import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.utils.json.JSONObject;
-
-import java.util.Set;
 
 /**
  * A HornetQServerControlUsingCoreTest
@@ -527,6 +523,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
          }
          
+         public String[] getDivertNames()
+         {
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("divertNames"));
+         }
+
          public void createDivert(String name,
                                   String routingName,
                                   String address,
@@ -541,6 +542,85 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public void destroyDivert(String name) throws Exception
          {
             proxy.invokeOperation("destroyDivert", name);
+         }
+         
+
+         public String[] getBridgeNames()
+         {
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("bridgeNames"));
+         }
+
+         public void createBridge(String name,
+                                  String queueName,
+                                  String forwardingAddress,
+                                  String filterString,
+                                  String transformerClassName,
+                                  long retryInterval,
+                                  double retryIntervalMultiplier,
+                                  int reconnectAttempts,
+                                  boolean failoverOnServerShutdown,
+                                  boolean useDuplicateDetection,
+                                  int confirmationWindowSize,
+                                  long clientFailureCheckPeriod,
+                                  String discoveryGroupName,
+                                  String user,
+                                  String password) throws Exception
+         {
+            proxy.invokeOperation("createBridge", name,
+                                  queueName,
+                                  forwardingAddress,
+                                  filterString,
+                                  transformerClassName,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  useDuplicateDetection,
+                                  confirmationWindowSize,
+                                  clientFailureCheckPeriod,
+                                  discoveryGroupName,
+                                  user,
+                                  password);
+         }
+         
+         public void createBridge(String name,
+                                  String queueName,
+                                  String forwardingAddress,
+                                  String filterString,
+                                  String transformerClassName,
+                                  long retryInterval,
+                                  double retryIntervalMultiplier,
+                                  int reconnectAttempts,
+                                  boolean failoverOnServerShutdown,
+                                  boolean useDuplicateDetection,
+                                  int confirmationWindowSize,
+                                  long clientFailureCheckPeriod,
+                                  String liveConnector,
+                                  String backupConnector,
+                                  String user,
+                                  String password) throws Exception
+         {
+            proxy.invokeOperation("createBridge", name,
+                                  queueName,
+                                  forwardingAddress,
+                                  filterString,
+                                  transformerClassName,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  useDuplicateDetection,
+                                  confirmationWindowSize,
+                                  clientFailureCheckPeriod,
+                                  liveConnector,
+                                  backupConnector,
+                                  user,
+                                  password);
+         }
+         
+         public void destroyBridge(String name) throws Exception {
+            proxy.invokeOperation("destroyBridge", name);
+
          }
       };
    }

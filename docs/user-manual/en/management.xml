@@ -131,6 +131,18 @@
                      configuration through all its attributes (e.g. <literal>getVersion()</literal>
                      method to retrieve the server's version, etc.)</para>
                </listitem>
+               <listitem>
+                  <para>Listing, creating and destroying Core bridges and diverts</para>
+                  <para>A list of deployed core bridges (resp. diverts) can be retrieved using the <literal
+                        >getBridgeNames()</literal> (resp. <literal>getDivertNames()</literal>) method.</para>
+                  <para>Core bridges (resp. diverts) can be created or destroyed using the management operations
+                        <literal>createBridge()</literal> and <literal>destroyBridge()</literal> 
+                        (resp. <literal>createDivert()</literal> and <literal>destroyDivert()</literal>) on the <literal
+                        >HornetQServerControl</literal> (with the ObjectName <literal
+                        >org.hornetq:module=Core,type=Server</literal> or the resource name <literal
+                        >core.server</literal>).</para>
+               </listitem>
+               
             </itemizedlist>
          </section>
          <section>

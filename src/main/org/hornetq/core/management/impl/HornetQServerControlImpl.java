@@ -14,8 +14,16 @@
 package org.hornetq.core.management.impl;
 
 import java.text.DateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanNotificationInfo;
@@ -27,12 +35,16 @@ import javax.management.NotificationListener;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.BridgeControl;
+import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
@@ -1381,6 +1393,29 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
    
+   public String[] getDivertNames()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Object[] diverts = server.getManagementService().getResources(DivertControl.class);
+         String[] names = new String[diverts.length];
+         for (int i = 0; i < diverts.length; i++)
+         {
+            DivertControl divert = (DivertControl)diverts[i];
+            names[i] = divert.getUniqueName();
+         }
+
+         return names;
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
    public void createDivert(String name,
                             String routingName,
                             String address,
@@ -1388,21 +1423,169 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                             boolean exclusive,
                             String filterString,
                             String transformerClassName) throws Exception
-   {
-      DivertConfiguration config = new DivertConfiguration(name,
-                              routingName,
-                              address,
-                              forwardingAddress,
-                              exclusive,
-                              filterString,
-                              transformerClassName);
-      server.deployDivert(config);
-   }
+                            {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         DivertConfiguration config = new DivertConfiguration(name,
+                                                              routingName,
+                                                              address,
+                                                              forwardingAddress,
+                                                              exclusive,
+                                                              filterString,
+                                                              transformerClassName);
+         server.deployDivert(config);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+                            }
    
    public void destroyDivert(String name) throws Exception
    {
-      server.destroyDivert(SimpleString.toSimpleString(name));
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         server.destroyDivert(SimpleString.toSimpleString(name));
+      }
+      finally
+      {
+         blockOnIO();
+      }
    }
+   
+   public String[] getBridgeNames()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Object[] bridges = server.getManagementService().getResources(BridgeControl.class);
+         String[] names = new String[bridges.length];
+         for (int i = 0; i < bridges.length; i++)
+         {
+            BridgeControl bridge = (BridgeControl)bridges[i];
+            names[i] = bridge.getName();
+         }
+
+         return names;
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public void createBridge(final String name,
+                            final String queueName,
+                            final String forwardingAddress,
+                            final String filterString,
+                            final String transformerClassName,
+                            final long retryInterval,
+                            final double retryIntervalMultiplier,
+                            final int reconnectAttempts,
+                            final boolean failoverOnServerShutdown,
+                            final boolean useDuplicateDetection,
+                            final int confirmationWindowSize,
+                            final long clientFailureCheckPeriod,
+                            final String liveConnector,
+                            final String backupConnector,
+                            final String user,
+                            final String password) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Pair<String, String> connectors = new Pair<String, String>(liveConnector, backupConnector);
+         BridgeConfiguration config = new BridgeConfiguration(name,
+                                                              queueName,
+                                                              forwardingAddress,
+                                                              filterString,
+                                                              transformerClassName,
+                                                              retryInterval,
+                                                              retryIntervalMultiplier,
+                                                              reconnectAttempts,
+                                                              failoverOnServerShutdown,
+                                                              useDuplicateDetection,
+                                                              confirmationWindowSize,
+                                                              clientFailureCheckPeriod,
+                                                              connectors,
+                                                              user,
+                                                              password);
+         server.deployBridge(config);
+      }
+      finally
+      {
+         blockOnIO();
+      }      
+   }
+   
+   public void createBridge(final String name,
+                            final String queueName,
+                            final String forwardingAddress,
+                            final String filterString,
+                            final String transformerClassName,
+                            final long retryInterval,
+                            final double retryIntervalMultiplier,
+                            final int reconnectAttempts,
+                            final boolean failoverOnServerShutdown,
+                            final boolean useDuplicateDetection,
+                            final int confirmationWindowSize,
+                            final long clientFailureCheckPeriod,
+                            final String discoveryGroupName,
+                            final String user,
+                            final String password) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         BridgeConfiguration config = new BridgeConfiguration(name,
+                                                              queueName,
+                                                              forwardingAddress,
+                                                              filterString,
+                                                              transformerClassName,
+                                                              retryInterval,
+                                                              retryIntervalMultiplier,
+                                                              reconnectAttempts,
+                                                              failoverOnServerShutdown,
+                                                              useDuplicateDetection,
+                                                              confirmationWindowSize,
+                                                              clientFailureCheckPeriod,
+                                                              discoveryGroupName,
+                                                              user,
+                                                              password);
+         server.deployBridge(config);
+      }
+      finally
+      {
+         blockOnIO();
+      }      
+   }
+   
+   public void destroyBridge(final String name) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         server.destroyBridge(name);
+      }
+      finally
+      {
+         blockOnIO();
+      }      
+   } 
    
    // NotificationEmitter implementation ----------------------------
 
