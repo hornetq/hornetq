@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
+	<classpathentry kind="src" path="examples/core/twitter-connector/src"/>
 	<classpathentry kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
@@ -124,5 +125,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jboss-security-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/wutka-dtdparser/lib/dtdparser121.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/twitter4j/lib/twitter4j-core.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>

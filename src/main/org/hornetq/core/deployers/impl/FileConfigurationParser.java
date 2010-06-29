@@ -34,6 +34,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.TwitterConnectorConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
@@ -546,6 +547,24 @@ public class FileConfigurationParser
       parseQueues(e, config);
 
       parseSecurity(e, config);
+      
+      NodeList incomingTwitterConnectors = e.getElementsByTagName("incoming-twitter-connector");
+      
+      for (int i = 0; i < incomingTwitterConnectors.getLength(); i++)
+      {
+         Element twitterConnectorNode = (Element)incomingTwitterConnectors.item(i);
+
+         parseTwitterConnector(twitterConnectorNode, config, true);
+      }
+
+      NodeList outgoingTwitterConnectors = e.getElementsByTagName("outgoing-twitter-connector");
+      
+      for (int i = 0; i < outgoingTwitterConnectors.getLength(); i++)
+      {
+         Element twitterConnectorNode = (Element)outgoingTwitterConnectors.item(i);
+
+         parseTwitterConnector(twitterConnectorNode, config, false);
+      }
 
    }
 
@@ -1222,6 +1241,46 @@ public class FileConfigurationParser
                                                            transformerClassName);
 
       mainConfig.getDivertConfigurations().add(config);
+   }
+   
+   private void parseTwitterConnector(final Element connector,
+                                      final Configuration mainConfig,
+                                      final boolean isIncoming )
+   {
+      TwitterConnectorConfiguration conf = new TwitterConnectorConfiguration();
+      conf.setIncoming(isIncoming);
+      
+      String connectorName = connector.getAttribute("name");
+      conf.setConnectorName(connectorName);
+      
+      String queueName = XMLConfigurationUtil.getString(connector, "queue-name", null, Validators.NOT_NULL_OR_EMPTY);
+      conf.setQueueName(queueName);
+      
+      if(isIncoming)
+      {
+         int intervalMinutes = XMLConfigurationUtil.getInteger(connector, "interval-minutes", 10, Validators.NO_CHECK);
+         conf.setIntervalSeconds(intervalMinutes);
+      }
+      
+      NodeList accountInfo = connector.getElementsByTagName("twitter-account").item(0).getChildNodes();
+      String username = null;
+      String password = null;
+      for(int i=0; i<accountInfo.getLength(); i++)
+      {
+         Node val = accountInfo.item(i);
+         if(val.getNodeName().equals("username"))
+         {
+            username = val.getTextContent();
+         }
+         else if(val.getNodeName().equals("password"))
+         {
+            password = val.getTextContent();
+         }
+      }
+      conf.setUserName(username);
+      conf.setPassword(password);
+
+      mainConfig.getTwitterConnectorConfigurations().add(conf);
    }
 
    // Inner classes -------------------------------------------------

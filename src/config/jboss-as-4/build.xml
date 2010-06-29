@@ -70,6 +70,7 @@ Copyright 2009 Red Hat, Inc.
          <fileset dir="${lib.dir}">
             <include name="hornetq-*.jar"/>
             <include name="netty*.jar"/>
+            <include name="twitter4j*.jar"/>
          </fileset>
       </copy>
 

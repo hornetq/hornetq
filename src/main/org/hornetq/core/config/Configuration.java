@@ -822,4 +822,14 @@ public interface Configuration extends Serializable
     */
    Map<String, Set<Role>> getSecurityRoles();
 
+   /**
+    * 
+    * @param 
+    */
+   void setTwitterConnectorConfigurations(List<TwitterConnectorConfiguration> configs);
+   /**
+    * 
+    * @return 
+    */
+   List<TwitterConnectorConfiguration> getTwitterConnectorConfigurations();
 }

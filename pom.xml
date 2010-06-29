@@ -235,6 +235,12 @@ Copyright 2009 Red Hat, Inc.
          <artifactId>jboss-logging-spi</artifactId>
          <version>2.1.0.GA</version>
       </dependency>
+      <!--needed to compile twitter support-->
+      <dependency>
+         <groupId>org.twitter4j</groupId>
+           <artifactId>twitter4j-core</artifactId>
+           <version>2.1.2</version>
+       </dependency>
       <!-- needed to compile the tests-->
       <dependency>
         <groupId>junit</groupId>

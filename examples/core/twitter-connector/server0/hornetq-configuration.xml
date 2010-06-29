@@ -1,0 +1,64 @@
+<configuration xmlns="urn:hornetq"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+
+   <!-- Connectors -->
+
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>        
+      </acceptor>
+   </acceptors>
+
+   <!-- Other config -->
+
+   <security-settings>
+      <!--security for example queue-->
+      <security-setting match="queue.incomingQueue">
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+      <security-setting match="queue.outgoingQueue">
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
+
+   <queues>
+      <queue name="queue.incomingQueue">
+         <address>queue.incomingQueue</address>
+      </queue>
+      <queue name="queue.outgoingQueue">
+         <address>queue.outgoingQueue</address>
+      </queue>
+   </queues>
+   
+   <twitter-connectors>
+      <!-- consumes from twitter and forwards to queue.incomingQueue -->
+      <incoming-twitter-connector name="my-incoming-tweets">
+         <queue-name>queue.incomingQueue</queue-name>
+         <twitter-account>
+            <username>${twitter.username}</username>
+            <password>${twitter.password}</password>
+         </twitter-account>
+         <interval-seconds>60</interval-seconds>
+      </incoming-twitter-connector>
+      
+      <!-- consumes from queue.outgoingQueue and forwards to twitter -->
+      <outgoing-twitter-connector name="my-outgoing-tweets">
+         <queue-name>queue.outgoingQueue</queue-name>
+         <twitter-account>
+            <username>${twitter.username}</username>
+            <password>${twitter.password}</password>
+         </twitter-account>
+      </outgoing-twitter-connector>
+   </twitter-connectors>
+   
+</configuration>

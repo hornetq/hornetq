@@ -35,6 +35,7 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.twitter.TwitterConnectorService;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -144,7 +145,9 @@ public interface HornetQServer extends HornetQComponent
    ReplicationManager getReplicationManager();
 
    boolean checkActivate() throws Exception;
-
+   
+   TwitterConnectorService getTwitterConnectorService();        
+   
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;

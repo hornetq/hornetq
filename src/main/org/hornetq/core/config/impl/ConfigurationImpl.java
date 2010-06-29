@@ -30,6 +30,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.TwitterConnectorConfiguration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
@@ -322,6 +323,8 @@ public class ConfigurationImpl implements Configuration
 
    private Map<String, Set<Role>> securitySettings = new HashMap<String, Set<Role>>();
 
+   protected List<TwitterConnectorConfiguration> twitterConnectorConfigurations = new ArrayList<TwitterConnectorConfiguration>();
+   
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1314,6 +1317,16 @@ public class ConfigurationImpl implements Configuration
    public void setSecurityRoles(final Map<String, Set<Role>> securitySettings)
    {
       this.securitySettings = securitySettings;
+   }
+
+   public List<TwitterConnectorConfiguration> getTwitterConnectorConfigurations()
+   {
+      return this.twitterConnectorConfigurations;
+   }
+   
+   public void setTwitterConnectorConfigurations(final List<TwitterConnectorConfiguration> configs)
+   {
+      this.twitterConnectorConfigurations = configs; 
    }
 
 }

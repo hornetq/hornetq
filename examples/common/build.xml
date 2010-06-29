@@ -101,6 +101,7 @@
       <fileset dir="${jars.dir}">
          <include name="org/jboss/naming/lib/jnpserver.jar"/>
          <include name="org/jboss/netty/lib/netty*.jar"/>
+         <include name="org/twitter4j/lib/twitter4j*.jar"/>
       </fileset>
    </path>
 
