@@ -775,7 +775,6 @@ private ConnectionFactory connectionFactory;</programlisting>
                 <para>首先在<literal>deploy</literal>目录下创建一个以.rar为结尾的文件夹。
                       在这里我们将其命名为<literal>hornetq-ra.rar</literal>。主注意这一点很重要，因为MDB和外部配置都需要引用
                       该文件夹的名字。
-                   </literal>
                 </para>
                 <note>
                    <para>在JBoss中该文件夹的默认名为<literal>jms-ra.rar</literal>。你可以直接使用这个名字。但是你可能需要避免
@@ -987,4 +986,5 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             <para>参见<xref linkend="xa-recovery-example"/>。这个例子展示了如何来配置XA恢复以便在服务器崩溃后恢复消息。</para>
         </section>
     </section>
+  </section>
 </chapter>
