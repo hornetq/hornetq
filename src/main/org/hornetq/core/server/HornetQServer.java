@@ -32,11 +32,11 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.impl.ConnectorsService;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.core.twitter.TwitterConnectorService;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
@@ -145,14 +145,14 @@ public interface HornetQServer extends HornetQComponent
    
    ReplicationManager getReplicationManager();
 
-   boolean checkActivate() throws Exception;
-   
-   TwitterConnectorService getTwitterConnectorService();        
+   boolean checkActivate() throws Exception;      
    
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;
 
+   ConnectorsService getConnectorsService();
+   
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;

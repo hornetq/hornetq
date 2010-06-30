@@ -172,6 +172,20 @@ public class ConfigurationHelper
       return invalid;
    }
 
+   public static Set<String> checkKeysExist(final Set<String> requiredKeys, final Set<String> keys)
+   {
+      Set<String> invalid = new HashSet<String>(requiredKeys);
+
+      for (String key : keys)
+      {
+         if (requiredKeys.contains(key))
+         {
+            invalid.remove(key);
+         }
+      }
+      return invalid;
+   }
+
    public static String stringSetToCommaListString(final String msg, final Set<String> invalid)
    {
       StringBuilder sb = new StringBuilder();

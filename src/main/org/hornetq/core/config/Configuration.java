@@ -826,10 +826,10 @@ public interface Configuration extends Serializable
     * 
     * @param 
     */
-   void setTwitterConnectorConfigurations(List<TwitterConnectorConfiguration> configs);
+   void setConnectorServiceConfigurations(List<ConnectorServiceConfiguration> configs);
    /**
     * 
     * @return 
     */
-   List<TwitterConnectorConfiguration> getTwitterConnectorConfigurations();
+   List<ConnectorServiceConfiguration> getConnectorServiceConfigurations();
 }

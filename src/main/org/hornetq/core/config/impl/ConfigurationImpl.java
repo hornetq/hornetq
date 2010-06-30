@@ -23,14 +23,8 @@ import java.util.Set;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
-import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.TwitterConnectorConfiguration;
+import org.hornetq.core.config.*;
+import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
@@ -323,7 +317,7 @@ public class ConfigurationImpl implements Configuration
 
    private Map<String, Set<Role>> securitySettings = new HashMap<String, Set<Role>>();
 
-   protected List<TwitterConnectorConfiguration> twitterConnectorConfigurations = new ArrayList<TwitterConnectorConfiguration>();
+   protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
    
    // Public -------------------------------------------------------------------------
 
@@ -1319,14 +1313,14 @@ public class ConfigurationImpl implements Configuration
       this.securitySettings = securitySettings;
    }
 
-   public List<TwitterConnectorConfiguration> getTwitterConnectorConfigurations()
+   public List<ConnectorServiceConfiguration> getConnectorServiceConfigurations()
    {
-      return this.twitterConnectorConfigurations;
+      return this.connectorServiceConfigurations;
    }
    
-   public void setTwitterConnectorConfigurations(final List<TwitterConnectorConfiguration> configs)
+   public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
    {
-      this.twitterConnectorConfigurations = configs; 
+      this.connectorServiceConfigurations = configs;
    }
 
 }

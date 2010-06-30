@@ -109,8 +109,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
-import org.hornetq.core.twitter.TwitterConnectorService;
-import org.hornetq.core.twitter.impl.TwitterConnectorServiceImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -188,7 +186,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile ManagementService managementService;
    
-   private volatile TwitterConnectorService twitterService;
+   private volatile ConnectorsService connectorsService;
 
    private MemoryManager memoryManager;
 
@@ -319,12 +317,9 @@ public class HornetQServerImpl implements HornetQServer
       // so it can be initialised by the live node
       remotingService.start();
 
-      // start twitter connector service
-      twitterService = new TwitterConnectorServiceImpl(configuration,
-                                                       scheduledPool,
-                                                       storageManager,
-                                                       postOffice);
-      twitterService.start();
+      // start connector service
+      connectorsService = new ConnectorsService(configuration, storageManager, scheduledPool, postOffice);
+      connectorsService.start();
       
       started = true;
 
@@ -353,7 +348,7 @@ public class HornetQServerImpl implements HornetQServer
             return;
          }
 
-         twitterService.stop();
+         connectorsService.stop();
          
          if (clusterManager != null)
          {
@@ -780,11 +775,10 @@ public class HornetQServerImpl implements HornetQServer
       return replicationManager;
    }
 
-   public TwitterConnectorService getTwitterConnectorService()
+   public ConnectorsService getConnectorsService()
    {
-      return twitterService;
+      return connectorsService;
    }
-
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -1430,6 +1424,7 @@ public class HornetQServerImpl implements HornetQServer
 
       postOffice.removeBinding(name);
    }
+
 
    private synchronized void deployGroupingHandlerConfiguration(final GroupingHandlerConfiguration config) throws Exception
    {
