@@ -179,8 +179,6 @@ public interface JMSServerControl
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
     * <br>
     * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
-    * 
-    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[])
     */
    void createConnectionFactory(String name,
                                 String discoveryAddress,
@@ -193,8 +191,6 @@ public interface JMSServerControl
     * The ConnectionFactory is bound to JNDI for the specified bindings Strings
     * <br>
     * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
-    * 
-    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[])
     */
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,

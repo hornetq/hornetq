@@ -485,7 +485,7 @@ public interface ClientSessionFactory
    /**
     * Sets the local bind address to which the multicast socket is bound for discovery.
     * 
-    * @param the local bind address
+    * @param localBindAddress the local bind address
     */
    void setLocalBindAddress(String localBindAddress);
    
@@ -691,9 +691,7 @@ public interface ClientSessionFactory
     * Returns true if the client will automatically attempt to connect to the backup server if the initial
     * connection to the live server fails
     * 
-    * Default value is {@link HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION}.
-    * 
-    * @return
+    * Default value is {@link HornetQClient#DEFAULT_FAILOVER_ON_INITIAL_CONNECTION}.
     */
    boolean isFailoverOnInitialConnection();
    

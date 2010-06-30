@@ -50,7 +50,7 @@ public interface ConnectionFactoryControl
    String getClientID();
 
    /**
-   * @see  ClientSessionFactory.setClientID
+   * Sets the Client ID for this connection factory.
    */
    void setClientID(String clientID);
 
@@ -83,7 +83,7 @@ public interface ConnectionFactoryControl
    int getDupsOKBatchSize();
 
    /**
-    * @see ClientSessionFactory#setDupsOKBatchSize(int)
+    * @see ClientSessionFactory#setAckBatchSize(int)
     */
    void setDupsOKBatchSize(int dupsOKBatchSize);
 
@@ -186,7 +186,7 @@ public interface ConnectionFactoryControl
    int getTransactionBatchSize();
 
     /**
-    * @see ClientSessionFactory#setTransactionBatchSize(int)
+    * @see ClientSessionFactory#setAckBatchSize(int)
     */
    void setTransactionBatchSize(int transactionBatchSize);
 
