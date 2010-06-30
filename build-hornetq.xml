@@ -246,6 +246,7 @@
       <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
+      <path location="${build.jars.dir}/${twitter.integration.jar.name}"/>
    </path>
 
    <path id="jms.test.compilation.classpath">
