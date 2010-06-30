@@ -10,13 +10,13 @@
  *  implied.  See the License for the specific language governing
  *  permissions and limitations under the License.
  */
-package org.hornetq.core.twitter;
+package org.hornetq.integration.twitter;
 
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.ConnectorServiceFactory;
-import org.hornetq.core.twitter.impl.IncomingTweetsHandler;
+import org.hornetq.integration.twitter.impl.OutgoingTweetsHandler;
 
 import java.util.Map;
 import java.util.Set;
@@ -26,23 +26,20 @@ import java.util.concurrent.ScheduledExecutorService;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Jun 29, 2010
  */
-public class TwitterIncomingConnectorServiceFactory implements ConnectorServiceFactory
+public class TwitterOutgoingConnectorServiceFactory   implements ConnectorServiceFactory
 {
-   public ConnectorService createConnectorService(String connectorName, final Map<String, Object> configuration,
-                                                  final StorageManager storageManager,
-                                                  final PostOffice postOffice,
-                                                  final ScheduledExecutorService scheduledThreadPool)
+   public ConnectorService createConnectorService(String connectorName, Map<String, Object> configuration, StorageManager storageManager, PostOffice postOffice, ScheduledExecutorService scheduledThreadPool)
    {
-      return new IncomingTweetsHandler(connectorName, configuration, storageManager, postOffice, scheduledThreadPool);
+      return new OutgoingTweetsHandler(connectorName, configuration, postOffice);
    }
 
    public Set<String> getAllowableProperties()
    {
-      return TwitterConstants.ALLOWABLE_INCOMING_CONNECTOR_KEYS;
+      return TwitterConstants.ALLOWABLE_OUTGOING_CONNECTOR_KEYS;
    }
 
    public Set<String> getRequiredProperties()
    {
-      return TwitterConstants.REQUIRED_INCOMING_CONNECTOR_KEYS;
+      return TwitterConstants.REQUIRED_OUTGOING_CONNECTOR_KEYS;
    }
 }

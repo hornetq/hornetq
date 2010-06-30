@@ -10,7 +10,7 @@
  *  implied.  See the License for the specific language governing
  *  permissions and limitations under the License.
  */
-package org.hornetq.core.twitter.impl;
+package org.hornetq.integration.twitter.impl;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
@@ -18,7 +18,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.*;
-import org.hornetq.core.twitter.TwitterConstants;
+import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
 

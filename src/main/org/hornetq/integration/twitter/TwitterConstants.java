@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.twitter;
+package org.hornetq.integration.twitter;
 
 import java.util.HashSet;
 import java.util.Set;

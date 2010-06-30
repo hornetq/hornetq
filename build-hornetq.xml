@@ -63,6 +63,8 @@
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
    <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
+   <property name="twitter.integration.jar.name" value="hornetq-twitter-integration.jar"/>
+   <property name="twitter.integration.sources.jar.name" value="hornetq-twitter-integration-sources.jar"/>
    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
    <property name="bootstrap.sources.jar.name" value="hornetq-bootstrap-sources.jar"/>
    <property name="logging.jar.name" value="hornetq-logging.jar"/>
@@ -86,6 +88,7 @@
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
+   <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
@@ -186,7 +189,6 @@
 
    <path id="core.compilation.classpath">
       <path refid="org.jboss.netty.classpath"/>
-      <path refid="org.twitter4j.classpath"/>
    </path>
 
    <path id="jms.compilation.classpath">
@@ -203,6 +205,11 @@
       <path refid="org.jboss.security.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
+   </path>
+
+   <path id="twitter.integration.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.twitter4j.classpath"/>
    </path>
 
    <path id="jboss.service.compilation.classpath">
@@ -366,6 +373,7 @@
       <mkdir dir="${build.core.classes.dir}"/>
       <mkdir dir="${build.jms.classes.dir}"/>
       <mkdir dir="${build.jboss.integration.classes.dir}"/>
+      <mkdir dir="${build.twitter.integration.classes.dir}"/>
       <mkdir dir="${build.service.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
       <mkdir dir="${build.logging.classes.dir}"/>
@@ -477,6 +485,26 @@
          </src>
          <include name="org/hornetq/integration/jboss/**/*.java"/>
          <classpath refid="jboss.integration.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-twitter-integration" depends="compile-core">
+      <javac destdir="${build.twitter.integration.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/twitter/**/*.java"/>
+         <classpath refid="twitter.integration.compilation.classpath"/>
       </javac>
    </target>
 
@@ -620,11 +648,11 @@
    <!-- ======================================================================================== -->
 
    <target name="sources-jar" description="create jar files containing source code"
-           depends="jar-core-sources, jar-core-client-sources, jar-jms-sources, jar-jms-client-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources">
+           depends="jar-core-sources, jar-core-client-sources, jar-jms-sources, jar-jms-client-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -744,6 +772,22 @@
       <jar jarfile="${build.jars.dir}/${jboss.integration.sources.jar.name}">
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/jboss/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+    <target name="jar-twitter-integration" depends="compile-twitter-integration">
+
+      <jar jarfile="${build.jars.dir}/${twitter.integration.jar.name}">
+         <fileset dir="${build.twitter.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-twitter-integration-sources">
+      <jar jarfile="${build.jars.dir}/${twitter.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/twitter/**/*.java"/>
          </fileset>
       </jar>
    </target>
@@ -945,8 +989,9 @@
          	<include name="${core.client.jar.name}"/>
          	<include name="${jms.client.jar.name}"/>
          	<include name="${jnp.client.jar.name}"/>
+         	<include name="${twitter.integration.jar.name}"/>
          </fileset>
-         <fileset dir="${org.jboss.naming.lib}">
+         <fileset dir="${org.jboss.naming.lib}">                                                   
             <include name="jnpserver.jar"/>
          </fileset>
          <fileset dir="${org.jboss.javaee.lib}">
