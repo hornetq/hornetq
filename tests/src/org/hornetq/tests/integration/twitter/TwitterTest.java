@@ -34,6 +34,7 @@ import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.integration.twitter.TwitterIncomingConnectorServiceFactory;
+import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import twitter4j.*;
@@ -107,7 +108,7 @@ public class TwitterTest extends ServiceTestBase
 
    //outgoing
    
-   public void _testSimpleOutgoing() throws Exception
+   public void testSimpleOutgoing() throws Exception
    {
       internalTestOutgoing(true,false);
    }
@@ -116,7 +117,7 @@ public class TwitterTest extends ServiceTestBase
    {
       internalTestOutgoing(false,false);
    }
-   public void _testOutgoingWithRestart() throws Exception
+   public void testOutgoingWithRestart() throws Exception
    {
       internalTestOutgoing(true,true);
    }
@@ -317,7 +318,7 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
          config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
+               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,
                "test-outgoing-connector");
          configuration.getConnectorServiceConfigurations().add(outconf);
@@ -417,7 +418,7 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.USER_NAME, userName);
          config.put(TwitterConstants.PASSWORD, password);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
+               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,
                "test-outgoing-connector");
          configuration.getConnectorServiceConfigurations().add(outconf);
@@ -456,7 +457,7 @@ public class TwitterTest extends ServiceTestBase
          config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
          config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
          ConnectorServiceConfiguration outconf =
-               new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
+               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,
                "test-outgoing-with-in-reply-to");
          configuration.getConnectorServiceConfigurations().add(outconf);
