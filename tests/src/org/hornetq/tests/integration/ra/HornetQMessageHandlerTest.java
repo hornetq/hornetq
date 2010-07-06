@@ -15,25 +15,10 @@ package org.hornetq.tests.integration.ra;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.util.ServiceTestBase;
-
-import javax.jms.Message;
-import javax.jms.MessageListener;
-import javax.resource.ResourceException;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.*;
-import javax.transaction.xa.XAResource;
-import java.lang.reflect.Method;
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -41,39 +26,249 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created May 20, 2010
  */
-public class HornetQMessageHandlerTest  extends ServiceTestBase
+public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
-   private Configuration configuration;
-
-   private HornetQServer server;
-
    @Override
-   protected void setUp() throws Exception
+   public boolean isSecure()
    {
-      super.setUp();
-      clearData();
-      configuration = createDefaultConfig();
-      configuration.setSecurityEnabled(false);
-      server = createServer(true, configuration);
-      server.start();
+      return false;
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   public void testSimpleMessageReceivedOnQueue() throws Exception
    {
-      if (server != null)
-      {
-         try
-         {
-            server.stop();
-            server = null;
-         }
-         catch (Exception e)
-         {
-            // ignore
-         }
-      }
-      super.tearDown();
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("teststring");
+      clientProducer.send(message);
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testSimpleMessageReceivedOnQueueWithSelector() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setMessageSelector("color='red'");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("blue");
+      message.putStringProperty("color", "blue");
+      clientProducer.send(message);
+      message = session.createMessage(true);
+      message.getBodyBuffer().writeString("red");
+      message.putStringProperty("color", "red");
+      clientProducer.send(message);
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "red");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testEndpointDeactivated() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
+      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 15);
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 0);
+      assertTrue(endpoint.released);
+   }
+
+   public void testMaxSessions() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setMaxSession(1);
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
+      assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 1);
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testSimpleTopic() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("test");
+      clientProducer.send(message);
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "test");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testDurableSubscription() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      spec.setSubscriptionDurability("Durable");
+      spec.setSubscriptionName("durable-mdb");
+      spec.setClientID("id-1");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("1");
+      clientProducer.send(message);
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "1");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      message = session.createMessage(true);
+      message.getBodyBuffer().writeString("2");
+      clientProducer.send(message);
+
+      latch = new CountDownLatch(1);
+      endpoint = new DummyMessageEndpoint(latch);
+      endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "2");
+      latch = new CountDownLatch(1);
+      endpoint.reset(latch);
+      message = session.createMessage(true);
+      message.getBodyBuffer().writeString("3");
+      clientProducer.send(message);
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testNonDurableSubscription() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Topic");
+      spec.setDestination("mdbTopic");
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("1");
+      clientProducer.send(message);
+
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "1");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      message = session.createMessage(true);
+      message.getBodyBuffer().writeString("2");
+      clientProducer.send(message);
+
+      latch = new CountDownLatch(1);
+      endpoint = new DummyMessageEndpoint(latch);
+      endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      message = session.createMessage(true);
+      message.getBodyBuffer().writeString("3");
+      clientProducer.send(message);
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
    }
 
    public void testSelectorChangedWithTopic() throws Exception
@@ -93,7 +288,7 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(1);
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
-      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = createFactory(false).createSession();
       ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
@@ -118,7 +313,7 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
       endpoint = new DummyMessageEndpoint(latch);
       //change the selector forcing the queue to be recreated
       spec.setMessageSelector("foo='abar'");
-      endpointFactory = new DummyMessageEndpointFactory(endpoint);
+      endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       message = session.createMessage(true);
       message.getBodyBuffer().writeString("3");
@@ -132,7 +327,7 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
    }
 
    public void testSelectorNotChangedWithTopic() throws Exception
-   {      
+   {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
@@ -148,7 +343,7 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       CountDownLatch latch = new CountDownLatch(1);
       DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
-      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       ClientSession session = createFactory(false).createSession();
       ClientProducer clientProducer = session.createProducer("jms.topic.mdbTopic");
@@ -171,7 +366,7 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
 
       latch = new CountDownLatch(1);
       endpoint = new DummyMessageEndpoint(latch);
-      endpointFactory = new DummyMessageEndpointFactory(endpoint);
+      endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
       latch.await(5, TimeUnit.SECONDS);
 
@@ -181,108 +376,5 @@ public class HornetQMessageHandlerTest  extends ServiceTestBase
 
    }
 
-   class DummyMessageEndpointFactory implements MessageEndpointFactory
-   {
-      private DummyMessageEndpoint endpoint;
 
-      public DummyMessageEndpointFactory(DummyMessageEndpoint endpoint)
-      {
-         this.endpoint = endpoint;
-      }
-
-      public MessageEndpoint createEndpoint(XAResource xaResource) throws UnavailableException
-      {
-         return endpoint;
-      }
-
-      public boolean isDeliveryTransacted(Method method) throws NoSuchMethodException
-      {
-         return false;
-      }
-   }
-
-   class DummyMessageEndpoint implements MessageEndpoint, MessageListener
-   {
-      public CountDownLatch latch;
-
-      private HornetQMessage lastMessage;
-
-      public DummyMessageEndpoint(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void beforeDelivery(Method method) throws NoSuchMethodException, ResourceException
-      {
-
-      }
-
-      public void afterDelivery() throws ResourceException
-      {      
-         if(latch != null)
-         {
-            latch.countDown();
-         }
-      }
-
-      public void release()
-      {
-
-      }
-
-      public void onMessage(Message message)
-      {
-         lastMessage = (HornetQMessage) message;
-      }
-   }
-
-   class MyBootstrapContext implements BootstrapContext
-   {
-      WorkManager workManager = new DummyWorkManager();
-
-      public Timer createTimer() throws UnavailableException
-      {
-         return null;
-      }
-
-      public WorkManager getWorkManager()
-      {
-         return workManager;
-      }
-
-      public XATerminator getXATerminator()
-      {
-         return null;
-      }
-
-      class DummyWorkManager implements WorkManager
-      {
-         public void doWork(Work work) throws WorkException
-         {
-         }
-
-         public void doWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
-         {
-         }
-
-         public long startWork(Work work) throws WorkException
-         {
-            return 0;
-         }
-
-         public long startWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
-         {
-            return 0;
-         }
-
-         public void scheduleWork(Work work) throws WorkException
-         {
-            work.run();
-         }
-
-         public void scheduleWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
-         {
-         }
-      }
-   }
 }

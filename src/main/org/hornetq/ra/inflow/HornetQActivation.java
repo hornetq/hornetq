@@ -105,10 +105,6 @@ public class HornetQActivation
 
    // Whether we are in the failure recovery loop
    private AtomicBoolean inFailure = new AtomicBoolean(false);
-
-   private final int setupAttempts = 10;
-
-   private final long setupInterval = 2 * 1000;
    
    static
    {
@@ -520,13 +516,13 @@ public class HornetQActivation
          return;
       try
       {
-         while (deliveryActive.get() && reconnectCount < setupAttempts)
+         while (deliveryActive.get() && reconnectCount < spec.getSetupAttempts())
          {
             teardown();
 
             try
             {
-               Thread.sleep(setupInterval);
+               Thread.sleep(spec.getSetupInterval());
             }
             catch (InterruptedException e)
             {

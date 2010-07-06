@@ -40,6 +40,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 {
    private static final int DEFAULT_MAX_SESSION = 15;
 
+   private static final int DEFAULT_SETUP_ATTEMPTS = 10;
+
+   private static final long DEFAULT_SETUP_INTERVAL = 2 * 1000;
+
    /** The logger */
    private static final Logger log = Logger.getLogger(HornetQActivationSpec.class);
 
@@ -89,6 +93,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /* use local tx instead of XA*/
    private Boolean localTx;
 
+   private int setupAttempts;
+
+   private long setupInterval;
+
    /**
     * Constructor
     */
@@ -110,6 +118,8 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       password = null;
       maxSession = DEFAULT_MAX_SESSION;
       transactionTimeout = 0;
+      setupAttempts = DEFAULT_SETUP_ATTEMPTS;
+      setupInterval = DEFAULT_SETUP_INTERVAL;
    }
 
    /**
@@ -528,6 +538,26 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setUseLocalTx(final Boolean localTx)
    {
       this.localTx = localTx;
+   }
+
+   public int getSetupAttempts()
+   {
+      return setupAttempts;
+   }
+
+   public void setSetupAttempts(int setupAttempts)
+   {
+      this.setupAttempts = setupAttempts;
+   }
+
+   public long getSetupInterval()
+   {
+      return setupInterval;
+   }
+
+   public void setSetupInterval(long setupInterval)
+   {
+      this.setupInterval = setupInterval;
    }
 
    /**
