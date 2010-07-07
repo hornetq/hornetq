@@ -1382,7 +1382,9 @@
              timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
-         <jvmarg value="-Djava.library.path=native/bin"/>
+      	 <sysproperty key="twitter.username" value="${twitter.username}"/>
+      	 <sysproperty key="twitter.password" value="${twitter.password}"/>
+      	 <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
          <jvmarg value="-XX:+PrintClassHistogram"/>
