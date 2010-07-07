@@ -627,6 +627,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       BridgeControl bridgeControl = ManagementControlHelper.createBridgeControl(name, mbeanServer);
       assertEquals(name, bridgeControl.getName());
+      assertTrue(bridgeControl.isStarted());
 
       // check that a message sent to the sourceAddress is put in the tagetQueue
       ClientProducer producer = session.createProducer(sourceAddress);
@@ -635,16 +636,15 @@ public class HornetQServerControlTest extends ManagementTestBase
       message.putStringProperty("prop", text);
       producer.send(message);
       
-      ClientConsumer sourceConsumer = session.createConsumer(sourceQueue);
-      ClientConsumer targetConsumer = session.createConsumer(targetQueue);
-      
       session.start();
 
+      ClientConsumer targetConsumer = session.createConsumer(targetQueue);
       message = targetConsumer.receive(5000);
       assertNotNull(message);
       assertEquals(text, message.getStringProperty("prop"));
-      assertNull(sourceConsumer.receiveImmediate());
 
+      ClientConsumer sourceConsumer = session.createConsumer(sourceQueue);
+      assertNull(sourceConsumer.receiveImmediate());
       
       serverControl.destroyBridge(name);
 
