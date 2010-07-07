@@ -19,6 +19,8 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+
+import javax.jms.Message;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -55,6 +57,58 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       message.getBodyBuffer().writeString("teststring");
       clientProducer.send(message);
       session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNotNull(endpoint.lastMessage);
+      assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
+
+      qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+   }
+
+   public void testInvalidAckMode() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      try
+      {
+         spec.setAcknowledgeMode("CLIENT_ACKNOWLEDGE");
+         fail("should throw exception");
+      }
+      catch (java.lang.IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
+   public void testSimpleMessageReceivedOnQueueInLocalTX() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setUseLocalTx(true);
+      MyBootstrapContext ctx = new MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      CountDownLatch latch = new CountDownLatch(1);
+      ExceptionDummyMessageEndpoint endpoint = new ExceptionDummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      ClientSession session = createFactory(false).createSession();
+      ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
+      ClientMessage message = session.createMessage(true);
+      message.getBodyBuffer().writeString("teststring");
+      clientProducer.send(message);
+      session.close();
+      latch.await(5, TimeUnit.SECONDS);
+
+      assertNull(endpoint.lastMessage);
+      latch = new CountDownLatch(1);
+      endpoint.reset(latch);
       latch.await(5, TimeUnit.SECONDS);
 
       assertNotNull(endpoint.lastMessage);
@@ -376,5 +430,24 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
 
    }
 
+   class ExceptionDummyMessageEndpoint extends DummyMessageEndpoint
+   {
+      boolean throwException = true;
 
+      public ExceptionDummyMessageEndpoint(CountDownLatch latch)
+      {
+         super(latch);
+      }
+
+      @Override
+      public void onMessage(Message message)
+      {
+         if(throwException)
+         {
+            throwException = false;
+            throw new IllegalStateException("boo!");
+         }
+         super.onMessage(message);
+      }
+   }
 }

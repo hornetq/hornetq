@@ -411,36 +411,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
-    * Get load balancing policy class name
-    *
-    * @return The value
-    */
-   public String getLoadBalancingPolicyClassName()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("getLoadBalancingPolicyClassName()");
-      }
-
-      return raProperties.getConnectionLoadBalancingPolicyClassName();
-   }
-
-   /**
-    * Set load balancing policy class name
-    *
-    * @param loadBalancingPolicyClassName The value
-    */
-   public void setLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
-      }
-
-      raProperties.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-   }
-
-   /**
     * Get client failure check period
     *
     * @return The value
