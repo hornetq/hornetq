@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/**/*" kind="src" path="src/main"/>
-	<classpathentry kind="src" path="examples/core/twitter-connector/src"/>
 	<classpathentry kind="src" path="src/config/common"/>
 	<classpathentry kind="src" path="build/src"/>
 	<classpathentry kind="src" path="tests/jms-tests/config"/>
@@ -18,6 +17,7 @@
 	<classpathentry kind="src" path="examples/core/microcontainer/src"/>
 	<classpathentry kind="src" path="examples/core/embedded-remote/src"/>
 	<classpathentry kind="src" path="examples/core/perf/src"/>
+   <classpathentry kind="src" path="examples/core/twitter-connector/src"/>
 	<classpathentry kind="src" path="examples/jms/applet/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>
