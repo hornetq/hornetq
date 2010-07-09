@@ -40,12 +40,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    private final AtomicInteger size = new AtomicInteger(0);
 
-   public PriorityLinkedListImpl(final HQDeque<T>[] levels)
-   {
-      this.levels = levels;
-      this.priorities = levels.length;
-   }
-   
    public PriorityLinkedListImpl(final int priorities)
    {
       this.priorities = priorities;
