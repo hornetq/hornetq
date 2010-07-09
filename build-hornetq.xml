@@ -60,6 +60,8 @@
    <property name="jms.sources.jar.name" value="hornetq-jms-sources.jar"/>
    <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
    <property name="jms.client.sources.jar.name" value="hornetq-jms-client-sources.jar"/>
+   <property name="jms.client.java5.jar.name" value="hornetq-jms-client-java5.jar"/>
+   <property name="jms.client.java5.sources.jar.name" value="hornetq-jms-client-java5-sources.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
    <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
@@ -71,6 +73,8 @@
    <property name="logging.sources.jar.name" value="hornetq-logging-sources.jar"/>
    <property name="core.client.jar.name" value="hornetq-core-client.jar"/>
    <property name="core.client.sources.jar.name" value="hornetq-core-client-sources.jar"/>
+   <property name="core.client.java5.jar.name" value="hornetq-core-client-java5.jar"/>
+   <property name="core.client.java5.sources.jar.name" value="hornetq-core-client-java5-sources.jar"/>
    <property name="ra.jar.name" value="hornetq-ra.jar"/>
    <property name="ra.sources.jar.name" value="hornetq-ra-sources.jar"/>
    <property name="ra.rar.name" value="hornetq-ra.rar"/>
@@ -86,7 +90,9 @@
    <property name="build.dir" value="build"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
+   <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
+   <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
    <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
@@ -372,7 +378,9 @@
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
       <mkdir dir="${build.core.classes.dir}"/>
+      <mkdir dir="${build.core.client.java5.classes.dir}"/>
       <mkdir dir="${build.jms.classes.dir}"/>
+      <mkdir dir="${build.jms.java5.classes.dir}"/>
       <mkdir dir="${build.jboss.integration.classes.dir}"/>
       <mkdir dir="${build.twitter.integration.classes.dir}"/>
       <mkdir dir="${build.service.classes.dir}"/>
@@ -403,7 +411,7 @@
    <!-- Compilation targets               -->
    <!-- ================================= -->
 
-   <target name="compile" depends="compile-jms"/>
+   <target name="compile" depends="compile-jms, compile-core-client-java5"/>
 
    <target name="compile-core" depends="init">
       <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
@@ -449,6 +457,49 @@
 
    </target>
 
+   <target name="compile-core-client-java5" depends="init">
+      <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
+      <javacc target="${src.main.dir}/org/hornetq/core/filter/impl/FilterParser.jj"
+              outputdirectory="${build.src.dir}/org/hornetq/core/filter/impl"
+              javacchome="${sun.javacc.lib}"
+              static="false"/>
+      <javac destdir="${build.core.client.java5.classes.dir}"
+             target="1.5"
+             source="1.5"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <exclude name="**/hornetq/**/server/**/*.java" />
+
+         <include name="**/hornetq/*.java"/>
+         <include name="**/hornetq/api/*.java"/>
+         <include name="**/hornetq/api/core/**/*.java"/>
+         <include name="**/hornetq/core/**/*.java"/>
+         <include name="**/hornetq/spi/**/*.java"/>
+         <include name="**/hornetq/utils/**/*.java"/>
+         <classpath refid="core.compilation.classpath"/>
+      </javac>
+      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+            outputproperty="netty.version" fork="true"/>
+      <echo>setting netty version ${netty.version}</echo>
+      <copy file="${src.config.dir}/common/hornetq-version.properties"
+            tofile="${build.core.client.java5.classes.dir}/hornetq-version.properties" overwrite="true">
+         <filterset>
+               <filter token="NETTY.VERSION" value="${netty.version}"/>
+         </filterset>
+      </copy>
+
+   </target>
+	
    <target name="compile-jms" depends="compile-core">
       <javac destdir="${build.jms.classes.dir}"
              target="${javac.target}"
@@ -469,6 +520,26 @@
       </javac>
    </target>
 
+	   <target name="compile-jms-java5" depends="compile-core-client-java5">
+	      <javac destdir="${build.jms.java5.classes.dir}"
+	             target="1.5"
+	             source="1.5"
+	             optimize="${javac.optimize}"
+	             debug="${javac.debug}"
+	             depend="${javac.depend}"
+	             verbose="${javac.verbose}"
+	             deprecation="${javac.deprecation}"
+	             includeAntRuntime="${javac.include.ant.runtime}"
+	             includeJavaRuntime="${javac.include.java.runtime}"
+	             failonerror="${javac.fail.onerror}">
+	         <src>
+	            <pathelement path="${src.main.dir}"/>
+	         </src>
+	         <include name="**/jms/**/*.java"/>
+	         <classpath refid="jms.compilation.classpath"/>
+	      </javac>
+	   </target>
+	
    <target name="compile-jboss-integration" depends="compile-core">
       <javac destdir="${build.jboss.integration.classes.dir}"
              target="${javac.target}"
@@ -649,11 +720,11 @@
    <!-- ======================================================================================== -->
 
    <target name="sources-jar" description="create jar files containing source code"
-           depends="jar-core-sources, jar-core-client-sources, jar-jms-sources, jar-jms-client-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
+           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
+           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -761,7 +832,27 @@
       </jar>
    </target>
 
-   <target name="jar-jboss-integration" depends="compile-jboss-integration">
+	   <target name="jar-jms-client-java5" depends="compile-jms-java5">
+
+	      <jar jarfile="${build.jars.dir}/${jms.client.java5.jar.name}">
+	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
+		      <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+	      </jar>
+
+	   </target>
+
+	   <target name="jar-jms-client-java5-sources">
+	      <jar jarfile="${build.jars.dir}/${jms.client.java5.sources.jar.name}">
+	         <fileset dir="${src.main.dir}">
+	            <include name="org/hornetq/api/jms/**/*.*"/>
+	            <include name="org/hornetq/jms/client/**/*.*"/>
+	            <include name="org/hornetq/jms/referenceable/**/*.*"/>
+	         </fileset>
+	      </jar>
+	   </target>
+
+	<target name="jar-jboss-integration" depends="compile-jboss-integration">
 
       <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
          <fileset dir="${build.jboss.integration.classes.dir}" includes="**"/>
@@ -907,6 +998,71 @@
       </jar>
    </target>
 
+   <target name="jar-core-client-java5" depends="compile-core-client-java5">
+      <jar jarfile="${build.jars.dir}/${core.client.java5.jar.name}">
+         <fileset dir="${build.core.client.java5.classes.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.class"/>
+            <include name="org/hornetq/*.class"/>
+            <include name="org/hornetq/core/buffers/**/*.class"/>
+            <include name="org/hornetq/core/client/**/*.class"/>
+            <include name="org/hornetq/core/filter/**/*.class"/>
+            <include name="org/hornetq/core/exception/**/*.class"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.class"/>
+            <include name="org/hornetq/utils/**/*.class"/>
+            <include name="org/hornetq/core/cluster/**/*.class"/>
+            <include name="org/hornetq/core/list/**/*.class"/>
+            <include name="org/hornetq/core/logging/**/*.class"/>
+            <include name="org/hornetq/core/message/**/*.class"/>
+            <include name="org/hornetq/core/protocol/core/**/*.class"/>
+            <include name="org/hornetq/core/remoting/**/*.class"/>
+            <include name="org/hornetq/core/version/**/*.class"/>
+            <include name="org/hornetq/core/management/*.class"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
+            <include name="org/hornetq/spi/core/logging/*.class"/>
+            <include name="org/hornetq/spi/core/protocol/*.class"/>
+            <include name="org/hornetq/spi/core/remoting/*.class"/>
+
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.class"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.class"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jar-core-client-java5-sources">
+      <jar jarfile="${build.jars.dir}/${core.client.java5.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.*"/>
+            <include name="org/hornetq/*.*"/>
+            <include name="org/hornetq/core/buffers/**/*.*"/>
+            <include name="org/hornetq/core/client/**/*.*"/>
+            <include name="org/hornetq/core/filter/**/*.*"/>
+            <include name="org/hornetq/core/exception/**/*.*"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.*"/>
+            <include name="org/hornetq/utils/**/*.*"/>
+            <include name="org/hornetq/core/cluster/**/*.*"/>
+            <include name="org/hornetq/core/list/**/*.*"/>
+            <include name="org/hornetq/core/logging/**/*.*"/>
+            <include name="org/hornetq/core/message/**/*.*"/>
+            <include name="org/hornetq/core/protocol/core/**/*.*"/>
+            <include name="org/hornetq/core/remoting/**/*.*"/>
+            <include name="org/hornetq/core/version/**/*.*"/>
+            <include name="org/hornetq/core/management/*.*"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.java"/>
+            <include name="org/hornetq/spi/core/logging/*.*"/>
+            <include name="org/hornetq/spi/core/protocol/*.*"/>
+            <include name="org/hornetq/spi/core/remoting/*.*"/>
+
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.java"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
    <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
       <jar jarfile="${build.jars.dir}/${ra.jar.name}">
          <fileset dir="${build.ra.classes.dir}">
@@ -988,7 +1144,9 @@
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
          	<include name="${core.client.jar.name}"/>
+            <include name="${core.client.java5.jar.name}"/>
          	<include name="${jms.client.jar.name}"/>
+         	<include name="${jms.client.java5.jar.name}"/>
          	<include name="${jnp.client.jar.name}"/>
          	<include name="${twitter.integration.jar.name}"/>
          </fileset>

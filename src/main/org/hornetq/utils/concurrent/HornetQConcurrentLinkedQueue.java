@@ -9,6 +9,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.HQIterator;
 
 /**
  * An unbounded thread-safe {@linkplain Queue queue} based on linked nodes.

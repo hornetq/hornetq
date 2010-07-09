@@ -32,16 +32,20 @@
         <para>If you are using just a pure HornetQ Core client (i.e. no JMS) then you need <literal
                 >hornetq-core-client.jar</literal> and
                 <literal>netty.jar</literal> on your client classpath.</para>
+        <para>If the client runs inside a <emphasis>Java 5 virtual machine</emphasis>, use instead <literal>hornetq-core-client-java5.jar</literal>.</para>
     </section>
     <section>
         <title>JMS Client</title>
         <para>If you are using JMS on the client side, then you will also need to include <literal
                 >hornetq-jms-client.jar</literal> and <literal>jboss-jms-api.jar</literal>.</para>
+        <para>If the client runs inside a <emphasis>Java 5 virtual machine</emphasis>, include instead <literal>hornetq-jms-client-java5.jar</literal>.</para>
+        
         <note>
             <para><literal>jboss-jms-api.jar</literal> just contains Java EE API interface classes
                 needed for the <literal>javax.jms.*</literal> classes. If you already have a jar
                 with these interface classes on your classpath, you will not need it.</para>
         </note>
+        
     </section>
     <section>
         <title>JMS Client with JNDI</title>

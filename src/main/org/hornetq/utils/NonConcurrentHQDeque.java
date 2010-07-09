@@ -17,7 +17,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * A NonConcurrentHQDeque
@@ -28,7 +27,7 @@ import org.hornetq.utils.concurrent.HQIterator;
  */
 public class NonConcurrentHQDeque<T> implements HQDeque<T>
 {
-   private static final Logger log = Logger.getLogger(ConcurrentHQDeque.class);
+   private static final Logger log = Logger.getLogger(NonConcurrentHQDeque.class);
 
    private final LinkedList<T> queue;
    

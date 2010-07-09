@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * A priority linked list implementation
@@ -35,13 +34,19 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
    private static final Logger log = Logger.getLogger(PriorityLinkedListImpl.class);
 
-   private HQDeque<T>[] levels;
+   protected HQDeque<T>[] levels;
 
-   private final int priorities;
+   protected final int priorities;
 
    private final AtomicInteger size = new AtomicInteger(0);
 
-   public PriorityLinkedListImpl(final boolean concurrent, final int priorities)
+   public PriorityLinkedListImpl(final HQDeque<T>[] levels)
+   {
+      this.levels = levels;
+      this.priorities = levels.length;
+   }
+   
+   public PriorityLinkedListImpl(final int priorities)
    {
       this.priorities = priorities;
 
@@ -49,14 +54,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = 0; i < priorities; i++)
       {
-         if (concurrent)
-         {
-            levels[i] = new ConcurrentHQDeque<T>();
-         }
-         else
-         {
-            levels[i] = new NonConcurrentHQDeque<T>();
-         }
+         levels[i] = new NonConcurrentHQDeque<T>();
       }
    }
 

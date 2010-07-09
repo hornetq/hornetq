@@ -28,7 +28,7 @@ public class NonConcurrentPriorityLinkedListTest extends PriorityLinkedListTestB
    @Override
    protected PriorityLinkedListImpl<Wibble> getList()
    {
-      return new PriorityLinkedListImpl<Wibble>(false, 10);
+      return new PriorityLinkedListImpl<Wibble>(10);
    }
 
 }

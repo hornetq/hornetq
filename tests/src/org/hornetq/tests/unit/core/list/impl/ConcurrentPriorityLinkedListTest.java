@@ -14,6 +14,7 @@
 package org.hornetq.tests.unit.core.list.impl;
 
 import org.hornetq.utils.PriorityLinkedListImpl;
+import org.hornetq.utils.concurrent.ConcurrentPriorityLinkedListImpl;
 
 /**
  * A ConcurrentPriorityLinkedListTest
@@ -28,7 +29,7 @@ public class ConcurrentPriorityLinkedListTest extends PriorityLinkedListTestBase
    @Override
    protected PriorityLinkedListImpl<Wibble> getList()
    {
-      return new PriorityLinkedListImpl<Wibble>(true, 10);
+      return new ConcurrentPriorityLinkedListImpl<Wibble>(10);
    }
 
 }

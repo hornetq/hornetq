@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils.concurrent;
+package org.hornetq.utils;
 
 /**
  * A HQIterator

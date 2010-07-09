@@ -13,7 +13,6 @@
 
 package org.hornetq.utils;
 
-import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * A type of linked list which maintains items according to a priority

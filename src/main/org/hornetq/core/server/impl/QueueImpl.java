@@ -50,9 +50,9 @@ import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.ConcurrentHashSet;
+import org.hornetq.utils.HQIterator;
 import org.hornetq.utils.PriorityLinkedList;
-import org.hornetq.utils.PriorityLinkedListImpl;
-import org.hornetq.utils.concurrent.HQIterator;
+import org.hornetq.utils.concurrent.ConcurrentPriorityLinkedListImpl;
 
 /**
  * Implementation of a Queue
@@ -82,8 +82,7 @@ public class QueueImpl implements Queue
 
    private final PostOffice postOffice;
 
-   private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(true,
-                                                                                                                       QueueImpl.NUM_PRIORITIES);
+   private final PriorityLinkedList<MessageReference> messageReferences = new ConcurrentPriorityLinkedListImpl<MessageReference>(QueueImpl.NUM_PRIORITIES);
 
    private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
 

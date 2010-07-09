@@ -30,10 +30,10 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
+import org.hornetq.utils.HQIterator;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.TokenBucketLimiter;
-import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -79,8 +79,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final int ackBatchSize;
 
-   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(false,
-                                                                                                                      ClientConsumerImpl.NUM_PRIORITIES);
+   private final PriorityLinkedList<ClientMessageInternal> buffer = new PriorityLinkedListImpl<ClientMessageInternal>(ClientConsumerImpl.NUM_PRIORITIES);
 
    private final Runner runner = new Runner();
 

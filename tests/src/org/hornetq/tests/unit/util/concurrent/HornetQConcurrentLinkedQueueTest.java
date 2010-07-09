@@ -19,7 +19,7 @@ import java.util.Queue;
 import junit.framework.TestCase;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.concurrent.HQIterator;
+import org.hornetq.utils.HQIterator;
 import org.hornetq.utils.concurrent.HornetQConcurrentLinkedQueue;
 
 /**

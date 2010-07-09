@@ -16,8 +16,8 @@ package org.hornetq.tests.unit.core.list.impl;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.hornetq.utils.HQIterator;
 import org.hornetq.utils.PriorityLinkedListImpl;
-import org.hornetq.utils.concurrent.HQIterator;
 
 /**
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>

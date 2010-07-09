@@ -11,15 +11,13 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils;
+package org.hornetq.utils.concurrent;
 
 import java.util.Iterator;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.concurrent.BlockingDeque;
-import org.hornetq.utils.concurrent.HQIterator;
-import org.hornetq.utils.concurrent.HornetQConcurrentLinkedQueue;
-import org.hornetq.utils.concurrent.LinkedBlockingDeque;
+import org.hornetq.utils.HQDeque;
+import org.hornetq.utils.HQIterator;
 
 /**
  * A ConcurrentHQDeque
