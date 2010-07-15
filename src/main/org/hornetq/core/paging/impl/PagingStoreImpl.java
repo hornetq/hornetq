@@ -220,7 +220,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       try
       {
-         if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
+         if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
+         {
+            return false;
+         }
+         else if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
          {
             return isFull();
          }
