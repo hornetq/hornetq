@@ -37,7 +37,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.utils.IDGenerator;
+import org.hornetq.utils.SimpleIDGenerator;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
+import org.hornetq.utils.VariableLatch;
 
 /**
  * 
@@ -560,6 +562,107 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
 
    }
+   
+   // This test is under investigation... disabled for now
+   public void _testCompactAddAndUpdateFollowedByADelete() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+
+      final VariableLatch reusableLatchDone = new VariableLatch();
+      reusableLatchDone.up();
+      final VariableLatch reusableLatchWait = new VariableLatch();
+      reusableLatchWait.up();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.down();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.waitCompletion();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+      
+      long firstID = idGen.generateID();
+
+      long consumerTX = idGen.generateID();
+      
+      long appendTX = idGen.generateID();
+      
+      long addedRecord = idGen.generateID();
+      
+      add(firstID);
+
+      updateTx(consumerTX, firstID);
+
+      
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+
+      tCompact.start();
+      
+
+      reusableLatchDone.waitCompletion();
+      
+      addTx(appendTX, addedRecord);
+      updateTx(appendTX, addedRecord);
+      commit(appendTX);
+      updateTx(consumerTX, addedRecord);
+      commit(consumerTX);
+      delete(addedRecord);
+      
+      reusableLatchWait.down();
+      
+      tCompact.join();
+
+      journal.forceMoveNextFile();
+      
+      long newRecord = idGen.generateID();
+      add(newRecord);
+      update(newRecord);
+
+      journal.compact();
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
 
    public void testSimpleCompacting() throws Exception
    {
