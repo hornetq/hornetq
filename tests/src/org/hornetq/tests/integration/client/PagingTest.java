@@ -400,21 +400,18 @@ public class PagingTest extends ServiceTestBase
          byte[] body = new byte[messageSize];
 
          ClientSession sessionTransacted = sf.createSession(null, null, false, false, false, false, 0);
-
          ClientProducer producerTransacted = sessionTransacted.createProducer(PagingTest.ADDRESS);
-         
+
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
          ClientMessage firstMessage = sessionTransacted.createMessage(IS_DURABLE_MESSAGE);
          firstMessage.getBodyBuffer().writeBytes(body);
          firstMessage.putIntProperty(new SimpleString("id"), 0);
          
          producerTransacted.send(firstMessage);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
-
-         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
-
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
-
 
          ClientMessage message = null;
 
@@ -482,8 +479,9 @@ public class PagingTest extends ServiceTestBase
 
             Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
+//             System.out.println(messageID);
             Assert.assertNotNull(messageID);
-            Assert.assertEquals("message received out of order", messageID.intValue(), i);
+            Assert.assertEquals("message received out of order", i, messageID.intValue());
 
             message.acknowledge();
          }
