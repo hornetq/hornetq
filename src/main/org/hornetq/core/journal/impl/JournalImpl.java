@@ -904,13 +904,22 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         JournalRecord record = records.remove(id);
-
-         if (record == null)
+         JournalRecord record = null;
+         
+         if (compactor == null)
          {
-            if (!(compactor != null && compactor.lookupRecord(id)))
+            record = records.remove(id);
+
+            if (record == null)
             {
                throw new IllegalStateException("Cannot find add info " + id);
+            }
+         }
+         else
+         {
+            if (!records.containsKey(id) && !compactor.lookupRecord(id))
+            {
+               throw new IllegalStateException("Cannot find add info " + id + " on compactor or current records");
             }
          }
 
@@ -1464,7 +1473,7 @@ public class JournalImpl implements TestableJournal
                return;
             }
 
-            autoReclaim = false;
+            setAutoReclaim(false);
 
             // We need to move to the next file, as we need a clear start for negatives and positives counts
             moveNextFile(true);

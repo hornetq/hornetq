@@ -317,18 +317,18 @@ public class JournalTransaction
          {
             for (JournalUpdate trDelete : neg)
             {
-               JournalImpl.JournalRecord posFiles = journal.getRecords().remove(trDelete.id);
-
-               if (posFiles != null)
+               if (compactor != null)
                {
-                  posFiles.delete(trDelete.file);
-               }
-               else if (compactor != null && compactor.lookupRecord(trDelete.id))
-               {
-                  // This is a case where the transaction was opened after compacting was started,
-                  // but the commit arrived while compacting was working
-                  // We need to cache the counter update, so compacting will take the correct files when it is done
                   compactor.addCommandDelete(trDelete.id, trDelete.file);
+               }
+               else
+               {
+                  JournalImpl.JournalRecord posFiles = journal.getRecords().remove(trDelete.id);
+   
+                  if (posFiles != null)
+                  {
+                     posFiles.delete(trDelete.file);
+                  }
                }
             }
          }

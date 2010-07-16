@@ -563,8 +563,108 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
    
-   // This test is under investigation... disabled for now
-   public void _testCompactAddAndUpdateFollowedByADelete() throws Exception
+   public void testCompactAddAndUpdateFollowedByADelete() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+
+      final VariableLatch reusableLatchDone = new VariableLatch();
+      reusableLatchDone.up();
+      final VariableLatch reusableLatchWait = new VariableLatch();
+      reusableLatchWait.up();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.down();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.waitCompletion();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+
+      long consumerTX = idGen.generateID();
+      
+      long firstID = idGen.generateID();
+      
+      long appendTX = idGen.generateID();
+      
+      long addedRecord = idGen.generateID();
+      
+      addTx(consumerTX, firstID);
+      
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+
+      tCompact.start();
+      
+
+      reusableLatchDone.waitCompletion();
+      
+      addTx(appendTX, addedRecord);
+
+      commit(appendTX);
+
+      updateTx(consumerTX, addedRecord);
+      
+      commit(consumerTX);
+      
+      delete(addedRecord);
+      
+      reusableLatchWait.down();
+      
+      tCompact.join();
+
+      journal.forceMoveNextFile();
+      
+      long newRecord = idGen.generateID();
+      add(newRecord);
+      update(newRecord);
+
+      journal.compact();
+      
+      System.out.println("Debug after compact\n" + journal.debug());
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testCompactAddAndUpdateFollowedByADelete2() throws Exception
    {
 
       setup(2, 60 * 1024, false);
@@ -610,6 +710,100 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       
       long addedRecord = idGen.generateID();
       
+      addTx(consumerTX, firstID);
+
+      
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+
+      tCompact.start();
+
+      reusableLatchDone.waitCompletion();
+      
+      addTx(appendTX, addedRecord);
+      commit(appendTX);
+      updateTx(consumerTX, addedRecord);
+      commit(consumerTX);
+      
+      long deleteTXID = idGen.generateID();
+      
+      deleteTx(deleteTXID, addedRecord);
+
+      commit(deleteTXID);
+    
+      reusableLatchWait.down();
+      
+      tCompact.join();
+
+      journal.forceMoveNextFile();
+      
+      journal.compact();
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testCompactAddAndUpdateFollowedByADelete3() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+
+      final VariableLatch reusableLatchDone = new VariableLatch();
+      reusableLatchDone.up();
+      final VariableLatch reusableLatchWait = new VariableLatch();
+      reusableLatchWait.up();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.down();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.waitCompletion();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+      
+      long firstID = idGen.generateID();
+
+      long consumerTX = idGen.generateID();
+      
+      long addedRecord = idGen.generateID();
+      
       add(firstID);
 
       updateTx(consumerTX, firstID);
@@ -637,11 +831,102 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       reusableLatchDone.waitCompletion();
       
-      addTx(appendTX, addedRecord);
-      updateTx(appendTX, addedRecord);
-      commit(appendTX);
-      updateTx(consumerTX, addedRecord);
+      addTx(consumerTX, addedRecord);
       commit(consumerTX);
+      delete(addedRecord);
+      
+      reusableLatchWait.down();
+      
+      tCompact.join();
+
+      journal.compact();
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+
+   public void testCompactAddAndUpdateFollowedByADelete4() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+
+      final VariableLatch reusableLatchDone = new VariableLatch();
+      reusableLatchDone.up();
+      final VariableLatch reusableLatchWait = new VariableLatch();
+      reusableLatchWait.up();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.down();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.waitCompletion();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+
+      long consumerTX = idGen.generateID();
+      
+      long firstID = idGen.generateID();
+      
+      long appendTX = idGen.generateID();
+      
+      long addedRecord = idGen.generateID();
+      
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+
+      tCompact.start();
+      
+
+      reusableLatchDone.waitCompletion();
+      
+      addTx(consumerTX, firstID);
+      
+      addTx(appendTX, addedRecord);
+
+      commit(appendTX);
+
+      updateTx(consumerTX, addedRecord);
+      
+      commit(consumerTX);
+      
       delete(addedRecord);
       
       reusableLatchWait.down();
@@ -655,6 +940,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       update(newRecord);
 
       journal.compact();
+      
+      System.out.println("Debug after compact\n" + journal.debug());
       
       stopJournal();
       createJournal();
