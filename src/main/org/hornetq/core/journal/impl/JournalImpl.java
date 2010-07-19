@@ -581,6 +581,8 @@ public class JournalImpl implements TestableJournal
                JournalImpl.trace("Record at position " + pos +
                                  " recordType = " +
                                  recordType +
+                                 " possible transactionID = " + transactionID + 
+                                 " possible recordID = " + recordID +
                                  " file:" +
                                  file.getFile().getFileName() +
                                  " is corrupted and it is being ignored (III)");
@@ -749,10 +751,6 @@ public class JournalImpl implements TestableJournal
                                final boolean sync,
                                final IOCompletion callback) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendAddRecord id = " + id + ", recordType = " + recordType);
-      }
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -762,6 +760,11 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         if (JournalImpl.LOAD_TRACE)
+         {
+            JournalImpl.trace("appendAddRecord id = " + id + ", recordType = " + recordType + " compacting = " + (compactor != null));
+         }
+
          JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
          if (callback != null)
@@ -969,14 +972,6 @@ public class JournalImpl implements TestableJournal
                                             final byte recordType,
                                             final EncodingSupport record) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendAddRecordTransactional txID " + txID +
-                           ", id = " +
-                           id +
-                           ", recordType = " +
-                           recordType);
-      }
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -986,6 +981,15 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         if (JournalImpl.LOAD_TRACE)
+         {
+            JournalImpl.trace("appendAddRecordTransactional txID " + txID +
+                              ", id = " +
+                              id +
+                              ", recordType = " +
+                              recordType +
+                              ", compacting " + (this.compactor != null));
+         }
 
          JournalInternalRecord addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
 
@@ -1022,14 +1026,6 @@ public class JournalImpl implements TestableJournal
                                                final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendUpdateRecordTransactional txID " + txID +
-                           ", id = " +
-                           id +
-                           ", recordType = " +
-                           recordType);
-      }
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1039,6 +1035,14 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         if (JournalImpl.LOAD_TRACE)
+         {
+            JournalImpl.trace("appendUpdateRecordTransactional txID " + txID +
+                              ", id = " +
+                              id +
+                              ", recordType = " +
+                              recordType + ", compacting = " + (compactor != null));
+         }
 
          JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
 
@@ -1156,10 +1160,6 @@ public class JournalImpl implements TestableJournal
                                    final boolean sync,
                                    final IOCompletion callback) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendPrepareRecord txID " + txID);
-      }
 
       if (state != JournalImpl.STATE_LOADED)
       {
@@ -1172,6 +1172,11 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+
+         if (JournalImpl.LOAD_TRACE)
+         {
+            JournalImpl.trace("appendPrepareRecord txID " + txID + ", compacting = " + (compactor != null));
+         }
 
          JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
 
@@ -1241,6 +1246,11 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         if (JournalImpl.LOAD_TRACE)
+         {
+            JournalImpl.trace("appendCommitRecord txID " + txID + ", compacting = " + (compactor != null));
+         }
+
 
          if (tx == null)
          {
