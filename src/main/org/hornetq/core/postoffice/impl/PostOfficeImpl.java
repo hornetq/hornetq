@@ -14,8 +14,6 @@
 package org.hornetq.core.postoffice.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,9 +58,9 @@ import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
@@ -1104,18 +1102,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    private class PageMessageOperation implements TransactionOperation
    {
       private final List<ServerMessage> messagesToPage = new ArrayList<ServerMessage>();
-
+      
+      private Transaction subTX = null;
+      
       void addMessageToPage(final ServerMessage message)
       {
          messagesToPage.add(message);
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getDistinctQueues()
-       */
-      public Collection<Queue> getDistinctQueues()
-      {
-         return Collections.emptySet();
       }
 
       public void afterCommit(final Transaction tx)
@@ -1130,10 +1122,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             pageTransaction.commit();
          }
+         
+         if (subTX != null)
+         {
+            subTX.afterCommit();
+         }
       }
 
       public void afterPrepare(final Transaction tx)
       {
+         if (subTX != null)
+         {
+            subTX.afterPrepare();
+         }
       }
 
       public void afterRollback(final Transaction tx)
@@ -1144,6 +1145,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             pageTransaction.rollback();
          }
+
+         if (subTX != null)
+         {
+            subTX.afterRollback();
+         }
       }
 
       public void beforeCommit(final Transaction tx) throws Exception
@@ -1152,15 +1158,30 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             pageMessages(tx);
          }
+         
+         if (subTX != null)
+         {
+            subTX.beforeCommit();
+         }
+         
       }
 
       public void beforePrepare(final Transaction tx) throws Exception
       {
          pageMessages(tx);
+         
+         if (subTX != null)
+         {
+            subTX.beforePrepare();
+         }
       }
 
       public void beforeRollback(final Transaction tx) throws Exception
       {
+         if (subTX != null)
+         {
+            subTX.beforeRollback();
+         }
       }
 
       private void pageMessages(final Transaction tx) throws Exception
@@ -1201,9 +1222,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                else
                {
                   // This could happen when the PageStore left the pageState
-
-                  // TODO is this correct - don't we lose transactionality here???
-                  route(message, false);
+                  // we create a copy of the transaction so that messages are routed with the same tx ID.
+                  // but we can not use directly the tx as it has already its own set of TransactionOperations
+                  if (subTX == null)
+                  {
+                     subTX = tx.copy();
+                  }
+                  route(message, subTX, false);
                }
                first = false;
             }

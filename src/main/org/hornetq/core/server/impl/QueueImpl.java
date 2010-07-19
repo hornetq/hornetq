@@ -1385,7 +1385,7 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void postAcknowledge(final MessageReference ref) throws Exception
+   private void postAcknowledge(final MessageReference ref)
    {
       final ServerMessage message = ref.getMessage();
 
@@ -1423,7 +1423,14 @@ public class QueueImpl implements Queue
 
       queue.deliveringCount.decrementAndGet();
 
-      message.decrementRefCount();
+      try
+      {
+         message.decrementRefCount();
+      }
+      catch (Exception e)
+      {
+         QueueImpl.log.warn("Unable to decrement reference counting", e);
+      }
    }
 
    void postRollback(final LinkedList<MessageReference> refs)
@@ -1500,7 +1507,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      public void afterCommit(final Transaction tx) throws Exception
+      public void afterCommit(final Transaction tx)
       {
          for (MessageReference ref : refsToAck)
          {

@@ -247,7 +247,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int numberOfIntegers = 256;
+      final int messageSize = 1024; // 1k
 
       try
       {
@@ -263,7 +263,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         byte[] body = new byte[DataConstants.SIZE_INT * numberOfIntegers];
+         byte[] body = new byte[messageSize];
          // HornetQBuffer bodyLocal = HornetQChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
          ClientMessage message = null;
@@ -372,7 +372,7 @@ public class PagingTest extends ServiceTestBase
     *  Test under discussion at : http://community.jboss.org/thread/154061?tstart=0
     * 
     */
-   public void disabled_testDepageDuringTransaction2() throws Exception
+   public void testDepageDuringTransaction2() throws Exception
    {
       boolean IS_DURABLE_MESSAGE = true;
       clearData();

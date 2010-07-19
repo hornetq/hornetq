@@ -292,6 +292,35 @@ public class BindingsImplTest extends UnitTestCase
          
       }
 
+      public Transaction copy()
+      {
+         return null;
+      }
+
+      public void afterCommit()
+      {
+      }
+
+      public void afterPrepare()
+      {
+      }
+
+      public void afterRollback()
+      {
+      }
+
+      public void beforeCommit() throws Exception
+      {
+      }
+
+      public void beforePrepare() throws Exception
+      {
+      }
+
+      public void beforeRollback() throws Exception
+      {
+      }
+
    }
 
    class FakeMessage implements ServerMessage

@@ -73,6 +73,20 @@ public class TransactionImpl implements Transaction
       this.timeoutSeconds = timeoutSeconds;
    }
 
+   /** Used for copying */
+   private TransactionImpl(final TransactionImpl other)
+   {
+      this.storageManager = other.storageManager;
+
+      this.xid = other.xid;
+
+      this.id = other.id;
+
+      this.createTime = other.createTime;
+
+      this.timeoutSeconds = other.timeoutSeconds;
+   }
+
    public TransactionImpl(final StorageManager storageManager)
    {
       this.storageManager = storageManager;
@@ -130,7 +144,7 @@ public class TransactionImpl implements Transaction
    {
       return createTime;
    }
-
+   
    public boolean hasTimedOut(final long currentTime,final int defaultTimeout)
    {
       if(timeoutSeconds == - 1)
@@ -169,13 +183,7 @@ public class TransactionImpl implements Transaction
             throw new IllegalStateException("Cannot prepare non XA transaction");
          }
 
-         if (operations != null)
-         {
-            for (TransactionOperation operation : operations)
-            {
-               operation.beforePrepare(this);
-            }
-         }
+         beforePrepare();
 
          storageManager.prepare(id, xid);
 
@@ -195,22 +203,7 @@ public class TransactionImpl implements Transaction
 
             public void done()
             {
-               if (operations != null)
-               {
-                  for (TransactionOperation operation : operations)
-                  {
-                     try
-                     {
-                        operation.afterPrepare(TransactionImpl.this);
-                     }
-                     catch (Exception e)
-                     {
-                        // https://jira.jboss.org/jira/browse/HORNETQ-188
-                        // After commit shouldn't throw an exception
-                        TransactionImpl.log.warn(e.getMessage(), e);
-                     }
-                  }
-               }
+               afterPrepare();
             }
          });
       }
@@ -252,14 +245,8 @@ public class TransactionImpl implements Transaction
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
          }
-
-         if (operations != null)
-         {
-            for (TransactionOperation operation : operations)
-            {
-               operation.beforeCommit(this);
-            }
-         }
+         
+         beforeCommit();
 
          if (containsPersistent || xid != null && state == State.PREPARED)
          {
@@ -285,22 +272,7 @@ public class TransactionImpl implements Transaction
 
             public void done()
             {
-               if (operations != null)
-               {
-                  for (TransactionOperation operation : operations)
-                  {
-                     try
-                     {
-                        operation.afterCommit(TransactionImpl.this);
-                     }
-                     catch (Exception e)
-                     {
-                        // https://jira.jboss.org/jira/browse/HORNETQ-188
-                        // After commit shouldn't throw an exception
-                        TransactionImpl.log.warn(e.getMessage(), e);
-                     }
-                  }
-               }
+               afterCommit();
             }
          });
 
@@ -326,13 +298,7 @@ public class TransactionImpl implements Transaction
             }
          }
 
-         if (operations != null)
-         {
-            for (TransactionOperation operation : operations)
-            {
-               operation.beforeRollback(this);
-            }
-         }
+         beforeRollback();
 
          doRollback();
 
@@ -353,22 +319,7 @@ public class TransactionImpl implements Transaction
 
             public void done()
             {
-               if (operations != null)
-               {
-                  for (TransactionOperation operation : operations)
-                  {
-                     try
-                     {
-                        operation.afterRollback(TransactionImpl.this);
-                     }
-                     catch (Exception e)
-                     {
-                        // https://jira.jboss.org/jira/browse/HORNETQ-188
-                        // After commit shouldn't throw an exception
-                        TransactionImpl.log.warn(e.getMessage(), e);
-                     }
-                  }
-               }
+               afterRollback();
             }
          });
       }
@@ -468,6 +419,77 @@ public class TransactionImpl implements Transaction
       if (operations == null)
       {
          operations = new ArrayList<TransactionOperation>();
+      }
+   }
+
+   public Transaction copy()
+   {
+      return new TransactionImpl(this);
+   }
+
+   public void afterCommit()
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.afterCommit(this);
+         }
+      }
+   }
+
+   public void afterRollback()
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.afterRollback(this);
+         }
+      }
+   }
+
+   public void beforeCommit() throws Exception
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.beforeCommit(this);
+         }
+      }
+   }
+
+   public void beforePrepare() throws Exception
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.beforePrepare(this);
+         }
+      }
+   }
+
+   public void beforeRollback() throws Exception
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.beforeRollback(this);
+         }
+      }
+   }
+
+   public void afterPrepare()
+   {
+      if (operations != null)
+      {
+         for (TransactionOperation operation : operations)
+         {
+            operation.afterPrepare(this);
+         }
       }
    }
 
