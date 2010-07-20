@@ -302,7 +302,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       if (newRecords.get(recordID) != null)
       {
          // Sanity check, it should never happen
-         throw new IllegalStateException("Inconsistency during compacting: Delete record being read on an existent record");
+         throw new IllegalStateException("Inconsistency during compacting: Delete record being read on an existent record (id=" + recordID + ")");
       }
 
    }
