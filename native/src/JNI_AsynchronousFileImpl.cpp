@@ -196,6 +196,27 @@ JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_w
 	}
 }
 
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_writeInternal
+  (JNIEnv * env, jobject , jobject controllerAddress, jlong positionToWrite, jlong size, jobject jbuffer)
+{
+	try
+	{
+		AIOController * controller = getController(env, controllerAddress);
+		void * buffer = env->GetDirectBufferAddress(jbuffer);
+
+		if (buffer == 0)
+		{
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Buffer used, libaio requires NativeBuffer instead of Java ByteBuffer");
+			return;
+		}
+
+		controller->fileOutput.writeInternal(env, positionToWrite, (size_t)size, buffer);
+	}
+	catch (AIOException& e)
+	{
+		throwException(env, e.getErrorCode(), e.what());
+	}
+}
 
 
 JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents

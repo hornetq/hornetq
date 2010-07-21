@@ -13,6 +13,10 @@
 
 package org.hornetq.tests.unit.core.asyncio;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -917,6 +921,50 @@ public class AsynchronousFileTest extends AIOTestBase
       }
 
    }
+   
+   
+   public void testInternalWrite() throws Exception
+   {
+      final AsynchronousFileImpl controller = new AsynchronousFileImpl(executor, pollerExecutor);
+      controller.open(FILE_NAME, 2000);
+
+      ByteBuffer buffer = null;
+
+      try
+      {
+         final int SIZE = 10 * 512;
+
+         buffer = AsynchronousFileImpl.newBuffer(SIZE);
+         
+         for (int i = 0 ; i < SIZE; i++)
+         {
+            buffer.put(getSamplebyte(i));
+         }
+
+         controller.writeInternal(0, SIZE, buffer);
+         
+         InputStream fileInput = new BufferedInputStream(new FileInputStream(new File(FILE_NAME)));
+         
+         for (int  i = 0 ; i < SIZE; i++)
+         {
+            assertEquals((int)getSamplebyte(i), (int)fileInput.read());
+         }
+         
+         assertEquals(-1, fileInput.read());
+
+      }
+      catch (Exception e)
+      {
+         throw e;
+      }
+      finally
+      {
+         if (buffer != null) AsynchronousFileImpl.destroyBuffer(buffer);
+         if (controller != null) controller.close();
+      }
+
+   }
+
 
    public void testInvalidWrite() throws Exception
    {

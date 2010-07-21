@@ -260,6 +260,13 @@ public class NIOSequentialFile extends AbstractSequentialFile
    {
       internalWrite(bytes, sync, null);
    }
+   
+   
+   public void writeInternal(ByteBuffer bytes) throws Exception
+   {
+      internalWrite(bytes, true, null);
+   }
+
 
    @Override
    protected ByteBuffer newBuffer(int size, final int limit)

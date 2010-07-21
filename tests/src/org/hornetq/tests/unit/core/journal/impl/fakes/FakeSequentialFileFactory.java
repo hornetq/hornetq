@@ -498,6 +498,16 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          writeDirect(bytes, sync, null);
       }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#writeInternal(java.nio.ByteBuffer)
+       */
+      public void writeInternal(ByteBuffer bytes) throws Exception
+      {
+         writeDirect(bytes, true);
+      }
+
+      
 
       private void checkAndResize(final int size)
       {
@@ -662,8 +672,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
        */
       public void setTimedBuffer(final TimedBuffer buffer)
       {
-         // TODO Auto-generated method stub
-
       }
 
    }

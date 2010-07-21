@@ -206,6 +206,26 @@ void AsyncFile::preAllocate(THREAD_CONTEXT , off_t position, int blocks, size_t 
 	free (preAllocBuffer);
 }
 
+
+/** Write directly to the file without using libaio queue */
+void AsyncFile::writeInternal(THREAD_CONTEXT, long position, size_t size, void *& buffer)
+{
+	if (::lseek (fileHandle, position, SEEK_SET) < 0) throw AIOException (11, "Error positioning the file");
+
+	if (::write(fileHandle, buffer, size)<0)
+	{
+		throw AIOException (NATIVE_ERROR_IO, "Error writing file");
+	}
+	
+	if (::fsync(fileHandle) < 0)
+	{
+		throw AIOException (NATIVE_ERROR_IO, "Error on synchronizing file");
+	}
+	
+
+}
+
+
 void AsyncFile::write(THREAD_CONTEXT threadContext, long position, size_t size, void *& buffer, CallbackAdapter *& adapter)
 {
 

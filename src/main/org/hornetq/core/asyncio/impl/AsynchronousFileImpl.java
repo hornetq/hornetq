@@ -51,7 +51,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /** This definition needs to match Version.h on the native sources.
        Or else the native module won't be loaded because of version mismatches */
-   private static int EXPECTED_NATIVE_VERSION = 29;
+   private static int EXPECTED_NATIVE_VERSION = 30;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
@@ -271,6 +271,17 @@ public class AsynchronousFileImpl implements AsynchronousFile
          writeLock.unlock();
       }
    }
+   
+   
+   public void writeInternal(long positionToWrite, long size, ByteBuffer bytes) throws HornetQException
+   {
+      writeInternal(handler, positionToWrite, size, bytes);
+      if (bufferCallback != null)
+      {
+         bufferCallback.bufferDone(bytes);
+      }
+   }
+
 
    public void write(final long position,
                      final long size,
@@ -629,6 +640,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
                              ByteBuffer buffer,
                              AIOCallback aioPackage) throws HornetQException;
 
+   private native void writeInternal(ByteBuffer handle, long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
+
    private native void read(ByteBuffer handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
 
    private static native void fill(ByteBuffer handle, long position, int blocks, long size, byte fillChar) throws HornetQException;
@@ -720,4 +733,5 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
       }
    }
+
 }

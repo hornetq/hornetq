@@ -69,6 +69,11 @@ public interface SequentialFile
 
    /** Write directly to the file without using any buffer */
    void writeDirect(ByteBuffer bytes, boolean sync) throws Exception;
+   
+   /** Write directly to the file.
+    *  This is used by compacting and other places where we write a big buffer in a single shot.
+    *  writeInternal should always block until the entire write is sync on disk */
+   void writeInternal(ByteBuffer bytes) throws Exception;
 
    int read(ByteBuffer bytes, IOAsyncTask callback) throws Exception;
 

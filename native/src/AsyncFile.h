@@ -49,6 +49,9 @@ public:
 	
 	void write(THREAD_CONTEXT threadContext, long position, size_t size, void *& buffer, CallbackAdapter *& adapter);
 	
+	/** Write directly to the file without using libaio queue */
+	void writeInternal(THREAD_CONTEXT threadContext, long position, size_t size, void *& buffer);
+	
 	void read(THREAD_CONTEXT threadContext, long position, size_t size, void *& buffer, CallbackAdapter *& adapter);
 	
 	int getHandle()

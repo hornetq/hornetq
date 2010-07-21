@@ -279,6 +279,16 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
       aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
+   
+   public void writeInternal(ByteBuffer bytes) throws Exception
+   {
+      final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
+
+      final long positionToWrite = position.getAndAdd(bytesToWrite);
+
+      aioFile.writeInternal(positionToWrite, bytesToWrite, bytes);
+   }
+
 
    // Protected methods
    // -----------------------------------------------------------------------------------------------------

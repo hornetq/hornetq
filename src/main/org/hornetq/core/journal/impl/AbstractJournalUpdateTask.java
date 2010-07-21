@@ -180,13 +180,11 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       if (writingChannel != null)
       {
          sequentialFile.position(0);
-         SimpleWaitIOCallback completion = new SimpleWaitIOCallback();
          
          // To Fix the size of the file
          writingChannel.writerIndex(writingChannel.capacity());
          
-         sequentialFile.writeDirect(writingChannel.toByteBuffer(), true, completion);
-         completion.waitCompletion();
+         sequentialFile.writeInternal(writingChannel.toByteBuffer());
          sequentialFile.close();
          newDataFiles.add(currentFile);
       }

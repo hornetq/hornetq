@@ -43,6 +43,12 @@ public interface AsynchronousFile
 
    /** Any error will be reported on the callback interface */
    void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback);
+   
+   /**
+    * Performs an internal direct write. 
+    * @throws HornetQException 
+    */
+   void writeInternal(long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
 
    void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback) throws HornetQException;
 
@@ -53,5 +59,6 @@ public interface AsynchronousFile
    int getBlockSize();
 
    String getFileName();
+
 
 }
