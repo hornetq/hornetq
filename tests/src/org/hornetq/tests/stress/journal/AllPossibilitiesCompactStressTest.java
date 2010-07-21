@@ -216,6 +216,10 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
       long addRecordStay = idGen.generateID();
       
       long addRecord5 = idGen.generateID();
+      
+      long rollbackTx = idGen.generateID();
+      
+      long rollbackAdd = idGen.generateID();
 
       add(addRecordStay);
 
@@ -244,15 +248,21 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
       delete(addedRecord);
 
       add(addRecord3);
+      
+      addTx(rollbackTx, rollbackAdd);
 
       long updateTX = idGen.generateID();
       
       updateTx(updateTX, addRecord3);
       
       commit(updateTX);
+
+      updateTx(rollbackTx, rollbackAdd);
       
       delete(addRecord5);
-      
+
+      rollback(rollbackTx);
+
       checkJournalOperation();
 
       stopJournal();
