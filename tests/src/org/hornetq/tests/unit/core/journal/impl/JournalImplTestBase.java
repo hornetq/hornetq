@@ -210,6 +210,10 @@ public abstract class JournalImplTestBase extends UnitTestCase
    {
       journal.load(null, null, null);
    }
+   
+   protected void beforeJournalOperation() throws Exception
+   {
+   }
 
    protected void add(final long... arguments) throws Exception
    {
@@ -221,6 +225,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       for (long element : arguments)
       {
          byte[] record = generateRecord(size);
+
+         beforeJournalOperation();
 
          journal.appendAddRecord(element, (byte)0, record, sync);
 
@@ -236,6 +242,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength);
 
+         beforeJournalOperation();
+
          journal.appendUpdateRecord(element, (byte)0, updateRecord, sync);
 
          records.add(new RecordInfo(element, (byte)0, updateRecord, true));
@@ -248,6 +256,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
    {
       for (long element : arguments)
       {
+         beforeJournalOperation();
+
          journal.appendDeleteRecord(element, sync);
 
          removeRecordsForID(element);
@@ -266,6 +276,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
          // SIZE_BYTE
          byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
+         beforeJournalOperation();
+
          journal.appendAddRecordTransactional(txID, element, (byte)0, record);
 
          tx.records.add(new RecordInfo(element, (byte)0, record, false));
@@ -283,6 +295,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
+         beforeJournalOperation();
+
          journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord);
 
          tx.records.add(new RecordInfo(element, (byte)0, updateRecord, true));
@@ -296,6 +310,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       for (long element : arguments)
       {
+         beforeJournalOperation();
+
          journal.appendDeleteRecordTransactional(txID, element);
 
          tx.deletes.add(new RecordInfo(element, (byte)0, null, true));
@@ -318,6 +334,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          throw new IllegalStateException("Transaction is already prepared");
       }
+
+      beforeJournalOperation();
+
       journal.appendPrepareRecord(txID, xid, sync);
 
       tx.prepared = true;
@@ -327,16 +346,23 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected void commit(final long txID) throws Exception
    {
-      TransactionHolder tx = transactions.get(txID);
+      TransactionHolder tx = transactions.remove(txID);
 
       if (tx == null)
       {
          throw new IllegalStateException("Cannot find tx " + txID);
       }
 
+      beforeJournalOperation();
+
       journal.appendCommitRecord(txID, sync);
 
-      commitTx(txID);
+      records.addAll(tx.records);
+
+      for (RecordInfo l : tx.deletes)
+      {
+         removeRecordsForID(l.id);
+      }
 
       journal.debugWait();
    }
@@ -350,26 +376,11 @@ public abstract class JournalImplTestBase extends UnitTestCase
          throw new IllegalStateException("Cannot find tx " + txID);
       }
 
+      beforeJournalOperation();
+
       journal.appendRollbackRecord(txID, sync);
 
       journal.debugWait();
-   }
-
-   private void commitTx(final long txID)
-   {
-      TransactionHolder tx = transactions.remove(txID);
-
-      if (tx == null)
-      {
-         throw new IllegalStateException("Cannot find tx " + txID);
-      }
-
-      records.addAll(tx.records);
-
-      for (RecordInfo l : tx.deletes)
-      {
-         removeRecordsForID(l.id);
-      }
    }
 
    protected void removeRecordsForID(final long id)
