@@ -70,7 +70,7 @@ public class TimedBuffer
 
    private volatile boolean started;
 
-   // We use this flag to prevent flush occuring between calling checkSize and addBytes
+   // We use this flag to prevent flush occurring between calling checkSize and addBytes
    // CheckSize must always be followed by it's corresponding addBytes otherwise the buffer
    // can get in an inconsistent state
    private boolean delayFlush;
