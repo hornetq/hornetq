@@ -490,21 +490,27 @@ public class JournalImpl implements TestableJournal
 
                variableSize = wholeFileBuffer.getInt();
 
+               if (recordType != JournalImpl.DELETE_RECORD_TX)
+               {
+                  if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), 1))
+                  {
+                     wholeFileBuffer.position(pos +1);
+                     continue;
+                  }
+                  
+                  userRecordType = wholeFileBuffer.get();
+               }
+
                if (JournalImpl.isInvalidSize(journalFileSize, wholeFileBuffer.position(), variableSize))
                {
                   wholeFileBuffer.position(pos + 1);
                   continue;
                }
 
-               if (recordType != JournalImpl.DELETE_RECORD_TX)
-               {
-                  userRecordType = wholeFileBuffer.get();
-               }
-
                record = new byte[variableSize];
 
-               wholeFileBuffer.get(record);
-            }
+                wholeFileBuffer.get(record);
+         }
 
             // Case this is a transaction, this will contain the number of pendingTransactions on a transaction, at the
             // currentFile
@@ -3416,6 +3422,7 @@ public class JournalImpl implements TestableJournal
       else
       {
          final int position = bufferPos + size;
+         
          return position > fileSize || position < 0;
 
       }
