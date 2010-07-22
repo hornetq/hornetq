@@ -951,6 +951,96 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    }
 
 
+   public void testCompactAddAndUpdateFollowedByADelete5() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+
+      
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+      final VariableLatch reusableLatchDone = new VariableLatch();
+      reusableLatchDone.up();
+      final VariableLatch reusableLatchWait = new VariableLatch();
+      reusableLatchWait.up();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.down();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.waitCompletion();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      
+      long appendTX = idGen.generateID();
+      long appendOne = idGen.generateID();
+      long appendTwo = idGen.generateID();
+      
+      long updateTX = idGen.generateID();
+      
+      addTx(appendTX, appendOne);
+
+      
+      tCompact.start();
+      reusableLatchDone.waitCompletion();
+      
+      addTx(appendTX, appendTwo);
+
+      commit(appendTX);
+      
+      updateTx(updateTX, appendOne);
+      updateTx(updateTX, appendTwo);
+      
+      commit(updateTX);
+      //delete(appendTwo);
+      
+      reusableLatchWait.down();
+      tCompact.join();
+
+      journal.compact();
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+
    public void testSimpleCompacting() throws Exception
    {
       setup(2, 60 * 1024, false);
