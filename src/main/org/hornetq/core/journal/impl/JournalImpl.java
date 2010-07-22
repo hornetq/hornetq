@@ -436,6 +436,16 @@ public class JournalImpl implements TestableJournal
             // This is what supports us from not re-filling the whole file
             int readFileId = wholeFileBuffer.getInt();
 
+            
+            // This record is from a previous file-usage. The file was
+            // reused and we need to ignore this record
+            if (readFileId != file.getRecordID())
+            {
+               wholeFileBuffer.position(pos + 1);
+               continue;
+            }
+
+
             long transactionID = 0;
 
             if (JournalImpl.isTransaction(recordType))
@@ -598,17 +608,6 @@ public class JournalImpl implements TestableJournal
                reader.markAsDataFile(file);
 
                wholeFileBuffer.position(pos + DataConstants.SIZE_BYTE);
-
-               continue;
-            }
-
-            // This record is from a previous file-usage. The file was
-            // reused and we need to ignore this record
-            if (readFileId != file.getRecordID())
-            {
-               // If a file has damaged pendingTransactions, we make it a dataFile, and the
-               // next reclaiming will fix it
-               reader.markAsDataFile(file);
 
                continue;
             }
