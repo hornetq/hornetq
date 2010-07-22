@@ -838,6 +838,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    private void setPagingStore(final ServerMessage message) throws Exception
    {
       PagingStore store = pagingManager.getPageStore(message.getAddress());
+      
       message.setPagingStore(store);
    }
 
