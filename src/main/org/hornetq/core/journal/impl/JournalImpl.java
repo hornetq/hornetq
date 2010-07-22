@@ -2176,7 +2176,7 @@ public class JournalImpl implements TestableJournal
                               {
                                  cleanUp(cleanupFile);
                               }
-                              catch (Exception e)
+                              catch (Throwable e)
                               {
                                  JournalImpl.log.warn(e.getMessage(), e);
                               }
@@ -2338,7 +2338,7 @@ public class JournalImpl implements TestableJournal
                {
                   JournalImpl.this.compact();
                }
-               catch (Exception e)
+               catch (Throwable e)
                {
                   JournalImpl.log.error(e.getMessage(), e);
                }
