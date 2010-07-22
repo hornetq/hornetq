@@ -616,7 +616,22 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       page.open();
 
-      List<PagedMessage> messages = page.read();
+      List<PagedMessage> messages =  null;
+      
+      try
+      {
+         messages = page.read();
+      }
+      finally
+      {
+         try
+         {
+            page.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
 
       if (onDepage(page.getPageId(), storeName, messages))
       {
