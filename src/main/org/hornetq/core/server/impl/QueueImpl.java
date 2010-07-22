@@ -56,6 +56,8 @@ import org.hornetq.utils.concurrent.ConcurrentPriorityLinkedListImpl;
 
 /**
  * Implementation of a Queue
+ * 
+ * Completely non blocking between adding to queue and delivering to consumers.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -69,6 +71,8 @@ public class QueueImpl implements Queue
    public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
 
    public static final int NUM_PRIORITIES = 10;
+   
+   public static final int MAX_DELIVERIES_IN_LOOP = 1000;
 
    private final long id;
 
@@ -121,6 +125,8 @@ public class QueueImpl implements Queue
    private int pos;
 
    private final Executor executor;
+   
+   private volatile int consumerWithFilterCount;
 
    private static class ConsumerHolder
    {
@@ -228,7 +234,7 @@ public class QueueImpl implements Queue
    {
       return filter;
    }
-   
+
    public void addLast(final MessageReference ref)
    {
       addLast(ref, false);
@@ -264,6 +270,11 @@ public class QueueImpl implements Queue
    public synchronized void addConsumer(final Consumer consumer) throws Exception
    {
       cancelRedistributor();
+
+      if (consumer.getFilter() != null)
+      {
+         consumerWithFilterCount++;
+      }
 
       consumerList.add(new ConsumerHolder(consumer));
 
@@ -306,6 +317,11 @@ public class QueueImpl implements Queue
       for (SimpleString gid : gids)
       {
          groups.remove(gid);
+      }
+
+      if (consumer.getFilter() != null)
+      {
+         consumerWithFilterCount--;
       }
    }
 
@@ -1088,17 +1104,19 @@ public class QueueImpl implements Queue
       {
          return;
       }
-
+      
       int busyCount = 0;
 
       int nullRefCount = 0;
+
+      int noMatchCount = 0;
 
       int size = consumerList.size();
 
       int startPos = pos;
 
       // Deliver at most 1000 messages in one go, to prevent tying this thread up for too long
-      int loop = Math.min(messageReferences.size(), 1000);
+      int loop = Math.min(messageReferences.size(), MAX_DELIVERIES_IN_LOOP);
 
       for (int i = 0; i < loop; i++)
       {
@@ -1120,6 +1138,11 @@ public class QueueImpl implements Queue
          if (ref == null)
          {
             nullRefCount++;
+
+            if (holder.iter != null)
+            {
+               noMatchCount++;
+            }
          }
          else
          {
@@ -1207,18 +1230,17 @@ public class QueueImpl implements Queue
                break;
             }
 
-            nullRefCount = busyCount = 0;
+            nullRefCount = busyCount = noMatchCount = 0;
          }
       }
-
-      if (messageReferences.size() > 0 && busyCount != size)
+      
+      if (messageReferences.size() > 0 && busyCount != size && noMatchCount != size)
       {
          // More messages to deliver so need to prompt another runner - note we don't
          // prompt another one if all consumers are busy
 
          executor.execute(deliverRunner);
       }
-
    }
 
    /*
@@ -1230,14 +1252,14 @@ public class QueueImpl implements Queue
       {
          return false;
       }
-      
+
       if (checkExpired(ref))
       {
          return true;
       }
-      
+
       int startPos = pos;
-      
+
       int size = consumerList.size();
 
       while (true)
@@ -1261,7 +1283,7 @@ public class QueueImpl implements Queue
                consumer = groupConsumer;
             }
          }
-         
+
          pos++;
 
          if (pos == size)
@@ -1272,12 +1294,12 @@ public class QueueImpl implements Queue
          HandleStatus status = handle(ref, consumer);
 
          if (status == HandleStatus.HANDLED)
-         {            
+         {
             if (groupID != null && groupConsumer == null)
             {
                groups.put(groupID, consumer);
             }
-            
+
             return true;
          }
 
@@ -1344,9 +1366,11 @@ public class QueueImpl implements Queue
        * unnecessarily queued up
        * During delivery toDeliver is decremented before the message is delivered, therefore if it's delivering the last
        * message, then we cannot have a situation where this delivery is not prompted and message remains stranded in the
-       * queue
+       * queue.
+       * The exception to this is if we have consumers with filters - these will maintain an iterator, so we need to prompt delivery every time
+       * in this case, since there may be many non matching messages already in the queue
        */
-      if (refs == 1)
+      if (consumerWithFilterCount > 0 || refs == 1)
       {
          deliverAsync();
       }
