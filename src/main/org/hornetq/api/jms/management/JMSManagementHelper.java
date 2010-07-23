@@ -40,7 +40,7 @@ public class JMSManagementHelper
    {
       if (jmsMessage instanceof HornetQMessage == false)
       {
-         throw new IllegalArgumentException("Cannot send a non JBoss message as a management message " + jmsMessage.getClass()
+         throw new IllegalArgumentException("Cannot send a non HornetQ message as a management message " + jmsMessage.getClass()
                                                                                                                    .getName());
       }
 

@@ -442,7 +442,7 @@ public class HornetQMessage implements javax.jms.Message
       {
          if (dest instanceof HornetQDestination == false)
          {
-            throw new InvalidDestinationException("Not a JBoss destination " + dest);
+            throw new InvalidDestinationException("Not a HornetQ destination " + dest);
          }
 
          HornetQDestination jbd = (HornetQDestination)dest;

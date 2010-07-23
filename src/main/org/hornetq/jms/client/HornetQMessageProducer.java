@@ -216,7 +216,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       if (destination != null && !(destination instanceof HornetQDestination))
       {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
+         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
       }
 
       message.setJMSDeliveryMode(defaultDeliveryMode);
@@ -236,7 +236,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
       if (destination != null && !(destination instanceof HornetQDestination))
       {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
+         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
       }
 
       message.setJMSDeliveryMode(deliveryMode);

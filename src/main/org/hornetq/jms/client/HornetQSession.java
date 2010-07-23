@@ -313,7 +313,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       if (destination != null && !(destination instanceof HornetQDestination))
       {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
+         throw new InvalidDestinationException("Not a HornetQ Destination:" + destination);
       }
 
       try
