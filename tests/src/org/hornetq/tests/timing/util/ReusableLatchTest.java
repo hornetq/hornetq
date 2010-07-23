@@ -15,21 +15,21 @@ package org.hornetq.tests.timing.util;
 import junit.framework.Assert;
 
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.VariableLatch;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class VariableLatchTest extends UnitTestCase
+public class ReusableLatchTest extends UnitTestCase
 {
    public void testTimeout() throws Exception
    {
-      VariableLatch latch = new VariableLatch();
+      ReusableLatch latch = new ReusableLatch();
 
-      latch.up();
+      latch.countUp();
 
       long start = System.currentTimeMillis();
-      Assert.assertFalse(latch.waitCompletion(1000));
+      Assert.assertFalse(latch.await(1000));
       long end = System.currentTimeMillis();
 
       Assert.assertTrue("Timeout didn't work correctly", end - start >= 1000 && end - start < 2000);

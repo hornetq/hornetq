@@ -29,7 +29,7 @@ import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.VariableLatch;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * 
@@ -146,7 +146,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     **/
    private final Lock callbackLock = new ReentrantLock();
 
-   private final VariableLatch pollerLatch = new VariableLatch();
+   private final ReusableLatch pollerLatch = new ReusableLatch();
 
    private volatile Runnable poller;
 
@@ -154,7 +154,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private final Lock writeLock = new ReentrantReadWriteLock().writeLock();
 
-   private final VariableLatch pendingWrites = new VariableLatch();
+   private final ReusableLatch pendingWrites = new ReusableLatch();
 
    private Semaphore maxIOSemaphore;
 
@@ -242,7 +242,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       try
       {
 
-         while (!pendingWrites.waitCompletion(60000))
+         while (!pendingWrites.await(60000))
          {
             AsynchronousFileImpl.log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + fileName);
          }
@@ -299,7 +299,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          startPoller();
       }
 
-      pendingWrites.up();
+      pendingWrites.countUp();
 
       if (writeExecutor != null)
       {
@@ -362,7 +362,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          startPoller();
       }
-      pendingWrites.up();
+      pendingWrites.countUp();
       maxIOSemaphore.acquireUninterruptibly();
       try
       {
@@ -372,14 +372,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          // Release only if an exception happened
          maxIOSemaphore.release();
-         pendingWrites.down();
+         pendingWrites.countDown();
          throw e;
       }
       catch (RuntimeException e)
       {
          // Release only if an exception happened
          maxIOSemaphore.release();
-         pendingWrites.down();
+         pendingWrites.countDown();
          throw e;
       }
    }
@@ -457,7 +457,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       maxIOSemaphore.release();
 
-      pendingWrites.down();
+      pendingWrites.countDown();
 
       callbackLock.lock();
 
@@ -524,7 +524,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
       maxIOSemaphore.release();
 
-      pendingWrites.down();
+      pendingWrites.countDown();
 
       callbackLock.lock();
 
@@ -578,7 +578,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
          if (poller == null)
          {
-            pollerLatch.up();
+            pollerLatch.countUp();
             poller = new PollerRunnable();
             try
             {
@@ -613,7 +613,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       AsynchronousFileImpl.stopPoller(handler);
       // We need to make sure we won't call close until Poller is
       // completely done, or we might get beautiful GPFs
-      pollerLatch.waitCompletion();
+      pollerLatch.await();
    }
 
    // Native ----------------------------------------------------------------------------
@@ -729,7 +729,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
             // Case the poller thread is interrupted, this will allow us to
             // restart the thread when required
             poller = null;
-            pollerLatch.down();
+            pollerLatch.countDown();
          }
       }
    }

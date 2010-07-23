@@ -19,35 +19,35 @@ import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.VariableLatch;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  */
-public class VariableLatchTest extends UnitTestCase
+public class ReusableLatchTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(VariableLatchTest.class);
+   private static final Logger log = Logger.getLogger(ReusableLatchTest.class);
 
    public void testLatchOnSingleThread() throws Exception
    {
-      VariableLatch latch = new VariableLatch();
+      ReusableLatch latch = new ReusableLatch();
 
       for (int i = 1; i <= 100; i++)
       {
-         latch.up();
+         latch.countUp();
          Assert.assertEquals(i, latch.getCount());
       }
 
       for (int i = 100; i > 0; i--)
       {
          Assert.assertEquals(i, latch.getCount());
-         latch.down();
+         latch.countDown();
          Assert.assertEquals(i - 1, latch.getCount());
       }
 
-      latch.waitCompletion();
+      latch.await();
    }
 
    /**
@@ -63,9 +63,9 @@ public class VariableLatchTest extends UnitTestCase
     */
    public void testLatchOnMultiThread() throws Exception
    {
-      final VariableLatch latch = new VariableLatch();
+      final ReusableLatch latch = new ReusableLatch();
 
-      latch.up(); // We hold at least one, so ThreadWaits won't go away
+      latch.countUp(); // We hold at least one, so ThreadWaits won't go away
 
       final int numberOfThreads = 100;
       final int numberOfAdds = 100;
@@ -79,14 +79,14 @@ public class VariableLatchTest extends UnitTestCase
          {
             try
             {
-               if (!latch.waitCompletion(5000))
+               if (!latch.await(5000))
                {
-                  VariableLatchTest.log.error("Latch timed out");
+                  ReusableLatchTest.log.error("Latch timed out");
                }
             }
             catch (Exception e)
             {
-               VariableLatchTest.log.error(e);
+               ReusableLatchTest.log.error(e);
             }
             waiting = false;
          }
@@ -115,12 +115,12 @@ public class VariableLatchTest extends UnitTestCase
                latchStart.await();
                for (int i = 0; i < numberOfAdds; i++)
                {
-                  latch.up();
+                  latch.countUp();
                }
             }
             catch (Exception e)
             {
-               VariableLatchTest.log.error(e.getMessage(), e);
+               ReusableLatchTest.log.error(e.getMessage(), e);
             }
          }
       }
@@ -177,12 +177,12 @@ public class VariableLatchTest extends UnitTestCase
                latchStart.await();
                for (int i = 0; i < numberOfAdds; i++)
                {
-                  latch.down();
+                  latch.countDown();
                }
             }
             catch (Exception e)
             {
-               VariableLatchTest.log.error(e.getMessage(), e);
+               ReusableLatchTest.log.error(e.getMessage(), e);
             }
          }
       }
@@ -213,7 +213,7 @@ public class VariableLatchTest extends UnitTestCase
          Assert.assertTrue(waits[i].waiting);
       }
 
-      latch.down();
+      latch.countDown();
 
       for (int i = 0; i < numberOfThreads; i++)
       {
@@ -230,8 +230,13 @@ public class VariableLatchTest extends UnitTestCase
 
    public void testReuseLatch() throws Exception
    {
-      final VariableLatch latch = new VariableLatch();
-      latch.up();
+      final ReusableLatch latch = new ReusableLatch(5);
+      for (int i = 0 ; i < 5; i++)
+      {
+         latch.countDown();
+      }
+      
+      latch.countUp();
 
       class ThreadWait extends Thread
       {
@@ -248,14 +253,14 @@ public class VariableLatchTest extends UnitTestCase
             readyLatch.countDown();
             try
             {
-               if (!latch.waitCompletion(1000))
+               if (!latch.await(1000))
                {
-                  VariableLatchTest.log.error("Latch timed out!", new Exception("trace"));
+                  ReusableLatchTest.log.error("Latch timed out!", new Exception("trace"));
                }
             }
             catch (Exception e)
             {
-               VariableLatchTest.log.error(e);
+               ReusableLatchTest.log.error(e);
                this.e = e;
             }
             waiting = false;
@@ -269,7 +274,7 @@ public class VariableLatchTest extends UnitTestCase
 
       Assert.assertEquals(true, t.waiting);
 
-      latch.down();
+      latch.countDown();
 
       t.join();
 
@@ -277,7 +282,7 @@ public class VariableLatchTest extends UnitTestCase
 
       Assert.assertNull(t.e);
 
-      latch.up();
+      latch.countUp();
 
       t = new ThreadWait();
       t.start();
@@ -286,7 +291,7 @@ public class VariableLatchTest extends UnitTestCase
 
       Assert.assertEquals(true, t.waiting);
 
-      latch.down();
+      latch.countDown();
 
       t.join();
 
@@ -294,11 +299,11 @@ public class VariableLatchTest extends UnitTestCase
 
       Assert.assertNull(t.e);
 
-      Assert.assertTrue(latch.waitCompletion(1000));
+      Assert.assertTrue(latch.await(1000));
 
       Assert.assertEquals(0, latch.getCount());
 
-      latch.down();
+      latch.countDown();
 
       Assert.assertEquals(0, latch.getCount());
 

@@ -21,7 +21,9 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * <p>This class will use the framework provided to by AbstractQueuedSynchronizer.</p>
  * <p>AbstractQueuedSynchronizer is the framework for any sort of concurrent synchronization, such as Semaphores, events, etc, based on AtomicIntegers.</p>
  * 
- * <p>The idea is, instead of providing each user specific Latch/Synchronization, java.util.concurrent provides the framework for reuses, based on an AtomicInteger (getState())</p>
+ * <p>This class works just like CountDownLatch, with the difference you can also increase the counter</p>
+ * 
+ * <p>It could be used for sync points when one process is feeding the latch while another will wait when everything is done. (e.g. waiting IO completions to finish)</p>
  * 
  * <p>On HornetQ we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown.</p>
  * 
@@ -31,7 +33,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * 
  * @author Clebert Suconic
  * */
-public class VariableLatch
+public class ReusableLatch
 {
    /** 
     * Look at the doc and examples provided by AbstractQueuedSynchronizer for more information 
@@ -39,9 +41,9 @@ public class VariableLatch
    @SuppressWarnings("serial")
    private static class CountSync extends AbstractQueuedSynchronizer
    {
-      public CountSync()
+      public CountSync(int count)
       {
-         setState(0);
+         setState(count);
       }
 
       public int getCount()
@@ -89,30 +91,45 @@ public class VariableLatch
       }
    }
 
-   private final CountSync control = new CountSync();
+   private final CountSync control;
 
+   public ReusableLatch()
+   {
+      this(0);
+   }
+
+   public ReusableLatch(final int count)
+   {
+      control = new CountSync(count);
+   }
+   
    public int getCount()
    {
       return control.getCount();
    }
 
-   public void up()
+   public void countUp()
    {
       control.add();
    }
 
-   public void down()
+   public void countDown()
    {
       control.releaseShared(1);
    }
 
-   public void waitCompletion() throws InterruptedException
+   public void await() throws InterruptedException
    {
       control.acquireSharedInterruptibly(1);
    }
 
-   public boolean waitCompletion(final long milliseconds) throws InterruptedException
+   public boolean await(final long milliseconds) throws InterruptedException
    {
       return control.tryAcquireSharedNanos(1, TimeUnit.MILLISECONDS.toNanos(milliseconds));
+   }
+
+   public boolean await(final long timeWait, TimeUnit timeUnit) throws InterruptedException
+   {
+      return control.tryAcquireSharedNanos(1, timeUnit.toNanos(timeWait));
    }
 }

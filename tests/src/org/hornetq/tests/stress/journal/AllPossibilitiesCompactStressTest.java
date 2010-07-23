@@ -21,7 +21,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.utils.SimpleIDGenerator;
-import org.hornetq.utils.VariableLatch;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * A NIORandomCompactTest
@@ -37,9 +37,9 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
 
    // Attributes ----------------------------------------------------
 
-   private VariableLatch startedCompactingLatch = null;
+   private ReusableLatch startedCompactingLatch = null;
 
-   private VariableLatch releaseCompactingLatch = null;
+   private ReusableLatch releaseCompactingLatch = null;
 
    private Thread tCompact = null;
 
@@ -55,9 +55,9 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
 
       tCompact = null;
 
-      startedCompactingLatch = new VariableLatch();
+      startedCompactingLatch = new ReusableLatch();
 
-      releaseCompactingLatch = new VariableLatch();
+      releaseCompactingLatch = new ReusableLatch();
 
       File file = new File(getTestDir());
 
@@ -107,10 +107,10 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
          @Override
          public void onCompactDone()
          {
-            startedCompactingLatch.down();
+            startedCompactingLatch.countDown();
             try
             {
-               releaseCompactingLatch.waitCompletion();
+               releaseCompactingLatch.await();
             }
             catch (InterruptedException e)
             {
@@ -283,7 +283,7 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
     */
    private void joinCompact() throws InterruptedException
    {
-      releaseCompactingLatch.down();
+      releaseCompactingLatch.countDown();
 
       tCompact.join();
 
@@ -315,7 +315,7 @@ public class AllPossibilitiesCompactStressTest extends JournalImplTestBase
 
       tCompact.start();
 
-      startedCompactingLatch.waitCompletion();
+      startedCompactingLatch.await();
    }
 
    /* (non-Javadoc)
