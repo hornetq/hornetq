@@ -71,6 +71,18 @@ public class RandomUtil
    {
       return Math.abs(RandomUtil.randomInt());
    }
+   
+   public static int randomMax(int max)
+   {
+      int value = randomPositiveInt() % max;
+      
+      if (value == 0)
+      {
+         value = max;
+      }
+      
+      return value;
+   }
 
    public static int randomPort()
    {
