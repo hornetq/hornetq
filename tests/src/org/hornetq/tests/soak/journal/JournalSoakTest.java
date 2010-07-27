@@ -39,7 +39,7 @@ import org.hornetq.utils.concurrent.LinkedBlockingDeque;
  *
  *
  */
-public class SoakJournal extends ServiceTestBase
+public class JournalSoakTest extends ServiceTestBase
 {
 
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
@@ -50,12 +50,13 @@ public class SoakJournal extends ServiceTestBase
 
    ThreadFactory tFactory = new HornetQThreadFactory("SoakTest" + System.identityHashCode(this),
                                                      false,
-                                                     SoakJournal.class.getClassLoader());
+                                                     JournalSoakTest.class.getClassLoader());
 
-   private ExecutorService threadPool = Executors.newFixedThreadPool(20, tFactory);
+   private final ExecutorService threadPool = Executors.newFixedThreadPool(20, tFactory);
 
    OrderedExecutorFactory executorFactory = new OrderedExecutorFactory(threadPool);
 
+   @Override
    public void setUp() throws Exception
    {
       super.setUp();
@@ -89,6 +90,7 @@ public class SoakJournal extends ServiceTestBase
 
    }
 
+   @Override
    public void tearDown() throws Exception
    {
       journal.stop();
@@ -151,6 +153,7 @@ public class SoakJournal extends ServiceTestBase
 
       OperationContextImpl ctx = new OperationContextImpl(executorFactory.getExecutor());
 
+      @Override
       public void run()
       {
          try
@@ -160,13 +163,13 @@ public class SoakJournal extends ServiceTestBase
             {
                int txSize = RandomUtil.randomMax(1000);
 
-               long txID = idGen.generateID();
+               long txID = JournalSoakTest.idGen.generateID();
 
                final ArrayList<Long> ids = new ArrayList<Long>();
 
                for (int i = 0; i < txSize; i++)
                {
-                  long id = idGen.generateID();
+                  long id = JournalSoakTest.idGen.generateID();
                   ids.add(id);
                   journal.appendAddRecordTransactional(txID, id, (byte)0, generateRecord());
                   Thread.sleep(1);
@@ -175,7 +178,7 @@ public class SoakJournal extends ServiceTestBase
                ctx.executeOnCompletion(new IOAsyncTask()
                {
 
-                  public void onError(int errorCode, String errorMessage)
+                  public void onError(final int errorCode, final String errorMessage)
                   {
                   }
 
@@ -203,11 +206,12 @@ public class SoakJournal extends ServiceTestBase
 
       OperationContextImpl ctx = new OperationContextImpl(executorFactory.getExecutor());
 
-      public FastUpdateTx(LinkedBlockingDeque<Long> queue)
+      public FastUpdateTx(final LinkedBlockingDeque<Long> queue)
       {
          this.queue = queue;
       }
 
+      @Override
       public void run()
       {
          try
@@ -216,7 +220,7 @@ public class SoakJournal extends ServiceTestBase
             int txCount = 0;
             long ids[] = new long[txSize];
 
-            long txID = idGen.generateID();
+            long txID = JournalSoakTest.idGen.generateID();
 
             while (running)
             {
@@ -231,7 +235,7 @@ public class SoakJournal extends ServiceTestBase
                   ctx.executeOnCompletion(new DeleteTask(ids));
                   txCount = 0;
                   txSize = RandomUtil.randomMax(1000);
-                  txID = idGen.generateID();
+                  txID = JournalSoakTest.idGen.generateID();
                   ids = new long[txSize];
                }
             }
@@ -248,7 +252,7 @@ public class SoakJournal extends ServiceTestBase
    {
       final long ids[];
 
-      DeleteTask(long ids[])
+      DeleteTask(final long ids[])
       {
          this.ids = ids;
       }
@@ -257,9 +261,9 @@ public class SoakJournal extends ServiceTestBase
       {
          try
          {
-            for (int i = 0; i < ids.length; i++)
+            for (long id : ids)
             {
-               journal.appendDeleteRecord(ids[i], false);
+               journal.appendDeleteRecord(id, false);
             }
          }
          catch (Exception e)
@@ -269,7 +273,7 @@ public class SoakJournal extends ServiceTestBase
          }
       }
 
-      public void onError(int errorCode, String errorMessage)
+      public void onError(final int errorCode, final String errorMessage)
       {
       }
 
@@ -280,6 +284,7 @@ public class SoakJournal extends ServiceTestBase
     */
    class SlowAppenderNoTX extends Thread
    {
+      @Override
       public void run()
       {
          try
@@ -290,21 +295,21 @@ public class SoakJournal extends ServiceTestBase
                // Append
                for (int i = 0; running & i < 1000; i++)
                {
-                  ids[i] = idGen.generateID();
+                  ids[i] = JournalSoakTest.idGen.generateID();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
                   Thread.sleep(300);
                }
                // Update
                for (int i = 0; running & i < 1000; i++)
                {
-                  ids[i] = idGen.generateID();
+                  ids[i] = JournalSoakTest.idGen.generateID();
                   journal.appendUpdateRecord(ids[i], (byte)1, generateRecord(), true);
                   Thread.sleep(300);
                }
                // Delete
                for (int i = 0; running & i < 1000; i++)
                {
-                  ids[i] = idGen.generateID();
+                  ids[i] = JournalSoakTest.idGen.generateID();
                   journal.appendUpdateRecord(ids[i], (byte)1, generateRecord(), true);
                   Thread.sleep(300);
                }
