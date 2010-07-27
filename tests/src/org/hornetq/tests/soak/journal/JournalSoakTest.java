@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -67,9 +66,9 @@ public class JournalSoakTest extends ServiceTestBase
 
       File dir = new File(getTemporaryDir());
       dir.mkdirs();
-      
+
       SequentialFileFactory factory;
-      
+
       int maxAIO;
       if (AsynchronousFileImpl.isLoaded())
       {
