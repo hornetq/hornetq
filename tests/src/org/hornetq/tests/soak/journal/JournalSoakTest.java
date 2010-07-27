@@ -87,7 +87,7 @@ public class JournalSoakTest extends ServiceTestBase
       }
 
       journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
-                                10,
+                                100,
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES,
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
                                 factory,
