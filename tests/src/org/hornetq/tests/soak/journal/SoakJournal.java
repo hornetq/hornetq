@@ -118,7 +118,7 @@ public class SoakJournal extends ServiceTestBase
          updaters[i].start();
       }
 
-      Thread.sleep(3600000000l);
+      Thread.sleep(TimeUnit.HOURS.toMillis(24));
 
       running = false;
 

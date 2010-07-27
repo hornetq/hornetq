@@ -320,6 +320,7 @@ public class TimedBuffer
 
             // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
             // Using bufferToFlush.put(buffer) would make several append calls for each byte
+            // We also transfer the content of this buffer to the native file's buffer
 
             bufferToFlush.put(buffer.toByteBuffer().array(), 0, pos);
 
@@ -348,6 +349,7 @@ public class TimedBuffer
 
             pendingSync = false;
 
+            // swap the instance as the previous callback list is being used asynchronously
             callbacks = new LinkedList<IOAsyncTask>();
 
             buffer.clear();

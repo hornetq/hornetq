@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal.impl;
 
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,7 +95,7 @@ public class JournalImpl implements TestableJournal
 
    private static final Logger log = Logger.getLogger(JournalImpl.class);
 
-   private static final boolean trace = JournalImpl.log.isTraceEnabled();
+   private static final boolean trace = log.isTraceEnabled();
 
    /** This is to be set to true at DEBUG & development only */
    private static final boolean LOAD_TRACE = false;
@@ -104,7 +105,7 @@ public class JournalImpl implements TestableJournal
    // Journal
    private static final void trace(final String message)
    {
-      JournalImpl.log.trace(message);
+      log.trace(message);
    }
 
    // The sizes of primitive types
@@ -385,6 +386,142 @@ public class JournalImpl implements TestableJournal
       return compactor;
    }
 
+
+   
+   /** this method is used internally only however tools may use it to maintenance. 
+    *  It won't be part of the interface as the tools should be specific to the implementation */
+   public List<JournalFile> orderFiles() throws Exception
+   {
+      List<String> fileNames = fileFactory.listFiles(fileExtension);
+
+      List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
+
+      for (String fileName : fileNames)
+      {
+         SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
+
+         file.open(1, false);
+         
+         try
+         {
+            long fileID = readFileHeader(file);
+   
+            orderedFiles.add(new JournalFileImpl(file, fileID));
+         }
+         finally
+         {
+            file.close();
+         }
+      }
+
+      // Now order them by ordering id - we can't use the file name for ordering
+      // since we can re-use dataFiles
+
+      Collections.sort(orderedFiles, new JournalFileComparator());
+
+      return orderedFiles;
+   }
+   
+   private void calculateNextfileID(List<JournalFile> files)
+   {
+      
+      for (JournalFile file : files)
+      {
+         long fileID = file.getFileID();
+         if (nextFileID.get() < fileID)
+         {
+            nextFileID.set(fileID);
+         }
+   
+         long fileNameID = getFileNameID(file.getFile().getFileName());
+   
+         // The compactor could create a fileName but use a previously assigned ID.
+         // Because of that we need to take both parts into account
+         if (nextFileID.get() < fileNameID)
+         {
+            nextFileID.set(fileNameID);
+         }
+      }
+
+
+   }
+
+   
+   /**
+    * @param fileFactory
+    * @param journal
+    * @throws Exception
+    */
+   public static void listJournalFiles(final PrintStream out, final JournalImpl journal) throws Exception
+   {
+      List<JournalFile> files = journal.orderFiles();
+      
+      SequentialFileFactory fileFactory = journal.fileFactory;
+
+      for (JournalFile file : files)
+      {
+         out.println("####### listing file " + file.getFile().getFileName() +
+                            "  sequence = " +
+                            file.getFileID());
+
+         JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
+         {
+
+            public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+               out.println("ReadUpdateTX, txID=" + transactionID + ", " + recordInfo);
+            }
+
+            public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+            {
+               out.println("ReadUpdate  " + recordInfo);
+            }
+
+            public void onReadRollbackRecord(long transactionID) throws Exception
+            {
+               out.println("Rollback txID=" + transactionID);
+            }
+
+            public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+            {
+               out.println("Prepare txID=" + transactionID);
+            }
+
+            public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+               out.println("DeleteRecordTX txID=" + transactionID + ", " + recordInfo);
+            }
+
+            public void onReadDeleteRecord(long recordID) throws Exception
+            {
+               out.println("DeleteRecord id=" + recordID);
+            }
+
+            public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+            {
+               out.println("CommitRecord txID=" + transactionID);
+            }
+
+            public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+            {
+               out.println("AddRecordTX, txID=" + transactionID + ", " + recordInfo);
+            }
+
+            public void onReadAddRecord(RecordInfo recordInfo) throws Exception
+            {
+               out.println("AddRecord " + recordInfo);
+            }
+
+            public void markAsDataFile(JournalFile file)
+            {
+            }
+         });
+      }
+   }
+
+
+
+   /** this method is used internally only however tools may use it to maintenance.  */
    public static int readJournalFile(final SequentialFileFactory fileFactory,
                                      final JournalFile file,
                                      final JournalReaderCallback reader) throws Exception
@@ -703,7 +840,11 @@ public class JournalImpl implements TestableJournal
 
          return lastDataPos;
       }
-
+      catch (Throwable e)
+      {
+         log.warn(e.getMessage(), e);
+         throw new Exception (e.getMessage(), e);
+      }
       finally
       {
          if (wholeFileBuffer != null)
@@ -1476,7 +1617,10 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         JournalImpl.trace("Starting compacting operation on journal");
+         if (trace)
+         {
+            JournalImpl.trace("Starting compacting operation on journal");
+         }
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
@@ -1579,7 +1723,10 @@ public class JournalImpl implements TestableJournal
                dataFiles.addFirst(fileToAdd);
             }
 
-            JournalImpl.trace("There are " + dataFiles.size() + " datafiles Now");
+            if (trace)
+            {
+               JournalImpl.trace("There are " + dataFiles.size() + " datafiles Now");
+            }
 
             // Replay pending commands (including updates, deletes and commits)
 
@@ -1616,7 +1763,10 @@ public class JournalImpl implements TestableJournal
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
 
-         JournalImpl.trace("Finished compacting on journal");
+         if (trace)
+         {
+            JournalImpl.trace("Finished compacting on journal");
+         }
 
       }
       finally
@@ -1698,6 +1848,8 @@ public class JournalImpl implements TestableJournal
       final Map<Long, TransactionHolder> loadTransactions = new LinkedHashMap<Long, TransactionHolder>();
 
       final List<JournalFile> orderedFiles = orderFiles();
+      
+      calculateNextfileID(orderedFiles);
 
       int lastDataPos = JournalImpl.SIZE_HEADER;
 
@@ -2646,10 +2798,26 @@ public class JournalImpl implements TestableJournal
    /** being protected as testcases can override this method */
    protected void renameFiles(final List<JournalFile> oldFiles, final List<JournalFile> newFiles) throws Exception
    {
-      for (JournalFile file : oldFiles)
+      
+      // addFreeFiles has to be called through filesExecutor, or the fileID on the orderedFiles may end up in a wrong order
+      filesExecutor.execute(new Runnable()
       {
-         addFreeFile(file);
-      }
+         public void run()
+         {
+            for (JournalFile file : oldFiles)
+            {
+               try
+               {
+                  addFreeFile(file);
+               }
+               catch (Exception e)
+               {
+                  log.warn("Error reinitializing file "  + file, e);
+               }
+            }
+         }
+      });
+      
 
       for (JournalFile file : newFiles)
       {
@@ -2793,52 +2961,6 @@ public class JournalImpl implements TestableJournal
 
       }
       return recordSize;
-   }
-
-   private List<JournalFile> orderFiles() throws Exception
-   {
-      List<String> fileNames = fileFactory.listFiles(fileExtension);
-
-      List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
-
-      for (String fileName : fileNames)
-      {
-         SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
-
-         file.open(1, false);
-         
-         try
-         {
-            long fileID = readFileHeader(file);
-   
-            if (nextFileID.get() < fileID)
-            {
-               nextFileID.set(fileID);
-            }
-   
-            long fileNameID = getFileNameID(fileName);
-   
-            // The compactor could create a fileName but use a previously assigned ID.
-            // Because of that we need to take both parts into account
-            if (nextFileID.get() < fileNameID)
-            {
-               nextFileID.set(fileNameID);
-            }
-   
-            orderedFiles.add(new JournalFileImpl(file, fileID));
-         }
-         finally
-         {
-            file.close();
-         }
-      }
-
-      // Now order them by ordering id - we can't use the file name for ordering
-      // since we can re-use dataFiles
-
-      Collections.sort(orderedFiles, new JournalFileComparator());
-
-      return orderedFiles;
    }
 
    /**
@@ -3117,7 +3239,7 @@ public class JournalImpl implements TestableJournal
 
       if (JournalImpl.trace)
       {
-         JournalImpl.trace("moveNextFile: " + currentFile.getFile().getFileName() + " sync: " + synchronous);
+         JournalImpl.trace("moveNextFile: " + currentFile + " sync: " + synchronous);
       }
 
       fileFactory.activateBuffer(currentFile.getFile());
@@ -3175,6 +3297,11 @@ public class JournalImpl implements TestableJournal
                                  new Exception("Warning: Couldn't open a file in 60 Seconds"));
          }
       }
+      
+      if (trace)
+      {
+         JournalImpl.trace("Returning file " + nextFile);
+      }
 
       return nextFile;
    }
@@ -3212,6 +3339,11 @@ public class JournalImpl implements TestableJournal
    private void pushOpenedFile() throws Exception
    {
       JournalFile nextOpenedFile = getFile(true, true, true, false);
+      
+      if (trace)
+      {
+         JournalImpl.trace("pushing openFile " + nextOpenedFile);
+      }
 
       openedFiles.offer(nextOpenedFile);
    }

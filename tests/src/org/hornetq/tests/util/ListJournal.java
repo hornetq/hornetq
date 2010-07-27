@@ -13,19 +13,21 @@
 
 package org.hornetq.tests.util;
 
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 
 /**
  * Lists the journal content for debug purposes.
  * 
  * This is just a class useful on debug during development,
- * listing journal contents (As we don't have access to SQL on Journal :-) ).
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
@@ -52,15 +54,19 @@ public class ListJournal
       {
          FileConfiguration fileConf = new FileConfiguration();
 
+         fileConf.setJournalDirectory("/work/projects/trunk/journal");
+
          // fileConf.setConfigurationUrl(arg[0]);
 
          fileConf.start();
 
+         SequentialFileFactory fileFactory = new AIOSequentialFileFactory(fileConf.getJournalDirectory());
+
          JournalImpl journal = new JournalImpl(fileConf.getJournalFileSize(),
-                                               fileConf.getJournalMinFiles(),
+                                               10,
                                                0,
                                                0,
-                                               new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
+                                               fileFactory,
                                                "hornetq-data",
                                                "hq",
                                                fileConf.getJournalMaxIO_NIO());
@@ -69,18 +75,31 @@ public class ListJournal
          ArrayList<PreparedTransactionInfo> prepared = new ArrayList<PreparedTransactionInfo>();
 
          journal.start();
+
+
+         PrintStream out = new PrintStream(new FileOutputStream("/tmp/file.out"));
+
+         out.println("######### Journal records per file");
+         
+         JournalImpl.listJournalFiles(out, journal);
+
          journal.load(records, prepared, null);
+         
+         out.println();
+         
+         out.println("##########################################");
+         out.println("#  T O T A L   L I S T                   #");
 
          if (prepared.size() > 0)
          {
-            System.out.println("There are " + prepared.size() + " prepared transactions on the journal");
+            out.println("There are " + prepared.size() + " prepared transactions on the journal");
          }
 
-         System.out.println("Total of " + records.size() + " committed records");
+         out.println("Total of " + records.size() + " committed records");
 
          for (RecordInfo record : records)
          {
-            System.out.println("user record: " + record);
+            out.println("user record: " + record);
          }
 
          journal.checkReclaimStatus();
@@ -89,6 +108,9 @@ public class ListJournal
 
          journal.stop();
 
+         journal.stop();
+         
+         out.close();
       }
       catch (Exception e)
       {

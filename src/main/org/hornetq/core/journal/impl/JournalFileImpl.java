@@ -161,7 +161,7 @@ public class JournalFileImpl implements JournalFile
    {
       try
       {
-         return "JournalFileImpl: " + file.getFileName();
+         return "JournalFileImpl: (" + file.getFileName() + " id = " + this.fileID + ", recordID = " + recordID + ")";
       }
       catch (Exception e)
       {
