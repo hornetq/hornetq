@@ -147,8 +147,13 @@ public class JournalSoakTest extends ServiceTestBase
 
       t1.join();
       
-      
       assertEquals(0, errors.get());
+      
+      journal.stop();
+      
+      journal.start();
+      
+      journal.loadInternalOnly();
    }
 
    private byte[] generateRecord()
@@ -210,6 +215,7 @@ public class JournalSoakTest extends ServiceTestBase
          {
             e.printStackTrace();
             running = false;
+            errors.incrementAndGet();
          }
       }
    }
@@ -258,6 +264,7 @@ public class JournalSoakTest extends ServiceTestBase
          {
             e.printStackTrace();
             running = false;
+            errors.incrementAndGet();
          }
       }
    }
@@ -284,6 +291,8 @@ public class JournalSoakTest extends ServiceTestBase
          {
             System.err.println("Can't delete id");
             e.printStackTrace();
+            running = false;
+            errors.incrementAndGet();
          }
       }
 
