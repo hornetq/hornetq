@@ -20,10 +20,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -63,27 +67,29 @@ public class JournalSoakTest extends ServiceTestBase
 
       File dir = new File(getTemporaryDir());
       dir.mkdirs();
+      
+      SequentialFileFactory factory;
+      
+      int maxAIO;
+      if (AsynchronousFileImpl.isLoaded())
+      {
+         factory = new AIOSequentialFileFactory(dir.getPath());
+         maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO;
+      }
+      else
+      {
+         factory = new NIOSequentialFileFactory(dir.getPath());
+         maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO;
+      }
 
-      FileConfiguration fileConf = new FileConfiguration();
-
-      fileConf.setJournalDirectory(getTemporaryDir());
-
-      fileConf.setCreateJournalDir(true);
-
-      fileConf.setCreateBindingsDir(true);
-
-      fileConf.start();
-
-      fileConf.setJournalMinFiles(10);
-
-      journal = new JournalImpl(fileConf.getJournalFileSize(),
-                                fileConf.getJournalMinFiles(),
-                                fileConf.getJournalCompactMinFiles(),
-                                fileConf.getJournalCompactPercentage(),
-                                new AIOSequentialFileFactory(fileConf.getJournalDirectory()),
+      journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
+                                10,
+                                ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES,
+                                ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
+                                factory,
                                 "hornetq-data",
                                 "hq",
-                                fileConf.getJournalMaxIO_NIO());
+                                maxAIO);
 
       journal.start();
       journal.loadInternalOnly();
