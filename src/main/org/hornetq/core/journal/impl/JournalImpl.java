@@ -2800,6 +2800,11 @@ public class JournalImpl implements TestableJournal
    {
       
       // addFreeFiles has to be called through filesExecutor, or the fileID on the orderedFiles may end up in a wrong order
+      // These files are already freed, and are described on the compactor file control. 
+      // In case of crash they will be cleared anyways
+      
+      final CountDownLatch done = new CountDownLatch(1);
+      
       filesExecutor.execute(new Runnable()
       {
          public void run()
@@ -2810,14 +2815,19 @@ public class JournalImpl implements TestableJournal
                {
                   addFreeFile(file);
                }
-               catch (Exception e)
+               catch (Throwable e)
                {
                   log.warn("Error reinitializing file "  + file, e);
                }
             }
+            done.countDown();
          }
       });
       
+      // need to wait all old files to be freed
+      // to avoid a race where the CTR file is deleted before the init for these files is already done
+      // what could cause a duplicate in case of a crash after the CTR is deleted and before the file is initialized
+      done.await();
 
       for (JournalFile file : newFiles)
       {
