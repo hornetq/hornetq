@@ -266,8 +266,12 @@ Copyright 2009 Red Hat, Inc.
    </target>
 
    <target name="stress-tests" depends="createthirdparty">
-
       <ant antfile="build-hornetq.xml" target="stress-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
+   </target>
+
+   <target name="soak-tests" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="soak-tests"/>
       <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
