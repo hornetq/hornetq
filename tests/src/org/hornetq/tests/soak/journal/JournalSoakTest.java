@@ -19,6 +19,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -48,6 +49,8 @@ public class JournalSoakTest extends ServiceTestBase
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
 
    private volatile boolean running;
+   
+   private AtomicInteger errors = new AtomicInteger(0);
 
    private JournalImpl journal;
 
@@ -64,6 +67,8 @@ public class JournalSoakTest extends ServiceTestBase
    {
       super.setUp();
 
+      errors.set(0);
+      
       File dir = new File(getTemporaryDir());
       dir.mkdirs();
 
@@ -125,6 +130,7 @@ public class JournalSoakTest extends ServiceTestBase
          updaters[i].start();
       }
 
+      // TODO: parametrize this somehow
       Thread.sleep(TimeUnit.HOURS.toMillis(24));
 
       running = false;
@@ -140,6 +146,9 @@ public class JournalSoakTest extends ServiceTestBase
       }
 
       t1.join();
+      
+      
+      assertEquals(0, errors.get());
    }
 
    private byte[] generateRecord()
@@ -200,7 +209,7 @@ public class JournalSoakTest extends ServiceTestBase
          catch (Exception e)
          {
             e.printStackTrace();
-            System.exit(-1);
+            running = false;
          }
       }
    }
@@ -248,7 +257,7 @@ public class JournalSoakTest extends ServiceTestBase
          catch (Exception e)
          {
             e.printStackTrace();
-            System.exit(-1);
+            running = false;
          }
       }
    }
@@ -268,7 +277,7 @@ public class JournalSoakTest extends ServiceTestBase
          {
             for (long id : ids)
             {
-               journal.appendDeleteRecord(id, false);
+               journal.appendDeleteRecord(id, true);
             }
          }
          catch (Exception e)
@@ -302,21 +311,19 @@ public class JournalSoakTest extends ServiceTestBase
                {
                   ids[i] = JournalSoakTest.idGen.generateID();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
-                  Thread.sleep(300);
+                  Thread.sleep(10);
                }
                // Update
                for (int i = 0; running & i < 1000; i++)
                {
-                  ids[i] = JournalSoakTest.idGen.generateID();
                   journal.appendUpdateRecord(ids[i], (byte)1, generateRecord(), true);
-                  Thread.sleep(300);
+                  Thread.sleep(10);
                }
                // Delete
                for (int i = 0; running & i < 1000; i++)
                {
-                  ids[i] = JournalSoakTest.idGen.generateID();
-                  journal.appendUpdateRecord(ids[i], (byte)1, generateRecord(), true);
-                  Thread.sleep(300);
+                  journal.appendDeleteRecord(ids[i], true);
+                  Thread.sleep(10);
                }
             }
          }
