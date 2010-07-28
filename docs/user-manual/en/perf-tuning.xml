@@ -190,8 +190,12 @@
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
                     performance boost by increasing the TCP send and receive buffer sizes. See the
-                        <xref linkend="configuring-transports"/> for more information on this.
-                </para>
+                        <xref linkend="configuring-transports"/> for more information on this. </para>
+                <note>
+                    <para> Note that some operating systems like later versions of Linux include TCP
+                        auto-tuning and setting TCP buffer sizes manually can prevent auto-tune from
+                        working and actually give you worse performance!</para>
+                </note>
             </listitem>
             <listitem>
                 <para>Increase limit on file handles on the server. If you expect a lot of
