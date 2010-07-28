@@ -640,6 +640,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
                              ByteBuffer buffer,
                              AIOCallback aioPackage) throws HornetQException;
 
+   /** a direct write to the file without the use of libaio's submit. */
    private native void writeInternal(ByteBuffer handle, long positionToWrite, long size, ByteBuffer bytes) throws HornetQException;
 
    private native void read(ByteBuffer handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
