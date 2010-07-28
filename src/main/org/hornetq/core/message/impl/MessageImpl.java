@@ -422,7 +422,7 @@ public abstract class MessageImpl implements MessageInternal
       }
    }
 
-   public void resetCopied()
+   public synchronized void resetCopied()
    {
       copied = false;
    }

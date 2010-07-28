@@ -44,8 +44,8 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
       {
          writerIndex(limit);
       }
-
-      readerIndex(limit);
+      
+      buffer.readerIndex(limit);
 
       this.message = message;
    }
@@ -74,6 +74,8 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
    @Override
    public void readerIndex(int readerIndex)
    {
+      changed();
+      
       if (readerIndex < limit)
       {
          readerIndex = limit;
@@ -85,6 +87,8 @@ public class ResetLimitWrappedHornetQBuffer extends ChannelBufferWrapper
    @Override
    public void resetReaderIndex()
    {
+      changed();
+      
       buffer.readerIndex(limit);
    }
 

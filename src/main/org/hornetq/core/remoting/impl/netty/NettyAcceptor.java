@@ -337,7 +337,7 @@ public class NettyAcceptor implements Acceptor
           */
          public ChannelPipeline getPipeline() throws Exception
          {
-            ChannelPipeline pipeline = new DefaultChannelPipeline();
+            List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
 
             if (sslEnabled)
             {
@@ -347,37 +347,40 @@ public class NettyAcceptor implements Acceptor
 
                SslHandler handler = new SslHandler(engine);
 
-               pipeline.addLast("ssl", handler);
+               handlers.add(handler);
             }
 
             if (httpEnabled)
             {
-               pipeline.addLast("http-decoder", new HttpRequestDecoder());
+               handlers.add(new HttpRequestDecoder());
 
-               pipeline.addLast("http-encoder", new HttpResponseEncoder());
+               handlers.add(new HttpResponseEncoder());
 
-               pipeline.addLast("http-handler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+               handlers.add(new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
             }
 
             if (protocol == ProtocolType.CORE)
             {
                // Core protocol uses it's own optimised decoder
-               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder2());
+               
+               handlers.add(new HornetQFrameDecoder2());
             }
             else if (protocol == ProtocolType.STOMP_WS)
             {
-               pipeline.addLast("http-decoder", new HttpRequestDecoder());
-               pipeline.addLast("http-aggregator", new HttpChunkAggregator(65536));
-               pipeline.addLast("http-encoder", new HttpResponseEncoder());
-               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder(decoder));
-               pipeline.addLast("websocket-handler", new WebSocketServerHandler());
+               handlers.add(new HttpRequestDecoder());
+               handlers.add(new HttpChunkAggregator(65536));
+               handlers.add(new HttpResponseEncoder());
+               handlers.add(new HornetQFrameDecoder(decoder));
+               handlers.add(new WebSocketServerHandler());
             }
             else
             {
-               pipeline.addLast("hornetq-decoder", new HornetQFrameDecoder(decoder));
+                handlers.add(new HornetQFrameDecoder(decoder));
             }
 
-            pipeline.addLast("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
+            handlers.add(new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
+            
+            ChannelPipeline pipeline = new StaticChannelPipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
 
             return pipeline;
          }
