@@ -464,59 +464,70 @@ public class JournalImpl implements TestableJournal
                             "  sequence = " +
                             file.getFileID());
 
-         JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
-         {
-
-            public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-               out.println("ReadUpdateTX, txID=" + transactionID + ", " + recordInfo);
-            }
-
-            public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
-            {
-               out.println("ReadUpdate  " + recordInfo);
-            }
-
-            public void onReadRollbackRecord(long transactionID) throws Exception
-            {
-               out.println("Rollback txID=" + transactionID);
-            }
-
-            public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
-            {
-               out.println("Prepare txID=" + transactionID);
-            }
-
-            public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-               out.println("DeleteRecordTX txID=" + transactionID + ", " + recordInfo);
-            }
-
-            public void onReadDeleteRecord(long recordID) throws Exception
-            {
-               out.println("DeleteRecord id=" + recordID);
-            }
-
-            public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
-            {
-               out.println("CommitRecord txID=" + transactionID);
-            }
-
-            public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-            {
-               out.println("AddRecordTX, txID=" + transactionID + ", " + recordInfo);
-            }
-
-            public void onReadAddRecord(RecordInfo recordInfo) throws Exception
-            {
-               out.println("AddRecord " + recordInfo);
-            }
-
-            public void markAsDataFile(JournalFile file)
-            {
-            }
-         });
+         listJournalFile(out, fileFactory, file);
       }
+   }
+
+   /**
+    * @param out
+    * @param fileFactory
+    * @param file
+    * @throws Exception
+    */
+   public static void listJournalFile(final PrintStream out, SequentialFileFactory fileFactory, JournalFile file) throws Exception
+   {
+      JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
+      {
+
+         public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         {
+            out.println("ReadUpdateTX, txID=" + transactionID + ", " + recordInfo);
+         }
+
+         public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+         {
+            out.println("ReadUpdate  " + recordInfo);
+         }
+
+         public void onReadRollbackRecord(long transactionID) throws Exception
+         {
+            out.println("Rollback txID=" + transactionID);
+         }
+
+         public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+         {
+            out.println("Prepare txID=" + transactionID + ", numberOfRecords=" + numberOfRecords);
+         }
+
+         public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         {
+            out.println("DeleteRecordTX txID=" + transactionID + ", " + recordInfo);
+         }
+
+         public void onReadDeleteRecord(long recordID) throws Exception
+         {
+            out.println("DeleteRecord id=" + recordID);
+         }
+
+         public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+         {
+            out.println("CommitRecord txID=" + transactionID + ", numberOfRecords=" + numberOfRecords);
+         }
+
+         public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         {
+            out.println("AddRecordTX, txID=" + transactionID + ", " + recordInfo);
+         }
+
+         public void onReadAddRecord(RecordInfo recordInfo) throws Exception
+         {
+            out.println("AddRecord " + recordInfo);
+         }
+
+         public void markAsDataFile(JournalFile file)
+         {
+         }
+      });
    }
 
 
@@ -1621,6 +1632,7 @@ public class JournalImpl implements TestableJournal
          {
             JournalImpl.trace("Starting compacting operation on journal");
          }
+         JournalImpl.log.debug("Starting compacting operation on journal");
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
@@ -1765,7 +1777,7 @@ public class JournalImpl implements TestableJournal
 
          if (trace)
          {
-            JournalImpl.trace("Finished compacting on journal");
+            JournalImpl.log.debug("Finished compacting on journal");
          }
 
       }
@@ -2305,7 +2317,7 @@ public class JournalImpl implements TestableJournal
 
          if (compactMinFiles > 0)
          {
-            if (nCleanup > getMinCompact())
+            if (nCleanup > 0 && needsCompact())
             {
                for (JournalFile file : dataFiles)
                {
@@ -2357,15 +2369,8 @@ public class JournalImpl implements TestableJournal
       return false;
    }
 
-   /**
-    * @return
-    */
-   private float getMinCompact()
-   {
-      return compactMinFiles * compactPercentage;
-   }
-
-   private synchronized void cleanUp(final JournalFile file) throws Exception
+   // This method is public for tests
+   public synchronized void cleanUp(final JournalFile file) throws Exception
    {
       if (state != JournalImpl.STATE_LOADED)
       {
@@ -2388,7 +2393,7 @@ public class JournalImpl implements TestableJournal
                JournalImpl.trace("Cleaning up file " + file);
             }
             JournalImpl.log.debug("Cleaning up file " + file);
-
+            
             if (file.getPosCount() == 0)
             {
                // nothing to be done
@@ -2408,6 +2413,10 @@ public class JournalImpl implements TestableJournal
                   jrnFile.incPosCount(); // this file can't be reclaimed while cleanup is being done
                }
             }
+            
+            currentFile.resetNegCount(file);
+            currentFile.incPosCount();
+            dependencies.add(currentFile);
 
             cleaner = new JournalCleaner(fileFactory, this, records.keySet(), file.getFileID());
          }
@@ -2420,7 +2429,10 @@ public class JournalImpl implements TestableJournal
 
          cleaner.flush();
 
-         cleaner.fixDependencies(file, dependencies);
+         // pointcut for tests
+         // We need to test concurrent updates on the journal, as the compacting is being performed.
+         // Usually tests will use this to hold the compacting while other structures are being updated.
+         onCompactDone();
 
          for (JournalFile jrnfile : dependencies)
          {
@@ -2437,12 +2449,32 @@ public class JournalImpl implements TestableJournal
          file.getFile().delete();
          tmpFile.renameTo(cleanedFileName);
          controlFile.delete();
+         
       }
       finally
       {
          compactingLock.readLock().unlock();
-         JournalImpl.log.debug("Clean up on file " + file + " done");
+         JournalImpl.log.info("Clean up on file " + file + " done");
       }
+
+   }
+   
+   private boolean needsCompact() throws Exception
+   {
+      JournalFile[] dataFiles = getDataFiles();
+
+      long totalLiveSize = 0;
+
+      for (JournalFile file : dataFiles)
+      {
+         totalLiveSize += file.getLiveSize();
+      }
+
+      long totalBytes = (long)dataFiles.length * (long)fileSize;
+
+      long compactMargin = (long)(totalBytes * compactPercentage);
+
+      return (totalLiveSize < compactMargin && !compactorRunning.get() && dataFiles.length > compactMinFiles);
 
    }
 
@@ -2459,20 +2491,7 @@ public class JournalImpl implements TestableJournal
          return;
       }
 
-      JournalFile[] dataFiles = getDataFiles();
-
-      long totalLiveSize = 0;
-
-      for (JournalFile file : dataFiles)
-      {
-         totalLiveSize += file.getLiveSize();
-      }
-
-      long totalBytes = (long)dataFiles.length * (long)fileSize;
-
-      long compactMargin = (long)(totalBytes * compactPercentage);
-
-      if (totalLiveSize < compactMargin && !compactorRunning.get() && dataFiles.length > compactMinFiles)
+      if (needsCompact())
       {
          if (!compactorRunning.compareAndSet(false, true))
          {

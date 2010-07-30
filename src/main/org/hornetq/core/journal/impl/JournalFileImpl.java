@@ -49,6 +49,9 @@ public class JournalFileImpl implements JournalFile
 
    private boolean needCleanup;
 
+   private AtomicInteger totalNegativeToOthers = new AtomicInteger(0);
+   
+
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
 
    public JournalFileImpl(final SequentialFile file, final long fileID)
@@ -65,6 +68,7 @@ public class JournalFileImpl implements JournalFile
       negCounts.clear();
       posCount.set(0);
       liveBytes.set(0);
+      totalNegativeToOthers.set(0);
    }
 
    public int getPosCount()
@@ -94,6 +98,10 @@ public class JournalFileImpl implements JournalFile
 
    public void incNegCount(final JournalFile file)
    {
+      if (file != this)
+      {
+         totalNegativeToOthers.incrementAndGet();
+      }
       getOrCreateNegCount(file).incrementAndGet();
    }
 
@@ -219,5 +227,12 @@ public class JournalFileImpl implements JournalFile
    {
       return liveBytes.get();
    }
+   
+   public int getTotalNegativeToOthers()
+   {
+      return totalNegativeToOthers.get();
+   }
+   
 
+   
 }

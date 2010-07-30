@@ -711,6 +711,8 @@ public class ReclaimerTest extends UnitTestCase
    private void setupPosNeg(final int fileNumber, final int pos, final int... neg)
    {
       JournalFile file = files[fileNumber];
+      
+      int totalDep = file.getTotalNegativeToOthers();
 
       for (int i = 0; i < pos; i++)
       {
@@ -724,8 +726,11 @@ public class ReclaimerTest extends UnitTestCase
          for (int j = 0; j < neg[i]; j++)
          {
             file.incNegCount(reclaimable2);
+            totalDep++;
          }
       }
+      
+      assertEquals(totalDep, file.getTotalNegativeToOthers());
    }
 
    private void debugFiles()
@@ -777,6 +782,8 @@ public class ReclaimerTest extends UnitTestCase
       private boolean canDelete;
 
       private boolean needCleanup;
+      
+      private int totalDep;
 
       public void extendOffset(final int delta)
       {
@@ -822,6 +829,8 @@ public class ReclaimerTest extends UnitTestCase
          int c = count == null ? 1 : count.intValue() + 1;
 
          negCounts.put(file, c);
+         
+         totalDep++;
       }
 
       public int getPosCount()
@@ -984,6 +993,14 @@ public class ReclaimerTest extends UnitTestCase
       public int getRecordID()
       {
          return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#getTotalNegativeToOthers()
+       */
+      public int getTotalNegativeToOthers()
+      {
+         return totalDep;
       }
    }
 }

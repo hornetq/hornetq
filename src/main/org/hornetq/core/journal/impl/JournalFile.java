@@ -45,6 +45,9 @@ public interface JournalFile
    void decSize(int bytes);
 
    int getLiveSize();
+   
+   /** The total number of deletes this file has */
+   int getTotalNegativeToOthers();
 
    void setCanReclaim(boolean canDelete);
 

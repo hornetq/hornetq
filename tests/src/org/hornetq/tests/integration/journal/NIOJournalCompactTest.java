@@ -950,6 +950,107 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   
+
+   public void testDeleteWhileCleanup() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+
+
+      final ReusableLatch reusableLatchDone = new ReusableLatch();
+      reusableLatchDone.countUp();
+      final ReusableLatch reusableLatchWait = new ReusableLatch();
+      reusableLatchWait.countUp();
+
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+
+         @Override
+         public void onCompactDone()
+         {
+            reusableLatchDone.countDown();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               reusableLatchWait.await();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Done");
+         }
+      };
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+
+      
+      Thread tCompact = new Thread()
+      {
+         @Override
+         public void run()
+         {
+            try
+            {
+               journal.cleanUp(journal.getDataFiles()[0]);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      for (int i = 0 ; i < 100; i++)
+      {
+         add(i);
+      }
+      
+      journal.forceMoveNextFile();
+      
+      
+      for (int i = 10; i < 90; i++)
+      {
+         delete(i);
+      }
+
+      tCompact.start();
+
+      reusableLatchDone.await();
+
+      // Delete part of the live records while cleanup still working
+      for (int i = 1; i < 5; i++)
+      {
+         delete(i);
+      }
+      
+      reusableLatchWait.countDown();
+      
+      tCompact.join();
+
+      // Delete part of the live records after cleanup is done
+      for (int i = 5; i < 10; i++)
+      {
+         delete(i);
+      }
+      
+      assertEquals(9, journal.getCurrentFile().getNegCount(journal.getDataFiles()[0]));
+
+      journal.forceMoveNextFile();
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+
+
 
    public void testCompactAddAndUpdateFollowedByADelete5() throws Exception
    {

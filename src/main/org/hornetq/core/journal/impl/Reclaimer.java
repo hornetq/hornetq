@@ -63,20 +63,20 @@ public class Reclaimer
          {
             Reclaimer.trace("posCount on " + currentFile + " = " + posCount);
          }
-
+         
          for (int j = i; j < files.length; j++)
          {
             if (Reclaimer.trace)
             {
                if (files[j].getNegCount(currentFile) != 0)
                {
-                  Reclaimer.trace("Negative from " + files[j] + " = " + files[j].getNegCount(currentFile));
+                  Reclaimer.trace("Negative from " + files[j] + " into " + currentFile + " = " + files[j].getNegCount(currentFile));
                }
             }
 
             totNeg += files[j].getNegCount(currentFile);
          }
-
+         
          currentFile.setCanReclaim(true);
 
          if (posCount <= totNeg)
@@ -101,8 +101,18 @@ public class Reclaimer
                      {
                         Reclaimer.trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
                      }
-
                      file.setNeedCleanup(true);
+
+                     if (file.getTotalNegativeToOthers() == 0)
+                     {
+                        file.setNeedCleanup(true);
+                     }
+                     else
+                     {
+                        // This file can't be cleared as the file has negatives to other files as well
+                        file.setNeedCleanup(false);
+                     }
+
                      currentFile.setCanReclaim(false);
 
                      break;

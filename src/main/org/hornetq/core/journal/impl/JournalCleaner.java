@@ -176,20 +176,6 @@ public class JournalCleaner extends AbstractJournalUpdateTask
       }
    }
 
-   /**
-    * Read files that depend on this file.
-    * Commits and rollbacks are also counted as negatives. We need to fix those also.
-    * @param dependencies
-    */
-   public void fixDependencies(final JournalFile originalFile, final ArrayList<JournalFile> dependencies) throws Exception
-   {
-      for (JournalFile dependency : dependencies)
-      {
-         fixDependency(originalFile, dependency);
-      }
-
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -220,31 +206,6 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    }
 
    // Private -------------------------------------------------------
-   private void fixDependency(final JournalFile originalFile, final JournalFile dependency) throws Exception
-   {
-      JournalReaderCallback txfix = new JournalReaderCallbackAbstract()
-      {
-         @Override
-         public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
-         {
-            if (transactionCounter.containsKey(transactionID))
-            {
-               dependency.incNegCount(originalFile);
-            }
-         }
-
-         @Override
-         public void onReadRollbackRecord(final long transactionID) throws Exception
-         {
-            if (transactionCounter.containsKey(transactionID))
-            {
-               dependency.incNegCount(originalFile);
-            }
-         }
-      };
-
-      JournalImpl.readJournalFile(fileFactory, dependency, txfix);
-   }
 
    // Inner classes -------------------------------------------------
 
