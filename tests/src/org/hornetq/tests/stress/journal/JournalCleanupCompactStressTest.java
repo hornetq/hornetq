@@ -415,6 +415,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                for (int i = 0; running & i < ids.length; i++)
                {
                   System.out.println("Deleting");
+                  maxRecords.release();
                   journal.appendDeleteRecord(ids[i], false);
                   numberOfDeletes.incrementAndGet();
                }
