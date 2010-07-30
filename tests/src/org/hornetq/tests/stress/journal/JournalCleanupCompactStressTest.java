@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.soak.journal;
+package org.hornetq.tests.stress.journal;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ import org.hornetq.utils.concurrent.LinkedBlockingDeque;
  *
  *
  */
-public class JournalSoakTest extends ServiceTestBase
+public class JournalCleanupCompactStressTest extends ServiceTestBase
 {
 
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
@@ -66,7 +66,7 @@ public class JournalSoakTest extends ServiceTestBase
 
    ThreadFactory tFactory = new HornetQThreadFactory("SoakTest" + System.identityHashCode(this),
                                                      false,
-                                                     JournalSoakTest.class.getClassLoader());
+                                                     JournalCleanupCompactStressTest.class.getClassLoader());
 
    private final ExecutorService threadPool = Executors.newFixedThreadPool(20, tFactory);
 
@@ -125,6 +125,11 @@ public class JournalSoakTest extends ServiceTestBase
          // don't care :-)
       }
    }
+   
+   protected long getTotalTimeMilliseconds()
+   {
+      return TimeUnit.MINUTES.toMillis(10);
+   }
 
    public void testAppend() throws Exception
    {
@@ -153,7 +158,7 @@ public class JournalSoakTest extends ServiceTestBase
          updaters[i].start();
       }
 
-      long timeToEnd = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10);
+      long timeToEnd = System.currentTimeMillis() + getTotalTimeMilliseconds();
 
       while (System.currentTimeMillis() < timeToEnd)
       {
@@ -241,13 +246,13 @@ public class JournalSoakTest extends ServiceTestBase
             {
                final int txSize = RandomUtil.randomMax(100);
 
-               long txID = JournalSoakTest.idGen.generateID();
+               long txID = JournalCleanupCompactStressTest.idGen.generateID();
 
                final long ids[] = new long[txSize];
 
                for (int i = 0; i < txSize; i++)
                {
-                  long id = JournalSoakTest.idGen.generateID();
+                  long id = JournalCleanupCompactStressTest.idGen.generateID();
                   ids[i] = id;
                   journal.appendAddRecordTransactional(txID, id, (byte)0, generateRecord());
                   Thread.sleep(1);
@@ -300,7 +305,7 @@ public class JournalSoakTest extends ServiceTestBase
             int txCount = 0;
             long ids[] = new long[txSize];
 
-            long txID = JournalSoakTest.idGen.generateID();
+            long txID = JournalCleanupCompactStressTest.idGen.generateID();
 
             while (running)
             {
@@ -314,7 +319,7 @@ public class JournalSoakTest extends ServiceTestBase
                   ctx.executeOnCompletion(new DeleteTask(ids));
                   txCount = 0;
                   txSize = RandomUtil.randomMax(100);
-                  txID = JournalSoakTest.idGen.generateID();
+                  txID = JournalCleanupCompactStressTest.idGen.generateID();
                   ids = new long[txSize];
                }
             }
@@ -380,7 +385,7 @@ public class JournalSoakTest extends ServiceTestBase
                for (int i = 0; running & i < ids.length; i++)
                {
                   System.out.println("append slow");
-                  ids[i] = JournalSoakTest.idGen.generateID();
+                  ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
                   numberOfRecords.incrementAndGet();
 
