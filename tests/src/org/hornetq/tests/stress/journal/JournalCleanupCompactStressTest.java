@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +52,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 {
 
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
+   
+   // We want to maximize the difference between appends and deles, or we could get out of memory
+   public Semaphore maxRecords;
 
    private volatile boolean running;
 
@@ -77,6 +81,8 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    {
       super.setUp();
 
+      maxRecords = new Semaphore(20000);
+      
       errors.set(0);
 
       File dir = new File(getTemporaryDir());
@@ -235,6 +241,11 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       LinkedBlockingDeque<Long> queue = new LinkedBlockingDeque<Long>();
 
       OperationContextImpl ctx = new OperationContextImpl(executorFactory.getExecutor());
+      
+      public FastAppenderTx()
+      {
+         super("FastAppenderTX");
+      }
 
       @Override
       public void run()
@@ -255,7 +266,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                   long id = JournalCleanupCompactStressTest.idGen.generateID();
                   ids[i] = id;
                   journal.appendAddRecordTransactional(txID, id, (byte)0, generateRecord());
-                  Thread.sleep(1);
+                  maxRecords.acquire();
                }
                journal.appendCommitRecord(txID, true, ctx);
                ctx.executeOnCompletion(new IOAsyncTask()
@@ -293,6 +304,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       public FastUpdateTx(final LinkedBlockingDeque<Long> queue)
       {
+         super("FastUpdateTX");
          this.queue = queue;
       }
 
@@ -350,6 +362,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             for (long id : ids)
             {
                journal.appendDeleteRecord(id, false);
+               maxRecords.release();
                numberOfDeletes.incrementAndGet();
             }
          }
@@ -373,6 +386,12 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
     */
    class SlowAppenderNoTX extends Thread
    {
+      
+      public SlowAppenderNoTX()
+      {
+         super("SlowAppender");
+      }
+      
       @Override
       public void run()
       {
@@ -386,6 +405,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                {
                   System.out.println("append slow");
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
+                  maxRecords.acquire();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
                   numberOfRecords.incrementAndGet();
 
