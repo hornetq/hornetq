@@ -105,9 +105,7 @@ public class ListJournal
          journal.checkReclaimStatus();
 
          System.out.println("Data = " + journal.debug());
-
-         journal.stop();
-
+         
          journal.stop();
          
          out.close();
