@@ -13,6 +13,7 @@
 
 package org.hornetq.core.paging.impl;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,9 @@ public class PageImpl implements Page
    {
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
-      ByteBuffer buffer2 = fileFactory.newBuffer((int)file.size());
+      // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
+      ByteBuffer buffer2 = ByteBuffer.allocateDirect((int)file.size());
+      
       file.position(0);
       file.read(buffer2);
 
