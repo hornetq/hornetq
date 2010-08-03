@@ -1570,6 +1570,9 @@ public class JournalStorageManager implements StorageManager
        */
       public void executeOnCompletion(final IOAsyncTask runnable)
       {
+         // There are no executeOnCompletion calls while using the DummyOperationContext
+         // However we keep the code here for correctness
+         runnable.done();
       }
 
       /* (non-Javadoc)
