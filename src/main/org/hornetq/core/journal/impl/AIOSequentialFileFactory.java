@@ -135,7 +135,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
     * @see org.hornetq.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
     */
    @Override
-   public void releaseBuffer(final ByteBuffer buffer)
+   public synchronized void releaseBuffer(final ByteBuffer buffer)
    {
       AsynchronousFileImpl.destroyBuffer(buffer);
    }

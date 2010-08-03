@@ -1433,6 +1433,10 @@ public class QueueImpl implements Queue
 
             // also note then when this happens as part of a trasaction its the tx commt of the ack that is important
             // not this
+            
+            // Also note that this delete shouldn't sync to disk, or else we would build up the executor's queue
+            // as we can't delete each messaging with sync=true while adding messages transactionally.
+            // There is a startup check to remove non referenced messages case these deletes fail
             try
             {
                storageManager.deleteMessage(message.getMessageID());

@@ -23,6 +23,7 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.transaction.Transaction;
 
 public class FakePostOffice implements PostOffice
@@ -162,8 +163,7 @@ public class FakePostOffice implements PostOffice
 
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new MessageReferenceImpl();
    }
 
    public void route(final ServerMessage message, final Transaction tx) throws Exception

@@ -17,9 +17,11 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
@@ -772,6 +774,9 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+      
+      // used to identify messages that are not referenced
+      Set<Long> referencedMessages = new HashSet<Long>();
 
       JournalLoadInformation info = messageJournal.load(records,
                                                         preparedTransactions,
@@ -834,6 +839,8 @@ public class JournalStorageManager implements StorageManager
                {
                   throw new IllegalStateException("Cannot find message " + record.id);
                }
+               
+               referencedMessages.add(messageID);
 
                queueMessages.put(messageID, new AddMessageRecord(message));
 
@@ -1001,6 +1008,15 @@ public class JournalStorageManager implements StorageManager
             JournalStorageManager.log.debug("Large message: " + msg.getMessageID() +
                                             " didn't have any associated reference, file will be deleted");
             msg.decrementDelayDeletionCount();
+         }
+      }
+      
+      for (ServerMessage msg : messages.values())
+      {
+         if (!referencedMessages.contains(msg.getMessageID()))
+         {
+            log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
+            deleteMessage(msg.getMessageID());
          }
       }
 

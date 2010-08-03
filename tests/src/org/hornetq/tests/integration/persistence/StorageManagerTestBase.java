@@ -24,7 +24,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
@@ -121,7 +120,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig();
 
-      journal = new JournalStorageManager(configuration, execFactory);
+      journal = createJournalStorageManager(configuration);
 
       journal.start();
 
@@ -130,6 +129,14 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
       journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null);
+   }
+
+   /**
+    * @param configuration
+    */
+   protected JournalStorageManager createJournalStorageManager(Configuration configuration)
+   {
+      return new JournalStorageManager(configuration, execFactory);
    }
 
    /**
