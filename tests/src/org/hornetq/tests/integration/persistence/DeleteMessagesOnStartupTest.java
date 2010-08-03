@@ -61,9 +61,10 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       journal.storeMessage(msg);
 
-      journal.storeMessage(new ServerMessageImpl(2, 100));
-
-      journal.storeMessage(new ServerMessageImpl(3, 100));
+      for (int i = 2; i < 100; i++)
+      {
+         journal.storeMessage(new ServerMessageImpl(i, 100));
+      }
       
       journal.storeReference(1, 1, true);
 
@@ -77,11 +78,12 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
       
-      assertEquals(2, deletedMessage.size());
+      assertEquals(98, deletedMessage.size());
       
-      assertEquals(new Long(2), deletedMessage.get(0));
-      
-      assertEquals(new Long(3), deletedMessage.get(1));
+      for (Long messageID : deletedMessage)
+      {
+         assertTrue("messageID = " + messageID, messageID.longValue() >= 2 && messageID <= 99);
+      }
    }
 
    protected JournalStorageManager createJournalStorageManager(Configuration configuration)
