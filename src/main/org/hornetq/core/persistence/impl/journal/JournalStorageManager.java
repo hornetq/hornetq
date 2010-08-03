@@ -511,7 +511,11 @@ public class JournalStorageManager implements StorageManager
 
    public void deleteMessage(final long messageID) throws Exception
    {
-      messageJournal.appendDeleteRecord(messageID, syncNonTransactional, getContext(syncNonTransactional));
+      // Messages are deleted on postACK, one after another.
+      // If these deletes are synchronized, we would build up messages on the Executor
+      // increasing chances of losing deletes.
+      // The StorageManager should verify messages without references
+      messageJournal.appendDeleteRecord(messageID, false, getContext(false));
    }
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
