@@ -58,7 +58,7 @@ public class NIOImportExportTest extends JournalImplTestBase
 
    protected void tearDown() throws Exception
    {
-
+      super.tearDown();
    }
 
    public void testExportImport() throws Exception
@@ -98,9 +98,9 @@ public class NIOImportExportTest extends JournalImplTestBase
       addTx(11, 11, 12);
       updateTx(11, 11, 12);
       commit(11);
-      
+
       journal.forceMoveNextFile();
-      
+
       update(11, 12);
 
       stopJournal();
@@ -114,7 +114,6 @@ public class NIOImportExportTest extends JournalImplTestBase
       loadAndCheck();
 
    }
-
 
    public void testExportImport3() throws Exception
    {
@@ -164,7 +163,7 @@ public class NIOImportExportTest extends JournalImplTestBase
       startJournal();
 
       loadAndCheck();
-      
+
       commit(11);
 
       stopJournal();
@@ -176,8 +175,7 @@ public class NIOImportExportTest extends JournalImplTestBase
       startJournal();
 
       loadAndCheck();
-      
-      
+
    }
 
    public void testExportImport2() throws Exception
