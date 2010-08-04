@@ -149,8 +149,12 @@
         <itemizedlist>
             <listitem>
                 <para>TCP缓存大小。如果你的网络速度很快，并且你的主机也很快，你可以通过增加TCP的发送和接收缓存
-                    来提高性能。参见<xref linkend="configuring-transports"/>中的详细说明。
-                </para>
+                    来提高性能。参见<xref linkend="configuring-transports"/>中的详细说明。</para>
+                <note>
+                     <para>注意某些操作系统，如最近的Linux版本中，包括了TCP自动优化功能。如果再手工设置TCP缓存
+                    会导致自动优化失效，最終使性能下降！
+                     </para>
+                </note>
             </listitem>
             <listitem>
                 <para>增加服务器中文件句柄数量限制。如果你的服务器将要处理很多并行的连接，或者客户端在快速不停地

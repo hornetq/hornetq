@@ -113,6 +113,17 @@
                   <para><literal>HornetQServerControl</literal>提供了访问HornetQ服务器所有属性
                      的方法（例如<literal>getVersion()</literal>方法可以得到服务器的版本，等等）。 </para>
                </listitem>
+               <listitem>
+                  <para>核心桥和转发器的创建，删除与列表</para>
+                  <para>使用<literal>getBridgeNames()</literal>可以列出部署的核心桥。
+                        使用<literal>getDivertNames()</literal>可以列出部署的转发器。</para>
+                  <para>使用<literal>HornetQServerControl</literal> (ObjectName <literal
+                        >org.hornetq:module=Core,type=Server</literal> 或资源名 <literal
+                        >core.server</literal>)的方法<literal>createBridge()</literal>
+　　　　　　　　　　　　　   和<literal>destroyBridge()</literal>可以创建和删除核心桥。
+                        通过<literal>createDivert()</literal>和<literal>destroyDivert()</literal>
+                        可以创建和删除转发器。</para>
+               </listitem>
             </itemizedlist>
          </section>
          <section>
