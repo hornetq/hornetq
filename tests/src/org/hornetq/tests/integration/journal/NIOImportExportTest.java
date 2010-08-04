@@ -96,7 +96,12 @@ public class NIOImportExportTest extends JournalImplTestBase
       commit(10);
 
       addTx(11, 11, 12);
+      updateTx(11, 11, 12);
       commit(11);
+      
+      journal.forceMoveNextFile();
+      
+      update(11, 12);
 
       stopJournal();
 
