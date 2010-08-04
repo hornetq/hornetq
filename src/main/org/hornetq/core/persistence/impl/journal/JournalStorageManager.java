@@ -1016,7 +1016,16 @@ public class JournalStorageManager implements StorageManager
          if (!referencedMessages.contains(msg.getMessageID()))
          {
             log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
-            deleteMessage(msg.getMessageID());
+            // Something after routing could delete messages
+            // So we ignore eventual ignores
+            try
+            {
+               deleteMessage(msg.getMessageID());
+            }
+            catch (Exception ignored)
+            {
+               log.warn("It wasn't possible to delete message " + msg.getMessageID());
+            }
          }
       }
 
