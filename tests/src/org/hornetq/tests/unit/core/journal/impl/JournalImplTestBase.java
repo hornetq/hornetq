@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.journal.impl;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -28,6 +30,8 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TestableJournal;
+import org.hornetq.core.journal.impl.ExportJournal;
+import org.hornetq.core.journal.impl.ImportJournal;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -165,6 +169,50 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal.stop();
    }
 
+   /**
+    * @throws Exception
+    */
+   protected void exportImportJournal() throws Exception
+   {
+      System.out.println("Exporting to " + getTestDir() + "/output.log");
+
+      ExportJournal.exportJournal(getTestDir(),
+                                  this.filePrefix,
+                                  this.fileExtension,
+                                  this.minFiles,
+                                  this.fileSize,
+                                  getTestDir() + "/output.log");
+
+      File dir = new File(getTestDir());
+
+      FilenameFilter fnf = new FilenameFilter()
+      {
+         public boolean accept(final File file, final String name)
+         {
+            return name.endsWith("." + fileExtension);
+         }
+      };
+
+      System.out.println("file = " + dir);
+
+      File files[] = dir.listFiles(fnf);
+
+      for (File file : files)
+      {
+         System.out.println("Deleting " + file);
+         file.delete();
+      }
+
+      ImportJournal.importJournal(getTestDir(),
+                                  filePrefix,
+                                  fileExtension,
+                                  minFiles,
+                                  fileSize,
+                                  getTestDir() + "/output.log");
+   }
+
+
+   
    protected void loadAndCheck() throws Exception
    {
       loadAndCheck(false);

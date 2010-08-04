@@ -13,7 +13,6 @@
 
 package org.hornetq.core.journal.impl;
 
-import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -447,88 +446,7 @@ public class JournalImpl implements TestableJournal
    }
 
    
-   /**
-    * @param fileFactory
-    * @param journal
-    * @throws Exception
-    */
-   public static void listJournalFiles(final PrintStream out, final JournalImpl journal) throws Exception
-   {
-      List<JournalFile> files = journal.orderFiles();
-      
-      SequentialFileFactory fileFactory = journal.fileFactory;
 
-      for (JournalFile file : files)
-      {
-         out.println("####### listing file " + file.getFile().getFileName() +
-                            "  sequence = " +
-                            file.getFileID());
-
-         listJournalFile(out, fileFactory, file);
-      }
-   }
-
-   /**
-    * @param out
-    * @param fileFactory
-    * @param file
-    * @throws Exception
-    */
-   public static void listJournalFile(final PrintStream out, SequentialFileFactory fileFactory, JournalFile file) throws Exception
-   {
-      JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
-      {
-
-         public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-         {
-            out.println("ReadUpdateTX, txID=" + transactionID + ", " + recordInfo);
-         }
-
-         public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
-         {
-            out.println("ReadUpdate  " + recordInfo);
-         }
-
-         public void onReadRollbackRecord(long transactionID) throws Exception
-         {
-            out.println("Rollback txID=" + transactionID);
-         }
-
-         public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
-         {
-            out.println("Prepare txID=" + transactionID + ", numberOfRecords=" + numberOfRecords);
-         }
-
-         public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-         {
-            out.println("DeleteRecordTX txID=" + transactionID + ", " + recordInfo);
-         }
-
-         public void onReadDeleteRecord(long recordID) throws Exception
-         {
-            out.println("DeleteRecord id=" + recordID);
-         }
-
-         public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
-         {
-            out.println("CommitRecord txID=" + transactionID + ", numberOfRecords=" + numberOfRecords);
-         }
-
-         public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
-         {
-            out.println("AddRecordTX, txID=" + transactionID + ", " + recordInfo);
-         }
-
-         public void onReadAddRecord(RecordInfo recordInfo) throws Exception
-         {
-            out.println("AddRecord " + recordInfo);
-         }
-
-         public void markAsDataFile(JournalFile file)
-         {
-         }
-      });
-   }
 
 
 
@@ -3319,7 +3237,7 @@ public class JournalImpl implements TestableJournal
 
       while (nextFile == null)
       {
-         nextFile = openedFiles.poll(60, TimeUnit.SECONDS);
+         nextFile = openedFiles.poll(5, TimeUnit.SECONDS);
          if (nextFile == null)
          {
             JournalImpl.log.warn("Couldn't open a file in 60 Seconds",

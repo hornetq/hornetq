@@ -1,0 +1,358 @@
+/*
+ * Copyright 2010 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hornetq.core.journal.impl;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
+import org.hornetq.utils.Base64;
+
+/**
+ * Use this class to import the journal data from a listed file. You can use it as a main class or through its native method {@link ImportJournal#importJournal(String, String, String, int, int, String)}
+ * 
+ * If you use the main method, use it as  <JournalDirectory> <JournalPrefix> <FileExtension> <MinFiles> <FileSize> <FileOutput>
+ * 
+ * Example: java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal /journalDir hornetq-data hq 2 10485760 /tmp/export.dat
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ *
+ *
+ */
+public class ImportJournal
+{
+
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   public static void main(String arg[])
+   {
+      if (arg.length != 6)
+      {
+         System.err.println("Use: java -cp hornetq-core.jar org.hornetq.core.journal.impl.ImportJournal <JournalDirectory> <JournalPrefix> <FileExtension> <MinFiles> <FileSize> <FileOutput>");
+         return;
+      }
+
+      try
+      {
+         importJournal(arg[0], arg[1], arg[2], Integer.parseInt(arg[3]), Integer.parseInt(arg[4]), arg[5]);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+
+   }
+
+   public static void importJournal(String directory,
+                                    String journalPrefix,
+                                    String journalSuffix,
+                                    int minFiles,
+                                    int fileSize,
+                                    String fileInput) throws Exception
+   {
+
+      File journalDir = new File(directory);
+
+      journalDir.mkdirs();
+
+      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
+
+      JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
+
+      if (journal.orderFiles().size() != 0)
+      {
+         throw new IllegalStateException("Import needs to create a brand new journal");
+      }
+
+      journal.start();
+
+      // The journal is empty, as we checked already. Calling load just to initialize the internal data
+      journal.loadInternalOnly();
+
+      FileInputStream fileInputStream = new FileInputStream(new File(fileInput));
+
+      BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+
+      String line;
+
+      HashMap<Long, AtomicInteger> txCounters = new HashMap<Long, AtomicInteger>();
+
+      long lineNumber = 0;
+      
+      Map<Long, JournalRecord> journalRecords = journal.getRecords();
+
+      while ((line = reader.readLine()) != null)
+      {
+         lineNumber++;
+         String splitLine[] = line.split(",");
+         if (splitLine[0].equals("#File"))
+         {
+            txCounters.clear();
+            continue;
+         }
+
+         Properties lineProperties = parseLine(splitLine);
+
+         String operation = null;
+         try
+         {
+            operation = lineProperties.getProperty("operation");
+
+            if (operation.equals("AddRecord"))
+            {
+               RecordInfo info = parseRecord(lineProperties);
+               journal.appendAddRecord(info.id, info.userRecordType, info.data, false);
+            }
+            else if (operation.equals("AddRecordTX"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               counter.incrementAndGet();
+               RecordInfo info = parseRecord(lineProperties);
+               journal.appendAddRecordTransactional(txID, info.id, info.userRecordType, info.data);
+            }
+            else if (operation.equals("AddRecordTX"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               counter.incrementAndGet();
+               RecordInfo info = parseRecord(lineProperties);
+               journal.appendAddRecordTransactional(txID, info.id, info.userRecordType, info.data);
+            }
+            else if (operation.equals("UpdateTX"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               counter.incrementAndGet();
+               RecordInfo info = parseRecord(lineProperties);
+               journal.appendUpdateRecordTransactional(txID, info.id, info.userRecordType, info.data);
+            }
+            else if (operation.equals("Update"))
+            {
+               RecordInfo info = parseRecord(lineProperties);
+               journal.appendUpdateRecord(info.id, info.userRecordType, info.data, false);
+            }
+            else if (operation.equals("DeleteRecord"))
+            {
+               long id = parseLong("id", lineProperties);
+               
+               // If not found it means the append/update records were reclaimed already
+               if (journalRecords.get((Long)id) != null)
+               {
+                  journal.appendDeleteRecord(id, false);
+               }
+            }
+            else if (operation.equals("DeleteRecordTX"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               long id = parseLong("id", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               counter.incrementAndGet();
+
+               // If not found it means the append/update records were reclaimed already
+               if (journalRecords.get((Long)id) != null)
+               {
+                  journal.appendDeleteRecordTransactional(txID, id);
+               }
+            }
+            else if (operation.equals("Prepare"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               int numberOfRecords = parseInt("numberOfRecords", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               byte[] data = parseEncoding("extraData", lineProperties);
+
+               if (counter.get() == numberOfRecords)
+               {
+                  journal.appendPrepareRecord(txID, data, false);
+               }
+               else
+               {
+                  System.err.println("Transaction " + txID +
+                                     " at line " +
+                                     lineNumber +
+                                     " is incomplete. The prepare record expected " +
+                                     numberOfRecords +
+                                     " while the import only had " +
+                                     counter);
+               }
+            }
+            else if (operation.equals("Commit"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               int numberOfRecords = parseInt("numberOfRecords", lineProperties);
+               AtomicInteger counter = getCounter(txID, txCounters);
+               if (counter.get() == numberOfRecords)
+               {
+                  journal.appendCommitRecord(txID, false);
+               }
+               else
+               {
+                  System.err.println("Transaction " + txID +
+                                     " at line " +
+                                     lineNumber +
+                                     " is incomplete. The commit record expected " +
+                                     numberOfRecords +
+                                     " while the import only had " +
+                                     counter);
+               }
+            }
+            else if (operation.equals("Rollback"))
+            {
+               long txID = parseLong("txID", lineProperties);
+               journal.appendRollbackRecord(txID, false);
+            }
+            else
+            {
+               System.err.println("Invalid opeartion " + operation + " at line " + lineNumber);
+            }
+         }
+         catch (Exception ex)
+         {
+            System.err.println("Error at line " + lineNumber + ", operation=" + operation + " msg = " + ex.getMessage());
+         }
+      }
+
+      journal.compact();
+      
+      journal.stop();
+   }
+
+   protected static AtomicInteger getCounter(Long txID, Map<Long, AtomicInteger> txCounters)
+   {
+
+      AtomicInteger counter = txCounters.get(txID);
+      if (counter == null)
+      {
+         counter = new AtomicInteger(0);
+         txCounters.put(txID, counter);
+      }
+
+      return counter;
+   }
+
+   protected static RecordInfo parseRecord(Properties properties) throws Exception
+   {
+      int id = parseInt("id", properties);
+      byte userRecordType = parseByte("userRecordType", properties);
+      boolean isUpdate = parseBoolean("isUpdate", properties);
+      byte[] data = parseEncoding("data", properties);
+      return new RecordInfo(id, userRecordType, data, isUpdate);
+   }
+
+   private static byte[] parseEncoding(String name, Properties properties) throws Exception
+   {
+      String value = parseString(name, properties);
+
+      return decode(value);
+   }
+
+   /**
+    * @param properties
+    * @return
+    */
+   private static int parseInt(String name, Properties properties) throws Exception
+   {
+      String value = parseString(name, properties);
+
+      return Integer.parseInt(value);
+   }
+
+   private static long parseLong(String name, Properties properties) throws Exception
+   {
+      String value = parseString(name, properties);
+
+      return Long.parseLong(value);
+   }
+
+   private static boolean parseBoolean(String name, Properties properties) throws Exception
+   {
+      String value = parseString(name, properties);
+
+      return Boolean.parseBoolean(value);
+   }
+
+   private static byte parseByte(String name, Properties properties) throws Exception
+   {
+      String value = parseString(name, properties);
+
+      return Byte.parseByte(value);
+   }
+
+   /**
+    * @param name
+    * @param properties
+    * @return
+    * @throws Exception
+    */
+   private static String parseString(String name, Properties properties) throws Exception
+   {
+      String value = properties.getProperty(name);
+
+      if (value == null)
+      {
+         throw new Exception("property " + name + " not found");
+      }
+      return value;
+   }
+
+   protected static Properties parseLine(String[] splitLine)
+   {
+      Properties properties = new Properties();
+
+      for (String el : splitLine)
+      {
+         String[] tuple = el.split("@");
+         if (tuple.length == 2)
+         {
+            properties.put(tuple[0], tuple[1]);
+         }
+         else
+         {
+            properties.put(tuple[0], tuple[0]);
+         }
+      }
+
+      return properties;
+   }
+
+   private static byte[] decode(String data)
+   {
+      return Base64.decode(data, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+}
