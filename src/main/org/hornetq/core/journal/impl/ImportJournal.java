@@ -238,8 +238,6 @@ public class ImportJournal
             System.err.println("Error at line " + lineNumber + ", operation=" + operation + " msg = " + ex.getMessage());
          }
       }
-
-      journal.compact();
       
       journal.stop();
    }
