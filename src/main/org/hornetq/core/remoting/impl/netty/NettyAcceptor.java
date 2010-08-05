@@ -17,8 +17,9 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
@@ -329,15 +330,9 @@ public class NettyAcceptor implements Acceptor
 
       ChannelPipelineFactory factory = new ChannelPipelineFactory()
       {
-         /**
-          *  we use named handlers so that the web socket server handler can
-          * replace the http encode/decoder after the http handshake.
-          * 
-          * @see WebSocketServerHandler#handleHttpRequest(ChannelHandlerContext, org.jboss.netty.handler.codec.http.HttpRequest)
-          */
          public ChannelPipeline getPipeline() throws Exception
          {
-            List<ChannelHandler> handlers = new ArrayList<ChannelHandler>();
+            Map<String, ChannelHandler> handlers = new LinkedHashMap<String, ChannelHandler>();
 
             if (sslEnabled)
             {
@@ -347,40 +342,57 @@ public class NettyAcceptor implements Acceptor
 
                SslHandler handler = new SslHandler(engine);
 
-               handlers.add(handler);
+               handlers.put("ssl", handler);
             }
 
             if (httpEnabled)
             {
-               handlers.add(new HttpRequestDecoder());
+               handlers.put("http-decoder", new HttpRequestDecoder());
 
-               handlers.add(new HttpResponseEncoder());
+               handlers.put("http-encoder", new HttpResponseEncoder());
 
-               handlers.add(new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+               handlers.put("http-handler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
             }
 
             if (protocol == ProtocolType.CORE)
             {
-               // Core protocol uses it's own optimised decoder
+               // Core protocol uses its own optimised decoder
                
-               handlers.add(new HornetQFrameDecoder2());
+               handlers.put("hornetq-decode", new HornetQFrameDecoder2());
             }
             else if (protocol == ProtocolType.STOMP_WS)
             {
-               handlers.add(new HttpRequestDecoder());
-               handlers.add(new HttpChunkAggregator(65536));
-               handlers.add(new HttpResponseEncoder());
-               handlers.add(new HornetQFrameDecoder(decoder));
-               handlers.add(new WebSocketServerHandler());
+               handlers.put("http-decoder", new HttpRequestDecoder());
+               handlers.put("http-aggregator", new HttpChunkAggregator(65536));
+               handlers.put("http-encoder", new HttpResponseEncoder());
+               handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
+               handlers.put("websocket-handler", new WebSocketServerHandler());
             }
             else
             {
-                handlers.add(new HornetQFrameDecoder(decoder));
+                handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
             }
 
-            handlers.add(new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
+            handlers.put("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
             
-            ChannelPipeline pipeline = new StaticChannelPipeline(handlers.toArray(new ChannelHandler[handlers.size()]));
+            /**
+             * STOMP_WS protocol mandates use of named handlers to be able to replace http codecs
+             * by websocket codecs after handshake.
+             * Other protocols can use a faster static channel pipeline directly.
+             */
+            ChannelPipeline pipeline;
+            if (protocol == ProtocolType.STOMP_WS)
+            {
+               pipeline = new DefaultChannelPipeline();
+               for (Entry<String, ChannelHandler> handler : handlers.entrySet())
+               {
+                  pipeline.addLast(handler.getKey(), handler.getValue());
+               }
+            }
+            else
+            {
+               pipeline = new StaticChannelPipeline(handlers.values().toArray(new ChannelHandler[handlers.size()]));
+            }
 
             return pipeline;
          }
