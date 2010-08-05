@@ -91,10 +91,11 @@ class StompSession implements SessionCallback
             headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
          }
          HornetQBuffer buffer = serverMessage.getBodyBuffer();
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+
          int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                 : serverMessage.getEndOfBodyPosition();
+                                                                  : serverMessage.getEndOfBodyPosition();
          int size = bodyPos - buffer.readerIndex();
+         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
          byte[] data = new byte[size];
          if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
          {
