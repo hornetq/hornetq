@@ -172,16 +172,19 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          // reclaimed
          id.a = new ByteArrayHolder(duplID);
 
-         try
+         if (persist)
          {
-            storageManager.deleteDuplicateID(id.b);
+            try
+            {
+               storageManager.deleteDuplicateID(id.b);
+            }
+            catch (Exception e)
+            {
+               DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
+            }
+   
+            id.b = recordID;
          }
-         catch (Exception e)
-         {
-            DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
-         }
-
-         id.b = recordID;
       }
       else
       {
