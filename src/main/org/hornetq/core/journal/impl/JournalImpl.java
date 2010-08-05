@@ -2372,7 +2372,7 @@ public class JournalImpl implements TestableJournal
       finally
       {
          compactingLock.readLock().unlock();
-         JournalImpl.log.info("Clean up on file " + file + " done");
+         JournalImpl.log.debug("Clean up on file " + file + " done");
       }
 
    }
