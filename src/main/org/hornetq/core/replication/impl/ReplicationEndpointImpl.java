@@ -264,6 +264,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
 
       largeMessages.clear();
+      
+      pageManager.stop();
    }
 
    /* (non-Javadoc)

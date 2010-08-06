@@ -39,5 +39,5 @@ public interface Page
 
    void close() throws Exception;
 
-   void delete() throws Exception;
+   boolean delete() throws Exception;
 }

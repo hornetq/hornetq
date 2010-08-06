@@ -56,9 +56,9 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
 
    PagingStore getPagingStore();
 
-   boolean page(boolean duplicateDetection) throws Exception;
+   boolean page() throws Exception;
 
-   boolean page(long transactionID, boolean duplicateDetection) throws Exception;
+   boolean page(long transactionID) throws Exception;
 
    boolean storeIsPaging();
 

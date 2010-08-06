@@ -49,9 +49,9 @@ public interface PagingStore extends HornetQComponent
 
    void sync() throws Exception;
 
-   boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
+   boolean page(ServerMessage message, long transactionId) throws Exception;
 
-   boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
+   boolean page(ServerMessage message) throws Exception;
 
    Page createPage(final int page) throws Exception;
 

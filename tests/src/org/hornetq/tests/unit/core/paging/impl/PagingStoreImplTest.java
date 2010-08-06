@@ -216,7 +216,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertTrue(storeImpl.isPaging());
 
-      Assert.assertTrue(storeImpl.page(msg, true));
+      Assert.assertTrue(storeImpl.page(msg));
 
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -279,7 +279,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
          ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
 
-         Assert.assertTrue(storeImpl.page(msg, true));
+         Assert.assertTrue(storeImpl.page(msg));
       }
 
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
@@ -359,7 +359,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
          ServerMessage msg = createMessage(i, storeImpl, destination, buffer);
 
-         Assert.assertTrue(storeImpl.page(msg, true));
+         Assert.assertTrue(storeImpl.page(msg));
       }
 
       Assert.assertEquals(2, storeImpl.getNumberOfPages());
@@ -395,7 +395,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1, storeImpl, destination, buffers.get(0));
 
-      Assert.assertTrue(storeImpl.page(msg, true));
+      Assert.assertTrue(storeImpl.page(msg));
 
       Page newPage = storeImpl.depage();
 
@@ -413,11 +413,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertFalse(storeImpl.isPaging());
 
-      Assert.assertFalse(storeImpl.page(msg, true));
+      Assert.assertFalse(storeImpl.page(msg));
 
       storeImpl.startPaging();
 
-      Assert.assertTrue(storeImpl.page(msg, true));
+      Assert.assertTrue(storeImpl.page(msg));
 
       Page page = storeImpl.depage();
 
@@ -513,7 +513,7 @@ public class PagingStoreImplTest extends UnitTestCase
                   // This is possible because the depage thread is not actually reading the pages.
                   // Just using the internal API to remove it from the page file system
                   ServerMessage msg = createMessage(id, storeImpl, destination, createRandomBuffer(id, 5));
-                  if (storeImpl.page(msg, false))
+                  if (storeImpl.page(msg))
                   {
                      buffers.put(id, msg);
                   }
@@ -658,7 +658,7 @@ public class PagingStoreImplTest extends UnitTestCase
       long lastMessageId = messageIdGenerator.incrementAndGet();
       ServerMessage lastMsg = createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
 
-      storeImpl2.page(lastMsg, true);
+      storeImpl2.page(lastMsg);
       buffers2.put(lastMessageId, lastMsg);
 
       Page lastPage = null;
@@ -685,10 +685,9 @@ public class PagingStoreImplTest extends UnitTestCase
             ServerMessage msgWritten = buffers2.remove(id);
             Assert.assertNotNull(msgWritten);
             Assert.assertEquals(msg.getMessage(null).getAddress(), msgWritten.getAddress());
-            UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().toByteBuffer().array(), msg.getMessage(null)
-                                                                                                      .getBodyBuffer()
-                                                                                                      .toByteBuffer()
-                                                                                                      .array());
+            UnitTestCase.assertEqualsByteArrays(msgWritten.getBodyBuffer().writerIndex(),
+                                                msgWritten.getBodyBuffer().toByteBuffer().array(),
+                                                msg.getMessage(null).getBodyBuffer().toByteBuffer().array());
          }
       }
 
@@ -814,7 +813,7 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          return null;
       }
-      
+
       public void deletePageStore(SimpleString storeName) throws Exception
       {
       }

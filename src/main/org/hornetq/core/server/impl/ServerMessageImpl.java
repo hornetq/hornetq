@@ -253,11 +253,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return pagingStore;
    }
 
-   public boolean page(final boolean duplicateDetection) throws Exception
+   public boolean page() throws Exception
    {
       if (pagingStore != null)
       {
-         return pagingStore.page(this, duplicateDetection);
+         return pagingStore.page(this);
       }
       else
       {
@@ -265,11 +265,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       }
    }
 
-   public boolean page(final long transactionID, final boolean duplicateDetection) throws Exception
+   public boolean page(final long transactionID) throws Exception
    {
       if (pagingStore != null)
       {
-         return pagingStore.page(this, transactionID, duplicateDetection);
+         return pagingStore.page(this, transactionID);
       }
       else
       {

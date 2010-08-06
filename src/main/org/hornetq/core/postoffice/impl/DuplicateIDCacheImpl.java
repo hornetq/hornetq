@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -43,7 +44,8 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 {
    private static final Logger log = Logger.getLogger(DuplicateIDCacheImpl.class);
 
-   private final Set<ByteArrayHolder> cache = new org.hornetq.utils.ConcurrentHashSet<ByteArrayHolder>();
+   // ByteHolder, position
+   private final Map<ByteArrayHolder, Integer> cache = new ConcurrentHashMap<ByteArrayHolder, Integer>();
 
    private final SimpleString address;
 
@@ -89,7 +91,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
             Pair<ByteArrayHolder, Long> pair = new Pair<ByteArrayHolder, Long>(bah, id.b);
 
-            cache.add(bah);
+            cache.put(bah, ids.size());
 
             ids.add(pair);
          }
@@ -120,20 +122,52 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
 
    }
+   
+   
+   public void deleteFromCache(byte [] duplicateID) throws Exception
+   {
+      ByteArrayHolder bah = new ByteArrayHolder(duplicateID);
+      
+      Integer posUsed = cache.remove(bah);
+      
+      if (posUsed != null)
+      {
+         Pair<ByteArrayHolder, Long> id;
+   
+         synchronized (this)
+         {
+            id = ids.get(posUsed.intValue());
+            
+            if (id.a.equals(bah))
+            {
+               id.a = null;
+               storageManager.deleteDuplicateID(id.b);
+               id.b = null;
+            }
+            else
+            {
+               System.out.println("Can't delete duplicateID");
+            }
+         }
+      }
+      
+   }
+   
 
    public boolean contains(final byte[] duplID)
    {
-      return cache.contains(new ByteArrayHolder(duplID));
+      return cache.get(new ByteArrayHolder(duplID)) != null;
    }
 
    public synchronized void addToCache(final byte[] duplID, final Transaction tx) throws Exception
    {
-      long recordID = storageManager.generateUniqueID();
+      long recordID = -1;
 
       if (tx == null)
       {
          if (persist)
          {
+            recordID = storageManager.generateUniqueID();
             storageManager.storeDuplicateID(address, duplID, recordID);
          }
 
@@ -143,6 +177,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
          if (persist)
          {
+            recordID = storageManager.generateUniqueID();
             storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
 
             tx.setContainsPersistent();
@@ -156,7 +191,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
    private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID)
    {
-      cache.add(new ByteArrayHolder(duplID));
+      ByteArrayHolder holder = new ByteArrayHolder(duplID);
+      
+      cache.put(holder, pos);
 
       Pair<ByteArrayHolder, Long> id;
 
@@ -165,32 +202,43 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          // Need fast array style access here -hence ArrayList typing
          id = ids.get(pos);
 
-         cache.remove(id.a);
-
-         // Record already exists - we delete the old one and add the new one
-         // Note we can't use update since journal update doesn't let older records get
-         // reclaimed
-         id.a = new ByteArrayHolder(duplID);
-
-         if (persist)
+         // The id here might be null if it was explicit deleted
+         if (id.a != null)
          {
-            try
-            {
-               storageManager.deleteDuplicateID(id.b);
-            }
-            catch (Exception e)
-            {
-               DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
-            }
+            cache.remove(id.a);
    
-            id.b = recordID;
+            // Record already exists - we delete the old one and add the new one
+            // Note we can't use update since journal update doesn't let older records get
+            // reclaimed
+   
+            if (id.b != null)
+            {
+               try
+               {
+                  storageManager.deleteDuplicateID(id.b);
+               }
+               catch (Exception e)
+               {
+                  DuplicateIDCacheImpl.log.warn("Error on deleting duplicate cache", e);
+               }
+            }
          }
+
+         id.a = holder;
+
+         // The recordID could be negative if the duplicateCache is configured to not persist, 
+         // -1 would mean null on this case
+         id.b = recordID >= 0 ? recordID : null;
+         
+         holder.pos = pos;
       }
       else
       {
-         id = new Pair<ByteArrayHolder, Long>(new ByteArrayHolder(duplID), recordID);
+         id = new Pair<ByteArrayHolder, Long>(holder, recordID >= 0 ? recordID : null);
 
          ids.add(id);
+         
+         holder.pos = pos;
       }
 
       if (pos++ == cacheSize - 1)
@@ -270,6 +318,8 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       final byte[] bytes;
 
       int hash;
+      
+      int pos;
 
       @Override
       public boolean equals(final Object other)

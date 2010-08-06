@@ -32,7 +32,6 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.replication.impl.ReplicationEndpointImpl;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -128,14 +127,6 @@ public class PagingFailoverTest extends FailoverTestBase
          if (failBeforeConsume)
          {
             failSession(session, latch);
-         }
-         else
-         {
-            endpoint = (ReplicationEndpointImpl)((HornetQServerImpl)server1Service).getReplicationEndpoint();
-            if (endpoint != null)
-            {
-               endpoint.setDeletePages(false);
-            }
          }
 
          session.start();

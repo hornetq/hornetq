@@ -196,24 +196,34 @@ public class PageImpl implements Page
       file.close();
    }
 
-   public void delete() throws Exception
+   public boolean delete() throws Exception
    {
       if (storageManager != null)
       {
          storageManager.pageDeleted(storeName, pageId);
       }
 
-      if (suspiciousRecords)
+      try
       {
-         PageImpl.log.warn("File " + file.getFileName() +
-                           " being renamed to " +
-                           file.getFileName() +
-                           ".invalidPage as it was loaded partially. Please verify your data.");
-         file.renameTo(file.getFileName() + ".invalidPage");
+         if (suspiciousRecords)
+         {
+            PageImpl.log.warn("File " + file.getFileName() +
+                              " being renamed to " +
+                              file.getFileName() +
+                              ".invalidPage as it was loaded partially. Please verify your data.");
+            file.renameTo(file.getFileName() + ".invalidPage");
+         }
+         else
+         {
+            file.delete();
+         }
+         
+         return true;
       }
-      else
+      catch (Exception e)
       {
-         file.delete();
+         log.warn("Error while deleting page file", e);
+         return false;
       }
    }
 

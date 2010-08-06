@@ -398,13 +398,13 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public boolean page(final boolean duplicateDetection) throws Exception
+      public boolean page() throws Exception
       {
          // TODO Auto-generated method stub
          return false;
       }
 
-      public boolean page(final long transactionID, final boolean duplicateDetection) throws Exception
+      public boolean page(final long transactionID) throws Exception
       {
          // TODO Auto-generated method stub
          return false;

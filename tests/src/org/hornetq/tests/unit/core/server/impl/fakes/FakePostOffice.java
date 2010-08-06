@@ -15,10 +15,12 @@ package org.hornetq.tests.unit.core.server.impl.fakes;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
@@ -88,8 +90,7 @@ public class FakePostOffice implements PostOffice
     */
    public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new DuplicateIDCacheImpl(address, 2000, new NullStorageManager(), false);
    }
 
    /* (non-Javadoc)

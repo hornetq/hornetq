@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -41,6 +39,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
@@ -110,6 +109,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    private volatile Page currentPage;
 
    private final ReentrantLock writeLock = new ReentrantLock();
+   
+   /** duplicate cache used at this address */
+   private final DuplicateIDCache duplicateCache;
 
    /** 
     * We need to perform checks on currentPage with minimal locking
@@ -183,6 +185,17 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.storeFactory = storeFactory;
 
       this.syncNonTransactional = syncNonTransactional;
+      
+      // Post office could be null on the backup node
+      if (postOffice == null)
+      {
+         this.duplicateCache = null;
+      }
+      else
+      {
+         this.duplicateCache = postOffice.getDuplicateIDCache(storeName);
+      }
+      
    }
 
    // Public --------------------------------------------------------
@@ -249,17 +262,17 @@ public class PagingStoreImpl implements TestSupportPageStore
       return storeName;
    }
 
-   public boolean page(final ServerMessage message, final long transactionID, final boolean duplicateDetection) throws Exception
+   public boolean page(final ServerMessage message, final long transactionID) throws Exception
    {
       // The sync on transactions is done on commit only
-      return page(message, transactionID, false, duplicateDetection);
+      return page(message, transactionID, false);
    }
 
-   public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
+   public boolean page(final ServerMessage message) throws Exception
    {
       // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
       // of crash
-      return page(message, -1, syncNonTransactional && message.isDurable(), duplicateDetection);
+      return page(message, -1, syncNonTransactional && message.isDurable());
    }
 
    public void sync() throws Exception
@@ -635,7 +648,15 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       if (onDepage(page.getPageId(), storeName, messages))
       {
-         page.delete();
+         if (page.delete())
+         {
+            // DuplicateCache could be null during replication
+            // however the deletes on the journal will happen through replicated journal
+            if (duplicateCache != null)
+            {
+               duplicateCache.deleteFromCache(generateDuplicateID(page.getPageId()));
+            }
+         }
 
          return true;
       }
@@ -777,8 +798,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private boolean page(final ServerMessage message,
                         final long transactionID,
-                        final boolean sync,
-                        final boolean duplicateDetection) throws Exception
+                        final boolean sync) throws Exception
    {
       if (!running)
       {
@@ -834,20 +854,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (currentPage == null)
          {
             return false;
-         }
-
-         if (duplicateDetection)
-         {
-            // We set the duplicate detection header to prevent the message being depaged more than once in case of
-            // failure during depage
-
-            byte[] bytes = new byte[8];
-
-            ByteBuffer buff = ByteBuffer.wrap(bytes);
-
-            buff.putLong(message.getMessageID());
-
-            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
          PagedMessage pagedMessage;
@@ -933,8 +939,22 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
-
+      
+      byte[] duplicateIdForPage = generateDuplicateID(pageId);
+      
       Transaction depageTransaction = new TransactionImpl(storageManager);
+
+      // DuplicateCache could be null during replication
+      if (duplicateCache != null)
+      {
+         if (duplicateCache.contains(duplicateIdForPage))
+         {
+            log.warn("Page " + pageId + " had been processed already but the file wasn't removed as a crash happened. Ignoring this page");
+            return true;
+         }
+
+         duplicateCache.addToCache(duplicateIdForPage, depageTransaction);
+      }
 
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
@@ -1054,6 +1074,16 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       return true;
+   }
+
+   /**
+    * @param pageId
+    * @return
+    */
+   private byte[] generateDuplicateID(final int pageId)
+   {
+      byte duplicateIdForPage[] = new SimpleString("page-" + pageId).getData();
+      return duplicateIdForPage;
    }
 
    /**

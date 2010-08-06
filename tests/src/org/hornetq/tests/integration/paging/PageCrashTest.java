@@ -357,9 +357,11 @@ public class PageCrashTest extends ServiceTestBase
           * @throws Exception
           * @see org.hornetq.core.paging.Page#delete()
           */
-         public void delete() throws Exception
+         public boolean delete() throws Exception
          {
-            // This will let the file stay, simulating a system failure
+            
+            System.out.println("Won't delete");
+            return false;
          }
 
          /**

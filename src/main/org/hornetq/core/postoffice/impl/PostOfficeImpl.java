@@ -604,7 +604,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (context.getTransaction() == null)
       {
-         if (message.page(true))
+         if (message.page())
          {
             return;
          }
@@ -1206,11 +1206,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             Set<PagingStore> pagingStoresToSync = new HashSet<PagingStore>();
 
-            // We only need to add the dupl id header once per transaction
-            boolean first = true;
             for (ServerMessage message : messagesToPage)
             {
-               if (message.page(tx.getID(), first))
+               if (message.page(tx.getID()))
                {
                   if (message.isDurable())
                   {
@@ -1231,7 +1229,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   }
                   route(message, subTX, false);
                }
-               first = false;
             }
 
             if (pagingPersistent)
