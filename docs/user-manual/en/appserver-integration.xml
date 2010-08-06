@@ -821,6 +821,18 @@ private ConnectionFactory connectionFactory;</programlisting>
                                 <entry>Boolean</entry>
                                 <entry>Whether or not use JNDI to look up the destination (default is true)</entry>
                             </row>
+                            <row>
+                                <entry>SetupAttempts</entry>
+                                <entry>Integer</entry>
+                                <entry>Number of attemps to setup a JMS connection (default is 10). It is possible
+                                   that the MDB is deployed before the JMS resources are available. In that case, the resource
+                                   adapter will try to setup several times until the resources are available</entry>
+                            </row>
+                            <row>
+                                <entry>SetupInterval</entry>
+                                <entry>Long</entry>
+                                <entry>Interval in seconds between consecutive attemps to setup a JMS connection (default is 2 seconds)</entry>
+                            </row>
                          </tbody>
                       </tgroup>
                    </table>
