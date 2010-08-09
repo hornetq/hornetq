@@ -52,6 +52,14 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    /** Method used to locate the TM */
    private String transactionManagerLocatorMethod = "getTm;getTM";
 
+   private static final int DEFAULT_SETUP_ATTEMPTS = 10;
+
+   private static final long DEFAULT_SETUP_INTERVAL = 2 * 1000;
+
+   private int setupAttempts = DEFAULT_SETUP_ATTEMPTS;
+
+   private long setupInterval = DEFAULT_SETUP_INTERVAL;
+
    /**
     * Constructor
     */
@@ -168,7 +176,25 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       this.transactionManagerLocatorMethod = transactionManagerLocatorMethod;
    }
 
+   public int getSetupAttempts()
+   {
+      return setupAttempts;
+   }
 
+   public void setSetupAttempts(int setupAttempts)
+   {
+      this.setupAttempts = setupAttempts;
+   }
+
+   public long getSetupInterval()
+   {
+      return setupInterval;
+   }
+
+   public void setSetupInterval(long setupInterval)
+   {
+      this.setupInterval = setupInterval;
+   }
    
    @Override
    public String toString()

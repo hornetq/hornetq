@@ -511,18 +511,21 @@ public class HornetQActivation
          log.warn("Failure in HornetQ activation " + spec, failure);
       }
       int reconnectCount = 0;
+      int setupAttempts = spec.getSetupAttempts();
+      long setupInterval = spec.getSetupInterval();
+      
       // Only enter the failure loop once
       if (inFailure.getAndSet(true))
          return;
       try
       {
-         while (deliveryActive.get() && reconnectCount < spec.getSetupAttempts())
+         while (deliveryActive.get() && (setupAttempts == -1 || reconnectCount < setupAttempts))
          {
             teardown();
 
             try
             {
-               Thread.sleep(spec.getSetupInterval());
+               Thread.sleep(setupInterval);
             }
             catch (InterruptedException e)
             {

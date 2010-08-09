@@ -1166,6 +1166,41 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setUseLocalTx(localTx);
    }
 
+   public int getSetupAttempts()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("getSetupAttempts()");
+      }
+      return raProperties.getSetupAttempts();
+   }
+
+   public void setSetupAttempts(int setupAttempts)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("setSetupAttempts(" + setupAttempts + ")");
+      }
+      raProperties.setSetupAttempts(setupAttempts);
+   }
+
+   public long getSetupInterval()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("getSetupInterval()");
+      }
+      return raProperties.getSetupInterval();
+   }
+
+   public void setSetupInterval(long interval)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("setSetupInterval(" + interval + ")");
+      }
+      raProperties.setSetupInterval(interval);
+   }
 
    /**
     * Indicates whether some other object is "equal to" this one.

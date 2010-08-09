@@ -40,10 +40,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 {
    private static final int DEFAULT_MAX_SESSION = 15;
 
-   private static final int DEFAULT_SETUP_ATTEMPTS = 10;
-
-   private static final long DEFAULT_SETUP_INTERVAL = 2 * 1000;
-
    /** The logger */
    private static final Logger log = Logger.getLogger(HornetQActivationSpec.class);
 
@@ -93,9 +89,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /* use local tx instead of XA*/
    private Boolean localTx;
 
-   private int setupAttempts;
-
-   private long setupInterval;
+   // undefined by default, default is specified at the RA level in HornetQRAProperties
+   private Integer setupAttempts;
+   
+   // undefined by default, default is specified at the RA level in HornetQRAProperties
+   private Long setupInterval;
 
    /**
     * Constructor
@@ -118,8 +116,6 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       password = null;
       maxSession = DEFAULT_MAX_SESSION;
       transactionTimeout = 0;
-      setupAttempts = DEFAULT_SETUP_ATTEMPTS;
-      setupInterval = DEFAULT_SETUP_INTERVAL;
    }
 
    /**
@@ -542,21 +538,55 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
 
    public int getSetupAttempts()
    {
-      return setupAttempts;
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQActivationSpec.log.trace("getSetupAttempts()");
+      }
+
+      if (setupAttempts == null)
+      {
+         return ra.getSetupAttempts();
+      }
+      else
+      {
+         return setupAttempts;
+      }
    }
 
    public void setSetupAttempts(int setupAttempts)
    {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQActivationSpec.log.trace("setSetupAttempts(" + setupAttempts + ")");
+      }
+
       this.setupAttempts = setupAttempts;
    }
 
    public long getSetupInterval()
    {
-      return setupInterval;
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQActivationSpec.log.trace("getSetupInterval()");
+      }
+
+      if (setupInterval == null)
+      {
+         return ra.getSetupInterval();
+      }
+      else
+      {
+         return setupInterval;
+      }
    }
 
    public void setSetupInterval(long setupInterval)
    {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQActivationSpec.log.trace("setSetupInterval(" + setupInterval + ")");
+      }
+
       this.setupInterval = setupInterval;
    }
 
