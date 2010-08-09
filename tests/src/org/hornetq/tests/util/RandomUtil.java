@@ -72,6 +72,12 @@ public class RandomUtil
       return Math.abs(RandomUtil.randomInt());
    }
    
+   
+   public static int randomInterval(final int min, final int max)
+   {
+      return min + randomMax(max - min);
+   }
+   
    public static int randomMax(int max)
    {
       int value = randomPositiveInt() % max;

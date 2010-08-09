@@ -739,7 +739,7 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfIntegers = 10;
 
-      final int numberOfMessages = 10;
+      final int numberOfMessages = 500;
 
       try
       {
@@ -756,6 +756,8 @@ public class PagingTest extends ServiceTestBase
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
          ClientMessage message = null;
+         
+         
 
          for (int i = 0; i < numberOfMessages; i++)
          {
@@ -780,12 +782,12 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = consumer.receive(500);
+            System.out.println("Received " + i);
+            ClientMessage msg = consumer.receive(5000);
             Assert.assertNotNull(msg);
             msg.acknowledge();
+            session.commit();
          }
-
-         session.commit();
 
          session.close();
       }

@@ -2220,7 +2220,7 @@ public class JournalImpl implements TestableJournal
                   JournalImpl.log.warn("Could not remove file " + file);
                }
 
-               addFreeFile(file);
+               addFreeFile(file, false);
             }
          }
 
@@ -2364,10 +2364,33 @@ public class JournalImpl implements TestableJournal
 
          SequentialFile controlFile = createControlFile(null, null, new Pair<String, String>(tmpFileName,
                                                                                              cleanedFileName));
-         file.getFile().delete();
+         
+         SequentialFile returningFile = fileFactory.createSequentialFile(file.getFile().getFileName(), maxAIO);
+
+         returningFile.renameTo(renameExtensionFile(tmpFileName, ".cmp") + ".tmp");
+
          tmpFile.renameTo(cleanedFileName);
+
          controlFile.delete();
          
+         final JournalFile retJournalfile = new JournalFileImpl(returningFile, -1);
+         
+         filesExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  addFreeFile(retJournalfile, true);
+               }
+               catch (Throwable e)
+               {
+                  log.warn("Error reinitializing file " + file, e);
+               }
+
+            }
+         });
+
       }
       finally
       {
@@ -2750,7 +2773,7 @@ public class JournalImpl implements TestableJournal
             {
                try
                {
-                  addFreeFile(file);
+                  addFreeFile(file, false);
                }
                catch (Throwable e)
                {
@@ -2768,11 +2791,20 @@ public class JournalImpl implements TestableJournal
 
       for (JournalFile file : newFiles)
       {
-         String newName = file.getFile().getFileName();
-         newName = newName.substring(0, newName.lastIndexOf(".cmp"));
+         String newName = renameExtensionFile(file.getFile().getFileName(), ".cmp");
          file.getFile().renameTo(newName);
       }
 
+   }
+
+   /**
+    * @param name
+    * @return
+    */
+   private String renameExtensionFile(String name, String extension)
+   {
+      name = name.substring(0, name.lastIndexOf(extension));
+      return name;
    }
 
    /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
@@ -2787,12 +2819,11 @@ public class JournalImpl implements TestableJournal
     * @param file
     * @throws Exception
     */
-   private void addFreeFile(final JournalFile file) throws Exception
+   private void addFreeFile(final JournalFile file, final boolean renameTmp) throws Exception
    {
       if (file.getFile().size() != this.getFileSize())
       {
-         // This will happen during cleanup
-         log.debug("Deleting "  + file + ".. as it doesn't have the standard size", new Exception ("trace"));
+         log.warn("Deleting "  + file + ".. as it doesn't have the configured size", new Exception ("trace"));
          file.getFile().delete();
       }
       else
@@ -2802,6 +2833,11 @@ public class JournalImpl implements TestableJournal
          // Re-initialise it
 
          JournalFile jf = reinitializeFile(file);
+         
+         if (renameTmp)
+         {
+            jf.getFile().renameTo(renameExtensionFile(jf.getFile().getFileName(), ".tmp"));
+         }
 
          freeFiles.add(jf);
       }
@@ -3109,14 +3145,7 @@ public class JournalImpl implements TestableJournal
 
       String fileName;
 
-      if (tmpCompact)
-      {
-         fileName = filePrefix + "-" + fileID + "." + fileExtension + ".cmp";
-      }
-      else
-      {
-         fileName = filePrefix + "-" + fileID + "." + fileExtension;
-      }
+      fileName = createFileName(tmpCompact, fileID);
 
       if (JournalImpl.trace)
       {
@@ -3156,6 +3185,25 @@ public class JournalImpl implements TestableJournal
       }
 
       return new JournalFileImpl(sequentialFile, fileID);
+   }
+
+   /**
+    * @param tmpCompact
+    * @param fileID
+    * @return
+    */
+   private String createFileName(final boolean tmpCompact, long fileID)
+   {
+      String fileName;
+      if (tmpCompact)
+      {
+         fileName = filePrefix + "-" + fileID + "." + fileExtension + ".cmp";
+      }
+      else
+      {
+         fileName = filePrefix + "-" + fileID + "." + fileExtension;
+      }
+      return fileName;
    }
 
    private void openFile(final JournalFile file, final boolean multiAIO) throws Exception

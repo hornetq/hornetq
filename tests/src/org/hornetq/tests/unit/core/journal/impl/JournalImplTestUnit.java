@@ -25,6 +25,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * 
@@ -37,6 +38,17 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
    private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
+   
+   protected void tearDown() throws Exception
+   {
+      List<String> files = fileFactory.listFiles(fileExtension);
+      
+      for (String file : files)
+      {
+         SequentialFile seqFile = fileFactory.createSequentialFile(file, 1);
+         assertEquals(fileSize, seqFile.size());
+      }
+   }
 
    // General tests
    // =============
@@ -2390,14 +2402,14 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testMultipleAddUpdateDeleteDifferentRecordLengths() throws Exception
    {
-      setup(10, 2048, true);
+      setup(10, 20480, true);
       createJournal();
       startJournal();
       load();
 
       for (int i = 0; i < 100; i++)
       {
-         byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
+         byte[] record = generateRecord(RandomUtil.randomInterval(1500, 10000)); 
 
          journal.appendAddRecord(i, (byte)0, record, false);
 
@@ -2406,7 +2418,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
+         byte[] record = generateRecord(10 + RandomUtil.randomInterval(1500, 10000));
 
          journal.appendUpdateRecord(i, (byte)0, record, false);
 

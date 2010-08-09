@@ -292,6 +292,8 @@ public class NIOSequentialFile extends AbstractSequentialFile
          }
          return;
       }
+      
+      position.addAndGet(bytes.limit());
 
       if (maxIOSemaphore == null)
       {
@@ -336,8 +338,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
     */
    private void doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
    {
-      position.addAndGet(bytes.limit());
-
       channel.write(bytes);
 
       if (sync)
