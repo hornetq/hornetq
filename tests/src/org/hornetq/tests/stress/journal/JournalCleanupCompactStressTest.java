@@ -53,6 +53,8 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
    
+   
+   private static final int MAX_WRITES = 20000;
    // We want to maximize the difference between appends and deles, or we could get out of memory
    public Semaphore maxRecords;
 
@@ -81,7 +83,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    {
       super.setUp();
 
-      maxRecords = new Semaphore(20000);
+      maxRecords = new Semaphore(MAX_WRITES);
       
       errors.set(0);
 
@@ -103,7 +105,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
 
       journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
-                                10,
+                                20,
                                 15,
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
                                 factory,
@@ -179,6 +181,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
 
       running = false;
+
+      // Release Semaphore after setting running to false or the threads may never finish
+      maxRecords.release(MAX_WRITES - maxRecords.availablePermits());
+
 
       for (Thread t : appenders)
       {
