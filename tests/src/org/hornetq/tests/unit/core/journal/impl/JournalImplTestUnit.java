@@ -48,6 +48,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          SequentialFile seqFile = fileFactory.createSequentialFile(file, 1);
          assertEquals(fileSize, seqFile.size());
       }
+      
+      super.tearDown();
    }
 
    // General tests
