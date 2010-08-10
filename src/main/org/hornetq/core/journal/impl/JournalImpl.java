@@ -1551,6 +1551,8 @@ public class JournalImpl implements TestableJournal
             JournalImpl.trace("Starting compacting operation on journal");
          }
          JournalImpl.log.debug("Starting compacting operation on journal");
+         
+         onCompactStart();
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
@@ -1571,15 +1573,9 @@ public class JournalImpl implements TestableJournal
 
             dataFilesToProcess.addAll(dataFiles);
 
-            for (JournalFile file : pendingCloseFiles)
-            {
-               file.getFile().close();
-            }
-
-            dataFilesToProcess.addAll(pendingCloseFiles);
-            pendingCloseFiles.clear();
-
             dataFiles.clear();
+
+            drainClosedFiles();
 
             if (dataFilesToProcess.size() == 0)
             {
@@ -2294,7 +2290,7 @@ public class JournalImpl implements TestableJournal
       {
          return;
       }
-
+ 
       compactingLock.readLock().lock();
 
       try
@@ -2808,10 +2804,15 @@ public class JournalImpl implements TestableJournal
    }
 
    /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
-   protected void onCompactDone()
+   protected void onCompactStart() throws Exception
    {
    }
 
+   /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
+   protected void onCompactDone()
+   {
+   }
+   
    // Private
    // -----------------------------------------------------------------------------
 
@@ -3314,6 +3315,8 @@ public class JournalImpl implements TestableJournal
          {
             try
             {
+               drainClosedFiles();
+
                if (!checkReclaimStatus())
                {
                   checkCompact();
@@ -3384,33 +3387,13 @@ public class JournalImpl implements TestableJournal
    {
       fileFactory.deactivateBuffer();
       pendingCloseFiles.add(file);
+      dataFiles.add(file);
 
       Runnable run = new Runnable()
       {
          public void run()
          {
-            compactingLock.readLock().lock();
-            try
-            {
-               // The file could be closed by compacting. On this case we need to check if the close still pending
-               // before we add it to dataFiles
-               if (pendingCloseFiles.remove(file))
-               {
-                  dataFiles.add(file);
-                  if (file.getFile().isOpen())
-                  {
-                     file.getFile().close();
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               JournalImpl.log.warn(e.getMessage(), e);
-            }
-            finally
-            {
-               compactingLock.readLock().unlock();
-            }
+            drainClosedFiles();
          }
       };
 
@@ -3421,6 +3404,23 @@ public class JournalImpl implements TestableJournal
       else
       {
          filesExecutor.execute(run);
+      }
+
+   }
+   
+   private void drainClosedFiles()
+   {
+      JournalFile file;
+      try
+      {
+         while ((file = pendingCloseFiles.poll()) != null)
+         {
+            file.getFile().close();
+         }
+      }
+      catch (Exception e)
+      {
+         JournalImpl.log.warn(e.getMessage(), e);
       }
 
    }

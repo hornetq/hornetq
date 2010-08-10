@@ -16,12 +16,16 @@ package org.hornetq.tests.stress.journal;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -52,9 +56,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 {
 
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
-   
-   
+
    private static final int MAX_WRITES = 20000;
+
    // We want to maximize the difference between appends and deles, or we could get out of memory
    public Semaphore maxRecords;
 
@@ -74,17 +78,23 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                                                      false,
                                                      JournalCleanupCompactStressTest.class.getClassLoader());
 
-   private final ExecutorService threadPool = Executors.newFixedThreadPool(20, tFactory);
+   private ExecutorService threadPool;
 
-   OrderedExecutorFactory executorFactory = new OrderedExecutorFactory(threadPool);
+   private OrderedExecutorFactory executorFactory = new OrderedExecutorFactory(threadPool);
+
+   Executor testExecutor;
 
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
 
+      threadPool = Executors.newFixedThreadPool(20, tFactory);
+      executorFactory = new OrderedExecutorFactory(threadPool);
+      testExecutor = executorFactory.getExecutor();
+
       maxRecords = new Semaphore(MAX_WRITES);
-      
+
       errors.set(0);
 
       File dir = new File(getTemporaryDir());
@@ -111,7 +121,37 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                                 factory,
                                 "hornetq-data",
                                 "hq",
-                                maxAIO);
+                                maxAIO)
+      {
+         protected void onCompactStart() throws Exception
+         {
+            testExecutor.execute(new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     System.out.println("OnCompactSTart enter");
+                     for (int i = 0; i < 20; i++)
+                     {
+                        long id = idGen.generateID();
+                        journal.appendAddRecord(id, (byte)0, new byte[] { 1, 2, 3 }, false);
+                        journal.forceMoveNextFile();
+                        journal.appendDeleteRecord(id, id == 20);
+                     }
+                     System.out.println("OnCompactSTart leave");
+                  }
+                  catch (Exception e)
+                  {
+                     e.printStackTrace();
+                     errors.incrementAndGet();
+                  }
+               }
+            });
+
+         }
+
+      };
 
       journal.start();
       journal.loadInternalOnly();
@@ -132,8 +172,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       {
          // don't care :-)
       }
+
+      threadPool.shutdown();
    }
-   
+
    protected long getTotalTimeMilliseconds()
    {
       return TimeUnit.MINUTES.toMillis(10);
@@ -185,7 +227,6 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       // Release Semaphore after setting running to false or the threads may never finish
       maxRecords.release(MAX_WRITES - maxRecords.availablePermits());
 
-
       for (Thread t : appenders)
       {
          t.join();
@@ -197,6 +238,17 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
 
       t1.join();
+
+      final CountDownLatch latchExecutorDone = new CountDownLatch(1);
+      testExecutor.execute(new Runnable()
+      {
+         public void run()
+         {
+            latchExecutorDone.countDown();
+         }
+      });
+
+      latchExecutorDone.await();
 
       assertEquals(0, errors.get());
 
@@ -247,7 +299,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       LinkedBlockingDeque<Long> queue = new LinkedBlockingDeque<Long>();
 
       OperationContextImpl ctx = new OperationContextImpl(executorFactory.getExecutor());
-      
+
       public FastAppenderTx()
       {
          super("FastAppenderTX");
@@ -392,12 +444,12 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
     */
    class SlowAppenderNoTX extends Thread
    {
-      
+
       public SlowAppenderNoTX()
       {
          super("SlowAppender");
       }
-      
+
       @Override
       public void run()
       {
