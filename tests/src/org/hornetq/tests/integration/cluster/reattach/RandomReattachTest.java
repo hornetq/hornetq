@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.reattach;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -21,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -303,13 +305,13 @@ public class RandomReattachTest extends UnitTestCase
          producer.send(message);
       }
 
-      class MyHandler implements MessageHandler
+      class MyHandler extends AssertionCheckMessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
 
-         public void onMessage(final ClientMessage message)
+         public void onMessageAssert(final ClientMessage message)
          {
             if (count == numMessages)
             {
@@ -350,6 +352,8 @@ public class RandomReattachTest extends UnitTestCase
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(5000, TimeUnit.MILLISECONDS);
+         
+         handler.checkAssertions();
 
          Assert.assertTrue("Didn't receive all messages", ok);
       }
@@ -422,13 +426,13 @@ public class RandomReattachTest extends UnitTestCase
          session.start();
       }
 
-      class MyHandler implements MessageHandler
+      class MyHandler extends AssertionCheckMessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
 
-         public void onMessage(final ClientMessage message)
+         public void onMessageAssert(final ClientMessage message)
          {
             if (count == numMessages)
             {
@@ -460,6 +464,8 @@ public class RandomReattachTest extends UnitTestCase
       for (MyHandler handler : handlers)
       {
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         
+         handler.checkAssertions();
 
          Assert.assertTrue(ok);
       }
@@ -494,7 +500,7 @@ public class RandomReattachTest extends UnitTestCase
 
       final int numMessages = 100;
 
-      final int numSessions = 10;
+      final int numSessions = 1;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();
@@ -516,7 +522,7 @@ public class RandomReattachTest extends UnitTestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true);
+      ClientSession sessSend = sf.createSession(false, false, true);
 
       ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
@@ -546,25 +552,36 @@ public class RandomReattachTest extends UnitTestCase
 
       sessSend.commit();
 
-      class MyHandler implements MessageHandler
+      class MyHandler extends AssertionCheckMessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
 
-         public void onMessage(final ClientMessage message)
+         public void onMessageAssert(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               Assert.fail("Too many messages");
+               Assert.fail("Too many messages, expected " + count);
             }
 
             Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
+            
+            try
+            {
+               message.acknowledge();
+            }
+            catch (HornetQException e)
+            {
+               e.printStackTrace();
+               throw new RuntimeException (e.getMessage(), e);
+            }
 
             if (count == numMessages)
             {
+               System.out.println("Latch released");
                latch.countDown();
             }
          }
@@ -586,6 +603,8 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
+         
+         handler.checkAssertions();
       }
 
       handlers.clear();
@@ -610,6 +629,8 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
+         
+         handler.checkAssertions();
       }
 
       for (ClientSession session : sessions)
@@ -665,7 +686,7 @@ public class RandomReattachTest extends UnitTestCase
          sessions.add(sessConsume);
       }
 
-      ClientSession sessSend = sf.createSession(false, true, true);
+      ClientSession sessSend = sf.createSession(false, false, true);
 
       ClientProducer producer = sessSend.createProducer(RandomReattachTest.ADDRESS);
 
@@ -700,17 +721,17 @@ public class RandomReattachTest extends UnitTestCase
          session.start();
       }
 
-      class MyHandler implements MessageHandler
+      class MyHandler extends AssertionCheckMessageHandler
       {
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
 
-         public void onMessage(final ClientMessage message)
+         public void onMessageAssert(final ClientMessage message)
          {
             if (count == numMessages)
             {
-               Assert.fail("Too many messages");
+               Assert.fail("Too many messages, " + count);
             }
 
             Assert.assertEquals(count, message.getObjectProperty(new SimpleString("count")));
@@ -740,6 +761,8 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(20000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
+         
+         handler.checkAssertions();
       }
 
       handlers.clear();
@@ -764,6 +787,8 @@ public class RandomReattachTest extends UnitTestCase
          boolean ok = handler.latch.await(10000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
+         
+         handler.checkAssertions();
       }
 
       for (ClientSession session : sessions)
@@ -1408,7 +1433,7 @@ public class RandomReattachTest extends UnitTestCase
    {
       return 2;
    }
-
+   
    @Override
    protected void setUp() throws Exception
    {
@@ -1494,4 +1519,41 @@ public class RandomReattachTest extends UnitTestCase
    {
       abstract void run(final ClientSessionFactory sf) throws Exception;
    }
+   
+   static abstract class AssertionCheckMessageHandler implements MessageHandler
+   {
+      
+      
+      public void checkAssertions()
+      {
+         for (AssertionFailedError e: errors)
+         {
+            // it will throw the first error
+            throw e;
+         }
+      }
+      
+      private ArrayList<AssertionFailedError> errors = new ArrayList<AssertionFailedError>(); 
+
+      /* (non-Javadoc)
+       * @see org.hornetq.api.core.client.MessageHandler#onMessage(org.hornetq.api.core.client.ClientMessage)
+       */
+      public void onMessage(ClientMessage message)
+      {
+         try
+         {
+            onMessageAssert(message);
+         }
+         catch (AssertionFailedError e)
+         {
+            e.printStackTrace(); // System.out -> junit reports
+            errors.add(e);
+         }
+      }
+      
+      public abstract void onMessageAssert(ClientMessage message);
+      
+   }
+
+   
 }
