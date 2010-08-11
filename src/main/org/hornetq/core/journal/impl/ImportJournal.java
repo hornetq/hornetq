@@ -16,7 +16,9 @@ package org.hornetq.core.journal.impl;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -76,6 +78,28 @@ public class ImportJournal
                                     int fileSize,
                                     String fileInput) throws Exception
    {
+      FileInputStream fileInputStream = new FileInputStream(new File(fileInput));
+      importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, fileInputStream);
+
+   }
+   public static void importJournal(String directory,
+                                    String journalPrefix,
+                                    String journalSuffix,
+                                    int minFiles,
+                                    int fileSize,
+                                    InputStream stream) throws Exception
+   {
+      Reader reader = new InputStreamReader(stream);
+      importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, reader);
+   }
+
+   public static void importJournal(String directory,
+                                    String journalPrefix,
+                                    String journalSuffix,
+                                    int minFiles,
+                                    int fileSize,
+                                    Reader reader) throws Exception
+   {
 
       File journalDir = new File(directory);
 
@@ -95,19 +119,17 @@ public class ImportJournal
       // The journal is empty, as we checked already. Calling load just to initialize the internal data
       journal.loadInternalOnly();
 
-      FileInputStream fileInputStream = new FileInputStream(new File(fileInput));
-
-      BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+      BufferedReader buffReader = new BufferedReader(reader);
 
       String line;
 
       HashMap<Long, AtomicInteger> txCounters = new HashMap<Long, AtomicInteger>();
 
       long lineNumber = 0;
-      
+
       Map<Long, JournalRecord> journalRecords = journal.getRecords();
 
-      while ((line = reader.readLine()) != null)
+      while ((line = buffReader.readLine()) != null)
       {
          lineNumber++;
          String splitLine[] = line.split(",");
@@ -161,7 +183,7 @@ public class ImportJournal
             else if (operation.equals("DeleteRecord"))
             {
                long id = parseLong("id", lineProperties);
-               
+
                // If not found it means the append/update records were reclaimed already
                if (journalRecords.get((Long)id) != null)
                {
@@ -238,7 +260,7 @@ public class ImportJournal
             System.err.println("Error at line " + lineNumber + ", operation=" + operation + " msg = " + ex.getMessage());
          }
       }
-      
+
       journal.stop();
    }
 

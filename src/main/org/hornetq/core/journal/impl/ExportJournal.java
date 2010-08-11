@@ -72,17 +72,31 @@ public class ExportJournal
                                     String journalSuffix,
                                     int minFiles,
                                     int fileSize,
-                                    String fileOutpu) throws Exception
+                                    String fileOutput) throws Exception
    {
-      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
-
-      JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
       
-      FileOutputStream fileOut = new FileOutputStream(new File(fileOutpu));
+      FileOutputStream fileOut = new FileOutputStream(new File(fileOutput));
 
       BufferedOutputStream buffOut = new BufferedOutputStream(fileOut);
 
       PrintStream out = new PrintStream(buffOut);
+      
+      exportJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, out);
+      
+      out.close();
+   }
+
+   
+   public static void exportJournal(String directory,
+                                    String journalPrefix,
+                                    String journalSuffix,
+                                    int minFiles,
+                                    int fileSize,
+                                    PrintStream out) throws Exception
+   {
+      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
+
+      JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
 
       List<JournalFile> files = journal.orderFiles();
 
@@ -92,8 +106,6 @@ public class ExportJournal
 
          exportJournalFile(out, nio, file);
       }
-
-      out.close();
    }
 
    /**
