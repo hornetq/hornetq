@@ -581,7 +581,6 @@ public class RandomReattachTest extends UnitTestCase
 
             if (count == numMessages)
             {
-               System.out.println("Latch released");
                latch.countDown();
             }
          }
