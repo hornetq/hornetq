@@ -165,7 +165,6 @@ public class FakePostOffice implements PostOffice
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
    {
       message.incrementRefCount();
-      message.incrementDurableRefCount();
       return new MessageReferenceImpl();
    }
 
