@@ -1465,7 +1465,7 @@ public class JournalImpl implements TestableJournal
             // HORNETQ-482 - Flush deletes only if memory is critical 
             if (recordsToDelete.size() > DELETE_FLUSH && (runtime.freeMemory() < (runtime.maxMemory() * 0.2)))
             {
-               log.info("Flushing deletes during loading, deleteCount = " + recordsToDelete.size());
+               log.debug("Flushing deletes during loading, deleteCount = " + recordsToDelete.size());
                // Clean up when the list is too large, or it won't be possible to load large sets of files
                // Done as part of JBMESSAGING-1678
                Iterator<RecordInfo> iter = records.iterator();
@@ -1481,7 +1481,7 @@ public class JournalImpl implements TestableJournal
 
                recordsToDelete.clear();
                
-               log.info("flush delete done");
+               log.debug("flush delete done");
             }
          }
 
