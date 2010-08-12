@@ -52,7 +52,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    {
       long deliveryTime = ref.getScheduledDeliveryTime();
 
-      if (deliveryTime > 0 && scheduledExecutor != null)
+      if (deliveryTime > System.currentTimeMillis() && scheduledExecutor != null)
       {
          if (ScheduledDeliveryHandlerImpl.trace)
          {

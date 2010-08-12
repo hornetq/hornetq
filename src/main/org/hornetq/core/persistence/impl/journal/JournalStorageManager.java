@@ -16,12 +16,11 @@ package org.hornetq.core.persistence.impl.journal;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
@@ -775,9 +774,6 @@ public class JournalStorageManager implements StorageManager
 
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
       
-      // used to identify messages that are not referenced
-      Set<Long> referencedMessages = new HashSet<Long>();
-
       JournalLoadInformation info = messageJournal.load(records,
                                                         preparedTransactions,
                                                         new LargeMessageTXFailureCallback(messages));
@@ -786,8 +782,19 @@ public class JournalStorageManager implements StorageManager
 
       Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
 
-      for (RecordInfo record : records)
+      final int totalSize = records.size();
+      
+      for (int reccount = 0 ; reccount < totalSize; reccount++)
       {
+         // It will show log.info only with large journals (more than 1 million records)
+         if (reccount> 0 && reccount % 1000000 == 0)
+         {
+            long percent = (long)((((double)reccount) / ((double)totalSize)) * 100f);
+            
+            log.info(percent + "% loaded");
+         }
+         
+         RecordInfo record = records.get(reccount);
          byte[] data = record.data;
 
          HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
@@ -839,8 +846,6 @@ public class JournalStorageManager implements StorageManager
                {
                   throw new IllegalStateException("Cannot find message " + record.id);
                }
-               
-               referencedMessages.add(messageID);
 
                queueMessages.put(messageID, new AddMessageRecord(message));
 
@@ -969,7 +974,16 @@ public class JournalStorageManager implements StorageManager
                throw new IllegalStateException("Invalid record type " + recordType);
             }
          }
+         
+         // This will free up memory sooner. The record is not needed any more
+         // and its byte array would consume memory during the load process even though it's not necessary any longer
+         // what would delay processing time during load
+         records.set(reccount, null);
       }
+      
+      // Release the memory as soon as not needed any longer
+      records.clear();
+      records = null;
 
       for (Map.Entry<Long, Map<Long, AddMessageRecord>> entry : queueMap.entrySet())
       {
@@ -978,8 +992,10 @@ public class JournalStorageManager implements StorageManager
          Map<Long, AddMessageRecord> queueRecords = entry.getValue();
 
          Queue queue = queues.get(queueID);
+         
+         Collection<AddMessageRecord> valueRecords = queueRecords.values();
 
-         for (AddMessageRecord record : queueRecords.values())
+         for (AddMessageRecord record : valueRecords)
          {
             long scheduledDeliveryTime = record.scheduledDeliveryTime;
 
@@ -1013,11 +1029,9 @@ public class JournalStorageManager implements StorageManager
       
       for (ServerMessage msg : messages.values())
       {
-         if (!referencedMessages.contains(msg.getMessageID()))
+         if (msg.getRefCount() == 0)
          {
             log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
-            // Something after routing could delete messages
-            // So we ignore eventual ignores
             try
             {
                deleteMessage(msg.getMessageID());
@@ -2128,6 +2142,8 @@ public class JournalStorageManager implements StorageManager
       long scheduledDeliveryTime;
 
       int deliveryCount;
+      
+      boolean referenced = false;
    }
 
    private class LargeMessageTXFailureCallback implements TransactionFailureCallback
