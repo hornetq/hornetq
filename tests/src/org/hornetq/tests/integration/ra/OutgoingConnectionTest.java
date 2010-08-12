@@ -76,6 +76,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          resourceAdapter.stop();
       }
+      super.tearDown();
    }
 
    public void testSimpleMessageSendAndReceive() throws Exception
