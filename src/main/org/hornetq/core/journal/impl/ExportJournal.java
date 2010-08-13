@@ -50,15 +50,15 @@ public class ExportJournal
 
    public static void main(String arg[])
    {
-      if (arg.length != 6)
+      if (arg.length != 5)
       {
-         System.err.println("Use: java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal <JournalDirectory> <JournalPrefix> <FileExtension> <MinFiles> <FileSize> <FileOutput>");
+         System.err.println("Use: java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal <JournalDirectory> <JournalPrefix> <FileExtension> <FileSize> <FileOutput>");
          return;
       }
 
       try
       {
-         exportJournal(arg[0], arg[1], arg[2], Integer.parseInt(arg[3]), Integer.parseInt(arg[4]), arg[5]);
+         exportJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), arg[4]);
       }
       catch (Exception e)
       {

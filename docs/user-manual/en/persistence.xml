@@ -67,14 +67,16 @@
             <para>The AIO journal is only available when running Linux kernel 2.6 or later and after
                 having installed libaio (if it's not already installed). For instructions on how to
                 install libaio please see <xref linkend="installing-aio"/>.</para>
-            <para>Also, please note that AIO will only work with the following file systems: ext2, ext3, ext4, jfs, xfs. With other file systems, 
-            e.g. NFS it may appear to work, but it will fall back to a slower sychronous behaviour. Don't put the journal on a NFS share!</para>
+            <para>Also, please note that AIO will only work with the following file systems: ext2,
+                ext3, ext4, jfs, xfs. With other file systems, e.g. NFS it may appear to work, but
+                it will fall back to a slower sychronous behaviour. Don't put the journal on a NFS
+                share!</para>
             <para>For more information on libaio please see <xref linkend="libaio"/>.</para>
             <para>libaio is part of the kernel project.</para>
         </listitem>
     </itemizedlist>
     <para>The standard HornetQ core server uses two instances of the journal:</para>
-    <itemizedlist>
+    <itemizedlist id="persistence.journallist">
         <listitem>
             <para>Bindings journal.</para>
             <para>This journal is used to store bindings related data. That includes the set of
@@ -82,13 +84,21 @@
                 such as id sequence counters. </para>
             <para>The bindings journal is always a NIO journal as it is typically low throughput
                 compared to the message journal.</para>
+            <para>The files on this journal are prefixed as <literal>hornetq-bindings</literal>.
+                Each file has a <literal>bindings</literal> extension. File size is <literal
+                    >1048576</literal>, and it is located at the bindings folder.</para>
         </listitem>
-       <listitem>
+        <listitem>
             <para>JMS journal.</para>
-            <para>This journal instance stores all JMS related data, This is basically any JMS Queues, Topics and Connection
-               Factories and any JNDI bindings for these resources.</para>
-            <para>Any JMS Resources created via the management API will be persisted to this journal. Any resources
-               configured via configuration files will not. The JMS Journal will only be created if JMS is being used.</para>
+            <para>This journal instance stores all JMS related data, This is basically any JMS
+                Queues, Topics and Connection Factories and any JNDI bindings for these
+                resources.</para>
+            <para>Any JMS Resources created via the management API will be persisted to this
+                journal. Any resources configured via configuration files will not. The JMS Journal
+                will only be created if JMS is being used.</para>
+            <para>The files on this journal are prefixed as <literal>hornetq-jms</literal>. Each
+                file has a <literal>jms</literal> extension. File size is <literal
+                >1048576</literal>, and it is located at the bindings folder.</para>
         </listitem>
         <listitem>
             <para>Message journal.</para>
@@ -98,6 +108,10 @@
                 the platform is not Linux with the correct kernel version or AIO has not been
                 installed then it will automatically fall back to using Java NIO which is available
                 on any Java platform.</para>
+            <para>The files on this journal are prefixed as <literal>hornetq-data</literal>. Each
+                file has a <literal>hq</literal> extension. File size is by the default <literal
+                    >10485760</literal> (configurable), and it is located at the journal
+                folder.</para>
         </listitem>
     </itemizedlist>
     <para>For large messages, HornetQ persists them outside the message journal. This is discussed
@@ -125,7 +139,7 @@
             </listitem>
         </itemizedlist>
     </section>
-   <section id="configuring.bindings.jms">
+    <section id="configuring.bindings.jms">
         <title>Configuring the jms journal</title>
         <para>The jms config shares its configuration with the bindings journal.</para>
     </section>
@@ -298,5 +312,41 @@
         <para>Please note that if you set this parameter to false, then <emphasis>zero</emphasis>
             persistence will occur. That means no bindings data, message data, large message data,
             duplicate id caches or paging data will be persisted.</para>
+    </section>
+    <section id="persistence.importexport">
+        <title>Import/Export the Journal Data</title>
+        <para>You may want to inspect the existent records on each one of the journals used by
+            HornetQ, and you can use the export/import tool for that purpose. The export/import are
+            classes located at the hornetq-core.jar, you can export the journal as a text file by
+            using this command:</para>
+        <para><literal>java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal
+                &lt;JournalDirectory> &lt;JournalPrefix> &lt;FileExtension> &lt;FileSize>
+                &lt;FileOutput></literal></para>
+        <para>To import the file as binary data on the journal (Notice you also require
+            netty.jar):</para>
+        <para><literal>java -cp hornetq-core.jar:netty.jar org.hornetq.core.journal.impl.ImportJournal
+                &lt;JournalDirectory> &lt;JournalPrefix> &lt;FileExtension> &lt;FileSize>
+                &lt;FileInput></literal></para>
+        <itemizedlist>
+            <listitem>
+                <para>JournalDirectory: Use the configured folder for your selected folder. Example:
+                    ./hornetq/data/journal</para>
+            </listitem>
+            <listitem>
+                <para>JournalPrefix: Use the prefix for your selected journal, as discussed
+                    <link linkend="persistence.journallist">here</link></para>
+            </listitem>
+            <listitem>
+                <para>FileExtension: Use the extension for your selected journal, as discussed
+                    <link linkend="persistence.journallist">here</link></para>
+            </listitem>
+            <listitem>
+                <para>FileSize: Use the size for your selected journal, as discussed <link
+                        linkend="persistence.journallist">here</link></para>
+            </listitem>
+            <listitem>
+                <para>FileOutput: text file that will contain the exported data</para>
+            </listitem>
+        </itemizedlist>
     </section>
 </chapter>
