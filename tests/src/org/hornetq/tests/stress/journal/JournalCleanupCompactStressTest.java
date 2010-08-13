@@ -25,8 +25,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
-
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -317,16 +315,26 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
                long txID = JournalCleanupCompactStressTest.idGen.generateID();
 
+               long rollbackTXID = JournalCleanupCompactStressTest.idGen.generateID();
+
                final long ids[] = new long[txSize];
+               
+               for (int i = 0; i < txSize; i++)
+               {
+                  ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
+               }
+
+               journal.appendAddRecordTransactional(rollbackTXID, ids[0], (byte)0, generateRecord());
+               journal.appendRollbackRecord(rollbackTXID, true);
 
                for (int i = 0; i < txSize; i++)
                {
-                  long id = JournalCleanupCompactStressTest.idGen.generateID();
-                  ids[i] = id;
+                  long id = ids[i];
                   journal.appendAddRecordTransactional(txID, id, (byte)0, generateRecord());
                   maxRecords.acquire();
                }
                journal.appendCommitRecord(txID, true, ctx);
+               
                ctx.executeOnCompletion(new IOAsyncTask()
                {
 
