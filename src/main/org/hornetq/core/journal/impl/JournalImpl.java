@@ -1660,6 +1660,11 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             // Replay pending commands (including updates, deletes and commits)
 
+            for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
+            {
+               newTransaction.replaceRecordProvider(this);
+            }
+            
             localCompactor.replayPendingCommands();
 
             // Merge transactions back after compacting
@@ -1668,8 +1673,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
             {
-               newTransaction.replaceRecordProvider(this);
-               
                if (JournalImpl.trace)
                {
                   JournalImpl.trace("Merging pending transaction " + newTransaction + " after compacting the journal");
