@@ -129,15 +129,15 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                {
                   try
                   {
-                     System.out.println("OnCompactSTart enter");
-                     for (int i = 0; i < 20; i++)
+                     System.out.println("OnCompactStart enter");
+                     if (running)
                      {
                         long id = idGen.generateID();
                         journal.appendAddRecord(id, (byte)0, new byte[] { 1, 2, 3 }, false);
                         journal.forceMoveNextFile();
                         journal.appendDeleteRecord(id, id == 20);
                      }
-                     System.out.println("OnCompactSTart leave");
+                     System.out.println("OnCompactStart leave");
                   }
                   catch (Exception e)
                   {
