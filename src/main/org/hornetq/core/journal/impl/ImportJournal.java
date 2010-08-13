@@ -25,7 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
+import org.hornetq.core.journal.impl.JournalRecord;
 import org.hornetq.utils.Base64;
 
 /**

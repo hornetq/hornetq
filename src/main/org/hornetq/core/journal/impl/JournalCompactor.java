@@ -27,13 +27,13 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -43,7 +43,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public class JournalCompactor extends AbstractJournalUpdateTask
+public class JournalCompactor extends AbstractJournalUpdateTask implements JournalRecordProvider
 {
 
    private static final Logger log = Logger.getLogger(JournalCompactor.class);
@@ -263,7 +263,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
    public void onReadAddRecordTX(final long transactionID, final RecordInfo info) throws Exception
    {
-      if (pendingTransactions.get(transactionID) != null)
+      if (pendingTransactions.get(transactionID) != null || lookupRecord(info.id))
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
@@ -279,11 +279,6 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
          writeEncoder(record);
       }
-      else
-      {
-         // Will try it as a regular record, the method addRecord will validate if this is a live record or not
-         onReadAddRecord(info);
-      }
    }
 
    public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
@@ -294,6 +289,20 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          // Sanity check, this should never happen
          throw new IllegalStateException("Inconsistency during compacting: CommitRecord ID = " + transactionID +
                                          " for an already committed transaction during compacting");
+      }
+      else
+      {
+         JournalTransaction newTransaction =  newTransactions.remove(transactionID);
+         if (newTransaction != null)
+         {
+            JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, transactionID, null);
+   
+            checkSize(commitRecord.getEncodeSize());
+   
+            writeEncoder(commitRecord, newTransaction.getCounter(currentFile));
+   
+            newTransaction.commit(currentFile);
+         }
       }
    }
 
@@ -359,6 +368,22 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          throw new IllegalStateException("Inconsistency during compacting: RollbackRecord ID = " + transactionID +
                                          " for an already rolled back transaction during compacting");
       }
+      else
+      {
+         JournalTransaction newTransaction = newTransactions.remove(transactionID);
+         if (newTransaction != null)
+         {
+            
+            JournalInternalRecord rollbackRecord = new JournalRollbackRecordTX(transactionID);
+            
+            checkSize(rollbackRecord.getEncodeSize());
+
+            writeEncoder(rollbackRecord);
+            
+            newTransaction.rollback(currentFile);
+         }
+         
+      }
    }
 
    public void onReadUpdateRecord(final RecordInfo info) throws Exception
@@ -390,7 +415,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
 
    public void onReadUpdateRecordTX(final long transactionID, final RecordInfo info) throws Exception
    {
-      if (pendingTransactions.get(transactionID) != null)
+      if (pendingTransactions.get(transactionID) != null || lookupRecord(info.id))
       {
          JournalTransaction newTransaction = getNewJournalTransaction(transactionID);
 
@@ -421,7 +446,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask
       JournalTransaction newTransaction = newTransactions.get(transactionID);
       if (newTransaction == null)
       {
-         newTransaction = new JournalTransaction(transactionID, journal);
+         newTransaction = new JournalTransaction(transactionID, this);
          newTransactions.put(transactionID, newTransaction);
       }
       return newTransaction;
@@ -536,6 +561,22 @@ public class JournalCompactor extends AbstractJournalUpdateTask
          }
          newTransactions.remove(liveTransaction.getId());
       }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.impl.JournalRecordsProvider#getCompactor()
+    */
+   public JournalCompactor getCompactor()
+   {
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.impl.JournalRecordsProvider#getRecords()
+    */
+   public Map<Long, JournalRecord> getRecords()
+   {
+      return newRecords;
    }
 
 }

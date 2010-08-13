@@ -185,56 +185,81 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    {
       internalCompactTest(false, false, true, true, false, false, false, false, false, false, true, true, true);
    }
-   
+
    public void testCompactFirstFileReclaimed() throws Exception
    {
 
       setup(2, 60 * 1024, false);
 
       final byte recordType = (byte)0;
-      
+
       journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO);
-      
+
       journal.start();
-      
+
       journal.loadInternalOnly();
-      
+
       journal.appendAddRecord(1, recordType, "test".getBytes(), true);
-      
+
       journal.forceMoveNextFile();
-      
-      
+
       journal.appendUpdateRecord(1, recordType, "update".getBytes(), true);
-      
+
       journal.appendDeleteRecord(1, true);
-      
+
       journal.appendAddRecord(2, recordType, "finalRecord".getBytes(), true);
 
-      
-      for (int i = 10 ; i < 100; i++)
+      for (int i = 10; i < 100; i++)
       {
          journal.appendAddRecord(i, recordType, ("tst" + i).getBytes(), true);
          journal.forceMoveNextFile();
          journal.appendUpdateRecord(i, recordType, ("uptst" + i).getBytes(), true);
          journal.appendDeleteRecord(i, true);
       }
-      
+
       journal.compact();
-      
+
       journal.stop();
-      
+
       List<RecordInfo> records = new ArrayList<RecordInfo>();
-      
+
       List<PreparedTransactionInfo> preparedRecords = new ArrayList<PreparedTransactionInfo>();
-      
+
       journal.start();
 
       journal.load(records, preparedRecords, null);
-      
-      assertEquals(1, records.size());
-         
 
-   
+      assertEquals(1, records.size());
+
+   }
+
+   public void testOnRollback() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      createJournal();
+      
+      startJournal();
+      
+      load();
+      
+      add(1);
+      
+      updateTx(2, 1);
+      
+      rollback(2);
+      
+      journal.compact();
+      
+      stopJournal();
+      
+      startJournal();
+      
+      loadAndCheck();
+      
+      stopJournal();
+
    }
 
    private void internalCompactTest(final boolean preXA, // prepare before compact
@@ -562,14 +587,13 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       loadAndCheck();
 
    }
-   
+
    public void testCompactAddAndUpdateFollowedByADelete() throws Exception
    {
 
       setup(2, 60 * 1024, false);
-      
-      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       final ReusableLatch reusableLatchDone = new ReusableLatch();
       reusableLatchDone.countUp();
@@ -602,15 +626,15 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       load();
 
       long consumerTX = idGen.generateID();
-      
+
       long firstID = idGen.generateID();
-      
+
       long appendTX = idGen.generateID();
-      
+
       long addedRecord = idGen.generateID();
-      
+
       addTx(consumerTX, firstID);
-      
+
       Thread tCompact = new Thread()
       {
          @Override
@@ -627,36 +651,34 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-
       tCompact.start();
-      
 
       reusableLatchDone.await();
-      
+
       addTx(appendTX, addedRecord);
 
       commit(appendTX);
 
       updateTx(consumerTX, addedRecord);
-      
+
       commit(consumerTX);
-      
+
       delete(addedRecord);
-      
+
       reusableLatchWait.countDown();
-      
+
       tCompact.join();
 
       journal.forceMoveNextFile();
-      
+
       long newRecord = idGen.generateID();
       add(newRecord);
       update(newRecord);
 
       journal.compact();
-      
+
       System.out.println("Debug after compact\n" + journal.debug());
-      
+
       stopJournal();
       createJournal();
       startJournal();
@@ -668,9 +690,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    {
 
       setup(2, 60 * 1024, false);
-      
-      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       final ReusableLatch reusableLatchDone = new ReusableLatch();
       reusableLatchDone.countUp();
@@ -701,18 +722,17 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       startJournal();
       load();
-      
+
       long firstID = idGen.generateID();
 
       long consumerTX = idGen.generateID();
-      
+
       long appendTX = idGen.generateID();
-      
+
       long addedRecord = idGen.generateID();
-      
+
       addTx(consumerTX, firstID);
 
-      
       Thread tCompact = new Thread()
       {
          @Override
@@ -729,30 +749,29 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-
       tCompact.start();
 
       reusableLatchDone.await();
-      
+
       addTx(appendTX, addedRecord);
       commit(appendTX);
       updateTx(consumerTX, addedRecord);
       commit(consumerTX);
-      
+
       long deleteTXID = idGen.generateID();
-      
+
       deleteTx(deleteTXID, addedRecord);
 
       commit(deleteTXID);
-    
+
       reusableLatchWait.countDown();
-      
+
       tCompact.join();
 
       journal.forceMoveNextFile();
-      
+
       journal.compact();
-      
+
       stopJournal();
       createJournal();
       startJournal();
@@ -764,9 +783,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    {
 
       setup(2, 60 * 1024, false);
-      
-      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       final ReusableLatch reusableLatchDone = new ReusableLatch();
       reusableLatchDone.countUp();
@@ -797,18 +815,17 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       startJournal();
       load();
-      
+
       long firstID = idGen.generateID();
 
       long consumerTX = idGen.generateID();
-      
+
       long addedRecord = idGen.generateID();
-      
+
       add(firstID);
 
       updateTx(consumerTX, firstID);
 
-      
       Thread tCompact = new Thread()
       {
          @Override
@@ -825,37 +842,33 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-
       tCompact.start();
-      
 
       reusableLatchDone.await();
-      
+
       addTx(consumerTX, addedRecord);
       commit(consumerTX);
       delete(addedRecord);
-      
+
       reusableLatchWait.countDown();
-      
+
       tCompact.join();
 
       journal.compact();
-      
+
       stopJournal();
       createJournal();
       startJournal();
       loadAndCheck();
 
    }
-
 
    public void testCompactAddAndUpdateFollowedByADelete4() throws Exception
    {
 
       setup(2, 60 * 1024, false);
-      
-      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       final ReusableLatch reusableLatchDone = new ReusableLatch();
       reusableLatchDone.countUp();
@@ -888,13 +901,13 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       load();
 
       long consumerTX = idGen.generateID();
-      
+
       long firstID = idGen.generateID();
-      
+
       long appendTX = idGen.generateID();
-      
+
       long addedRecord = idGen.generateID();
-      
+
       Thread tCompact = new Thread()
       {
          @Override
@@ -911,53 +924,48 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-
       tCompact.start();
-      
 
       reusableLatchDone.await();
-      
+
       addTx(consumerTX, firstID);
-      
+
       addTx(appendTX, addedRecord);
 
       commit(appendTX);
 
       updateTx(consumerTX, addedRecord);
-      
+
       commit(consumerTX);
-      
+
       delete(addedRecord);
-      
+
       reusableLatchWait.countDown();
-      
+
       tCompact.join();
 
       journal.forceMoveNextFile();
-      
+
       long newRecord = idGen.generateID();
       add(newRecord);
       update(newRecord);
 
       journal.compact();
-      
+
       System.out.println("Debug after compact\n" + journal.debug());
-      
+
       stopJournal();
       createJournal();
       startJournal();
       loadAndCheck();
 
    }
-
-   
 
    public void testDeleteWhileCleanup() throws Exception
    {
 
       setup(2, 60 * 1024, false);
 
-
       final ReusableLatch reusableLatchDone = new ReusableLatch();
       reusableLatchDone.countUp();
       final ReusableLatch reusableLatchWait = new ReusableLatch();
@@ -988,7 +996,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       startJournal();
       load();
 
-      
       Thread tCompact = new Thread()
       {
          @Override
@@ -1005,14 +1012,13 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-      for (int i = 0 ; i < 100; i++)
+      for (int i = 0; i < 100; i++)
       {
          add(i);
       }
-      
+
       journal.forceMoveNextFile();
-      
-      
+
       for (int i = 10; i < 90; i++)
       {
          delete(i);
@@ -1027,9 +1033,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
          delete(i);
       }
-      
+
       reusableLatchWait.countDown();
-      
+
       tCompact.join();
 
       // Delete part of the live records after cleanup is done
@@ -1037,11 +1043,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
          delete(i);
       }
-      
+
       assertEquals(9, journal.getCurrentFile().getNegCount(journal.getDataFiles()[0]));
 
       journal.forceMoveNextFile();
-      
+
       stopJournal();
       createJournal();
       startJournal();
@@ -1049,15 +1055,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
-
-
-
    public void testCompactAddAndUpdateFollowedByADelete5() throws Exception
    {
 
       setup(2, 60 * 1024, false);
 
-      
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       final ReusableLatch reusableLatchDone = new ReusableLatch();
@@ -1106,41 +1108,38 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          }
       };
 
-      
       long appendTX = idGen.generateID();
       long appendOne = idGen.generateID();
       long appendTwo = idGen.generateID();
-      
+
       long updateTX = idGen.generateID();
-      
+
       addTx(appendTX, appendOne);
 
-      
       tCompact.start();
       reusableLatchDone.await();
-      
+
       addTx(appendTX, appendTwo);
 
       commit(appendTX);
-      
+
       updateTx(updateTX, appendOne);
       updateTx(updateTX, appendTwo);
-      
+
       commit(updateTX);
-      //delete(appendTwo);
-      
+      // delete(appendTwo);
+
       reusableLatchWait.countDown();
       tCompact.join();
 
       journal.compact();
-      
+
       stopJournal();
       createJournal();
       startJournal();
       loadAndCheck();
 
    }
-
 
    public void testSimpleCompacting() throws Exception
    {

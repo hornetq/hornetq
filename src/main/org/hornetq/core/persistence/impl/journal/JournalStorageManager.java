@@ -1042,7 +1042,7 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
-
+      
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);

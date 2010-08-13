@@ -34,7 +34,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 public class JournalTransaction
 {
 
-   private final JournalImpl journal;
+   private JournalRecordProvider journal;
 
    private List<JournalUpdate> pos;
 
@@ -56,10 +56,15 @@ public class JournalTransaction
 
    private final AtomicInteger counter = new AtomicInteger();
 
-   public JournalTransaction(final long id, final JournalImpl journal)
+   public JournalTransaction(final long id, final JournalRecordProvider journal)
    {
       this.id = id;
       this.journal = journal;
+   }
+   
+   public void replaceRecordProvider(JournalRecordProvider provider)
+   {
+      this.journal = provider;
    }
 
    /**
@@ -291,7 +296,7 @@ public class JournalTransaction
          {
             for (JournalUpdate trUpdate : pos)
             {
-               JournalImpl.JournalRecord posFiles = journal.getRecords().get(trUpdate.id);
+               JournalRecord posFiles = journal.getRecords().get(trUpdate.id);
 
                if (compactor != null && compactor.lookupRecord(trUpdate.id))
                {
@@ -302,7 +307,7 @@ public class JournalTransaction
                }
                else if (posFiles == null)
                {
-                  posFiles = new JournalImpl.JournalRecord(trUpdate.file, trUpdate.size);
+                  posFiles = new JournalRecord(trUpdate.file, trUpdate.size);
 
                   journal.getRecords().put(trUpdate.id, posFiles);
                }
@@ -323,7 +328,7 @@ public class JournalTransaction
                }
                else
                {
-                  JournalImpl.JournalRecord posFiles = journal.getRecords().remove(trDelete.id);
+                  JournalRecord posFiles = journal.getRecords().remove(trDelete.id);
    
                   if (posFiles != null)
                   {
