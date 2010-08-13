@@ -454,7 +454,7 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = sessions.get(connection.getID());
       if (stompSession == null)
       {
-         stompSession = new StompSession(connection, this, server.getStorageManager().newContext(executor));
+         stompSession = new StompSession(connection, this, server.getStorageManager().newContext(server.getExecutorFactory().getExecutor()));
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
