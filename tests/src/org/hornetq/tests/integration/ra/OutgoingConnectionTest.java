@@ -22,10 +22,12 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
+import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.XAQueueConnection;
 import javax.jms.XASession;
+import javax.resource.spi.ManagedConnection;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -37,6 +39,7 @@ import org.hornetq.ra.HornetQRAConnectionFactory;
 import org.hornetq.ra.HornetQRAConnectionFactoryImpl;
 import org.hornetq.ra.HornetQRAConnectionManager;
 import org.hornetq.ra.HornetQRAManagedConnectionFactory;
+import org.hornetq.ra.HornetQRASession;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -100,7 +103,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       TextMessage textMessage = (TextMessage) consumer.receive(1000);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
+      
+      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
+      mc.destroy();
    }
 
    public void testSimpleMessageSendAndReceiveXA() throws Exception
@@ -135,9 +141,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       resource.commit(xid, true);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
+
+      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
-      
-      resourceAdapter.stop();
+      mc.destroy();
    }
 
    public void testSimpleMessageSendAndReceiveTransacted() throws Exception
@@ -168,7 +175,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
       s.commit();
+      
+      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
+      mc.destroy();
    }
 
    public void testMultipleSessionsThrowsException() throws Exception
@@ -192,7 +202,10 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       {
          assertTrue(e.getLinkedException() instanceof IllegalStateException);
       }
+      
+      ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
+      mc.destroy();
    }
 
    public void testConnectionCredentials() throws Exception
@@ -206,10 +219,19 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
-      queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
+      QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
       queueConnection.close();
+      mc.destroy();
+
       queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testpassword");
-      queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
+      session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      mc = ((HornetQRASession)session).getManagedConnection();
+      queueConnection.close();
+      mc.destroy();
+
    }
 
    public void testConnectionCredentialsFail() throws Exception
@@ -223,8 +245,12 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       mcf.setResourceAdapter(resourceAdapter);
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
-      queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE).close();
+      QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+      
+      ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
       queueConnection.close();
+      mc.destroy();
+
       queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testwrongpassword");
       try
       {

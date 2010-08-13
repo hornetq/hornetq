@@ -49,6 +49,7 @@ import javax.jms.XASession;
 import javax.jms.XATopicSession;
 import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionEvent;
+import javax.resource.spi.ManagedConnection;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.logging.Logger;
@@ -1333,6 +1334,12 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
       mc = managedConnection;
    }
 
+   /** for tests only */
+   public ManagedConnection getManagedConnection()
+   {
+      return mc;
+   }
+   
    /**
     * Destroy
     */
