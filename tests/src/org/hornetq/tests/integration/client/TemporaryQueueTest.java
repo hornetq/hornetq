@@ -180,6 +180,95 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
+
+   public void _testQueueWithWildcard() throws Exception
+   {
+      session.createQueue("a.b", "queue1");
+      session.createTemporaryQueue("a.#", "queue2");
+      session.createTemporaryQueue("a.#", "queue3");
+      
+      ClientProducer producer = session.createProducer("a.b");
+      producer.send(session.createMessage(false));
+      
+      ClientConsumer cons = session.createConsumer("queue2");
+
+      session.start();
+      
+      ClientMessage msg = cons.receive(5000);
+      
+      assertNotNull(msg);
+      
+      msg.acknowledge();
+      
+      cons.close();
+
+      cons = session.createConsumer("queue3");
+
+      session.start();
+      
+      msg = cons.receive(5000);
+      
+      assertNotNull(msg);
+      
+      msg.acknowledge();
+      
+      cons.close();
+
+      session.deleteQueue("queue2");
+      session.deleteQueue("queue3");
+      
+      session.close();
+   }
+
+
+   public void _testQueueWithWildcard2() throws Exception
+   {
+      session.createQueue("a.b", "queue1");
+      session.createTemporaryQueue("a.#", "queue2");
+      session.createTemporaryQueue("a.#", "queue3");
+      
+      ClientProducer producer = session.createProducer("a.b");
+      producer.send(session.createMessage(false));
+      
+      ClientConsumer cons = session.createConsumer("queue2");
+
+      session.start();
+      
+      ClientMessage msg = cons.receive(5000);
+      
+      assertNotNull(msg);
+      
+      msg.acknowledge();
+      
+      cons.close();
+
+      cons = session.createConsumer("queue3");
+
+      session.start();
+      
+      msg = cons.receive(5000);
+      
+      assertNotNull(msg);
+      
+      msg.acknowledge();
+      
+      cons.close();
+
+      session.deleteQueue("queue2");
+      session.deleteQueue("queue3");
+      
+      session.close();
+   }
+
+   public void _testQueueWithWildcard3() throws Exception
+   {
+      session.createQueue("a.b", "queue1");
+      session.createTemporaryQueue("a.#", "queue2");
+      session.createTemporaryQueue("a.#", "queue2.1");
+
+      session.deleteQueue("queue2");
+   }
+
    /**
     * @see org.hornetq.core.server.impl.ServerSessionImpl#doHandleCreateQueue(org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage) 
     */
