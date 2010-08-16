@@ -62,7 +62,10 @@ public class AddressImpl implements Address
 
    public void addLinkedAddress(final Address address)
    {
-      linkedAddresses.add(address);
+      if(!linkedAddresses.contains(address))
+      {
+         linkedAddresses.add(address);
+      }
    }
 
    public void removeLinkedAddress(final Address actualAddress)

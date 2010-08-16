@@ -181,7 +181,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
 
-   public void _testQueueWithWildcard() throws Exception
+   public void testQueueWithWildcard() throws Exception
    {
       session.createQueue("a.b", "queue1");
       session.createTemporaryQueue("a.#", "queue2");
@@ -221,7 +221,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
 
-   public void _testQueueWithWildcard2() throws Exception
+   public void testQueueWithWildcard2() throws Exception
    {
       session.createQueue("a.b", "queue1");
       session.createTemporaryQueue("a.#", "queue2");
