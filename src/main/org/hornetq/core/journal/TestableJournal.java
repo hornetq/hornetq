@@ -49,6 +49,8 @@ public interface TestableJournal extends Journal
 
    void forceMoveNextFile() throws Exception;
 
+   void forceMoveNextFile(boolean synchronous) throws Exception;
+
    void setAutoReclaim(boolean autoReclaim);
 
    boolean isAutoReclaim();

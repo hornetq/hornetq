@@ -121,6 +121,13 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                                 "hq",
                                 maxAIO)
       {
+         protected void onCompactLock() throws Exception
+         {
+            System.out.println("OnCompactLock");
+            journal.forceMoveNextFile(false);
+            System.out.println("OnCompactLock done");
+         }
+      
          protected void onCompactStart() throws Exception
          {
             testExecutor.execute(new Runnable()
@@ -134,7 +141,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      {
                         long id = idGen.generateID();
                         journal.appendAddRecord(id, (byte)0, new byte[] { 1, 2, 3 }, false);
-                        journal.forceMoveNextFile();
+                        journal.forceMoveNextFile(false);
                         journal.appendDeleteRecord(id, id == 20);
                      }
                      System.out.println("OnCompactStart leave");
@@ -176,7 +183,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    protected long getTotalTimeMilliseconds()
    {
-      return TimeUnit.MINUTES.toMillis(10);
+      return TimeUnit.MINUTES.toMillis(1);
    }
 
    public void testAppend() throws Exception
