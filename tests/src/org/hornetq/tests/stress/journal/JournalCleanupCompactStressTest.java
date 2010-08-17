@@ -183,7 +183,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
    protected long getTotalTimeMilliseconds()
    {
-      return TimeUnit.MINUTES.toMillis(1);
+      return TimeUnit.MINUTES.toMillis(10);
    }
 
    public void testAppend() throws Exception
