@@ -2467,17 +2467,9 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       {
          // Send something to the closingExecutor, just to make sure we went
          // until its end
-         final CountDownLatch latch = new CountDownLatch(2);
+         final CountDownLatch latch = new CountDownLatch(1);
 
          filesExecutor.execute(new Runnable()
-         {
-            public void run()
-            {
-               latch.countDown();
-            }
-         });
-         
-         compactorExecutor.execute(new Runnable()
          {
             public void run()
             {
