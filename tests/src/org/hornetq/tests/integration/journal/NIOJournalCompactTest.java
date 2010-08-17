@@ -262,6 +262,36 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+
+   public void testIncompleteTXDuringcompact() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+      
+      createJournal();
+      
+      startJournal();
+      
+      load();
+      
+      add(1);
+      
+      updateTx(2, 1);
+      
+      journal.compact();
+      
+      commit(2);
+      
+      stopJournal();
+      
+      startJournal();
+      
+      loadAndCheck();
+      
+      stopJournal();
+
+   }
+
    private void internalCompactTest(final boolean preXA, // prepare before compact
                                     final boolean postXA, // prepare after compact
                                     final boolean regularAdd,

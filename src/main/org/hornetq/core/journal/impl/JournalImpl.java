@@ -96,15 +96,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    private static final boolean trace = log.isTraceEnabled();
 
-   /** This is to be set to true at DEBUG & development only */
-   private static final boolean LOAD_TRACE = false;
-
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
    // Journal
    private static final void trace(final String message)
    {
-      log.info(message);
+      log.trace(message);
    }
 
    // The sizes of primitive types
@@ -827,15 +824,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       try
       {
-         if (JournalImpl.LOAD_TRACE)
-         {
-            JournalImpl.trace("appendAddRecord id = " + id +
-                              ", recordType = " +
-                              recordType +
-                              " compacting = " +
-                              (compactor != null));
-         }
-
          JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
          if (callback != null)
@@ -893,10 +881,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                                   final boolean sync,
                                   final IOCompletion callback) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendUpdateRecord id = " + id + ", recordType = " + recordType);
-      }
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -964,10 +948,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion callback) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendDeleteRecord id = " + id);
-      }
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1051,17 +1031,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       try
       {
-         if (JournalImpl.LOAD_TRACE)
-         {
-            JournalImpl.trace("appendAddRecordTransactional txID " + txID +
-                              ", id = " +
-                              id +
-                              ", recordType = " +
-                              recordType +
-                              ", compacting " +
-                              (this.compactor != null));
-         }
-
          JournalInternalRecord addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
@@ -1106,17 +1075,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       try
       {
-         if (JournalImpl.LOAD_TRACE)
-         {
-            JournalImpl.trace("appendUpdateRecordTransactional txID " + txID +
-                              ", id = " +
-                              id +
-                              ", recordType = " +
-                              recordType +
-                              ", compacting = " +
-                              (compactor != null));
-         }
-
          JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
 
          JournalTransaction tx = getTransactionInfo(txID);
@@ -1146,11 +1104,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
-      if (JournalImpl.LOAD_TRACE)
-      {
-         JournalImpl.trace("appendDeleteRecordTransactional txID " + txID + ", id = " + id);
-      }
-
       if (state != JournalImpl.STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1246,11 +1199,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       try
       {
 
-         if (JournalImpl.LOAD_TRACE)
-         {
-            JournalImpl.trace("appendPrepareRecord txID " + txID + ", compacting = " + (compactor != null));
-         }
-
          JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
 
          if (callback != null)
@@ -1319,11 +1267,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       try
       {
-         if (JournalImpl.LOAD_TRACE)
-         {
-            JournalImpl.trace("appendCommitRecord txID " + txID + ", compacting = " + (compactor != null));
-         }
-
          if (tx == null)
          {
             throw new IllegalStateException("Cannot find tx with id " + txID);
@@ -1697,12 +1640,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                   JournalImpl.trace("Merging pending transaction " + newTransaction + " after compacting the journal");
                }
                JournalTransaction liveTransaction = transactions.get(newTransaction.getId());
-               if (liveTransaction == null)
-               {
-                  JournalImpl.log.warn("Inconsistency: Can't merge transaction " + newTransaction.getId() +
-                                       " back into JournalTransactions");
-               }
-               else
+               if (liveTransaction != null)
                {
                   liveTransaction.merge(newTransaction);
                }
@@ -1828,11 +1766,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadAddRecord(final RecordInfo info) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("AddRecord: " + info);
-               }
-
                checkID(info.id);
 
                hasData.set(true);
@@ -1844,11 +1777,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadUpdateRecord(final RecordInfo info) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("UpdateRecord: " + info);
-               }
-
                checkID(info.id);
 
                hasData.set(true);
@@ -1869,10 +1797,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadDeleteRecord(final long recordID) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("DeleteRecord: " + recordID);
-               }
                hasData.set(true);
 
                loadManager.deleteRecord(recordID);
@@ -1892,13 +1816,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadAddRecordTX(final long transactionID, final RecordInfo info) throws Exception
             {
-
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace((info.isUpdate ? "updateRecordTX: " : "addRecordTX: ") + info +
-                                    ", txid = " +
-                                    transactionID);
-               }
 
                checkID(info.id);
 
@@ -1929,11 +1846,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadDeleteRecordTX(final long transactionID, final RecordInfo info) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("DeleteRecordTX: " + transactionID + " info = " + info);
-               }
-
                hasData.set(true);
 
                TransactionHolder tx = loadTransactions.get(transactionID);
@@ -1962,11 +1874,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("prepareRecordTX: txid = " + transactionID);
-               }
-
                hasData.set(true);
 
                TransactionHolder tx = loadTransactions.get(transactionID);
@@ -2008,11 +1915,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("commitRecord: txid = " + transactionID);
-               }
-
                TransactionHolder tx = loadTransactions.remove(transactionID);
 
                // The commit could be alone on its own journal-file and the
@@ -2069,11 +1971,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadRollbackRecord(final long transactionID) throws Exception
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("rollbackRecord: txid = " + transactionID);
-               }
-
                TransactionHolder tx = loadTransactions.remove(transactionID);
 
                // The rollback could be alone on its own journal-file and the
@@ -2099,11 +1996,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void markAsDataFile(final JournalFile file)
             {
-               if (JournalImpl.trace && JournalImpl.LOAD_TRACE)
-               {
-                  JournalImpl.trace("Marking " + file + " as data file");
-               }
-
                hasData.set(true);
             }
 
@@ -2575,9 +2467,17 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       {
          // Send something to the closingExecutor, just to make sure we went
          // until its end
-         final CountDownLatch latch = new CountDownLatch(1);
+         final CountDownLatch latch = new CountDownLatch(2);
 
          filesExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         compactorExecutor.execute(new Runnable()
          {
             public void run()
             {
@@ -2661,7 +2561,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          try
          {
             moveNextFile(synchronous);
-            if (autoReclaim && !synchronous)
+            if (autoReclaim && synchronous)
             {
                checkReclaimStatus();
             }
@@ -2707,7 +2607,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
       });
 
-      compactorExecutor = Executors.newCachedThreadPool(new ThreadFactory()
+      compactorExecutor = Executors.newSingleThreadExecutor(new ThreadFactory()
       {
 
          public Thread newThread(Runnable r)
