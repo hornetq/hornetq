@@ -1,0 +1,1304 @@
+#This file is used to remove twitter support from HornetQ
+#As EAP doesn't have twitter4j.jar certified for the build
+Index: src/main/org/hornetq/integration/twitter/TwitterConstants.java
+===================================================================
+--- src/main/org/hornetq/integration/twitter/TwitterConstants.java	(revision 9563)
++++ src/main/org/hornetq/integration/twitter/TwitterConstants.java	(working copy)
+@@ -1,81 +0,0 @@
+-/*
+- * Copyright 2010 Red Hat, Inc.
+- * Red Hat licenses this file to you under the Apache License, version
+- * 2.0 (the "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *    http://www.apache.org/licenses/LICENSE-2.0
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- * implied.  See the License for the specific language governing
+- * permissions and limitations under the License.
+- */
+-
+-package org.hornetq.integration.twitter;
+-
+-import java.util.HashSet;
+-import java.util.Set;
+-
+-/**
+- * A TwitterConstants
+- *
+- * @author <a href="tm.igarashi@gmail.com">Tomohisa Igarashi</a>
+- */
+-public class TwitterConstants
+-{
+-   public static final String KEY_ID = "id";
+-   public static final String KEY_SOURCE = "source";
+-   public static final String KEY_CREATED_AT = "createdAt";
+-   public static final String KEY_IS_TRUNCATED = "isTruncated";
+-   public static final String KEY_IN_REPLY_TO_STATUS_ID = "inReplyToStatusId";
+-   public static final String KEY_IN_REPLY_TO_USER_ID = "inReplyToUserId";
+-   public static final String KEY_IN_REPLY_TO_SCREEN_NAME = "inReplyToScreenName";
+-   public static final String KEY_IS_FAVORITED = "isFavorited";
+-   public static final String KEY_IS_RETWEET = "isRetweet";
+-   public static final String KEY_CONTRIBUTORS = "contributors";
+-   public static final String KEY_GEO_LOCATION_LATITUDE = "geoLocation.latitude";
+-   public static final String KEY_GEO_LOCATION_LONGITUDE = "geoLocation.longitude";
+-   public static final String KEY_PLACE_ID = "place.id";
+-   public static final String KEY_DISPLAY_COODINATES = "displayCoodinates";
+-   
+-   public static final int DEFAULT_POLLING_INTERVAL_SECS = 10;
+-   public static final int DEFAULT_PAGE_SIZE = 100;
+-   public static final int FIRST_ATTEMPT_PAGE_SIZE = 1;
+-   public static final int START_SINCE_ID = 1;
+-   public static final int INITIAL_MESSAGE_BUFFER_SIZE = 50;
+-
+-   public static final Set<String> ALLOWABLE_INCOMING_CONNECTOR_KEYS;
+-   public static final Set<String> REQUIRED_INCOMING_CONNECTOR_KEYS;
+-
+-   public static final Set<String> ALLOWABLE_OUTGOING_CONNECTOR_KEYS;
+-   public static final Set<String> REQUIRED_OUTGOING_CONNECTOR_KEYS;
+-
+-   public static final String USER_NAME =  "username";
+-   public static final String PASSWORD = "password";
+-   public static final String QUEUE_NAME =  "queue";
+-   public static final String INCOMING_INTERVAL = "interval";
+-
+-   static
+-   {
+-      ALLOWABLE_INCOMING_CONNECTOR_KEYS = new HashSet<String>();
+-      ALLOWABLE_INCOMING_CONNECTOR_KEYS.add(USER_NAME);
+-      ALLOWABLE_INCOMING_CONNECTOR_KEYS.add(PASSWORD);
+-      ALLOWABLE_INCOMING_CONNECTOR_KEYS.add(QUEUE_NAME);
+-      ALLOWABLE_INCOMING_CONNECTOR_KEYS.add(INCOMING_INTERVAL);
+-
+-      REQUIRED_INCOMING_CONNECTOR_KEYS = new HashSet<String>();
+-      REQUIRED_INCOMING_CONNECTOR_KEYS.add(USER_NAME);
+-      REQUIRED_INCOMING_CONNECTOR_KEYS.add(PASSWORD);
+-      REQUIRED_INCOMING_CONNECTOR_KEYS.add(QUEUE_NAME);
+-
+-      ALLOWABLE_OUTGOING_CONNECTOR_KEYS = new HashSet<String>();
+-      ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(USER_NAME);
+-      ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(PASSWORD);
+-      ALLOWABLE_OUTGOING_CONNECTOR_KEYS.add(QUEUE_NAME);
+-
+-      REQUIRED_OUTGOING_CONNECTOR_KEYS = new HashSet<String>();
+-      REQUIRED_OUTGOING_CONNECTOR_KEYS.add(USER_NAME);
+-      REQUIRED_OUTGOING_CONNECTOR_KEYS.add(PASSWORD);
+-      REQUIRED_OUTGOING_CONNECTOR_KEYS.add(QUEUE_NAME);
+-   }
+-}
+Index: src/main/org/hornetq/integration/twitter/impl/OutgoingTweetsHandler.java
+===================================================================
+--- src/main/org/hornetq/integration/twitter/impl/OutgoingTweetsHandler.java	(revision 9563)
++++ src/main/org/hornetq/integration/twitter/impl/OutgoingTweetsHandler.java	(working copy)
+@@ -1,202 +0,0 @@
+-/*
+- * Copyright 2009 Red Hat, Inc.
+- *  Red Hat licenses this file to you under the Apache License, version
+- *  2.0 (the "License"); you may not use this file except in compliance
+- *  with the License.  You may obtain a copy of the License at
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- *  implied.  See the License for the specific language governing
+- *  permissions and limitations under the License.
+- */
+-package org.hornetq.integration.twitter.impl;
+-
+-import org.hornetq.api.core.SimpleString;
+-import org.hornetq.core.filter.Filter;
+-import org.hornetq.core.logging.Logger;
+-import org.hornetq.core.postoffice.Binding;
+-import org.hornetq.core.postoffice.PostOffice;
+-import org.hornetq.core.server.*;
+-import org.hornetq.integration.twitter.TwitterConstants;
+-import org.hornetq.utils.ConfigurationHelper;
+-import twitter4j.*;
+-
+-import java.util.Map;
+-
+-/**
+- * OutgoingTweetsHandler consumes from configured HornetQ address
+- * and forwards to the twitter.
+- */
+-public class OutgoingTweetsHandler implements Consumer, ConnectorService
+-{
+-   private static final Logger log = Logger.getLogger(OutgoingTweetsHandler.class);
+-
+-   private final String connectorName;
+-
+-   private final String userName;
+-
+-   private final String password;
+-
+-   private final String queueName;
+-
+-   private final PostOffice postOffice;
+-
+-   private Twitter twitter = null;
+-
+-   private Queue queue = null;
+-
+-   private Filter filter = null;
+-
+-   private boolean isStarted = false;
+-
+-   public OutgoingTweetsHandler(final String connectorName, 
+-                                final Map<String, Object> configuration,
+-                                final PostOffice postOffice)
+-   {
+-      this.connectorName = connectorName;
+-      this.userName = ConfigurationHelper.getStringProperty(TwitterConstants.USER_NAME, null, configuration);
+-      this.password = ConfigurationHelper.getStringProperty(TwitterConstants.PASSWORD, null, configuration);
+-      this.queueName = ConfigurationHelper.getStringProperty(TwitterConstants.QUEUE_NAME, null, configuration);
+-      this.postOffice = postOffice;
+-   }
+-
+-   /**
+-    * TODO streaming API support
+-    * TODO rate limit support
+-    */
+-   public synchronized void start() throws Exception
+-   {
+-      if(this.isStarted)
+-      {
+-         return;
+-      }
+-
+-      if(this.connectorName == null || this.connectorName.trim().equals(""))
+-      {
+-         throw new Exception("invalid connector name: " + this.connectorName);
+-      }
+-
+-      if(this.queueName == null || this.queueName.trim().equals(""))
+-      {
+-         throw new Exception("invalid queue name: " + queueName);
+-      }
+-
+-      SimpleString name = new SimpleString(this.queueName);
+-      Binding b = this.postOffice.getBinding(name);
+-      if(b == null)
+-      {
+-         throw new Exception(connectorName + ": queue " + queueName + " not found");
+-      }
+-      this.queue = (Queue)b.getBindable();
+-
+-      TwitterFactory tf = new TwitterFactory();
+-      this.twitter = tf.getInstance(userName, password);
+-      this.twitter.verifyCredentials();
+-      // TODO make filter-string configurable
+-      // this.filter = FilterImpl.createFilter(filterString);
+-      this.filter = null;
+-
+-      this.queue.addConsumer(this);
+-
+-      this.queue.deliverAsync();
+-      this.isStarted = true;
+-      log.debug(connectorName + ": started");
+-   }
+-
+-   public boolean isStarted()
+-   {
+-      return isStarted;  //To change body of implemented methods use File | Settings | File Templates.
+-   }
+-
+-   public synchronized void stop() throws Exception
+-   {
+-      if(!this.isStarted)
+-      {
+-         return;
+-      }
+-
+-      log.debug(connectorName + ": receive shutdown request");
+-
+-      this.queue.removeConsumer(this);
+-
+-      this.isStarted = false;
+-      log.debug(connectorName + ": shutdown");
+-   }
+-
+-   public String getName()
+-   {
+-      return connectorName;
+-   }
+-   
+-   public Filter getFilter()
+-   {
+-      return filter;
+-   }
+-
+-   public HandleStatus handle(final MessageReference ref) throws Exception
+-   {
+-      if (filter != null && !filter.match(ref.getMessage()))
+-      {
+-         return HandleStatus.NO_MATCH;
+-      }
+-
+-      synchronized (this)
+-      {
+-         ref.handled();
+-
+-         ServerMessage message = ref.getMessage();
+-
+-         StatusUpdate status = new StatusUpdate(message.getBodyBuffer().readString());
+-
+-         // set optional property
+-
+-         if(message.containsProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID))
+-         {
+-            status.setInReplyToStatusId(message.getLongProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID));
+-         }
+-
+-         if(message.containsProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE))
+-         {
+-            double geolat = message.getDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE);
+-            double geolong = message.getDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LONGITUDE);
+-            status.setLocation(new GeoLocation(geolat, geolong));
+-         }
+-
+-         if(message.containsProperty(TwitterConstants.KEY_PLACE_ID))
+-         {
+-            status.setPlaceId(message.getStringProperty(TwitterConstants.KEY_PLACE_ID));
+-         }
+-
+-         if(message.containsProperty(TwitterConstants.KEY_DISPLAY_COODINATES))
+-         {
+-            status.setDisplayCoordinates(message.getBooleanProperty(TwitterConstants.KEY_DISPLAY_COODINATES));
+-         }
+-
+-         // send to Twitter
+-         try
+-         {
+-            this.twitter.updateStatus(status);
+-         }
+-         catch (TwitterException e)
+-         {
+-            if(e.getStatusCode() == 403 )
+-            {
+-               // duplicated message
+-               log.warn(connectorName + ": HTTP status code = 403: Ignore duplicated message");
+-               queue.acknowledge(ref);
+-
+-               return HandleStatus.HANDLED;
+-            }
+-            else
+-            {
+-               throw e;
+-            }
+-         }
+-
+-         queue.acknowledge(ref);
+-         log.debug(connectorName + ": forwarded to twitter: " + message.getMessageID());
+-         return HandleStatus.HANDLED;
+-      }
+-   }
+-}
+Index: src/main/org/hornetq/integration/twitter/impl/IncomingTweetsHandler.java
+===================================================================
+--- src/main/org/hornetq/integration/twitter/impl/IncomingTweetsHandler.java	(revision 9563)
++++ src/main/org/hornetq/integration/twitter/impl/IncomingTweetsHandler.java	(working copy)
+@@ -1,213 +0,0 @@
+-/*
+- * Copyright 2009 Red Hat, Inc.
+- *  Red Hat licenses this file to you under the Apache License, version
+- *  2.0 (the "License"); you may not use this file except in compliance
+- *  with the License.  You may obtain a copy of the License at
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- *  implied.  See the License for the specific language governing
+- *  permissions and limitations under the License.
+- */
+-package org.hornetq.integration.twitter.impl;
+-
+-import org.hornetq.api.core.SimpleString;
+-import org.hornetq.core.logging.Logger;
+-import org.hornetq.core.persistence.StorageManager;
+-import org.hornetq.core.postoffice.Binding;
+-import org.hornetq.core.postoffice.PostOffice;
+-import org.hornetq.core.server.ConnectorService;
+-import org.hornetq.core.server.ServerMessage;
+-import org.hornetq.core.server.impl.ServerMessageImpl;
+-import org.hornetq.integration.twitter.TwitterConstants;
+-import org.hornetq.utils.ConfigurationHelper;
+-import twitter4j.*;
+-
+-import java.util.Map;
+-import java.util.concurrent.ScheduledExecutorService;
+-import java.util.concurrent.ScheduledFuture;
+-import java.util.concurrent.TimeUnit;
+-
+-/**
+- * IncomingTweetsHandler consumes from twitter and forwards to the
+- * configured HornetQ address.
+- */
+-public class IncomingTweetsHandler implements ConnectorService
+-{
+-   private static final Logger log = Logger.getLogger(IncomingTweetsHandler.class);
+-
+-   private final String connectorName;
+-
+-   private final String userName;
+-
+-   private final String password;
+-
+-   private final String queueName;
+-
+-   private final int intervalSeconds;
+-
+-   private final StorageManager storageManager;
+-
+-   private final PostOffice postOffice;
+-
+-   private  Paging paging;
+-
+-   private Twitter twitter;
+-
+-   private boolean isStarted = false;
+-
+-   private final ScheduledExecutorService scheduledPool;
+-
+-   private ScheduledFuture scheduledFuture;
+-
+-   public IncomingTweetsHandler(final String connectorName, 
+-                                final Map<String, Object> configuration,
+-                                final StorageManager storageManager,
+-                                final PostOffice postOffice,
+-                                final ScheduledExecutorService scheduledThreadPool)
+-   {
+-      this.connectorName = connectorName;
+-      this.userName = ConfigurationHelper.getStringProperty(TwitterConstants.USER_NAME, null, configuration);
+-      this.password = ConfigurationHelper.getStringProperty(TwitterConstants.PASSWORD, null, configuration);
+-      this.queueName = ConfigurationHelper.getStringProperty(TwitterConstants.QUEUE_NAME, null, configuration);
+-      Integer intervalSeconds = ConfigurationHelper.getIntProperty(TwitterConstants.INCOMING_INTERVAL, 0, configuration);
+-      if (intervalSeconds > 0)
+-      {
+-         this.intervalSeconds = intervalSeconds;
+-      }
+-      else
+-      {
+-         this.intervalSeconds = TwitterConstants.DEFAULT_POLLING_INTERVAL_SECS;
+-      }
+-      this.storageManager = storageManager;
+-      this.postOffice = postOffice;
+-      this.scheduledPool = scheduledThreadPool;
+-   }
+-
+-   public void start() throws Exception
+-   {
+-      Binding b = postOffice.getBinding(new SimpleString(queueName));
+-      if (b == null)
+-      {
+-         throw new Exception(connectorName + ": queue " + queueName + " not found");
+-      }
+-
+-      paging = new Paging();
+-      TwitterFactory tf = new TwitterFactory();
+-      this.twitter = tf.getInstance(userName, password);
+-      this.twitter.verifyCredentials();
+-
+-      // getting latest ID
+-      this.paging.setCount(TwitterConstants.FIRST_ATTEMPT_PAGE_SIZE);
+-      ResponseList<Status> res = this.twitter.getHomeTimeline(paging);
+-      this.paging.setSinceId(res.get(0).getId());
+-      log.debug(connectorName + " initialise(): got latest ID: " + this.paging.getSinceId());
+-
+-      // TODO make page size configurable
+-      this.paging.setCount(TwitterConstants.DEFAULT_PAGE_SIZE);
+-
+-      scheduledFuture = this.scheduledPool.scheduleWithFixedDelay(new TweetsRunnable(),
+-                                                intervalSeconds,
+-                                                intervalSeconds,
+-                                                TimeUnit.SECONDS);
+-      isStarted = true;
+-   }
+-
+-   public void stop() throws Exception
+-   {
+-      if(!isStarted)
+-      {
+-         return;
+-      }
+-      scheduledFuture.cancel(true);
+-      paging = null;
+-      isStarted = false;
+-   }
+-
+-   public boolean isStarted()
+-   {
+-      return isStarted;
+-   }
+-
+-   private void poll() throws Exception
+-   {
+-      // get new tweets
+-      ResponseList<Status> res = this.twitter.getHomeTimeline(paging);
+-
+-      if (res == null || res.size() == 0)
+-      {
+-         return;
+-      }
+-
+-      for (int i = res.size() - 1; i >= 0; i--)
+-      {
+-         Status status = res.get(i);
+-
+-         ServerMessage msg = new ServerMessageImpl(this.storageManager.generateUniqueID(),
+-               TwitterConstants.INITIAL_MESSAGE_BUFFER_SIZE);
+-         msg.setAddress(new SimpleString(this.queueName));
+-         msg.setDurable(true);
+-         msg.encodeMessageIDToBuffer();
+-
+-         putTweetIntoMessage(status, msg);
+-
+-         this.postOffice.route(msg, false);
+-         log.debug(connectorName + ": routed: " + status.toString());
+-      }
+-
+-      this.paging.setSinceId(res.get(0).getId());
+-      log.debug(connectorName + ": update latest ID: " + this.paging.getSinceId());
+-   }
+-
+-   private void putTweetIntoMessage(final Status status, final ServerMessage msg)
+-   {
+-      msg.getBodyBuffer().writeString(status.getText());
+-      msg.putLongProperty(TwitterConstants.KEY_ID, status.getId());
+-      msg.putStringProperty(TwitterConstants.KEY_SOURCE, status.getSource());
+-
+-      msg.putLongProperty(TwitterConstants.KEY_CREATED_AT, status.getCreatedAt().getTime());
+-      msg.putBooleanProperty(TwitterConstants.KEY_IS_TRUNCATED, status.isTruncated());
+-      msg.putLongProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID, status.getInReplyToStatusId());
+-      msg.putIntProperty(TwitterConstants.KEY_IN_REPLY_TO_USER_ID, status.getInReplyToUserId());
+-      msg.putBooleanProperty(TwitterConstants.KEY_IS_FAVORITED, status.isFavorited());
+-      msg.putBooleanProperty(TwitterConstants.KEY_IS_RETWEET, status.isRetweet());
+-      msg.putObjectProperty(TwitterConstants.KEY_CONTRIBUTORS, status.getContributors());
+-      GeoLocation gl;
+-      if ((gl = status.getGeoLocation()) != null)
+-      {
+-         msg.putDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LATITUDE, gl.getLatitude());
+-         msg.putDoubleProperty(TwitterConstants.KEY_GEO_LOCATION_LONGITUDE, gl.getLongitude());
+-      }
+-      Place place;
+-      if ((place = status.getPlace()) != null)
+-      {
+-         msg.putStringProperty(TwitterConstants.KEY_PLACE_ID, place.getId());
+-      }
+-   }
+-
+-   public String getName()
+-   {
+-      return connectorName;
+-   }
+-
+-   private final class TweetsRunnable implements Runnable
+-   {
+-      /**
+-       * TODO streaming API support
+-       * TODO rate limit support
+-       */
+-      public void run()
+-      {
+-         // Avoid cancelling the task with RuntimeException
+-         try
+-         {
+-            poll();
+-         }
+-         catch (Throwable t)
+-         {
+-            log.warn(connectorName, t);
+-         }
+-      }
+-   }
+-}
+Index: src/main/org/hornetq/integration/twitter/TwitterOutgoingConnectorServiceFactory.java
+===================================================================
+--- src/main/org/hornetq/integration/twitter/TwitterOutgoingConnectorServiceFactory.java	(revision 9563)
++++ src/main/org/hornetq/integration/twitter/TwitterOutgoingConnectorServiceFactory.java	(working copy)
+@@ -1,45 +0,0 @@
+-/*
+- * Copyright 2009 Red Hat, Inc.
+- *  Red Hat licenses this file to you under the Apache License, version
+- *  2.0 (the "License"); you may not use this file except in compliance
+- *  with the License.  You may obtain a copy of the License at
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- *  implied.  See the License for the specific language governing
+- *  permissions and limitations under the License.
+- */
+-package org.hornetq.integration.twitter;
+-
+-import org.hornetq.core.persistence.StorageManager;
+-import org.hornetq.core.postoffice.PostOffice;
+-import org.hornetq.core.server.ConnectorService;
+-import org.hornetq.core.server.ConnectorServiceFactory;
+-import org.hornetq.integration.twitter.impl.OutgoingTweetsHandler;
+-
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.concurrent.ScheduledExecutorService;
+-
+-/**
+- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+- *         Created Jun 29, 2010
+- */
+-public class TwitterOutgoingConnectorServiceFactory   implements ConnectorServiceFactory
+-{
+-   public ConnectorService createConnectorService(String connectorName, Map<String, Object> configuration, StorageManager storageManager, PostOffice postOffice, ScheduledExecutorService scheduledThreadPool)
+-   {
+-      return new OutgoingTweetsHandler(connectorName, configuration, postOffice);
+-   }
+-
+-   public Set<String> getAllowableProperties()
+-   {
+-      return TwitterConstants.ALLOWABLE_OUTGOING_CONNECTOR_KEYS;
+-   }
+-
+-   public Set<String> getRequiredProperties()
+-   {
+-      return TwitterConstants.REQUIRED_OUTGOING_CONNECTOR_KEYS;
+-   }
+-}
+Index: src/main/org/hornetq/integration/twitter/TwitterIncomingConnectorServiceFactory.java
+===================================================================
+--- src/main/org/hornetq/integration/twitter/TwitterIncomingConnectorServiceFactory.java	(revision 9563)
++++ src/main/org/hornetq/integration/twitter/TwitterIncomingConnectorServiceFactory.java	(working copy)
+@@ -1,48 +0,0 @@
+-/*
+- * Copyright 2009 Red Hat, Inc.
+- *  Red Hat licenses this file to you under the Apache License, version
+- *  2.0 (the "License"); you may not use this file except in compliance
+- *  with the License.  You may obtain a copy of the License at
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *  Unless required by applicable law or agreed to in writing, software
+- *  distributed under the License is distributed on an "AS IS" BASIS,
+- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- *  implied.  See the License for the specific language governing
+- *  permissions and limitations under the License.
+- */
+-package org.hornetq.integration.twitter;
+-
+-import org.hornetq.core.persistence.StorageManager;
+-import org.hornetq.core.postoffice.PostOffice;
+-import org.hornetq.core.server.ConnectorService;
+-import org.hornetq.core.server.ConnectorServiceFactory;
+-import org.hornetq.integration.twitter.impl.IncomingTweetsHandler;
+-
+-import java.util.Map;
+-import java.util.Set;
+-import java.util.concurrent.ScheduledExecutorService;
+-
+-/**
+- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+- *         Created Jun 29, 2010
+- */
+-public class TwitterIncomingConnectorServiceFactory implements ConnectorServiceFactory
+-{
+-   public ConnectorService createConnectorService(String connectorName, final Map<String, Object> configuration,
+-                                                  final StorageManager storageManager,
+-                                                  final PostOffice postOffice,
+-                                                  final ScheduledExecutorService scheduledThreadPool)
+-   {
+-      return new IncomingTweetsHandler(connectorName, configuration, storageManager, postOffice, scheduledThreadPool);
+-   }
+-
+-   public Set<String> getAllowableProperties()
+-   {
+-      return TwitterConstants.ALLOWABLE_INCOMING_CONNECTOR_KEYS;
+-   }
+-
+-   public Set<String> getRequiredProperties()
+-   {
+-      return TwitterConstants.REQUIRED_INCOMING_CONNECTOR_KEYS;
+-   }
+-}
+Index: pom.xml
+===================================================================
+--- pom.xml	(revision 9563)
++++ pom.xml	(working copy)
+@@ -236,11 +236,6 @@
+          <version>2.1.0.GA</version>
+       </dependency>
+       <!--needed to compile twitter support-->
+-      <dependency>
+-         <groupId>org.twitter4j</groupId>
+-           <artifactId>twitter4j-core</artifactId>
+-           <version>2.1.2</version>
+-       </dependency>
+       <!-- needed to compile the tests-->
+       <dependency>
+         <groupId>junit</groupId>
+Index: tests/src/org/hornetq/tests/integration/twitter/TwitterTest.java
+===================================================================
+--- tests/src/org/hornetq/tests/integration/twitter/TwitterTest.java	(revision 9563)
++++ tests/src/org/hornetq/tests/integration/twitter/TwitterTest.java	(working copy)
+@@ -1,511 +0,0 @@
+-/*
+- * Copyright 2010 Red Hat, Inc.
+- * Red Hat licenses this file to you under the Apache License, version
+- * 2.0 (the "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *    http://www.apache.org/licenses/LICENSE-2.0
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+- * implied.  See the License for the specific language governing
+- * permissions and limitations under the License.
+- */
+-
+-package org.hornetq.tests.integration.twitter;
+-
+-import java.util.HashMap;
+-import java.util.Iterator;
+-import java.util.Set;
+-
+-import junit.framework.Assert;
+-
+-import org.hornetq.api.core.TransportConfiguration;
+-import org.hornetq.api.core.client.ClientConsumer;
+-import org.hornetq.api.core.client.ClientMessage;
+-import org.hornetq.api.core.client.ClientProducer;
+-import org.hornetq.api.core.client.ClientSession;
+-import org.hornetq.api.core.client.ClientSessionFactory;
+-import org.hornetq.api.core.client.HornetQClient;
+-import org.hornetq.core.config.Configuration;
+-import org.hornetq.core.config.ConnectorServiceConfiguration;
+-import org.hornetq.core.config.CoreQueueConfiguration;
+-import org.hornetq.core.logging.Logger;
+-import org.hornetq.core.server.ConnectorService;
+-import org.hornetq.core.server.HornetQServer;
+-import org.hornetq.integration.twitter.TwitterConstants;
+-import org.hornetq.integration.twitter.TwitterIncomingConnectorServiceFactory;
+-import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
+-import org.hornetq.tests.util.ServiceTestBase;
+-import org.hornetq.tests.util.UnitTestCase;
+-import twitter4j.*;
+-
+-/**
+- * A TwitterTest
+- *
+- * @author tm.igarashi@gmail.com
+- *
+- *
+- */
+-public class TwitterTest extends ServiceTestBase
+-{
+-   private static final Logger log = Logger.getLogger(TwitterTest.class);
+-   private static final String KEY_CONNECTOR_NAME = "connector.name";
+-   private static final String KEY_USERNAME = "username";
+-   private static final String KEY_PASSWORD = "password";
+-   private static final String KEY_QUEUE_NAME = "queue.name";
+-   
+-   private static final String TWITTER_USERNAME = System.getProperty("twitter.username");
+-   private static final String TWITTER_PASSWORD = System.getProperty("twitter.password");
+-   
+-   @Override
+-   protected void setUp() throws Exception
+-   {
+-      if(TWITTER_USERNAME == null || TWITTER_PASSWORD == null)
+-      {
+-         throw new Exception("* * *  Please set twitter.username and twitter.password in system property  * * *");
+-      }
+-      super.setUp();
+-   }
+-
+-   // incoming
+-   
+-   public void testSimpleIncoming() throws Exception
+-   {
+-      internalTestIncoming(true,false);
+-   }
+-
+-   public void testIncomingNoQueue() throws Exception
+-   {
+-      internalTestIncoming(false,false);
+-   }
+-
+-   public void testIncomingWithRestart() throws Exception
+-   {
+-      internalTestIncoming(true,true);
+-   }
+-   
+-   public void testIncomingWithEmptyConnectorName() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_CONNECTOR_NAME, "");
+-      internalTestIncomingFailedToInitialize(params);
+-   }
+-
+-   public void testIncomingWithEmptyQueueName() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_QUEUE_NAME, "");
+-      internalTestIncomingFailedToInitialize(params);
+-   }
+-
+-   public void testIncomingWithInvalidCredentials() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_USERNAME, "invalidUsername");
+-      params.put(KEY_PASSWORD, "invalidPassword");
+-      internalTestIncomingFailedToInitialize(params);
+-   }
+-
+-   //outgoing
+-   
+-   public void testSimpleOutgoing() throws Exception
+-   {
+-      internalTestOutgoing(true,false);
+-   }
+-
+-   public void testOutgoingNoQueue() throws Exception
+-   {
+-      internalTestOutgoing(false,false);
+-   }
+-   public void testOutgoingWithRestart() throws Exception
+-   {
+-      internalTestOutgoing(true,true);
+-   }
+-   
+-   public void testOutgoingWithEmptyConnectorName() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_CONNECTOR_NAME, "");
+-      internalTestOutgoingFailedToInitialize(params);
+-   }
+-
+-   public void testOutgoingWithEmptyQueueName() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_QUEUE_NAME, "");
+-      internalTestOutgoingFailedToInitialize(params);
+-   }
+-
+-   public void testOutgoingWithInvalidCredentials() throws Exception
+-   {
+-      HashMap<String,String> params = new HashMap<String,String>();
+-      params.put(KEY_USERNAME, "invalidUsername");
+-      params.put(KEY_PASSWORD, "invalidPassword");
+-      internalTestOutgoingFailedToInitialize(params);
+-   }
+-   
+-   /**
+-    *  This will fail until TFJ-347 is fixed.
+-    * http://twitter4j.org/jira/browse/TFJ-347
+-    * 
+-    * @throws Exception
+-    */
+-   public void _testOutgoingWithInReplyTo() throws Exception
+-   {
+-      internalTestOutgoingWithInReplyTo();
+-   }
+-   
+-   protected void internalTestIncoming(boolean createQueue, boolean restart) throws Exception
+-   {
+-      HornetQServer server0 = null;
+-      ClientSession session = null;
+-      String queue = "TwitterTestQueue";
+-      int interval = 5;
+-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+-      String testMessage = "TwitterTest/incoming: " + System.currentTimeMillis();
+-      log.debug("test incoming: " + testMessage);
+-      
+-      try
+-      {
+-         Configuration configuration = createDefaultConfig(false);
+-         HashMap<String, Object> config = new HashMap<String, Object>();
+-         config.put(TwitterConstants.INCOMING_INTERVAL, interval);
+-         config.put(TwitterConstants.QUEUE_NAME, queue);
+-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
+-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+-         ConnectorServiceConfiguration inconf =
+-               new ConnectorServiceConfiguration(
+-               TwitterIncomingConnectorServiceFactory.class.getName(),
+-                     config,"test-incoming-connector");
+-         configuration.getConnectorServiceConfigurations().add(inconf);
+-
+-         if(createQueue)
+-         {
+-            CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, true);
+-            configuration.getQueueConfigurations().add(qc);
+-         }
+-
+-         server0 = createServer(false,configuration);
+-         server0.start();
+-         
+-         if(restart)
+-         {
+-            server0.getConnectorsService().stop();
+-            server0.getConnectorsService().start();
+-         }
+-
+-         assertEquals(1, server0.getConnectorsService().getConnectors().size());
+-         Iterator<ConnectorService> connectorServiceIterator = server0.getConnectorsService().getConnectors().iterator();
+-         if(createQueue)
+-         {
+-            Assert.assertTrue(connectorServiceIterator.next().isStarted());
+-         }
+-         else
+-         {
+-            Assert.assertFalse(connectorServiceIterator.next().isStarted());
+-            return;
+-         }
+-
+-         twitter.updateStatus(testMessage);
+-
+-         TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
+-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+-         session = sf.createSession(false, true, true);
+-         ClientConsumer consumer = session.createConsumer(queue);
+-         session.start();
+-         ClientMessage msg = consumer.receive(60*1000);
+-         
+-         Assert.assertNotNull(msg);
+-         Assert.assertEquals(testMessage, msg.getBodyBuffer().readString());
+-         
+-         msg.acknowledge();
+-      }
+-      finally
+-      {
+-         try
+-         {
+-            session.close();
+-         }
+-         catch(Throwable t)
+-         {
+-         }
+-         try
+-         {
+-            server0.stop();
+-         }
+-         catch(Throwable ignored)
+-         {
+-         }
+-      }
+-   }
+-
+-   protected void internalTestIncomingFailedToInitialize(HashMap<String,String> params) throws Exception
+-   {
+-      HornetQServer server0 = null;
+-      String connectorName = "test-incoming-connector"; 
+-      String queue = "TwitterTestQueue";
+-      String userName = "invalidUsername";
+-      String password = "invalidPassword";
+-      int interval = 5;
+-      
+-      if(params.containsKey(KEY_CONNECTOR_NAME))
+-      {
+-         connectorName = params.get(KEY_CONNECTOR_NAME);
+-      }
+-      if(params.containsKey(KEY_USERNAME))
+-      {
+-         userName = params.get(KEY_USERNAME);
+-      }
+-      if(params.containsKey(KEY_PASSWORD))
+-      {
+-         password = params.get(KEY_PASSWORD);
+-      }
+-      if(params.containsKey(KEY_QUEUE_NAME))
+-      {
+-         queue = params.get(KEY_QUEUE_NAME);
+-      }
+-      
+-      try
+-      {
+-         Configuration configuration = createDefaultConfig(false);
+-         HashMap<String, Object> config = new HashMap<String, Object>();
+-         config.put(TwitterConstants.INCOMING_INTERVAL, interval);
+-         config.put(TwitterConstants.QUEUE_NAME, queue);
+-         config.put(TwitterConstants.USER_NAME, userName);
+-         config.put(TwitterConstants.PASSWORD, password);
+-         ConnectorServiceConfiguration inconf =
+-               new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
+-                     config,
+-               connectorName);
+-         configuration.getConnectorServiceConfigurations().add(inconf);
+-         CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, true);
+-         configuration.getQueueConfigurations().add(qc);
+-
+-         server0 = createServer(false,configuration);
+-         server0.start();
+-
+-         Set<ConnectorService> conns = server0.getConnectorsService().getConnectors();
+-         Assert.assertEquals(1, conns.size());
+-         Iterator<ConnectorService> it = conns.iterator();
+-         Assert.assertFalse(it.next().isStarted());
+-      }
+-      finally
+-      {
+-         try
+-         {
+-            server0.stop();
+-         }
+-         catch(Throwable ignored)
+-         {
+-         }
+-      }
+-   }
+-
+-   protected void internalTestOutgoing(boolean createQueue, boolean restart) throws Exception
+-   {
+-      HornetQServer server0 = null;
+-      ClientSession session = null;
+-      String queue = "TwitterTestQueue";
+-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+-      String testMessage = "TwitterTest/outgoing: " + System.currentTimeMillis();
+-      log.debug("test outgoing: " + testMessage);
+-
+-      try
+-      {
+-         Configuration configuration = createDefaultConfig(false);
+-         HashMap<String, Object> config = new HashMap<String, Object>();
+-         config.put(TwitterConstants.QUEUE_NAME, queue);
+-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
+-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+-         ConnectorServiceConfiguration outconf =
+-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+-                     config,
+-               "test-outgoing-connector");
+-         configuration.getConnectorServiceConfigurations().add(outconf);
+-         if(createQueue)
+-         {
+-            CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
+-            configuration.getQueueConfigurations().add(qc);
+-         }
+-
+-         server0 = createServer(false,configuration);
+-         server0.start();
+-
+-         if(restart)
+-         {
+-            server0.getConnectorsService().stop();
+-            server0.getConnectorsService().start();
+-         }
+-
+-         assertEquals(1, server0.getConnectorsService().getConnectors().size());
+-         Iterator<ConnectorService> connectorServiceIterator = server0.getConnectorsService().getConnectors().iterator();
+-         if(createQueue)
+-         {
+-            Assert.assertTrue(connectorServiceIterator.next().isStarted());
+-         }
+-         else
+-         {
+-            Assert.assertFalse(connectorServiceIterator.next().isStarted());
+-            return;
+-         }
+-
+-         TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
+-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+-         session = sf.createSession(false, true, true);
+-         ClientProducer producer = session.createProducer(queue);
+-         ClientMessage msg = session.createMessage(false);
+-         msg.getBodyBuffer().writeString(testMessage);
+-         session.start();
+-         producer.send(msg);
+-
+-         Thread.sleep(3000);
+-
+-         Paging page = new Paging();
+-         page.setCount(1);
+-         ResponseList<Status> res = twitter.getHomeTimeline(page);
+-
+-         Assert.assertEquals(testMessage, res.get(0).getText());
+-      }
+-      finally
+-      {
+-         try
+-         {
+-            session.close();
+-         }
+-         catch(Throwable t)
+-         {
+-         }
+-         try
+-         {
+-            server0.stop();
+-         }
+-         catch(Throwable ignored)
+-         {
+-         }
+-      }
+-   }
+-
+-   protected void internalTestOutgoingFailedToInitialize(HashMap<String,String> params) throws Exception
+-   {
+-      HornetQServer server0 = null;
+-      String connectorName = "test-outgoing-connector"; 
+-      String queue = "TwitterTestQueue";
+-      String userName = TWITTER_USERNAME;
+-      String password = TWITTER_PASSWORD;
+-      
+-      if(params.containsKey(KEY_CONNECTOR_NAME))
+-      {
+-         connectorName = params.get(KEY_CONNECTOR_NAME);
+-      }
+-      if(params.containsKey(KEY_USERNAME))
+-      {
+-         userName = params.get(KEY_USERNAME);
+-      }
+-      if(params.containsKey(KEY_PASSWORD))
+-      {
+-         password = params.get(KEY_PASSWORD);
+-      }
+-      if(params.containsKey(KEY_QUEUE_NAME))
+-      {
+-         queue = params.get(KEY_QUEUE_NAME);
+-      }
+-      
+-      try
+-      {
+-         Configuration configuration = createDefaultConfig(false);
+-         HashMap<String, Object> config = new HashMap<String, Object>();
+-         config.put(TwitterConstants.QUEUE_NAME, queue);
+-         config.put(TwitterConstants.USER_NAME, userName);
+-         config.put(TwitterConstants.PASSWORD, password);
+-         ConnectorServiceConfiguration outconf =
+-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+-                     config,
+-               "test-outgoing-connector");
+-         configuration.getConnectorServiceConfigurations().add(outconf);
+-         CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
+-         configuration.getQueueConfigurations().add(qc);
+-         
+-         server0 = createServer(false,configuration);
+-         server0.start();
+-
+-      }
+-      finally
+-      {
+-         try
+-         {
+-            server0.stop();
+-         }
+-         catch(Throwable ignored)
+-         {
+-         }
+-      }
+-   }
+-
+-   protected void internalTestOutgoingWithInReplyTo() throws Exception
+-   {
+-      HornetQServer server0 = null;
+-      ClientSession session = null;
+-      String queue = "TwitterTestQueue";
+-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+-      String testMessage = "TwitterTest/outgoing with in_reply_to: " + System.currentTimeMillis();
+-      String replyMessage = "@" + TWITTER_USERNAME + " TwitterTest/outgoing reply: " + System.currentTimeMillis();
+-      try
+-      {
+-         Configuration configuration = createDefaultConfig(false);
+-         HashMap<String, Object> config = new HashMap<String, Object>();
+-         config.put(TwitterConstants.QUEUE_NAME, queue);
+-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
+-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+-         ConnectorServiceConfiguration outconf =
+-               new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
+-                     config,
+-               "test-outgoing-with-in-reply-to");
+-         configuration.getConnectorServiceConfigurations().add(outconf);
+-         CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
+-         configuration.getQueueConfigurations().add(qc);
+-
+-         Status s = twitter.updateStatus(testMessage);
+-
+-         server0 = createServer(false,configuration);
+-         server0.start();
+-         
+-         TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
+-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+-         session = sf.createSession(false, true, true);
+-         ClientProducer producer = session.createProducer(queue);
+-         ClientMessage msg = session.createMessage(false);
+-         msg.getBodyBuffer().writeString(replyMessage);
+-         msg.putLongProperty(TwitterConstants.KEY_IN_REPLY_TO_STATUS_ID, s.getId());
+-         session.start();
+-         producer.send(msg);
+-
+-         Thread.sleep(3000);
+-         
+-         Paging page = new Paging();
+-         page.setCount(2);
+-         ResponseList<Status> res = twitter.getHomeTimeline(page);
+-         
+-         Assert.assertEquals(testMessage, res.get(1).getText());
+-         Assert.assertEquals(-1, res.get(1).getInReplyToStatusId());
+-         Assert.assertEquals(replyMessage, res.get(0).getText());
+-         Assert.assertEquals(s.getId(), res.get(0).getInReplyToStatusId());
+-      }
+-      finally
+-      {
+-         try
+-         {
+-            session.close();
+-         }
+-         catch(Throwable t)
+-         {
+-         }
+-         try
+-         {
+-            server0.stop();
+-         }
+-         catch(Throwable ignored)
+-         {
+-         }
+-      }
+-   }
+-}
+Index: build-hornetq.xml
+===================================================================
+--- build-hornetq.xml	(revision 9563)
++++ build-hornetq.xml	(working copy)
+@@ -65,8 +65,8 @@
+    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
+    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
+    <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
+-   <property name="twitter.integration.jar.name" value="hornetq-twitter-integration.jar"/>
+-   <property name="twitter.integration.sources.jar.name" value="hornetq-twitter-integration-sources.jar"/>
++   <!-- <property name="twitter.integration.jar.name" value="hornetq-twitter-integration.jar"/>
++   <property name="twitter.integration.sources.jar.name" value="hornetq-twitter-integration-sources.jar"/> -->
+    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
+    <property name="bootstrap.sources.jar.name" value="hornetq-bootstrap-sources.jar"/>
+    <property name="logging.jar.name" value="hornetq-logging.jar"/>
+@@ -84,7 +84,7 @@
+    <property name="service.sources.sar.name" value="hornetq-service-sources.sar"/>
+    <property name="resources.jar.name" value="hornetq-resources.jar"/>
+    <property name="resources.sources.jar.name" value="hornetq-resources-sources.jar"/>
+-   <property name="twitter4j.jar.name" value="twitter4j-core.jar"/>
++   <!-- <property name="twitter4j.jar.name" value="twitter4j-core.jar"/> -->
+ 
+    <!--source and build dirs-->
+    <property name="build.dir" value="build"/>
+@@ -94,7 +94,7 @@
+    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
+    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
+    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
+-   <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
++<!--   <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/> -->
+    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
+    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
+    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
+@@ -213,10 +213,10 @@
+       <path refid="org.jboss.javaee.classpath"/>
+    </path>
+ 
+-   <path id="twitter.integration.compilation.classpath">
++   <!-- <path id="twitter.integration.compilation.classpath">
+       <path location="${build.core.classes.dir}"/>
+       <path refid="org.twitter4j.classpath"/>
+-   </path>
++   </path> -->
+ 
+    <path id="jboss.service.compilation.classpath">
+       <path refid="org.jboss.javaee.classpath"/>
+@@ -246,13 +246,13 @@
+       <path refid="jboss.integration.compilation.classpath"/>
+       <path refid="bootstrap.compilation.classpath"/>
+       <path refid="junit.junit.classpath"/>
+-      <path refid="org.twitter4j.classpath"/>
++      <!-- <path refid="org.twitter4j.classpath"/> -->
+       <path location="${build.jars.dir}/${ra.jar.name}"/>
+       <path location="${build.jars.dir}/${jms.jar.name}"/>
+       <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
+       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+       <path location="${build.jars.dir}/${logging.jar.name}"/>
+-      <path location="${build.jars.dir}/${twitter.integration.jar.name}"/>
++      <!-- <path location="${build.jars.dir}/${twitter.integration.jar.name}"/> -->
+    </path>
+ 
+    <path id="jms.test.compilation.classpath">
+@@ -305,7 +305,7 @@
+  	  <!-- we must include Apache commons logging   -->
+  	  <!-- as a transitive dependency from JBoss TM -->
+  	  <path refid="apache.logging.classpath"/>
+-      <path refid="org.twitter4j.classpath"/>
++      <!-- <path refid="org.twitter4j.classpath"/> -->
+    </path>
+ 
+    <path id="emma.unit.test.execution.classpath">
+@@ -382,7 +382,7 @@
+       <mkdir dir="${build.jms.classes.dir}"/>
+       <mkdir dir="${build.jms.java5.classes.dir}"/>
+       <mkdir dir="${build.jboss.integration.classes.dir}"/>
+-      <mkdir dir="${build.twitter.integration.classes.dir}"/>
++      <!-- <mkdir dir="${build.twitter.integration.classes.dir}"/> -->
+       <mkdir dir="${build.service.classes.dir}"/>
+       <mkdir dir="${build.bootstrap.classes.dir}"/>
+       <mkdir dir="${build.logging.classes.dir}"/>
+@@ -560,7 +560,7 @@
+       </javac>
+    </target>
+ 
+-   <target name="compile-twitter-integration" depends="compile-core">
++   <!-- <target name="compile-twitter-integration" depends="compile-core">
+       <javac destdir="${build.twitter.integration.classes.dir}"
+              target="${javac.target}"
+              source="${javac.source}"
+@@ -578,7 +578,7 @@
+          <include name="org/hornetq/integration/twitter/**/*.java"/>
+          <classpath refid="twitter.integration.compilation.classpath"/>
+       </javac>
+-   </target>
++   </target> -->
+ 
+    <!-- author: Lucas Amador -->
+    <target name="compile-jboss-service" depends="compile-core">
+@@ -719,12 +719,19 @@
+    <!-- Jar Targets                                                                              -->
+    <!-- ======================================================================================== -->
+ 
++   <!-- <target name="sources-jar" description="create jar files containing source code"
++           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
++   </target> -->
+    <target name="sources-jar" description="create jar files containing source code"
+-           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
++           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources">
+    </target>
+ 
++   <!-- <target name="jar"
++           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
++   </target> -->
++
+    <target name="jar"
+-           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
++           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar">
+    </target>
+ 
+    <target name="jar-jnp-client" depends="init">
+@@ -868,7 +875,7 @@
+       </jar>
+    </target>
+ 
+-    <target name="jar-twitter-integration" depends="compile-twitter-integration">
++<!--     <target name="jar-twitter-integration" depends="compile-twitter-integration">
+ 
+       <jar jarfile="${build.jars.dir}/${twitter.integration.jar.name}">
+          <fileset dir="${build.twitter.integration.classes.dir}" includes="**"/>
+@@ -882,7 +889,7 @@
+             <include name="org/hornetq/integration/twitter/**/*.java"/>
+          </fileset>
+       </jar>
+-   </target>
++   </target> -->
+ 
+ 	<!-- author: Lucas Amador -->
+    <target name="jar-jboss-service" depends="compile-jboss-service">
+@@ -1148,7 +1155,7 @@
+          	<include name="${jms.client.jar.name}"/>
+          	<include name="${jms.client.java5.jar.name}"/>
+          	<include name="${jnp.client.jar.name}"/>
+-         	<include name="${twitter.integration.jar.name}"/>
++         	<!-- <include name="${twitter.integration.jar.name}"/> -->
+          </fileset>
+          <fileset dir="${org.jboss.naming.lib}">                                                   
+             <include name="jnpserver.jar"/>
+@@ -1158,7 +1165,7 @@
+          </fileset>
+       </copy>
+       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+-      <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
++      <!-- <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/> -->
+       <copy todir="${build.distro.config.dir}">
+          <fileset dir="${src.config.dir}">
+             <include name="*.xml"/>
