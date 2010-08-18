@@ -49,11 +49,13 @@ public interface Queue extends Bindable
 
    int getConsumerCount();
    
-   void addLast(MessageReference ref);
+   void reload(MessageReference ref);
+   
+   void addTail(MessageReference ref);
 
-   void addLast(MessageReference ref, boolean direct);
+   void addTail(MessageReference ref, boolean direct);
 
-   void addFirst(MessageReference ref);
+   void addHead(MessageReference ref);
 
    void acknowledge(MessageReference ref) throws Exception;
 
@@ -80,8 +82,6 @@ public interface Queue extends Bindable
    long getMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
-
-   MessageReference removeFirstReference(long id) throws Exception;
 
    MessageReference getReference(long id);
 
@@ -124,9 +124,6 @@ public interface Queue extends Bindable
 
    boolean checkDLQ(MessageReference ref) throws Exception;
 
-   /**
-    * @return an immutable iterator which does not allow to remove references
-    */
    Iterator<MessageReference> iterator();
 
    void setExpiryAddress(SimpleString expiryAddress);
@@ -152,6 +149,10 @@ public interface Queue extends Bindable
    boolean isPaused();
    
    Executor getExecutor();
+   
+   void resetAllIterators();
 
-
+   void blockOnExecutorFuture();
+   
+   void close() throws Exception;
 }

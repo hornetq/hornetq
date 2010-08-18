@@ -57,7 +57,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
          consumers[4] = session.createConsumer(queueA);
 
          ClientProducer cp = session.createProducer(addressA);
-         int numMessage = 100;
+         int numMessage = 10;
          for (int i = 0; i < numMessage; i++)
          {
             ClientMessage cm = session.createMessage(false);
@@ -67,8 +67,10 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
          int currMessage = 0;
          for (int i = 0; i < numMessage / 5; i++)
          {
+            log.info("i is " + i);
             for (int j = 0; j < 5; j++)
             {
+               log.info("j is " + j);
                ClientMessage cm = consumers[j].receive(5000);
                Assert.assertNotNull(cm);
                Assert.assertEquals(currMessage++, cm.getBodyBuffer().readInt());

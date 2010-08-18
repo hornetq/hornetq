@@ -396,6 +396,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          Filter filter = FilterImpl.createFilter(filterStr);
          List<Map<String, Object>> messages = new ArrayList<Map<String,Object>>();
+         queue.blockOnExecutorFuture();
          Iterator<MessageReference> iterator = queue.iterator();
          while (iterator.hasNext())
          {

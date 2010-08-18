@@ -14,6 +14,7 @@
 package org.hornetq.core.client.impl;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -30,7 +31,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.utils.Future;
-import org.hornetq.utils.HQIterator;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
 import org.hornetq.utils.TokenBucketLimiter;
@@ -209,7 +209,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             synchronized (this)
             {
-               while ((stopped || (m = buffer.removeFirst()) == null) && !closed && toWait > 0)
+               while ((stopped || (m = buffer.poll()) == null) && !closed && toWait > 0)
                {
                   if (start == -1)
                   {
@@ -367,7 +367,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // if no previous handler existed queue up messages for delivery
       if (handler != null && noPreviousHandler)
       {
-
          requeueExecutors();
       }
       // if unsetting a previous handler may be in onMessage so wait for completion
@@ -496,7 +495,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Add it to the buffer
-      buffer.addLast(messageToHandle, messageToHandle.getPriority());
+      buffer.addTail(messageToHandle, messageToHandle.getPriority());
 
       if (handler != null)
       {
@@ -567,12 +566,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          // Need to send credits for the messages in the buffer
 
-         HQIterator<ClientMessageInternal> iter = buffer.iterator();
+         Iterator<ClientMessageInternal> iter = buffer.iterator();
 
-         ClientMessageInternal message;
-
-         while ((message = iter.next()) != null)
+         while (iter.hasNext())
          {
+            ClientMessageInternal message = iter.next();
+            
             flowControlBeforeConsumption(message);
          }
 
@@ -802,7 +801,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          synchronized (this)
          {
-            message = buffer.removeFirst();
+            message = buffer.poll();
          }
 
          if (message != null)

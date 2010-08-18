@@ -15,7 +15,6 @@ package org.hornetq.utils;
 
 import java.lang.reflect.Array;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.logging.Logger;
 
@@ -34,80 +33,87 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
    private static final Logger log = Logger.getLogger(PriorityLinkedListImpl.class);
 
-   protected HQDeque<T>[] levels;
+   protected LinkedListImpl<T>[] levels;
 
    protected final int priorities;
 
-   private final AtomicInteger size = new AtomicInteger(0);
+   private int size;
+
+   private int lastReset;
+
+   private int highestPriority = -1;
 
    public PriorityLinkedListImpl(final int priorities)
    {
       this.priorities = priorities;
 
-      levels = (HQDeque<T>[])Array.newInstance(HQDeque.class, priorities);
+      levels = (LinkedListImpl<T>[])Array.newInstance(LinkedListImpl.class, priorities);
 
       for (int i = 0; i < priorities; i++)
       {
-         levels[i] = new NonConcurrentHQDeque<T>();
+         levels[i] = new LinkedListImpl<T>();
+      }
+   }
+   
+   private void checkHighest(int priority)
+   {
+      if (priority > highestPriority)
+      {
+         highestPriority = priority;
+         
+         lastReset++;
       }
    }
 
-   public int addFirst(final T t, final int priority)
+   public void addHead(final T t, final int priority)
    {
-      levels[priority].addFirst(t);
-      
-      return size.incrementAndGet();
+      checkHighest(priority);
+
+      levels[priority].addHead(t);
+
+      size++;
    }
 
-   public int addLast(final T t, final int priority)
+   public void addTail(final T t, final int priority)
    {
-      levels[priority].addLast(t);
-      
-      return size.incrementAndGet();
+      checkHighest(priority);
+
+      levels[priority].addTail(t);
+
+      size++;
    }
 
-   public T removeFirst()
+   public T poll()
    {
       T t = null;
 
-      // Initially we are just using a simple prioritization algorithm:
+      // We are just using a simple prioritization algorithm:
       // Highest priority refs always get returned first.
       // This could cause starvation of lower priority refs.
 
       // TODO - A better prioritization algorithm
 
-      for (int i = priorities - 1; i >= 0; i--)
+      for (int i = highestPriority; i >= 0; i--)
       {
-         HQDeque<T> ll = levels[i];
+         LinkedListImpl<T> ll = levels[i];
 
-         if (!ll.isEmpty())
+         if (ll.size() != 0)
          {
-            t = ll.removeFirst();
-            break;
-         }
-      }
+            t = ll.poll();
 
-      if (t != null)
-      {
-         size.decrementAndGet();
-      }
+            if (t != null)
+            {
+               size--;
 
-      return t;
-   }
+               if (ll.size() == 0)
+               {
+                  if (highestPriority == i)
+                  {
+                     highestPriority--;
+                  }
+               }
+            }
 
-   public T peekFirst()
-   {
-      T t = null;
-
-      for (int i = priorities - 1; i >= 0; i--)
-      {
-         HQDeque<T> ll = levels[i];
-         if (!ll.isEmpty())
-         {
-            t = ll.getFirst();
-         }
-         if (t != null)
-         {
             break;
          }
       }
@@ -117,83 +123,134 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    public void clear()
    {
-      for (HQDeque<T> list : levels)
+      for (LinkedListImpl<T> list : levels)
       {
          list.clear();
       }
 
-      size.set(0);
+      size = 0;
    }
 
    public int size()
    {
-      return size.get();
+      return size;
    }
 
    public boolean isEmpty()
    {
-      return size.get() == 0;
+      return size == 0;
    }
 
-   public HQIterator<T> iterator()
+   public LinkedListIterator<T> iterator()
    {
       return new PriorityLinkedListIterator();
    }
 
-   private class PriorityLinkedListIterator implements HQIterator<T>
+   private class PriorityLinkedListIterator implements LinkedListIterator<T>
    {
       private int index;
 
-      private HQIterator<T>[] cachedIters = new HQIterator[levels.length]; 
+      private LinkedListIterator<T>[] cachedIters = new LinkedListIterator[levels.length];
+
+      private LinkedListIterator<T> lastIter;
+      
+      private int resetCount = lastReset;
 
       PriorityLinkedListIterator()
       {
          index = levels.length - 1;
       }
 
-      public T next()
+      public void repeat()
       {
+         if (lastIter == null)
+         {
+            throw new NoSuchElementException();
+         }
+
+         lastIter.repeat();
+      }
+
+      public void close()
+      {
+         lastIter = null;
+
+         for (LinkedListIterator<T> iter : cachedIters)
+         {
+            if (iter != null)
+            {
+               iter.close();
+            }
+         }
+      }
+      
+      private void checkReset()
+      {
+         if (lastReset > resetCount)
+         {
+            index = highestPriority;
+            
+            resetCount = lastReset;
+         }
+      }
+
+      public boolean hasNext()
+      {
+         checkReset();
+         
          while (index >= 0)
          {
-            HQIterator<T> iter = cachedIters[index];
-            
-            if (iter == null)
+            lastIter = cachedIters[index];
+
+            if (lastIter == null)
             {
-               iter = cachedIters[index] = levels[index].iterator();
+               lastIter = cachedIters[index] = levels[index].iterator();
             }
-            
-            T t = iter.next();
-            
-            if (t != null)
+
+            boolean b = lastIter.hasNext();
+
+            if (b)
             {
-               return t;
+               return true;
             }
-            
+
             index--;
-            
+
             if (index < 0)
             {
                index = levels.length - 1;
-               
+
                break;
             }
          }
-         
-         return null;
+         return false;
+      }
+
+      public T next()
+      {
+         if (lastIter == null)
+         {
+            throw new NoSuchElementException();
+         }
+
+         return lastIter.next();
       }
 
       public void remove()
       {
-         HQIterator<T> iter = cachedIters[index];
-         
-         if (iter == null)
+         if (lastIter == null)
          {
             throw new NoSuchElementException();
          }
-         
-         iter.remove();
 
-         size.decrementAndGet();
+         lastIter.remove();
+         
+         if (index == highestPriority && levels[index].size() == 0)
+         {
+            highestPriority--;
+         }
+
+         size--;
       }
    }
 }

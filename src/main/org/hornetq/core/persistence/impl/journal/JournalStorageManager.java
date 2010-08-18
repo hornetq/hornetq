@@ -1397,7 +1397,6 @@ public class JournalStorageManager implements StorageManager
                }
                case ADD_REF:
                {
-
                   long messageID = record.id;
 
                   RefEncoding encoding = new RefEncoding();
@@ -1436,8 +1435,8 @@ public class JournalStorageManager implements StorageManager
                   {
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
-
-                  // TODO - this involves a scan - we should find a quicker qay of doing it
+                  
+                  // TODO - this involves a scan - we should find a quicker way of doing it
                   MessageReference removed = queue.removeReferenceWithID(messageID);
 
                   referencesToAck.add(removed);

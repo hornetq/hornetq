@@ -610,7 +610,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
       try
       {
-         final int numberOfMessages = 100;
+         final int numberOfMessages = 10;
 
          server.start();
 
@@ -660,6 +660,8 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
             String str = getTextMessage(msg);
             Assert.assertEquals("Msg" + i, str);
+            
+            log.info("got msg " + str);
 
             msg.acknowledge();
 
@@ -673,8 +675,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             ClientMessage msg = cons2.receive(1000);
 
             Assert.assertNotNull("expected message at i = " + i, msg);
+            
+            String str = getTextMessage(msg);
+            
+            log.info("got msg " + str);
 
-            Assert.assertEquals("Msg" + i, msg.getBodyBuffer().readString());
+            
+            Assert.assertEquals("Msg" + i, str);
 
             msg.acknowledge();
 
@@ -1010,11 +1017,14 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
             {
                try
                {
+                  log.info("received msg " + message);
                   String str = getTextMessage(message);
                   if (ConsumerWindowSizeTest.isTrace)
                   {
                      ConsumerWindowSizeTest.log.trace("Received message " + str);
                   }
+                  
+                  ConsumerWindowSizeTest.log.info("Received message " + str);
 
                   failed = failed || !str.equals("Msg" + count);
 
@@ -1058,9 +1068,12 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          Assert.assertTrue(latchReceived.await(TIMEOUT, TimeUnit.SECONDS));
 
+         log.info("bs " + consReceiveOneAndHold.getBufferSize());
+         
          long timeout = System.currentTimeMillis() + 1000 * TIMEOUT;
          while (consReceiveOneAndHold.getBufferSize() == 0 && System.currentTimeMillis() < timeout)
          {
+            log.info("bs " + consReceiveOneAndHold.getBufferSize());
             Thread.sleep(10);
          }
 

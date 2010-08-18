@@ -126,6 +126,9 @@ public class MessagePriorityTest extends UnitTestCase
       for (int i = 9; i >= 0; i--)
       {
          ClientMessage m = consumer.receive(500);
+         
+         log.info("received msg " + m.getPriority());
+         
          Assert.assertNotNull(m);
          Assert.assertEquals(i, m.getPriority());
       }
@@ -221,9 +224,9 @@ public class MessagePriorityTest extends UnitTestCase
          ClientMessage m = createTextMessage(Integer.toString(i), session);
          m.setPriority((byte)i);
          producer.send(m);
-
-         Thread.sleep(20);
       }
+      
+      Thread.sleep(500);
 
       // Now we wait a little bit to make sure the messages are in the client side buffer
 

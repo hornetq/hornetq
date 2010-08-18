@@ -289,5 +289,10 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
              uniqueName +
              "]";
    }
+   
+   public void close() throws Exception
+   {
+      storeAndForwardQueue.close();
+   }
 
 }

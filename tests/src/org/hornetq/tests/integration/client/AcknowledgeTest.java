@@ -25,6 +25,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -34,6 +35,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class AcknowledgeTest extends ServiceTestBase
 {
+   private static final Logger log = Logger.getLogger(AcknowledgeTest.class);
+
    public final SimpleString addressA = new SimpleString("addressA");
 
    public final SimpleString queueA = new SimpleString("queueA");
@@ -96,17 +99,23 @@ public class AcknowledgeTest extends ServiceTestBase
          sendSession.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);
-         int numMessages = 100;
+         int numMessages = 3;
          for (int i = 0; i < numMessages; i++)
          {
             cp.send(sendSession.createMessage(false));
          }
+         
+         Thread.sleep(500);
+         log.info("woke up");
+         
          final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
          cc.setMessageHandler(new MessageHandler()
          {
+            int c = 0;
             public void onMessage(final ClientMessage message)
             {
+               log.info("Got message " + c++);
                latch.countDown();
             }
          });

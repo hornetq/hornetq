@@ -203,9 +203,15 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          }
 
          ref.setScheduledDeliveryTime(0);
-         // TODO - need to replicate this so backup node also adds back to
-         // front of queue
-         ref.getQueue().addFirst(ref);
+
+         synchronized (ref.getQueue())
+         {
+            ref.getQueue().resetAllIterators();
+
+            ref.getQueue().addHead(ref);
+            
+            ref.getQueue().deliverAsync();
+         }
       }
    }
 }

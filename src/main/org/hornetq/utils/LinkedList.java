@@ -11,24 +11,26 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.list.impl;
-
-import org.hornetq.utils.PriorityLinkedListImpl;
+package org.hornetq.utils;
 
 /**
- * A NonConcurrentPriorityLinkedListTest
+ * A LinkedList
  *
  * @author Tim Fox
  *
  *
  */
-public class NonConcurrentPriorityLinkedListTest extends PriorityLinkedListTestBase
+public interface LinkedList<E>
 {
-
-   @Override
-   protected PriorityLinkedListImpl<Wibble> getList()
-   {
-      return new PriorityLinkedListImpl<Wibble>(10);
-   }
-
+   void addHead(E e);
+   
+   void addTail(E e);
+   
+   E poll();
+   
+   LinkedListIterator<E> iterator();
+   
+   void clear();
+   
+   int size();
 }

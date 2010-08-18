@@ -144,5 +144,10 @@ public class LocalQueueBinding implements QueueBinding
    {
       return "LocalQueueBinding [address=" + address + ", name=" + name + ", filter=" + filter + "]";
    }
+   
+   public void close() throws Exception
+   {
+      queue.close();
+   }
 
 }

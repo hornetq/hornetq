@@ -76,7 +76,7 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       producer.send(message);
 
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
 
       message = session.createMessage(false);
 
@@ -86,14 +86,14 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       producer.send(message);
 
-      ClientMessage received = consumer.receive(500);
+      ClientMessage received = consumer.receiveImmediate();
 
       assertNotNull(received);
 
       assertEquals("giraffe", received.getStringProperty("animal"));
 
-      assertNull(consumer.receive(500));
-
+      assertNull(consumer.receiveImmediate());
+      
       session.close();
    }
 
@@ -113,7 +113,6 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       for (int i = 0; i < QueueImpl.MAX_DELIVERIES_IN_LOOP * 2; i++)
       {
-
          ClientMessage message = session.createMessage(false);
 
          message.putStringProperty("animal", "hippo");
@@ -121,7 +120,7 @@ public class ConsumerFilterTest extends ServiceTestBase
          producer.send(message);
       }
 
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
 
       for (int i = 0; i < QueueImpl.MAX_DELIVERIES_IN_LOOP * 2; i++)
       {
@@ -134,15 +133,101 @@ public class ConsumerFilterTest extends ServiceTestBase
 
       for (int i = 0; i < QueueImpl.MAX_DELIVERIES_IN_LOOP * 2; i++)
       {
-         ClientMessage received = consumer.receive(500);
+         ClientMessage received = consumer.receiveImmediate();
 
          assertNotNull(received);
 
          assertEquals("giraffe", received.getStringProperty("animal"));
       }
+      
+      assertNull(consumer.receiveImmediate());
 
-      assertNull(consumer.receive(500));
+      session.close();
+   }
+   
+   public void testTwoConsumers() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
 
+      ClientSession session = sf.createSession();
+
+      session.start();
+
+      session.createQueue("foo", "foo");
+
+      ClientProducer producer = session.createProducer("foo");
+
+      ClientConsumer consumer1 = session.createConsumer("foo", "animal='giraffe'");
+      
+      ClientConsumer consumer2 = session.createConsumer("foo", "animal='elephant'");
+
+      //Create and consume message that matches the first consumer's filter
+      
+      ClientMessage message = session.createMessage(false);
+
+      message.putStringProperty("animal", "giraffe");
+
+      producer.send(message);
+      
+      ClientMessage received = consumer1.receive(10000);
+      
+      assertNotNull(received);
+      
+      assertEquals("giraffe", received.getStringProperty("animal"));
+      
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      
+      //Create and consume another message that matches the first consumer's filter
+      message = session.createMessage(false);
+
+      message.putStringProperty("animal", "giraffe");
+      
+      producer.send(message);
+      
+      received = consumer1.receive(10000);
+      
+      assertNotNull(received);
+      
+      assertEquals("giraffe", received.getStringProperty("animal"));
+      
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      
+      //Create and consume a message that matches the second consumer's filter
+      
+      message = session.createMessage(false);
+      
+      message.putStringProperty("animal", "elephant");
+      
+      producer.send(message);
+      
+      received = consumer2.receive(10000);
+      
+      assertNotNull(received);
+      
+      assertEquals("elephant", received.getStringProperty("animal"));
+      
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      
+      //Create and consume another message that matches the second consumer's filter
+      
+      message = session.createMessage(false);
+      
+      message.putStringProperty("animal", "elephant");
+      
+      producer.send(message);
+      
+      received = consumer2.receive(1000);
+      
+      assertNotNull(received);
+      
+      assertEquals("elephant", received.getStringProperty("animal"));
+      
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      
       session.close();
    }
 }

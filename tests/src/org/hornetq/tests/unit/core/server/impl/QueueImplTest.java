@@ -243,7 +243,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(numMessages, queue.getMessageCount());
@@ -276,7 +276,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -330,7 +330,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -384,7 +384,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -404,7 +404,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(20, queue.getMessageCount());
@@ -420,7 +420,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       queue.deliverNow();
@@ -431,7 +431,7 @@ public class QueueImplTest extends UnitTestCase
       Assert.assertEquals(30, queue.getDeliveringCount());
    }
 
-   public void testAddFirstadd() throws Exception
+   public void testaddHeadadd() throws Exception
    {
       QueueImpl queue = new QueueImpl(1,
                                       QueueImplTest.address1,
@@ -455,7 +455,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs1.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       LinkedList<MessageReference> refs2 = new LinkedList<MessageReference>();
@@ -466,7 +466,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs2.addFirst(ref);
 
-         queue.addFirst(ref);
+         queue.addHead(ref);
       }
 
       List<MessageReference> refs3 = new ArrayList<MessageReference>();
@@ -477,7 +477,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs3.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       FakeConsumer consumer = new FakeConsumer();
@@ -519,7 +519,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(numMessages, queue.getMessageCount());
@@ -559,7 +559,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
       
       queue.deliverNow();
@@ -593,7 +593,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
       
       queue.deliverNow();
@@ -625,7 +625,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       queue.deliverNow();
@@ -654,7 +654,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
       
       queue.deliverNow();
@@ -694,7 +694,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       FakeConsumer cons1 = new FakeConsumer();
@@ -747,8 +747,10 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
+      
+      queue.deliverNow();
 
       FakeConsumer consumer = new FakeConsumer();
 
@@ -820,7 +822,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
 
          refs.add(ref);
       }
@@ -872,13 +874,13 @@ public class QueueImplTest extends UnitTestCase
 
       ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      queue.addLast(ref1);
+      queue.addTail(ref1);
 
       MessageReference ref2 = generateReference(queue, 2);
 
       ref2.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
 
-      queue.addLast(ref2);
+      queue.addTail(ref2);
 
       refs.add(ref2);
 
@@ -908,13 +910,13 @@ public class QueueImplTest extends UnitTestCase
 
       ref3.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      queue.addLast(ref3);
+      queue.addTail(ref3);
 
       MessageReference ref4 = generateReference(queue, 4);
 
       ref4.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("orange"));
 
-      queue.addLast(ref4);
+      queue.addTail(ref4);
 
       refs.add(ref4);
 
@@ -959,7 +961,7 @@ public class QueueImplTest extends UnitTestCase
          ref.getMessage().putStringProperty("color", "green");
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -1010,7 +1012,7 @@ public class QueueImplTest extends UnitTestCase
          ref.getMessage().putStringProperty("color", "red");
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -1030,7 +1032,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
          ref.getMessage().putStringProperty("color", "green");
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(20, queue.getMessageCount());
@@ -1046,7 +1048,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       queue.deliverNow();
@@ -1087,7 +1089,7 @@ public class QueueImplTest extends UnitTestCase
          ref.getMessage().putStringProperty("color", "red");
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       Assert.assertEquals(10, queue.getMessageCount());
@@ -1106,7 +1108,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
          ref.getMessage().putStringProperty("color", "green");
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
@@ -1125,7 +1127,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
          ref.getMessage().putStringProperty("color", "green");
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       queue.deliverNow();
@@ -1167,19 +1169,19 @@ public class QueueImplTest extends UnitTestCase
 
       ref1.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("banana"));
 
-      queue.addLast(ref1);
+      queue.addTail(ref1);
 
       MessageReference ref2 = generateReference(queue, 2);
 
       ref2.getMessage().putStringProperty(new SimpleString("cheese"), new SimpleString("stilton"));
 
-      queue.addLast(ref2);
+      queue.addTail(ref2);
 
       MessageReference ref3 = generateReference(queue, 3);
 
       ref3.getMessage().putStringProperty(new SimpleString("cake"), new SimpleString("sponge"));
 
-      queue.addLast(ref3);
+      queue.addTail(ref3);
 
       MessageReference ref4 = generateReference(queue, 4);
 
@@ -1187,13 +1189,13 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref4);
 
-      queue.addLast(ref4);
+      queue.addTail(ref4);
 
       MessageReference ref5 = generateReference(queue, 5);
 
       ref5.getMessage().putStringProperty(new SimpleString("fruit"), new SimpleString("apple"));
 
-      queue.addLast(ref5);
+      queue.addTail(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
 
@@ -1201,7 +1203,7 @@ public class QueueImplTest extends UnitTestCase
 
       refs.add(ref6);
 
-      queue.addLast(ref6);
+      queue.addTail(ref6);
 
       if (!direct)
       {
@@ -1255,9 +1257,9 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
-      queue.addFirst(messageReference);
-      queue.addLast(messageReference2);
-      queue.addFirst(messageReference3);
+      queue.addHead(messageReference);
+      queue.addTail(messageReference2);
+      queue.addHead(messageReference3);
 
       Assert.assertEquals(0, consumer.getReferences().size());
       queue.addConsumer(consumer);
@@ -1285,9 +1287,9 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
-      queue.addLast(messageReference);
-      queue.addLast(messageReference2);
-      queue.addLast(messageReference3);
+      queue.addTail(messageReference);
+      queue.addTail(messageReference2);
+      queue.addTail(messageReference3);
       Assert.assertEquals(queue.getMessagesAdded(), 3);
    }
 
@@ -1307,9 +1309,9 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
-      queue.addFirst(messageReference);
-      queue.addFirst(messageReference2);
-      queue.addFirst(messageReference3);
+      queue.addHead(messageReference);
+      queue.addHead(messageReference2);
+      queue.addHead(messageReference3);
       Assert.assertEquals(queue.getReference(2), messageReference2);
 
    }
@@ -1330,9 +1332,9 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
       MessageReference messageReference3 = generateReference(queue, 3);
-      queue.addFirst(messageReference);
-      queue.addFirst(messageReference2);
-      queue.addFirst(messageReference3);
+      queue.addHead(messageReference);
+      queue.addHead(messageReference2);
+      queue.addHead(messageReference3);
       Assert.assertNull(queue.getReference(5));
 
    }
@@ -1368,7 +1370,7 @@ public class QueueImplTest extends UnitTestCase
 
          refs.add(ref);
 
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
       // even as this queue is paused, it will receive the messages anyway
       Assert.assertEquals(10, queue.getMessageCount());
@@ -1438,7 +1440,7 @@ public class QueueImplTest extends UnitTestCase
       {
          MessageReference ref = generateReference(queue, i);
          refs.add(ref);
-         queue.addLast(ref);
+         queue.addTail(ref);
       }
 
       // the queue even if it's paused will receive the message but won't forward
@@ -1488,11 +1490,11 @@ public class QueueImplTest extends UnitTestCase
       {
          if (first)
          {
-            queue.addFirst(messageReference);
+            queue.addHead(messageReference);
          }
          else
          {
-            queue.addLast(messageReference);
+            queue.addTail(messageReference);
          }
          added = true;
          countDownLatch.countDown();

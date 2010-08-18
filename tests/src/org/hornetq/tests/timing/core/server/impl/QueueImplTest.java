@@ -84,34 +84,34 @@ public class QueueImplTest extends UnitTestCase
 
       MessageReference ref1 = generateReference(queue, 1);
       ref1.setScheduledDeliveryTime(now + 7000);
-      queue.addLast(ref1);
+      queue.addTail(ref1);
 
       // Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
-      queue.addLast(ref2);
+      queue.addTail(ref2);
       MessageReference ref3 = generateReference(queue, 3);
-      queue.addLast(ref3);
+      queue.addTail(ref3);
       MessageReference ref4 = generateReference(queue, 4);
-      queue.addLast(ref4);
+      queue.addTail(ref4);
 
       // Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
-      queue.addLast(ref5);
+      queue.addTail(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
       ref6.setScheduledDeliveryTime(now + 4000);
-      queue.addLast(ref6);
+      queue.addTail(ref6);
 
       MessageReference ref7 = generateReference(queue, 7);
       ref7.setScheduledDeliveryTime(now + 3000);
-      queue.addLast(ref7);
+      queue.addTail(ref7);
 
       MessageReference ref8 = generateReference(queue, 8);
       ref8.setScheduledDeliveryTime(now + 6000);
-      queue.addLast(ref8);
+      queue.addTail(ref8);
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
@@ -162,34 +162,34 @@ public class QueueImplTest extends UnitTestCase
 
       MessageReference ref1 = generateReference(queue, 1);
       ref1.setScheduledDeliveryTime(now + 7000);
-      queue.addLast(ref1);
+      queue.addTail(ref1);
 
       // Send some non scheduled messages
 
       MessageReference ref2 = generateReference(queue, 2);
-      queue.addLast(ref2);
+      queue.addTail(ref2);
       MessageReference ref3 = generateReference(queue, 3);
-      queue.addLast(ref3);
+      queue.addTail(ref3);
       MessageReference ref4 = generateReference(queue, 4);
-      queue.addLast(ref4);
+      queue.addTail(ref4);
 
       // Now send some more scheduled messages
 
       MessageReference ref5 = generateReference(queue, 5);
       ref5.setScheduledDeliveryTime(now + 5000);
-      queue.addLast(ref5);
+      queue.addTail(ref5);
 
       MessageReference ref6 = generateReference(queue, 6);
       ref6.setScheduledDeliveryTime(now + 4000);
-      queue.addLast(ref6);
+      queue.addTail(ref6);
 
       MessageReference ref7 = generateReference(queue, 7);
       ref7.setScheduledDeliveryTime(now + 3000);
-      queue.addLast(ref7);
+      queue.addTail(ref7);
 
       MessageReference ref8 = generateReference(queue, 8);
       ref8.setScheduledDeliveryTime(now + 6000);
-      queue.addLast(ref8);
+      queue.addTail(ref8);
 
       consumer = new FakeConsumer();
 
@@ -263,7 +263,7 @@ public class QueueImplTest extends UnitTestCase
       MessageReference messageReference = generateReference(queue, 1);
       queue.addConsumer(consumer);
       messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);
-      queue.addFirst(messageReference);
+      queue.addHead(messageReference);
 
       boolean gotLatch = countDownLatch.await(3000, TimeUnit.MILLISECONDS);
       Assert.assertTrue(gotLatch);

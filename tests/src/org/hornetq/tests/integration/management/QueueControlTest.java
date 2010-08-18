@@ -372,7 +372,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientMessage message = session.createMessage(false);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
-
+      
       String jsonString = queueControl.listMessagesAsJSON(null);
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);

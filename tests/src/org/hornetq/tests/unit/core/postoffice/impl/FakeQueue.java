@@ -29,6 +29,54 @@ import org.hornetq.core.transaction.Transaction;
 
 public class FakeQueue implements Queue
 {
+   public void close()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void forceCheckQueueSize()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void reload(MessageReference ref)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void blockOnExecutorFuture()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void addHead(MessageReference ref)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void addTail(MessageReference ref, boolean direct)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void addTail(MessageReference ref)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void resetAllIterators()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    private final SimpleString name;
 
    public FakeQueue(final SimpleString name)

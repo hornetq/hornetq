@@ -509,8 +509,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-
-      consumer.acknowledge(autoCommitAcks, tx, messageID);
+      
+       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
 
    public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
@@ -1131,7 +1131,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          toCancel.addAll(consumer.cancelRefs(false, lastMessageAsDelived, theTx));
       }
-
+      
       for (MessageReference ref : toCancel)
       {
          ref.getQueue().cancel(theTx, ref);

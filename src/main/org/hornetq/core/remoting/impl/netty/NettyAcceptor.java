@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.impl.netty;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;

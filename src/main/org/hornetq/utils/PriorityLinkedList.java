@@ -25,19 +25,17 @@ package org.hornetq.utils;
  */
 public interface PriorityLinkedList<T>
 {
-   int addFirst(T t, int priority);
+   void addHead(T t, int priority);
 
-   int addLast(T t, int priority);
+   void addTail(T t, int priority);
 
-   T removeFirst();
-
-   T peekFirst();
+   T poll();
 
    void clear();
 
    int size();
 
-   HQIterator<T> iterator();
+   LinkedListIterator<T> iterator();
 
    boolean isEmpty();
 }

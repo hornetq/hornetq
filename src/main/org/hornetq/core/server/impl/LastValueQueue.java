@@ -71,7 +71,7 @@ public class LastValueQueue extends QueueImpl
    }
 
    @Override
-   public synchronized void add(final MessageReference ref, final boolean first, final boolean direct)
+   public synchronized void addTail(final MessageReference ref, final boolean direct)
    {
       SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
 
@@ -79,67 +79,75 @@ public class LastValueQueue extends QueueImpl
       {
          HolderReference hr = map.get(prop);
 
-         if (!first)
+         if (hr != null)
          {
-            if (hr != null)
+            // We need to overwrite the old ref with the new one and ack the old one
+
+            MessageReference oldRef = hr.getReference();
+
+            super.referenceHandled();
+
+            try
             {
-               // We need to overwrite the old ref with the new one and ack the old one
-
-               MessageReference oldRef = hr.getReference();
-
-               super.referenceHandled();
-
-               try
-               {
-                  super.acknowledge(oldRef);
-               }
-               catch (Exception e)
-               {
-                  LastValueQueue.log.error("Failed to ack old reference", e);
-               }
-
-               hr.setReference(ref);
-
+               super.acknowledge(oldRef);
             }
-            else
+            catch (Exception e)
             {
-               hr = new HolderReference(prop, ref);
-
-               map.put(prop, hr);
-
-               super.add(hr, first, direct);
+               LastValueQueue.log.error("Failed to ack old reference", e);
             }
+
+            hr.setReference(ref);
+
          }
          else
          {
-            // Add to front
+            hr = new HolderReference(prop, ref);
 
-            if (hr != null)
-            {
-               // We keep the current ref and ack the one we are returning
+            map.put(prop, hr);
 
-               super.referenceHandled();
-
-               try
-               {
-                  super.acknowledge(ref);
-               }
-               catch (Exception e)
-               {
-                  LastValueQueue.log.error("Failed to ack old reference", e);
-               }
-            }
-            else
-            {
-               map.put(prop, (HolderReference)ref);
-
-               super.add(ref, first, direct);
-            }
+            super.addTail(hr, direct);
          }
       }
       else
       {
-         super.add(ref, first, direct);
+         super.addTail(ref, direct);
+      }
+   }
+
+   @Override
+   public synchronized void addHead(final MessageReference ref)
+   {
+      SimpleString prop = ref.getMessage().getSimpleStringProperty(Message.HDR_LAST_VALUE_NAME);
+
+      if (prop != null)
+      {
+         HolderReference hr = map.get(prop);
+
+         if (hr != null)
+         {
+            // We keep the current ref and ack the one we are returning
+
+            super.referenceHandled();
+
+            try
+            {
+               super.acknowledge(ref);
+            }
+            catch (Exception e)
+            {
+               LastValueQueue.log.error("Failed to ack old reference", e);
+            }
+         }
+         else
+         {
+            map.put(prop, (HolderReference)ref);
+
+            super.addHead(ref);
+         }
+      }
+      else
+      {
+         super.addHead(ref);
       }
    }
 

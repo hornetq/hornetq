@@ -480,7 +480,7 @@ public class MessageGroupingTest extends UnitTestCase
       
       SimpleString groupId = new SimpleString("grp1");
       SimpleString groupId2 = new SimpleString("grp2");
-      int numMessages = 10;
+      int numMessages = 4;
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);

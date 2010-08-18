@@ -132,5 +132,9 @@ public class DivertBinding implements Binding
    {
       return "DivertBinding [divert=" + divert + "]";
    }
+   
+   public void close() throws Exception
+   {    
+   }
 
 }

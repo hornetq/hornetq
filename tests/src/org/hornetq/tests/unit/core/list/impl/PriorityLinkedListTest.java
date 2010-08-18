@@ -11,20 +11,24 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils;
+package org.hornetq.tests.unit.core.list.impl;
+
+import org.hornetq.utils.PriorityLinkedListImpl;
 
 /**
- * A HQIterator
+ * A PriorityLinkedListTest
  *
  * @author Tim Fox
  *
  *
  */
-public interface HQIterator<E>
+public class PriorityLinkedListTest extends PriorityLinkedListTestBase
 {
-   E next();
-   
-   void remove();
-   
-   void prev();
+
+   @Override
+   protected PriorityLinkedListImpl<Wibble> getList()
+   {
+      return new PriorityLinkedListImpl<Wibble>(10);
+   }
+
 }

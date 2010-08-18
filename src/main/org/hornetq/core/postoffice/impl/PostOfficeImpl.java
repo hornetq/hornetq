@@ -501,6 +501,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
 
+      binding.close();
+      
       return binding;
    }
 
@@ -692,7 +694,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (tx == null)
       {
-         queue.addLast(reference, false);
+         queue.reload(reference);
       }
       else
       {
@@ -968,7 +970,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       for (MessageReference ref : refs)
       {
-         ref.getQueue().addLast(ref, direct);
+         ref.getQueue().addTail(ref, direct);
       }
    }
 
@@ -1262,7 +1264,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          for (MessageReference ref : refs)
          {
-            ref.getQueue().addLast(ref, false);
+            ref.getQueue().addTail(ref, false);
          }
       }
 

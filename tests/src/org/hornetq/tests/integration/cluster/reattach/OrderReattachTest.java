@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.cluster.reattach;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
@@ -35,7 +36,6 @@ import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.utils.concurrent.LinkedBlockingDeque;
 
 /**
  * A OrderReattachTest

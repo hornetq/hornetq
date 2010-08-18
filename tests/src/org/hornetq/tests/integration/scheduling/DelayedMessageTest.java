@@ -136,6 +136,8 @@ public class DelayedMessageTest extends ServiceTestBase
          Assert.assertNotNull(tm);
 
          long time = System.currentTimeMillis();
+         
+         log.info("delay " + (time-now));
 
          Assert.assertTrue(time - now >= DelayedMessageTest.DELAY);
 

@@ -11,25 +11,23 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.list.impl;
+package org.hornetq.utils;
 
-import org.hornetq.utils.PriorityLinkedListImpl;
-import org.hornetq.utils.concurrent.ConcurrentPriorityLinkedListImpl;
+import java.util.Iterator;
+
 
 /**
- * A ConcurrentPriorityLinkedListTest
+ * A LinkedListIterator
+ * 
+ * This iterator allows the last element to be repeated in the next call to hasNext or next
  *
  * @author Tim Fox
  *
  *
  */
-public class ConcurrentPriorityLinkedListTest extends PriorityLinkedListTestBase
+public interface LinkedListIterator<E> extends Iterator<E>
 {
-
-   @Override
-   protected PriorityLinkedListImpl<Wibble> getList()
-   {
-      return new ConcurrentPriorityLinkedListImpl<Wibble>(10);
-   }
-
+   void repeat();
+   
+   void close();
 }

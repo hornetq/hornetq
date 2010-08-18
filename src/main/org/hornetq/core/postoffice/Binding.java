@@ -51,4 +51,6 @@ public interface Binding
    int getDistance();
 
    void route(ServerMessage message, RoutingContext context) throws Exception;
+   
+   void close() throws Exception;
 }

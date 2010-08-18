@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -66,6 +67,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalRollbackRecordTX;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
+
 
 /**
  * 
@@ -183,9 +185,9 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    public final String fileExtension;
 
-   private final LinkedBlockingDeque<JournalFile> dataFiles = new LinkedBlockingDeque<JournalFile>();
+   private final BlockingDeque<JournalFile> dataFiles = new LinkedBlockingDeque<JournalFile>();
 
-   private final LinkedBlockingDeque<JournalFile> pendingCloseFiles = new LinkedBlockingDeque<JournalFile>();
+   private final BlockingQueue<JournalFile> pendingCloseFiles = new LinkedBlockingDeque<JournalFile>();
 
    private final ConcurrentLinkedQueue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 

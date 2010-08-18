@@ -16,7 +16,7 @@ package org.hornetq.tests.unit.core.list.impl;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.hornetq.utils.HQIterator;
+import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedListImpl;
 
 /**
@@ -126,414 +126,451 @@ public abstract class PriorityLinkedListTestBase extends TestCase
    {
       Assert.assertTrue(list.isEmpty());
 
-      list.addFirst(a, 0);
+      list.addHead(a, 0);
 
       Assert.assertFalse(list.isEmpty());
 
-      Wibble w = list.removeFirst();
+      Wibble w = list.poll();
       Assert.assertEquals(a, w);
       Assert.assertTrue(list.isEmpty());
+      
+      assertEquals(0, list.size());
    }
 
-   public void testAddFirst() throws Exception
+   public void testaddHead() throws Exception
    {
-      list.addFirst(a, 0);
-      list.addFirst(b, 0);
-      list.addFirst(c, 0);
-      list.addFirst(d, 0);
-      list.addFirst(e, 0);
+      list.addHead(a, 0);
+      list.addHead(b, 0);
+      list.addHead(c, 0);
+      list.addHead(d, 0);
+      list.addHead(e, 0);
+      
+      assertEquals(5, list.size());
 
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(a, list.removeFirst());
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(a, list.poll());
+      Assert.assertNull(list.poll());
+      
+      assertEquals(0, list.size());
    }
 
-   public void testAddLast() throws Exception
+   public void testaddTail() throws Exception
    {
-      list.addLast(a, 0);
-      list.addLast(b, 0);
-      list.addLast(c, 0);
-      list.addLast(d, 0);
-      list.addLast(e, 0);
+      list.addTail(a, 0);
+      list.addTail(b, 0);
+      list.addTail(c, 0);
+      list.addTail(d, 0);
+      list.addTail(e, 0);
+      assertEquals(5, list.size());
 
-      Assert.assertEquals(a, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(a, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertNull(list.poll());
+      
+      assertEquals(0, list.size());
 
    }
    
    public void testAddLastAndFirst() throws Exception
    {
-      list.addLast(a, 0);
-      list.addLast(b, 0);
-      list.addLast(c, 0);
-      list.addLast(d, 0);
-      list.addLast(e, 0);
-      list.addLast(f, 0);
-      list.addLast(g, 0);
-      list.addLast(h, 0);
-      list.addLast(i, 0);
-      list.addLast(j, 0);
+      list.addTail(a, 0);
+      list.addTail(b, 0);
+      list.addTail(c, 0);
+      list.addTail(d, 0);
+      list.addTail(e, 0);
+      list.addTail(f, 0);
+      list.addTail(g, 0);
+      list.addTail(h, 0);
+      list.addTail(i, 0);
+      list.addTail(j, 0);
       
-      list.addFirst(k, 0);
-      list.addFirst(l, 0);
-      list.addFirst(m, 0);
-      list.addFirst(n, 0);
-      list.addFirst(o, 0);
-      list.addFirst(p, 0);
-      list.addFirst(q, 0);
-      list.addFirst(r, 0);
-      list.addFirst(s, 0);
-      list.addFirst(t, 0);
+      list.addHead(k, 0);
+      list.addHead(l, 0);
+      list.addHead(m, 0);
+      list.addHead(n, 0);
+      list.addHead(o, 0);
+      list.addHead(p, 0);
+      list.addHead(q, 0);
+      list.addHead(r, 0);
+      list.addHead(s, 0);
+      list.addHead(t, 0);
       
-      assertEquals(t, list.removeFirst());
-      assertEquals(s, list.removeFirst());
-      assertEquals(r, list.removeFirst());
-      assertEquals(q, list.removeFirst());
-      assertEquals(p, list.removeFirst());
-      assertEquals(o, list.removeFirst());
-      assertEquals(n, list.removeFirst());
-      assertEquals(m, list.removeFirst());
-      assertEquals(l, list.removeFirst());
-      assertEquals(k, list.removeFirst());
+      assertEquals(t, list.poll());
+      assertEquals(s, list.poll());
+      assertEquals(r, list.poll());
+      assertEquals(q, list.poll());
+      assertEquals(p, list.poll());
+      assertEquals(o, list.poll());
+      assertEquals(n, list.poll());
+      assertEquals(m, list.poll());
+      assertEquals(l, list.poll());
+      assertEquals(k, list.poll());
       
-      assertEquals(a, list.removeFirst());
-      assertEquals(b, list.removeFirst());
-      assertEquals(c, list.removeFirst());
-      assertEquals(d, list.removeFirst());
-      assertEquals(e, list.removeFirst());
-      assertEquals(f, list.removeFirst());
-      assertEquals(g, list.removeFirst());
-      assertEquals(h, list.removeFirst());
-      assertEquals(i, list.removeFirst());
-      assertEquals(j, list.removeFirst());
+      assertEquals(a, list.poll());
+      assertEquals(b, list.poll());
+      assertEquals(c, list.poll());
+      assertEquals(d, list.poll());
+      assertEquals(e, list.poll());
+      assertEquals(f, list.poll());
+      assertEquals(g, list.poll());
+      assertEquals(h, list.poll());
+      assertEquals(i, list.poll());
+      assertEquals(j, list.poll());
    }
    
    public void testAddLastAndFirstWithIterator() throws Exception
    {
-      list.addLast(a, 0);
-      list.addLast(b, 0);
-      list.addLast(c, 0);
-      list.addLast(d, 0);
-      list.addLast(e, 0);
-      list.addLast(f, 0);
-      list.addLast(g, 0);
-      list.addLast(h, 0);
-      list.addLast(i, 0);
-      list.addLast(j, 0);
+      list.addTail(a, 0);
+      list.addTail(b, 0);
+      list.addTail(c, 0);
+      list.addTail(d, 0);
+      list.addTail(e, 0);
+      list.addTail(f, 0);
+      list.addTail(g, 0);
+      list.addTail(h, 0);
+      list.addTail(i, 0);
+      list.addTail(j, 0);
       
-      list.addFirst(k, 0);
-      list.addFirst(l, 0);
-      list.addFirst(m, 0);
-      list.addFirst(n, 0);
-      list.addFirst(o, 0);
-      list.addFirst(p, 0);
-      list.addFirst(q, 0);
-      list.addFirst(r, 0);
-      list.addFirst(s, 0);
-      list.addFirst(t, 0);
+      list.addHead(k, 0);
+      list.addHead(l, 0);
+      list.addHead(m, 0);
+      list.addHead(n, 0);
+      list.addHead(o, 0);
+      list.addHead(p, 0);
+      list.addHead(q, 0);
+      list.addHead(r, 0);
+      list.addHead(s, 0);
+      list.addHead(t, 0);
       
-      HQIterator<Wibble> iter = list.iterator();
+      LinkedListIterator<Wibble> iter = list.iterator();
            
+      assertTrue(iter.hasNext());
       assertEquals(t, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(s, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(r, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(q, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(p, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(o, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(n, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(m, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(l, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(k, iter.next());
  
-      
+      assertTrue(iter.hasNext());
       assertEquals(a, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(b, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(c, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(d, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(e, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(f, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(g, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(h, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(i, iter.next());
+      assertTrue(iter.hasNext());
       assertEquals(j, iter.next());
    }
 
-   public void testPeekFirst()
+   public void testPoll() throws Exception
    {
-      list.addLast(a, 0);
-      list.addLast(b, 1);
-      list.addLast(c, 2);
-      list.addLast(d, 3);
-      list.addLast(e, 4);
-      list.addLast(f, 5);
-      list.addLast(g, 6);
-      list.addLast(h, 7);
-      list.addLast(i, 8);
-      list.addLast(j, 9);
+      list.addTail(a, 0);
+      list.addTail(b, 1);
+      list.addTail(c, 2);
+      list.addTail(d, 3);
+      list.addTail(e, 4);
+      list.addTail(f, 5);
+      list.addTail(g, 6);
+      list.addTail(h, 7);
+      list.addTail(i, 8);
+      list.addTail(j, 9);
 
-      Assert.assertEquals(j, list.peekFirst());
-      Assert.assertEquals(j, list.peekFirst());
+      Assert.assertEquals(j, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(a, list.poll());
 
-      list.removeFirst();
+      Assert.assertNull(list.poll());
 
-      Assert.assertEquals(i, list.peekFirst());
-      Assert.assertEquals(i, list.peekFirst());
+      list.addTail(a, 9);
+      list.addTail(b, 8);
+      list.addTail(c, 7);
+      list.addTail(d, 6);
+      list.addTail(e, 5);
+      list.addTail(f, 4);
+      list.addTail(g, 3);
+      list.addTail(h, 2);
+      list.addTail(i, 1);
+      list.addTail(j, 0);
 
-      list.clear();
-   }
+      Assert.assertEquals(a, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(j, list.poll());
 
-   public void testRemoveFirst() throws Exception
-   {
-      list.addLast(a, 0);
-      list.addLast(b, 1);
-      list.addLast(c, 2);
-      list.addLast(d, 3);
-      list.addLast(e, 4);
-      list.addLast(f, 5);
-      list.addLast(g, 6);
-      list.addLast(h, 7);
-      list.addLast(i, 8);
-      list.addLast(j, 9);
+      Assert.assertNull(list.poll());
 
-      Assert.assertEquals(j, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(a, list.removeFirst());
+      list.addTail(a, 9);
+      list.addTail(b, 0);
+      list.addTail(c, 8);
+      list.addTail(d, 1);
+      list.addTail(e, 7);
+      list.addTail(f, 2);
+      list.addTail(g, 6);
+      list.addTail(h, 3);
+      list.addTail(i, 5);
+      list.addTail(j, 4);
 
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(a, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(j, list.poll());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(b, list.poll());
 
-      list.addLast(a, 9);
-      list.addLast(b, 8);
-      list.addLast(c, 7);
-      list.addLast(d, 6);
-      list.addLast(e, 5);
-      list.addLast(f, 4);
-      list.addLast(g, 3);
-      list.addLast(h, 2);
-      list.addLast(i, 1);
-      list.addLast(j, 0);
+      Assert.assertNull(list.poll());
 
-      Assert.assertEquals(a, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(j, list.removeFirst());
+      list.addTail(a, 0);
+      list.addTail(b, 3);
+      list.addTail(c, 3);
+      list.addTail(d, 3);
+      list.addTail(e, 6);
+      list.addTail(f, 6);
+      list.addTail(g, 6);
+      list.addTail(h, 9);
+      list.addTail(i, 9);
+      list.addTail(j, 9);
 
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(j, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(a, list.poll());
 
-      list.addLast(a, 9);
-      list.addLast(b, 0);
-      list.addLast(c, 8);
-      list.addLast(d, 1);
-      list.addLast(e, 7);
-      list.addLast(f, 2);
-      list.addLast(g, 6);
-      list.addLast(h, 3);
-      list.addLast(i, 5);
-      list.addLast(j, 4);
+      Assert.assertNull(list.poll());
 
-      Assert.assertEquals(a, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(j, list.removeFirst());
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
+      list.addTail(a, 5);
+      list.addTail(b, 5);
+      list.addTail(c, 5);
+      list.addTail(d, 5);
+      list.addTail(e, 5);
+      list.addTail(f, 5);
+      list.addTail(g, 5);
+      list.addTail(h, 5);
+      list.addTail(i, 5);
+      list.addTail(j, 5);
 
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(a, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(j, list.poll());
 
-      list.addLast(a, 0);
-      list.addLast(b, 3);
-      list.addLast(c, 3);
-      list.addLast(d, 3);
-      list.addLast(e, 6);
-      list.addLast(f, 6);
-      list.addLast(g, 6);
-      list.addLast(h, 9);
-      list.addLast(i, 9);
-      list.addLast(j, 9);
+      Assert.assertNull(list.poll());
 
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(j, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(a, list.removeFirst());
+      list.addTail(j, 5);
+      list.addTail(i, 5);
+      list.addTail(h, 5);
+      list.addTail(g, 5);
+      list.addTail(f, 5);
+      list.addTail(e, 5);
+      list.addTail(d, 5);
+      list.addTail(c, 5);
+      list.addTail(b, 5);
+      list.addTail(a, 5);
 
-      Assert.assertNull(list.removeFirst());
+      Assert.assertEquals(j, list.poll());
+      Assert.assertEquals(i, list.poll());
+      Assert.assertEquals(h, list.poll());
+      Assert.assertEquals(g, list.poll());
+      Assert.assertEquals(f, list.poll());
+      Assert.assertEquals(e, list.poll());
+      Assert.assertEquals(d, list.poll());
+      Assert.assertEquals(c, list.poll());
+      Assert.assertEquals(b, list.poll());
+      Assert.assertEquals(a, list.poll());
 
-      list.addLast(a, 5);
-      list.addLast(b, 5);
-      list.addLast(c, 5);
-      list.addLast(d, 5);
-      list.addLast(e, 5);
-      list.addLast(f, 5);
-      list.addLast(g, 5);
-      list.addLast(h, 5);
-      list.addLast(i, 5);
-      list.addLast(j, 5);
-
-      Assert.assertEquals(a, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(j, list.removeFirst());
-
-      Assert.assertNull(list.removeFirst());
-
-      list.addLast(j, 5);
-      list.addLast(i, 5);
-      list.addLast(h, 5);
-      list.addLast(g, 5);
-      list.addLast(f, 5);
-      list.addLast(e, 5);
-      list.addLast(d, 5);
-      list.addLast(c, 5);
-      list.addLast(b, 5);
-      list.addLast(a, 5);
-
-      Assert.assertEquals(j, list.removeFirst());
-      Assert.assertEquals(i, list.removeFirst());
-      Assert.assertEquals(h, list.removeFirst());
-      Assert.assertEquals(g, list.removeFirst());
-      Assert.assertEquals(f, list.removeFirst());
-      Assert.assertEquals(e, list.removeFirst());
-      Assert.assertEquals(d, list.removeFirst());
-      Assert.assertEquals(c, list.removeFirst());
-      Assert.assertEquals(b, list.removeFirst());
-      Assert.assertEquals(a, list.removeFirst());
-
-      Assert.assertNull(list.removeFirst());
+      Assert.assertNull(list.poll());
+      
+      assertEquals(0, list.size());
 
    }
 
    public void testIterator()
    {
-      list.addLast(a, 9);
-      list.addLast(b, 9);
-      list.addLast(c, 8);
-      list.addLast(d, 8);
-      list.addLast(e, 7);
-      list.addLast(f, 7);
-      list.addLast(g, 7);
-      list.addLast(h, 6);
-      list.addLast(i, 6);
-      list.addLast(j, 6);
-      list.addLast(k, 5);
-      list.addLast(l, 5);
-      list.addLast(m, 4);
-      list.addLast(n, 4);
-      list.addLast(o, 4);
-      list.addLast(p, 3);
-      list.addLast(q, 3);
-      list.addLast(r, 3);
-      list.addLast(s, 2);
-      list.addLast(t, 2);
-      list.addLast(u, 2);
-      list.addLast(v, 1);
-      list.addLast(w, 1);
-      list.addLast(x, 1);
-      list.addLast(y, 0);
-      list.addLast(z, 0);
+      list.addTail(a, 9);
+      list.addTail(b, 9);
+      list.addTail(c, 8);
+      list.addTail(d, 8);
+      list.addTail(e, 7);
+      list.addTail(f, 7);
+      list.addTail(g, 7);
+      list.addTail(h, 6);
+      list.addTail(i, 6);
+      list.addTail(j, 6);
+      list.addTail(k, 5);
+      list.addTail(l, 5);
+      list.addTail(m, 4);
+      list.addTail(n, 4);
+      list.addTail(o, 4);
+      list.addTail(p, 3);
+      list.addTail(q, 3);
+      list.addTail(r, 3);
+      list.addTail(s, 2);
+      list.addTail(t, 2);
+      list.addTail(u, 2);
+      list.addTail(v, 1);
+      list.addTail(w, 1);
+      list.addTail(x, 1);
+      list.addTail(y, 0);
+      list.addTail(z, 0);
 
-      HQIterator<Wibble> iter = list.iterator();
+      LinkedListIterator<Wibble> iter = list.iterator();
 
-      int c = 0;
+      int count = 0;
       Wibble w;
-      while ((w = iter.next()) != null)
+      while (iter.hasNext())
       {
-         c++;
+         w = iter.next();
+         count++;
       }
-      Assert.assertEquals(c, 26);
+      Assert.assertEquals(26, count);
       Assert.assertEquals(26, list.size());
 
       iter = list.iterator();
 
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
+      assertTrue(iter.hasNext());
       Assert.assertEquals("a", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
+      assertTrue(iter.hasNext());
       Assert.assertEquals("b", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("c", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("d", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("e", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("f", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("g", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("h", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("i", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("j", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("k", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("l", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("m", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("n", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("o", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("p", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("q", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("r", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("s", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("t", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("u", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("v", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("w", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("x", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("y", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("z", w.s);
-      Assert.assertNull(iter.next());
-
+      assertFalse(iter.hasNext());
+      
+      
       iter = list.iterator();
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("a", w.s);
 
@@ -541,10 +578,13 @@ public abstract class PriorityLinkedListTestBase extends TestCase
 
       Assert.assertEquals(25, list.size());
 
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("b", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("c", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("d", w.s);
 
@@ -552,126 +592,241 @@ public abstract class PriorityLinkedListTestBase extends TestCase
 
       Assert.assertEquals(24, list.size());
 
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("c", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("e", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("f", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("g", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("h", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("i", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("j", w.s);
 
       iter.remove();
 
       Assert.assertEquals(23, list.size());
-
+      
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("i", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("k", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("l", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("m", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("n", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("o", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("p", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("q", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("r", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("s", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("t", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("u", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("v", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("w", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("x", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("y", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("z", w.s);
       iter.remove();
-      Assert.assertNull(iter.next());
+
 
       iter = list.iterator();
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("b", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("c", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("e", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("f", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("g", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("h", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("i", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("k", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("l", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("m", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("n", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("o", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("p", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("q", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("r", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("s", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("t", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("u", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("v", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("w", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("x", w.s);
+      assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("y", w.s);
-      Assert.assertNull(iter.next());
       
-      //We test again - should still be null (there was a bug here)
-      Assert.assertNull(iter.next());
+      assertFalse(iter.hasNext());
+      assertFalse(iter.hasNext());
+
+      //Test the elements added after iter created are seen
+      
+      list.addTail(a, 4);
+      list.addTail(b, 4);
+      
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("a", w.s);
+      
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("b", w.s);
+      
+      assertFalse(iter.hasNext());      
+      
+      list.addTail(c, 4);
+      list.addTail(d, 4);
+      
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("c", w.s);
+      
+      assertTrue(iter.hasNext());
+      w = (Wibble)iter.next();
+      Assert.assertEquals("d", w.s);
+      
+      assertFalse(iter.hasNext());
+      
 
    }
+   
+   public void testIteratorPicksUpHigherPriorities()
+   {
+      list.addTail(a, 4);
+      list.addTail(b, 4);
+      list.addTail(c, 4);
+     
+      LinkedListIterator<Wibble> iter = list.iterator();
+      
+      assertTrue(iter.hasNext());
+      assertEquals(a, iter.next());
+      
+      assertTrue(iter.hasNext());
+      assertEquals(b, iter.next());
+      
+      list.addTail(d, 5);
+      list.addTail(e, 5);
+      
+      assertTrue(iter.hasNext());
+      assertEquals(d, iter.next());
+      
+      assertTrue(iter.hasNext());
+      assertEquals(e, iter.next());
+      
+      assertTrue(iter.hasNext());
+      assertEquals(c, iter.next());
+      
+      list.addTail(f, 1);
+      list.addTail(g, 9);
+      
+      assertTrue(iter.hasNext());
+      assertEquals(g, iter.next());
+      
+      assertTrue(iter.hasNext());
+      assertEquals(f, iter.next());
+   }
+
 
    public void testClear()
    {
-      list.addLast(a, 0);
-      list.addLast(b, 3);
-      list.addLast(c, 3);
-      list.addLast(d, 3);
-      list.addLast(e, 6);
-      list.addLast(f, 6);
-      list.addLast(g, 6);
-      list.addLast(h, 9);
-      list.addLast(i, 9);
-      list.addLast(j, 9);
+      list.addTail(a, 0);
+      list.addTail(b, 3);
+      list.addTail(c, 3);
+      list.addTail(d, 3);
+      list.addTail(e, 6);
+      list.addTail(f, 6);
+      list.addTail(g, 6);
+      list.addTail(h, 9);
+      list.addTail(i, 9);
+      list.addTail(j, 9);
 
       list.clear();
 
-      Assert.assertNull(list.removeFirst());
+      Assert.assertNull(list.poll());
    }
 
    class Wibble

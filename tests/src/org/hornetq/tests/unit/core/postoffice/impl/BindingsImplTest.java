@@ -964,6 +964,12 @@ public class BindingsImplTest extends UnitTestCase
    class FakeBinding implements Binding
    {
 
+      public void close() throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
       final SimpleString name;
 
       FakeBinding(final SimpleString name)
