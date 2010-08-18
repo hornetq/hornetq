@@ -123,9 +123,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       {
          protected void onCompactLock() throws Exception
          {
-            System.out.println("OnCompactLock");
+            // System.out.println("OnCompactLock");
             journal.forceMoveNextFile(false);
-            System.out.println("OnCompactLock done");
+            // System.out.println("OnCompactLock done");
          }
 
          protected void onCompactStart() throws Exception
@@ -136,7 +136,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                {
                   try
                   {
-                     System.out.println("OnCompactStart enter");
+                     // System.out.println("OnCompactStart enter");
                      if (running)
                      {
                         long id = idGen.generateID();
@@ -144,7 +144,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                         journal.forceMoveNextFile(false);
                         journal.appendDeleteRecord(id, id == 20);
                      }
-                     System.out.println("OnCompactStart leave");
+                     // System.out.println("OnCompactStart leave");
                   }
                   catch (Exception e)
                   {
@@ -481,7 +481,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                // Append
                for (int i = 0; running & i < ids.length; i++)
                {
-                  System.out.println("append slow");
+                  // System.out.println("append slow");
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
                   maxRecords.acquire();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
@@ -492,7 +492,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                // Delete
                for (int i = 0; running & i < ids.length; i++)
                {
-                  System.out.println("Deleting");
+                  // System.out.println("Deleting");
                   maxRecords.release();
                   journal.appendDeleteRecord(ids[i], false);
                   numberOfDeletes.incrementAndGet();
