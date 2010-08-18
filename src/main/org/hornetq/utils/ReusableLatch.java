@@ -50,6 +50,11 @@ public class ReusableLatch
       {
          return getState();
       }
+      
+      public void setCount(final int count)
+      {
+         setState(count);
+      }
 
       @Override
       public int tryAcquireShared(final int numberOfAqcquires)
@@ -106,6 +111,11 @@ public class ReusableLatch
    public int getCount()
    {
       return control.getCount();
+   }
+   
+   public void setCount(final int count)
+   {
+      control.setCount(count);
    }
 
    public void countUp()

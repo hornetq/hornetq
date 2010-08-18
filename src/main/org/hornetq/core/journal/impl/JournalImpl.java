@@ -1570,8 +1570,8 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             }
             catch (Throwable e)
             {
-               log.warn("Error on reading compacting for "  + file);
-               throw new Exception("Error on reading compacting for "  + file, e);
+               log.warn("Error on reading compacting for " + file);
+               throw new Exception("Error on reading compacting for " + file, e);
             }
          }
 
@@ -1643,6 +1643,10 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                if (liveTransaction != null)
                {
                   liveTransaction.merge(newTransaction);
+               }
+               else
+               {
+                  log.warn("Couldn't find tx=" + newTransaction.getId() + " to merge after compacting");
                }
             }
          }
@@ -2114,6 +2118,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     */
    public boolean checkReclaimStatus() throws Exception
    {
+
+      if (compactorRunning.get())
+      {
+         return false;
+      }
+
       // We can't start reclaim while compacting is working
       compactingLock.readLock().lock();
       try
@@ -2190,6 +2200,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                         });
                      }
                      return true;
+                  }
+                  else
+                  {
+                     // We only cleanup the first files
+                     // if a middle file needs cleanup it will be done through compacting
+                     break;
                   }
                }
             }
@@ -2298,10 +2314,10 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          controlFile.delete();
 
          final JournalFile retJournalfile = new JournalFileImpl(returningFile, -1);
- 
+
          if (trace)
          {
-             trace("Adding free file back from cleanup" + retJournalfile);
+            trace("Adding free file back from cleanup" + retJournalfile);
          }
 
          filesExecutor.execute(new Runnable()
@@ -3280,7 +3296,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       {
          return;
       }
- 
+
       if (autoReclaim && !compactorRunning.get())
       {
          filesExecutor.execute(new Runnable()

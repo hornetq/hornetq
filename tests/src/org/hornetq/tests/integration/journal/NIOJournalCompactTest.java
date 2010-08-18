@@ -237,57 +237,93 @@ public class NIOJournalCompactTest extends JournalImplTestBase
    {
 
       setup(2, 60 * 1024, false);
-      
+
       createJournal();
-      
+
       startJournal();
-      
+
       load();
-      
+
       add(1);
-      
+
       updateTx(2, 1);
-      
+
       rollback(2);
-      
+
       journal.compact();
-      
+
       stopJournal();
-      
+
       startJournal();
-      
+
       loadAndCheck();
-      
+
       stopJournal();
 
    }
 
+   public void testCompactSecondFileReclaimed() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+
+      createJournal();
+
+      startJournal();
+
+      load();
+
+      addTx(1, 1, 2, 3, 4);
+
+      journal.forceMoveNextFile();
+
+      addTx(1, 5, 6, 7, 8);
+      
+      commit(1);
+      
+      journal.forceMoveNextFile();
+      
+      journal.compact();
+      
+      add(10);
+
+      stopJournal();
+
+      startJournal();
+
+      loadAndCheck();
+
+      stopJournal();
+
+   }
 
    public void testIncompleteTXDuringcompact() throws Exception
    {
 
       setup(2, 60 * 1024, false);
-      
+
       createJournal();
-      
+
       startJournal();
-      
+
       load();
-      
+
       add(1);
-      
+
       updateTx(2, 1);
-      
+
       journal.compact();
-      
+
+      journal.compact();
+
       commit(2);
-      
+
       stopJournal();
-      
+
       startJournal();
-      
+
       loadAndCheck();
-      
+
       stopJournal();
 
    }
@@ -625,31 +661,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
-      final ReusableLatch reusableLatchDone = new ReusableLatch();
-      reusableLatchDone.countUp();
-      final ReusableLatch reusableLatchWait = new ReusableLatch();
-      reusableLatchWait.countUp();
-
-      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
-      {
-
-         @Override
-         public void onCompactDone()
-         {
-            reusableLatchDone.countDown();
-            System.out.println("Waiting on Compact");
-            try
-            {
-               reusableLatchWait.await();
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
-            System.out.println("Done");
-         }
-      };
-
+      createJournal();
       journal.setAutoReclaim(false);
 
       startJournal();
@@ -665,25 +677,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       addTx(consumerTX, firstID);
 
-      Thread tCompact = new Thread()
-      {
-         @Override
-         public void run()
-         {
-            try
-            {
-               journal.compact();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      };
-
-      tCompact.start();
-
-      reusableLatchDone.await();
+      startCompact();
 
       addTx(appendTX, addedRecord);
 
@@ -695,9 +689,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       delete(addedRecord);
 
-      reusableLatchWait.countDown();
-
-      tCompact.join();
+      finishCompact();
 
       journal.forceMoveNextFile();
 
@@ -723,30 +715,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
-      final ReusableLatch reusableLatchDone = new ReusableLatch();
-      reusableLatchDone.countUp();
-      final ReusableLatch reusableLatchWait = new ReusableLatch();
-      reusableLatchWait.countUp();
-
-      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
-      {
-
-         @Override
-         public void onCompactDone()
-         {
-            reusableLatchDone.countDown();
-            System.out.println("Waiting on Compact");
-            try
-            {
-               reusableLatchWait.await();
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
-            System.out.println("Done");
-         }
-      };
+      createJournal();
 
       journal.setAutoReclaim(false);
 
@@ -763,25 +732,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       addTx(consumerTX, firstID);
 
-      Thread tCompact = new Thread()
-      {
-         @Override
-         public void run()
-         {
-            try
-            {
-               journal.compact();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      };
-
-      tCompact.start();
-
-      reusableLatchDone.await();
+      startCompact();
 
       addTx(appendTX, addedRecord);
       commit(appendTX);
@@ -794,9 +745,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       commit(deleteTXID);
 
-      reusableLatchWait.countDown();
-
-      tCompact.join();
+      finishCompact();
 
       journal.forceMoveNextFile();
 
@@ -816,30 +765,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
-      final ReusableLatch reusableLatchDone = new ReusableLatch();
-      reusableLatchDone.countUp();
-      final ReusableLatch reusableLatchWait = new ReusableLatch();
-      reusableLatchWait.countUp();
-
-      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
-      {
-
-         @Override
-         public void onCompactDone()
-         {
-            reusableLatchDone.countDown();
-            System.out.println("Waiting on Compact");
-            try
-            {
-               reusableLatchWait.await();
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
-            System.out.println("Done");
-         }
-      };
+      createJournal();
 
       journal.setAutoReclaim(false);
 
@@ -856,33 +782,13 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       updateTx(consumerTX, firstID);
 
-      Thread tCompact = new Thread()
-      {
-         @Override
-         public void run()
-         {
-            try
-            {
-               journal.compact();
-            }
-            catch (Exception e)
-            {
-               e.printStackTrace();
-            }
-         }
-      };
-
-      tCompact.start();
-
-      reusableLatchDone.await();
+      startCompact();
 
       addTx(consumerTX, addedRecord);
       commit(consumerTX);
       delete(addedRecord);
 
-      reusableLatchWait.countDown();
-
-      tCompact.join();
+      finishCompact();
 
       journal.compact();
 
@@ -983,6 +889,63 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       journal.compact();
 
       System.out.println("Debug after compact\n" + journal.debug());
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testCompactAddAndUpdateFollowedByADelete6() throws Exception
+   {
+
+      setup(2, 60 * 1024, false);
+
+      SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
+
+      createJournal();
+
+      journal.setAutoReclaim(false);
+
+      startJournal();
+      load();
+
+      long tx0 = idGen.generateID();
+
+      long tx1 = idGen.generateID();
+
+      long add1 = idGen.generateID();
+
+      long add2 = idGen.generateID();
+
+      startCompact();
+
+      addTx(tx0, add1);
+
+      rollback(tx0);
+
+      addTx(tx1, add1, add2);
+      commit(tx1);
+
+      finishCompact();
+
+      long tx2 = idGen.generateID();
+
+      updateTx(tx2, add1, add2);
+      commit(tx2);
+
+      delete(add1);
+
+      startCompact();
+
+      delete(add2);
+
+      finishCompact();
+
+      journal.forceMoveNextFile();
+
+      journal.compact();
 
       stopJournal();
       createJournal();

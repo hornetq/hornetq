@@ -35,6 +35,7 @@ import org.hornetq.core.journal.impl.ImportJournal;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.ReusableLatch;
 
 /**
  * 
@@ -68,6 +69,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected String fileExtension = "hq";
 
    protected SequentialFileFactory fileFactory;
+
+   private ReusableLatch latchDone = new ReusableLatch(0);
+
+   private ReusableLatch latchWait = new ReusableLatch(0);
+
+   private Thread compactThread;
 
    @Override
    protected void setUp() throws Exception
@@ -144,8 +151,58 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    public void createJournal() throws Exception
    {
-      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO);
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO)
+      {
+         @Override
+         public void onCompactDone()
+         {
+            latchDone.countDown();
+            System.out.println("Waiting on Compact");
+            try
+            {
+               latchWait.await();
+            }
+            catch (InterruptedException e)
+            {
+               e.printStackTrace();
+            }
+            System.out.println("Waiting on Compact Done");
+         }
+      };
+
       journal.setAutoReclaim(false);
+   }
+
+   // It will start compacting, but it will let the thread in wait mode at onCompactDone, so we can validate command
+   // executions
+   protected void startCompact() throws Exception
+   {
+      latchDone.setCount(1);
+      latchWait.setCount(1);
+      this.compactThread = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               journal.compact();
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+            }
+         }
+      };
+
+      this.compactThread.start();
+
+      latchDone.await();
+   }
+
+   protected void finishCompact() throws Exception
+   {
+      latchWait.countDown();
+      compactThread.join();
    }
 
    protected void startJournal() throws Exception
@@ -211,8 +268,6 @@ public abstract class JournalImplTestBase extends UnitTestCase
                                   getTestDir() + "/output.log");
    }
 
-
-   
    protected void loadAndCheck() throws Exception
    {
       loadAndCheck(false);
@@ -258,7 +313,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
    {
       journal.load(null, null, null);
    }
-   
+
    protected void beforeJournalOperation() throws Exception
    {
    }

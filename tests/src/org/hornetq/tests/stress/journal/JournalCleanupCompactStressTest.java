@@ -112,7 +112,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
          maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO;
       }
 
-      journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
+      journal = new JournalImpl(50 * 1024,
                                 20,
                                 15,
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
@@ -127,7 +127,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             journal.forceMoveNextFile(false);
             System.out.println("OnCompactLock done");
          }
-      
+
          protected void onCompactStart() throws Exception
          {
             testExecutor.execute(new Runnable()
@@ -325,7 +325,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                long rollbackTXID = JournalCleanupCompactStressTest.idGen.generateID();
 
                final long ids[] = new long[txSize];
-               
+
                for (int i = 0; i < txSize; i++)
                {
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
@@ -341,7 +341,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                   maxRecords.acquire();
                }
                journal.appendCommitRecord(txID, true, ctx);
-               
+
                ctx.executeOnCompletion(new IOAsyncTask()
                {
 
@@ -407,6 +407,11 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                   txID = JournalCleanupCompactStressTest.idGen.generateID();
                   ids = new long[txSize];
                }
+            }
+
+            if (txCount > 0)
+            {
+               journal.appendCommitRecord(txID, true);
             }
          }
          catch (Exception e)
