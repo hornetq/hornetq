@@ -1070,6 +1070,15 @@ public class QueueImpl implements Queue
 
       while (handled < numRefs)
       {
+         if (handled == MAX_DELIVERIES_IN_LOOP)
+         {
+            // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too long
+
+            deliverAsync();
+            
+            return;
+         }
+         
          ConsumerHolder holder = consumerList.get(pos);
 
          Consumer consumer = holder.consumer;
@@ -1160,14 +1169,7 @@ public class QueueImpl implements Queue
          if (pos == size)
          {
             pos = 0;
-         }
-
-         if (handled == MAX_DELIVERIES_IN_LOOP)
-         {
-            // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too long
-
-            deliverAsync();
-         }
+         }         
       }
    }
 
