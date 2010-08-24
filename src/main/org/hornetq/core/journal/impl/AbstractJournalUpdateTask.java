@@ -218,7 +218,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
       sequentialFile.open(1, false);
 
-      currentFile = new JournalFileImpl(sequentialFile, nextOrderingID++);
+      currentFile = new JournalFileImpl(sequentialFile, nextOrderingID++, JournalImpl.FORMAT_VERSION);
       
       JournalImpl.writeHeader(writingChannel, journal.getUserVersion(), currentFile.getFileID());
    }

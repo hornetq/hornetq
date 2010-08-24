@@ -39,14 +39,15 @@ public class JournalRollbackRecordTX extends JournalInternalRecord
    {
       buffer.writeByte(JournalImpl.ROLLBACK_RECORD);
       buffer.writeInt(fileID);
+      buffer.writeByte(compactCount);
       buffer.writeLong(txID);
-      buffer.writeInt(JournalImpl.SIZE_ROLLBACK_RECORD);
+      buffer.writeInt(JournalImpl.SIZE_ROLLBACK_RECORD + 1);
 
    }
 
    @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_ROLLBACK_RECORD;
+      return JournalImpl.SIZE_ROLLBACK_RECORD + 1;
    }
 }

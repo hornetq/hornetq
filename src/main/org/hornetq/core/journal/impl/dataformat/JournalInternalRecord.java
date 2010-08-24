@@ -27,6 +27,8 @@ public abstract class JournalInternalRecord implements EncodingSupport
 {
 
    protected int fileID;
+   
+   protected byte compactCount;
 
    public int getFileID()
    {
@@ -49,6 +51,23 @@ public abstract class JournalInternalRecord implements EncodingSupport
    public int getNumberOfRecords()
    {
       return 0;
+   }
+   
+   public short getCompactCount()
+   {
+      return compactCount;
+   }
+   
+   public void setCompactCount(final short compactCount)
+   {
+      if (compactCount > Byte.MAX_VALUE)
+      {
+         this.compactCount = Byte.MAX_VALUE;
+      }
+      else
+      {
+         this.compactCount = (byte)compactCount;
+      }
    }
 
    public abstract int getEncodeSize();

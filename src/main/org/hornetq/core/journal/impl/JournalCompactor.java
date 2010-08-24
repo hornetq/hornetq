@@ -47,6 +47,11 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 {
 
    private static final Logger log = Logger.getLogger(JournalCompactor.class);
+   
+   // We try to separate old record from new ones when doing the compacting
+   // this is a split line
+   // We will force a moveNextFiles when the compactCount is bellow than COMPACT_SPLIT_LINE 
+   private final short COMPACT_SPLIT_LINE = 2;
 
    // Snapshot of transactions that were pending when the compactor started
    private final Map<Long, PendingTransaction> pendingTransactions = new ConcurrentHashMap<Long, PendingTransaction>();
@@ -69,7 +74,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 
       if (controlFile.exists())
       {
-         JournalFile file = new JournalFileImpl(controlFile, 0);
+         JournalFile file = new JournalFileImpl(controlFile, 0, JournalImpl.FORMAT_VERSION);
 
          final ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -209,18 +214,64 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
 
    private void checkSize(final int size) throws Exception
    {
+      checkSize(size, -1);
+   }
+   
+   private void checkSize(final int size, final int compactCount) throws Exception
+   {
       if (getWritingChannel() == null)
       {
-         openFile();
+         if (!checkCompact(compactCount))
+         {
+            // will need to open a file either way
+            openFile();
+         }
       }
       else
       {
+         if (compactCount >= 0)
+         {
+            if (checkCompact(compactCount))
+            {
+               // The file was already moved on this case, no need to check for the size.
+               // otherwise we will also need to check for the size
+               return;
+            }
+         }
+         
          if (getWritingChannel().writerIndex() + size > getWritingChannel().capacity())
          {
             openFile();
          }
       }
    }
+   
+   int currentCount;
+   // This means we will need to split when the compactCount is bellow the watermark
+   boolean willNeedToSplit = false;
+   boolean splitted = false;
+
+   private boolean checkCompact(final int compactCount) throws Exception
+   {
+      if (compactCount >= COMPACT_SPLIT_LINE && !splitted)
+      {
+         willNeedToSplit = true;
+      }
+      
+      if (willNeedToSplit && compactCount < COMPACT_SPLIT_LINE)
+      {
+         willNeedToSplit = false;
+         splitted = false;
+         openFile();
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+   
+   
 
    /**
     * Replay pending counts that happened during compacting
@@ -252,8 +303,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
                                                                 info.id,
                                                                 info.getUserRecordType(),
                                                                 new ByteArrayEncoding(info.data));
-
-         checkSize(addRecord.getEncodeSize());
+         addRecord.setCompactCount((short)(info.compactCount + 1));
+         
+         checkSize(addRecord.getEncodeSize(), info.compactCount);
 
          writeEncoder(addRecord);
 
@@ -273,7 +325,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
                                                                info.getUserRecordType(),
                                                                new ByteArrayEncoding(info.data));
 
-         checkSize(record.getEncodeSize());
+         record.setCompactCount((short)(info.compactCount + 1));
+         
+         checkSize(record.getEncodeSize(), info.compactCount);
 
          newTransaction.addPositive(currentFile, info.id, record.getEncodeSize());
 
@@ -395,7 +449,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
                                                                    info.userRecordType,
                                                                    new ByteArrayEncoding(info.data));
 
-         checkSize(updateRecord.getEncodeSize());
+         updateRecord.setCompactCount((short)(info.compactCount + 1));
+         
+         checkSize(updateRecord.getEncodeSize(), info.compactCount);
 
          JournalRecord newRecord = newRecords.get(info.id);
 
@@ -425,7 +481,9 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
                                                                        info.userRecordType,
                                                                        new ByteArrayEncoding(info.data));
 
-         checkSize(updateRecordTX.getEncodeSize());
+         updateRecordTX.setCompactCount((short)(info.compactCount + 1));
+         
+         checkSize(updateRecordTX.getEncodeSize(), info.compactCount);
 
          writeEncoder(updateRecordTX);
 

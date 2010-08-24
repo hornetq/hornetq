@@ -70,6 +70,8 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
       }
 
       buffer.writeInt(fileID);
+      
+      buffer.writeByte(compactCount);
 
       buffer.writeLong(txID);
 
@@ -105,11 +107,11 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
    {
       if (isCommit)
       {
-         return JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD;
+         return JournalImpl.SIZE_COMPLETE_TRANSACTION_RECORD + 1;
       }
       else
       {
-         return JournalImpl.SIZE_PREPARE_RECORD + (transactionData != null ? transactionData.getEncodeSize() : 0);
+         return JournalImpl.SIZE_PREPARE_RECORD + (transactionData != null ? transactionData.getEncodeSize() : 0) + 1;
       }
    }
 }

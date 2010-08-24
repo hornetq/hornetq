@@ -183,6 +183,8 @@ public class ExportJournal
              recordInfo.data.length +
              ",isUpdate@" +
              recordInfo.isUpdate +
+             ",compactCount@" +
+             recordInfo.compactCount +
              ",data@" +
              encode(recordInfo.data);
    }

@@ -23,7 +23,7 @@ package org.hornetq.core.journal;
  */
 public class RecordInfo
 {
-   public RecordInfo(final long id, final byte userRecordType, final byte[] data, final boolean isUpdate)
+   public RecordInfo(final long id, final byte userRecordType, final byte[] data, final boolean isUpdate, final short compactCount)
    {
       this.id = id;
 
@@ -32,8 +32,15 @@ public class RecordInfo
       this.data = data;
 
       this.isUpdate = isUpdate;
+
+      this.compactCount = compactCount;
    }
 
+   /** How many times this record was compacted (up to 7 times)
+       After the record has reached 7 times, it will always be 7
+       As we only store up to 0x7 binary, as part of the recordID (binary 111) */
+   public final short compactCount;
+   
    public final long id;
 
    public final byte userRecordType;

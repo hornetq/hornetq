@@ -53,10 +53,6 @@ public interface JournalFile
 
    boolean isCanReclaim();
 
-   void setNeedCleanup(boolean needCleanup);
-
-   boolean isNeedCleanup();
-
    long getOffset();
 
    /** This is a field to identify that records on this file actually belong to the current file.
@@ -64,6 +60,8 @@ public interface JournalFile
    int getRecordID();
    
    long getFileID();
+   
+   int getJournalVersion();
 
    SequentialFile getFile();
 }

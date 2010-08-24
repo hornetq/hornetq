@@ -55,6 +55,8 @@ public class JournalDeleteRecordTX extends JournalInternalRecord
       buffer.writeByte(JournalImpl.DELETE_RECORD_TX);
 
       buffer.writeInt(fileID);
+      
+      buffer.writeByte(compactCount);
 
       buffer.writeLong(txID);
 
@@ -73,6 +75,6 @@ public class JournalDeleteRecordTX extends JournalInternalRecord
    @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_DELETE_RECORD_TX + (record != null ? record.getEncodeSize() : 0);
+      return JournalImpl.SIZE_DELETE_RECORD_TX + (record != null ? record.getEncodeSize() : 0) + 1;
    }
 }

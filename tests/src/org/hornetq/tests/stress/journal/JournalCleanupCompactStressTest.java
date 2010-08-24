@@ -15,6 +15,7 @@ package org.hornetq.tests.stress.journal;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -25,6 +26,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -56,6 +59,8 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    public static SimpleIDGenerator idGen = new SimpleIDGenerator(1);
 
    private static final int MAX_WRITES = 20000;
+   
+   private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
    // We want to maximize the difference between appends and deles, or we could get out of memory
    public Semaphore maxRecords;
@@ -81,6 +86,12 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
    private OrderedExecutorFactory executorFactory = new OrderedExecutorFactory(threadPool);
 
    Executor testExecutor;
+
+   protected long getTotalTimeMilliseconds()
+   {
+      return TimeUnit.MINUTES.toMillis(2);
+   }
+
 
    @Override
    public void setUp() throws Exception
@@ -114,7 +125,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       journal = new JournalImpl(50 * 1024,
                                 20,
-                                15,
+                                50, 
                                 ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE,
                                 factory,
                                 "hornetq-data",
@@ -181,11 +192,6 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       threadPool.shutdown();
    }
 
-   protected long getTotalTimeMilliseconds()
-   {
-      return TimeUnit.MINUTES.toMillis(10);
-   }
-
    public void testAppend() throws Exception
    {
 
@@ -225,6 +231,12 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                             ", liveRecords = " +
                             (numberOfRecords.get() - numberOfDeletes.get()));
          Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+         rwLock.writeLock().lock();
+         System.out.println("Restarting server");
+         journal.stop();
+         journal.start();
+         reloadJournal();
+         rwLock.writeLock().unlock();
       }
 
       running = false;
@@ -255,12 +267,36 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       latchExecutorDone.await();
 
-      assertEquals(0, errors.get());
-
       journal.stop();
 
       journal.start();
 
+      reloadJournal();
+      
+      Collection<Long> records = journal.getRecords().keySet();
+      
+      System.out.println("Deleting everything!");
+      for (Long delInfo : records)
+      {
+         journal.appendDeleteRecord(delInfo, false);
+      }
+      
+      journal.forceMoveNextFile();
+      
+      Thread.sleep(5000);
+      
+      assertEquals(0, journal.getDataFilesCount());
+
+      journal.stop();
+   }
+
+   /**
+    * @throws Exception
+    */
+   private void reloadJournal() throws Exception
+   {
+      assertEquals(0, errors.get());
+      
       ArrayList<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
       journal.load(committedRecords, preparedTransactions, new TransactionFailureCallback()
@@ -285,8 +321,6 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
 
       assertEquals(numberOfRecords.get() - numberOfDeletes.get(), appends);
-
-      journal.stop();
    }
 
    private byte[] generateRecord()
@@ -313,9 +347,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       @Override
       public void run()
       {
+         rwLock.readLock().lock();
+         
          try
          {
-
             while (running)
             {
                final int txSize = RandomUtil.randomMax(100);
@@ -358,6 +393,14 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      }
                   }
                });
+               
+               rwLock.readLock().unlock();
+               
+               Thread.yield();
+             
+               rwLock.readLock().lock();
+               
+
             }
          }
          catch (Exception e)
@@ -365,6 +408,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             e.printStackTrace();
             running = false;
             errors.incrementAndGet();
+         }
+         finally
+         {
+            rwLock.readLock().unlock();
          }
       }
    }
@@ -384,6 +431,9 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       @Override
       public void run()
       {
+
+         rwLock.readLock().lock();
+
          try
          {
             int txSize = RandomUtil.randomMax(100);
@@ -391,17 +441,30 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             long ids[] = new long[txSize];
 
             long txID = JournalCleanupCompactStressTest.idGen.generateID();
-
+            
             while (running)
             {
 
-               long id = queue.poll(60, TimeUnit.MINUTES);
-               ids[txCount] = id;
-               journal.appendUpdateRecordTransactional(txID, id, (byte)0, generateRecord());
-               if (++txCount == txSize)
+               Long id = queue.poll(10, TimeUnit.SECONDS);
+               if (id != null)
                {
-                  journal.appendCommitRecord(txID, true, ctx);
-                  ctx.executeOnCompletion(new DeleteTask(ids));
+                  ids[txCount++] = id;
+                  journal.appendUpdateRecordTransactional(txID, id, (byte)0, generateRecord());
+               }
+               if (txCount == txSize || id == null)
+               {
+                  if (txCount > 0)
+                  {
+                     journal.appendCommitRecord(txID, true, ctx);
+                     ctx.executeOnCompletion(new DeleteTask(ids));
+                  }
+                  
+                  rwLock.readLock().unlock();
+                  
+                  Thread.yield();
+                  
+                  rwLock.readLock().lock();
+                  
                   txCount = 0;
                   txSize = RandomUtil.randomMax(100);
                   txID = JournalCleanupCompactStressTest.idGen.generateID();
@@ -420,6 +483,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             running = false;
             errors.incrementAndGet();
          }
+         finally
+         {
+            rwLock.readLock().unlock();
+         }
       }
    }
 
@@ -434,14 +501,18 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
 
       public void done()
       {
+         rwLock.readLock().lock();
          numberOfUpdates.addAndGet(ids.length);
          try
          {
             for (long id : ids)
             {
-               journal.appendDeleteRecord(id, false);
-               maxRecords.release();
-               numberOfDeletes.incrementAndGet();
+               if (id != 0)
+               {
+                  journal.appendDeleteRecord(id, false);
+                  maxRecords.release();
+                  numberOfDeletes.incrementAndGet();
+               }
             }
          }
          catch (Exception e)
@@ -450,6 +521,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
             e.printStackTrace();
             running = false;
             errors.incrementAndGet();
+         }
+         finally
+         {
+            rwLock.readLock().unlock();
          }
       }
 
@@ -473,6 +548,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       @Override
       public void run()
       {
+         rwLock.readLock().lock();
          try
          {
             while (running)
@@ -481,18 +557,22 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                // Append
                for (int i = 0; running & i < ids.length; i++)
                {
-                  // System.out.println("append slow");
+                  System.out.println("append slow");
                   ids[i] = JournalCleanupCompactStressTest.idGen.generateID();
                   maxRecords.acquire();
                   journal.appendAddRecord(ids[i], (byte)1, generateRecord(), true);
                   numberOfRecords.incrementAndGet();
 
+                  rwLock.readLock().unlock();
+                  
                   Thread.sleep(TimeUnit.SECONDS.toMillis(50));
+                  
+                  rwLock.readLock().lock();
                }
                // Delete
                for (int i = 0; running & i < ids.length; i++)
                {
-                  // System.out.println("Deleting");
+                  System.out.println("Deleting");
                   maxRecords.release();
                   journal.appendDeleteRecord(ids[i], false);
                   numberOfDeletes.incrementAndGet();
@@ -503,6 +583,10 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
          {
             e.printStackTrace();
             System.exit(-1);
+         }
+         finally
+         {
+            rwLock.readLock().unlock();
          }
       }
    }

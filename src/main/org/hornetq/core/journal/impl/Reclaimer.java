@@ -53,8 +53,6 @@ public class Reclaimer
 
          JournalFile currentFile = files[i];
 
-         currentFile.setNeedCleanup(false);
-
          int posCount = currentFile.getPosCount();
 
          int totNeg = 0;
@@ -101,18 +99,7 @@ public class Reclaimer
                      {
                         Reclaimer.trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
                      }
-                     file.setNeedCleanup(true);
-
-                     if (file.getTotalNegativeToOthers() == 0)
-                     {
-                        file.setNeedCleanup(true);
-                     }
-                     else
-                     {
-                        // This file can't be cleared as the file has negatives to other files as well
-                        file.setNeedCleanup(false);
-                     }
-
+ 
                      currentFile.setCanReclaim(false);
 
                      break;

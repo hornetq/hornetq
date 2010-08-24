@@ -44,6 +44,8 @@ public class JournalDeleteRecord extends JournalInternalRecord
       buffer.writeByte(JournalImpl.DELETE_RECORD);
 
       buffer.writeInt(fileID);
+      
+      buffer.writeByte(compactCount);
 
       buffer.writeLong(id);
 
@@ -53,6 +55,6 @@ public class JournalDeleteRecord extends JournalInternalRecord
    @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_DELETE_RECORD;
+      return JournalImpl.SIZE_DELETE_RECORD + 1;
    }
 }

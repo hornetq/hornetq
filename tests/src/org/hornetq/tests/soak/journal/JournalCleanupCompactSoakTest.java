@@ -39,7 +39,7 @@ public class JournalCleanupCompactSoakTest extends JournalCleanupCompactStressTe
    
    protected long getTotalTimeMilliseconds()
    {
-      return TimeUnit.HOURS.toMillis(2);
+      return TimeUnit.HOURS.toMillis(8);
    }
 
 

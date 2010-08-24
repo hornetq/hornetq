@@ -283,7 +283,7 @@ public class ImportJournal
       byte userRecordType = parseByte("userRecordType", properties);
       boolean isUpdate = parseBoolean("isUpdate", properties);
       byte[] data = parseEncoding("data", properties);
-      return new RecordInfo(id, userRecordType, data, isUpdate);
+      return new RecordInfo(id, userRecordType, data, isUpdate, (short)0);
    }
 
    private static byte[] parseEncoding(String name, Properties properties) throws Exception

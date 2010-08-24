@@ -66,6 +66,8 @@ public class JournalAddRecord extends JournalInternalRecord
       }
 
       buffer.writeInt(fileID);
+      
+      buffer.writeByte(compactCount);
 
       buffer.writeLong(id);
 
@@ -81,6 +83,6 @@ public class JournalAddRecord extends JournalInternalRecord
    @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_ADD_RECORD + record.getEncodeSize();
+      return JournalImpl.SIZE_ADD_RECORD + record.getEncodeSize() + 1;
    }
 }

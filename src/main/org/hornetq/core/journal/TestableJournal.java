@@ -57,8 +57,6 @@ public interface TestableJournal extends Journal
 
    void compact() throws Exception;
    
-   void cleanUp(final JournalFile file) throws Exception;
-   
    JournalFile getCurrentFile();
    
 

@@ -36,7 +36,7 @@ public class JournalFileImpl implements JournalFile
    private final SequentialFile file;
 
    private final long fileID;
-   
+
    private final int recordID;
 
    private long offset;
@@ -47,19 +47,20 @@ public class JournalFileImpl implements JournalFile
 
    private boolean canReclaim;
 
-   private boolean needCleanup;
-
    private AtomicInteger totalNegativeToOthers = new AtomicInteger(0);
-   
+
+   private final int version;
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
 
-   public JournalFileImpl(final SequentialFile file, final long fileID)
+   public JournalFileImpl(final SequentialFile file, final long fileID, final int version)
    {
       this.file = file;
 
       this.fileID = fileID;
-      
+
+      this.version = version;
+
       this.recordID = (int)(fileID & (long)Integer.MAX_VALUE);
    }
 
@@ -79,16 +80,6 @@ public class JournalFileImpl implements JournalFile
    public boolean isCanReclaim()
    {
       return canReclaim;
-   }
-
-   public boolean isNeedCleanup()
-   {
-      return needCleanup;
-   }
-
-   public void setNeedCleanup(final boolean needCleanup)
-   {
-      this.needCleanup = needCleanup;
    }
 
    public void setCanReclaim(final boolean canReclaim)
@@ -117,6 +108,11 @@ public class JournalFileImpl implements JournalFile
       {
          return count.intValue();
       }
+   }
+
+   public int getJournalVersion()
+   {
+      return version;
    }
 
    public boolean resetNegCount(final JournalFile file)
@@ -148,7 +144,7 @@ public class JournalFileImpl implements JournalFile
    {
       return fileID;
    }
-   
+
    public int getRecordID()
    {
       return recordID;
@@ -227,12 +223,10 @@ public class JournalFileImpl implements JournalFile
    {
       return liveBytes.get();
    }
-   
+
    public int getTotalNegativeToOthers()
    {
       return totalNegativeToOthers.get();
    }
-   
 
-   
 }

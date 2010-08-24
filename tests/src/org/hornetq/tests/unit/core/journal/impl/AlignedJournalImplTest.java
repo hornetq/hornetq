@@ -542,7 +542,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.appendAddRecordTransactional(1l,
                                                2l,
                                                (byte)3,
-                                               new SimpleEncoding(1900 - JournalImpl.SIZE_ADD_RECORD_TX, (byte)4));
+                                               new SimpleEncoding(1900 - JournalImpl.SIZE_ADD_RECORD_TX - 1, (byte)4));
 
       journalImpl.appendCommitRecord(1l, false);
 
@@ -587,11 +587,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       // jumping RecordType, FileId, TransactionID, RecordID, VariableSize,
       // RecordType, RecordBody (that we know it is 1 )
-      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1);
+      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1 + 1);
 
       int posCheckSize = buffer.position();
 
-      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 2, buffer.getInt());
 
       buffer.position(posCheckSize);
 
@@ -652,11 +652,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       // jumping RecordType, FileId, TransactionID, RecordID, VariableSize,
       // RecordType, RecordBody (that we know it is 1 )
-      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1);
+      buffer.position(1 + 4 + 8 + 8 + 4 + 1 + 1 + 1);
 
       int posCheckSize = buffer.position();
 
-      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 1, buffer.getInt());
+      Assert.assertEquals(JournalImpl.SIZE_ADD_RECORD_TX + 2, buffer.getInt());
 
       buffer.position(posCheckSize);
 

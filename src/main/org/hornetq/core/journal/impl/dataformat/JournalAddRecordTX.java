@@ -75,6 +75,8 @@ public class JournalAddRecordTX extends JournalInternalRecord
       }
 
       buffer.writeInt(fileID);
+      
+      buffer.writeByte(compactCount);
 
       buffer.writeLong(txID);
 
@@ -92,6 +94,6 @@ public class JournalAddRecordTX extends JournalInternalRecord
    @Override
    public int getEncodeSize()
    {
-      return JournalImpl.SIZE_ADD_RECORD_TX + record.getEncodeSize();
+      return JournalImpl.SIZE_ADD_RECORD_TX + record.getEncodeSize() + 1;
    }
 }

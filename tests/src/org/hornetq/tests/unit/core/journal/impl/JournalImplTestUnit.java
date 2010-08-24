@@ -492,7 +492,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    private int calculateRecordsPerFile(final int fileSize, final int alignment, int recordSize)
    {
       recordSize = calculateRecordSize(recordSize, alignment);
-      return fileSize / recordSize;
+      int headerSize = calculateRecordSize(JournalImpl.SIZE_HEADER, alignment);
+      return (fileSize - headerSize) / recordSize;
    }
 
    /** 
@@ -666,7 +667,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       int addRecordsPerFile = calculateRecordsPerFile(10 * 1024,
                                                       journal.getAlignment(),
-                                                      JournalImpl.SIZE_ADD_RECORD + recordLength);
+                                                      JournalImpl.SIZE_ADD_RECORD + 1 + recordLength);
+      
+      System.out.println(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength);
 
       // Fills exactly 10 files
       int initialNumberOfAddRecords = addRecordsPerFile * 10;
@@ -693,29 +696,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Now delete half of them
 
-      int deleteRecordsPerFile = calculateRecordsPerFile(10 * 1024,
-                                                         journal.getAlignment(),
-                                                         JournalImpl.SIZE_DELETE_RECORD);
-
       for (int i = 0; i < initialNumberOfAddRecords / 2; i++)
       {
          delete(i);
       }
 
-      int numberOfFiles = calculateNumberOfFiles(10 * 1024,
-                                                 journal.getAlignment(),
-                                                 initialNumberOfAddRecords,
-                                                 JournalImpl.SIZE_ADD_RECORD + recordLength,
-                                                 initialNumberOfAddRecords / 2,
-                                                 JournalImpl.SIZE_DELETE_RECORD);
-
-      if (initialNumberOfAddRecords / 2 % deleteRecordsPerFile == 0)
-      {
-         // The file is already full, next add would fix it
-         numberOfFiles--;
-      }
-
-      Assert.assertEquals(numberOfFiles, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(initialNumberOfAddRecords / 2, journal.getIDMapSize());
 
@@ -726,16 +711,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          add(initialNumberOfAddRecords + i);
       }
 
-      numberOfFiles = calculateNumberOfFiles(10 * 1024,
-                                             journal.getAlignment(),
-                                             initialNumberOfAddRecords,
-                                             JournalImpl.SIZE_ADD_RECORD + recordLength,
-                                             initialNumberOfAddRecords / 2,
-                                             JournalImpl.SIZE_DELETE_RECORD,
-                                             10,
-                                             JournalImpl.SIZE_ADD_RECORD + recordLength);
-
-      Assert.assertEquals(numberOfFiles, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(initialNumberOfAddRecords / 2 + 10, journal.getIDMapSize());
 
@@ -786,7 +761,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testReclaimAddUpdateDeleteDifferentFiles1() throws Exception
    {
       // Make sure there is one record per file
-      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
+      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
                                                                             getAlignment()), true);
       createJournal();
       startJournal();
@@ -825,7 +800,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testReclaimAddUpdateDeleteDifferentFiles2() throws Exception
    {
       // Make sure there is one record per file
-      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + recordLength,
+      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength,
                                                                             getAlignment()), true);
 
       createJournal();
@@ -1130,7 +1105,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Make sure we move on to the next file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 2); // in file 2
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 2); // in file 2
 
       journal.debugWait();
 
@@ -1161,7 +1136,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Make sure we move on to the next file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 3); // in file 4
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 3); // in file 4
 
       List<String> files5 = fileFactory.listFiles(fileExtension);
 
@@ -1491,7 +1466,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 2);
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 2);
 
       // Move on to another file
 
@@ -1544,7 +1519,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Make sure we move on to the next file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 2); // in file 1
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 2); // in file 1
 
       List<String> files2 = fileFactory.listFiles(fileExtension);
 
@@ -1565,7 +1540,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_COMMIT_RECORD) + 2, files3.size());
+                                                 JournalImpl.SIZE_COMMIT_RECORD + 1) + 2, files3.size());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
       Assert.assertEquals(calculateNumberOfFiles(fileSize,
@@ -1586,9 +1561,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_COMMIT_RECORD,
+                                                 JournalImpl.SIZE_COMMIT_RECORD + 1,
                                                  1,
-                                                 JournalImpl.SIZE_DELETE_RECORD) + 2, files4.size());
+                                                 JournalImpl.SIZE_DELETE_RECORD + 1) + 2, files4.size());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
       Assert.assertEquals(calculateNumberOfFiles(fileSize,
@@ -1596,9 +1571,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_COMMIT_RECORD,
+                                                 JournalImpl.SIZE_COMMIT_RECORD + 1,
                                                  1,
-                                                 JournalImpl.SIZE_DELETE_RECORD), journal.getDataFilesCount());
+                                                 JournalImpl.SIZE_DELETE_RECORD + 1), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
@@ -1608,9 +1583,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       List<String> files5 = fileFactory.listFiles(fileExtension);
 
-      Assert.assertEquals(4, files5.size());
-
-      Assert.assertEquals(2, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(2, journal.getIDMapSize());
@@ -1619,9 +1591,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       List<String> files6 = fileFactory.listFiles(fileExtension);
 
-      Assert.assertEquals(4, files6.size());
-
-      Assert.assertEquals(2, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(2, journal.getIDMapSize());
@@ -1633,11 +1602,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       startJournal();
       loadAndCheck();
 
-      List<String> files7 = fileFactory.listFiles(fileExtension);
-
-      Assert.assertEquals(4, files7.size());
-
-      Assert.assertEquals(2, journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(2, journal.getIDMapSize());
@@ -1665,7 +1629,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Make sure we move on to the next file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 2); // in file 1
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 2); // in file 1
 
       List<String> files2 = fileFactory.listFiles(fileExtension);
 
@@ -1678,14 +1642,12 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       rollback(1); // in file 1
 
-      List<String> files3 = fileFactory.listFiles(fileExtension);
-
       Assert.assertEquals(calculateNumberOfFiles(fileSize,
                                                  journal.getAlignment(),
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD) + 2, files3.size());
+                                                 JournalImpl.SIZE_ROLLBACK_RECORD + 1), journal.getDataFilesCount());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
       Assert.assertEquals(calculateNumberOfFiles(fileSize,
@@ -1693,7 +1655,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD), journal.getDataFilesCount());
+                                                 JournalImpl.SIZE_ROLLBACK_RECORD + 1), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
@@ -1706,9 +1668,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD,
+                                                 JournalImpl.SIZE_ROLLBACK_RECORD + 1,
                                                  1,
-                                                 JournalImpl.SIZE_DELETE_RECORD) + 2, files4.size());
+                                                 JournalImpl.SIZE_DELETE_RECORD + 1) + 2, files4.size());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
       Assert.assertEquals(calculateNumberOfFiles(fileSize,
@@ -1716,43 +1678,19 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
                                                  2,
                                                  recordLength,
                                                  1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD,
+                                                 JournalImpl.SIZE_ROLLBACK_RECORD + 1,
                                                  1,
-                                                 JournalImpl.SIZE_DELETE_RECORD), journal.getDataFilesCount());
+                                                 JournalImpl.SIZE_DELETE_RECORD + 1), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(0, journal.getIDMapSize());
 
       // Move on to another file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 3); // in file 2
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD - 1, 3); // in file 2
       // (current
       // file)
 
-      List<String> files5 = fileFactory.listFiles(fileExtension);
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD,
-                                                 1,
-                                                 recordLength) + 2, files5.size());
-
       Assert.assertEquals(1, journal.getOpenedFilesCount());
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_ROLLBACK_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD,
-                                                 1,
-                                                 recordLength), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
@@ -1859,75 +1797,22 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       EncodingSupport xid = new SimpleEncoding(10, (byte)0);
       prepare(1, xid); // in file 1
 
-      List<String> files3 = fileFactory.listFiles(fileExtension);
-
-      Assert.assertEquals(3, files3.size());
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_PREPARE_RECORD), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
       delete(2); // in file 1
 
-      List<String> files4 = fileFactory.listFiles(fileExtension);
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_PREPARE_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD) + 2, files4.size());
-
       Assert.assertEquals(1, journal.getOpenedFilesCount());
 
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_PREPARE_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD), journal.getDataFilesCount());
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(0, journal.getIDMapSize());
 
       // Move on to another file
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 3); // in file 2
-
-      List<String> files5 = fileFactory.listFiles(fileExtension);
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_PREPARE_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD,
-                                                 1,
-                                                 recordLength) + 2, files5.size());
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 3); // in file 2
 
       Assert.assertEquals(1, journal.getOpenedFilesCount());
-
-      Assert.assertEquals(calculateNumberOfFiles(fileSize,
-                                                 journal.getAlignment(),
-                                                 2,
-                                                 recordLength,
-                                                 1,
-                                                 JournalImpl.SIZE_PREPARE_RECORD,
-                                                 1,
-                                                 JournalImpl.SIZE_DELETE_RECORD,
-                                                 1,
-                                                 recordLength), journal.getDataFilesCount());
 
       Assert.assertEquals(0, journal.getFreeFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
@@ -1943,7 +1828,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       Assert.assertEquals(1, journal.getOpenedFilesCount());
       Assert.assertEquals(1, journal.getIDMapSize());
 
-      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD, 4); // in file 3
+      addWithSize(recordLength - JournalImpl.SIZE_ADD_RECORD -1, 4); // in file 3
 
       List<String> files7 = fileFactory.listFiles(fileExtension);
 
@@ -2415,7 +2300,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          journal.appendAddRecord(i, (byte)0, record, false);
 
-         records.add(new RecordInfo(i, (byte)0, record, false));
+         records.add(new RecordInfo(i, (byte)0, record, false, (short)0));
       }
 
       for (int i = 0; i < 100; i++)
@@ -2424,7 +2309,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          journal.appendUpdateRecord(i, (byte)0, record, false);
 
-         records.add(new RecordInfo(i, (byte)0, record, true));
+         records.add(new RecordInfo(i, (byte)0, record, true, (short)0));
       }
 
       for (int i = 0; i < 100; i++)

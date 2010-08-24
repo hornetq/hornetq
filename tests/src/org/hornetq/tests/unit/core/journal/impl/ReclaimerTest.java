@@ -22,6 +22,7 @@ import junit.framework.Assert;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
+import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.Reclaimer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -354,23 +355,6 @@ public class ReclaimerTest extends UnitTestCase
 
       assertCantDelete(0);
       assertCanDelete(1);
-      assertCantDelete(2);
-   }
-
-   public void testCleanup() throws Exception
-   {
-      setup(3);
-      setupPosNeg(0, 11, 0, 0, 0);
-      setupPosNeg(1, 1, 10, 0, 0);
-      setupPosNeg(2, 1, 0, 1, 0);
-
-      reclaimer.scan(files);
-
-      debugFiles();
-
-      assertCantDelete(0);
-      Assert.assertTrue(files[0].isNeedCleanup());
-      assertCantDelete(1);
       assertCantDelete(2);
    }
 
@@ -741,9 +725,7 @@ public class ReclaimerTest extends UnitTestCase
                             "]=" +
                             files[i].getPosCount() +
                             ", canDelete = " +
-                            files[i].isCanReclaim() +
-                            ", cleanup = " +
-                            files[i].isNeedCleanup());
+                            files[i].isCanReclaim());
          for (int j = 0; j <= i; j++)
          {
             System.out.println("..." + files[i].getNegCount(files[j]));
@@ -1001,6 +983,32 @@ public class ReclaimerTest extends UnitTestCase
       public int getTotalNegativeToOthers()
       {
          return totalDep;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#getJournalVersion()
+       */
+      public int getJournalVersion()
+      {
+         return JournalImpl.FORMAT_VERSION;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#getTotNeg()
+       */
+      public int getTotNeg()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#setTotNeg(int)
+       */
+      public void setTotNeg(int totNeg)
+      {
+         // TODO Auto-generated method stub
+         
       }
    }
 }
