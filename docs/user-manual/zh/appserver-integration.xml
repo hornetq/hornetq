@@ -627,6 +627,17 @@ public class MyMDB implements MessageListener
                             <entry>Integer</entry>
                             <entry>线程池的大小</entry>
                         </row>
+                        <row>
+                            <entry>SetupAttempts</entry>
+                            <entry>Integer</entry>
+                            <entry>尝试建立JMS连接的次数（默认值是10。-1表示无限次进行尝试）。有时MDB在部署时相关的JMS资源还没有准备好，这时通过多次的
+　　　　　　　　　　　　　　　　　　　尝试直到JMS资源连接上为止。只适用于内部（Inbound）连接的情况。</entry>
+                        </row>
+                        <row>
+                            <entry>SetupInterval</entry>
+                            <entry>Long</entry>
+                            <entry>每两次相邻尝试之间的时间间隔，以毫秒为单位（默认值为2000毫秒）。只适用于内部（Inbound）连接的情况。</entry>
+                        </row>
                     </tbody>
                 </tgroup>
             </informaltable>

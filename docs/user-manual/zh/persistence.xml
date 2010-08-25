@@ -56,23 +56,32 @@
         </listitem>
     </itemizedlist>
     <para>标准的HornetQ核心服务器使用了两种日志：</para>
-    <itemizedlist>
+    <itemizedlist id="persistence.journallist">
         <listitem>
             <para>绑定日志</para>
             <para>这个日志用来保存与绑定有关的数据。其中包括在HornetQ上部署的队列及其属性，还有ID序列计数器。 </para>
             <para>绑定日志是一个NIO型日志。与消息日志相比它的呑吐量是比较低的。</para>
+            <para>这种日志文件的名字采用<literal>hornetq-bindings</literal>作为前缀。每个文件都有
+                   <literal>bindings</literal>这样的扩展。文件大小是<literal
+                    >1048576</literal>，它的位置在bindings文件夹下。</para>
         </listitem>
         <listitem>
             <para>JMS日志</para>
             <para>这个日志保存所有JMS相关的数据，包括JMS队列，话题及连接工厂，以及它们的JNDI绑定信息。</para>
             <para>通过管理接口创建的JMS资源将被保存在这个日志中。但是通过配置文件配置的资源则不保存。只有使用JMS时JMS的日志
                才被创建。</para>
+            <para>这种日志文件的名字采用<literal>hornetq-jms</literal>作为前缀。每个文件都有
+                   <literal>jms</literal>这样的扩展。文件大小是<literal
+                    >1048576</literal>，它的位置在bindings文件夹下。</para>
         </listitem>
         <listitem>
             <para>消息日志</para>
             <para>这个日志用来存贮所有消息相关的数据，包括消息本身和重复ID缓存。</para>
             <para>默认情况下HornetQ总是优先使用AIO型日志。如果AIO型日志不可用（比如在非Linux平台上运行，或系统内核版本不同）
                 它将自动使用NIO型日志。</para>
+            <para>这种日志文件的名字采用<literal>hornetq-data</literal>。作为前缀。每个文件都有
+                　<literal>hq</literal>作为扩展名。默认的文件大小是 <literal
+                    >10485760</literal> (可配置)。文件保存在journal文件夹下。</para>
         </listitem>
     </itemizedlist>
     <para>对于超大消息，Hornet将它们保存在消息日志之外的地方。详见<xref linkend="large-messages"/>.</para>
@@ -220,4 +229,35 @@
               参数设为<literal>false</literal>即可。 </para>
         <para>注意如果你将该参数设为 false来关闭持久化，就意味着所有的绑定数据、消息数据、超大消息数据、重复ID缓冲以及转移（paging）数据都将不会被持久。</para>
     </section>
+    <section id="persistence.importexport">
+        <title>导入入/导出日志数据</title>
+        <para>有时你需要使用导入／导出工具来查看日志文件的记录。这个导入／导出工具类在hornetq-core.jar文件中。
+　　　       使用以下命令可以将日志文件导出为文本文件：</para>
+        <para><literal>java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal
+                &lt;JournalDirectory> &lt;JournalPrefix> &lt;FileExtension> &lt;FileSize>
+                &lt;FileOutput></literal></para>
+        <para>要将日志文件导入，使用下面的命令（注意你需要netty.jar）：</para>
+        <para><literal>java -cp hornetq-core.jar:netty.jar org.hornetq.core.journal.impl.ImportJournal
+                &lt;JournalDirectory> &lt;JournalPrefix> &lt;FileExtension> &lt;FileSize>
+                &lt;FileInput></literal></para>
+        <itemizedlist>
+            <listitem>
+                <para>JournalDirectory：文件的位置，如./hornetq/data/journal</para>
+            </listitem>
+            <listitem>
+                <para>JournalPrefix： 日志文件的前缀。<link linkend="persistence.journallist">这里</link>有关于前缀的详细描述。</para>
+            </listitem>
+            <listitem>
+                <para>FileExtension： 文件的扩展名。详细讨论参见<link linkend="persistence.journallist">这里</link>。
+                    </para>
+            </listitem>
+            <listitem>
+                <para>FileSize：日志文件的大小。详细讨论参见<link linkend="persistence.journallist">这里</link>。</para>
+            </listitem>
+            <listitem>
+                <para>FileOutput：输出的文本文件名。</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+
 </chapter>
