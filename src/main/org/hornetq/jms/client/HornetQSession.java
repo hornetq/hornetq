@@ -213,6 +213,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       return ackMode;
    }
+   
+   public boolean isXA()
+   {
+      return xa;
+   }
 
    public void commit() throws JMSException
    {

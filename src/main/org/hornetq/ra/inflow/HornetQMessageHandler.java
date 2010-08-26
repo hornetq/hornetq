@@ -68,11 +68,16 @@ public class HornetQMessageHandler implements MessageHandler
 
    private boolean useLocalTx;
    
+   private boolean transacted;
+
    private final int sessionNr;
 
    private final TransactionManager tm;
 
-   public HornetQMessageHandler(final HornetQActivation activation, final TransactionManager tm, final ClientSession session, final int sessionNr)
+   public HornetQMessageHandler(final HornetQActivation activation,
+                                final TransactionManager tm,
+                                final ClientSession session,
+                                final int sessionNr)
    {
       this.activation = activation;
       this.session = session;
@@ -96,14 +101,16 @@ public class HornetQMessageHandler implements MessageHandler
       {
          String subscriptionName = spec.getSubscriptionName();
          String clientID = spec.getClientID();
-         
+
          // Durable sub
          if (clientID == null)
          {
-            throw new InvalidClientIDException("Cannot create durable subscription for " + subscriptionName + " - client ID has not been set");
+            throw new InvalidClientIDException("Cannot create durable subscription for " + subscriptionName +
+                                               " - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(clientID, subscriptionName));
+         SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(clientID,
+                                                                                                            subscriptionName));
 
          QueueQuery subResponse = session.queueQuery(queueName);
 
@@ -123,9 +130,10 @@ public class HornetQMessageHandler implements MessageHandler
             SimpleString oldFilterString = subResponse.getFilterString();
 
             boolean selectorChanged = selector == null && oldFilterString != null ||
-                                      oldFilterString == null && selector != null ||
-                                      (oldFilterString != null && selector != null &&
-                                      !oldFilterString.toString().equals(selector));
+                                      oldFilterString == null &&
+                                      selector != null ||
+                                      (oldFilterString != null && selector != null && !oldFilterString.toString()
+                                                                                                      .equals(selector));
 
             SimpleString oldTopicName = subResponse.getAddress();
 
@@ -155,7 +163,7 @@ public class HornetQMessageHandler implements MessageHandler
             }
             else
             {
-               queueName = activation.getTopicTemporaryQueue(); 
+               queueName = activation.getTopicTemporaryQueue();
             }
          }
          else
@@ -168,6 +176,7 @@ public class HornetQMessageHandler implements MessageHandler
       // Create the endpoint, if we are transacted pass the sesion so it is enlisted, unless using Local TX
       MessageEndpointFactory endpointFactory = activation.getMessageEndpointFactory();
       useLocalTx = !activation.isDeliveryTransacted() && activation.getActivationSpec().isUseLocalTx();
+      transacted = activation.isDeliveryTransacted();
       if (activation.isDeliveryTransacted() && !activation.getActivationSpec().isUseLocalTx())
       {
          endpoint = endpointFactory.createEndpoint(session);
@@ -201,7 +210,7 @@ public class HornetQMessageHandler implements MessageHandler
       {
          HornetQMessageHandler.log.debug("Error releasing endpoint " + endpoint, t);
       }
-      
+
       try
       {
          consumer.close();
@@ -246,15 +255,28 @@ public class HornetQMessageHandler implements MessageHandler
 
       try
       {
-         if(activation.getActivationSpec().getTransactionTimeout() > 0 && tm != null)
+         if (activation.getActivationSpec().getTransactionTimeout() > 0 && tm != null)
          {
             tm.setTransactionTimeout(activation.getActivationSpec().getTransactionTimeout());
          }
          endpoint.beforeDelivery(HornetQActivation.ONMESSAGE);
          beforeDelivery = true;
          msg.doBeforeReceive();
+         
+         //In the transacted case the message must be acked *before* onMessage is called
+         
+         if (transacted)
+         {
+            message.acknowledge();
+         }
+         
          ((MessageListener)endpoint).onMessage(msg);
-         message.acknowledge();
+         
+         if (!transacted)
+         {
+            message.acknowledge();
+         }
+         
          try
          {
             endpoint.afterDelivery();

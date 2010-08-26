@@ -42,9 +42,9 @@ public class JMSMessageListenerWrapper implements MessageHandler
    private final boolean transactedOrClientAck;
 
    protected JMSMessageListenerWrapper(final HornetQSession session,
-                                    final ClientConsumer consumer,
-                                    final MessageListener listener,
-                                    final int ackMode)
+                                       final ClientConsumer consumer,
+                                       final MessageListener listener,
+                                       final int ackMode)
    {
       this.session = session;
 
@@ -52,7 +52,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
 
       this.listener = listener;
 
-      transactedOrClientAck = ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE;
+      transactedOrClientAck = (ackMode == Session.SESSION_TRANSACTED || ackMode == Session.CLIENT_ACKNOWLEDGE) || session.isXA();
    }
 
    /**
