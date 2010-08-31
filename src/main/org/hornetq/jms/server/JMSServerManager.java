@@ -25,6 +25,7 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.spi.BindingRegistry;
 
 /**
  * The JMS Management interface.
@@ -56,46 +57,46 @@ public interface JMSServerManager extends HornetQComponent
     * @throws Exception
     *            if problems were encountered creating the queue.
     */
-   boolean createQueue(boolean storeConfig, String queueName, String selectorString, boolean durable, String ...jndi) throws Exception;
+   boolean createQueue(boolean storeConfig, String queueName, String selectorString, boolean durable, String ...bindings) throws Exception;
    
-   boolean addTopicToJndi(final String topicName, final String jndiBinding) throws Exception;
+   boolean addTopicToJndi(final String topicName, final String binding) throws Exception;
 
-   boolean addQueueToJndi(final String queueName, final String jndiBinding) throws Exception;
+   boolean addQueueToJndi(final String queueName, final String binding) throws Exception;
 
-   boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception;
+   boolean addConnectionFactoryToJNDI(final String name, final String binding) throws Exception;
 
    /**
     * Creates a JMS Topic
     * 
     * @param topicName
     *           the name of the topic
-    * @param jndiBinding
-    *           the name of the binding for JNDI
+    * @param binding
+    *           the name of the binding for JNDI or BindingRegistry
     * @return true if the topic was created or if it existed and was added to
     *         JNDI
     * @throws Exception
     *            if a problem occurred creating the topic
     */
-   boolean createTopic(boolean storeConfig, String topicName, String ... jndi) throws Exception;
+   boolean createTopic(boolean storeConfig, String topicName, String ... bindings) throws Exception;
 
    /**
-    * Remove the topic from JNDI.
+    * Remove the topic from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
     * 
     * @param name
-    *           the name of the destination to remove from JNDI
+    *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
     * @throws Exception
     *            if a problem occurred removing the destination
     */
-   boolean removeTopicFromJNDI(String name, String jndi) throws Exception;
+   boolean removeTopicFromJNDI(String name, String binding) throws Exception;
 
    /**
-    * Remove the topic from JNDI.
+    * Remove the topic from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
     * 
     * @param name
-    *           the name of the destination to remove from JNDI
+    *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
     * @throws Exception
     *            if a problem occurred removing the destination
@@ -103,35 +104,35 @@ public interface JMSServerManager extends HornetQComponent
    boolean removeTopicFromJNDI(String name) throws Exception;
 
    /**
-    * Remove the queue from JNDI.
+    * Remove the queue from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
     * 
     * @param name
-    *           the name of the destination to remove from JNDI
+    *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
     * @throws Exception
     *            if a problem occurred removing the destination
     */
-   boolean removeQueueFromJNDI(String name, String jndi) throws Exception;
+   boolean removeQueueFromJNDI(String name, String binding) throws Exception;
 
    /**
-    * Remove the queue from JNDI.
+    * Remove the queue from JNDI or BindingRegistry.
     * Calling this method does <em>not</em> destroy the destination.
     * 
     * @param name
-    *           the name of the destination to remove from JNDI
+    *           the name of the destination to remove from JNDI or BindingRegistry
     * @return true if removed
     * @throws Exception
     *            if a problem occurred removing the destination
     */
    boolean removeQueueFromJNDI(String name) throws Exception;
 
-   boolean removeConnectionFactoryFromJNDI(String name, String jndi) throws Exception;
+   boolean removeConnectionFactoryFromJNDI(String name, String binding) throws Exception;
 
    boolean removeConnectionFactoryFromJNDI(String name) throws Exception;
 
    /**
-    * destroys a queue and removes it from JNDI
+    * destroys a queue and removes it from JNDI or BindingRegistry
     * 
     * @param name
     *           the name of the queue to destroy
@@ -148,7 +149,7 @@ public interface JMSServerManager extends HornetQComponent
    String[] getJNDIOnConnectionFactory(String factoryName);
 
    /**
-    * destroys a topic and removes it from JNDI
+    * destroys a topic and removes it from JNDI  or BindingRegistry
     * 
     * @param name
     *           the name of the topic to destroy
@@ -158,37 +159,37 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean destroyTopic(String name) throws Exception;
 
-   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, String ... jndiBindings) throws Exception;
+   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 TransportConfiguration liveTC,
                                 TransportConfiguration backupTC,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
-   void createConnectionFactory(String name, TransportConfiguration liveTC, String ... jndiBindings) throws Exception;
+   void createConnectionFactory(String name, TransportConfiguration liveTC, String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String clientID,
                                 String discoveryAddress,
                                 int discoveryPort,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String clientID,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String clientID,
                                 TransportConfiguration liveTC,
                                 TransportConfiguration backupTC,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
-   void createConnectionFactory(String name, String clientID, TransportConfiguration liveTC,  String ... jndiBindings) throws Exception;
+   void createConnectionFactory(String name, String clientID, TransportConfiguration liveTC,  String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
@@ -221,7 +222,7 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean failoverOnInitialConnection,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String localBindAdress,
@@ -258,9 +259,9 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean failoverOnInitialConnection,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
-                                String ... jndiBindings) throws Exception;
+                                String ... bindings) throws Exception;
    
-   void createConnectionFactory(boolean storeConfig, ConnectionFactoryConfiguration cfConfig, String... jndiBindings) throws Exception;
+   void createConnectionFactory(boolean storeConfig, ConnectionFactoryConfiguration cfConfig, String... bindings) throws Exception;
 
    /**
     * destroys a connection factory.
@@ -294,4 +295,13 @@ public interface JMSServerManager extends HornetQComponent
    void addSecurity(String addressMatch, Set<Role> roles);
 
    Set<Role> getSecurity(final String addressMatch);
+
+   BindingRegistry getRegistry();
+
+   /**
+    * Set this property if you want something other than JNDI for your registry
+    *
+    * @param registry
+    */
+   void setRegistry(BindingRegistry registry);
 }

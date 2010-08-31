@@ -65,6 +65,8 @@
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
    <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
+   <property name="spring.integration.jar.name" value="hornetq-spring-integration.jar"/>
+   <property name="spring.integration.sources.jar.name" value="hornetq-spring-integration-sources.jar"/>
    <property name="twitter.integration.jar.name" value="hornetq-twitter-integration.jar"/>
    <property name="twitter.integration.sources.jar.name" value="hornetq-twitter-integration-sources.jar"/>
    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
@@ -94,6 +96,7 @@
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
+   <property name="build.spring.integration.classes.dir" value="${build.dir}/classes/spring-integration"/>
    <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
@@ -218,6 +221,13 @@
       <path refid="org.twitter4j.classpath"/>
    </path>
 
+   <path id="spring.integration.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path location="${build.jms.classes.dir}"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.springframework.classpath"/>
+   </path>
+
    <path id="jboss.service.compilation.classpath">
       <path refid="org.jboss.javaee.classpath"/>
       <path location="${build.core.classes.dir}"/>
@@ -247,11 +257,13 @@
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
       <path refid="org.twitter4j.classpath"/>
+      <path refid="org.springframework.classpath"/>
       <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
+      <path location="${build.jars.dir}/${spring.integration.jar.name}"/>
       <path location="${build.jars.dir}/${twitter.integration.jar.name}"/>
    </path>
 
@@ -305,6 +317,7 @@
  	  <!-- we must include Apache commons logging   -->
  	  <!-- as a transitive dependency from JBoss TM -->
  	  <path refid="apache.logging.classpath"/>
+      <path refid="org.springframework.classpath"/>
       <path refid="org.twitter4j.classpath"/>
    </path>
 
@@ -382,6 +395,7 @@
       <mkdir dir="${build.jms.classes.dir}"/>
       <mkdir dir="${build.jms.java5.classes.dir}"/>
       <mkdir dir="${build.jboss.integration.classes.dir}"/>
+      <mkdir dir="${build.spring.integration.classes.dir}"/>
       <mkdir dir="${build.twitter.integration.classes.dir}"/>
       <mkdir dir="${build.service.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
@@ -580,6 +594,26 @@
       </javac>
    </target>
 
+   <target name="compile-spring-integration" depends="compile-core">
+      <javac destdir="${build.spring.integration.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/spring/**/*.java"/>
+         <classpath refid="spring.integration.compilation.classpath"/>
+      </javac>
+   </target>
+
    <!-- author: Lucas Amador -->
    <target name="compile-jboss-service" depends="compile-core">
       <javac destdir="${build.service.classes.dir}"
@@ -720,11 +754,11 @@
    <!-- ======================================================================================== -->
 
    <target name="sources-jar" description="create jar files containing source code"
-           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources">
+           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources, jar-spring-integration-sources">
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration">
+           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -880,6 +914,22 @@
       <jar jarfile="${build.jars.dir}/${twitter.integration.sources.jar.name}">
          <fileset dir="${src.main.dir}">
             <include name="org/hornetq/integration/twitter/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+    <target name="jar-spring-integration" depends="compile-spring-integration">
+
+      <jar jarfile="${build.jars.dir}/${spring.integration.jar.name}">
+         <fileset dir="${build.spring.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-spring-integration-sources">
+      <jar jarfile="${build.jars.dir}/${spring.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/spring/**/*.java"/>
          </fileset>
       </jar>
    </target>
@@ -1148,6 +1198,7 @@
          	<include name="${jms.client.jar.name}"/>
          	<include name="${jms.client.java5.jar.name}"/>
          	<include name="${jnp.client.jar.name}"/>
+         	<include name="${spring.integration.jar.name}"/>
          	<include name="${twitter.integration.jar.name}"/>
          </fileset>
          <fileset dir="${org.jboss.naming.lib}">                                                   
@@ -1489,6 +1540,12 @@
          <param name="tests.param" value="**/org/hornetq/tests/integration/**/*${test-mask}.class"/>
       </antcall>
    </target>
+
+    <target name="spring-tests" depends="jar, compile-unit-tests">
+       <antcall inheritall="true" inheritrefs="true" target="tests">
+          <param name="tests.param" value="**/org/hornetq/tests/integration/spring/*${test-mask}.class"/>
+       </antcall>
+    </target>
 
    <target name="failover-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
