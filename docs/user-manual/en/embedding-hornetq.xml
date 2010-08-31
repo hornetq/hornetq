@@ -66,18 +66,18 @@ config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
                 >org.hornetq.api.core.server.HornetQ</literal> has a few static methods for creating
             servers with common configurations.</para>
-        <programlisting>import org.hornetq.api.core.server.HornetQ;
-import org.hornetq.core.server.HornetQServer;
+        <programlisting>import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
+            
 
 ...
 
-HornetQServer server = HornetQ.newHornetQServer(config);
+HornetQServer server = HornetQServers.newHornetQServer(config);
 
 server.start();</programlisting>
         <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>
             directly:</para>
-        <programlisting>HornetQServer server = 
-        new HornetQServerImpl(config);
+        <programlisting>HornetQServer server = new HornetQServerImpl(config);
 server.start();</programlisting>
     </section>
     <section>
