@@ -14,7 +14,6 @@ public class SpringJmsBootstrap extends EmbeddedJMS implements BeanFactoryAware
 {
    public void setBeanFactory(BeanFactory beanFactory) throws BeansException
    {
-      System.out.println("SpringJmsBootstrap setBeanFactory...");
-      registry = new SpringBindingRegistry((ConfigurableBeanFactory)beanFactory);
+      registry = new SpringBindingRegistry((ConfigurableBeanFactory) beanFactory);
    }
 }

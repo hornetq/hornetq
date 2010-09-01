@@ -5,13 +5,10 @@ import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.BindingRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Simple bootstrap class that parses hornetq config files (server and jms and security) and starts
  * a HornetQServer instance and populates it with configured JMS endpoints.
- *
+ * <p/>
  * JMS Endpoints are registered with a simple MapBindingRegistry.  If you want to use a different registry
  * you must set the registry property of this clas
  *
@@ -57,7 +54,6 @@ public class EmbeddedJMS extends EmbeddedHornetQ
 
    public void start() throws Exception
    {
-      System.out.println("EmbeddedJMS starting...");
       super.initStart();
       if (jmsConfigResourcePath == null) serverManager = new JMSServerManagerImpl(hornetQServer);
       else serverManager = new JMSServerManagerImpl(hornetQServer, jmsConfigResourcePath);
