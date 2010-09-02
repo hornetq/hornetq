@@ -1,5 +1,6 @@
 package org.hornetq.core.server.embedded;
 
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
@@ -17,7 +18,8 @@ import javax.management.MBeanServer;
 public class EmbeddedHornetQ
 {
    protected HornetQSecurityManager securityManager;
-   protected FileConfiguration configuration = new FileConfiguration();
+   protected String configResourcePath = null;
+   protected Configuration configuration;
    protected HornetQServer hornetQServer;
    protected MBeanServer mbeanServer;
 
@@ -28,7 +30,7 @@ public class EmbeddedHornetQ
     */
    public void setConfigResourcePath(String filename)
    {
-      configuration.setConfigurationUrl(filename);
+      configResourcePath = filename;
    }
 
    /**
@@ -51,6 +53,17 @@ public class EmbeddedHornetQ
       this.mbeanServer = mbeanServer;
    }
 
+   /**
+    * Set this object if you are not using file-based configuration.  The default implementation will load
+    * configuration from a file.
+    *
+    * @param configuration
+    */
+   public void setConfiguration(Configuration configuration)
+   {
+      this.configuration = configuration;
+   }
+
    public HornetQServer getHornetQServer()
    {
       return hornetQServer;
@@ -65,7 +78,14 @@ public class EmbeddedHornetQ
 
    protected void initStart() throws Exception
    {
-      configuration.start();
+      if (configuration == null)
+      {
+         if (configResourcePath == null) configResourcePath = "hornetq-configuration.xml";
+         FileConfiguration config = new FileConfiguration();
+         config.setConfigurationUrl(configResourcePath);
+         config.start();
+         configuration = config;
+      }
       if (securityManager == null)
       {
          securityManager = new HornetQSecurityManagerImpl();

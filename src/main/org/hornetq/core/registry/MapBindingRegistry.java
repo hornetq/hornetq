@@ -1,7 +1,7 @@
 package org.hornetq.core.registry;
 
 import org.hornetq.spi.BindingRegistry;
-import org.jboss.netty.util.internal.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
