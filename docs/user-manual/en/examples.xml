@@ -161,10 +161,14 @@
                 Note that for the messages to be persisted, the messages sent to them must be marked
                 as durable messages. </para>
         </section>
-        <section>
+        <section id="examples.embedded.jms.simple">
+            <title>Embedded Simple</title>
+            <para>The <literal>embedded</literal> example shows how to embed JMS within your own code using regular HornetQ XML files.</para>
+        </section>
+        <section id="examples.embedded.jms">
             <title>Embedded</title>
-            <para>The <literal>embedded</literal> example shows how to embed the HornetQ server
-                within your own code.</para>
+            <para>The <literal>embedded</literal> example shows how to embed JMS
+                within your own code using POJO instantiation and no config files.</para>
         </section>
         <section>
             <title>HTTP Transport</title>
@@ -400,6 +404,10 @@
                 to obtain acknowledgement from the server that sends have been received and
                 processed in a separate stream to the sent messages. </para>
         </section>
+	<section id="examples.jms.spring.integration">
+	  <title>Spring Integration</title>
+	  <para>This example shows how to use embedded JMS using HornetQ's Spring integration.</para>
+	</section>
         <section>
             <title>SSL Transport</title>
             <para>The <literal>ssl-enabled</literal> shows you how to configure SSL with HornetQ to
@@ -507,7 +515,8 @@
             directory and type <literal>ant</literal></para>
         <section id="examples.embedded">
             <title>Embedded</title>
-            <para>This example shows how to embed the HornetQ server within your own code.</para>
+            <para>The <literal>embedded</literal> example shows how to embed the HornetQ server
+                within your own code.</para>
         </section>
     </section>
     <section>

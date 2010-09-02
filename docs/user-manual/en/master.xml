@@ -59,6 +59,7 @@
         <!ENTITY scheduled-messages      SYSTEM "scheduled-messages.xml">
         <!ENTITY security                SYSTEM "security.xml">
         <!ENTITY send-guarantees         SYSTEM "send-guarantees.xml">
+        <!ENTITY spring-integration      SYSTEM "spring-integration.xml">
         <!ENTITY thread-pooling          SYSTEM "thread-pooling.xml">
         <!ENTITY undelivered-messages    SYSTEM "undelivered-messages.xml">
         <!ENTITY using-core              SYSTEM "using-core.xml">
@@ -119,6 +120,7 @@
    &thread-pooling;
    &logging;
    &embedding-hornetq;
+   &spring-integration;
    &intercepting-operations;
    &interoperability;
    &perf-tuning;
