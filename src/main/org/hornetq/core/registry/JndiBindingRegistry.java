@@ -44,7 +44,14 @@ public class JndiBindingRegistry implements BindingRegistry
    {
       try
       {
-         return context.lookup(name);
+         if (context == null)
+         {
+            return null;
+         }
+         else
+         {
+            return context.lookup(name);
+         }
       }
       catch (NamingException e)
       {
@@ -68,7 +75,10 @@ public class JndiBindingRegistry implements BindingRegistry
    {
       try
       {
-         context.unbind(name);
+         if (context != null)
+         {
+            context.unbind(name);
+         }
       }
       catch (NamingException e)
       {
@@ -79,7 +89,10 @@ public class JndiBindingRegistry implements BindingRegistry
    {
       try
       {
-         context.close();
+         if (context != null)
+         {
+            context.close();
+         }
       }
       catch (NamingException e)
       {
