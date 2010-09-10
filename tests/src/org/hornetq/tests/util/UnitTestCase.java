@@ -100,7 +100,7 @@ public class UnitTestCase extends TestCase
    
    protected static String getUDPDiscoveryAddress()
    {
-      return System.getProperty("TEST-UDP-ADDRESS", "230.10.20.1");
+      return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
    }
    
    protected static String getUDPDiscoveryAddress(int variant)
