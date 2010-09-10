@@ -113,6 +113,10 @@ Copyright 2009 Red Hat, Inc.
       <ant antfile="build-hornetq.xml" target="userdoc"/>
    </target>
 
+   <target name="restdoc">
+      <ant antfile="build-hornetq.xml" target="restdoc"/>
+   </target>
+
    <target name="javadoc">
 
       <ant antfile="build-hornetq.xml" target="javadoc"/>
@@ -136,6 +140,9 @@ Copyright 2009 Red Hat, Inc.
 
    <target name="jar-jms" depends="createthirdparty">
       <ant antfile="build-hornetq.xml" target="jar-jms"/>
+   </target>
+   <target name="jar-rest" depends="jar-jms">
+      <ant antfile="build-hornetq.xml" target="jar-rest"/>
    </target>
 
 
@@ -289,6 +296,10 @@ Copyright 2009 Red Hat, Inc.
       <ant antfile="build-hornetq.xml" target="joram-tests"/>
 
       <ant antfile="build-hornetq.xml" target="compile-reports"/>
+   </target>
+
+   <target name="rest-tests" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="rest-tests"/>
    </target>
 
    <target name="all-tests" depends="createthirdparty">

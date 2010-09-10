@@ -196,8 +196,8 @@
                 protocol.</para>
             <para>The advantage of a REST approach with HTTP is in its simplicity and the fact the
                 internet is already tuned to deal with HTTP optimally.</para>
-            <para>HornetQ will shortly be implementing RESTful approach to messaging
-                interoperability.</para>
+            <para>HornetQ has a RESTful interface.  You can find documentation for it outside of this manual.  See the HornetQ distribution
+                 or website for more information.</para>
         </section>
         <section>
             <title>STOMP</title>

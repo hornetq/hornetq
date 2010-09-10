@@ -7,39 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../thirdparty/org/twitter4j/lib/twitter4j-core.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="lib7" level="project" />
-    <orderEntry type="library" name="lib4" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/netty/lib/netty.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="lib2" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="lib3" level="project" />
-    <orderEntry type="library" name="lib6" level="project" />
-    <orderEntry type="library" name="jars" level="project" />
+    <orderEntry type="library" name="lib10" level="project" />
+    <orderEntry type="library" name="lib13" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -52,15 +21,46 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../tools/maven/lib/maven-2.0.9-uber.jar!/" />
+          <root url="jar://$MODULE_DIR$/../thirdparty/org/twitter4j/lib/twitter4j-core.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="lib1" level="project" />
+    <orderEntry type="library" name="lib3" level="project" />
+    <orderEntry type="library" name="lib5" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../thirdparty/javax/xml/stream/lib/stax-api.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/netty/lib/netty.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="jars" level="project" />
+    <orderEntry type="library" name="lib6" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="lib9" level="project" />
-    <orderEntry type="library" name="lib-spring" level="project" />
+    <orderEntry type="library" name="lib4" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>
 

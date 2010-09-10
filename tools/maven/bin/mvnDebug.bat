@@ -32,16 +32,16 @@
 @REM set MAVEN_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
 @REM ----------------------------------------------------------------------------
 
-set INT_MAVEN_OPTS=%MAVEN_OPTS% -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
-@echo Preparing to Execute Maven in Debug Mode
-
 @REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'
 @echo off
 @REM enable echoing my setting MAVEN_BATCH_ECHO to 'on'
 @if "%MAVEN_BATCH_ECHO%" == "on"  echo %MAVEN_BATCH_ECHO%
 
+set MAVEN_DEBUG_OPTS=-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+@echo Preparing to Execute Maven in Debug Mode
+
 @REM set %HOME% to equivalent of $HOME
-if "%HOME%" == "" (set HOME=%HOMEDRIVE%%HOMEPATH%)
+if "%HOME%" == "" (set "HOME=%HOMEDRIVE%%HOMEPATH%")
 
 @REM Execute a user defined script before this one
 if exist "%HOME%\mavenrc_pre.bat" call "%HOME%\mavenrc_pre.bat"
@@ -67,7 +67,7 @@ if exist "%JAVA_HOME%\bin\java.exe" goto chkMHome
 
 echo.
 echo ERROR: JAVA_HOME is set to an invalid directory.
-echo JAVA_HOME = %JAVA_HOME%
+echo JAVA_HOME = "%JAVA_HOME%"
 echo Please set the JAVA_HOME variable in your environment to match the
 echo location of your Java installation
 echo.
@@ -76,8 +76,8 @@ goto error
 :chkMHome
 if not "%M2_HOME%"=="" goto valMHome
 
-if "%OS%"=="Windows_NT" SET M2_HOME=%~dp0..
-if "%OS%"=="WINNT" SET M2_HOME=%~dp0..
+if "%OS%"=="Windows_NT" SET "M2_HOME=%~dp0.."
+if "%OS%"=="WINNT" SET "M2_HOME=%~dp0.."
 if not "%M2_HOME%"=="" goto valMHome
 
 echo.
@@ -90,8 +90,8 @@ goto error
 :valMHome
 
 :stripMHome
-if not _%M2_HOME:~-1%==_\ goto checkMBat
-set M2_HOME=%M2_HOME:~0,-1%
+if not "_%M2_HOME:~-1%"=="_\" goto checkMBat
+set "M2_HOME=%M2_HOME:~0,-1%"
 goto stripMHome
 
 :checkMBat
@@ -99,7 +99,7 @@ if exist "%M2_HOME%\bin\mvn.bat" goto init
 
 echo.
 echo ERROR: M2_HOME is set to an invalid directory.
-echo M2_HOME = %M2_HOME%
+echo M2_HOME = "%M2_HOME%"
 echo Please set the M2_HOME variable in your environment to match the
 echo location of the Maven installation
 echo.
@@ -157,8 +157,7 @@ goto runm2
 
 @REM Start MAVEN2
 :runm2
-
-%MAVEN_JAVA_EXE% %INT_MAVEN_OPTS% -classpath %CLASSWORLDS_JAR% "-Dclassworlds.conf=%M2_HOME%\bin\m2.conf" "-Dmaven.home=%M2_HOME%" org.codehaus.classworlds.Launcher %MAVEN_CMD_LINE_ARGS%
+%MAVEN_JAVA_EXE% %MAVEN_OPTS% %MAVEN_DEBUG_OPTS% -classpath %CLASSWORLDS_JAR% "-Dclassworlds.conf=%M2_HOME%\bin\m2.conf" "-Dmaven.home=%M2_HOME%" org.codehaus.classworlds.Launcher %MAVEN_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
 

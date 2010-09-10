@@ -13,7 +13,7 @@
   -->
 
 <project default="upload" name="HornetQ">
-   <property name="hornetq.version" value="2.1.2.Final"/>
+   <property name="hornetq.version" value="2.2.0.CR1"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
@@ -141,6 +141,10 @@
           <param name="artifact.id" value="hornetq-ra"/>
       </antcall>
 
+      <antcall target="upload-local-target">
+          <param name="artifact.id" value="hornetq-spring-integration"/>
+      </antcall>
+
    </target>
 
    <target name="upload-local-target">
@@ -236,6 +240,10 @@
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-ra"/>
+    </antcall>
+
+    <antcall target="deploy-jar">
+        <param name="artifact.id" value="hornetq-spring-integration"/>
     </antcall>
 
    </target>

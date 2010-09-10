@@ -53,11 +53,12 @@
     <attribute name="options" default="" />
     <attribute name="goal" />
     <attribute name="basedir" />
+    <attribute name="workingdir"/>
     <attribute name="resultproperty" default="maven.result" />
     <element name="args" implicit="true" optional="true" />
     <sequential>
       <java classname="org.codehaus.classworlds.Launcher" fork="true"
-            dir="@{basedir}" resultproperty="@{resultproperty}">
+            dir="@{workingdir}" resultproperty="@{resultproperty}">
         <jvmarg value="-Xmx512m"/>
         <classpath>
           <fileset dir="${maven.home}/boot">
@@ -92,13 +93,14 @@
 
    <target name="maven-install" description="Run the install goal against the maven build"
           depends="maven-init">
-
      <property name="maven.opts" value=""/>
+     <property name="maven.goal" value="initialize"/>
      <property name="maven.install.opts" value="-Dintegrated-build ${maven.opts}"/>
-
+     <property name="working.dir" value="${basedir}"/>
      <maven basedir="${basedir}"
+	    workingdir="${working.dir}"
             options="${maven.install.opts}"
-            goal="initialize"
+            goal="${maven.goal}"
             resultproperty="maven.install.result"/>
 
      <fail message="Unable to build maven modules.  See maven output for details.">

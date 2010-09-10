@@ -10,25 +10,14 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/naming/lib/jnpserver.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="lib7" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/metadata/lib/jboss-metadata.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="library" name="jars" level="project" />
-    <orderEntry type="library" name="lib4" level="project" />
-    <orderEntry type="library" name="lib" level="project" />
+    <orderEntry type="library" name="lib6" level="project" />
+    <orderEntry type="library" name="lib10" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -41,14 +30,25 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/metadata/lib/jboss-metadata.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="library" name="lib2" level="project" />
-    <orderEntry type="library" name="lib6" level="project" />
+    <orderEntry type="library" name="lib9" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../thirdparty/org/jboss/naming/lib/jnpserver.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lib4" level="project" />
+    <orderEntry type="library" name="jars" level="project" />
     <orderEntry type="module" module-name="Hornetq" />
   </component>
 </module>

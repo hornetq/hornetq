@@ -124,6 +124,7 @@
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
    <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
+   <property name="rest-manual.build.dir" value="hornetq-rest/docbook/target/docbook/publish/en-US"/>
    <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
@@ -386,6 +387,10 @@
          <fileset dir="${logs.dir}" includes="*"/>
       </delete>
       <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+	<property name="maven.goal" value="clean"/>
+      </ant>
    </target>
 
    <target name="init" depends="createthirdparty">
@@ -759,7 +764,7 @@
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration">
+           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -1171,6 +1176,31 @@
       </jar>
    </target>
 
+   <target name="jar-rest-init" depends="jar-jms">
+      <ant antfile="build-maven.xml" target="upload-local-target">
+	<property name="artifact.id" value="hornetq-core"/>
+      </ant>
+      <ant antfile="build-maven.xml" target="upload-local-target">
+	<property name="artifact.id" value="hornetq-jms"/>
+      </ant>
+   </target>
+      
+
+   <target name="jar-rest" depends="jar-rest-init">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+        <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+	<property name="maven.goal" value="install"/>
+	<property name="working.dir" value="hornetq-rest"/>
+      </ant>
+   </target>
+
+   <target name="rest-tests" depends="jar-rest">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+	<property name="maven.goal" value="install"/>
+      </ant>
+   </target>
+
    <!-- ======================================================================================== -->
    <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
@@ -1184,6 +1214,29 @@
       <mkdir dir="${build.distro.api.dir}"/>
       <mkdir dir="${build.distro.licenses.dir}"/>
 
+      <copy todir="${build.distro.lib.dir}/rest">
+	<fileset dir="hornetq-rest/hornetq-rest/target">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${org.jboss.resteasy.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${com.sun.xml.bind.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${com.sun.xml.stream.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${org.slf4j.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${org.scannotation.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${javax.annotation.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+      </copy>
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
             <include name="${core.jar.name}"/>
@@ -1376,6 +1429,17 @@
    <!-- ======================================================================================== -->
 
    <target name="dist-doc" unless="no-doc">
+    <antcall target="restdoc"/>
+    <copy todir="${build.distro.dir}/docs/rest-interface-manual">
+       <fileset dir="${rest-manual.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <copy todir="${build.distro.dir}/docs/rest-api">
+       <fileset dir="hornetq-rest/hornetq-rest/target/site/apidocs">
+          <include name="**"/>
+       </fileset>
+    </copy>
     <antcall target="userdoc"/>
     <copy todir="${build.distro.dir}/docs/user-manual">
        <fileset dir="${user-manual.build.dir}">
@@ -1395,6 +1459,18 @@
     </copy>
    </target>
 
+   <target name="restdoc">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value=""/>
+	<property name="maven.goal" value="javadoc:javadoc"/>
+	<property name="working.dir" value="hornetq-rest/hornetq-rest"/>
+      </ant>
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value=""/>
+	<property name="maven.goal" value="install"/>
+	<property name="working.dir" value="hornetq-rest/docbook"/>
+      </ant>
+   </target>
 
    <target name="userdoc">
       <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
@@ -1809,7 +1885,7 @@
       </junit>
    </target>
 
-   <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests"/>
+   <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests, rest-tests"/>
 
    <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
 
