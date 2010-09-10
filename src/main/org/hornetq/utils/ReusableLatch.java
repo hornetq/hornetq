@@ -87,6 +87,11 @@ public class ReusableLatch
             }
 
             int newState = actualState - numberOfReleases;
+            
+            if (newState < 0)
+            {
+               newState = 0;
+            }
 
             if (compareAndSetState(actualState, newState))
             {
@@ -126,6 +131,12 @@ public class ReusableLatch
    public void countDown()
    {
       control.releaseShared(1);
+   }
+
+
+   public void countDown(final int count)
+   {
+      control.releaseShared(count);
    }
 
    public void await() throws InterruptedException

@@ -17,8 +17,6 @@ import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
 import javax.naming.InitialContext;
 
 /**
@@ -32,26 +30,26 @@ public abstract class HornetQExample
 
    private Process[] servers;
 
-   private Connection conn;
+   protected boolean failure = false;
 
-   private boolean failure = false;
+   protected String serverClasspath;
 
-   private String serverClasspath;
-
-   private String serverProps;
+   protected String serverProps;
 
    public abstract boolean runExample() throws Exception;
 
    private boolean logServerOutput;
 
-   private String[] configs;
+   protected String[] configs;
+   
+   protected boolean runServer;
 
    protected void run(final String[] configs)
    {
       String runServerProp = System.getProperty("hornetq.example.runServer");
       String logServerOutputProp = System.getProperty("hornetq.example.logserveroutput");
       serverClasspath = System.getProperty("hornetq.example.server.classpath");
-      boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
+      runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
       logServerOutput = logServerOutputProp == null ? false : Boolean.valueOf(logServerOutputProp);
       serverProps = System.getProperty("hornetq.example.server.args");
       if (System.getProperty("hornetq.example.server.override.args") != null)
@@ -83,17 +81,6 @@ public abstract class HornetQExample
       }
       finally
       {
-         if (conn != null)
-         {
-            try
-            {
-               conn.close();
-            }
-            catch (JMSException e)
-            {
-               // ignore
-            }
-         }
          if (runServer)
          {
             try
@@ -165,7 +152,7 @@ public abstract class HornetQExample
                                                 "hornetq-beans.xml");
    }
 
-   private void startServers() throws Exception
+   protected void startServers() throws Exception
    {
       servers = new Process[configs.length];
       for (int i = 0; i < configs.length; i++)
@@ -174,7 +161,7 @@ public abstract class HornetQExample
       }
    }
 
-   private void stopServers() throws Exception
+   protected void stopServers() throws Exception
    {
       for (Process server : servers)
       {
@@ -185,7 +172,7 @@ public abstract class HornetQExample
       }
    }
 
-   private void stopServer(final Process server) throws Exception
+   protected void stopServer(final Process server) throws Exception
    {
       if (!System.getProperty("os.name").contains("Windows") && !System.getProperty("os.name").contains("Mac OS X"))
       {

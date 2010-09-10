@@ -14,6 +14,8 @@
 package org.hornetq.core.paging;
 
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * 
@@ -37,10 +39,15 @@ public interface PageTransactionInfo extends EncodingSupport
    void setRecordID(long id);
 
    long getTransactionID();
+   
+   void store(StorageManager storageManager,Transaction tx) throws Exception;
+   
+   void storeUpdate(StorageManager storageManager, Transaction tx, int depages) throws Exception;
 
-   int increment();
+   // To be used after the update was stored or reload
+   void update(int update, StorageManager storageManager);
 
-   int decrement();
+   void increment();
 
    int getNumberOfMessages();
 

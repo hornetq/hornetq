@@ -13,27 +13,36 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import java.io.File;
+
+import javax.jms.Connection;
+import javax.jms.Message;
 import javax.jms.Queue;
+import javax.jms.QueueRequestor;
+import javax.jms.QueueSession;
+import javax.jms.Session;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.management.JMSManagementHelper;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.persistence.JMSStorageManager;
-import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
+import org.hornetq.core.server.JournalType;
+import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**
  * A JMSServerControlRestartTest
@@ -51,9 +60,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
    protected InVMContext context;
 
-   private HornetQServer server;
-
-   private JMSServerManagerImpl serverManager;
+   private JMSServerManager serverManager;
 
    // Static --------------------------------------------------------
 
@@ -61,7 +68,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
-   public void testCreateDurableQueueAndRestartServer() throws Exception
+   public void testCreateDurableQueueUsingJMXAndRestartServer() throws Exception
    {
       String queueName = RandomUtil.randomString();
       String binding = RandomUtil.randomString();
@@ -79,10 +86,52 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       serverManager.stop();
+      
+      checkNoBinding(context, binding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      serverManager = createJMSServer();
+      serverManager.start();
+
+      o = UnitTestCase.checkBinding(context, binding);
+      Assert.assertTrue(o instanceof Queue);
+      queue = (Queue)o;
+      assertEquals(queueName, queue.getQueueName());
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+   }
+   
+   public void testCreateDurableQueueUsingJMSAndRestartServer() throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+      String binding = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, binding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      Connection connection = HornetQJMSClient.createConnectionFactory(config).createConnection();
+      connection.start();
+      Queue managementQueue = HornetQJMSClient.createQueue("hornetq.management");
+      QueueSession session = (QueueSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      QueueRequestor requestor = new QueueRequestor(session, managementQueue);
+      Message message = session.createMessage();
+      JMSManagementHelper.putOperationInvocation(message, "jms.server", "createQueue", queueName, binding);
+      Message reply = requestor.request(message);
+      assertTrue(JMSManagementHelper.hasOperationSucceeded(reply));
+      connection.close();
+
+      Object o = UnitTestCase.checkBinding(context, binding);
+      Assert.assertTrue(o instanceof Queue);
+      Queue queue = (Queue)o;
+      assertEquals(queueName, queue.getQueueName());
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
+
+      serverManager.stop();
 
       checkNoBinding(context, binding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
+      serverManager = createJMSServer();
       serverManager.start();
 
       o = UnitTestCase.checkBinding(context, binding);
@@ -101,34 +150,34 @@ public class JMSServerControlRestartTest extends ManagementTestBase
    {
       super.setUp();
 
+      serverManager = createJMSServer();
+      serverManager.start();
+   }
+
+   private JMSServerManager createJMSServer() throws Exception {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
+      conf.setPersistenceEnabled(true);
+      conf.setJournalType(JournalType.NIO);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer);
 
       context = new InVMContext();
       
-      JMSStorageManager storage = new JMSJournalStorageManagerImpl(new TimeAndCounterIDGenerator(),
-                                                 server.getConfiguration(),
-                                                 server.getReplicationManager());
-      
-      serverManager = new JMSServerManagerImpl(server, null, storage);
+      serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
-      serverManager.start();
-      serverManager.activated();
+      return serverManager;
    }
-
+   
    @Override
    protected void tearDown() throws Exception
    {
+      String bindingDir = serverManager.getHornetQServer().getConfiguration().getBindingsDirectory();
       serverManager.stop();
-
-      server.stop();
-
       serverManager = null;
-
-      server = null;
+      System.out.println(bindingDir);
+      deleteDirectory(new File(bindingDir));
 
       super.tearDown();
    }

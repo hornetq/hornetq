@@ -575,19 +575,17 @@ public class JournalStorageManager implements StorageManager
 
    public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
    {
-      if (pageTransaction.getRecordID() != 0)
-      {
-         // Instead of updating the record, we delete the old one as that is
-         // better for reclaiming
-         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
-      }
-
       pageTransaction.setRecordID(generateUniqueID());
 
       messageJournal.appendAddRecordTransactional(txID,
                                                   pageTransaction.getRecordID(),
                                                   JournalStorageManager.PAGE_TRANSACTION,
                                                   pageTransaction);
+   }
+
+   public void updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction, final int depages) throws Exception
+   {
+      messageJournal.appendUpdateRecordTransactional(txID, pageTransaction.getRecordID(), JournalStorageManager.PAGE_TRANSACTION, new PageUpdateTXEncoding(pageTransaction.getTransactionID(), depages));
    }
 
    public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
@@ -623,9 +621,9 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecord(id, true, getContext(true));
    }
 
-   public void deletePageTransactional(final long txID, final long recordID) throws Exception
+   public void deletePageTransactional(final long recordID) throws Exception
    {
-      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+      messageJournal.appendDeleteRecord(recordID, false);
    }
 
    public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
@@ -907,13 +905,26 @@ public class JournalStorageManager implements StorageManager
             }
             case PAGE_TRANSACTION:
             {
-               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
-
-               pageTransactionInfo.decode(buff);
-
-               pageTransactionInfo.setRecordID(record.id);
-
-               pagingManager.addTransaction(pageTransactionInfo);
+               if (record.isUpdate)
+               {
+                  PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
+                  
+                  pageUpdate.decode(buff);
+                  
+                  PageTransactionInfo pageTX = pagingManager.getTransaction(pageUpdate.pageTX);
+                  
+                  pageTX.update(pageUpdate.recods, null);
+               }
+               else
+               {
+                  PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+   
+                  pageTransactionInfo.decode(buff);
+   
+                  pageTransactionInfo.setRecordID(record.id);
+   
+                  pagingManager.addTransaction(pageTransactionInfo);
+               }
 
                break;
             }
@@ -2005,6 +2016,48 @@ public class JournalStorageManager implements StorageManager
       {
          super(queueID);
       }
+   }
+   
+   private static class PageUpdateTXEncoding implements EncodingSupport
+   {
+      
+      public long pageTX;
+      
+      public int recods;
+      
+      public PageUpdateTXEncoding()
+      {
+      }
+      
+      public PageUpdateTXEncoding(final long pageTX, final int records)
+      {
+         this.pageTX = pageTX;
+         this.recods = records;
+      }
+      
+      public void decode(HornetQBuffer buffer)
+      {
+         this.pageTX = buffer.readLong();
+         this.recods = buffer.readInt();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(pageTX);
+         buffer.writeInt(recods);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+      }
+      
    }
 
    private static class ScheduledDeliveryEncoding extends QueueEncoding

@@ -125,22 +125,6 @@ public class PagingStoreImplTest extends UnitTestCase
 
       Assert.assertEquals(nr1, trans2.getNumberOfMessages());
 
-      for (int i = 0; i < nr1; i++)
-      {
-         trans.decrement();
-      }
-
-      Assert.assertEquals(0, trans.getNumberOfMessages());
-
-      try
-      {
-         trans.decrement();
-         Assert.fail("Exception expected!");
-      }
-      catch (Throwable ignored)
-      {
-      }
-
    }
 
    public void testDoubleStart() throws Exception
@@ -1352,6 +1336,20 @@ public class PagingStoreImplTest extends UnitTestCase
        * @see org.hornetq.core.persistence.StorageManager#deleteSecurityRoles(org.hornetq.api.core.SimpleString)
        */
       public void deleteSecurityRoles(SimpleString addressMatch) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long)
+       */
+      public void deletePageTransactional(long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo, int)
+       */
+      public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
       {
       }
 

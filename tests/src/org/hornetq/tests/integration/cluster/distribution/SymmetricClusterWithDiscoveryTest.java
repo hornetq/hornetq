@@ -28,9 +28,9 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
 
-   protected static final String groupAddress = "230.1.2.3";
+   protected static final String groupAddress = getUDPDiscoveryAddress();
 
-   protected static final int groupPort = 6745;
+   protected static final int groupPort = getUDPDiscoveryPort();
 
    protected boolean isNetty()
    {

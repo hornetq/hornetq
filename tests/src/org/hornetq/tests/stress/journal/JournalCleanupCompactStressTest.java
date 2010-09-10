@@ -119,7 +119,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
       else
       {
-         factory = new NIOSequentialFileFactory(dir.getPath());
+         factory = new NIOSequentialFileFactory(dir.getPath(), true);
          maxAIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO;
       }
 
@@ -134,9 +134,6 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       {
          protected void onCompactLock() throws Exception
          {
-            // System.out.println("OnCompactLock");
-            journal.forceMoveNextFile(false);
-            // System.out.println("OnCompactLock done");
          }
 
          protected void onCompactStart() throws Exception
@@ -152,7 +149,7 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
                      {
                         long id = idGen.generateID();
                         journal.appendAddRecord(id, (byte)0, new byte[] { 1, 2, 3 }, false);
-                        journal.forceMoveNextFile(false);
+                        journal.forceMoveNextFile();
                         journal.appendDeleteRecord(id, id == 20);
                      }
                      // System.out.println("OnCompactStart leave");
@@ -282,6 +279,8 @@ public class JournalCleanupCompactStressTest extends ServiceTestBase
       }
       
       journal.forceMoveNextFile();
+      
+      journal.checkReclaimStatus();
       
       Thread.sleep(5000);
       

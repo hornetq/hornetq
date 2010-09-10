@@ -74,6 +74,7 @@ public class JournalRecord
       }
    }
 
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();

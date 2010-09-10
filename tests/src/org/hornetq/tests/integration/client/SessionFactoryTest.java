@@ -53,9 +53,9 @@ public class SessionFactoryTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionFactoryTest.class);
 
-   private final String groupAddress = "230.1.2.3";
+   private final String groupAddress = getUDPDiscoveryAddress();
 
-   private final int groupPort = 8765;
+   private final int groupPort = getUDPDiscoveryPort();
 
    private HornetQServer liveService;
 

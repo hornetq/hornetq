@@ -53,16 +53,16 @@ public class DiscoveryTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(DiscoveryTest.class);
 
-   private static final String address1 = "230.1.2.3";
+   private static final String address1 = getUDPDiscoveryAddress();
 
-   private static final String address2 = "230.1.2.4";
+   private static final String address2 = getUDPDiscoveryAddress(1);
 
-   private static final String address3 = "230.1.2.5";
+   private static final String address3 = getUDPDiscoveryAddress(2);
 
    public void testSimpleBroadcast() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       final String nodeID = RandomUtil.randomString();
@@ -122,7 +122,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testSimpleBroadcastSpecificNIC() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       final String nodeID = RandomUtil.randomString();
@@ -222,7 +222,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testSimpleBroadcastWithStopStartDiscoveryGroup() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       final String nodeID = RandomUtil.randomString();
@@ -304,7 +304,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testIgnoreTrafficFromOwnNode() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       String nodeID = RandomUtil.randomString();
@@ -357,7 +357,7 @@ public class DiscoveryTest extends UnitTestCase
    // public void testSimpleBroadcastDifferentAddress() throws Exception
    // {
    // final InetAddress groupAddress = InetAddress.getByName(address1);
-   // final int groupPort = 6745;
+   // final int groupPort = getUDPDiscoveryPort();
    // final int timeout = 500;
    //
    // BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort);
@@ -394,8 +394,8 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testSimpleBroadcastDifferentPort() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName("230.1.2.3");
-      final int groupPort = 6745;
+      final InetAddress groupAddress = InetAddress.getByName(getUDPDiscoveryAddress());
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       BroadcastGroup bg = new BroadcastGroupImpl(RandomUtil.randomString(),
@@ -417,7 +417,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnectorPair(connectorPair);
 
-      final int port2 = 6746;
+      final int port2 = getUDPDiscoveryPort(1);
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
@@ -442,7 +442,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testSimpleBroadcastDifferentAddressAndPort() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       BroadcastGroup bg = new BroadcastGroupImpl(RandomUtil.randomString(),
@@ -465,7 +465,7 @@ public class DiscoveryTest extends UnitTestCase
       bg.addConnectorPair(connectorPair);
 
       final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
-      final int port2 = 6746;
+      final int port2 = getUDPDiscoveryPort(1);
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),
@@ -490,13 +490,13 @@ public class DiscoveryTest extends UnitTestCase
    public void testMultipleGroups() throws Exception
    {
       final InetAddress groupAddress1 = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort1 = 6745;
+      final int groupPort1 = getUDPDiscoveryPort();
 
       final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
-      final int groupPort2 = 6746;
+      final int groupPort2 = getUDPDiscoveryPort(1);
 
       final InetAddress groupAddress3 = InetAddress.getByName(DiscoveryTest.address3);
-      final int groupPort3 = 6747;
+      final int groupPort3 = getUDPDiscoveryPort(2);
 
       final int timeout = 500;
 
@@ -624,7 +624,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testBroadcastNullBackup() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       String nodeID = RandomUtil.randomString();
@@ -677,7 +677,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testDiscoveryListenersCalled() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       String nodeID = RandomUtil.randomString();
@@ -745,7 +745,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testConnectorsUpdatedMultipleBroadcasters() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       String node1 = RandomUtil.randomString();
@@ -1014,7 +1014,7 @@ public class DiscoveryTest extends UnitTestCase
    public void testMultipleDiscoveryGroups() throws Exception
    {
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       String nodeID = RandomUtil.randomString();
@@ -1105,7 +1105,7 @@ public class DiscoveryTest extends UnitTestCase
       notifService.addNotificationListener(notifListener);
 
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
@@ -1144,7 +1144,7 @@ public class DiscoveryTest extends UnitTestCase
       notifService.addNotificationListener(notifListener);
 
       final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-      final int groupPort = 6745;
+      final int groupPort = getUDPDiscoveryPort();
 
       BroadcastGroup bg = new BroadcastGroupImpl(RandomUtil.randomString(),
                                                  RandomUtil.randomString(),

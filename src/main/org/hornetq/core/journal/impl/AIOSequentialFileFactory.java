@@ -146,7 +146,8 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
       super.start();
 
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                              true, getThisClassLoader()));
+                                                                              true,
+                                                                              AIOSequentialFileFactory.getThisClassLoader()));
 
    }
 
@@ -295,18 +296,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          }
       }
    }
-   
+
    private static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
-                                    {
-                                       public ClassLoader run()
-                                       {
-                                          return ClientSessionFactoryImpl.class.getClassLoader();
-                                       }
-                                    });
-      
-   }
+      {
+         public ClassLoader run()
+         {
+            return ClientSessionFactoryImpl.class.getClassLoader();
+         }
+      });
 
+   }
 
 }

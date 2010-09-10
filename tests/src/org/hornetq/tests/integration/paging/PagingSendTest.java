@@ -13,6 +13,10 @@
 
 package org.hornetq.tests.integration.paging;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
@@ -58,7 +62,7 @@ public class PagingSendTest extends ServiceTestBase
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(10 * 1024);
-      defaultSetting.setMaxSizeBytes(100 * 1024);
+      defaultSetting.setMaxSizeBytes(20 * 1024);
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -142,6 +146,113 @@ public class PagingSendTest extends ServiceTestBase
          consumer.close();
 
          session.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testOrderOverTX() throws Exception
+   {
+      HornetQServer server = newHornetQServer();
+
+      server.start();
+
+      try
+      {
+         ClientSessionFactory sf;
+
+         if (isNetty())
+         {
+            sf = createNettyFactory();
+         }
+         else
+         {
+            sf = createInVMFactory();
+         }
+
+         ClientSession sessionConsumer = sf.createSession(true, true, 0);
+
+         sessionConsumer.createQueue(PagingSendTest.ADDRESS, PagingSendTest.ADDRESS, null, true);
+
+         final ClientSession sessionProducer = sf.createSession(false, false);
+         final ClientProducer producer = sessionProducer.createProducer(PagingSendTest.ADDRESS);
+
+         final AtomicInteger errors = new AtomicInteger(0);
+
+         final int TOTAL_MESSAGES = 1000;
+         
+         // Consumer will be ready after we have commits
+         final CountDownLatch ready = new CountDownLatch(1);
+
+         Thread tProducer = new Thread()
+         {
+            public void run()
+            {
+               try
+               {
+                  int commit = 0;
+                  for (int i = 0; i < TOTAL_MESSAGES; i++)
+                  {
+                     ClientMessage msg = sessionProducer.createMessage(true);
+                     msg.getBodyBuffer().writeBytes(new byte[1024]);
+                     msg.putIntProperty("count", i);
+                     producer.send(msg);
+
+                     if (i % 100 == 0 && i > 0)
+                     {
+                        sessionProducer.commit();
+                        if (commit++ > 2)
+                        {
+                           ready.countDown();
+                        }
+                     }
+                  }
+                  
+                  sessionProducer.commit();
+
+               }
+               catch (Exception e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         };
+
+         ClientConsumer consumer = sessionConsumer.createConsumer(PagingSendTest.ADDRESS);
+
+         sessionConsumer.start();
+         
+         tProducer.start();
+         
+         assertTrue(ready.await(10, TimeUnit.SECONDS));
+
+         for (int i = 0; i < TOTAL_MESSAGES; i++)
+         {
+            ClientMessage msg = consumer.receive(10000);
+
+            Assert.assertNotNull(msg);
+            
+            assertEquals(i, msg.getIntProperty("count").intValue());
+            
+            msg.acknowledge();
+         }
+         
+         tProducer.join();
+
+         sessionConsumer.close();
+         
+         sessionProducer.close();
+         
+         assertEquals(0, errors.get());
       }
       finally
       {

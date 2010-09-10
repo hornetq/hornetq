@@ -18,7 +18,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -30,11 +34,13 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 {
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(PageTransactionInfoImpl.class);
+
    // Attributes ----------------------------------------------------
 
    private long transactionID;
 
-   private volatile long recordID;
+   private volatile long recordID = -1;
 
    private volatile CountDownLatch countDownCompleted;
 
@@ -42,7 +48,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private volatile boolean rolledback;
 
-   private final AtomicInteger numberOfMessages = new AtomicInteger(0);
+   private AtomicInteger numberOfMessages = new AtomicInteger(0);
 
    // Static --------------------------------------------------------
 
@@ -75,21 +81,25 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       return transactionID;
    }
 
-   public int increment()
+   public void update(final int update, final StorageManager storageManager)
    {
-      return numberOfMessages.incrementAndGet();
+      int sizeAfterUpdate = numberOfMessages.addAndGet(-update);
+      if (sizeAfterUpdate == 0 && storageManager != null)
+      {
+         try
+         {
+            storageManager.deletePageTransactional(this.recordID);
+         }
+         catch (Exception e)
+         {
+            log.warn("Can't delete page transaction id=" + this.recordID);
+         }
+      }
    }
 
-   public int decrement()
+   public void increment()
    {
-      final int value = numberOfMessages.decrementAndGet();
-
-      if (value < 0)
-      {
-         throw new IllegalStateException("Internal error Negative value on Paging transactions!");
-      }
-
-      return value;
+      numberOfMessages.incrementAndGet();
    }
 
    public int getNumberOfMessages()
@@ -103,10 +113,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       transactionID = buffer.readLong();
       numberOfMessages.set(buffer.readInt());
-      countDownCompleted = null; // if it is being readed, probably it was
-      // committed
-      committed = true; // Unless it is a incomplete prepare, which is marked by
-      // markIcomplete
+      countDownCompleted = null;
+      committed = true;
    }
 
    public synchronized void encode(final HornetQBuffer buffer)
@@ -141,6 +149,49 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       }
    }
 
+   public void store(final StorageManager storageManager, final Transaction tx) throws Exception
+   {
+      storageManager.storePageTransaction(tx.getID(), this);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.PageTransactionInfo#storeUpdate(org.hornetq.core.persistence.StorageManager, org.hornetq.core.transaction.Transaction, int)
+    */
+   public void storeUpdate(final StorageManager storageManager, final Transaction tx, final int depages) throws Exception
+   {
+      storageManager.updatePageTransaction(tx.getID(), this, depages);
+      
+      final PageTransactionInfo pgToUpdate = this;
+      
+      tx.addOperation(new TransactionOperation()
+      {
+         public void beforeRollback(Transaction tx) throws Exception
+         {
+         }
+         
+         public void beforePrepare(Transaction tx) throws Exception
+         {
+         }
+         
+         public void beforeCommit(Transaction tx) throws Exception
+         {
+         }
+         
+         public void afterRollback(Transaction tx)
+         {
+         }
+         
+         public void afterPrepare(Transaction tx)
+         {
+         }
+         
+         public void afterCommit(Transaction tx)
+         {
+            pgToUpdate.update(depages, storageManager);
+         }
+      });
+   }
+
    public boolean isCommit()
    {
       return committed;
@@ -164,6 +215,16 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       rolledback = false;
 
       countDownCompleted = new CountDownLatch(1);
+   }
+
+   public String toString()
+   {
+      return "PageTransactionInfoImpl(transactionID=" + transactionID +
+             ",id=" +
+             recordID +
+             ",numberOfMessages=" +
+             numberOfMessages +
+             ")";
    }
 
    // Package protected ---------------------------------------------

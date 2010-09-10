@@ -58,9 +58,9 @@ import org.hornetq.core.server.management.NotificationListener;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
+import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
@@ -614,11 +614,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       else
       {
          Transaction tx = context.getTransaction();
+         
          boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
-
-         if (!depage && message.storeIsPaging())
+         
+         // if the TX paged at least one message on a give address, all the other addresses should also go towards paging cache now 
+         boolean alreadyPaging = false;
+         
+         if (tx.isPaging())
          {
-            
+            alreadyPaging = getPageOperation(tx).isPaging(message.getAddress()); 
+         }
+         
+         if (!depage && message.storeIsPaging() || alreadyPaging)
+         {
+            tx.setPaging(true);
             getPageOperation(tx).addMessageToPage(message);
             if (startedTx)
             {
@@ -1106,11 +1115,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       private final List<ServerMessage> messagesToPage = new ArrayList<ServerMessage>();
       
+      private final HashSet<SimpleString> addressesPaging = new HashSet<SimpleString>();
+      
       private Transaction subTX = null;
       
       void addMessageToPage(final ServerMessage message)
       {
          messagesToPage.add(message);
+         addressesPaging.add(message.getAddress());
+      }
+      
+      boolean isPaging(final SimpleString address)
+      {
+         return addressesPaging.contains(address);
       }
 
       public void afterCommit(final Transaction tx)
@@ -1229,7 +1246,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   {
                      subTX = tx.copy();
                   }
+                  
                   route(message, subTX, false);
+                  
+                  if (subTX.isContainsPersistent())
+                  {
+                     // The route wouldn't be able to update the persistent flag on the main TX
+                     // If we don't do this we would eventually miss a commit record
+                     tx.setContainsPersistent();
+                  }
                }
             }
 
@@ -1244,7 +1269,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      store.sync();
                   }
 
-                  storageManager.storePageTransaction(tx.getID(), pageTransaction);
+                  pageTransaction.store(storageManager, tx);
                }
             }
          }

@@ -436,4 +436,18 @@ public class NullStorageManager implements StorageManager
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deletePageTransactional(long)
+    */
+   public void deletePageTransactional(long recordID) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(long, org.hornetq.core.paging.PageTransactionInfo, int)
+    */
+   public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
+   {
+   }
+
 }

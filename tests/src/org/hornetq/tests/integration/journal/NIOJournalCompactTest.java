@@ -23,11 +23,13 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.Pair;
+import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AbstractJournalUpdateTask;
+import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.JournalCompactor;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalFileImpl;
@@ -38,7 +40,6 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestBase;
 import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
-import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**
  * 
@@ -53,7 +54,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    private static final int NUMBER_OF_RECORDS = 1000;
 
-   IDGenerator idGenerator = new TimeAndCounterIDGenerator();
+   IDGenerator idGenerator = new SimpleIDGenerator(100000);
 
    // General tests
    // =============
@@ -232,6 +233,119 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
    }
 
+   public void testCompactPrepareRestart() throws Exception
+   {
+      setup(2, 60 * 1024, false);
+
+      createJournal();
+      
+      startJournal();
+      
+      load();
+
+      startCompact();
+      
+      addTx(1, 2);
+      
+      prepare(1, new SimpleEncoding(10, (byte)0));
+      
+      finishCompact();
+      
+      stopJournal();
+      
+      createJournal();
+      
+      startJournal();
+      
+      loadAndCheck();
+      
+      startCompact();
+      
+      commit(1);
+      
+      finishCompact();
+      
+      journal.compact();
+      
+      stopJournal();
+      
+      createJournal();
+
+      startJournal();
+      
+      loadAndCheck();
+   }
+
+   public void testCompactPrepareRestart2() throws Exception
+   {
+      setup(2, 60 * 1024, false);
+
+      createJournal();
+      
+      startJournal();
+      
+      load();
+
+      addTx(1, 2);
+      
+      prepare(1, new SimpleEncoding(10, (byte)0));
+      
+      stopJournal();
+      
+      createJournal();
+      
+      startJournal();
+      
+      loadAndCheck();
+      
+      startCompact();
+      
+      commit(1);
+      
+      finishCompact();
+      
+      journal.compact();
+      
+      stopJournal();
+      
+      createJournal();
+
+      startJournal();
+      
+      loadAndCheck();
+   }
+
+   public void testCompactPrepareRestart3() throws Exception
+   {
+      setup(2, 60 * 1024, false);
+
+      createJournal();
+      
+      startJournal();
+      
+      load();
+
+      addTx(1, 2, 3);
+      
+      prepare(1, new SimpleEncoding(10, (byte)0));
+      
+      startCompact();
+      
+      commit(1);
+      
+      finishCompact();
+      
+      journal.compact();
+      
+      stopJournal();
+      
+      createJournal();
+
+      startJournal();
+      
+      loadAndCheck();
+   }
+
    public void testOnRollback() throws Exception
    {
 
@@ -277,13 +391,13 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       journal.forceMoveNextFile();
 
       addTx(1, 5, 6, 7, 8);
-      
+
       commit(1);
-      
+
       journal.forceMoveNextFile();
-      
+
       journal.compact();
-      
+
       add(10);
 
       stopJournal();
@@ -806,7 +920,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
 
       createJournal();
-      
+
       startJournal();
       load();
 
@@ -931,7 +1045,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       }
 
       startCompact();
- 
+
       // Delete part of the live records while cleanup still working
       for (int i = 1; i < 5; i++)
       {
@@ -939,7 +1053,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       }
 
       finishCompact();
- 
+
       // Delete part of the live records after cleanup is done
       for (int i = 5; i < 10; i++)
       {
@@ -963,7 +1077,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       setup(2, 60 * 1024, false);
 
       SimpleIDGenerator idGen = new SimpleIDGenerator(1000);
-      
+
       createJournal();
 
       startJournal();
@@ -978,7 +1092,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       addTx(appendTX, appendOne);
 
       startCompact();
-      
+
       addTx(appendTX, appendTwo);
 
       commit(appendTX);
@@ -1161,7 +1275,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       }
 
    }
-   
+
    public void testCompactFirstFileWithPendingCommits() throws Exception
    {
       setup(2, 60 * 1024, true);
@@ -1175,10 +1289,58 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
          addTx(tx, idGenerator.generateID());
       }
-      
+
       journal.forceMoveNextFile();
-      commit(tx);
-      
+
+      ArrayList<Long> listToDelete = new ArrayList<Long>();
+      for (int i = 0; i < 10; i++)
+      {
+         if (i == 5)
+         {
+            commit(tx);
+         }
+         long id = idGenerator.generateID();
+         listToDelete.add(id);
+         add(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      for (Long id : listToDelete)
+      {
+         delete(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      // This operation used to be journal.cleanup(journal.getDataFiles()[0]); when cleanup was still in place
+      journal.compact();
+
+      journal.checkReclaimStatus();
+
+      journal.compact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits3() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long tx = idGenerator.generateID();
+      for (int i = 0; i < 10; i++)
+      {
+         addTx(tx, idGenerator.generateID());
+      }
+
+      journal.forceMoveNextFile();
 
       ArrayList<Long> listToDelete = new ArrayList<Long>();
       for (int i = 0; i < 10; i++)
@@ -1187,20 +1349,263 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          listToDelete.add(id);
          add(id);
       }
-      
+
       journal.forceMoveNextFile();
 
       for (Long id : listToDelete)
       {
          delete(id);
       }
+
+      journal.forceMoveNextFile();
+
+      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out1.dmp");
+
+      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out2.dmp");
+
+      rollback(tx);
+
+      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out3.dmp");
+
+      journal.forceMoveNextFile();
+      journal.checkReclaimStatus();
+
+      ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out4.dmp");
+
+      journal.compact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits2() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long tx = idGenerator.generateID();
+      for (int i = 0; i < 10; i++)
+      {
+         addTx(tx, idGenerator.generateID());
+      }
+
+      journal.forceMoveNextFile();
+
+      ArrayList<Long> listToDelete = new ArrayList<Long>();
+      for (int i = 0; i < 10; i++)
+      {
+         long id = idGenerator.generateID();
+         listToDelete.add(id);
+         add(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      for (Long id : listToDelete)
+      {
+         delete(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      startCompact();
+      System.out.println("Committing TX " + tx);
+      commit(tx);
+      finishCompact();
+
+      journal.checkReclaimStatus();
+
+      journal.compact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits4() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long ids[] = new long[10];
+
+      long tx0 = idGenerator.generateID();
+      for (int i = 0; i < 10; i++)
+      {
+         ids[i] = idGenerator.generateID();
+         addTx(tx0, ids[i]);
+      }
+
+      long tx1 = idGenerator.generateID();
+      
+      journal.forceMoveNextFile();
+
+      ArrayList<Long> listToDelete = new ArrayList<Long>();
+      for (int i = 0; i < 10; i++)
+      {
+         long id = idGenerator.generateID();
+         listToDelete.add(id);
+         add(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      for (Long id : listToDelete)
+      {
+         delete(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      startCompact();
+      System.out.println("Committing TX " + tx1);
+      rollback(tx0);
+      for (int i = 0 ; i < 10; i++)
+      {
+         addTx(tx1, ids[i]);
+      }
+
+      journal.forceMoveNextFile();
+      commit(tx1);
+      finishCompact();
+
+      journal.checkReclaimStatus();
+
+      journal.compact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits5() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long ids[] = new long[10];
+
+      long tx0 = idGenerator.generateID();
+      for (int i = 0; i < 10; i++)
+      {
+         ids[i] = idGenerator.generateID();
+         addTx(tx0, ids[i]);
+      }
+
+      long tx1 = idGenerator.generateID();
+      
+      journal.forceMoveNextFile();
+
+      ArrayList<Long> listToDelete = new ArrayList<Long>();
+      for (int i = 0; i < 10; i++)
+      {
+         long id = idGenerator.generateID();
+         listToDelete.add(id);
+         add(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      for (Long id : listToDelete)
+      {
+         delete(id);
+      }
+
+      journal.forceMoveNextFile();
+
+      startCompact();
+      System.out.println("Committing TX " + tx1);
+      rollback(tx0);
+      for (int i = 0 ; i < 10; i++)
+      {
+         addTx(tx1, ids[i]);
+      }
+
+      journal.forceMoveNextFile();
+      commit(tx1);
+      finishCompact();
+
+      journal.checkReclaimStatus();
+
+      journal.compact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits6() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long ids[] = new long[10];
+
+      long tx0 = idGenerator.generateID();
+      for (int i = 0; i < 10; i++)
+      {
+         ids[i] = idGenerator.generateID();
+         addTx(tx0, ids[i]);
+      }
+      
+      commit(tx0);
+
+      startCompact();
+      for (int i = 0 ; i < 10; i++)
+      {
+         delete(ids[i]);
+      }
+      finishCompact();
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+   }
+
+   public void testCompactFirstFileWithPendingCommits7() throws Exception
+   {
+      setup(2, 60 * 1024, true);
+
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      long tx0 = idGenerator.generateID();
+      add(idGenerator.generateID());
+
+      long ids[] = new long[]{idGenerator.generateID(), idGenerator.generateID()};
+
+      addTx(tx0, ids[0]);
+      addTx(tx0, ids[1]);
       
       journal.forceMoveNextFile();
       
-      // This operation used to be journal.cleanup(journal.getDataFiles()[0]); when cleanup was still in place
-      journal.compact();
-
-      journal.checkReclaimStatus();
+      commit(tx0);
+      
+      journal.forceMoveNextFile();
+      
+      delete(ids[0]);
+      delete(ids[1]);
+      
+      journal.forceMoveNextFile();
       
       journal.compact();
 

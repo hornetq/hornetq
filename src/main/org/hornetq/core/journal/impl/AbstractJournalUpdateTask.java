@@ -55,6 +55,8 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
    protected SequentialFile sequentialFile;
 
+   protected final JournalFilesRepository filesRepository;
+
    protected long nextOrderingID;
 
    private HornetQBuffer writingChannel;
@@ -69,11 +71,13 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
    protected AbstractJournalUpdateTask(final SequentialFileFactory fileFactory,
                                        final JournalImpl journal,
+                                       final JournalFilesRepository filesRepository,
                                        final Set<Long> recordsSnapshot,
                                        final long nextOrderingID)
    {
       super();
       this.journal = journal;
+      this.filesRepository = filesRepository;
       this.fileFactory = fileFactory;
       this.nextOrderingID = nextOrderingID;
       this.recordsSnapshot.addAll(recordsSnapshot);
@@ -150,16 +154,14 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
                                                                     new ByteArrayEncoding(filesToRename.toByteBuffer()
                                                                                                        .array()));
 
-
-
          HornetQBuffer renameBuffer = HornetQBuffers.dynamicBuffer(filesToRename.writerIndex());
 
          controlRecord.setFileID(0);
-         
+
          controlRecord.encode(renameBuffer);
 
          ByteBuffer writeBuffer = fileFactory.newBuffer(renameBuffer.writerIndex());
-         
+
          writeBuffer.put(renameBuffer.toByteBuffer().array(), 0, renameBuffer.writerIndex());
 
          writeBuffer.rewind();
@@ -180,10 +182,10 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       if (writingChannel != null)
       {
          sequentialFile.position(0);
-         
+
          // To Fix the size of the file
          writingChannel.writerIndex(writingChannel.capacity());
-         
+
          sequentialFile.writeInternal(writingChannel.toByteBuffer());
          sequentialFile.close();
          newDataFiles.add(currentFile);
@@ -212,14 +214,14 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
       writingChannel = HornetQBuffers.wrappedBuffer(bufferWrite);
 
-      currentFile = journal.getFile(false, false, false, true);
-      
+      currentFile = filesRepository.takeFile(false, false, false, true);
+
       sequentialFile = currentFile.getFile();
 
       sequentialFile.open(1, false);
 
       currentFile = new JournalFileImpl(sequentialFile, nextOrderingID++, JournalImpl.FORMAT_VERSION);
-      
+
       JournalImpl.writeHeader(writingChannel, journal.getUserVersion(), currentFile.getFileID());
    }
 

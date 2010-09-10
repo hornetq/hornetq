@@ -60,12 +60,20 @@ public interface Transaction
    void removeOperation(TransactionOperation sync);
 
    boolean hasTimedOut(long currentTime, int defaultTimeout);
+   
+   /** We don't want to look on operations at every send, so we keep the paging attribute and will only look at 
+    *  the PagingOperation case this attribute is true*/
+   boolean isPaging();
+   
+   void setPaging(boolean paging);
 
    void putProperty(int index, Object property);
 
    Object getProperty(int index);
 
    void setContainsPersistent();
+   
+   boolean isContainsPersistent();
 
    void setTimeout(int timeout);
    

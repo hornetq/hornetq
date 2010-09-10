@@ -463,8 +463,12 @@ public class AlignedJournalImplTest extends UnitTestCase
       {
          AlignedJournalImplTest.log.debug("Expected exception " + e, e);
       }
+      
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
+      
+      journalImpl.forceMoveNextFile();
+      journalImpl.checkReclaimStatus();
 
       Assert.assertEquals(0, records.size());
       Assert.assertEquals(0, transactions.size());

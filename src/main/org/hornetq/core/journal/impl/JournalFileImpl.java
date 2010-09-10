@@ -47,7 +47,7 @@ public class JournalFileImpl implements JournalFile
 
    private boolean canReclaim;
 
-   private AtomicInteger totalNegativeToOthers = new AtomicInteger(0);
+   private final AtomicInteger totalNegativeToOthers = new AtomicInteger(0);
 
    private final int version;
 
@@ -61,7 +61,7 @@ public class JournalFileImpl implements JournalFile
 
       this.version = version;
 
-      this.recordID = (int)(fileID & (long)Integer.MAX_VALUE);
+      recordID = (int)(fileID & Integer.MAX_VALUE);
    }
 
    public void clearCounts()
@@ -165,7 +165,7 @@ public class JournalFileImpl implements JournalFile
    {
       try
       {
-         return "JournalFileImpl: (" + file.getFileName() + " id = " + this.fileID + ", recordID = " + recordID + ")";
+         return "JournalFileImpl: (" + file.getFileName() + " id = " + fileID + ", recordID = " + recordID + ")";
       }
       catch (Exception e)
       {

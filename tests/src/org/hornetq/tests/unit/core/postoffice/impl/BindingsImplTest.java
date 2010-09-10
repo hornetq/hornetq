@@ -321,6 +321,33 @@ public class BindingsImplTest extends UnitTestCase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#isPaging()
+       */
+      public boolean isPaging()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#setPaging(boolean)
+       */
+      public void setPaging(boolean paging)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#isContainsPersistent()
+       */
+      public boolean isContainsPersistent()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
    }
 
    class FakeMessage implements ServerMessage

@@ -40,7 +40,7 @@ public class JournalCompleteRecordTX extends JournalInternalRecord
 {
    private final boolean isCommit;
 
-   private final long txID;
+   public final long txID;
 
    private final EncodingSupport transactionData;
 

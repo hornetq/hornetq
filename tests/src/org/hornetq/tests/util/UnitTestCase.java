@@ -96,6 +96,34 @@ public class UnitTestCase extends TestCase
    private final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
    // Static --------------------------------------------------------
+   
+   
+   protected static String getUDPDiscoveryAddress()
+   {
+      return System.getProperty("TEST-UDP-ADDRESS", "230.10.20.1");
+   }
+   
+   protected static String getUDPDiscoveryAddress(int variant)
+   {
+      String value = getUDPDiscoveryAddress();
+      
+      int posPoint = value.lastIndexOf('.');
+      
+      int last = Integer.valueOf( value.substring(posPoint + 1) );
+      
+      return value.substring(0, posPoint + 1) + (last + variant);
+   }
+   
+   public static int getUDPDiscoveryPort()
+   {
+      return Integer.parseInt(System.getProperty("TEST-UDP-PORT", "6750"));
+   }
+
+   
+   public static int getUDPDiscoveryPort(final int variant)
+   {
+      return getUDPDiscoveryPort() + 1;
+   }
 
    
    protected static JournalType getDefaultJournalType()

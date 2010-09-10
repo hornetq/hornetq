@@ -80,8 +80,8 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       final String forwardAddress = "forwardAddress";
       final String queueName1 = "queue1";
 
-      final String groupAddress = "230.1.2.3";
-      final int port = 7746;
+      final String groupAddress = getUDPDiscoveryAddress();
+      final int port = getUDPDiscoveryPort();
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
       connectorPairs.add(new Pair<String, String>(server1tc.getName(), null));

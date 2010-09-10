@@ -127,7 +127,6 @@ public class TimedBuffer
          return;
       }
 
-
       // Need to start with the spin limiter acquired
       try
       {
@@ -207,7 +206,7 @@ public class TimedBuffer
       {
          throw new IllegalStateException("TimedBuffer is not started");
       }
-      
+
       if (sizeChecked > bufferSize)
       {
          throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
@@ -259,7 +258,7 @@ public class TimedBuffer
       {
          throw new IllegalStateException("TimedBuffer is not started");
       }
-      
+
       delayFlush = false;
 
       bytes.encode(buffer);
@@ -306,7 +305,7 @@ public class TimedBuffer
          {
             throw new IllegalStateException("TimedBuffer is not started");
          }
-         
+
          if ((force || !delayFlush) && buffer.writerIndex() > 0)
          {
             int pos = buffer.writerIndex();

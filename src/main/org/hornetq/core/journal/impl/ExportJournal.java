@@ -19,8 +19,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.hornetq.core.journal.*;
-
+import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.utils.Base64;
 
@@ -48,7 +47,7 @@ public class ExportJournal
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       if (arg.length != 5)
       {
@@ -58,7 +57,7 @@ public class ExportJournal
 
       try
       {
-         exportJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), arg[4]);
+         ExportJournal.exportJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), arg[4]);
       }
       catch (Exception e)
       {
@@ -67,32 +66,31 @@ public class ExportJournal
 
    }
 
-   public static void exportJournal(String directory,
-                                    String journalPrefix,
-                                    String journalSuffix,
-                                    int minFiles,
-                                    int fileSize,
-                                    String fileOutput) throws Exception
+   public static void exportJournal(final String directory,
+                                    final String journalPrefix,
+                                    final String journalSuffix,
+                                    final int minFiles,
+                                    final int fileSize,
+                                    final String fileOutput) throws Exception
    {
-      
+
       FileOutputStream fileOut = new FileOutputStream(new File(fileOutput));
 
       BufferedOutputStream buffOut = new BufferedOutputStream(fileOut);
 
       PrintStream out = new PrintStream(buffOut);
-      
-      exportJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, out);
-      
+
+      ExportJournal.exportJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, out);
+
       out.close();
    }
 
-   
-   public static void exportJournal(String directory,
-                                    String journalPrefix,
-                                    String journalSuffix,
-                                    int minFiles,
-                                    int fileSize,
-                                    PrintStream out) throws Exception
+   public static void exportJournal(final String directory,
+                                    final String journalPrefix,
+                                    final String journalSuffix,
+                                    final int minFiles,
+                                    final int fileSize,
+                                    final PrintStream out) throws Exception
    {
       NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
 
@@ -104,7 +102,7 @@ public class ExportJournal
       {
          out.println("#File," + file);
 
-         exportJournalFile(out, nio, file);
+         ExportJournal.exportJournalFile(out, nio, file);
       }
    }
 
@@ -114,67 +112,71 @@ public class ExportJournal
     * @param file
     * @throws Exception
     */
-   public static void exportJournalFile(final PrintStream out, SequentialFileFactory fileFactory, JournalFile file) throws Exception
+   public static void exportJournalFile(final PrintStream out,
+                                        final SequentialFileFactory fileFactory,
+                                        final JournalFile file) throws Exception
    {
       JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
       {
 
-         public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         public void onReadUpdateRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
          {
-            out.println("operation@UpdateTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            out.println("operation@UpdateTX,txID@" + transactionID + "," + ExportJournal.describeRecord(recordInfo));
          }
 
-         public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+         public void onReadUpdateRecord(final RecordInfo recordInfo) throws Exception
          {
-            out.println("operation@Update," + describeRecord(recordInfo));
+            out.println("operation@Update," + ExportJournal.describeRecord(recordInfo));
          }
 
-         public void onReadRollbackRecord(long transactionID) throws Exception
+         public void onReadRollbackRecord(final long transactionID) throws Exception
          {
             out.println("operation@Rollback,txID@" + transactionID);
          }
 
-         public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+         public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
          {
             out.println("operation@Prepare,txID@" + transactionID +
                         ",numberOfRecords@" +
                         numberOfRecords +
                         ",extraData@" +
-                        encode(extraData));
+                        ExportJournal.encode(extraData));
          }
 
-         public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
          {
-            out.println("operation@DeleteRecordTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            out.println("operation@DeleteRecordTX,txID@" + transactionID +
+                        "," +
+                        ExportJournal.describeRecord(recordInfo));
          }
 
-         public void onReadDeleteRecord(long recordID) throws Exception
+         public void onReadDeleteRecord(final long recordID) throws Exception
          {
             out.println("operation@DeleteRecord,id@" + recordID);
          }
 
-         public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+         public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
          {
             out.println("operation@Commit,txID@" + transactionID + ",numberOfRecords@" + numberOfRecords);
          }
 
-         public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+         public void onReadAddRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
          {
-            out.println("operation@AddRecordTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            out.println("operation@AddRecordTX,txID@" + transactionID + "," + ExportJournal.describeRecord(recordInfo));
          }
 
-         public void onReadAddRecord(RecordInfo recordInfo) throws Exception
+         public void onReadAddRecord(final RecordInfo recordInfo) throws Exception
          {
-            out.println("operation@AddRecord," + describeRecord(recordInfo));
+            out.println("operation@AddRecord," + ExportJournal.describeRecord(recordInfo));
          }
 
-         public void markAsDataFile(JournalFile file)
+         public void markAsDataFile(final JournalFile file)
          {
          }
       });
    }
 
-   private static String describeRecord(RecordInfo recordInfo)
+   private static String describeRecord(final RecordInfo recordInfo)
    {
       return "id@" + recordInfo.id +
              ",userRecordType@" +
@@ -186,10 +188,10 @@ public class ExportJournal
              ",compactCount@" +
              recordInfo.compactCount +
              ",data@" +
-             encode(recordInfo.data);
+             ExportJournal.encode(recordInfo.data);
    }
 
-   private static String encode(byte[] data)
+   private static String encode(final byte[] data)
    {
       return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }

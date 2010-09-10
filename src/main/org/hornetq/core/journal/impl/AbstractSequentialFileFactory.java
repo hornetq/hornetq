@@ -117,7 +117,8 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       if (isSupportsCallbacks())
       {
          writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-Asynchronous-Persistent-Writes" + System.identityHashCode(this),
-                                                                                    true, getThisClassLoader()));
+                                                                                    true,
+                                                                                    AbstractSequentialFileFactory.getThisClassLoader()));
       }
 
    }
@@ -193,14 +194,13 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    private static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
-                                    {
-                                       public ClassLoader run()
-                                       {
-                                          return ClientSessionFactoryImpl.class.getClassLoader();
-                                       }
-                                    });
-      
-   }
+      {
+         public ClassLoader run()
+         {
+            return ClientSessionFactoryImpl.class.getClassLoader();
+         }
+      });
 
+   }
 
 }

@@ -260,13 +260,11 @@ public class NIOSequentialFile extends AbstractSequentialFile
    {
       internalWrite(bytes, sync, null);
    }
-   
-   
-   public void writeInternal(ByteBuffer bytes) throws Exception
+
+   public void writeInternal(final ByteBuffer bytes) throws Exception
    {
       internalWrite(bytes, true, null);
    }
-
 
    @Override
    protected ByteBuffer newBuffer(int size, final int limit)
@@ -292,7 +290,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
          }
          return;
       }
-      
+
       position.addAndGet(bytes.limit());
 
       if (maxIOSemaphore == null)

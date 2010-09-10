@@ -45,7 +45,7 @@ public interface JournalFile
    void decSize(int bytes);
 
    int getLiveSize();
-   
+
    /** The total number of deletes this file has */
    int getTotalNegativeToOthers();
 
@@ -58,9 +58,9 @@ public interface JournalFile
    /** This is a field to identify that records on this file actually belong to the current file.
     *  The possible implementation for this is fileID & Integer.MAX_VALUE */
    int getRecordID();
-   
+
    long getFileID();
-   
+
    int getJournalVersion();
 
    SequentialFile getFile();

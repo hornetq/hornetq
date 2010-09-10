@@ -30,6 +30,19 @@ public class ReusableLatchTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ReusableLatchTest.class);
 
+   
+   public void testLatchWithParameterizedDown() throws Exception
+   {
+      ReusableLatch latch = new ReusableLatch(1000);
+      
+      latch.countDown(5000);
+      
+      assertTrue(latch.await(1000));
+      
+      
+      assertEquals(0, latch.getCount());
+   }
+   
    public void testLatchOnSingleThread() throws Exception
    {
       ReusableLatch latch = new ReusableLatch();

@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.impl.JournalRecord;
 import org.hornetq.utils.Base64;
 
 /**
@@ -52,7 +51,7 @@ public class ImportJournal
 
    // Public --------------------------------------------------------
 
-   public static void main(String arg[])
+   public static void main(final String arg[])
    {
       if (arg.length != 5)
       {
@@ -62,7 +61,7 @@ public class ImportJournal
 
       try
       {
-         importJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), arg[4]);
+         ImportJournal.importJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), arg[4]);
       }
       catch (Exception e)
       {
@@ -71,34 +70,35 @@ public class ImportJournal
 
    }
 
-   public static void importJournal(String directory,
-                                    String journalPrefix,
-                                    String journalSuffix,
-                                    int minFiles,
-                                    int fileSize,
-                                    String fileInput) throws Exception
+   public static void importJournal(final String directory,
+                                    final String journalPrefix,
+                                    final String journalSuffix,
+                                    final int minFiles,
+                                    final int fileSize,
+                                    final String fileInput) throws Exception
    {
       FileInputStream fileInputStream = new FileInputStream(new File(fileInput));
-      importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, fileInputStream);
+      ImportJournal.importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, fileInputStream);
 
    }
-   public static void importJournal(String directory,
-                                    String journalPrefix,
-                                    String journalSuffix,
-                                    int minFiles,
-                                    int fileSize,
-                                    InputStream stream) throws Exception
+
+   public static void importJournal(final String directory,
+                                    final String journalPrefix,
+                                    final String journalSuffix,
+                                    final int minFiles,
+                                    final int fileSize,
+                                    final InputStream stream) throws Exception
    {
       Reader reader = new InputStreamReader(stream);
-      importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, reader);
+      ImportJournal.importJournal(directory, journalPrefix, journalSuffix, minFiles, fileSize, reader);
    }
 
-   public static void importJournal(String directory,
-                                    String journalPrefix,
-                                    String journalSuffix,
-                                    int minFiles,
-                                    int fileSize,
-                                    Reader reader) throws Exception
+   public static void importJournal(final String directory,
+                                    final String journalPrefix,
+                                    final String journalSuffix,
+                                    final int minFiles,
+                                    final int fileSize,
+                                    final Reader reader) throws Exception
    {
 
       File journalDir = new File(directory);
@@ -139,7 +139,7 @@ public class ImportJournal
             continue;
          }
 
-         Properties lineProperties = parseLine(splitLine);
+         Properties lineProperties = ImportJournal.parseLine(splitLine);
 
          String operation = null;
          try
@@ -148,67 +148,67 @@ public class ImportJournal
 
             if (operation.equals("AddRecord"))
             {
-               RecordInfo info = parseRecord(lineProperties);
+               RecordInfo info = ImportJournal.parseRecord(lineProperties);
                journal.appendAddRecord(info.id, info.userRecordType, info.data, false);
             }
             else if (operation.equals("AddRecordTX"))
             {
-               long txID = parseLong("txID", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
                counter.incrementAndGet();
-               RecordInfo info = parseRecord(lineProperties);
+               RecordInfo info = ImportJournal.parseRecord(lineProperties);
                journal.appendAddRecordTransactional(txID, info.id, info.userRecordType, info.data);
             }
             else if (operation.equals("AddRecordTX"))
             {
-               long txID = parseLong("txID", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
                counter.incrementAndGet();
-               RecordInfo info = parseRecord(lineProperties);
+               RecordInfo info = ImportJournal.parseRecord(lineProperties);
                journal.appendAddRecordTransactional(txID, info.id, info.userRecordType, info.data);
             }
             else if (operation.equals("UpdateTX"))
             {
-               long txID = parseLong("txID", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
                counter.incrementAndGet();
-               RecordInfo info = parseRecord(lineProperties);
+               RecordInfo info = ImportJournal.parseRecord(lineProperties);
                journal.appendUpdateRecordTransactional(txID, info.id, info.userRecordType, info.data);
             }
             else if (operation.equals("Update"))
             {
-               RecordInfo info = parseRecord(lineProperties);
+               RecordInfo info = ImportJournal.parseRecord(lineProperties);
                journal.appendUpdateRecord(info.id, info.userRecordType, info.data, false);
             }
             else if (operation.equals("DeleteRecord"))
             {
-               long id = parseLong("id", lineProperties);
+               long id = ImportJournal.parseLong("id", lineProperties);
 
                // If not found it means the append/update records were reclaimed already
-               if (journalRecords.get((Long)id) != null)
+               if (journalRecords.get(id) != null)
                {
                   journal.appendDeleteRecord(id, false);
                }
             }
             else if (operation.equals("DeleteRecordTX"))
             {
-               long txID = parseLong("txID", lineProperties);
-               long id = parseLong("id", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               long id = ImportJournal.parseLong("id", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
                counter.incrementAndGet();
 
                // If not found it means the append/update records were reclaimed already
-               if (journalRecords.get((Long)id) != null)
+               if (journalRecords.get(id) != null)
                {
                   journal.appendDeleteRecordTransactional(txID, id);
                }
             }
             else if (operation.equals("Prepare"))
             {
-               long txID = parseLong("txID", lineProperties);
-               int numberOfRecords = parseInt("numberOfRecords", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
-               byte[] data = parseEncoding("extraData", lineProperties);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               int numberOfRecords = ImportJournal.parseInt("numberOfRecords", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
+               byte[] data = ImportJournal.parseEncoding("extraData", lineProperties);
 
                if (counter.get() == numberOfRecords)
                {
@@ -227,9 +227,9 @@ public class ImportJournal
             }
             else if (operation.equals("Commit"))
             {
-               long txID = parseLong("txID", lineProperties);
-               int numberOfRecords = parseInt("numberOfRecords", lineProperties);
-               AtomicInteger counter = getCounter(txID, txCounters);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
+               int numberOfRecords = ImportJournal.parseInt("numberOfRecords", lineProperties);
+               AtomicInteger counter = ImportJournal.getCounter(txID, txCounters);
                if (counter.get() == numberOfRecords)
                {
                   journal.appendCommitRecord(txID, false);
@@ -247,7 +247,7 @@ public class ImportJournal
             }
             else if (operation.equals("Rollback"))
             {
-               long txID = parseLong("txID", lineProperties);
+               long txID = ImportJournal.parseLong("txID", lineProperties);
                journal.appendRollbackRecord(txID, false);
             }
             else
@@ -264,7 +264,7 @@ public class ImportJournal
       journal.stop();
    }
 
-   protected static AtomicInteger getCounter(Long txID, Map<Long, AtomicInteger> txCounters)
+   protected static AtomicInteger getCounter(final Long txID, final Map<Long, AtomicInteger> txCounters)
    {
 
       AtomicInteger counter = txCounters.get(txID);
@@ -277,50 +277,50 @@ public class ImportJournal
       return counter;
    }
 
-   protected static RecordInfo parseRecord(Properties properties) throws Exception
+   protected static RecordInfo parseRecord(final Properties properties) throws Exception
    {
-      long id = parseLong("id", properties);
-      byte userRecordType = parseByte("userRecordType", properties);
-      boolean isUpdate = parseBoolean("isUpdate", properties);
-      byte[] data = parseEncoding("data", properties);
+      long id = ImportJournal.parseLong("id", properties);
+      byte userRecordType = ImportJournal.parseByte("userRecordType", properties);
+      boolean isUpdate = ImportJournal.parseBoolean("isUpdate", properties);
+      byte[] data = ImportJournal.parseEncoding("data", properties);
       return new RecordInfo(id, userRecordType, data, isUpdate, (short)0);
    }
 
-   private static byte[] parseEncoding(String name, Properties properties) throws Exception
+   private static byte[] parseEncoding(final String name, final Properties properties) throws Exception
    {
-      String value = parseString(name, properties);
+      String value = ImportJournal.parseString(name, properties);
 
-      return decode(value);
+      return ImportJournal.decode(value);
    }
 
    /**
     * @param properties
     * @return
     */
-   private static int parseInt(String name, Properties properties) throws Exception
+   private static int parseInt(final String name, final Properties properties) throws Exception
    {
-      String value = parseString(name, properties);
+      String value = ImportJournal.parseString(name, properties);
 
       return Integer.parseInt(value);
    }
 
-   private static long parseLong(String name, Properties properties) throws Exception
+   private static long parseLong(final String name, final Properties properties) throws Exception
    {
-      String value = parseString(name, properties);
+      String value = ImportJournal.parseString(name, properties);
 
       return Long.parseLong(value);
    }
 
-   private static boolean parseBoolean(String name, Properties properties) throws Exception
+   private static boolean parseBoolean(final String name, final Properties properties) throws Exception
    {
-      String value = parseString(name, properties);
+      String value = ImportJournal.parseString(name, properties);
 
       return Boolean.parseBoolean(value);
    }
 
-   private static byte parseByte(String name, Properties properties) throws Exception
+   private static byte parseByte(final String name, final Properties properties) throws Exception
    {
-      String value = parseString(name, properties);
+      String value = ImportJournal.parseString(name, properties);
 
       return Byte.parseByte(value);
    }
@@ -331,7 +331,7 @@ public class ImportJournal
     * @return
     * @throws Exception
     */
-   private static String parseString(String name, Properties properties) throws Exception
+   private static String parseString(final String name, final Properties properties) throws Exception
    {
       String value = properties.getProperty(name);
 
@@ -342,7 +342,7 @@ public class ImportJournal
       return value;
    }
 
-   protected static Properties parseLine(String[] splitLine)
+   protected static Properties parseLine(final String[] splitLine)
    {
       Properties properties = new Properties();
 
@@ -362,7 +362,7 @@ public class ImportJournal
       return properties;
    }
 
-   private static byte[] decode(String data)
+   private static byte[] decode(final String data)
    {
       return Base64.decode(data, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
    }

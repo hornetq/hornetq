@@ -29,6 +29,6 @@ import java.util.Map;
 public interface JournalRecordProvider
 {
    JournalCompactor getCompactor();
-   
+
    Map<Long, JournalRecord> getRecords();
 }

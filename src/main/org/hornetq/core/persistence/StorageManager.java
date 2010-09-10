@@ -134,8 +134,10 @@ public interface StorageManager extends HornetQComponent
    void rollback(long txID) throws Exception;
 
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
+   
+   void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
-   void deletePageTransactional(long txID, long recordID) throws Exception;
+   void deletePageTransactional(long recordID) throws Exception;
 
    /** This method is only useful at the backup side. We only load internal structures making the journals ready for
     *  append mode on the backup side. */

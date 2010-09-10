@@ -77,6 +77,11 @@ public class FileConfiguration extends ConfigurationImpl
       Element e = org.hornetq.utils.XMLUtil.stringToElement(xml);
       
       FileConfigurationParser parser = new FileConfigurationParser();
+      
+      // https://jira.jboss.org/browse/HORNETQ-478 - We only want to validate AIO when
+      //     starting the server
+      //     and we don't want to do it when deploying hornetq-queues.xml which uses the same parser and XML format
+      parser.setValidateAIO(true);
 
       parser.parseMainConfig(e, this);
 

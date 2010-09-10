@@ -35,9 +35,9 @@ public class DiscoveryClusterWithBackupFailoverTest extends ClusterWithBackupFai
 {
    private static final Logger log = Logger.getLogger(DiscoveryClusterWithBackupFailoverTest.class);
 
-   protected static final String groupAddress = "230.1.2.3";
+   protected static final String groupAddress = getUDPDiscoveryAddress();
 
-   protected static final int groupPort = 6745;
+   protected static final int groupPort = getUDPDiscoveryPort();
 
    @Override
    protected void setupCluster(final boolean forwardWhenNoConsumers) throws Exception

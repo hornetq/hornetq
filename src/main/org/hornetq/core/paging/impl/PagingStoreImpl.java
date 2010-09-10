@@ -14,8 +14,9 @@
 package org.hornetq.core.paging.impl;
 
 import java.text.DecimalFormat;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -958,7 +959,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
-      HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
+      HashMap<PageTransactionInfo, AtomicInteger> pageTransactionsToUpdate = new HashMap<PageTransactionInfo, AtomicInteger>();
 
       for (PagedMessage pagedMessage : pagedMessages)
       {
@@ -978,6 +979,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 
          PageTransactionInfo pageUserTransaction = null;
+         AtomicInteger countPageTX = null;
 
          if (transactionIdDuringPaging >= 0)
          {
@@ -992,6 +994,12 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
             else
             {
+               countPageTX = pageTransactionsToUpdate.get(pageUserTransaction);
+               if (countPageTX == null)
+               {
+                  countPageTX = new AtomicInteger();
+                  pageTransactionsToUpdate.put(pageUserTransaction, countPageTX);
+               }
 
                // This is to avoid a race condition where messages are depaged
                // before the commit arrived
@@ -1036,8 +1044,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          // This needs to be done after routing because of duplication detection
          if (pageUserTransaction != null && message.isDurable())
          {
-            pageUserTransaction.decrement();
-            pageTransactionsToUpdate.add(pageUserTransaction);
+            countPageTX.incrementAndGet();
          }
       }
 
@@ -1047,21 +1054,12 @@ public class PagingStoreImpl implements TestSupportPageStore
          return false;
       }
 
-      for (PageTransactionInfo pageWithTransaction : pageTransactionsToUpdate)
+      for (Map.Entry<PageTransactionInfo, AtomicInteger> entry : pageTransactionsToUpdate.entrySet())
       {
          // This will set the journal transaction to commit;
          depageTransaction.setContainsPersistent();
-
-         if (pageWithTransaction.getNumberOfMessages() == 0)
-         {
-            // numberOfReads==numberOfWrites -> We delete the record
-            storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
-            pagingManager.removeTransaction(pageWithTransaction.getTransactionID());
-         }
-         else
-         {
-            storageManager.storePageTransaction(depageTransaction.getID(), pageWithTransaction);
-         }
+         
+         entry.getKey().storeUpdate(storageManager, depageTransaction, entry.getValue().intValue());
       }
 
       depageTransaction.commit();

@@ -116,7 +116,11 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          if (i % 2 == 0 && i > 0)
          {
             System.out.println("DataFiles = " + journal.getDataFilesCount());
+            
             journal.forceMoveNextFile();
+            journal.debugWait();
+            journal.checkReclaimStatus();
+            
             if (journal.getDataFilesCount() != 0)
             {
                System.out.println("DebugJournal:"  + journal.debug());

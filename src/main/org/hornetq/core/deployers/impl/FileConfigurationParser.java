@@ -123,12 +123,30 @@ public class FileConfigurationParser
    private static final String SEND_TO_DLA_ON_NO_ROUTE = "send-to-dla-on-no-route";
 
    // Attributes ----------------------------------------------------
+   
+   private boolean validateAIO = false;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   /**
+    * @return the validateAIO
+    */
+   public boolean isValidateAIO()
+   {
+      return validateAIO;
+   }
+
+   /**
+    * @param validateAIO the validateAIO to set
+    */
+   public void setValidateAIO(boolean validateAIO)
+   {
+      this.validateAIO = validateAIO;
+   }
 
    public Configuration parseMainConfig(final InputStream input) throws Exception
    {
@@ -431,7 +449,10 @@ public class FileConfigurationParser
          }
          else
          {
-            log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+            if (validateAIO)
+            {
+               log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
+            }
             
             config.setJournalType(JournalType.NIO);
          }

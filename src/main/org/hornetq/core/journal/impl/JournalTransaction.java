@@ -61,10 +61,10 @@ public class JournalTransaction
       this.id = id;
       this.journal = journal;
    }
-   
-   public void replaceRecordProvider(JournalRecordProvider provider)
+
+   public void replaceRecordProvider(final JournalRecordProvider provider)
    {
-      this.journal = provider;
+      journal = provider;
    }
 
    /**
@@ -329,7 +329,7 @@ public class JournalTransaction
                else
                {
                   JournalRecord posFiles = journal.getRecords().remove(trDelete.id);
-   
+
                   if (posFiles != null)
                   {
                      posFiles.delete(trDelete.file);
