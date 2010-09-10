@@ -1,6 +1,6 @@
 package org.hornetq.core.registry;
 
-import org.hornetq.spi.BindingRegistry;
+import org.hornetq.spi.core.naming.BindingRegistry;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -13,6 +13,22 @@ import javax.naming.NamingException;
 public class JndiBindingRegistry implements BindingRegistry
 {
    private Context context;
+
+   /**
+    * @return the context
+    */
+   public Object getContext()
+   {
+      return context;
+   }
+
+   /**
+    * @param context the context to set
+    */
+   public void setContext(Object context)
+   {
+      this.context = (Context)context;
+   }
 
    public JndiBindingRegistry(Context context)
    {

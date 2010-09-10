@@ -5,7 +5,7 @@ import org.hornetq.core.registry.MapBindingRegistry;
 import org.hornetq.core.server.embedded.EmbeddedHornetQ;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.spi.BindingRegistry;
+import org.hornetq.spi.core.naming.BindingRegistry;
 
 import javax.naming.Context;
 

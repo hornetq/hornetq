@@ -25,7 +25,7 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
-import org.hornetq.spi.BindingRegistry;
+import org.hornetq.spi.core.naming.BindingRegistry;
 
 /**
  * The JMS Management interface.

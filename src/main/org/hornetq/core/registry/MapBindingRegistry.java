@@ -1,7 +1,9 @@
 package org.hornetq.core.registry;
 
-import org.hornetq.spi.BindingRegistry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import org.hornetq.spi.core.naming.BindingRegistry;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -9,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MapBindingRegistry implements BindingRegistry
 {
-   protected ConcurrentHashMap<String, Object> registry = new ConcurrentHashMap<String, Object>();
+   protected ConcurrentMap<String, Object> registry = new ConcurrentHashMap<String, Object>();
 
    public Object lookup(String name)
    {
@@ -28,5 +30,18 @@ public class MapBindingRegistry implements BindingRegistry
 
    public void close()
    {
+   }
+
+   public Object getContext()
+   {
+      return registry;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.spi.core.naming.BindingRegistry#setContext(java.lang.Object)
+    */
+   public void setContext(Object ctx)
+   {
+      registry = (ConcurrentMap)ctx;
    }
 }

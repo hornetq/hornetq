@@ -1,6 +1,6 @@
 package org.hornetq.integration.spring;
 
-import org.hornetq.spi.BindingRegistry;
+import org.hornetq.spi.core.naming.BindingRegistry;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 
 /**
@@ -33,5 +33,21 @@ public class SpringBindingRegistry implements BindingRegistry
 
    public void close()
    {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.spi.core.naming.BindingRegistry#getContext()
+    */
+   public Object getContext()
+   {
+      return this.factory;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.spi.core.naming.BindingRegistry#setContext(java.lang.Object)
+    */
+   public void setContext(Object ctx)
+   {
+      this.factory = (ConfigurableBeanFactory) ctx;
    }
 }

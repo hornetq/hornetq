@@ -66,7 +66,7 @@ import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
-import org.hornetq.spi.BindingRegistry;
+import org.hornetq.spi.core.naming.BindingRegistry;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**
@@ -355,6 +355,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public synchronized void setContext(final Context context)
    {
       this.context = context;
+      if (registry != null && registry instanceof JndiBindingRegistry)
+      {
+         registry.setContext(context);
+      }
 
       contextSet = true;
    }

@@ -17,7 +17,7 @@
 	<classpathentry kind="src" path="examples/core/microcontainer/src"/>
 	<classpathentry kind="src" path="examples/core/embedded-remote/src"/>
 	<classpathentry kind="src" path="examples/core/perf/src"/>
-   <classpathentry kind="src" path="examples/core/twitter-connector/src"/>
+	<classpathentry kind="src" path="examples/core/twitter-connector/src"/>
 	<classpathentry kind="src" path="examples/jms/applet/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>
@@ -126,5 +126,12 @@
 	<classpathentry kind="lib" path="thirdparty/wutka-dtdparser/lib/dtdparser121.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/twitter4j/lib/twitter4j-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-asm.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-beans.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-context.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-expression.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-jms.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-tx.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
