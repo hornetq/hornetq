@@ -312,9 +312,9 @@ void AsyncFile::read(THREAD_CONTEXT threadContext, long position, size_t size, v
 
 long AsyncFile::getSize()
 {
-	struct stat64 statBuffer;
+	struct stat statBuffer;
 
-	if (fstat64(fileHandle, &statBuffer) < 0)
+	if (fstat(fileHandle, &statBuffer) < 0)
 	{
 		return -1l;
 	}
