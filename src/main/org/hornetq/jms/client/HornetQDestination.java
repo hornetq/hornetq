@@ -225,7 +225,7 @@ public class HornetQDestination implements Destination, Serializable, Referencea
    
    private final boolean queue;
    
-   private final HornetQSession session;
+   private transient final HornetQSession session;
    
    // Constructors --------------------------------------------------
 
