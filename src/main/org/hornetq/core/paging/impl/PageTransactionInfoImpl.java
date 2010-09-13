@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -56,6 +57,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    public PageTransactionInfoImpl(final long transactionID)
    {
+      this();
       this.transactionID = transactionID;
       countDownCompleted = new CountDownLatch(1);
    }
@@ -81,7 +83,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       return transactionID;
    }
 
-   public void update(final int update, final StorageManager storageManager)
+   public void update(final int update, final StorageManager storageManager, PagingManager pagingManager)
    {
       int sizeAfterUpdate = numberOfMessages.addAndGet(-update);
       if (sizeAfterUpdate == 0 && storageManager != null)
@@ -94,6 +96,11 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          {
             log.warn("Can't delete page transaction id=" + this.recordID);
          }
+      }
+      
+      if (sizeAfterUpdate == 0 && pagingManager != null)
+      {
+         pagingManager.removeTransaction(this.transactionID);
       }
    }
 
@@ -149,7 +156,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       }
    }
 
-   public void store(final StorageManager storageManager, final Transaction tx) throws Exception
+   public void store(final StorageManager storageManager, PagingManager pagingManager, final Transaction tx) throws Exception
    {
       storageManager.storePageTransaction(tx.getID(), this);
    }
@@ -157,7 +164,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.PageTransactionInfo#storeUpdate(org.hornetq.core.persistence.StorageManager, org.hornetq.core.transaction.Transaction, int)
     */
-   public void storeUpdate(final StorageManager storageManager, final Transaction tx, final int depages) throws Exception
+   public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int depages) throws Exception
    {
       storageManager.updatePageTransaction(tx.getID(), this, depages);
       
@@ -187,7 +194,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          
          public void afterCommit(Transaction tx)
          {
-            pgToUpdate.update(depages, storageManager);
+            pgToUpdate.update(depages, storageManager, pagingManager);
          }
       });
    }

@@ -1059,7 +1059,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          // This will set the journal transaction to commit;
          depageTransaction.setContainsPersistent();
          
-         entry.getKey().storeUpdate(storageManager, depageTransaction, entry.getValue().intValue());
+         entry.getKey().storeUpdate(storageManager, this.pagingManager, depageTransaction, entry.getValue().intValue());
       }
 
       depageTransaction.commit();

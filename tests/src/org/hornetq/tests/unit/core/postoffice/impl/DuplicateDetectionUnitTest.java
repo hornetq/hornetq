@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,7 +36,6 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
@@ -310,6 +310,14 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       public boolean isGlobalFull()
       {
          return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#getTransactions()
+       */
+      public Map<Long, PageTransactionInfo> getTransactions()
+      {
+         return null;
       }
 
    }

@@ -688,6 +688,154 @@ public class PagingStoreImplTest extends UnitTestCase
       Assert.assertEquals(0, storeImpl.getAddressSize());
    }
 
+   public void testOrderOnPaging() throws Throwable
+   {
+      clearData();
+      SequentialFileFactory factory = new NIOSequentialFileFactory(this.getPageDir());
+
+      PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
+
+      final int MAX_SIZE = 1024 * 10;
+
+      AddressSettings settings = new AddressSettings();
+      settings.setPageSizeBytes(MAX_SIZE);
+      settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+
+      final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                                 createMockManager(),
+                                                                 createStorageManagerMock(),
+                                                                 createPostOfficeMock(),
+                                                                 factory,
+                                                                 storeFactory,
+                                                                 new SimpleString("test"),
+                                                                 settings,
+                                                                 executor,
+                                                                 true);
+
+      storeImpl.start();
+
+      Assert.assertEquals(0, storeImpl.getNumberOfPages());
+
+      // Marked the store to be paged
+      storeImpl.startPaging();
+
+      final CountDownLatch producedLatch = new CountDownLatch(1);
+
+      Assert.assertEquals(1, storeImpl.getNumberOfPages());
+
+      final SimpleString destination = new SimpleString("test");
+
+      final long NUMBER_OF_MESSAGES = 100000;
+
+      final List<Throwable> errors = new ArrayList<Throwable>();
+
+      class WriterThread extends Thread
+      {
+
+         public WriterThread()
+         {
+            super("PageWriter");
+         }
+
+         @Override
+         public void run()
+         {
+
+            try
+            {
+               for (long i = 0; i < NUMBER_OF_MESSAGES; i++)
+               {
+                  // Each thread will Keep paging until all the messages are depaged.
+                  // This is possible because the depage thread is not actually reading the pages.
+                  // Just using the internal API to remove it from the page file system
+                  ServerMessage msg = createMessage(i, storeImpl, destination, createRandomBuffer(i, 1024));
+                  msg.putLongProperty("count", i);
+                  while (!storeImpl.page(msg))
+                  {
+                     storeImpl.startPaging();
+                  }
+
+                  if (i == 0)
+                  {
+                     producedLatch.countDown();
+                  }
+               }
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               errors.add(e);
+            }
+         }
+      }
+
+      class ReaderThread extends Thread
+      {
+         public ReaderThread()
+         {
+            super("PageReader");
+         }
+
+         @Override
+         public void run()
+         {
+            try
+            {
+
+               long msgsRead = 0;
+
+               while (msgsRead < NUMBER_OF_MESSAGES)
+               {
+                  Page page = storeImpl.depage();
+                  if (page != null)
+                  {
+                     page.open();
+                     List<PagedMessage> messages = page.read();
+ 
+                     for (PagedMessage pgmsg : messages)
+                     {
+                        ServerMessage msg = pgmsg.getMessage(null);
+
+                        assertEquals(msgsRead++, msg.getMessageID());
+
+                        assertEquals(msg.getMessageID(), msg.getLongProperty("count").longValue());
+                     }
+ 
+                     page.close();
+                     page.delete();
+                  }
+                  else
+                  {
+                     System.out.println("Depaged!!!!");
+                     Thread.sleep(500);
+                  }
+               }
+
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               errors.add(e);
+            }
+         }
+      }
+
+      WriterThread producerThread = new WriterThread();
+      producerThread.start();
+      ReaderThread consumer = new ReaderThread();
+      consumer.start();
+
+      producerThread.join();
+      consumer.join();
+
+      storeImpl.stop();
+
+      for (Throwable e: errors)
+      {
+         throw e;
+      }
+   }
+
    /**
    * @return
    */
@@ -876,6 +1024,15 @@ public class PagingStoreImplTest extends UnitTestCase
       public boolean isGlobalFull()
       {
          return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#getTransactions()
+       */
+      public Map<Long, PageTransactionInfo> getTransactions()
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
    }

@@ -40,12 +40,12 @@ public interface PageTransactionInfo extends EncodingSupport
 
    long getTransactionID();
    
-   void store(StorageManager storageManager,Transaction tx) throws Exception;
+   void store(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
    
-   void storeUpdate(StorageManager storageManager, Transaction tx, int depages) throws Exception;
+   void storeUpdate(StorageManager storageManager, PagingManager pagingManager, Transaction tx, int depages) throws Exception;
 
    // To be used after the update was stored or reload
-   void update(int update, StorageManager storageManager);
+   void update(int update, StorageManager storageManager, PagingManager pagingManager);
 
    void increment();
 

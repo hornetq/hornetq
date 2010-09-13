@@ -1269,7 +1269,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      store.sync();
                   }
 
-                  pageTransaction.store(storageManager, tx);
+                  pageTransaction.store(storageManager, pagingManager, tx);
                }
             }
          }

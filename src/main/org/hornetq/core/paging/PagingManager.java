@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging;
 
+import java.util.Map;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.postoffice.PostOffice;
@@ -67,6 +69,8 @@ public interface PagingManager extends HornetQComponent
     * @param transactionID
     */
    void removeTransaction(long transactionID);
+   
+   Map<Long, PageTransactionInfo> getTransactions();
 
    /**
     * Reload previously created PagingStores into memory

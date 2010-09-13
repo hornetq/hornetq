@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -155,6 +156,15 @@ public class PagingManagerImpl implements PagingManager
    {
       return transactions.get(id);
    }
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.PagingManager#getTransactions()
+    */
+   public Map<Long, PageTransactionInfo> getTransactions()
+   {
+      return transactions;
+   }
+
 
    // HornetQComponent implementation
    // ------------------------------------------------------------------------------------------------

@@ -913,7 +913,7 @@ public class JournalStorageManager implements StorageManager
                   
                   PageTransactionInfo pageTX = pagingManager.getTransaction(pageUpdate.pageTX);
                   
-                  pageTX.update(pageUpdate.recods, null);
+                  pageTX.update(pageUpdate.recods, null, null);
                }
                else
                {
