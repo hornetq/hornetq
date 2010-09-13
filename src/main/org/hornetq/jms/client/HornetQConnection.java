@@ -163,8 +163,6 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    {
       checkClosed();
 
-      justCreated = false;
-
       return clientID;
    }
 
