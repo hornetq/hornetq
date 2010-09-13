@@ -10,7 +10,7 @@
      
      <p>This example demonstrates two servers coupled as a live-backup pair for high availability (HA), and a client
      connection failing over from live to backup when the live server is crashed.</p>
-     <p>Failover behavior differs wether the JMS session is transacter or not.</p>
+     <p>Failover behavior differs wether the JMS session is transacted or not.</p>
      <p>When a <em>non-transacted</em> JMS session is used, once and only once delivery is not guaranteed 
         and it is possible some messages will be lost or delivered twice, depending when the failover to the backup server occurs.</p>
      <p>It is up to the client to deal with such cases. To ensure once and only once delivery, the client must
