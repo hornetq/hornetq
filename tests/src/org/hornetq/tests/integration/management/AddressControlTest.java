@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +22,11 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.config.Configuration;
@@ -95,6 +101,31 @@ public class AddressControlTest extends ManagementTestBase
       Assert.assertEquals(anotherQueue.toString(), queueNames[0]);
 
       session.deleteQueue(anotherQueue);
+   }
+   
+   public void testGetBindingNames() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      String divertName = RandomUtil.randomString();
+      
+      session.createQueue(address, queue, false);
+
+      AddressControl addressControl = createManagementControl(address);
+      String[] bindingNames = addressControl.getBindingNames();
+      assertEquals(1, bindingNames.length);
+      assertEquals(queue.toString(), bindingNames[0]);
+
+      server.getHornetQServerControl().createDivert(divertName, randomString(), address.toString(), RandomUtil.randomString(), false, null, null);
+
+      bindingNames = addressControl.getBindingNames();
+      Assert.assertEquals(2, bindingNames.length);
+      
+      session.deleteQueue(queue);
+      
+      bindingNames = addressControl.getBindingNames();
+      assertEquals(1, bindingNames.length);
+      assertEquals(divertName.toString(), bindingNames[0]);
    }
 
    public void testGetRoles() throws Exception

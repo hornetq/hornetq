@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import static org.hornetq.tests.util.RandomUtil.randomString;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +27,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -99,6 +100,31 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       Assert.assertEquals(anotherQueue.toString(), queueNames[0]);
 
       session.deleteQueue(anotherQueue);
+   }
+   
+   public void testGetBindingNames() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+      String divertName = RandomUtil.randomString();
+      
+      session.createQueue(address, queue, false);
+
+      CoreMessagingProxy proxy = createProxy(address);
+      Object[] bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");
+      assertEquals(1, bindingNames.length);
+      assertEquals(queue.toString(), bindingNames[0]);
+
+      server.getHornetQServerControl().createDivert(divertName, randomString(), address.toString(), RandomUtil.randomString(), false, null, null);
+
+      bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");   
+      assertEquals(2, bindingNames.length);
+      
+      session.deleteQueue(queue);
+      
+      bindingNames = (Object[])proxy.retrieveAttributeValue("bindingNames");
+      assertEquals(1, bindingNames.length);
+      assertEquals(divertName.toString(), bindingNames[0]);
    }
 
    public void testGetRoles() throws Exception

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.management.MBeanOperationInfo;
@@ -25,6 +27,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -86,13 +89,39 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
       try
       {
          Bindings bindings = postOffice.getBindingsForAddress(address);
-         String[] queueNames = new String[bindings.getBindings().size()];
+         List<String> queueNames = new ArrayList<String>();
+         for (Binding binding : bindings.getBindings())
+         {
+            if (binding instanceof QueueBinding)
+            {
+               queueNames.add(binding.getUniqueName().toString());
+            }
+         }
+         return (String[])queueNames.toArray(new String[queueNames.size()]);
+      }
+      catch (Throwable t)
+      {
+         throw new IllegalStateException(t.getMessage());
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public String[] getBindingNames() throws Exception
+   {
+      clearIO();
+      try
+      {
+         Bindings bindings = postOffice.getBindingsForAddress(address);
+         String[] bindingNames = new String[bindings.getBindings().size()];
          int i = 0;
          for (Binding binding : bindings.getBindings())
          {
-            queueNames[i++] = binding.getUniqueName().toString();
+               bindingNames[i++] = binding.getUniqueName().toString();
          }
-         return queueNames;
+         return bindingNames;
       }
       catch (Throwable t)
       {

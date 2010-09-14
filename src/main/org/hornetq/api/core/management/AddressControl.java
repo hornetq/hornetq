@@ -56,6 +56,11 @@ public interface AddressControl
     */
    long getNumberOfBytesPerPage() throws Exception;
 
+   /**
+    * Returns the names of all bindings (both queues and diverts) bound to this address
+    */
+   String[] getBindingNames() throws Exception;
+
    // Operations ----------------------------------------------------
 
 }
