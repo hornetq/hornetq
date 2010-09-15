@@ -34,7 +34,6 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -268,8 +267,10 @@ public class PagingTest extends ServiceTestBase
             threads[i].join();
          }
          
+         assertEquals(0, errors.get());
+         
          assertEquals(0, server.getPostOffice().getPagingManager().getTransactions().size());
-
+         
       }
       finally
       {
