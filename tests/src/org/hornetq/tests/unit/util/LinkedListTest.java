@@ -15,10 +15,10 @@ package org.hornetq.tests.unit.util;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import junit.framework.TestCase;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.LinkedListImpl;
 import org.hornetq.utils.LinkedListIterator;
 
@@ -29,7 +29,7 @@ import org.hornetq.utils.LinkedListIterator;
  *
  *
  */
-public class LinkedListTest extends TestCase
+public class LinkedListTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(LinkedListTest.class);
 
@@ -41,6 +41,89 @@ public class LinkedListTest extends TestCase
       super.setUp();
 
       list = new LinkedListImpl<Integer>();
+   }
+
+   public void testAddAndRemove()
+   {
+      final AtomicInteger count = new AtomicInteger(0);
+      class MyObject
+      {
+
+         public byte payload[];
+
+         MyObject()
+         {
+            count.incrementAndGet();
+            payload = new byte[10 * 1024];
+         }
+
+         protected void finalize() throws Exception
+         {
+            count.decrementAndGet();
+         }
+      };
+
+      LinkedListImpl<MyObject> objs = new LinkedListImpl<MyObject>();
+
+      // Initial add
+      for (int i = 0; i < 1000; i++)
+      {
+         objs.addTail(new MyObject());
+      }
+
+      LinkedListIterator<MyObject> iter = objs.iterator();
+
+      for (int i = 0; i < 5000; i++)
+      {
+
+         for (int add = 0; add < 1000; add++)
+         {
+            objs.addTail(new MyObject());
+         }
+
+         for (int remove = 0; remove < 1000; remove++)
+         {
+            assertNotNull(iter.next());
+            iter.remove();
+         }
+
+         if (i % 1000 == 0)
+         {
+            System.out.println("Checking on " + i);
+
+            for (int gcLoop = 0 ; gcLoop < 5; gcLoop++)
+            {
+               forceGC();
+               if (count.get() == 1000)
+               {
+                  break;
+               }
+               else
+               {
+                  System.out.println("Trying a GC again");
+               }
+            }
+   
+            assertEquals(1000, count.get());
+         }
+      }
+
+      forceGC();
+
+      assertEquals(1000, count.get());
+
+      int removed = 0;
+      while (iter.hasNext())
+      {
+         System.out.println("removed " + (removed++));
+         iter.next();
+         iter.remove();
+      }
+
+      forceGC();
+
+      assertEquals(0, count.get());
+
    }
 
    public void testAddTail()
@@ -1095,29 +1178,29 @@ public class LinkedListTest extends TestCase
       // Close the odd ones
 
       boolean b = false;
-      for (LinkedListIterator<Integer> iter: iters)
+      for (LinkedListIterator<Integer> iter : iters)
       {
          if (b)
          {
-            iter.close();            
+            iter.close();
          }
          b = !b;
       }
-      
+
       assertEquals(numIters / 2, list.numIters());
-      
+
       // close the even ones
-      
+
       b = true;
-      for (LinkedListIterator<Integer> iter: iters)
+      for (LinkedListIterator<Integer> iter : iters)
       {
          if (b)
          {
-            iter.close();            
+            iter.close();
          }
          b = !b;
       }
-      
+
       assertEquals(0, list.numIters());
 
    }
