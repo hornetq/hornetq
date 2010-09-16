@@ -75,8 +75,8 @@ public class QueueImpl implements Queue
    public static final int NUM_PRIORITIES = 10;
 
    public static final int MAX_DELIVERIES_IN_LOOP = 1000;
-   
-   private static final int CHECK_QUEUE_SIZE_PERIOD = 2000;
+
+   public static final int CHECK_QUEUE_SIZE_PERIOD = 100;
 
    private final long id;
 
@@ -138,9 +138,9 @@ public class QueueImpl implements Queue
 
    private final Runnable concurrentPoller = new ConcurrentPoller();
 
-   private volatile boolean queued;
-   
-   private volatile boolean checkQueueSize = true;
+   private volatile boolean checkDirect;
+
+   private volatile boolean directDeliver = true;
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -191,11 +191,15 @@ public class QueueImpl implements Queue
       {
          public void run()
          {
-            checkQueueSize = true;
+            // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
+            // is empty
+            // We don't want to evaluate that on every delivery since that's too expensive
+
+            checkDirect = true;
          }
       }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
    }
-   
+
    // Bindable implementation -------------------------------------------------------------------------------------
 
    public SimpleString getRoutingName()
@@ -252,12 +256,10 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       messageReferences.addHead(ref, ref.getMessage().getPriority());
-      
-      queued = true;
-      
-      checkQueueSize = false;
+
+      directDeliver = false;
    }
 
    public synchronized void reload(final MessageReference ref)
@@ -267,9 +269,7 @@ public class QueueImpl implements Queue
          messageReferences.addTail(ref, ref.getMessage().getPriority());
       }
 
-      queued = true;
-      
-      checkQueueSize = false;
+      directDeliver = false;
 
       messagesAdded++;
    }
@@ -291,41 +291,47 @@ public class QueueImpl implements Queue
          return;
       }
 
-      if (checkQueueSize)
+      // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
+      // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
+      // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
+      if (checkDirect)
       {
-         // This is an expensive operation so we don't want to do it every time we add a message, that's why we use the checkQueueSize flag
-         // which is set to true periodically using a scheduled executor
+         if (direct && !directDeliver && concurrentQueue.isEmpty() && messageReferences.isEmpty())
+         {
+            // We must block on the executor to ensure any async deliveries have completed or we might get out of order
+            // deliveries
+            blockOnExecutorFuture();
 
-         queued = !messageReferences.isEmpty() || !concurrentQueue.isEmpty();
-
-         checkQueueSize = false;
+            // Go into direct delivery mode
+            directDeliver = true;
+         }
+         checkDirect = false;
       }
 
-      if (direct & !queued)
+      if (direct && directDeliver && deliverDirect(ref))
       {
-         if (deliverDirect(ref))
-         {
-            return;
-         }
+         return;
       }
 
       concurrentQueue.add(ref);
 
+      directDeliver = false;
+
       executor.execute(concurrentPoller);
    }
-   
+
    public void deliverAsync()
    {
       executor.execute(deliverRunner);
    }
-   
+
    public void close() throws Exception
    {
       if (checkQueueSizeFuture != null)
       {
          checkQueueSizeFuture.cancel(false);
       }
-      
+
       cancelRedistributor();
    }
 
@@ -486,7 +492,7 @@ public class QueueImpl implements Queue
          redistributorFuture = null;
       }
    }
-   
+
    @Override
    protected void finalize() throws Throwable
    {
@@ -494,9 +500,9 @@ public class QueueImpl implements Queue
       {
          checkQueueSizeFuture.cancel(false);
       }
-      
+
       cancelRedistributor();
-      
+
       super.finalize();
    }
 
@@ -998,6 +1004,11 @@ public class QueueImpl implements Queue
    {
       return paused;
    }
+   
+   public boolean isDirectDeliver()
+   {
+      return directDeliver;
+   }
 
    // Public
    // -----------------------------------------------------------------------------
@@ -1075,10 +1086,10 @@ public class QueueImpl implements Queue
             // Schedule another one - we do this to prevent a single thread getting caught up in this loop for too long
 
             deliverAsync();
-            
+
             return;
          }
-         
+
          ConsumerHolder holder = consumerList.get(pos);
 
          Consumer consumer = holder.consumer;
@@ -1169,7 +1180,7 @@ public class QueueImpl implements Queue
          if (pos == size)
          {
             pos = 0;
-         }         
+         }
       }
    }
 

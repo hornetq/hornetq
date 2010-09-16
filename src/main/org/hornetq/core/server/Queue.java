@@ -155,4 +155,6 @@ public interface Queue extends Bindable
    void blockOnExecutorFuture();
    
    void close() throws Exception;
+   
+   boolean isDirectDeliver();
 }

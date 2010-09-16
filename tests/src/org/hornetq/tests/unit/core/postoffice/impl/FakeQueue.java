@@ -27,8 +27,21 @@ import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 
+/**
+ * A FakeQueue
+ *
+ * @author tim
+ *
+ *
+ */
 public class FakeQueue implements Queue
 {
+   public boolean isDirectDeliver()
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
    public void close()
    {
       // TODO Auto-generated method stub
