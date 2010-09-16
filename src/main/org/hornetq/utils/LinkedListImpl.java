@@ -176,6 +176,10 @@ public class LinkedListImpl<E> implements LinkedList<E>
       {
          LinkedListImpl.this.nudgeIterators(toRemove);
       }
+      
+      //Help GC - otherwise GC potentially has to traverse a very long list to see if elements are reachable, this can result in OOM
+      //https://jira.jboss.org/browse/HORNETQ-469
+      toRemove.next = toRemove.prev = null;
    }
 
    private void nudgeIterators(Node<E> node)

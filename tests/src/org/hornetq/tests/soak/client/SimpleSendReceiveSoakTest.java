@@ -88,7 +88,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       server = null;
    }
 
-   public void testSoakClient() throws Exception
+   public void testSoakClientTransactions() throws Exception
    {
       final ClientSessionFactory sf = createFactory(IS_NETTY);
 
@@ -123,8 +123,6 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
             producer.send(msg);
          }
          
-         session.commit();
-
          for (int i = 0; i < MIN_MESSAGES_ON_QUEUE; i++)
          {
             ClientMessage msg = consumer.receive(5000);
@@ -132,8 +130,6 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
             msg.acknowledge();
             assertEquals(msgReceivedID++, msg.getLongProperty("count").longValue());
          }
-         
-         sessionConsumer.commit();
       }
 
       sessionConsumer.close();
@@ -141,6 +137,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       sf.close();
 
    }
+   
 
    // Package protected ---------------------------------------------
 
