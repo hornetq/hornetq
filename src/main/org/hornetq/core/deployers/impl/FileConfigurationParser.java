@@ -686,31 +686,31 @@ public class FileConfigurationParser
                }
                else if (FileConfigurationParser.CREATEDURABLEQUEUE_NAME.equals(type))
                {
-                  createDurableQueue.add(role);
+                  createDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.DELETEDURABLEQUEUE_NAME.equals(type))
                {
-                  deleteDurableQueue.add(role);
+                  deleteDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.CREATE_NON_DURABLE_QUEUE_NAME.equals(type))
                {
-                  createNonDurableQueue.add(role);
+                  createNonDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.DELETE_NON_DURABLE_QUEUE_NAME.equals(type))
                {
-                  deleteNonDurableQueue.add(role);
+                  deleteNonDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.CREATETEMPQUEUE_NAME.equals(type))
                {
-                  createNonDurableQueue.add(role);
+                  createNonDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.DELETETEMPQUEUE_NAME.equals(type))
                {
-                  deleteNonDurableQueue.add(role);
+                  deleteNonDurableQueue.add(role.trim());
                }
                else if (FileConfigurationParser.MANAGE_NAME.equals(type))
                {
-                  manageRoles.add(role);
+                  manageRoles.add(role.trim());
                }
                if (!allRoles.contains(role.trim()))
                {

@@ -41,7 +41,31 @@ public class SecurityDeployerTest extends UnitTestCase
                                + "      <permission type=\"manage\" roles=\"guest,publisher,durpublisher\"/>\n"
                                + "   </security-setting>";
 
-   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
+   private final String confWithWhiteSpace1 = "<security-setting match=\"jms.topic.testTopic\">\n" +
+   "      <permission type=\"createDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n" +
+   "<permission type=\"createNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+   + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              + "      <permission type=\"deleteDurableQueue\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              
+                                              + "      <permission type=\"consume\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              + "      <permission type=\"send\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              + "      <permission type=\"manage\" roles=\"guest, publisher, durpublisher\"/>\n"
+                                              + "   </security-setting>";
+
+   private final String confWithWhiteSpace2 = "<security-setting match=\"jms.topic.testTopic\">\n" +
+   "      <permission type=\"createDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n" +
+   "<permission type=\"createNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+   + "      <permission type=\"deleteNonDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+                                              + "      <permission type=\"deleteDurableQueue\" roles=\"guest , publisher , durpublisher\"/>\n"
+                                              
+                                              + "      <permission type=\"consume\" roles=\"guest , publisher , durpublisher\"/>\n"
+                                              + "      <permission type=\"send\" roles=\"guest , publisher , durpublisher\"/>\n"
+                                              + "      <permission type=\"manage\" roles=\"guest , publisher , durpublisher\"/>\n"
+                                              + "   </security-setting>";
+
+   private final String conf2 = "<security-setting match=\"jms.topic.testQueue\">\n" + 
+   "      <permission type=\"createNonDurableQueue\" roles=\"durpublisher\"/>\n"
                                 + "      <permission type=\"deleteNonDurableQueue\" roles=\"durpublisher\"/>\n"
                                 + "      <permission type=\"consume\" roles=\"guest,publisher,durpublisher\"/>\n"
                                 + "      <permission type=\"send\" roles=\"guest,publisher,durpublisher\"/>\n"
@@ -97,6 +121,62 @@ public class SecurityDeployerTest extends UnitTestCase
             Assert.assertFalse(role.isCreateNonDurableQueue());
             Assert.assertTrue(role.isDeleteDurableQueue());
             Assert.assertFalse(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
+         }
+         else
+         {
+            Assert.fail("unexpected role");
+         }
+      }
+   }
+   
+   public void testWithWhiteSpace1() throws Exception
+   {
+      testWithWhiteSpace(confWithWhiteSpace1);
+   }
+   
+   public void testWithWhiteSpace2() throws Exception
+   {
+      testWithWhiteSpace(confWithWhiteSpace2);
+   }
+
+   private void testWithWhiteSpace(String conf) throws Exception
+   {
+      Element e = org.hornetq.utils.XMLUtil.stringToElement(confWithWhiteSpace1);
+      deployer.deploy(e);
+      HashSet<Role> roles = (HashSet<Role>)repository.getMatch("jms.topic.testTopic");
+      Assert.assertNotNull(roles);
+      Assert.assertEquals(3, roles.size());
+      for (Role role : roles)
+      {
+         if (role.getName().equals("guest"))
+         {
+            Assert.assertTrue(role.isConsume());
+            Assert.assertTrue(role.isCreateDurableQueue());
+            Assert.assertTrue(role.isCreateNonDurableQueue());
+            Assert.assertTrue(role.isDeleteDurableQueue());
+            Assert.assertTrue(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
+         }
+         else if (role.getName().equals("publisher"))
+         {
+            Assert.assertTrue(role.isConsume());
+            Assert.assertTrue(role.isCreateDurableQueue());
+            Assert.assertTrue(role.isCreateNonDurableQueue());
+            Assert.assertTrue(role.isDeleteDurableQueue());
+            Assert.assertTrue(role.isDeleteNonDurableQueue());
+            Assert.assertTrue(role.isManage());
+            Assert.assertTrue(role.isSend());
+         }
+         else if (role.getName().equals("durpublisher"))
+         {
+            Assert.assertTrue(role.isConsume());
+            Assert.assertTrue(role.isCreateDurableQueue());
+            Assert.assertTrue(role.isCreateNonDurableQueue());
+            Assert.assertTrue(role.isDeleteDurableQueue());
+            Assert.assertTrue(role.isDeleteNonDurableQueue());
             Assert.assertTrue(role.isManage());
             Assert.assertTrue(role.isSend());
          }
