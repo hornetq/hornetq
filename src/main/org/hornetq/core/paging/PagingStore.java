@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging;
 
+import java.util.List;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.ServerMessage;
@@ -49,7 +51,7 @@ public interface PagingStore extends HornetQComponent
 
    void sync() throws Exception;
 
-   boolean page(ServerMessage message, long transactionId) throws Exception;
+   boolean page(List<ServerMessage> messages, long transactionId) throws Exception;
 
    boolean page(ServerMessage message) throws Exception;
 

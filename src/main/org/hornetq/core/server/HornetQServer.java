@@ -23,6 +23,7 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
+import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
@@ -58,6 +59,8 @@ public interface HornetQServer extends HornetQComponent
    RemotingService getRemotingService();
 
    StorageManager getStorageManager();
+   
+   PagingManager getPagingManager();
 
    ManagementService getManagementService();
 

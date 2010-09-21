@@ -502,6 +502,11 @@ public class HornetQServerImpl implements HornetQServer
    {
       return mbeanServer;
    }
+   
+   public PagingManager getPagingManager()
+   {
+      return pagingManager;
+   }
 
    public RemotingService getRemotingService()
    {

@@ -13,10 +13,17 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
@@ -33,14 +40,30 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.Page;
+import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.paging.PagingStoreFactory;
+import org.hornetq.core.paging.impl.PageImpl;
+import org.hornetq.core.paging.impl.PagingManagerImpl;
+import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
+import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.ExecutorFactory;
 
 /**
  * A PagingTest
@@ -129,17 +152,17 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int numberOfIntegers = 256;
+      final int messageSize = 1024;
 
       final int numberOfMessages = 30000;
 
-      final byte[] body = new byte[numberOfIntegers * 4];
+      final byte[] body = new byte[messageSize];
 
       ByteBuffer bb = ByteBuffer.wrap(body);
 
-      for (int j = 1; j <= numberOfIntegers; j++)
+      for (int j = 1; j <= messageSize; j++)
       {
-         bb.putInt(j);
+         bb.put(getSamplebyte(j));
       }
 
       try
@@ -244,7 +267,7 @@ public class PagingTest extends ServiceTestBase
                      }
 
                      consumer.close();
-                     
+
                      session.close();
                   }
                   catch (Throwable e)
@@ -266,11 +289,20 @@ public class PagingTest extends ServiceTestBase
          {
             threads[i].join();
          }
-         
+
          assertEquals(0, errors.get());
          
+         for (int i = 0 ; i < 20 && server.getPostOffice().getPagingManager().getTransactions().size() != 0; i++)
+         {
+            if (server.getPostOffice().getPagingManager().getTransactions().size() != 0)
+            {
+               // The delete may be asynchronous, giving some time case it eventually happen asynchronously
+               Thread.sleep(500);
+            }
+         }
+
          assertEquals(0, server.getPostOffice().getPagingManager().getTransactions().size());
-         
+
       }
       finally
       {
@@ -740,11 +772,11 @@ public class PagingTest extends ServiceTestBase
             message.putIntProperty(new SimpleString("id"), i);
 
             producerTransacted.send(message);
-            
+
             if (i % 2 == 0)
             {
                System.out.println("Sending 20 msgs to make it page");
-               for (int j = 0 ; j < 20; j++)
+               for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
                   msgSend.getBodyBuffer().writeBytes(new byte[10 * 1024]);
@@ -756,7 +788,7 @@ public class PagingTest extends ServiceTestBase
             {
                System.out.println("Consuming 20 msgs to make it page");
                ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
-               for (int j = 0 ; j < 20; j++)
+               for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgReceived = consumer.receive(10000);
                   assertNotNull(msgReceived);
@@ -765,7 +797,7 @@ public class PagingTest extends ServiceTestBase
                consumer.close();
             }
          }
-         
+
          ClientConsumer consumerNonTX = sessionNonTX.createConsumer(PagingTest.ADDRESS);
          while (true)
          {
@@ -777,7 +809,6 @@ public class PagingTest extends ServiceTestBase
             msgReceived.acknowledge();
          }
          consumerNonTX.close();
-         
 
          ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
 
@@ -798,7 +829,7 @@ public class PagingTest extends ServiceTestBase
             // System.out.println(messageID);
             Assert.assertNotNull(messageID);
             Assert.assertEquals("message received out of order", i, messageID.intValue());
-            
+
             System.out.println("MessageID = " + messageID);
 
             message.acknowledge();
@@ -823,7 +854,6 @@ public class PagingTest extends ServiceTestBase
 
    }
 
-
    public void testDepageDuringTransaction4() throws Exception
    {
       clearData();
@@ -835,93 +865,88 @@ public class PagingTest extends ServiceTestBase
                                           PagingTest.PAGE_SIZE,
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
-      
+
       server.getConfiguration().setJournalSyncNonTransactional(false);
       server.getConfiguration().setJournalSyncTransactional(false);
 
       server.start();
 
       final AtomicInteger errors = new AtomicInteger(0);
-      
+
       final int messageSize = 1024; // 1k
       final int numberOfMessages = 10000;
 
       try
       {
          final ClientSessionFactory sf = createInVMFactory();
-         
 
          sf.setBlockOnNonDurableSend(true);
          sf.setBlockOnDurableSend(true);
          sf.setBlockOnAcknowledge(false);
 
          final byte[] body = new byte[messageSize];
-         
-         
+
          Thread producerThread = new Thread()
          {
-           public void run()
-           {
-              ClientSession sessionProducer = null;
-              try
-              {
-                 sessionProducer = sf.createSession(false, false);
-                 ClientProducer producer = sessionProducer.createProducer(ADDRESS);
-                 
-                 for (int i = 0 ; i < numberOfMessages; i++)
-                 {
-                    ClientMessage msg = sessionProducer.createMessage(true);
-                    msg.getBodyBuffer().writeBytes(body);
-                    msg.putIntProperty("count", i);
-                    producer.send(msg);
-                    
-                    if (i % 50 == 0 && i != 0)
-                    {
-                       sessionProducer.commit();
-                       //Thread.sleep(500);
-                    }
-                 }
-                 
-                 sessionProducer.commit();
-                 
-                 System.out.println("Producer gone");
-                 
-                 
-                 
-              }
-              catch (Throwable e)
-              {
-                 e.printStackTrace(); // >> junit report
-                 errors.incrementAndGet();
-              }
-              finally
-              {
-                 try
-                 {
-                    if (sessionProducer != null)
-                    {
-                       sessionProducer.close();
-                    }
-                 }
-                 catch (Throwable e)
-                 {
-                    e.printStackTrace();
-                    errors.incrementAndGet();
-                 }
-              }
-           }
+            public void run()
+            {
+               ClientSession sessionProducer = null;
+               try
+               {
+                  sessionProducer = sf.createSession(false, false);
+                  ClientProducer producer = sessionProducer.createProducer(ADDRESS);
+
+                  for (int i = 0; i < numberOfMessages; i++)
+                  {
+                     ClientMessage msg = sessionProducer.createMessage(true);
+                     msg.getBodyBuffer().writeBytes(body);
+                     msg.putIntProperty("count", i);
+                     producer.send(msg);
+
+                     if (i % 50 == 0 && i != 0)
+                     {
+                        sessionProducer.commit();
+                        // Thread.sleep(500);
+                     }
+                  }
+
+                  sessionProducer.commit();
+
+                  System.out.println("Producer gone");
+
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace(); // >> junit report
+                  errors.incrementAndGet();
+               }
+               finally
+               {
+                  try
+                  {
+                     if (sessionProducer != null)
+                     {
+                        sessionProducer.close();
+                     }
+                  }
+                  catch (Throwable e)
+                  {
+                     e.printStackTrace();
+                     errors.incrementAndGet();
+                  }
+               }
+            }
          };
-         
+
          ClientSession session = sf.createSession(true, true, 0);
          session.start();
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
-         
+
          producerThread.start();
- 
+
          ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
-         
-         
-         for (int i = 0 ; i < numberOfMessages; i++)
+
+         for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(500000);
             assertNotNull(msg);
@@ -929,15 +954,370 @@ public class PagingTest extends ServiceTestBase
             msg.acknowledge();
             if (i > 0 && i % 10 == 0)
             {
-               //session.commit();
+               // session.commit();
             }
          }
-         //session.commit();
-         
+         // session.commit();
+
          session.close();
-         
+
          producerThread.join();
-         
+
+         assertEquals(0, errors.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+   // This test will force a depage thread as soon as the first message hits the page
+   public void testDepageOnTX5() throws Exception
+   {
+      clearData();
+
+      final Configuration config = createDefaultConfig();
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
+
+      final Executor executor = Executors.newSingleThreadExecutor();
+
+      final AtomicInteger countDepage = new AtomicInteger(0);
+      class HackPagingStore extends PagingStoreImpl
+      {
+         HackPagingStore(final SimpleString address,
+                         final PagingManager pagingManager,
+                         final StorageManager storageManager,
+                         final PostOffice postOffice,
+                         final SequentialFileFactory fileFactory,
+                         final PagingStoreFactory storeFactory,
+                         final SimpleString storeName,
+                         final AddressSettings addressSettings,
+                         final Executor executor,
+                         final boolean syncNonTransactional)
+         {
+            super(address,
+                  pagingManager,
+                  storageManager,
+                  postOffice,
+                  fileFactory,
+                  storeFactory,
+                  storeName,
+                  addressSettings,
+                  executor,
+                  syncNonTransactional);
+         }
+
+         protected boolean page(final List<ServerMessage> messages, final long transactionID, final boolean sync) throws Exception
+         {
+            boolean paged = super.page(messages, transactionID, sync);
+
+            if (paged)
+            {
+
+               if (countDepage.incrementAndGet() == 1)
+               {
+                  countDepage.set(0);
+
+                  executor.execute(new Runnable()
+                  {
+                     public void run()
+                     {
+                        try
+                        {
+                           while (isStarted() && readPage());
+                        }
+                        catch (Exception e)
+                        {
+                           e.printStackTrace();
+                        }
+                     }
+                  });
+               }
+            }
+
+            return paged;
+         }
+
+         public boolean startDepaging()
+         {
+            // do nothing, we are hacking depage right in between paging
+            return false;
+         }
+
+      };
+
+      class HackStoreFactory extends PagingStoreFactoryNIO
+      {
+         HackStoreFactory(final String directory,
+                          final ExecutorFactory executorFactory,
+                          final boolean syncNonTransactional)
+         {
+            super(directory, executorFactory, syncNonTransactional);
+         }
+
+         public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings) throws Exception
+         {
+
+            return new HackPagingStore(address,
+                                       getPagingManager(),
+                                       getStorageManager(),
+                                       getPostOffice(),
+                                       null,
+                                       this,
+                                       address,
+                                       settings,
+                                       getExecutorFactory().getExecutor(),
+                                       syncNonTransactional);
+         }
+
+      };
+
+      HornetQServer server = new HornetQServerImpl(config, ManagementFactory.getPlatformMBeanServer(), securityManager)
+
+      {
+         protected PagingManager createPagingManager()
+         {
+            return new PagingManagerImpl(new HackStoreFactory(config.getPagingDirectory(),
+                                                              getExecutorFactory(),
+                                                              config.isJournalSyncNonTransactional()),
+                                         getStorageManager(),
+                                         getAddressSettingsRepository());
+         }
+      };
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(PAGE_SIZE);
+      defaultSetting.setMaxSizeBytes(PAGE_MAX);
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
+      server.start();
+
+      final AtomicInteger errors = new AtomicInteger(0);
+
+      final int messageSize = 1024; // 1k
+      final int numberOfMessages = 2000;
+
+      try
+      {
+         final ClientSessionFactory sf = createInVMFactory();
+
+         sf.setBlockOnNonDurableSend(true);
+         sf.setBlockOnDurableSend(true);
+         sf.setBlockOnAcknowledge(false);
+
+         final byte[] body = new byte[messageSize];
+
+         Thread producerThread = new Thread()
+         {
+            public void run()
+            {
+               ClientSession sessionProducer = null;
+               try
+               {
+                  sessionProducer = sf.createSession(false, false);
+                  ClientProducer producer = sessionProducer.createProducer(ADDRESS);
+
+                  for (int i = 0; i < numberOfMessages; i++)
+                  {
+                     ClientMessage msg = sessionProducer.createMessage(true);
+                     msg.getBodyBuffer().writeBytes(body);
+                     msg.putIntProperty("count", i);
+                     producer.send(msg);
+
+                     if (i % 500 == 0 && i != 0)
+                     {
+                        sessionProducer.commit();
+                        // Thread.sleep(500);
+                     }
+                  }
+
+                  sessionProducer.commit();
+
+                  System.out.println("Producer gone");
+
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace(); // >> junit report
+                  errors.incrementAndGet();
+               }
+               finally
+               {
+                  try
+                  {
+                     if (sessionProducer != null)
+                     {
+                        sessionProducer.close();
+                     }
+                  }
+                  catch (Throwable e)
+                  {
+                     e.printStackTrace();
+                     errors.incrementAndGet();
+                  }
+               }
+            }
+         };
+
+         ClientSession session = sf.createSession(true, true, 0);
+         session.start();
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         producerThread.start();
+
+         ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            ClientMessage msg = consumer.receive(500000);
+            assertNotNull(msg);
+            assertEquals(i, msg.getIntProperty("count").intValue());
+            msg.acknowledge();
+            if (i > 0 && i % 10 == 0)
+            {
+               // session.commit();
+            }
+         }
+         // session.commit();
+
+         session.close();
+
+         producerThread.join();
+
+         assertEquals(0, errors.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+   public void testOrderingNonTX() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      final HornetQServer server = createServer(true,
+                                                config,
+                                                PagingTest.PAGE_SIZE,
+                                                PagingTest.PAGE_SIZE * 2,
+                                                new HashMap<String, AddressSettings>());
+
+      server.getConfiguration().setJournalSyncNonTransactional(false);
+      server.getConfiguration().setJournalSyncTransactional(false);
+
+      server.start();
+
+      final AtomicInteger errors = new AtomicInteger(0);
+
+      final int messageSize = 1024; // 1k
+      final int numberOfMessages = 2000;
+
+      try
+      {
+         final ClientSessionFactory sf = createInVMFactory();
+
+         sf.setBlockOnNonDurableSend(false);
+         sf.setBlockOnDurableSend(true);
+         sf.setBlockOnAcknowledge(false);
+
+         final CountDownLatch ready = new CountDownLatch(1);
+
+         final byte[] body = new byte[messageSize];
+
+         Thread producerThread = new Thread()
+         {
+            public void run()
+            {
+               ClientSession sessionProducer = null;
+               try
+               {
+                  sessionProducer = sf.createSession(true, true);
+                  ClientProducer producer = sessionProducer.createProducer(ADDRESS);
+
+                  for (int i = 0; i < numberOfMessages; i++)
+                  {
+                     ClientMessage msg = sessionProducer.createMessage(true);
+                     msg.getBodyBuffer().writeBytes(body);
+                     msg.putIntProperty("count", i);
+                     producer.send(msg);
+
+                     if (i == 1000)
+                     {
+                        // The session is not TX, but we do this just to perform a round trip to the server
+                        // and make sure there are no pending messages
+                        sessionProducer.commit();
+
+                        assertTrue(server.getPagingManager().getPageStore(ADDRESS).isPaging());
+                        ready.countDown();
+                     }
+                  }
+
+                  sessionProducer.commit();
+
+                  System.out.println("Producer gone");
+
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace(); // >> junit report
+                  errors.incrementAndGet();
+               }
+               finally
+               {
+                  try
+                  {
+                     if (sessionProducer != null)
+                     {
+                        sessionProducer.close();
+                     }
+                  }
+                  catch (Throwable e)
+                  {
+                     e.printStackTrace();
+                     errors.incrementAndGet();
+                  }
+               }
+            }
+         };
+
+         ClientSession session = sf.createSession(true, true, 0);
+         session.start();
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         producerThread.start();
+
+         assertTrue(ready.await(10, TimeUnit.SECONDS));
+
+         ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            ClientMessage msg = consumer.receive(500000);
+            assertNotNull(msg);
+            assertEquals(i, msg.getIntProperty("count").intValue());
+            msg.acknowledge();
+         }
+
+         session.close();
+
+         producerThread.join();
+
          assertEquals(0, errors.get());
       }
       finally

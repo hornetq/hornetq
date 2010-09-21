@@ -14,6 +14,7 @@
 package org.hornetq.core.server.impl;
 
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -269,7 +270,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       if (pagingStore != null)
       {
-         return pagingStore.page(this, transactionID);
+         return pagingStore.page(Arrays.asList((ServerMessage)this), transactionID);
       }
       else
       {

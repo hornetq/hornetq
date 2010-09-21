@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.impl;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +111,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private volatile Page currentPage;
 
    private final ReentrantLock writeLock = new ReentrantLock();
-   
+
    /** duplicate cache used at this address */
    private final DuplicateIDCache duplicateCache;
 
@@ -186,7 +187,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.storeFactory = storeFactory;
 
       this.syncNonTransactional = syncNonTransactional;
-      
+
       // Post office could be null on the backup node
       if (postOffice == null)
       {
@@ -196,7 +197,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          this.duplicateCache = postOffice.getDuplicateIDCache(storeName);
       }
-      
+
    }
 
    // Public --------------------------------------------------------
@@ -263,7 +264,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       return storeName;
    }
 
-   public boolean page(final ServerMessage message, final long transactionID) throws Exception
+   public boolean page(final List<ServerMessage> message, final long transactionID) throws Exception
    {
       // The sync on transactions is done on commit only
       return page(message, transactionID, false);
@@ -273,7 +274,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
       // of crash
-      return page(message, -1, syncNonTransactional && message.isDurable());
+      return page(Arrays.asList(message), -1, syncNonTransactional && message.isDurable());
    }
 
    public void sync() throws Exception
@@ -541,7 +542,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       writeLock.lock();
 
       currentPageLock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
-
       try
       {
          if (!running)
@@ -597,6 +597,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                returnPage = createPage(firstPageId++);
             }
+
             return returnPage;
          }
       }
@@ -619,9 +620,13 @@ public class PagingStoreImpl implements TestSupportPageStore
     * @return
     * @throws Exception
     */
-   private boolean readPage() throws Exception
+   protected boolean readPage() throws Exception
    {
       Page page = depage();
+
+      // It's important that only depage should happen while locked
+      // or we would be holding a lock for a long time
+      // The reading (IO part) should happen outside of any locks
 
       if (page == null)
       {
@@ -630,8 +635,8 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       page.open();
 
-      List<PagedMessage> messages =  null;
-      
+      List<PagedMessage> messages = null;
+
       try
       {
          messages = page.read();
@@ -688,25 +693,25 @@ public class PagingStoreImpl implements TestSupportPageStore
    class OurRunnable implements Runnable
    {
       boolean ran;
-      
+
       final Runnable runnable;
-      
+
       OurRunnable(final Runnable runnable)
       {
          this.runnable = runnable;
       }
-      
+
       public synchronized void run()
       {
          if (!ran)
          {
             runnable.run();
-            
+
             ran = true;
          }
       }
    }
-   
+
    public void executeRunnableWhenMemoryAvailable(final Runnable runnable)
    {
       if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
@@ -714,23 +719,23 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (sizeInBytes.get() > maxSize)
          {
             OurRunnable ourRunnable = new OurRunnable(runnable);
-            
+
             onMemoryFreedRunnables.add(ourRunnable);
-            
-            //We check again to avoid a race condition where the size can come down just after the element
-            //has been added, but the check to execute was done before the element was added
-            //NOTE! We do not fix this race by locking the whole thing, doing this check provides
-            //MUCH better performance in a highly concurrent environment
+
+            // We check again to avoid a race condition where the size can come down just after the element
+            // has been added, but the check to execute was done before the element was added
+            // NOTE! We do not fix this race by locking the whole thing, doing this check provides
+            // MUCH better performance in a highly concurrent environment
             if (sizeInBytes.get() <= maxSize)
             {
-               //run it now
+               // run it now
                ourRunnable.run();
             }
 
             return;
          }
       }
-      
+
       runnable.run();
    }
 
@@ -797,9 +802,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   private boolean page(final ServerMessage message,
-                        final long transactionID,
-                        final boolean sync) throws Exception
+   protected boolean page(final List<ServerMessage> messages, final long transactionID, final boolean sync) throws Exception
    {
       if (!running)
       {
@@ -857,60 +860,63 @@ public class PagingStoreImpl implements TestSupportPageStore
             return false;
          }
 
-         PagedMessage pagedMessage;
-         
-         if (!message.isDurable())
+         for (ServerMessage message : messages)
          {
-            // The address should never be transient when paging (even for non-persistent messages when paging)
-            // This will force everything to be persisted
-            message.bodyChanged();
-         }
+            PagedMessage pagedMessage;
 
-         if (transactionID != -1)
-         {
-            pagedMessage = new PagedMessageImpl(message, transactionID);
-         }
-         else
-         {
-            pagedMessage = new PagedMessageImpl(message);
-         }
+            if (!message.isDurable())
+            {
+               // The address should never be transient when paging (even for non-persistent messages when paging)
+               // This will force everything to be persisted
+               message.bodyChanged();
+            }
 
-         int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
+            if (transactionID != -1)
+            {
+               pagedMessage = new PagedMessageImpl(message, transactionID);
+            }
+            else
+            {
+               pagedMessage = new PagedMessageImpl(message);
+            }
 
-         if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
-         {
-            // Make sure nothing is currently validating or using currentPage
-            currentPageLock.writeLock().lock();
+            int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
+
+            if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
+            {
+               // Make sure nothing is currently validating or using currentPage
+               currentPageLock.writeLock().lock();
+               try
+               {
+                  openNewPage();
+
+                  // openNewPage will set currentPageSize to zero, we need to set it again
+                  currentPageSize.addAndGet(bytesToWrite);
+               }
+               finally
+               {
+                  currentPageLock.writeLock().unlock();
+               }
+            }
+
+            currentPageLock.readLock().lock();
+
             try
             {
-               openNewPage();
-
-               // openNewPage will set currentPageSize to zero, we need to set it again
-               currentPageSize.addAndGet(bytesToWrite);
+               currentPage.write(pagedMessage);
+ 
+               if (sync)
+               {
+                  currentPage.sync();
+               }
             }
             finally
             {
-               currentPageLock.writeLock().unlock();
+               currentPageLock.readLock().unlock();
             }
          }
 
-         currentPageLock.readLock().lock();
-
-         try
-         {
-            currentPage.write(pagedMessage);
-
-            if (sync)
-            {
-               currentPage.sync();
-            }
-
-            return true;
-         }
-         finally
-         {
-            currentPageLock.readLock().unlock();
-         }
+         return true;
       }
       finally
       {
@@ -940,9 +946,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
-      
+
       byte[] duplicateIdForPage = generateDuplicateID(pageId);
-      
+
       Transaction depageTransaction = new TransactionImpl(storageManager);
 
       // DuplicateCache could be null during replication
@@ -950,7 +956,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          if (duplicateCache.contains(duplicateIdForPage))
          {
-            log.warn("Page " + pageId + " had been processed already but the file wasn't removed as a crash happened. Ignoring this page");
+            log.warn("Page " + pageId +
+                     " had been processed already but the file wasn't removed as a crash happened. Ignoring this page");
             return true;
          }
 
@@ -1058,7 +1065,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          // This will set the journal transaction to commit;
          depageTransaction.setContainsPersistent();
-         
+
          entry.getKey().storeUpdate(storageManager, this.pagingManager, depageTransaction, entry.getValue().intValue());
       }
 

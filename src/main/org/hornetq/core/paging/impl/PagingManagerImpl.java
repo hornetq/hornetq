@@ -235,10 +235,15 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   private PagingStore newStore(final SimpleString address) throws Exception
+   protected PagingStore newStore(final SimpleString address) throws Exception
    {
       return pagingStoreFactory.newStore(address,
                                          addressSettingsRepository.getMatch(address.toString()));
+   }
+   
+   protected PagingStoreFactory getStoreFactory()
+   {
+      return pagingStoreFactory;
    }
 
    // Inner classes -------------------------------------------------

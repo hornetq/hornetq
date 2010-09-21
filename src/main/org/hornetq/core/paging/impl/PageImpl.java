@@ -236,6 +236,11 @@ public class PageImpl implements Page
    {
       return size.intValue();
    }
+   
+   public String toString()
+   {
+      return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
+   }
 
    // Package protected ---------------------------------------------
 
