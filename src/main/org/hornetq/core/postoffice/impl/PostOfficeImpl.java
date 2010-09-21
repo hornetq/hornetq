@@ -482,7 +482,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
-         
+      }
+      else if (binding.getType() == BindingType.DIVERT)
+      {
+         managementService.unregisterDivert(uniqueName);
+      }
+      
+      if (binding.getType() != BindingType.DIVERT)
+      {
          TypedProperties props = new TypedProperties();
 
          props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
@@ -494,10 +501,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
          managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
-      }
-      else if (binding.getType() == BindingType.DIVERT)
-      {
-         managementService.unregisterDivert(uniqueName);
       }
 
       binding.close();
