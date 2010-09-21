@@ -483,23 +483,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          managementService.unregisterQueue(uniqueName, binding.getAddress());
+         
+         TypedProperties props = new TypedProperties();
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+
+         props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+
+         props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
+
+         managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
       }
       else if (binding.getType() == BindingType.DIVERT)
       {
          managementService.unregisterDivert(uniqueName);
       }
-
-      TypedProperties props = new TypedProperties();
-
-      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
-
-      props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
-
-      props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
-
-      props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
-
-      managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
 
       binding.close();
       
