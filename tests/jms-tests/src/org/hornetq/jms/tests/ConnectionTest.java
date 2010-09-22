@@ -148,17 +148,19 @@ public class ConnectionTest extends JMSTestCase
 
       connection.close();
 
-      connection = JMSTestCase.cf.createConnection();
-      connection.getClientID();
-      try
-      {
-         connection.setClientID(clientID);
-         ProxyAssertSupport.fail();
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      connection.close();
+      // TODO: This will probably go away, remove it enterily after we 
+      //       make sure this rule can go away
+//      connection = JMSTestCase.cf.createConnection();
+//      connection.getClientID();
+//      try
+//      {
+//         connection.setClientID(clientID);
+//         ProxyAssertSupport.fail();
+//      }
+//      catch (javax.jms.IllegalStateException e)
+//      {
+//      }
+//      connection.close();
 
       connection = JMSTestCase.cf.createConnection();
       ExceptionListener listener = connection.getExceptionListener();
