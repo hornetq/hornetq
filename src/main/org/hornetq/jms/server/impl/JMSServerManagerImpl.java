@@ -869,6 +869,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setReconnectAttempts(reconnectAttempts);
          configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         configuration.setGroupID(groupId);
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }
@@ -1006,6 +1007,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnInitialConnection(failoverOnInitialConnection);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
+         cf.setGroupID(groupId);
       }
 
       return cf;
