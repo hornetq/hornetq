@@ -15,10 +15,8 @@ package org.hornetq.tests.integration.persistence;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
-import com.arjuna.ats.internal.arjuna.template.HashList;
-
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
@@ -26,8 +24,8 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
-import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A DeleteMessagesOnStartupTest
@@ -56,9 +54,13 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
    public void testDeleteMessagesOnStartup() throws Exception
    {
       createStorage();
-
+      
+      Queue theQueue = new FakeQueue(new SimpleString(""));
+      HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
+      queues.put(100l, theQueue);
+      
       ServerMessage msg = new ServerMessageImpl(1, 100);
-
+      
       journal.storeMessage(msg);
 
       for (int i = 2; i < 100; i++)
@@ -66,18 +68,16 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
          journal.storeMessage(new ServerMessageImpl(i, 100));
       }
       
-      journal.storeReference(1, 1, true);
+      journal.storeReference(100, 1, true);
 
       journal.stop();
 
       journal.start();
 
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
-
-      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null);
-
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
       
+      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null);
+
       assertEquals(98, deletedMessage.size());
       
       for (Long messageID : deletedMessage)
@@ -107,5 +107,6 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   
 
 }
