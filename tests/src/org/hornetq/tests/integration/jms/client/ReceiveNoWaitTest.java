@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.jms.client;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
-import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -29,7 +28,7 @@ import org.hornetq.tests.util.JMSTestBase;
  * 
  * A ReceiveNoWaitTest
  *
- * @author tim
+ * @author Tim Fox
  *
  *
  */
@@ -65,8 +64,6 @@ public class ReceiveNoWaitTest extends JMSTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         log.info("Iteration " + i);
-         
          Connection connection = cf.createConnection();
                           
          Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
