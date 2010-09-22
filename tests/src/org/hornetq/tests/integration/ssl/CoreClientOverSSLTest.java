@@ -30,6 +30,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -129,12 +130,25 @@ public class CoreClientOverSSLTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      clearData();
+      
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+      
+      config.setJournalDirectory(getJournalDir());
+      config.setPagingDirectory(getPageDir());
+      config.setBindingsDirectory(getBindingsDir());
+
       server = HornetQServers.newHornetQServer(config, false);
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setMaxSizeBytes(-1);
+
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+      
       server.start();
    }
 
