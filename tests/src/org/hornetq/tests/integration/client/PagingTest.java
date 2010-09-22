@@ -2058,13 +2058,13 @@ public class PagingTest extends ServiceTestBase
 
          Assert.assertNull(consumerNonPaged.receiveImmediate());
 
-         consumerNonPaged.close();
-
          for (ClientMessage ack : ackList)
          {
             ack.acknowledge();
          }
 
+         consumerNonPaged.close();
+         
          session.commit();
 
          ackList = null;
