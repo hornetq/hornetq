@@ -846,6 +846,54 @@ public class SelectorTest extends HornetQServerTestCase
       }
    }
    
+   public void testJMSExpirationOnSelector() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+         conn.start();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer prod = session.createProducer(HornetQServerTestCase.queue1);
+         
+         TextMessage msg1 = session.createTextMessage("msg1");
+         prod.send(msg1);
+         
+         prod.setTimeToLive(100000);
+         
+         TextMessage msg2 = session.createTextMessage("msg2");
+                           
+         prod.send(msg2);
+         
+         long expire = msg2.getJMSExpiration();
+         
+         String selector = "JMSExpiration = " + expire;
+         
+         MessageConsumer cons = session.createConsumer(HornetQServerTestCase.queue1, selector);
+         
+         conn.start();
+
+         TextMessage rec = (TextMessage)cons.receive(10000);
+         
+         assertNotNull(rec);
+         
+         assertEquals("msg2", rec.getText());
+         
+         assertNull(cons.receiveNoWait());
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+   
    public void testJMSTypeOnSelector() throws Exception
    {
       Connection conn = null;

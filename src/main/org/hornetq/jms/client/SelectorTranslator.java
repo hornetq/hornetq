@@ -50,6 +50,7 @@ public class SelectorTranslator
       filterString = SelectorTranslator.parse(filterString, "JMSPriority", "HQPriority");
       filterString = SelectorTranslator.parse(filterString, "JMSTimestamp", "HQTimestamp");
       filterString = SelectorTranslator.parse(filterString, "JMSMessageID", "HQUserID");
+      filterString = SelectorTranslator.parse(filterString, "JMSExpiration", "HQExpiration");
 
       return filterString;
 

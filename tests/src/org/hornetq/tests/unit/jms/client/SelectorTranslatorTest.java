@@ -141,6 +141,30 @@ public class SelectorTranslatorTest extends UnitTestCase
                           SelectorTranslator.convertToHornetQFilterString(selector));
 
    }
+   
+   public void testParseJMSExpiration()
+   {
+      String selector = "JMSExpiration=12345678";
+
+      Assert.assertEquals("HQExpiration=12345678", SelectorTranslator.convertToHornetQFilterString(selector));
+
+      selector = " JMSExpiration=12345678";
+
+      Assert.assertEquals(" HQExpiration=12345678", SelectorTranslator.convertToHornetQFilterString(selector));
+
+      selector = " JMSExpiration=12345678 OR 78766 = JMSExpiration AND (JMSExpiration= 1 + 4878787)";
+
+      Assert.assertEquals(" HQExpiration=12345678 OR 78766 = HQExpiration AND (HQExpiration= 1 + 4878787)",
+                          SelectorTranslator.convertToHornetQFilterString(selector));
+
+      checkNoSubstitute("JMSExpiration");
+
+      selector = "animal = 'lion' JMSExpiration = 321 OR animal_name = 'xyzJMSExpirationxyz'";
+
+      Assert.assertEquals("animal = 'lion' HQExpiration = 321 OR animal_name = 'xyzJMSExpirationxyz'",
+                          SelectorTranslator.convertToHornetQFilterString(selector));
+
+   }
 
    public void testParseJMSCorrelationID()
    {
@@ -191,6 +215,8 @@ public class SelectorTranslatorTest extends UnitTestCase
 
       checkNoSubstitute("JMSType");
    }
+   
+   
 
    // Private -------------------------------------------------------------------------------------
 
