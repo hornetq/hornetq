@@ -16,7 +16,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -112,6 +117,41 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
       sf.close();
 
+   }
+   
+   // https://jira.jboss.org/browse/HORNETQ-450
+   public void testReceivedImmediateFollowedByReceive() throws Exception
+   {
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf.setBlockOnNonDurableSend(true);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, QUEUE, null, false);
+      
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage message = session.createMessage(false);
+      
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
+      
+      session.start();
+      
+      ClientMessage received = consumer.receiveImmediate();
+
+      assertNotNull(received);
+      
+      received.acknowledge();
+      
+      received = consumer.receive(1);
+      
+      assertNull(received);      
+
+      session.close();
+
+      sf.close();
    }
 
    private void doConsumerReceiveImmediateWithNoMessages(final boolean browser) throws Exception

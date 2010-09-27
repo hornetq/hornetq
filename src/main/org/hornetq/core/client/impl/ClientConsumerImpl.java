@@ -113,7 +113,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private boolean stopped = false;
 
-   private final AtomicLong forceDeliveryCount = new AtomicLong(0);
+   private long forceDeliveryCount;
 
    private final SessionQueueQueryResponseMessage queueInfo;
 
@@ -226,7 +226,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
-                        session.forceDelivery(id, forceDeliveryCount.incrementAndGet());
+                        session.forceDelivery(id, forceDeliveryCount++);
 
                         deliveryForced = true;
                      }
@@ -260,18 +260,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                if (m.containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
                {
                   long seq = m.getLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE);
-                  if (seq >= forceDeliveryCount.longValue())
+
+                  if (forcingDelivery && seq == forceDeliveryCount - 1)
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue
-                     if (forcingDelivery)
-                     {
-                        resetIfSlowConsumer();
-                        return null;
-                     }
+                     resetIfSlowConsumer();
+
+                     return null;
                   }
                   else
                   {
-                     // ignore any previous forced delivery message
+                     // Ignore the message
                      continue;
                   }
                }
@@ -425,7 +424,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       lastAckedMessage = null;
 
       creditsToSend = 0;
-      
+
       ackIndividually = false;
    }
 
@@ -468,7 +467,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       return browseOnly;
    }
-   
+
    public synchronized void handleMessage(final ClientMessageInternal message) throws Exception
    {
       if (closing)
@@ -571,7 +570,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          while (iter.hasNext())
          {
             ClientMessageInternal message = iter.next();
-            
+
             flowControlBeforeConsumption(message);
          }
 
@@ -603,7 +602,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             flushAcks();
          }
-         
+
          session.individualAcknowledge(id, message.getMessageID());
       }
       else
@@ -708,7 +707,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void resetIfSlowConsumer()
    {
-      if(clientWindowSize == 0)
+      if (clientWindowSize == 0)
       {
          slowConsumerInitialCreditSent = false;
          sendCredits(0);
