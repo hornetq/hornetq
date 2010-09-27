@@ -16,7 +16,6 @@ package org.hornetq.core.client.impl;
 import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
@@ -728,6 +727,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          ClientConsumerImpl.log.trace("Adding Runner on Executor for delivery");
       }
+      
       sessionExecutor.execute(runner);
    }
 
@@ -805,6 +805,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (message != null)
          {
+            if (message.containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
+            {
+               //Ignore, this could be a relic from a previous receiveImmediate();
+               return;
+            }
+            
             boolean expired = message.isExpired();
 
             flowControlBeforeConsumption(message);
@@ -932,7 +938,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       public void run()
       {
-
          try
          {
             callOnMessage();

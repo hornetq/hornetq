@@ -12,6 +12,8 @@
  */
 package org.hornetq.tests.integration.client;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
@@ -22,6 +24,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -148,6 +151,51 @@ public class ReceiveImmediateTest extends ServiceTestBase
       received = consumer.receive(1);
       
       assertNull(received);      
+
+      session.close();
+
+      sf.close();
+   }
+   
+   // https://jira.jboss.org/browse/HORNETQ-450
+   public void testReceivedImmediateFollowedByAsyncConsume() throws Exception
+   {
+      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf.setBlockOnNonDurableSend(true);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, QUEUE, null, false);
+      
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage message = session.createMessage(false);
+      
+      producer.send(message);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
+      
+      session.start();
+      
+      ClientMessage received = consumer.receiveImmediate();
+
+      assertNotNull(received);
+      
+      received.acknowledge();
+      
+      final AtomicBoolean receivedAsync = new AtomicBoolean(false);
+      
+      consumer.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(ClientMessage message)
+         {
+            receivedAsync.set(true);
+         }
+      });
+      
+      Thread.sleep(1000);
+                  
+      assertFalse(receivedAsync.get());      
 
       session.close();
 
