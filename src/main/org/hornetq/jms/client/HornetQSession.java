@@ -111,11 +111,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    // Constructors --------------------------------------------------
 
    protected HornetQSession(final HornetQConnection connection,
-                         final boolean transacted,
-                         final boolean xa,
-                         final int ackMode,
-                         final ClientSession session,
-                         final int sessionType)
+                            final boolean transacted,
+                            final boolean xa,
+                            final int ackMode,
+                            final ClientSession session,
+                            final int sessionType)
    {
       this.connection = connection;
 
@@ -213,7 +213,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
       return ackMode;
    }
-   
+
    public boolean isXA()
    {
       return xa;
@@ -262,20 +262,23 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    public void close() throws JMSException
    {
-      try
+      synchronized (connection)
       {
-         for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))
+         try
          {
-            cons.close();
+            for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))
+            {
+               cons.close();
+            }
+
+            session.close();
+
+            connection.removeSession(this);
          }
-
-         session.close();
-
-         connection.removeSession(this);
-      }
-      catch (HornetQException e)
-      {
-         throw JMSExceptionHelper.convertFromHornetQException(e);
+         catch (HornetQException e)
+         {
+            throw JMSExceptionHelper.convertFromHornetQException(e);
+         }
       }
    }
 
@@ -393,7 +396,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       try
       {
          HornetQQueue queue = lookupQueue(queueName, false);
-         
+
          if (queue == null)
          {
             queue = lookupQueue(queueName, true);
@@ -413,7 +416,6 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
-   
 
    public Topic createTopic(final String topicName) throws JMSException
    {
@@ -423,7 +425,6 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      
       try
       {
          HornetQTopic topic = lookupTopic(topicName, false);
@@ -477,7 +478,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       }
 
       HornetQDestination jbdest = (HornetQDestination)topic;
-      
+
       if (jbdest.isQueue())
       {
          throw new InvalidDestinationException("Cannot create a subscriber on a queue");
@@ -490,7 +491,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                                                  final String subscriptionName,
                                                  String selectorString,
                                                  final boolean noLocal) throws JMSException
-   {     
+   {
       try
       {
          selectorString = "".equals(selectorString) ? null : selectorString;
@@ -525,7 +526,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          SimpleString autoDeleteQueueName = null;
 
          if (dest.isQueue())
-         {            
+         {
             BindingQuery response = session.bindingQuery(dest.getSimpleAddress());
 
             if (!response.isExists())
@@ -573,7 +574,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
                }
 
                queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
-                                                                                               subscriptionName));
+                                                                                                     subscriptionName));
 
                QueueQuery subResponse = session.queueQuery(queueName);
 
@@ -678,10 +679,10 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       }
 
       HornetQDestination jbq = (HornetQDestination)queue;
-      
+
       if (!jbq.isQueue())
       {
-         throw new InvalidDestinationException("Cannot create a browser on a topic");  
+         throw new InvalidDestinationException("Cannot create a browser on a topic");
       }
 
       try
@@ -767,7 +768,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       }
 
       SimpleString queueName = new SimpleString(HornetQDestination.createQueueNameForDurableSubscription(connection.getClientID(),
-                                                                                                   name));
+                                                                                                         name));
 
       try
       {
@@ -887,7 +888,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          throw new InvalidDestinationException("Not a temporary topic " + tempTopic);
       }
-      
+
       try
       {
          BindingQuery response = session.bindingQuery(tempTopic.getSimpleAddress());
@@ -949,7 +950,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
-   
+
    public void start() throws JMSException
    {
       try
@@ -991,11 +992,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          }
          catch (HornetQException ignore)
          {
-            //Exception on deleting queue shouldn't prevent close from completing
+            // Exception on deleting queue shouldn't prevent close from completing
          }
       }
    }
-   
+
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
@@ -1007,11 +1008,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          throw new IllegalStateException("Session is closed");
       }
    }
-   
+
    private HornetQQueue lookupQueue(final String queueName, boolean isTemporary) throws HornetQException
    {
       HornetQQueue queue;
-      
+
       if (isTemporary)
       {
          queue = HornetQDestination.createTemporaryQueue(queueName);
@@ -1020,7 +1021,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          queue = HornetQDestination.createQueue(queueName);
       }
-      
+
       QueueQuery response = session.queueQuery(queue.getSimpleAddress());
 
       if (response.isExists())
@@ -1032,12 +1033,12 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          return null;
       }
    }
-   
+
    private HornetQTopic lookupTopic(final String topicName, final boolean isTemporary) throws HornetQException
    {
 
       HornetQTopic topic;
-      
+
       if (isTemporary)
       {
          topic = HornetQDestination.createTemporaryTopic(topicName);
@@ -1046,7 +1047,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          topic = HornetQDestination.createTopic(topicName);
       }
-      
+
       BindingQuery query = session.bindingQuery(topic.getSimpleAddress());
 
       if (!query.isExists())
@@ -1058,7 +1059,6 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
          return topic;
       }
    }
-
 
    // Inner classes -------------------------------------------------
 

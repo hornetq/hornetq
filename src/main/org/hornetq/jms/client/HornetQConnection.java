@@ -216,7 +216,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       justCreated = false;
    }
 
-   public void start() throws JMSException
+   public synchronized void start() throws JMSException
    {
       checkClosed();
 
@@ -229,7 +229,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       started = true;
    }
 
-   public void stop() throws JMSException
+   public synchronized void stop() throws JMSException
    {
       checkClosed();
 
