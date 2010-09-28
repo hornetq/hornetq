@@ -22,10 +22,6 @@
       <attribute name="FactoryRef">java:/XAConnectionFactory</attribute>
       <attribute name="QueueFactoryRef">java:/XAConnectionFactory</attribute>
       <attribute name="TopicFactoryRef">java:/XAConnectionFactory</attribute>
-      <attribute name="Properties">
-       java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
-       java.naming.factory.url.pkgs=org.jnp.interfaces
-       java.naming.provider.url=localhost:1199
     </attribute>
 
    </mbean>
