@@ -200,7 +200,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             ProtocolManager manager = protocolMap.get(protocol);
 
             Acceptor acceptor = factory.createAcceptor(info.getParams(),
-                                                       new DelegatingBufferHandler(manager),
+                                                       new DelegatingBufferHandler(),
                                                        manager,
                                                        this,
                                                        threadPool,
@@ -443,13 +443,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final class DelegatingBufferHandler implements BufferHandler
    {
-      private ProtocolManager manager;
-
-      DelegatingBufferHandler(final ProtocolManager manager)
-      {
-         this.manager = manager;
-      }
-
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          ConnectionEntry conn = connections.get(connectionID);

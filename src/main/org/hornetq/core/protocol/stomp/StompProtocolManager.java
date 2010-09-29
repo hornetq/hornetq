@@ -115,7 +115,19 @@ class StompProtocolManager implements ProtocolManager
    {
       StompConnection conn = new StompConnection(connection, this);
 
-      return new ConnectionEntry(conn, 0, 0);
+      //Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection will be timed out and closed!
+      
+      long ttl = server.getConfiguration().getConnectionTTLOverride();
+
+      if (ttl != -1)
+      {
+         return new ConnectionEntry(conn, System.currentTimeMillis(), ttl);
+      }
+      else
+      {
+         // Default to 1 minute - which is same as core protocol
+         return new ConnectionEntry(conn, System.currentTimeMillis(), 1 * 60 * 1000);
+      }            
    }
 
    public void removeHandler(String name)
