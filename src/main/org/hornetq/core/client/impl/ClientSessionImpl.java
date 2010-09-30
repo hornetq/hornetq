@@ -974,6 +974,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
                      sendPacketWithoutLock(packet);
                   }
+                  else
+                  {
+                     //https://jira.jboss.org/browse/HORNETQ-522
+                     SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
+                                                                                                    1);
+                     sendPacketWithoutLock(packet);
+                  }
                }
 
                if ((!autoCommitAcks || !autoCommitSends) && workDone)
