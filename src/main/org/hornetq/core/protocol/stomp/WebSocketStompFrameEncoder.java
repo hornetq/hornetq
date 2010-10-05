@@ -38,20 +38,25 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  */
 public class WebSocketStompFrameEncoder extends OneToOneEncoder
 {
-
-   private final StompFrameDecoder decoder = new StompFrameDecoder();
-   
    @Override
    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception
    {
       
       if (msg instanceof ChannelBuffer)
       {
+         // FIXME - this is a silly way to do this - a better way to do this would be to create a new protocol, with protocol manager etc
+         // and re-use some of the STOMP codec stuff - Tim
+         
+         
          // this is ugly and slow!
          // we have to go ChannelBuffer -> HornetQBuffer -> StompFrame -> String -> WebSocketFrame
          // since HornetQ protocol SPI requires to return HornetQBuffer to the transport
          HornetQBuffer buffer = new ChannelBufferWrapper((ChannelBuffer)msg);
+         
+         StompDecoder decoder = new StompDecoder();
+         
          StompFrame frame = decoder.decode(buffer);
+         
          if (frame != null)
          {
             WebSocketFrame wsFrame = new DefaultWebSocketFrame(frame.asString());

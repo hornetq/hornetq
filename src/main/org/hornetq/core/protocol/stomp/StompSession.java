@@ -93,7 +93,7 @@ class StompSession implements SessionCallback
          HornetQBuffer buffer = serverMessage.getBodyBuffer();
 
          int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                  : serverMessage.getEndOfBodyPosition();
+                                                                 : serverMessage.getEndOfBodyPosition();
          int size = bodyPos - buffer.readerIndex();
          buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
          byte[] data = new byte[size];
@@ -108,7 +108,8 @@ class StompSession implements SessionCallback
             if (text != null)
             {
                data = text.toString().getBytes("UTF-8");
-            } else
+            }
+            else
             {
                data = new byte[0];
             }

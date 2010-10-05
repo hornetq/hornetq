@@ -57,6 +57,18 @@
             When a Stomp client subscribes (or unsubscribes) for a destination (using a <literal>SUBSCRIBE</literal>
             or <literal>UNSUBSCRIBE</literal> frame), the destination is mapped to a HornetQ queue.</para>
         </section>
+      <section>
+        <title>STOMP and connection-ttl</title>
+        <para>Well behaved STOMP clients will always send a DISCONNECT frame before closing their connections. In this case the server
+          will clear up any server side resources such as sessions and consumers synchronously. However if STOMP clients exit without
+        sending a DISCONNECT frame or if they crash the server will have no way of knowing immediately whether the client is still alive
+        or not. STOMP connections therefore default to a connection-ttl value of 1 minute (see chapter on <link linkend="connection-ttl"
+          >connection-ttl</link> for more information. This value can be overridden using connection-ttl-override.
+        </para>
+        <note><para>Please note that the STOMP protocol does not contain any heartbeat frame. It is therefore the user's responsibility to make sure
+        data is sent within connection-ttl or the server will assume the client is dead and clean up server side resources.</para></note>
+      </section>
+      
         <section>
           <title>Stomp and JMS interoperabilty</title>
           <section>

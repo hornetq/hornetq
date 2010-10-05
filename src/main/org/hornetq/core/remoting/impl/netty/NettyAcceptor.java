@@ -356,8 +356,8 @@ public class NettyAcceptor implements Acceptor
             if (protocol == ProtocolType.CORE)
             {
                // Core protocol uses its own optimised decoder
-               
-               handlers.put("hornetq-decode", new HornetQFrameDecoder2());
+
+               handlers.put("hornetq-decoder", new HornetQFrameDecoder2());
             }
             else if (protocol == ProtocolType.STOMP_WS)
             {
@@ -367,13 +367,17 @@ public class NettyAcceptor implements Acceptor
                handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
                handlers.put("websocket-handler", new WebSocketServerHandler());
             }
+            else if (protocol == ProtocolType.STOMP)
+            {
+               //With STOMP the decoding is handled in the StompFrame class
+            }
             else
             {
-                handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
+               handlers.put("hornetq-decoder", new HornetQFrameDecoder(decoder));
             }
 
             handlers.put("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
-            
+
             /**
              * STOMP_WS protocol mandates use of named handlers to be able to replace http codecs
              * by websocket codecs after handshake.

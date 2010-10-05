@@ -90,7 +90,7 @@ public class StompTest extends UnitTestCase
 
    private JMSServerManager server;
    
-   public void _testSendManyMessages() throws Exception
+   public void testSendManyMessages() throws Exception
    {
       MessageConsumer consumer = session.createConsumer(queue);
 
@@ -106,7 +106,7 @@ public class StompTest extends UnitTestCase
 
          public void onMessage(Message arg0)
          {
-            System.out.println("<<< " + (1000 - latch.getCount()));
+            //System.out.println("<<< " + (1000 - latch.getCount()));
             latch.countDown();
          }
       });
@@ -115,12 +115,40 @@ public class StompTest extends UnitTestCase
       for (int i = 1; i <= count; i++)
       {
          // Thread.sleep(1);
-         System.out.println(">>> " + i);
+         //System.out.println(">>> " + i);
          sendFrame(frame);
       }
 
       assertTrue(latch.await(60, TimeUnit.SECONDS));
+   }
+   
+   public void testPerf() throws Exception
+   {
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+      frame = receiveFrame(10000);
 
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+            
+      int count = 100000;
+      
+      frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "ABCDJIMTEST<GRV>http://techcrunch.com/2010/09/23/thelikestream-digg-for-facebook-likes/<GRV>0" + Stomp.NULL;
+      
+      long start = System.currentTimeMillis();
+      
+      for (int i = 1; i <= count; i++)
+      {
+         sendFrame(frame);
+         
+         if (i % 1000 == 0)
+         {
+            log.info("Sent " + i);
+         }
+      }
+      
+      long end = System.currentTimeMillis();
+
+      log.info("That took " + (end-start));
    }
 
    public void testConnect() throws Exception
@@ -185,7 +213,38 @@ public class StompTest extends UnitTestCase
       frame = receiveFrame(10000);
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 
-      frame = "\nSEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World" + Stomp.NULL;
+      frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World" + Stomp.NULL;
+
+      sendFrame(frame);
+
+      TextMessage message = (TextMessage)consumer.receive(1000);
+      Assert.assertNotNull(message);
+      Assert.assertEquals("Hello World", message.getText());
+      
+      // Make sure that the timestamp is valid - should
+      // be very close to the current time.
+      long tnow = System.currentTimeMillis();
+      long tmsg = message.getJMSTimestamp();
+      Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
+   }
+   
+   /*
+    * Some STOMP clients erroneously put a new line \n *after* the terminating NUL char at the end of the frame
+    * This means next frame read might have a \n a the beginning.
+    * This is contrary to STOMP spec but we deal with it so we can work nicely with crappy STOMP clients
+    */
+   public void testSendMessageWithLeadingNewLine() throws Exception
+   {
+
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL + "\n";
+      sendFrame(frame);
+
+      frame = receiveFrame(10000);
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+      frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "Hello World" + Stomp.NULL + "\n";
 
       sendFrame(frame);
 

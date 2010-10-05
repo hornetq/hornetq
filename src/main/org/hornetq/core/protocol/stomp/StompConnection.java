@@ -49,6 +49,13 @@ class StompConnection implements RemotingConnection
    private boolean valid;
 
    private boolean destroyed = false;
+   
+   private StompDecoder decoder = new StompDecoder();
+   
+   public StompDecoder getDecoder()
+   {
+      return decoder;
+   }
 
    StompConnection(final Connection transportConnection, final StompProtocolManager manager)
    {

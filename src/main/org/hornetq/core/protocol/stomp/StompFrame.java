@@ -22,31 +22,40 @@ import java.util.Map.Entry;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.core.logging.Logger;
 
 /**
  * Represents all the data in a STOMP frame.
  *
  * @author <a href="http://hiramchirino.com">chirino</a>
+ * @author Tim Fox
+ * 
  */
 class StompFrame
 {
+   private static final Logger log = Logger.getLogger(StompFrame.class);
+
    public static final byte[] NO_DATA = new byte[] {};
+
    private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
    private final String command;
-   private final Map<String, Object> headers;
-   private final byte[] content;
-   
-   private HornetQBuffer buffer = null;
-   private int size;
 
+   private final Map<String, Object> headers;
+
+   private final byte[] content;
+
+   private HornetQBuffer buffer = null;
+
+   private int size;
+   
    public StompFrame(String command, Map<String, Object> headers, byte[] data)
    {
       this.command = command;
       this.headers = headers;
       this.content = data;
    }
-   
+
    public StompFrame(String command, Map<String, Object> headers)
    {
       this.command = command;
@@ -63,7 +72,7 @@ class StompFrame
    {
       return content;
    }
-
+   
    public Map<String, Object> getHeaders()
    {
       return headers;
@@ -95,7 +104,8 @@ class StompFrame
       out += new String(content);
       return out;
    }
-   
+
+ 
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
       if (buffer == null)

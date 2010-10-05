@@ -21,6 +21,7 @@ import java.util.Set;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
@@ -34,6 +35,9 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 class StompUtils
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(StompUtils.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -53,6 +57,7 @@ class StompUtils
       {
          msg.setDurable(Boolean.parseBoolean(persistent));
       }
+      
       // FIXME should use a proper constant
       msg.putObjectProperty("JMSCorrelationID", headers.remove(Stomp.Headers.Send.CORRELATION_ID));
       msg.putObjectProperty("JMSType", headers.remove(Stomp.Headers.Send.TYPE));

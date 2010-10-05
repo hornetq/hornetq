@@ -59,8 +59,6 @@ class StompProtocolManager implements ProtocolManager
 
    private final HornetQServer server;
 
-   private final StompFrameDecoder frameDecoder;
-
    private final Executor executor;
 
    private final Map<String, StompSession> transactedSessions = new HashMap<String, StompSession>();
@@ -105,7 +103,6 @@ class StompProtocolManager implements ProtocolManager
    public StompProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
-      this.frameDecoder = new StompFrameDecoder();
       this.executor = server.getExecutorFactory().getExecutor();
    }
 
@@ -115,8 +112,9 @@ class StompProtocolManager implements ProtocolManager
    {
       StompConnection conn = new StompConnection(connection, this);
 
-      //Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection will be timed out and closed!
-      
+      // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
+      // will be timed out and closed!
+
       long ttl = server.getConfiguration().getConnectionTTLOverride();
 
       if (ttl != -1)
@@ -127,7 +125,7 @@ class StompProtocolManager implements ProtocolManager
       {
          // Default to 1 minute - which is same as core protocol
          return new ConnectionEntry(conn, System.currentTimeMillis(), 1 * 60 * 1000);
-      }            
+      }
    }
 
    public void removeHandler(String name)
@@ -136,121 +134,123 @@ class StompProtocolManager implements ProtocolManager
 
    public int isReadyToHandle(HornetQBuffer buffer)
    {
-      int start = buffer.readerIndex();
+      // This never gets called
 
-      StompFrame frame = frameDecoder.decode(buffer);
-
-      if (frame == null)
-      {
-         return -1;
-      }
-      else
-      {
-         return buffer.readerIndex() - start;
-      }
+      return -1;
    }
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
-      try
-      {
-         doHandleBuffer(connection, buffer);
-      }
-      finally
-      {
-         server.getStorageManager().clearContext();
-      }
-   }
-
-   private void doHandleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
-   {
       StompConnection conn = (StompConnection)connection;
-      StompFrame request = null;
-      try
+      
+      StompDecoder decoder = conn.getDecoder();
+
+      do
       {
-         request = frameDecoder.decode(buffer);
-         if (log.isTraceEnabled())
+         StompFrame request;
+         
+         try
          {
-            log.trace("received " + request);
+            request = decoder.decode(buffer);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to decode", e);
+
+            return;
+         }
+         
+         if (request == null)
+         {
+            return;
          }
 
-         String command = request.getCommand();
-         StompFrame response = null;
+         try
+         {
+            String command = request.getCommand();
 
-         if (Stomp.Commands.CONNECT.equals(command))
-         {
-            response = onConnect(request, conn);
-         }
-         else if (Stomp.Commands.DISCONNECT.equals(command))
-         {
-            response = onDisconnect(request, conn);
-         }
-         else if (Stomp.Commands.SEND.equals(command))
-         {
-            response = onSend(request, conn);
-         }
-         else if (Stomp.Commands.SUBSCRIBE.equals(command))
-         {
-            response = onSubscribe(request, conn);
-         }
-         else if (Stomp.Commands.UNSUBSCRIBE.equals(command))
-         {
-            response = onUnsubscribe(request, conn);
-         }
-         else if (Stomp.Commands.ACK.equals(command))
-         {
-            response = onAck(request, conn);
-         }
-         else if (Stomp.Commands.BEGIN.equals(command))
-         {
-            response = onBegin(request, server, conn);
-         }
-         else if (Stomp.Commands.COMMIT.equals(command))
-         {
-            response = onCommit(request, conn);
-         }
-         else if (Stomp.Commands.ABORT.equals(command))
-         {
-            response = onAbort(request, conn);
-         }
-         else
-         {
-            log.error("Unsupported Stomp frame: " + request);
-            response = new StompFrame(Stomp.Responses.ERROR,
-                                      new HashMap<String, Object>(),
-                                      ("Unsupported frame: " + command).getBytes());
-         }
+            StompFrame response = null;
 
-         if (request.getHeaders().containsKey(Stomp.Headers.RECEIPT_REQUESTED))
-         {
-            if (response == null)
+            if (Stomp.Commands.CONNECT.equals(command))
             {
-               Map<String, Object> h = new HashMap<String, Object>();
-               response = new StompFrame(Stomp.Responses.RECEIPT, h);
+               response = onConnect(request, conn);
             }
-            response.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID,
-                                      request.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED));
-         }
+            else if (Stomp.Commands.DISCONNECT.equals(command))
+            {
+               response = onDisconnect(request, conn);
+            }
+            else if (Stomp.Commands.SEND.equals(command))
+            {
+               response = onSend(request, conn);
+            }
+            else if (Stomp.Commands.SUBSCRIBE.equals(command))
+            {
+               response = onSubscribe(request, conn);
+            }
+            else if (Stomp.Commands.UNSUBSCRIBE.equals(command))
+            {
+               response = onUnsubscribe(request, conn);
+            }
+            else if (Stomp.Commands.ACK.equals(command))
+            {
+               response = onAck(request, conn);
+            }
+            else if (Stomp.Commands.BEGIN.equals(command))
+            {
+               response = onBegin(request, server, conn);
+            }
+            else if (Stomp.Commands.COMMIT.equals(command))
+            {
+               response = onCommit(request, conn);
+            }
+            else if (Stomp.Commands.ABORT.equals(command))
+            {
+               response = onAbort(request, conn);
+            }
+            else
+            {
+               log.error("Unsupported Stomp frame: " + request);
+               response = new StompFrame(Stomp.Responses.ERROR,
+                                         new HashMap<String, Object>(),
+                                         ("Unsupported frame: " + command).getBytes());
+            }
 
-         if (response != null)
-         {
-            sendReply(conn, response);
-         }
+            if (request.getHeaders().containsKey(Stomp.Headers.RECEIPT_REQUESTED))
+            {
+               log.info("receipt requested");
+               if (response == null)
+               {
+                  Map<String, Object> h = new HashMap<String, Object>();
+                  response = new StompFrame(Stomp.Responses.RECEIPT, h);
+               }
+               response.getHeaders().put(Stomp.Headers.Response.RECEIPT_ID,
+                                         request.getHeaders().get(Stomp.Headers.RECEIPT_REQUESTED));
+            }
 
-         if (Stomp.Commands.DISCONNECT.equals(command))
-         {
-            conn.destroy();
+            if (response != null)
+            {
+               sendReply(conn, response);
+            }
+
+            if (Stomp.Commands.DISCONNECT.equals(command))
+            {
+               conn.destroy();
+            }
          }
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         StompFrame error = createError(e, request);
-         if (error != null)
+         catch (Exception e)
          {
-            sendReply(conn, error);
+            e.printStackTrace();
+            StompFrame error = createError(e, request);
+            if (error != null)
+            {
+               sendReply(conn, error);
+            }
          }
-      }
+         finally
+         {
+            server.getStorageManager().clearContext();
+         }
+      } while (decoder.hasBytes());
    }
 
    // Public --------------------------------------------------------
@@ -466,7 +466,8 @@ class StompProtocolManager implements ProtocolManager
       StompSession stompSession = sessions.get(connection.getID());
       if (stompSession == null)
       {
-         stompSession = new StompSession(connection, this, server.getStorageManager().newContext(server.getExecutorFactory().getExecutor()));
+         stompSession = new StompSession(connection, this, server.getStorageManager()
+                                                                 .newContext(server.getExecutorFactory().getExecutor()));
          String name = UUIDGenerator.getInstance().generateStringUUID();
          ServerSession session = server.createSession(name,
                                                       connection.getLogin(),
@@ -516,7 +517,7 @@ class StompProtocolManager implements ProtocolManager
       cleanup(connection);
       return null;
    }
-
+   
    private StompFrame onSend(StompFrame frame, StompConnection connection) throws Exception
    {
       checkConnected(connection);
@@ -554,7 +555,8 @@ class StompProtocolManager implements ProtocolManager
       {
          message.putStringProperty(CONNECTION_ID_PROP, connection.getID().toString());
       }
-      stompSession.getSession().send(message, true);
+      stompSession.getSession().send(message, true);           
+      
       return null;
    }
 
