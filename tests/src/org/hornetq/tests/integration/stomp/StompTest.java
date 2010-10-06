@@ -121,35 +121,6 @@ public class StompTest extends UnitTestCase
 
       assertTrue(latch.await(60, TimeUnit.SECONDS));
    }
-   
-   public void testPerf() throws Exception
-   {
-      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
-      sendFrame(frame);
-      frame = receiveFrame(10000);
-
-      Assert.assertTrue(frame.startsWith("CONNECTED"));
-            
-      int count = 100000;
-      
-      frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n\n" + "ABCDJIMTEST<GRV>http://techcrunch.com/2010/09/23/thelikestream-digg-for-facebook-likes/<GRV>0" + Stomp.NULL;
-      
-      long start = System.currentTimeMillis();
-      
-      for (int i = 1; i <= count; i++)
-      {
-         sendFrame(frame);
-         
-         if (i % 1000 == 0)
-         {
-            log.info("Sent " + i);
-         }
-      }
-      
-      long end = System.currentTimeMillis();
-
-      log.info("That took " + (end-start));
-   }
 
    public void testConnect() throws Exception
    {
