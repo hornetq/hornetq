@@ -27,7 +27,7 @@ import org.hornetq.spi.core.protocol.SessionCallback;
 /**
  * A CoreSessionCallback
  *
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author Tim Fox
  *
  *
  */
@@ -40,7 +40,7 @@ public final class CoreSessionCallback implements SessionCallback
    private ProtocolManager protocolManager;
 
    private String name;
-   
+
    public CoreSessionCallback(String name, ProtocolManager protocolManager, Channel channel)
    {
       this.name = name;
@@ -54,8 +54,8 @@ public final class CoreSessionCallback implements SessionCallback
 
       channel.send(packet);
 
-      int size =  packet.getPacketSize();
-      
+      int size = packet.getPacketSize();
+
       return size;
    }
 
@@ -67,14 +67,14 @@ public final class CoreSessionCallback implements SessionCallback
 
       return packet.getPacketSize();
    }
-     
+
    public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
    {
       Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
 
       channel.sendBatched(packet);
-      
-      int size =  packet.getPacketSize();
+
+      int size = packet.getPacketSize();
 
       return size;
    }

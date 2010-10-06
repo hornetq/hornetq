@@ -33,13 +33,13 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.CoreProtocolManagerFactory;
 import org.hornetq.core.protocol.stomp.StompProtocolManagerFactory;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
@@ -133,7 +133,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
       this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server,
                                                                                                        interceptors));
-      this.protocolMap.put(ProtocolType.STOMP_WS, new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.STOMP_WS, new StompProtocolManagerFactory().createProtocolManager(server,
+                                                                                                          interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -144,15 +145,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-      
-      ClassLoader tccl =
-         AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+
+      ClassLoader tccl = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
          {
-            public ClassLoader run()
-            {
-               return Thread.currentThread().getContextClassLoader();
-            }
-         });
+            return Thread.currentThread().getContextClassLoader();
+         }
+      });
 
       // The remoting service maintains it's own thread pool for handling remoting traffic
       // If OIO each connection will have it's own thread
@@ -161,7 +161,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
       ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this),
-                                                        false, tccl);
+                                                        false,
+                                                        tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 
@@ -322,6 +323,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
       else
       {
+         log.info("failed to remove connection");
+
          return null;
       }
    }
@@ -388,7 +391,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          for (FailureListener listener : failureListeners)
          {
-            if (listener instanceof ServerSessionPacketHandler)
+            if (listener instanceof ServerSessionImpl)
             {
                empty = false;
 
@@ -528,9 +531,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                RemotingConnection conn = removeConnection(id);
 
                HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                          "Did not receive ping from " + conn.getRemoteAddress() +
+                                                          "Did not receive data from " + conn.getRemoteAddress() +
                                                                    ". It is likely the client has exited or crashed without " +
-                                                                   "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+                                                                   "closing its connection, or the network between the server and client has failed. " +
+                                                                   "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
+                                                                   "Please check user manual for more information." +
+                                                                   " The connection will now be closed.");
                conn.fail(me);
             }
 

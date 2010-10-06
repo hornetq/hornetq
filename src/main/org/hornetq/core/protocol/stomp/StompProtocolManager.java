@@ -124,6 +124,7 @@ class StompProtocolManager implements ProtocolManager
       else
       {
          // Default to 1 minute - which is same as core protocol
+
          return new ConnectionEntry(conn, System.currentTimeMillis(), 1 * 60 * 1000);
       }
    }
@@ -142,6 +143,8 @@ class StompProtocolManager implements ProtocolManager
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
       StompConnection conn = (StompConnection)connection;
+      
+      conn.setDataReceived();
       
       StompDecoder decoder = conn.getDecoder();
 
@@ -217,7 +220,6 @@ class StompProtocolManager implements ProtocolManager
 
             if (request.getHeaders().containsKey(Stomp.Headers.RECEIPT_REQUESTED))
             {
-               log.info("receipt requested");
                if (response == null)
                {
                   Map<String, Object> h = new HashMap<String, Object>();

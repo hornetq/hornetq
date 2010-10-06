@@ -107,7 +107,7 @@ import org.hornetq.spi.core.remoting.Connection;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org>Clebert Suconic</a>
  */
-public class ServerSessionPacketHandler implements ChannelHandler, CloseListener, FailureListener
+public class ServerSessionPacketHandler implements ChannelHandler
 {
    private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
 
@@ -150,29 +150,11 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       {
          direct = false;
       }
-      
-      addConnectionListeners();
    }
 
    public long getID()
    {
       return channel.getID();
-   }
-
-   public void connectionFailed(final HornetQException exception)
-   {
-      log.warn("Client connection failed, clearing up resources for session " + session.getName());
-
-      try
-      {
-         session.close(true);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to close session", e);
-      }
-
-      log.warn("Cleared up resources for session " + session.getName());
    }
 
    public void close()
@@ -187,22 +169,6 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       {
          log.error("Failed to close session", e);
       }
-   }
-
-   public void connectionClosed()
-   {
-   }
-
-   private void addConnectionListeners()
-   {
-      remotingConnection.addFailureListener(this);
-      remotingConnection.addCloseListener(this);
-   }
-
-   private void removeConnectionListeners()
-   {
-      remotingConnection.removeFailureListener(this);
-      remotingConnection.removeCloseListener(this);
    }
 
    public Channel getChannel()
@@ -423,7 +389,7 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
                {
                   requiresResponse = true;
                   session.close(false);
-                  removeConnectionListeners();
+                 // removeConnectionListeners();
                   response = new NullResponseMessage();
                   flush = true;
                   closeChannel = true;
@@ -601,10 +567,10 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
       // might be executed
       // before we have transferred the connection, leaving it in a started state
       session.setTransferring(true);
-
-      remotingConnection.removeFailureListener(this);
-      remotingConnection.removeCloseListener(this);
-
+            
+      List<CloseListener> closeListeners = remotingConnection.removeCloseListeners();
+      List<FailureListener> failureListeners = remotingConnection.removeFailureListeners();
+      
       // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
       // then the connection will get cleaned up anyway when the server ping timeout kicks in.
       // In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing
@@ -618,8 +584,8 @@ public class ServerSessionPacketHandler implements ChannelHandler, CloseListener
 
       remotingConnection = newConnection;
 
-      remotingConnection.addFailureListener(this);
-      remotingConnection.addCloseListener(this);
+      remotingConnection.setCloseListeners(closeListeners);
+      remotingConnection.setFailureListeners(failureListeners);
 
       int serverLastReceivedCommandID = channel.getLastConfirmedCommandID();
 

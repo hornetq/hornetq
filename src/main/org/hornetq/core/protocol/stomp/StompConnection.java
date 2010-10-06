@@ -13,8 +13,10 @@
 
 package org.hornetq.core.protocol.stomp;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -32,8 +34,9 @@ import org.hornetq.spi.core.remoting.Connection;
  *
  *
  */
-class StompConnection implements RemotingConnection
+public class StompConnection implements RemotingConnection
 {
+
    private static final Logger log = Logger.getLogger(StompConnection.class);
 
    private final StompProtocolManager manager;
@@ -49,9 +52,17 @@ class StompConnection implements RemotingConnection
    private boolean valid;
 
    private boolean destroyed = false;
-   
+
    private StompDecoder decoder = new StompDecoder();
+
+   private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
+
+   private final List<CloseListener> closeListeners = new CopyOnWriteArrayList<CloseListener>();
+
+   private final Object failLock = new Object();
    
+   private volatile boolean dataReceived;
+
    public StompDecoder getDecoder()
    {
       return decoder;
@@ -64,17 +75,90 @@ class StompConnection implements RemotingConnection
       this.manager = manager;
    }
 
-   public void addCloseListener(CloseListener listener)
+   public void addFailureListener(final FailureListener listener)
    {
+      if (listener == null)
+      {
+         throw new IllegalStateException("FailureListener cannot be null");
+      }
+
+      failureListeners.add(listener);
    }
 
-   public void addFailureListener(FailureListener listener)
+   public boolean removeFailureListener(final FailureListener listener)
    {
+      if (listener == null)
+      {
+         throw new IllegalStateException("FailureListener cannot be null");
+      }
+
+      return failureListeners.remove(listener);
+   }
+
+   public void addCloseListener(final CloseListener listener)
+   {
+      if (listener == null)
+      {
+         throw new IllegalStateException("CloseListener cannot be null");
+      }
+
+      closeListeners.add(listener);
+   }
+
+   public boolean removeCloseListener(final CloseListener listener)
+   {
+      if (listener == null)
+      {
+         throw new IllegalStateException("CloseListener cannot be null");
+      }
+
+      return closeListeners.remove(listener);
+   }
+
+   public List<CloseListener> removeCloseListeners()
+   {
+      List<CloseListener> ret = new ArrayList<CloseListener>(closeListeners);
+
+      closeListeners.clear();
+
+      return ret;
+   }
+
+   public List<FailureListener> removeFailureListeners()
+   {
+      List<FailureListener> ret = new ArrayList<FailureListener>(failureListeners);
+
+      failureListeners.clear();
+
+      return ret;
+   }
+
+   public void setCloseListeners(List<CloseListener> listeners)
+   {
+      closeListeners.clear();
+
+      closeListeners.addAll(listeners);
+   }
+
+   public void setFailureListeners(final List<FailureListener> listeners)
+   {
+      failureListeners.clear();
+
+      failureListeners.addAll(listeners);
+   }
+   
+   public void setDataReceived()
+   {
+      dataReceived = true;
    }
 
    public boolean checkDataReceived()
    {
-      return true;
+      boolean res = dataReceived;
+
+      dataReceived = false;
+
+      return res;
    }
 
    public HornetQBuffer createBuffer(int size)
@@ -84,13 +168,23 @@ class StompConnection implements RemotingConnection
 
    public void destroy()
    {
-      if (destroyed)
+      synchronized (failLock)
       {
-         return;
+         if (destroyed)
+         {
+            return;
+         }
       }
 
       destroyed = true;
 
+      internalClose();
+
+      callClosingListeners();
+   }
+
+   private void internalClose()
+   {
       transportConnection.close();
 
       manager.cleanup(this);
@@ -100,8 +194,29 @@ class StompConnection implements RemotingConnection
    {
    }
 
-   public void fail(HornetQException me)
+   public void fail(final HornetQException me)
    {
+      synchronized (failLock)
+      {
+         if (destroyed)
+         {
+            return;
+         }
+
+         destroyed = true;
+      }
+
+      log.warn("Connection failure has been detected: " + me.getMessage() +
+                                      " [code=" +
+                                      me.getCode() +
+                                      "]");
+
+      // Then call the listeners
+      callFailureListeners(me);
+
+      callClosingListeners();
+      
+      internalClose();
    }
 
    public void flush()
@@ -140,20 +255,6 @@ class StompConnection implements RemotingConnection
       return destroyed;
    }
 
-   public boolean removeCloseListener(CloseListener listener)
-   {
-      return false;
-   }
-
-   public boolean removeFailureListener(FailureListener listener)
-   {
-      return false;
-   }
-
-   public void setFailureListeners(List<FailureListener> listeners)
-   {
-   }
-
    public void bufferReceived(Object connectionID, HornetQBuffer buffer)
    {
       manager.handleBuffer(this, buffer);
@@ -188,7 +289,7 @@ class StompConnection implements RemotingConnection
    {
       return clientID;
    }
-   
+
    public boolean isValid()
    {
       return valid;
@@ -198,4 +299,45 @@ class StompConnection implements RemotingConnection
    {
       this.valid = valid;
    }
+
+   private void callFailureListeners(final HornetQException me)
+   {
+      final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
+
+      for (final FailureListener listener : listenersClone)
+      {
+         try
+         {
+            listener.connectionFailed(me);
+         }
+         catch (final Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others
+            // from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
+      }
+   }
+
+   private void callClosingListeners()
+   {
+      final List<CloseListener> listenersClone = new ArrayList<CloseListener>(closeListeners);
+
+      for (final CloseListener listener : listenersClone)
+      {
+         try
+         {
+            listener.connectionClosed();
+         }
+         catch (final Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others
+            // from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
+      }
+   }
+
 }

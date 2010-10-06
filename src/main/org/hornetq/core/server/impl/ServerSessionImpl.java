@@ -73,7 +73,7 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-public class ServerSessionImpl implements ServerSession, FailureListener
+public class ServerSessionImpl implements ServerSession , FailureListener
 {
    // Constants -----------------------------------------------------------------------------
 

@@ -225,6 +225,31 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       return closeListeners.remove(listener);
    }
 
+   public List<CloseListener> removeCloseListeners()
+   {
+      List<CloseListener> ret = new ArrayList<CloseListener>(closeListeners);
+      
+      closeListeners.clear();
+      
+      return ret;
+   }
+
+   public List<FailureListener> removeFailureListeners()
+   {
+      List<FailureListener> ret = new ArrayList<FailureListener>(failureListeners);
+      
+      failureListeners.clear();
+      
+      return ret; 
+   }
+
+   public void setCloseListeners(List<CloseListener> listeners)
+   {
+      closeListeners.clear();
+      
+      closeListeners.addAll(listeners);      
+   }
+
    public HornetQBuffer createBuffer(final int size)
    {
       return transportConnection.createBuffer(size);
@@ -471,6 +496,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          channels.clear();
       }
    }  
+   
    private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);

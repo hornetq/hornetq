@@ -77,13 +77,21 @@ public interface RemotingConnection extends BufferHandler
     * @return true if removed
     */
    boolean removeCloseListener(CloseListener listener);
-
+   
+   List<CloseListener> removeCloseListeners();
+   
+   void setCloseListeners(List<CloseListener> listeners);
+   
+   
    /**
     * return all the failure listeners
     *
     * @return the listeners
     */
    List<FailureListener> getFailureListeners();
+   
+   List<FailureListener> removeFailureListeners();
+
 
    /**
     * set the failure listeners.
