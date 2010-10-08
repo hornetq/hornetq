@@ -66,6 +66,12 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          public void connectionCreated(final Connection connection, final ProtocolType protocol)
          {
          }
+
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
+         
+         
       };
 
       Acceptor acceptor = factory.createAcceptor(params,

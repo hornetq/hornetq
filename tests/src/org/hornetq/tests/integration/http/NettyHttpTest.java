@@ -561,5 +561,11 @@ public class NettyHttpTest extends UnitTestCase
       {
          me.printStackTrace();
       }
+
+      public void connectionReadyForWrites(Object connectionID, boolean ready)
+      {
+      }
+      
+      
    }
 }

@@ -80,6 +80,10 @@ public class NettyAcceptorTest extends UnitTestCase
          public void connectionCreated(final Connection connection, final ProtocolType protocol)
          {
          }
+         
+         public void connectionReadyForWrites(Object connectionID, boolean ready)
+         {
+         }
       };
       NettyAcceptor acceptor = new NettyAcceptor(params,
                                                  handler,

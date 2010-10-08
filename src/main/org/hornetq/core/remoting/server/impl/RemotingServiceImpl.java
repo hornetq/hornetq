@@ -423,6 +423,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       // Connections should only fail when TTL is exceeded
    }
+   
+   public void connectionReadyForWrites(final Object connectionID, final boolean ready)
+   {
+   }
 
    public void addInterceptor(final Interceptor interceptor)
    {

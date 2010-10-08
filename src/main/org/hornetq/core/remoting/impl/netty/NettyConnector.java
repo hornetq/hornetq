@@ -693,6 +693,12 @@ public class NettyConnector implements Connector
             }
          });
       }
+
+      public void connectionReadyForWrites(Object connectionID, boolean ready)
+      {
+      }
+      
+      
    }
    
    private class BatchFlusher implements Runnable

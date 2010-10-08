@@ -234,6 +234,10 @@ public class NettyConnectionTest extends UnitTestCase
       {
 
       }
+      
+      public void connectionReadyForWrites(Object connectionID, boolean ready)
+      {
+      }
 
    }
 }

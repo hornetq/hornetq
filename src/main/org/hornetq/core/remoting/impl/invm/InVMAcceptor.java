@@ -250,6 +250,9 @@ public class InVMAcceptor implements Acceptor
          listener.connectionException(connectionID, me);
       }
 
+      public void connectionReadyForWrites(Object connectionID, boolean ready)
+      {
+      }
    }
 
 }

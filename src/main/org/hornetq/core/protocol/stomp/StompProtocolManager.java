@@ -142,11 +142,14 @@ class StompProtocolManager implements ProtocolManager
 
    public void handleBuffer(final RemotingConnection connection, final HornetQBuffer buffer)
    {
+      long start = System.nanoTime();
       StompConnection conn = (StompConnection)connection;
       
       conn.setDataReceived();
       
       StompDecoder decoder = conn.getDecoder();
+      
+     // log.info("in handle");
 
       do
       {
@@ -165,7 +168,7 @@ class StompProtocolManager implements ProtocolManager
          
          if (request == null)
          {
-            return;
+            break;
          }
 
          try
@@ -253,6 +256,10 @@ class StompProtocolManager implements ProtocolManager
             server.getStorageManager().clearContext();
          }
       } while (decoder.hasBytes());
+      
+      long end = System.nanoTime();
+      
+     // log.info("handle took " + (end-start));
    }
 
    // Public --------------------------------------------------------

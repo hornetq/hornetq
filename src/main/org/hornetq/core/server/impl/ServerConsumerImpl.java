@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -42,6 +43,7 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 
@@ -54,7 +56,7 @@ import org.hornetq.utils.TypedProperties;
  * 
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
-public class ServerConsumerImpl implements ServerConsumer
+public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -117,6 +119,12 @@ public class ServerConsumerImpl implements ServerConsumer
    private final Binding binding;
 
    private boolean transferring = false;
+   
+   /* As well as consumer credit based flow control, we also tap into TCP flow control (assuming transport is using TCP)
+    * This is useful in the case where consumer-window-size = -1, but we don't want to OOM by sending messages ad infinitum to the Netty
+    * write queue when the TCP buffer is full, e.g. the client is slow or has died.    
+    */
+   private AtomicBoolean writeReady = new AtomicBoolean(true);
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -159,6 +167,8 @@ public class ServerConsumerImpl implements ServerConsumer
       minLargeMessageSize = session.getMinLargeMessageSize();
 
       this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
+      
+      this.callback.addReadyListener(this);
 
       if (browseOnly)
       {
@@ -177,13 +187,19 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       return id;
    }
-
+   
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       if (availableCredits != null && availableCredits.get() <= 0)
       {
          return HandleStatus.BUSY;
       }
+      
+// TODO - https://jira.jboss.org/browse/HORNETQ-533      
+//      if (!writeReady.get())
+//      {
+//         return HandleStatus.BUSY;
+//      }
       
       synchronized (lock)
       {
@@ -264,6 +280,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    public void close(final boolean failed) throws Exception
    {
+      callback.removeReadyListener(this);
+      
       setStarted(false);
 
       if (largeMessageDeliverer != null)
@@ -584,8 +602,20 @@ public class ServerConsumerImpl implements ServerConsumer
 
       return ref;
    }
-
-   // Public ---------------------------------------------------------------------------------------
+      
+   public void readyForWriting(final boolean ready)
+   {
+      if (ready)
+      {
+         writeReady.set(true);
+         
+         promptDelivery();
+      }
+      else
+      {
+         writeReady.set(false);
+      }
+   }
 
    /** To be used on tests only */
    public AtomicInteger getAvailableCredits()

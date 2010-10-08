@@ -296,8 +296,14 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       handleConnectionFailure(connectionID, me);
    }
+   
+   public void connectionReadyForWrites(final Object connectionID, final boolean ready)
+   {
+   }
 
    // ConnectionManager implementation ------------------------------------------------------------------
+
+   
 
    public ClientSession createSession(final String username,
                                       final String password,

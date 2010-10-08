@@ -70,4 +70,8 @@ public interface Connection
     * Called periodically to flush any data in the batch buffer
     */
    void checkFlushBatchBuffer();
+   
+   void addReadyListener(ReadyListener listener);
+   
+   void removeReadyListener(ReadyListener listener);
 }

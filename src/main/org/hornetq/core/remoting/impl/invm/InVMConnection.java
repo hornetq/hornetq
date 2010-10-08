@@ -22,6 +22,7 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -32,6 +33,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class InVMConnection implements Connection
 {
+
    private static final Logger log = Logger.getLogger(InVMConnection.class);
 
    private final BufferHandler handler;
@@ -159,5 +161,12 @@ public class InVMConnection implements Connection
    {
       return -1;
    }
+   
+   public void addReadyListener(ReadyListener listener)
+   {
+   }
 
+   public void removeReadyListener(ReadyListener listener)
+   {
+   }
 }

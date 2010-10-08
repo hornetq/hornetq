@@ -44,4 +44,6 @@ public interface ConnectionLifeCycleListener
     * @param me           the exception.
     */
    void connectionException(Object connectionID, HornetQException me);
+   
+   void connectionReadyForWrites(Object connectionID, boolean ready);
 }

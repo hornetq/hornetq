@@ -139,6 +139,10 @@ public class StompDecoder
     */
    public synchronized StompFrame decode(final HornetQBuffer buffer) throws Exception
    {
+      //log.info("got buff " + buffer.readableBytes());
+      
+      long start = System.nanoTime();
+      
       int readable = buffer.readableBytes();
 
       if (data + readable >= workingBuffer.length)
@@ -301,6 +305,8 @@ public class StompDecoder
             throwInvalid();
          }
       }
+      
+      long commandTime = System.nanoTime() - start;
 
       if (readingHeaders)
       {
@@ -406,6 +412,8 @@ public class StompDecoder
             }
          }
       }
+      
+      long headersTime = System.nanoTime() - start - commandTime;
 
       // Now the body
 
@@ -447,6 +455,8 @@ public class StompDecoder
             }
          }
       }
+      
+      
 
       if (content != null)
       {
@@ -464,6 +474,12 @@ public class StompDecoder
          StompFrame ret = new StompFrame(command, headers, content);
 
          init();
+         
+        // log.info("decoded");
+         
+         long bodyTime = System.nanoTime() - start - headersTime - commandTime;
+         
+        // log.info("command: "+ commandTime + " headers: " + headersTime + " body: " + bodyTime);
 
          return ret;
       }

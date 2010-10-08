@@ -23,6 +23,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.spi.core.remoting.ReadyListener;
 
 /**
  * A CoreSessionCallback
@@ -40,7 +41,7 @@ public final class CoreSessionCallback implements SessionCallback
    private ProtocolManager protocolManager;
 
    private String name;
-
+   
    public CoreSessionCallback(String name, ProtocolManager protocolManager, Channel channel)
    {
       this.name = name;
@@ -90,4 +91,15 @@ public final class CoreSessionCallback implements SessionCallback
    {
       protocolManager.removeHandler(name);
    }
+   
+   public void addReadyListener(final ReadyListener listener)
+   {
+      channel.getConnection().getTransportConnection().addReadyListener(listener);      
+   }
+
+   public void removeReadyListener(final ReadyListener listener)
+   {
+      channel.getConnection().getTransportConnection().removeReadyListener(listener);
+   }
+
 }

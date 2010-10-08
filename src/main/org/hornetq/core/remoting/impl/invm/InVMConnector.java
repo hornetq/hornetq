@@ -215,6 +215,12 @@ public class InVMConnector implements Connector
          });
       }
 
+      public void connectionReadyForWrites(Object connectionID, boolean ready)
+      {
+      }
+      
+      
+
    }
 
 }

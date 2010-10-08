@@ -30,6 +30,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
+import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -155,6 +156,16 @@ class StompSession implements SessionCallback
 
    public void closed()
    {
+   }
+   
+   public void addReadyListener(final ReadyListener listener)
+   {
+      connection.getTransportConnection().addReadyListener(listener);      
+   }
+
+   public void removeReadyListener(final ReadyListener listener)
+   {
+      connection.getTransportConnection().removeReadyListener(listener);
    }
 
    public void acknowledge(String messageID) throws Exception

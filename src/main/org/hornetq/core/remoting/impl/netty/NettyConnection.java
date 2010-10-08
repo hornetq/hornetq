@@ -13,6 +13,7 @@
 
 package org.hornetq.core.remoting.impl.netty;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -22,6 +23,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.ReadyListener;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -57,6 +60,8 @@ public class NettyConnection implements Connection
    private volatile HornetQBuffer batchBuffer;
 
    private final AtomicBoolean writeLock = new AtomicBoolean(false);
+   
+   private Set<ReadyListener> readyListeners = new ConcurrentHashSet<ReadyListener>();
 
    // Static --------------------------------------------------------
 
@@ -240,6 +245,24 @@ public class NettyConnection implements Connection
    public boolean isDirectDeliver()
    {
       return directDeliver;
+   }
+   
+   public void addReadyListener(final ReadyListener listener)
+   {
+      readyListeners.add(listener);
+   }
+   
+   public void removeReadyListener(final ReadyListener listener)
+   {
+      readyListeners.remove(listener);
+   }
+   
+   public void fireReady(final boolean ready)
+   {
+      for (ReadyListener listener: readyListeners)
+      {
+         listener.readyForWriting(ready);
+      }
    }
 
    // Public --------------------------------------------------------
