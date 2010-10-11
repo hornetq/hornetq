@@ -30,7 +30,6 @@ public class UriStrategy implements PushStrategy
    protected String method;
    protected String contentType;
 
-   @Override
    public void setRegistration(PushRegistration reg)
    {
       this.registration = reg;
@@ -63,12 +62,10 @@ public class UriStrategy implements PushStrategy
       }
    }
 
-   @Override
    public void stop()
    {
    }
 
-   @Override
    public boolean push(ClientMessage message)
    {
       String uri = createUri(message);

@@ -18,7 +18,6 @@ public class FileTopicPushStore extends FilePushStore implements TopicPushStore
       super(dirname);
    }
 
-   @Override
    public synchronized List<PushTopicRegistration> getByTopic(String topic)
    {
       List<PushTopicRegistration> list = new ArrayList<PushTopicRegistration>();

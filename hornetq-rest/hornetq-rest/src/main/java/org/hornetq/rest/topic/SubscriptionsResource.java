@@ -84,7 +84,6 @@ public class SubscriptionsResource implements TimeoutTask.Callback
 
    private Object timeoutLock = new Object();
 
-   @Override
    public void testTimeout(String target)
    {
       synchronized (timeoutLock)

@@ -16,7 +16,6 @@ public class RestMessagingBootstrapListener implements ServletContextListener
 {
    MessageServiceManager manager;
 
-   @Override
    public void contextInitialized(ServletContextEvent contextEvent)
    {
       ServletContext context = contextEvent.getServletContext();
@@ -44,7 +43,6 @@ public class RestMessagingBootstrapListener implements ServletContextListener
       }
    }
 
-   @Override
    public void contextDestroyed(ServletContextEvent servletContextEvent)
    {
       if (manager != null)

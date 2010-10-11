@@ -80,7 +80,6 @@ public class RawRestartTest
 
    private static class MyListener implements MessageHandler
    {
-      @Override
       public void onMessage(ClientMessage message)
       {
          int size = message.getBodyBuffer().readInt();

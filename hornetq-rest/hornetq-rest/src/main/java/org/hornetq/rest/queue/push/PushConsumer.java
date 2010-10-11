@@ -100,7 +100,6 @@ public class PushConsumer implements MessageHandler
       }
    }
 
-   @Override
    public void onMessage(ClientMessage clientMessage)
    {
       if (strategy.push(clientMessage) == false)

@@ -14,7 +14,6 @@ public class HornetqBootstrapListener implements ServletContextListener
 {
    private EmbeddedJMS jms;
 
-   @Override
    public void contextInitialized(ServletContextEvent contextEvent)
    {
       ServletContext context = contextEvent.getServletContext();
@@ -30,7 +29,6 @@ public class HornetqBootstrapListener implements ServletContextListener
       }
    }
 
-   @Override
    public void contextDestroyed(ServletContextEvent servletContextEvent)
    {
       try

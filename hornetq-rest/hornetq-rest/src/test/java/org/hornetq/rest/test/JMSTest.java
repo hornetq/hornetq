@@ -2,6 +2,7 @@ package org.hornetq.rest.test;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.rest.HttpHeaderProperty;
 import org.hornetq.rest.Jms;
 import org.hornetq.rest.queue.QueueDeployment;
@@ -39,7 +40,7 @@ public class JMSTest extends MessageTestBase
    @BeforeClass
    public static void setup() throws Exception
    {
-      connectionFactory = new HornetQConnectionFactory(manager.getQueueManager().getSessionFactory());
+      connectionFactory = new HornetQJMSConnectionFactory(manager.getQueueManager().getSessionFactory());
    }
 
    @XmlRootElement
@@ -128,7 +129,6 @@ public class JMSTest extends MessageTestBase
       public static Order order;
       public static CountDownLatch latch = new CountDownLatch(1);
 
-      @Override
       public void onMessage(Message message)
       {
          try

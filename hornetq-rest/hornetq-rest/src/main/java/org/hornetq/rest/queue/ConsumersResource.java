@@ -78,7 +78,6 @@ public class ConsumersResource implements TimeoutTask.Callback
 
    private Object timeoutLock = new Object();
 
-   @Override
    public void testTimeout(String target)
    {
       synchronized (timeoutLock)

@@ -17,37 +17,31 @@ public class ServletContextBindingRegistry implements BindingRegistry
       this.servletContext = servletContext;
    }
 
-   @Override
    public Object lookup(String name)
    {
       return servletContext.getAttribute(name);
    }
 
-   @Override
    public boolean bind(String name, Object obj)
    {
       servletContext.setAttribute(name, obj);
       return true;
    }
 
-   @Override
    public void unbind(String name)
    {
       servletContext.removeAttribute(name);
    }
 
-   @Override
    public void close()
    {
    }
 
-   @Override
    public Object getContext()
    {
       return servletContext;
    }
 
-   @Override
    public void setContext(Object o)
    {
       servletContext = (ServletContext)o;
