@@ -55,7 +55,7 @@ public class JMSBridgeExample
       try
       {
          // Step 2. Lookup the *source* JMS resources
-         ConnectionFactory sourceConnectionFactory = (ConnectionFactory)sourceContext.lookup("/source/ConnectionFactory");
+         ConnectionFactory sourceConnectionFactory = (ConnectionFactory)sourceContext.lookup("/client/ConnectionFactory");
          Topic sourceTopic = (Topic)sourceContext.lookup("/source/topic");
 
          // Step 3. Create a connection, a session and a message producer for the *source* topic
@@ -75,7 +75,7 @@ public class JMSBridgeExample
          sourceConnection.close();
 
          // Step 6. Lookup the *target* JMS resources
-         ConnectionFactory targetConnectionFactory = (ConnectionFactory)targetContext.lookup("/target/ConnectionFactory");
+         ConnectionFactory targetConnectionFactory = (ConnectionFactory)targetContext.lookup("/client/ConnectionFactory");
          Queue targetQueue = (Queue)targetContext.lookup("/target/queue");
 
          // Step 7. Create a connection, a session and a message consumer for the *target* queue

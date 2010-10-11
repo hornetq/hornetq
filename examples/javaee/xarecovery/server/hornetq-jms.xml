@@ -3,6 +3,7 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
 
    <connection-factory name="ConnectionFactory">
+      <xa>true</xa>
       <connectors>
          <connector-ref connector-name="netty"/>
       </connectors>
