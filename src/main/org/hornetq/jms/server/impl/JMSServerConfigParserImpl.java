@@ -205,6 +205,13 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       Element e = (Element)node;
 
       String name = node.getAttributes().getNamedItem(JMSServerConfigParserImpl.NAME_ATTR).getNodeValue();
+      
+      String fact = e.getAttribute("signature");
+      boolean isXA = XMLConfigurationUtil.getBoolean(e,
+                                                     "xa",
+                                                     HornetQClient.DEFAULT_XA);
+
+      JMSFactoryType factType = resolveFactoryType(fact, isXA);
 
       long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e,
                                                                    "client-failure-check-period",
@@ -381,6 +388,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
          cfConfig.setConnectorNames(connectorNames);
       }
 
+      cfConfig.setFactoryType(factType);
       cfConfig.setClientID(clientID);
       cfConfig.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cfConfig.setConnectionTTL(connectionTTL);
@@ -411,6 +419,46 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       cfConfig.setFailoverOnInitialConnection(failoverOnInitialConnection);
       cfConfig.setGroupID(groupid);
       return cfConfig;
+   }
+
+   private JMSFactoryType resolveFactoryType(String fact, boolean isXA) throws HornetQException
+   {
+      if ("".equals(fact))
+      {
+         fact = "generic";
+      }
+      if (isXA)
+      {
+         if ("generic".equals(fact))
+         {
+            return JMSFactoryType.XA_CF;
+         }
+         if ("queue".equals(fact))
+         {
+            return JMSFactoryType.QUEUE_XA_CF;
+         }
+         if ("topic".equals(fact))
+         {
+            return JMSFactoryType.TOPIC_XA_CF;
+         }
+      }
+      else
+      {
+         if ("generic".equals(fact))
+         {
+            return JMSFactoryType.CF;
+         }
+         if ("queue".equals(fact))
+         {
+            return JMSFactoryType.QUEUE_CF;
+         }
+         if ("topic".equals(fact))
+         {
+            return JMSFactoryType.TOPIC_CF;
+         }
+      }
+      throw new HornetQException(HornetQException.INTERNAL_ERROR, "Invalid signature " + fact +
+      " at parseConnectionFactory");
    }
 
    /**

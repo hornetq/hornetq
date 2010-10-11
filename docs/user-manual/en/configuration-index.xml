@@ -1018,6 +1018,22 @@
                     <colspec colname="c4" colnum="4"/>
                     <tbody>
                         <row>
+                            <entry id="configuration.connection-factory.signature">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.signature (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Type of connection factory</entry>
+                            <entry>generic</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.signature">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.xa</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>If it is a XA connection factory</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
                             <entry id="configuration.connection-factory.auto-group">
                                <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link>
                             </entry>

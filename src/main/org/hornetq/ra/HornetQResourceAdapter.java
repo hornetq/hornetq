@@ -35,6 +35,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.inflow.HornetQActivation;
@@ -1389,13 +1390,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
                                                                                                       backupConnectionParams);
 
-         cf = HornetQJMSClient.createConnectionFactory(transportConf, backup);
+         cf = HornetQJMSClient.createConnectionFactory(transportConf, backup, JMSFactoryType.XA_CF);
       }
       else if (discoveryAddress != null)
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         cf = HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
+         cf = HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort, JMSFactoryType.XA_CF);
       }
       else
       {

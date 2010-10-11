@@ -87,6 +87,82 @@
                 defines the transport and parameters used to actually connect to the server.</para>
         </note>
     </section>
+    <section id="using-jms.configure.factory.types">
+        <title>Connection Factory Types</title>
+        <para>The JMS API doc provides several connection factories for applications. HornetQ JMS users
+              can choose to configure the types for their connection factories. Each connection factory
+              has a <literal>signature</literal> attribute and a <literal>xa</literal> parameter, the
+              combination of which determines the type of the factory. Attribute <literal>signature</literal>
+              has three possible string values, i.e. <emphasis>generic</emphasis>, 
+              <emphasis>queue</emphasis> and <emphasis>topic</emphasis>; <literal>xa</literal> is a boolean
+              type parameter. The following table gives their configuration values for different 
+              connection factory interfaces.</para>
+        <table frame="topbot" id="using-jms.table.configure.factory.types">
+                <title>Configuration for Connection Factory Types</title>
+                <tgroup cols="3">
+                    <colspec colname="signature" colnum="1"/>
+                    <colspec colname="xa" colnum="2"/>
+                    <colspec colname="cftype" colnum="3"/>
+                    <thead>
+                        <row>
+                            <entry>signature</entry>
+                            <entry>xa</entry>
+                            <entry>Connection Factory Type</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>generic (default)</entry>
+                            <entry>false (default)</entry>
+                            <entry>javax.jms.ConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>generic</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XAConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>queue</entry>
+                            <entry>false</entry>
+                            <entry>javax.jms.QueueConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>queue</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XAQueueConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>topic</entry>
+                            <entry>false</entry>
+                            <entry>javax.jms.TopicConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>topic</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XATopicConnectionFactory</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para>As an example, the following configures an XAQueueConnectionFactory:</para>
+        <programlisting>
+&lt;configuration xmlns="urn:hornetq" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
+    
+    &lt;connection-factory name="ConnectionFactory" signature="queue"&gt;
+        &lt;xa>true&lt;/xa>
+        &lt;connectors>
+           &lt;connector-ref connector-name="netty"/&gt;
+        &lt;/connectors>
+        &lt;entries&gt;
+            &lt;entry name="ConnectionFactory"/&gt;           
+        &lt;/entries&gt;
+    &lt;/connection-factory&gt;
+&lt;/configuration&gt; 
+        </programlisting>
+
+    </section>
     <section>
         <title>JNDI configuration</title>
         <para>When using JNDI from the client side you need to specify a set of JNDI properties

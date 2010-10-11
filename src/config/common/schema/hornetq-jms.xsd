@@ -26,6 +26,7 @@
    <xsd:element name="connection-factory">
    	<xsd:complexType>
    		<xsd:all>
+           	<xsd:element name="xa" type="xsd:boolean" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-initial-wait-timeout" type="xsd:long" maxOccurs="1" minOccurs="0"></xsd:element>
 	
@@ -135,6 +136,7 @@
             </xsd:element>
    		</xsd:all>
    		<xsd:attribute name="name" type="xsd:string"></xsd:attribute>
+   		<xsd:attribute name="signature" type="xsd:string"></xsd:attribute>
    	</xsd:complexType>
    </xsd:element>
 

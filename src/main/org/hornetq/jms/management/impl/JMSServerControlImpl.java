@@ -38,6 +38,7 @@ import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -163,7 +164,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       {
          TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
-         server.createConnectionFactory(name, liveTC, JMSServerControlImpl.convert(jndiBindings));
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.CF, JMSServerControlImpl.convert(jndiBindings));
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
@@ -172,6 +173,121 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
          blockOnIO();
       }
                                        }
+
+   public void createXAConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.XA_CF, JMSServerControlImpl.convert(jndiBindings));
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public void createQueueConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.QUEUE_CF, JMSServerControlImpl.convert(jndiBindings));
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public void createTopicConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.TOPIC_CF, JMSServerControlImpl.convert(jndiBindings));
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public void createXAQueueConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.QUEUE_XA_CF, JMSServerControlImpl.convert(jndiBindings));
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public void createXATopicConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final Map<String, Object> liveTransportParams,
+                                       final Object[] jndiBindings) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
+
+         server.createConnectionFactory(name, liveTC, JMSFactoryType.TOPIC_XA_CF, JMSServerControlImpl.convert(jndiBindings));
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
 
    public void createConnectionFactory(final String name,
                                        final Object[] liveConnectorsTransportClassNames,

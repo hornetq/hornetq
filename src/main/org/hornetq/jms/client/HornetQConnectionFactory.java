@@ -17,18 +17,12 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnection;
-import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnection;
-import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
@@ -48,8 +42,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id$
  */
-public class HornetQConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable
+public class HornetQConnectionFactory implements Serializable, Referenceable
 {
    // Constants ------------------------------------------------------------------------------------
 

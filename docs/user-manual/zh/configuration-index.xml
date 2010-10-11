@@ -952,6 +952,22 @@
                             <entry/>
                         </row>
                         <row>
+                            <entry id="configuration.connection-factory.signature">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.signature (属性)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>连接工厂的类型</entry>
+                            <entry>generic</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.signature">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.xa</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>是否是XA类型的连接工厂</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
                             <entry id="configuration.connection-factory.auto-group">
                                <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link>
                             </entry>

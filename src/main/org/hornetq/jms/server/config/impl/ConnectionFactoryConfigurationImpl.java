@@ -21,6 +21,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.utils.BufferHelper;
 import org.hornetq.utils.DataConstants;
 
@@ -114,6 +115,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private boolean failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    
    private String groupID = null;
+   
+   private JMSFactoryType factoryType = JMSFactoryType.CF;
    
    // Static --------------------------------------------------------
 
@@ -671,6 +674,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       failoverOnServerShutdown = buffer.readBoolean();
 
       groupID = BufferHelper.readNullableSimpleStringAsString(buffer);
+      
+      factoryType = JMSFactoryType.valueOf(buffer.readInt());
    }
 
    /* (non-Javadoc)
@@ -762,6 +767,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       buffer.writeBoolean(failoverOnServerShutdown);
 
       BufferHelper.writeAsNullableSimpleString(buffer, groupID);
+      
+      buffer.writeInt(factoryType.intValue());
    }
 
 
@@ -860,7 +867,19 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
              DataConstants.SIZE_BOOLEAN + // failoverOnServerShutdown
              
-             BufferHelper.sizeOfNullableSimpleString(groupID);
+             BufferHelper.sizeOfNullableSimpleString(groupID) + 
+             
+             DataConstants.SIZE_INT; //factoryType
+   }
+
+   public void setFactoryType(JMSFactoryType factoryType)
+   {
+      this.factoryType = factoryType;
+   }
+
+   public JMSFactoryType getFactoryType()
+   {
+      return factoryType;
    }
    
    // Public --------------------------------------------------------

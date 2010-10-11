@@ -23,7 +23,6 @@ import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.HornetQException;
@@ -754,6 +753,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final boolean failoverOnInitialConnection,
                                                     final boolean failoverOnServerShutdown,
                                                     final String groupId,
+                                                    final JMSFactoryType factoryType,
                                                     String... jndiBindings) throws Exception
    {
       checkInitialised();
@@ -790,6 +790,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
          configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
          configuration.setGroupID(groupId);
+         configuration.setFactoryType(factoryType);
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }
@@ -969,13 +970,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final int reconnectAttempts,
                                                                     final boolean failoverOnInitialConnection,
                                                                     final boolean failoverOnServerShutdown,
-                                                                    final String groupId) throws Exception
+                                                                    final String groupId, 
+                                                                    final JMSFactoryType jmsFactoryType) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort);
+         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(discoveryAddress, discoveryPort, jmsFactoryType);
          cf.setClientID(clientID);
          cf.setLocalBindAddress(localBindAddress);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
@@ -1043,13 +1045,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                                     final int reconnectAttempts,
                                                                     final boolean failoverOnInitialConnection,
                                                                     final boolean failoverOnServerShutdown,
-                                                                    final String groupId) throws Exception
+                                                                    final String groupId, 
+                                                                    final JMSFactoryType jmsFactoryType) throws Exception
    {
       checkInitialised();
       HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(connectorConfigs);
+         cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(connectorConfigs, jmsFactoryType);
          cf.setClientID(clientID);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
@@ -1213,7 +1216,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                               cfConfig.getReconnectAttempts(),
                                               cfConfig.isFailoverOnInitialConnection(),
                                               cfConfig.isFailoverOnServerShutdown(),
-                                              cfConfig.getGroupID());
+                                              cfConfig.getGroupID(),
+                                              cfConfig.getFactoryType());
       }
       else
       {
@@ -1247,7 +1251,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                               cfConfig.getReconnectAttempts(),
                                               cfConfig.isFailoverOnInitialConnection(),
                                               cfConfig.isFailoverOnServerShutdown(),
-                                              cfConfig.getGroupID());
+                                              cfConfig.getGroupID(),
+                                              cfConfig.getFactoryType());
       }
       connectionFactories.put(cfConfig.getName(), cf);
 
@@ -1258,6 +1263,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void createConnectionFactory(final String name,
                                                     final TransportConfiguration liveTC,
+                                                    final JMSFactoryType cfType,
                                                     final String... jndiBindings) throws Exception
    {
       checkInitialised();
@@ -1265,6 +1271,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (cf == null)
       {
          ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, liveTC);
+         configuration.setFactoryType(cfType);
          createConnectionFactory(true, configuration, jndiBindings);
       }
    }

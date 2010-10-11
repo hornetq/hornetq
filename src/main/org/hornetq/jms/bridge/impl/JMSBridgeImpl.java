@@ -969,7 +969,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    {
       Connection conn;
 
-      ConnectionFactory cf = cff.createConnectionFactory();
+      Object cf = cff.createConnectionFactory();
 
       if (qualityOfServiceMode == QualityOfServiceMode.ONCE_AND_ONLY_ONCE && !(cf instanceof XAConnectionFactory))
       {
@@ -992,7 +992,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             {
                JMSBridgeImpl.log.trace("Creating a non XA connection");
             }
-            conn = cf.createConnection();
+            conn = ((ConnectionFactory)cf).createConnection();
          }
       }
       else
@@ -1011,7 +1011,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             {
                JMSBridgeImpl.log.trace("Creating a non XA connection");
             }
-            conn = cf.createConnection(username, password);
+            conn = ((ConnectionFactory)cf).createConnection(username, password);
          }
       }
 

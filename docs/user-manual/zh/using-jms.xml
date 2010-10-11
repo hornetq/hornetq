@@ -72,6 +72,77 @@
                  <literal>hornetq-configuration.xml</literal> 中。它定义了采用何种传输与服务器连接。</para>
         </note>
     </section>
+    <section id="using-jms.configure.factory.types">
+        <title>连接工厂的类型</title>
+        <para>在JMS API文档中有几种不同类型的连接工厂供用户使用。HornetQ为用户提供了配置连接工厂类型的参数。用户可以通过
+              配置连接工厂的”signature"属性和"xa"参数来得到想要的类型。“singature"属性是字符串类型，它有三个可选值：
+              <emphasis>generic</emphasis>、<emphasis>queue</emphasis>和<emphasis>topic</emphasis>; 
+              <literal>xa</literal>是一个布尔型参数。下表给出了不同类型连接工厂对应的配置值：</para>
+        <table frame="topbot" id="using-jms.table.configure.factory.types">
+                <title>连接工厂类型的配置</title>
+                <tgroup cols="3">
+                    <colspec colname="signature" colnum="1"/>
+                    <colspec colname="xa" colnum="2"/>
+                    <colspec colname="cftype" colnum="3"/>
+                    <thead>
+                        <row>
+                            <entry>signature</entry>
+                            <entry>xa</entry>
+                            <entry>连接工厂的类型</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>generic (默认)</entry>
+                            <entry>false (默认)</entry>
+                            <entry>javax.jms.ConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>generic</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XAConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>queue</entry>
+                            <entry>false</entry>
+                            <entry>javax.jms.QueueConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>queue</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XAQueueConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>topic</entry>
+                            <entry>false</entry>
+                            <entry>javax.jms.TopicConnectionFactory</entry>
+                        </row>
+                        <row>
+                            <entry>topic</entry>
+                            <entry>true</entry>
+                            <entry>javax.jms.XATopicConnectionFactory</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para>下面的例子配置了一个XAQueueConnectionFactory:</para>
+        <programlisting>
+&lt;configuration xmlns="urn:hornetq" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
+    
+    &lt;connection-factory name="ConnectionFactory" signature="queue"&gt;
+        &lt;xa>true&lt;/xa>
+        &lt;connectors>
+           &lt;connector-ref connector-name="netty"/&gt;
+        &lt;/connectors>
+        &lt;entries&gt;
+            &lt;entry name="ConnectionFactory"/&gt;           
+        &lt;/entries&gt;
+    &lt;/connection-factory&gt;
+&lt;/configuration&gt; 
+        </programlisting>
+    </section>
     <section>
         <title>JNDI的配置</title>
         <para>当客户端使用JNDI时需要定义一些JNDI的参数。这些参数主要用来确定JNDI服务的地址。这些参数通常保存在

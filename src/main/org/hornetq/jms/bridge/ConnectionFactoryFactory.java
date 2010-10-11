@@ -13,8 +13,6 @@
 
 package org.hornetq.jms.bridge;
 
-import javax.jms.ConnectionFactory;
-
 /**
  * A ConnectionFactoryFactory
  *
@@ -26,5 +24,5 @@ import javax.jms.ConnectionFactory;
  */
 public interface ConnectionFactoryFactory
 {
-   ConnectionFactory createConnectionFactory() throws Exception;
+   Object createConnectionFactory() throws Exception;
 }

@@ -15,8 +15,6 @@ package org.hornetq.jms.bridge.impl;
 
 import java.util.Hashtable;
 
-import javax.jms.ConnectionFactory;
-
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 
 
@@ -36,9 +34,9 @@ public class JNDIConnectionFactoryFactory extends JNDIFactorySupport implements 
       super(jndiProperties, lookup);
    }
 
-   public ConnectionFactory createConnectionFactory() throws Exception
+   public Object createConnectionFactory() throws Exception
    {
-      return (ConnectionFactory)createObject();
+      return createObject();
    }
 
 }

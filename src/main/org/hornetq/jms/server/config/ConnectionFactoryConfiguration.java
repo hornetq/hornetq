@@ -19,6 +19,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A ConnectionFactoryConfiguration
@@ -202,4 +203,8 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    String getGroupID();
 
    void setGroupID(String groupID);
+
+   void setFactoryType(JMSFactoryType factType);
+   
+   JMSFactoryType getFactoryType();
 }

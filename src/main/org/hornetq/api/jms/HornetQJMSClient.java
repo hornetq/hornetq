@@ -23,6 +23,13 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.jms.client.HornetQQueueConnectionFactory;
+import org.hornetq.jms.client.HornetQTopicConnectionFactory;
+import org.hornetq.jms.client.HornetQXAConnectionFactory;
+import org.hornetq.jms.client.HornetQXAQueueConnectionFactory;
+import org.hornetq.jms.client.HornetQXATopicConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A utility class for creating HornetQ client-side JMS managed resources.
@@ -49,9 +56,9 @@ public class HornetQJMSClient
     * @param sessionFactory The underlying ClientSessionFactory to use.
     * @return The HornetQConnectionFactory.
     */
-   public static HornetQConnectionFactory createConnectionFactory(final ClientSessionFactory sessionFactory)
+   public static HornetQJMSConnectionFactory createConnectionFactory(final ClientSessionFactory sessionFactory)
    {
-      return new HornetQConnectionFactory(sessionFactory);
+      return new HornetQJMSConnectionFactory(sessionFactory);
    }
 
    /**
@@ -59,11 +66,38 @@ public class HornetQJMSClient
     *
     * @param discoveryAddress The address to use for discovery.
     * @param discoveryPort The port to use for discovery.
+    * @param jmsFactoryType 
     * @return The HornetQConnectionFactory.
     */
-   public static HornetQConnectionFactory createConnectionFactory(final String discoveryAddress, final int discoveryPort)
+   public static HornetQConnectionFactory createConnectionFactory(final String discoveryAddress, final int discoveryPort, JMSFactoryType jmsFactoryType)
    {
-      return new HornetQConnectionFactory(discoveryAddress, discoveryPort);
+      HornetQConnectionFactory factory = null;
+      if (jmsFactoryType.equals(JMSFactoryType.CF))
+      {
+         factory = new HornetQJMSConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_CF))
+      {
+         factory = new HornetQQueueConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_CF))
+      {
+         factory = new HornetQTopicConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.XA_CF))
+      {
+         factory = new HornetQXAConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_XA_CF))
+      {
+         factory = new HornetQXAQueueConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_XA_CF))
+      {
+         factory = new HornetQXATopicConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      
+      return factory;
    }
 
    /**
@@ -72,22 +106,75 @@ public class HornetQJMSClient
     * @param staticConnectors The list of TransportConfiguration to use.
     * @return The HornetQConnectionFactory.
     */
-   public static HornetQConnectionFactory createConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public static HornetQConnectionFactory createConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors, 
+                                                                  final JMSFactoryType jmsFactoryType)
    {
-      return new HornetQConnectionFactory(staticConnectors);
+      HornetQConnectionFactory factory = null;
+      if (jmsFactoryType.equals(JMSFactoryType.CF))
+      {
+         factory = new HornetQJMSConnectionFactory(staticConnectors);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_CF))
+      {
+         factory = new HornetQQueueConnectionFactory(staticConnectors);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_CF))
+      {
+         factory = new HornetQTopicConnectionFactory(staticConnectors);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.XA_CF))
+      {
+         factory = new HornetQXAConnectionFactory(staticConnectors);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_XA_CF))
+      {
+         factory = new HornetQXAQueueConnectionFactory(staticConnectors);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_XA_CF))
+      {
+         factory = new HornetQXATopicConnectionFactory(staticConnectors);
+      }
+      
+      return factory;
    }
 
    /**
     * Creates a HornetQConnectionFactory using a single pair of live-backup TransportConfiguration.
     *
-    * @param connectorConfig The TransportConfiguration of the server to connect to.
-    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to. can be null.
+    * @param connectorConfigs The TransportConfiguration of the server to connect to.
     * @return The HornetQConnectionFactory.
     */
    public static HornetQConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConnectorConfig)
+                                                                  final TransportConfiguration backupConnectorConfig,
+                                                                  final JMSFactoryType jmsFactoryType)
    {
-      return new HornetQConnectionFactory(connectorConfig, backupConnectorConfig);
+      HornetQConnectionFactory factory = null;
+      if (jmsFactoryType.equals(JMSFactoryType.CF))
+      {
+         factory = new HornetQJMSConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_CF))
+      {
+         factory = new HornetQQueueConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_CF))
+      {
+         factory = new HornetQTopicConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.XA_CF))
+      {
+         factory = new HornetQXAConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_XA_CF))
+      {
+         factory = new HornetQXAQueueConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_XA_CF))
+      {
+         factory = new HornetQXATopicConnectionFactory(connectorConfig, backupConnectorConfig);
+      }
+      
+      return factory;
    }
 
    /**
@@ -96,9 +183,14 @@ public class HornetQJMSClient
     * @param connectorConfig The TransportConfiguration of the server.
     * @return The HornetQConnectionFactory.
     */
-   public static HornetQConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig)
+   public static HornetQJMSConnectionFactory createConnectionFactory(final TransportConfiguration connectorConfig)
    {
-      return new HornetQConnectionFactory(connectorConfig);
+      return new HornetQJMSConnectionFactory(connectorConfig);
+   }
+
+   public static HornetQXAConnectionFactory createXAConnectionFactory(final TransportConfiguration connectorConfig)
+   {
+      return new HornetQXAConnectionFactory(connectorConfig);
    }
 
    /**

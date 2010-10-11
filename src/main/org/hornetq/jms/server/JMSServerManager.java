@@ -25,6 +25,7 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.spi.core.naming.BindingRegistry;
 
 /**
@@ -170,7 +171,7 @@ public interface JMSServerManager extends HornetQComponent
                                 TransportConfiguration backupTC,
                                 String ... bindings) throws Exception;
 
-   void createConnectionFactory(String name, TransportConfiguration liveTC, String ... bindings) throws Exception;
+   void createConnectionFactory(String name, TransportConfiguration liveTC, JMSFactoryType cfType, String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
                                 String clientID,
@@ -222,6 +223,7 @@ public interface JMSServerManager extends HornetQComponent
                                 boolean failoverOnInitialConnection,
                                 boolean failoverOnServerShutdown,
                                 String groupId,
+                                JMSFactoryType factoryType,
                                 String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
