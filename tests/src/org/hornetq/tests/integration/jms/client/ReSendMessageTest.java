@@ -34,6 +34,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSConstants;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -328,6 +329,7 @@ public class ReSendMessageTest extends JMSTestBase
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                         failoverOnServerShutdown,
                                         null,
+                                        JMSFactoryType.CF,
                                         jndiBindings);
    }
 

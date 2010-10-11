@@ -22,6 +22,10 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.jms.client.HornetQQueueConnectionFactory;
+import org.hornetq.jms.client.HornetQTopicConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -32,7 +36,11 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 public class JMSTestCase extends HornetQServerTestCase
 {
 
-   protected static HornetQConnectionFactory cf;
+   protected static HornetQJMSConnectionFactory cf;
+
+   protected static HornetQQueueConnectionFactory queueCf;
+
+   protected static HornetQTopicConnectionFactory topicCf;
 
    protected static InitialContext ic;
 
@@ -91,9 +99,80 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                                     HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     null,
+                                                    JMSFactoryType.CF,
                                                     "/testsuitecf");
 
-      JMSTestCase.cf = (HornetQConnectionFactory)getInitialContext().lookup("/testsuitecf");
+      getJmsServerManager().createConnectionFactory("testsuitecf_queue",
+                                                    connectorConfigs,
+                                                    null,
+                                                    HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                    HornetQClient.DEFAULT_CONNECTION_TTL,
+                                                    HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                                    HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                                    HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                                                    HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                                                    true,
+                                                    true,
+                                                    true,
+                                                    HornetQClient.DEFAULT_AUTO_GROUP,
+                                                    HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                                                    HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                    HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                    HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                    HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                                                    HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                    HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                    HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                                    HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                    HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                                                    HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                                                    HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
+                                                    HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                    null,
+                                                    JMSFactoryType.QUEUE_CF,
+                                                    "/testsuitecf_queue");
+
+      getJmsServerManager().createConnectionFactory("testsuitecf_topic",
+                                                    connectorConfigs,
+                                                    null,
+                                                    HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                    HornetQClient.DEFAULT_CONNECTION_TTL,
+                                                    HornetQClient.DEFAULT_CALL_TIMEOUT,
+                                                    HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                                    HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
+                                                    HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                    HornetQClient.DEFAULT_PRODUCER_MAX_RATE,
+                                                    true,
+                                                    true,
+                                                    true,
+                                                    HornetQClient.DEFAULT_AUTO_GROUP,
+                                                    HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
+                                                    HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                                    HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                    HornetQClient.DEFAULT_ACK_BATCH_SIZE,
+                                                    HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
+                                                    HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                                    HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
+                                                    HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                                    HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                    HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
+                                                    HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
+                                                    HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
+                                                    HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
+                                                    null,
+                                                    JMSFactoryType.TOPIC_CF,
+                                                    "/testsuitecf_topic");
+
+      JMSTestCase.cf = (HornetQJMSConnectionFactory)getInitialContext().lookup("/testsuitecf");
+      JMSTestCase.queueCf = (HornetQQueueConnectionFactory)getInitialContext().lookup("/testsuitecf_queue");
+      JMSTestCase.topicCf = (HornetQTopicConnectionFactory)getInitialContext().lookup("/testsuitecf_topic");
 
       assertRemainingMessages(0);
    }

@@ -129,7 +129,19 @@ public class HornetQAdmin implements Admin
 
    public void createQueueConnectionFactory(final String name)
    {
-      createConnectionFactory(name);
+      try
+      {
+         invokeSyncOperation(ResourceNames.JMS_SERVER,
+                             "createQueueConnectionFactory",
+                             name,
+                             NettyConnectorFactory.class.getName(),
+                             new HashMap<String, Object>(),
+                             new String[] { name });
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
 
    public void createTopic(final String name)
@@ -148,7 +160,19 @@ public class HornetQAdmin implements Admin
 
    public void createTopicConnectionFactory(final String name)
    {
-      createConnectionFactory(name);
+      try
+      {
+         invokeSyncOperation(ResourceNames.JMS_SERVER,
+                             "createTopicConnectionFactory",
+                             name,
+                             NettyConnectorFactory.class.getName(),
+                             new HashMap<String, Object>(),
+                             new String[] { name });
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
 
    public void deleteConnectionFactory(final String name)

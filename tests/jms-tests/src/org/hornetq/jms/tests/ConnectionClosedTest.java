@@ -66,8 +66,8 @@ public class ConnectionClosedTest extends JMSTestCase
    /** See TCK test: topicconntests.connNotStartedTopicTest */
    public void testCannotReceiveMessageOnStoppedConnection() throws Exception
    {
-      TopicConnection conn1 = ((TopicConnectionFactory)JMSTestCase.cf).createTopicConnection();
-      TopicConnection conn2 = ((TopicConnectionFactory)JMSTestCase.cf).createTopicConnection();
+      TopicConnection conn1 = ((TopicConnectionFactory)JMSTestCase.topicCf).createTopicConnection();
+      TopicConnection conn2 = ((TopicConnectionFactory)JMSTestCase.topicCf).createTopicConnection();
 
       TopicSession sess1 = conn1.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
       TopicSession sess2 = conn2.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);

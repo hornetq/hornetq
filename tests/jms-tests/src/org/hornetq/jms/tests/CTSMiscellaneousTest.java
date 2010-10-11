@@ -25,6 +25,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * Safeguards for previously detected TCK failures.
@@ -95,6 +96,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
                                                        HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                                        HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                        null,
+                                                       JMSFactoryType.CF,
                                                        "/StrictTCKConnectionFactory");
 
          CTSMiscellaneousTest.cf = (HornetQConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");

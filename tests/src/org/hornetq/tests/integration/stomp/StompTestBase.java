@@ -47,7 +47,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
@@ -161,7 +161,7 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected ConnectionFactory createConnectionFactory()
    {
-      return new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      return new HornetQJMSConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
    }
 
    protected Socket createSocket() throws IOException

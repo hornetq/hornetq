@@ -499,7 +499,7 @@ public class JMSXDeliveryCountTest extends HornetQServerTestCase
 
          producer.send(tm);
 
-         xaConn = ((XAConnectionFactory)getConnectionFactory()).createXAConnection();
+         xaConn = ((XAConnectionFactory)getXAConnectionFactory()).createXAConnection();
 
          XASession consumerSess = xaConn.createXASession();
          MessageConsumer consumer = consumerSess.createConsumer(HornetQServerTestCase.queue1);

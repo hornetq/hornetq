@@ -33,6 +33,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.jms.HornetQJMSConstants;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 import org.hornetq.jms.client.HornetQMessage;
@@ -1444,10 +1445,18 @@ public class JMSBridgeTest extends BridgeTestBase
 
       Thread t = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+         factInUse1 = cff1xa;
+      }
+
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,
@@ -1530,10 +1539,18 @@ public class JMSBridgeTest extends BridgeTestBase
 
       Thread t = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+         factInUse1 = cff1xa;
+      }
+
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,
@@ -1617,10 +1634,16 @@ public class JMSBridgeTest extends BridgeTestBase
 
       Thread t = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+      }
+
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff0,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
                                     null,
@@ -1699,12 +1722,19 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+         factInUse1 = cff1xa;
+      }
       try
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,
@@ -1770,12 +1800,18 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+      }
+
       try
       {
          final int NUM_MESSAGES = 10;
 
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff0,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
                                     null,
@@ -1840,14 +1876,22 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+         factInUse1 = cff1xa;
+      }
+
       try
       {
          final long MAX_BATCH_TIME = 3000;
 
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
 
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,
@@ -1894,14 +1938,20 @@ public class JMSBridgeTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+      }
+
       try
       {
          final long MAX_BATCH_TIME = 3000;
 
          final int MAX_BATCH_SIZE = 100000; // something big so it won't reach it
 
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff0,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse0,
                                     sourceQueueFactory,
                                     localTargetQueueFactory,
                                     null,

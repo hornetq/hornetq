@@ -35,6 +35,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -159,6 +160,7 @@ public class FloodServerTest extends UnitTestCase
                                             HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                             failoverOnServerShutdown,
                                             null,
+                                            JMSFactoryType.CF,
                                             "/cf");
    }
 

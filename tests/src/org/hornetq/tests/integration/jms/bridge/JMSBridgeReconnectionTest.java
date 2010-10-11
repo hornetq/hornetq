@@ -18,6 +18,7 @@ import java.lang.management.ThreadInfo;
 import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 
@@ -196,10 +197,18 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
    {
       JMSBridgeImpl bridge = null;
 
+      ConnectionFactoryFactory factInUse0 = cff0;
+      ConnectionFactoryFactory factInUse1 = cff1;
+      if (qosMode.equals(QualityOfServiceMode.ONCE_AND_ONLY_ONCE))
+      {
+         factInUse0 = cff0xa;
+         factInUse1 = cff1xa;
+      }
+
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(factInUse0,
+                                    factInUse1,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,
@@ -290,8 +299,8 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
       try
       {
-         bridge = new JMSBridgeImpl(cff0,
-                                    cff1,
+         bridge = new JMSBridgeImpl(cff0xa,
+                                    cff1xa,
                                     sourceQueueFactory,
                                     targetQueueFactory,
                                     null,

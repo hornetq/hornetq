@@ -19,7 +19,7 @@ import javax.jms.Message;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 
 /**
  * A GroupIDTest
@@ -34,7 +34,7 @@ public class GroupIDTest extends GroupingTest
    @Override
    protected ConnectionFactory getCF() throws Exception
    {
-      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      HornetQJMSConnectionFactory cf = HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       
       cf.setGroupID("wibble");
       

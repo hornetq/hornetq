@@ -318,12 +318,12 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    public TopicConnectionFactory getTopicConnectionFactory() throws Exception
    {
-      return (TopicConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
+      return (TopicConnectionFactory)getInitialContext().lookup("/CF_TOPIC");
    }
 
    public XAConnectionFactory getXAConnectionFactory() throws Exception
    {
-      return (XAConnectionFactory)getInitialContext().lookup("/ConnectionFactory");
+      return (XAConnectionFactory)getInitialContext().lookup("/CF_XA_TRUE");
    }
 
    public InitialContext getInitialContext(final int serverid) throws Exception

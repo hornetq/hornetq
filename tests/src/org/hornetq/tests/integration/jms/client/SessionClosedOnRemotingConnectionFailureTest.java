@@ -34,6 +34,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -97,6 +98,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                         false,
                                         null,
+                                        JMSFactoryType.CF,
                                         "/cffoo");
 
       cf = (ConnectionFactory)context.lookup("/cffoo");

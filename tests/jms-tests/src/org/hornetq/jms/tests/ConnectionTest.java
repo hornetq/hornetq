@@ -211,7 +211,7 @@ public class ConnectionTest extends JMSTestCase
     */
    public void testQueueConnection1() throws Exception
    {
-      QueueConnectionFactory qcf = JMSTestCase.cf;
+      QueueConnectionFactory qcf = JMSTestCase.queueCf;
 
       QueueConnection qc = qcf.createQueueConnection();
 
@@ -225,7 +225,7 @@ public class ConnectionTest extends JMSTestCase
     */
    public void testQueueConnection2() throws Exception
    {
-      TopicConnectionFactory tcf = JMSTestCase.cf;
+      TopicConnectionFactory tcf = JMSTestCase.topicCf;
 
       TopicConnection tc = tcf.createTopicConnection();
 
@@ -280,7 +280,7 @@ public class ConnectionTest extends JMSTestCase
     */
    public void testDurableSubscriberOnQueueConnection() throws Exception
    {
-      QueueConnection queueConnection = ((QueueConnectionFactory)JMSTestCase.cf).createQueueConnection();
+      QueueConnection queueConnection = ((QueueConnectionFactory)JMSTestCase.queueCf).createQueueConnection();
 
       try
       {

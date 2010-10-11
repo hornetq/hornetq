@@ -38,6 +38,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.jboss.kernel.plugins.config.property.PropertyKernelConfig;
 
 /**
@@ -321,6 +322,7 @@ public class LocalTestServer implements Server, Runnable
                                                     HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                                     HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     null,
+                                                    JMSFactoryType.CF,
                                                     jndiBindings);
    }
 

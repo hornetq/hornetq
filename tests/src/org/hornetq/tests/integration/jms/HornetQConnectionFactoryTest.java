@@ -28,6 +28,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -172,7 +173,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testDiscoveryConstructor() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(groupAddress, groupPort);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(groupAddress, groupPort, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
                           groupAddress,
@@ -219,7 +220,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                                                                                                                             backupTC);
       staticConnectors.add(pair0);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(staticConnectors);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(staticConnectors, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -267,7 +268,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                                                                                                                             backupTC);
       staticConnectors.add(pair0);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC, backupTC);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(liveTC, backupTC, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,

@@ -30,6 +30,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -175,6 +176,7 @@ public class DivertAndACKClientTest extends JMSTestBase
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
                                         failoverOnServerShutdown,
                                         null,
+                                        JMSFactoryType.CF,
                                         jndiBindings);
    }
 

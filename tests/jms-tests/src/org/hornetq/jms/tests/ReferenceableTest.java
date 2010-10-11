@@ -27,6 +27,7 @@ import javax.naming.Referenceable;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
@@ -88,7 +89,7 @@ public class ReferenceableTest extends JMSTestCase
 
       ProxyAssertSupport.assertTrue(instance instanceof HornetQConnectionFactory);
 
-      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
+      HornetQJMSConnectionFactory cf2 = (HornetQJMSConnectionFactory)instance;
 
       simpleSendReceive(cf2, HornetQServerTestCase.queue1);
    }
