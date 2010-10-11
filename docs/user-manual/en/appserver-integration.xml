@@ -28,7 +28,7 @@
         outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
-    <section>
+    <section id="configuring-mdbs">
         <title>Configuring Message-Driven Beans</title>
         <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
             a configuration file <literal>ra.xml</literal> which can be found under the <literal
@@ -978,6 +978,202 @@ private ConnectionFactory connectionFactory;</programlisting>
 
           </section>
        </section>
+    </section>
+    <section>
+        <title>Configuring the JBoss Application Server to connect to Remote HornetQ Server</title>
+        <para>This is a step by step guide on how to configure a JBoss application server that doesn't have HornetQ installed
+            to use a remote instance of HornetQ</para>
+        <section>
+            <title>Configuring Jboss 5</title>
+            <para>Firstly download and install JBoss AS 5 as per the JBoss installation guide and HornetQ as per the
+                HornetQ installation guide. After thatt he following steps are required</para>
+            <itemizedlist>
+                <listitem>
+                    <para>Copy the following jars from the HornetQ distribution to the <literal>lib</literal> directory of
+                    which ever JBossAs configuration you have chosen, i.e. <literal>default</literal>.</para>
+                    <itemizedlist>
+                        <listitem>
+                            <para>hornetq-core-client.jar</para>
+                        </listitem>
+                        <listitem>
+                            <para>hornetq-jms-client.jar</para>
+                        </listitem>
+                        <listitem>
+                            <para>hornetq-ra.jar (this can be found inside the <literal>hornetq-ra.rar</literal> archive)</para>
+                        </listitem>
+                        <listitem>
+                            <para>netty.jar</para>
+                        </listitem>
+                    </itemizedlist>
+                </listitem>
+                <listitem>
+                    <para>create the directories <literal>hornetq-ra.rar</literal> and <literal>hornetq-ra.rar/META-INF</literal>
+                        under the <literal>deploy</literal> directory in your JBoss config directory</para>
+                </listitem>
+                <listitem>
+                    <para>under the <literal>hornetq-ra.rar/META-INF</literal> create a <literal>ra.xml</literal> file or
+                    copy it from the HornetQ distribution (again it can be found in the <literal>hornetq-ra.rar</literal> archive)
+                    and configure it as follows</para>
+                    <programlisting>
+                        &lt;?xml version="1.0" encoding="UTF-8"?>
+
+                        &lt;connector xmlns="http://java.sun.com/xml/ns/j2ee"
+                                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                                   xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+                                   http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+                                   version="1.5">
+
+                           &lt;description>HornetQ 2.0 Resource Adapter Alternate Configuration&lt;/description>
+                           &lt;display-name>HornetQ 2.0 Resource Adapter Alternate Configuration&lt;/display-name>
+
+                           &lt;vendor-name>Red Hat Middleware LLC&lt;/vendor-name>
+                           &lt;eis-type>JMS 1.1 Server&lt;/eis-type>
+                           &lt;resourceadapter-version>1.0&lt;/resourceadapter-version>
+
+                           &lt;license>
+                              &lt;description>
+                        Copyright 2009 Red Hat, Inc.
+                         Red Hat licenses this file to you under the Apache License, version
+                         2.0 (the "License"); you may not use this file except in compliance
+                         with the License.  You may obtain a copy of the License at
+                           http://www.apache.org/licenses/LICENSE-2.0
+                         Unless required by applicable law or agreed to in writing, software
+                         distributed under the License is distributed on an "AS IS" BASIS,
+                         WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+                         implied.  See the License for the specific language governing
+                         permissions and limitations under the License.
+                              &lt;/description>
+                              &lt;license-required>true&lt;/license-required>
+                           &lt;/license>
+
+                           &lt;resourceadapter>
+                              &lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
+                              &lt;config-property>
+                                 &lt;description>The transport type&lt;/description>
+                                 &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+                                 &lt;config-property-type>java.lang.String&lt;/config-property-type>
+                                 &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
+                              &lt;/config-property>
+                              &lt;config-property>
+                                 &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+                                 &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+                                 &lt;config-property-type>java.lang.String&lt;/config-property-type>
+                                 <emphasis role="bold"> &lt;config-property-value>host=127.0.0.1;port=5445&lt;/config-property-value></emphasis>
+                              &lt;/config-property>
+
+                              &lt;outbound-resourceadapter>
+                                 &lt;connection-definition>
+                                    &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnectionFactory&lt;/managedconnectionfactory-class>
+
+                                    &lt;config-property>
+                                       &lt;description>The default session type&lt;/description>
+                                       &lt;config-property-name>SessionDefaultType&lt;/config-property-name>
+                                       &lt;config-property-type>java.lang.String&lt;/config-property-type>
+                                       &lt;config-property-value>javax.jms.Queue&lt;/config-property-value>
+                                    &lt;/config-property>
+                                    &lt;config-property>
+                                       &lt;description>Try to obtain a lock within specified number of seconds; less than or equal to 0 disable this functionality&lt;/description>
+                                       &lt;config-property-name>UseTryLock&lt;/config-property-name>
+                                       &lt;config-property-type>java.lang.Integer&lt;/config-property-type>
+                                       &lt;config-property-value>0&lt;/config-property-value>
+                                    &lt;/config-property>
+
+                                    &lt;connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory&lt;/connectionfactory-interface>
+                                    &lt;connectionfactory-impl-class>org.hornetq.ra.HornetQRAConnectionFactoryImpl&lt;/connectionfactory-impl-class>
+                                    &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
+                                    &lt;connection-impl-class>org.hornetq.ra.HornetQRASession&lt;/connection-impl-class>
+                                 &lt;/connection-definition>
+                                 &lt;transaction-support>XATransaction&lt;/transaction-support>
+                                 &lt;authentication-mechanism>
+                                    &lt;authentication-mechanism-type>BasicPassword&lt;/authentication-mechanism-type>
+                                    &lt;credential-interface>javax.resource.spi.security.PasswordCredential&lt;/credential-interface>
+                                 &lt;/authentication-mechanism>
+                                 &lt;reauthentication-support>false&lt;/reauthentication-support>
+                              &lt;/outbound-resourceadapter>
+
+                              &lt;inbound-resourceadapter>
+                                 &lt;messageadapter>
+                                    &lt;messagelistener>
+                                       &lt;messagelistener-type>javax.jms.MessageListener&lt;/messagelistener-type>
+                                       &lt;activationspec>
+                                          &lt;activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec&lt;/activationspec-class>
+                                          &lt;required-config-property>
+                                              &lt;config-property-name>destination&lt;/config-property-name>
+                                          &lt;/required-config-property>
+                                       &lt;/activationspec>
+                                    &lt;/messagelistener>
+                                 &lt;/messageadapter>
+                              &lt;/inbound-resourceadapter>
+
+                           &lt;/resourceadapter>
+                        &lt;/connector>
+
+                    </programlisting>
+                    <para>The important part of this configuration is the part in bold, i.e. &lt;config-property-value>host=127.0.0.1;port=5445&lt;/config-property-value>.
+                    This should be configured to the host and port of the remote HornetQ server.</para>
+                </listitem>
+            </itemizedlist>
+            <para>At this point you should be able to now deploy MDB's that consume from the remote server. You will however,
+                have to make sure that your MDB's have the annotation <literal>@ResourceAdapter("hornetq-ra.rar")</literal>
+            added, this is illustrated in the <xref linkend="configuring-mdbs">Configuring Message-Driven Beans</xref> section.
+            If you don't want to add this annotation then you can delete the generic resource adapter <literal>jms-ra.rar</literal>
+            and rename the <literal>hornetq-ra.rar</literal> to this.</para>
+            <para>If you also want to use the remote HornetQ server for outgoing connections, i.e. sending messages, then
+            do the following:</para>
+            <itemizedlist>
+                <listitem>
+                    <para>Create a file called <literal>hornetq-ds.xml</literal> in the <literal>deploy</literal> directory
+                    (in fact you can call this anything you want as long as it ends in <literal>-ds.xml</literal>). Then
+                        add the following:</para>
+                    <programlisting>
+                       &lt;connection-factories>
+                       &lt;!--
+                        JMS XA Resource adapter, use this for outbound JMS connections.
+                        Inbound connections are defined at the @MDB activation or at the resource-adapter properties.
+                       -->
+                       &lt;tx-connection-factory>
+                          &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
+                          &lt;xa-transaction/>
+                          &lt;rar-name>hornetq-ra.rar&lt;/rar-name>
+                          &lt;connection-definition>org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition>
+                          &lt;config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic&lt;/config-property>
+                          &lt;config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property>
+                          &lt;config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5445&lt;/config-property>
+                          &lt;max-pool-size>20&lt;/max-pool-size>
+                       &lt;/tx-connection-factory>
+
+
+                    &lt;/connection-factories>
+                    </programlisting>
+                    <para>Again you will see that the host and port are configured here to match the remote HornetQ servers
+                        configuration. The other important attributes are:</para>
+                    <itemizedlist>
+                        <listitem>
+                            <para>jndi-name - This is the name used to look up the JMS connection factory from within your JEE client</para>
+                        </listitem>
+                        <listitem>
+                            <para>rar-name - This should match the directory that you created to hold the Resource Adapter
+                            configuration</para>
+                        </listitem>
+                    </itemizedlist>
+                </listitem>
+            </itemizedlist>
+            <para>Now you should be able to send messages using the JCA JMS connection pooling within an XA transaction.</para>
+        </section>
+        <section>
+            <title>Configuring Jboss 5</title>
+            <para>The steps to do this are exactly the same as for JBoss 4, you will have to create a jboss.xml definition
+                file for your MDB with the following entry</para>
+            <programlisting>
+                     &lt;message-driven>
+                         &lt;ejb-name>MyMDB&lt;/ejb-name>
+                         &lt;resource-adapter-name>jms-ra.rar&lt;/resource-adapter-name>
+                      &lt;/message-driven>
+            </programlisting>
+            <para>Also you will need to edit the <literal>standardjboss.xml</literal> and uncomment the section with the
+            following 'Uncomment to use JMS message inflow from jmsra.rar' and then comment out the invoker-proxy-binding
+            called 'message-driven-bean'</para>
+        </section>
     </section>
     <section>
         <title>High Availability JNDI (HA-JNDI)</title>
