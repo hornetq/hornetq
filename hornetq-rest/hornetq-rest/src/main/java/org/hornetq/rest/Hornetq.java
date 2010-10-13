@@ -130,7 +130,7 @@ public class Hornetq
 
    public static <T> T getEntity(ClientMessage msg, Class<T> type, Type genericType, ResteasyProviderFactory factory)
    {
-      int size = msg.getBodyBuffer().readInt();
+      int size = msg.getBodySize();
       if (size <= 0) return null;
 
       byte[] body = new byte[size];

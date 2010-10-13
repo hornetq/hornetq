@@ -23,7 +23,7 @@ public class ConsumedHttpMessage extends ConsumedMessage
       buildHeaders(builder);
       if (data == null)
       {
-         int size = message.getBodyBuffer().readInt();
+         int size = message.getBodySize();
          if (size > 0)
          {
             data = new byte[size];

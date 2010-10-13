@@ -2,12 +2,18 @@ package org.hornetq.rest;
 
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.rest.util.HttpMessageHelper;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.util.GenericType;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.MessageBodyReader;
+
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Type;
 
 /**
@@ -99,8 +105,12 @@ public class Jms
 
    public static boolean isHttpMessage(Message message)
    {
-      ClientMessage msg = ((HornetQMessage) message).getCoreMessage();
-      return Hornetq.isHttpMessage(msg);
+	   try {
+		   Boolean aBoolean = message.getBooleanProperty(HttpMessageHelper.POSTED_AS_HTTP_MESSAGE);
+		   return aBoolean != null && aBoolean.booleanValue() == true;
+	   } catch (JMSException e) {
+		   return false;
+	   }
    }
 
    /**
@@ -128,8 +138,33 @@ public class Jms
             throw new RuntimeException(e);
          }
       }
-      ClientMessage msg = ((HornetQMessage) message).getCoreMessage();
-      return Hornetq.getEntity(msg, type, genericType, factory);
+      BytesMessage bytesMessage = (BytesMessage)message;
+      
+      try
+      {
+    	  long size = bytesMessage.getBodyLength();
+    	  if (size <= 0) return null;
+
+    	  byte[] body = new byte[(int)size];
+    	  bytesMessage.readBytes(body);
+
+    	  String contentType = message.getStringProperty(HttpHeaderProperty.CONTENT_TYPE);
+    	  if (contentType == null)
+    	  {
+    		  throw new UnknownMediaType("Message did not have a Content-Type header cannot extract entity");
+    	  }
+    	  MediaType ct = MediaType.valueOf(contentType);
+    	  MessageBodyReader<T> reader = factory.getMessageBodyReader(type, genericType, null, ct);
+    	  if (reader == null)
+    	  {
+    		  throw new UnmarshalException("Unable to find a JAX-RS reader for type " + type.getName() + " and media type " + contentType);
+    	  }
+    	  return reader.readFrom(type, genericType, null, ct, null, new ByteArrayInputStream(body));
+      }
+      catch (Exception e)
+      {
+    	  throw new RuntimeException(e);
+      }
    }
 
 }

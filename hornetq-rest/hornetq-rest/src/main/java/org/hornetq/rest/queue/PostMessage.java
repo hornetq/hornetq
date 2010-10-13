@@ -1,6 +1,7 @@
 package org.hornetq.rest.queue;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -218,7 +219,7 @@ public class PostMessage
 
    protected ClientMessage createHornetQMessage(HttpHeaders headers, byte[] body, boolean durable, ClientSession session) throws Exception
    {
-      ClientMessage message = session.createMessage(durable);
+      ClientMessage message = session.createMessage(Message.BYTES_TYPE, durable);
       HttpMessageHelper.writeHttpMessage(headers, body, message);
       return message;
    }

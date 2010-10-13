@@ -35,7 +35,7 @@ public class HttpMessageHelper
          if (headerName == null) continue;
          builder.header(headerName, message.getStringProperty(k));
       }
-      int size = message.getBodyBuffer().readInt();
+      int size = message.getBodySize();
       if (size > 0)
       {
          byte[] body = new byte[size];
@@ -78,7 +78,7 @@ public class HttpMessageHelper
             contentType = value;
          }
       }
-      int size = message.getBodyBuffer().readInt();
+      int size = message.getBodySize();
       if (size > 0)
       {
          byte[] body = new byte[size];
@@ -123,7 +123,6 @@ public class HttpMessageHelper
          }
       }
       message.putBooleanProperty(POSTED_AS_HTTP_MESSAGE, true);
-      message.getBodyBuffer().writeInt(body.length);
       message.getBodyBuffer().writeBytes(body);
    }
 
