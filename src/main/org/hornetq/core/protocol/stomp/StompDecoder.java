@@ -549,14 +549,12 @@ public class StompDecoder
       for (int i = 0; i < data; i++)
       {
          char b = (char)bytes[i];
-
-         if (b == '\n')
+         
+         if (b < 33 || b > 136)
          {
-            str.append("\\n");
-         }
-         else if (b == 0)
-         {
-            str.append("NUL");
+            //Unreadable characters
+            
+            str.append(bytes[i]);
          }
          else
          {
