@@ -449,6 +449,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${build.src.dir}"/>
@@ -493,6 +494,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${build.src.dir}"/>
@@ -531,6 +533,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -551,6 +554,7 @@
 	             deprecation="${javac.deprecation}"
 	             includeAntRuntime="${javac.include.ant.runtime}"
 	             includeJavaRuntime="${javac.include.java.runtime}"
+                     encoding="${javac.encoding}"
 	             failonerror="${javac.fail.onerror}">
 	         <src>
 	            <pathelement path="${src.main.dir}"/>
@@ -571,6 +575,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -591,6 +596,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -611,6 +617,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -632,6 +639,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -652,6 +660,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -672,6 +681,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${src.main.dir}"/>
@@ -692,6 +702,7 @@
              deprecation="${javac.deprecation}"
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
              failonerror="${javac.fail.onerror}">
          <src>
             <pathelement path="${build.src.dir}"/>
@@ -1586,6 +1597,7 @@
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
              failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
              srcdir="${test.src.dir}"
              destdir="${test.classes.dir}">
          <classpath refid="test.compilation.classpath"/>
@@ -1604,6 +1616,7 @@
              includeAntRuntime="true"
              includeJavaRuntime="${javac.include.java.runtime}"
              failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
              srcdir="${test.jms.src.dir}"
              destdir="${test.jms.classes.dir}">
          <classpath refid="jms.test.compilation.classpath"/>
@@ -1622,6 +1635,7 @@
              includeAntRuntime="true"
              includeJavaRuntime="${javac.include.java.runtime}"
              failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
              srcdir="${test.joram.src.dir}"
              destdir="${test.joram.classes.dir}">
           <classpath refid="joram.test.compilation.classpath"/>
