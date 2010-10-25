@@ -584,7 +584,6 @@ class StompProtocolManager implements ProtocolManager
       if (sm != null)
       {
          sm.validateUser(login, passcode);
-         server.getSecurityManager().validateUser(login, passcode);
       }
 
       connection.setLogin(login);
