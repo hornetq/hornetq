@@ -46,19 +46,8 @@
     two different helper classes for this depending on whether your using the
     HornetQ Core API or JMS.</para>
 
-<<<<<<< .mine
     <section>
       <title>Core API Only</title>
-=======
-config.setAcceptorConfigurations(transports);</programlisting>
-        <para>You need to instantiate and start HornetQ server. The class <literal
-                >org.hornetq.api.core.server.HornetQ</literal> has a few static methods for creating
-            servers with common configurations.</para>
-        <programlisting>import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
-            
->>>>>>> .r9629
-
       <para>For instantiating a core HornetQ Server only, the steps are pretty
       simple. The example requires that you have defined a configuration file
       <literal>hornetq-configuration.xml</literal> in your
@@ -66,37 +55,8 @@ import org.hornetq.core.server.HornetQServers;
 
 ...
 
-<<<<<<< .mine
 EmbeddedHornetQ embedded = new EmbeddedHornetQ();
 embedded.start();
-=======
-HornetQServer server = HornetQServers.newHornetQServer(config);
->>>>>>> .r9629
-
-<<<<<<< .mine
-// Assuming you defined an "in-vm" acceptor within your hornetq-configuration.xml file
-=======
-server.start();</programlisting>
-        <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>
-            directly:</para>
-        <programlisting>HornetQServer server = new HornetQServerImpl(config);
-server.start();</programlisting>
-    </section>
-    <section>
-        <title>Dependency Frameworks</title>
-        <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
-                Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
-        <para>HornetQ standalone uses JBoss Micro Container as the injection framework. <literal
-                >HornetQBootstrapServer</literal> and <literal>hornetq-beans.xml</literal> which are
-            part of the HornetQ distribution provide a very complete implementation of what's needed
-            to bootstrap the server using JBoss Micro Container. </para>
-        <para>When using JBoss Micro Container, you need to provide an XML file declaring the
-                <literal>HornetQServer</literal> and <literal>Configuration</literal> object, you
-            can also inject a security manager and a MBean server if you want, but those are
-            optional.</para>
-        <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
-        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
->>>>>>> .r9629
 
 ClientSessionFactory nettyFactory =  HornetQClient.createClientSessionFactory(
                                         new TransportConfiguration(

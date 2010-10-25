@@ -1,12 +1,12 @@
 package org.hornetq.rest.queue;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.rest.util.HttpMessageHelper;
+import org.hornetq.api.core.Message;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;

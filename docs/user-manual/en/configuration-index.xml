@@ -1026,7 +1026,7 @@
                             <entry>generic</entry>
                         </row>
                         <row>
-                            <entry id="configuration.connection-factory.signature">
+                            <entry id="configuration.connection-factory.signature.xa">
                                <link linkend="using-jms.configure.factory.types">connection-factory.xa</link>
                             </entry>
                             <entry>Boolean</entry>
