@@ -1710,8 +1710,10 @@
              timeout="${junit.timeout}">
          <sysproperty key="user.home" value="${user.home}"/>
          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
-      	 <sysproperty key="twitter.username" value="${twitter.username}"/>
-      	 <sysproperty key="twitter.password" value="${twitter.password}"/>
+         <sysproperty key="twitter.consumerKey" value="${twitter.consumerKey}"/>
+         <sysproperty key="twitter.consumerSecret" value="${twitter.consumerSecret}"/>
+         <sysproperty key="twitter.accessToken" value="${twitter.accessToken}"/>
+         <sysproperty key="twitter.accessTokenSecret" value="${twitter.accessTokenSecret}"/>
       	 <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>

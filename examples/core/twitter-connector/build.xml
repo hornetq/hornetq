@@ -19,10 +19,13 @@
    <import file="../../common/build.xml"/>
    <property environment='env'/>
 
-   <target name="check" unless="env.TWITTER_USERNAME">
+   <target name="check" unless="env.TWITTER_CONSUMER_KEY">
       <echo>**************************************************************************</echo>
       <echo>* Please set the twitter account:                                        *</echo>
-      <echo>* ./build.sh -Denv.TWITTER_USERNAME=user -Denv.TWITTER_PASSWORD=password *</echo>
+      <echo>* ./build.sh -Denv.TWITTER_CONSUMER_KEY=consumerKey \                    *</echo>
+      <echo>*             -Denv.TWITTER_CONSUMER_SECRET=consumerSecret \             *</echo>
+      <echo>*             -Denv.TWITTER_ACCESS_TOKEN=accessToken \                   *</echo>
+      <echo>*             -Denv.TWITTER_ACCESS_TOKEN_SECRET=accessTokenSecret        *</echo>
       <echo>**************************************************************************</echo>
       <fail message="run example failed"/>
    </target>
@@ -30,10 +33,11 @@
    <target name="run" depends="check">
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.core.example.TwitterConnectorExample"/>
+         <param name="client.args" value="-Dtwitter.example.alternativeMessage=${env.TWITTER_EXAMPLE_ALTERNATIVE_MESSAGE}"/>
 	 <!-- HTTP proxy settings
          <param name="server.args" value="-Dtwitter4j.http.proxyHost=your.proxy.server -Dtwitter4j.http.proxyPort=your.proxy.port"/>
 	 -->
-         <param name="server.args" value="-Dtwitter.username=${env.TWITTER_USERNAME} -Dtwitter.password=${env.TWITTER_PASSWORD}"/>
+         <param name="server.args" value="-Dtwitter.consumerKey=${env.TWITTER_CONSUMER_KEY} -Dtwitter.consumerSecret=${env.TWITTER_CONSUMER_SECRET} -Dtwitter.accessToken=${env.TWITTER_ACCESS_TOKEN} -Dtwitter.accessTokenSecret=${env.TWITTER_ACCESS_TOKEN_SECRET}"/>
       </antcall>
    </target>
 

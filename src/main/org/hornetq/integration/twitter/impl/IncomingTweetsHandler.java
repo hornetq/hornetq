@@ -23,7 +23,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
-
+import twitter4j.http.AccessToken;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,9 +39,13 @@ public class IncomingTweetsHandler implements ConnectorService
 
    private final String connectorName;
 
-   private final String userName;
+   private final String consumerKey;
 
-   private final String password;
+   private final String consumerSecret;
+
+   private final String accessToken;
+
+   private final String accessTokenSecret;
 
    private final String queueName;
 
@@ -59,17 +63,19 @@ public class IncomingTweetsHandler implements ConnectorService
 
    private final ScheduledExecutorService scheduledPool;
 
-   private ScheduledFuture scheduledFuture;
+   private ScheduledFuture<?> scheduledFuture;
 
-   public IncomingTweetsHandler(final String connectorName, 
+   public IncomingTweetsHandler(final String connectorName,
                                 final Map<String, Object> configuration,
                                 final StorageManager storageManager,
                                 final PostOffice postOffice,
                                 final ScheduledExecutorService scheduledThreadPool)
    {
       this.connectorName = connectorName;
-      this.userName = ConfigurationHelper.getStringProperty(TwitterConstants.USER_NAME, null, configuration);
-      this.password = ConfigurationHelper.getStringProperty(TwitterConstants.PASSWORD, null, configuration);
+      this.consumerKey = ConfigurationHelper.getStringProperty(TwitterConstants.CONSUMER_KEY, null, configuration);
+      this.consumerSecret = ConfigurationHelper.getStringProperty(TwitterConstants.CONSUMER_SECRET, null, configuration);
+      this.accessToken = ConfigurationHelper.getStringProperty(TwitterConstants.ACCESS_TOKEN, null, configuration);
+      this.accessTokenSecret = ConfigurationHelper.getStringProperty(TwitterConstants.ACCESS_TOKEN_SECRET, null, configuration);
       this.queueName = ConfigurationHelper.getStringProperty(TwitterConstants.QUEUE_NAME, null, configuration);
       Integer intervalSeconds = ConfigurationHelper.getIntProperty(TwitterConstants.INCOMING_INTERVAL, 0, configuration);
       if (intervalSeconds > 0)
@@ -95,9 +101,12 @@ public class IncomingTweetsHandler implements ConnectorService
 
       paging = new Paging();
       TwitterFactory tf = new TwitterFactory();
-      this.twitter = tf.getInstance(userName, password);
+      this.twitter = tf.getOAuthAuthorizedInstance(this.consumerKey,
+                                                   this.consumerSecret,
+                                                   new AccessToken(this.accessToken,
+                                                                   this.accessTokenSecret));
       this.twitter.verifyCredentials();
-
+      
       // getting latest ID
       this.paging.setCount(TwitterConstants.FIRST_ATTEMPT_PAGE_SIZE);
       ResponseList<Status> res = this.twitter.getHomeTimeline(paging);

@@ -21,6 +21,7 @@ import org.hornetq.core.server.*;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.utils.ConfigurationHelper;
 import twitter4j.*;
+import twitter4j.http.AccessToken;
 
 import java.util.Map;
 
@@ -34,9 +35,13 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
 
    private final String connectorName;
 
-   private final String userName;
+   private final String consumerKey;
 
-   private final String password;
+   private final String consumerSecret;
+
+   private final String accessToken;
+
+   private final String accessTokenSecret;
 
    private final String queueName;
 
@@ -50,13 +55,15 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
 
    private boolean isStarted = false;
 
-   public OutgoingTweetsHandler(final String connectorName, 
+   public OutgoingTweetsHandler(final String connectorName,
                                 final Map<String, Object> configuration,
                                 final PostOffice postOffice)
    {
       this.connectorName = connectorName;
-      this.userName = ConfigurationHelper.getStringProperty(TwitterConstants.USER_NAME, null, configuration);
-      this.password = ConfigurationHelper.getStringProperty(TwitterConstants.PASSWORD, null, configuration);
+      this.consumerKey = ConfigurationHelper.getStringProperty(TwitterConstants.CONSUMER_KEY, null, configuration);
+      this.consumerSecret = ConfigurationHelper.getStringProperty(TwitterConstants.CONSUMER_SECRET, null, configuration);
+      this.accessToken = ConfigurationHelper.getStringProperty(TwitterConstants.ACCESS_TOKEN, null, configuration);
+      this.accessTokenSecret = ConfigurationHelper.getStringProperty(TwitterConstants.ACCESS_TOKEN_SECRET, null, configuration);
       this.queueName = ConfigurationHelper.getStringProperty(TwitterConstants.QUEUE_NAME, null, configuration);
       this.postOffice = postOffice;
    }
@@ -91,8 +98,12 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
       this.queue = (Queue)b.getBindable();
 
       TwitterFactory tf = new TwitterFactory();
-      this.twitter = tf.getInstance(userName, password);
+      this.twitter = tf.getOAuthAuthorizedInstance(this.consumerKey,
+                                                   this.consumerSecret,
+                                                   new AccessToken(this.accessToken,
+                                                                   this.accessTokenSecret));
       this.twitter.verifyCredentials();
+      
       // TODO make filter-string configurable
       // this.filter = FilterImpl.createFilter(filterString);
       this.filter = null;

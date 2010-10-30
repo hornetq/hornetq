@@ -140,6 +140,7 @@
       <!--<echo>client classpath = ${clientClasspath}</echo>-->
       <property file="${imported.basedir}/config/server.properties"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
+         <jvmarg line="${client.args}"/> 
          <jvmarg value="-Dhornetq.example.server.classpath=${serverclasspath}"/>
          <jvmarg value="-Dhornetq.example.server.args=${server.args}"/>
          <jvmarg value="-Dhornetq.example.logserveroutput=${hornetq.example.logserveroutput}"/>

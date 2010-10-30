@@ -38,6 +38,7 @@ import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import twitter4j.*;
+import twitter4j.http.AccessToken;
 
 /**
  * A TwitterTest
@@ -50,19 +51,23 @@ public class TwitterTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(TwitterTest.class);
    private static final String KEY_CONNECTOR_NAME = "connector.name";
-   private static final String KEY_USERNAME = "username";
-   private static final String KEY_PASSWORD = "password";
+   private static final String KEY_CONSUMER_KEY = "consumerKey";
+   private static final String KEY_CONSUMER_SECRET = "consumerSecret";
+   private static final String KEY_ACCESS_TOKEN = "accessToken";
+   private static final String KEY_ACCESS_TOKEN_SECRET = "accessTokenSecret";
    private static final String KEY_QUEUE_NAME = "queue.name";
    
-   private static final String TWITTER_USERNAME = System.getProperty("twitter.username");
-   private static final String TWITTER_PASSWORD = System.getProperty("twitter.password");
-   
+   private static final String TWITTER_CONSUMER_KEY = System.getProperty("twitter.consumerKey");
+   private static final String TWITTER_CONSUMER_SECRET = System.getProperty("twitter.consumerSecret");
+   private static final String TWITTER_ACCESS_TOKEN = System.getProperty("twitter.accessToken");
+   private static final String TWITTER_ACCESS_TOKEN_SECRET = System.getProperty("twitter.accessTokenSecret");
+
    @Override
    protected void setUp() throws Exception
    {
-      if(TWITTER_USERNAME == null || TWITTER_PASSWORD == null)
+      if(TWITTER_CONSUMER_KEY == null || TWITTER_CONSUMER_SECRET == null || TWITTER_ACCESS_TOKEN == null || TWITTER_ACCESS_TOKEN_SECRET == null)
       {
-         throw new Exception("* * *  Please set twitter.username and twitter.password in system property  * * *");
+         throw new Exception("* * *  Please set twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret in system property  * * *");
       }
       super.setUp();
    }
@@ -101,8 +106,10 @@ public class TwitterTest extends ServiceTestBase
    public void testIncomingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
-      params.put(KEY_USERNAME, "invalidUsername");
-      params.put(KEY_PASSWORD, "invalidPassword");
+      params.put(KEY_CONSUMER_KEY, "invalidConsumerKey");
+      params.put(KEY_CONSUMER_SECRET, "invalidConsumerSecret");
+      params.put(KEY_ACCESS_TOKEN, "invalidAccessToken");
+      params.put(KEY_ACCESS_TOKEN_SECRET, "invalidAcccessTokenSecret");
       internalTestIncomingFailedToInitialize(params);
    }
 
@@ -139,18 +146,14 @@ public class TwitterTest extends ServiceTestBase
    public void testOutgoingWithInvalidCredentials() throws Exception
    {
       HashMap<String,String> params = new HashMap<String,String>();
-      params.put(KEY_USERNAME, "invalidUsername");
-      params.put(KEY_PASSWORD, "invalidPassword");
+      params.put(KEY_CONSUMER_KEY, "invalidConsumerKey");
+      params.put(KEY_CONSUMER_SECRET, "invalidConsumerSecret");
+      params.put(KEY_ACCESS_TOKEN, "invalidAccessToken");
+      params.put(KEY_ACCESS_TOKEN_SECRET, "invalidAcccessTokenSecret");
       internalTestOutgoingFailedToInitialize(params);
    }
    
-   /**
-    *  This will fail until TFJ-347 is fixed.
-    * http://twitter4j.org/jira/browse/TFJ-347
-    * 
-    * @throws Exception
-    */
-   public void _testOutgoingWithInReplyTo() throws Exception
+   public void testOutgoingWithInReplyTo() throws Exception
    {
       internalTestOutgoingWithInReplyTo();
    }
@@ -161,7 +164,10 @@ public class TwitterTest extends ServiceTestBase
       ClientSession session = null;
       String queue = "TwitterTestQueue";
       int interval = 5;
-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+      Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
+                                                                        TWITTER_CONSUMER_SECRET,
+                                                                        new AccessToken(TWITTER_ACCESS_TOKEN,
+                                                                                        TWITTER_ACCESS_TOKEN_SECRET));
       String testMessage = "TwitterTest/incoming: " + System.currentTimeMillis();
       log.debug("test incoming: " + testMessage);
       
@@ -171,8 +177,10 @@ public class TwitterTest extends ServiceTestBase
          HashMap<String, Object> config = new HashMap<String, Object>();
          config.put(TwitterConstants.INCOMING_INTERVAL, interval);
          config.put(TwitterConstants.QUEUE_NAME, queue);
-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+         config.put(TwitterConstants.CONSUMER_KEY, TWITTER_CONSUMER_KEY);
+         config.put(TwitterConstants.CONSUMER_SECRET, TWITTER_CONSUMER_SECRET);
+         config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
+         config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration inconf =
                new ConnectorServiceConfiguration(
                TwitterIncomingConnectorServiceFactory.class.getName(),
@@ -244,21 +252,31 @@ public class TwitterTest extends ServiceTestBase
       HornetQServer server0 = null;
       String connectorName = "test-incoming-connector"; 
       String queue = "TwitterTestQueue";
-      String userName = "invalidUsername";
-      String password = "invalidPassword";
+      String consumerKey = "invalidConsumerKey";
+      String consumerSecret = "invalidConsumerSecret";
+      String accessToken = "invalidAccessToken";
+      String accessTokenSecret = "invalidAccessTokenSecret";
       int interval = 5;
       
       if(params.containsKey(KEY_CONNECTOR_NAME))
       {
          connectorName = params.get(KEY_CONNECTOR_NAME);
       }
-      if(params.containsKey(KEY_USERNAME))
+      if(params.containsKey(KEY_CONSUMER_KEY))
       {
-         userName = params.get(KEY_USERNAME);
+         consumerKey = params.get(KEY_CONSUMER_KEY);
       }
-      if(params.containsKey(KEY_PASSWORD))
+      if(params.containsKey(KEY_CONSUMER_SECRET))
       {
-         password = params.get(KEY_PASSWORD);
+         consumerSecret = params.get(KEY_CONSUMER_SECRET);
+      }
+      if(params.containsKey(KEY_ACCESS_TOKEN))
+      {
+         accessToken = params.get(KEY_ACCESS_TOKEN);
+      }
+      if(params.containsKey(KEY_ACCESS_TOKEN_SECRET))
+      {
+         accessTokenSecret = params.get(KEY_ACCESS_TOKEN_SECRET);
       }
       if(params.containsKey(KEY_QUEUE_NAME))
       {
@@ -271,8 +289,10 @@ public class TwitterTest extends ServiceTestBase
          HashMap<String, Object> config = new HashMap<String, Object>();
          config.put(TwitterConstants.INCOMING_INTERVAL, interval);
          config.put(TwitterConstants.QUEUE_NAME, queue);
-         config.put(TwitterConstants.USER_NAME, userName);
-         config.put(TwitterConstants.PASSWORD, password);
+         config.put(TwitterConstants.CONSUMER_KEY, consumerKey);
+         config.put(TwitterConstants.CONSUMER_SECRET, consumerSecret);
+         config.put(TwitterConstants.ACCESS_TOKEN, accessToken);
+         config.put(TwitterConstants.ACCESS_TOKEN_SECRET, accessTokenSecret);
          ConnectorServiceConfiguration inconf =
                new ConnectorServiceConfiguration(TwitterIncomingConnectorServiceFactory.class.getName(),
                      config,
@@ -306,7 +326,10 @@ public class TwitterTest extends ServiceTestBase
       HornetQServer server0 = null;
       ClientSession session = null;
       String queue = "TwitterTestQueue";
-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+      Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
+                                                                        TWITTER_CONSUMER_SECRET,
+                                                                        new AccessToken(TWITTER_ACCESS_TOKEN,
+                                                                                        TWITTER_ACCESS_TOKEN_SECRET));
       String testMessage = "TwitterTest/outgoing: " + System.currentTimeMillis();
       log.debug("test outgoing: " + testMessage);
 
@@ -315,8 +338,10 @@ public class TwitterTest extends ServiceTestBase
          Configuration configuration = createDefaultConfig(false);
          HashMap<String, Object> config = new HashMap<String, Object>();
          config.put(TwitterConstants.QUEUE_NAME, queue);
-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+         config.put(TwitterConstants.CONSUMER_KEY, TWITTER_CONSUMER_KEY);
+         config.put(TwitterConstants.CONSUMER_SECRET, TWITTER_CONSUMER_SECRET);
+         config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
+         config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration outconf =
                new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,
@@ -388,24 +413,34 @@ public class TwitterTest extends ServiceTestBase
    protected void internalTestOutgoingFailedToInitialize(HashMap<String,String> params) throws Exception
    {
       HornetQServer server0 = null;
-      String connectorName = "test-outgoing-connector"; 
+      String connectorName = "test-outgoing-connector";
       String queue = "TwitterTestQueue";
-      String userName = TWITTER_USERNAME;
-      String password = TWITTER_PASSWORD;
+      String consumerKey = TWITTER_CONSUMER_KEY;
+      String consumerSecret = TWITTER_CONSUMER_SECRET;
+      String accessToken = TWITTER_ACCESS_TOKEN;
+      String accessTokenSecret = TWITTER_ACCESS_TOKEN_SECRET;
       
       if(params.containsKey(KEY_CONNECTOR_NAME))
       {
          connectorName = params.get(KEY_CONNECTOR_NAME);
       }
-      if(params.containsKey(KEY_USERNAME))
+      if (params.containsKey(KEY_CONSUMER_KEY))
       {
-         userName = params.get(KEY_USERNAME);
+         consumerKey = params.get(KEY_CONSUMER_KEY);
       }
-      if(params.containsKey(KEY_PASSWORD))
+      if (params.containsKey(KEY_CONSUMER_SECRET))
       {
-         password = params.get(KEY_PASSWORD);
+         consumerSecret = params.get(KEY_CONSUMER_SECRET);
       }
-      if(params.containsKey(KEY_QUEUE_NAME))
+      if (params.containsKey(KEY_ACCESS_TOKEN))
+      {
+         accessToken = params.get(KEY_ACCESS_TOKEN);
+      }
+      if (params.containsKey(KEY_ACCESS_TOKEN_SECRET))
+      {
+         accessTokenSecret = params.get(KEY_ACCESS_TOKEN_SECRET);
+      }
+      if (params.containsKey(KEY_QUEUE_NAME))
       {
          queue = params.get(KEY_QUEUE_NAME);
       }
@@ -415,12 +450,14 @@ public class TwitterTest extends ServiceTestBase
          Configuration configuration = createDefaultConfig(false);
          HashMap<String, Object> config = new HashMap<String, Object>();
          config.put(TwitterConstants.QUEUE_NAME, queue);
-         config.put(TwitterConstants.USER_NAME, userName);
-         config.put(TwitterConstants.PASSWORD, password);
+         config.put(TwitterConstants.CONSUMER_KEY, consumerKey);
+         config.put(TwitterConstants.CONSUMER_SECRET, consumerSecret);
+         config.put(TwitterConstants.ACCESS_TOKEN, accessToken);
+         config.put(TwitterConstants.ACCESS_TOKEN_SECRET, accessTokenSecret);
          ConnectorServiceConfiguration outconf =
                new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,
-               "test-outgoing-connector");
+               connectorName);
          configuration.getConnectorServiceConfigurations().add(outconf);
          CoreQueueConfiguration qc = new CoreQueueConfiguration(queue, queue, null, false);
          configuration.getQueueConfigurations().add(qc);
@@ -446,16 +483,21 @@ public class TwitterTest extends ServiceTestBase
       HornetQServer server0 = null;
       ClientSession session = null;
       String queue = "TwitterTestQueue";
-      Twitter twitter = new TwitterFactory().getInstance(TWITTER_USERNAME,TWITTER_PASSWORD);
+      Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
+                                                                        TWITTER_CONSUMER_SECRET,
+                                                                        new AccessToken(TWITTER_ACCESS_TOKEN,
+                                                                                        TWITTER_ACCESS_TOKEN_SECRET));
       String testMessage = "TwitterTest/outgoing with in_reply_to: " + System.currentTimeMillis();
-      String replyMessage = "@" + TWITTER_USERNAME + " TwitterTest/outgoing reply: " + System.currentTimeMillis();
+      String replyMessage = "@" + twitter.getScreenName() + " TwitterTest/outgoing reply: " + System.currentTimeMillis();
       try
       {
          Configuration configuration = createDefaultConfig(false);
          HashMap<String, Object> config = new HashMap<String, Object>();
          config.put(TwitterConstants.QUEUE_NAME, queue);
-         config.put(TwitterConstants.USER_NAME, TWITTER_USERNAME);
-         config.put(TwitterConstants.PASSWORD, TWITTER_PASSWORD);
+         config.put(TwitterConstants.CONSUMER_KEY, TWITTER_CONSUMER_KEY);
+         config.put(TwitterConstants.CONSUMER_SECRET, TWITTER_CONSUMER_SECRET);
+         config.put(TwitterConstants.ACCESS_TOKEN, TWITTER_ACCESS_TOKEN);
+         config.put(TwitterConstants.ACCESS_TOKEN_SECRET, TWITTER_ACCESS_TOKEN_SECRET);
          ConnectorServiceConfiguration outconf =
                new ConnectorServiceConfiguration(TwitterOutgoingConnectorServiceFactory.class.getName(),
                      config,

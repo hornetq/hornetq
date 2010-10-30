@@ -44,6 +44,11 @@ public class TwitterConnectorExample extends HornetQExample
       ClientSession session = null;
       try
       {
+         String testMessage = System.currentTimeMillis() + ": " + System.getProperty("twitter.example.alternativeMessage");
+         if(testMessage == null || testMessage.trim().equals("")) {
+            testMessage = System.currentTimeMillis() + ": ### Hello, HornetQ fans!! We are now experiencing so fast, so reliable and so exciting messaging never seen before ;-) ###";
+         }
+
          // Step 1. Create a ClientSessionFactory.
          csf = HornetQClient.createClientSessionFactory (new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
@@ -58,7 +63,6 @@ public class TwitterConnectorExample extends HornetQExample
 
          // Step 5. Create a core message.
          ClientMessage cm = session.createMessage(org.hornetq.api.core.Message.TEXT_TYPE,true);
-         String testMessage = System.currentTimeMillis() + ": ### Hello, HornetQ fans!! We are now experiencing so fast, so reliable and so exciting messaging never seen before ;-) ###";
          cm.getBodyBuffer().writeString(testMessage);
 
          // Step 6. Send a message to queue.outgoingQueue.
@@ -76,13 +80,21 @@ public class TwitterConnectorExample extends HornetQExample
          ClientMessage received = cc.receive(70 * 1000);
          received.acknowledge();
          String receivedText = received.getBodyBuffer().readString();
-         System.out.println("#### Received a message from " + INCOMING_QUEUE + ": " + receivedText);
 
-         if(!receivedText.equals(testMessage))
+         while(!receivedText.equals(testMessage))
          {
-            return false;
+            // ignoring other tweets
+            received = cc.receiveImmediate();
+            if(received == null) {
+               // no other tweets. test message has gone...
+               return false;
+            }
+            
+            received.acknowledge();
+            receivedText = received.getBodyBuffer().readString();
          }
-         
+
+         System.out.println("#### Received a message from " + INCOMING_QUEUE + ": " + receivedText);
          return true;
       }
       finally
