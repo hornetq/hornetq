@@ -13,6 +13,10 @@
 
 package org.hornetq.core.transaction;
 
+import java.util.List;
+
+import org.hornetq.core.server.MessageReference;
+
 /**
  * 
  * A TransactionOperation
@@ -36,4 +40,6 @@ public interface TransactionOperation
 
    /** After rollback shouldn't throw any exception. Any verification has to be done on before rollback */
    void afterRollback(Transaction tx);
+   
+   List<MessageReference> getRelatedMessageReferences();   
 }

@@ -1212,6 +1212,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
       }
 
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
+      
       private void pageMessages(final Transaction tx) throws Exception
       {
          if (!pagingData.isEmpty())
@@ -1340,6 +1345,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             message.decrementRefCount();
          }
+      }
+      
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return refs;
       }
    }
 

@@ -286,6 +286,10 @@ public interface JMSServerManager extends HornetQComponent
 
    String[] listSessions(String connectionID) throws Exception;
 
+   String listPreparedTransactionDetailsAsJSON() throws Exception;
+   
+   String listPreparedTransactionDetailsAsHTML() throws Exception;
+   
    void setContext(final Context context);
 
    HornetQServer getHornetQServer();

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.transaction;
 
+import java.util.List;
+
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
@@ -59,6 +61,8 @@ public interface Transaction
 
    void removeOperation(TransactionOperation sync);
 
+   public List<TransactionOperation> getAllOperations();
+   
    boolean hasTimedOut(long currentTime, int defaultTimeout);
    
    /** We don't want to look on operations at every send, so we keep the paging attribute and will only look at 

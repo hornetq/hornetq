@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.postoffice.impl;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -346,6 +347,14 @@ public class BindingsImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.Transaction#getAllOperations()
+       */
+      public List<TransactionOperation> getAllOperations()
+      {
+         return null;
       }
 
    }

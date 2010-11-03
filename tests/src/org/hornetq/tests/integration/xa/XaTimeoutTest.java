@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.xa;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,7 @@ import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -544,6 +546,11 @@ public class XaTimeoutTest extends UnitTestCase
       public Collection<Queue> getDistinctQueues()
       {
          return Collections.emptySet();
+      }
+      
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
       }
    }
 }

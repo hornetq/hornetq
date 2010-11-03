@@ -383,6 +383,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (String[])proxy.invokeOperation("listPreparedTransactions");
          }
 
+         public String listPreparedTransactionDetailsAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsJSON");
+         }
+
+         public String listPreparedTransactionDetailsAsHTML() throws Exception
+         {
+            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsHTML");
+         }
+
          public String[] listHeuristicCommittedTransactions() throws Exception
          {
             return (String[])proxy.invokeOperation("listHeuristicCommittedTransactions");

@@ -25,6 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.DuplicateIDCache;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -298,6 +299,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
       }
 
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
+      
       /* (non-Javadoc)
        * @see org.hornetq.core.transaction.TransactionOperation#getDistinctQueues()
        */

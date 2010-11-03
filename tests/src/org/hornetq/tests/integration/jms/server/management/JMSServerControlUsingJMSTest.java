@@ -275,6 +275,16 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (Boolean)proxy.invokeOperation("createTopic", name, jndiBinding);
          }
 
+         public String listPreparedTransactionDetailsAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsJSON");
+         }
+
+         public String listPreparedTransactionDetailsAsHTML() throws Exception
+         {
+            return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsHTML");
+         }
+
       };
    }
    // Public --------------------------------------------------------

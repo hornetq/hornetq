@@ -13,6 +13,7 @@
 
 package org.hornetq.core.paging.impl;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,6 +23,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.utils.DataConstants;
@@ -195,6 +197,11 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          public void afterCommit(Transaction tx)
          {
             pgToUpdate.update(depages, storageManager, pagingManager);
+         }
+
+         public List<MessageReference> getRelatedMessageReferences()
+         {
+            return null;
          }
       });
    }

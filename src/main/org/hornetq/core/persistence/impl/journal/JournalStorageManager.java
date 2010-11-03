@@ -2068,6 +2068,10 @@ public class JournalStorageManager implements StorageManager
          return DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
       }
 
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
    }
 
    private static class ScheduledDeliveryEncoding extends QueueEncoding
@@ -2189,6 +2193,11 @@ public class JournalStorageManager implements StorageManager
 
       public void beforeRollback(final Transaction tx) throws Exception
       {
+      }
+
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
       }
 
    }

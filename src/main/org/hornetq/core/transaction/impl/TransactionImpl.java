@@ -401,6 +401,10 @@ public class TransactionImpl implements Transaction
       return operations.size();
    }
 
+   public List<TransactionOperation> getAllOperations() {
+      return operations;
+   }
+   
    public void putProperty(final int index, final Object property)
    {
       if (index >= properties.length)

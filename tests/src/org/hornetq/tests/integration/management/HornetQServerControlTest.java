@@ -16,6 +16,9 @@ package org.hornetq.tests.integration.management;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
@@ -41,7 +44,9 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -671,6 +676,80 @@ public class HornetQServerControlTest extends ManagementTestBase
       session.close();
    }
 
+   public void testListPreparedTransactionDetails() throws Exception
+   {
+      SimpleString atestq = new SimpleString("BasicXaTestq");
+      Xid xid = newXID();
+      
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName()));
+      ClientSession clientSession = csf.createSession(true, false, false);
+      clientSession.createQueue(atestq, atestq, null, true);
+
+      ClientMessage m1 = createTextMessage(clientSession, "");
+      ClientMessage m2 = createTextMessage(clientSession, "");
+      ClientMessage m3 = createTextMessage(clientSession, "");
+      ClientMessage m4 = createTextMessage(clientSession, "");
+      m1.putStringProperty("m1", "m1");
+      m2.putStringProperty("m2", "m2");
+      m3.putStringProperty("m3", "m3");
+      m4.putStringProperty("m4", "m4");
+      ClientProducer clientProducer = clientSession.createProducer(atestq);
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientProducer.send(m1);
+      clientProducer.send(m2);
+      clientProducer.send(m3);
+      clientProducer.send(m4);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      clientSession.close();
+
+      HornetQServerControl serverControl = createManagementControl();
+      String txDetails = serverControl.listPreparedTransactionDetailsAsJSON();
+
+      Assert.assertTrue(txDetails.matches(".*m1.*"));
+      Assert.assertTrue(txDetails.matches(".*m2.*"));
+      Assert.assertTrue(txDetails.matches(".*m3.*"));
+      Assert.assertTrue(txDetails.matches(".*m4.*"));
+   }
+   
+   public void testListPreparedTransactionDetailsAsHTML() throws Exception
+   {
+      SimpleString atestq = new SimpleString("BasicXaTestq");
+      Xid xid = newXID();
+      
+      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName()));
+      ClientSession clientSession = csf.createSession(true, false, false);
+      clientSession.createQueue(atestq, atestq, null, true);
+
+      ClientMessage m1 = createTextMessage(clientSession, "");
+      ClientMessage m2 = createTextMessage(clientSession, "");
+      ClientMessage m3 = createTextMessage(clientSession, "");
+      ClientMessage m4 = createTextMessage(clientSession, "");
+      m1.putStringProperty("m1", "m1");
+      m2.putStringProperty("m2", "m2");
+      m3.putStringProperty("m3", "m3");
+      m4.putStringProperty("m4", "m4");
+      ClientProducer clientProducer = clientSession.createProducer(atestq);
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientProducer.send(m1);
+      clientProducer.send(m2);
+      clientProducer.send(m3);
+      clientProducer.send(m4);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      clientSession.close();
+
+      HornetQServerControl serverControl = createManagementControl();
+      String html = serverControl.listPreparedTransactionDetailsAsHTML();
+
+      Assert.assertTrue(html.matches(".*m1.*"));
+      Assert.assertTrue(html.matches(".*m2.*"));
+      Assert.assertTrue(html.matches(".*m3.*"));
+      Assert.assertTrue(html.matches(".*m4.*"));
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

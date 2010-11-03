@@ -1636,6 +1636,10 @@ public class QueueImpl implements Queue
       public void beforeRollback(final Transaction tx) throws Exception
       {
       }
+      
+      public List<MessageReference> getRelatedMessageReferences() {
+         return refsToAck;
+      }
    }
 
    private class DelayedAddRedistributor implements Runnable

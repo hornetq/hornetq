@@ -31,7 +31,6 @@ import javax.management.StandardMBean;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ManagementHelper;
-import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
@@ -693,6 +692,38 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       try
       {
          return server.listSessions(connectionID);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public String listPreparedTransactionDetailsAsJSON() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         return server.listPreparedTransactionDetailsAsJSON();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   public String listPreparedTransactionDetailsAsHTML() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         return server.listPreparedTransactionDetailsAsHTML();
       }
       finally
       {

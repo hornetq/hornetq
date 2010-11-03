@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,6 +65,8 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionDetail;
+import org.hornetq.core.transaction.impl.CoreTransactionDetail;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.SecurityFormatter;
@@ -902,6 +905,134 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public String listPreparedTransactionDetailsAsJSON() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
+         if(xids == null || xids.size()==0)
+         {
+            return "";
+         }
+         
+         ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
+         Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
+         {
+            public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
+            {
+               // sort by creation time, oldest first
+               return (int)(entry1.getValue() - entry2.getValue());
+            }
+         });
+         
+         JSONArray txDetailListJson = new JSONArray();
+         for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
+         {
+            Xid xid = entry.getKey();
+            TransactionDetail detail = new CoreTransactionDetail(xid,
+                                                                resourceManager.getTransaction(xid),
+                                                                entry.getValue());
+            
+            txDetailListJson.put(detail.toJSON());
+         }
+         return txDetailListJson.toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public String listPreparedTransactionDetailsAsHTML() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
+         if(xids == null || xids.size() == 0)
+         {
+            return "<h3>*** Prepared Transaction Details ***</h3><p>No entry.</p>";
+         }
+
+         ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
+         Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
+         {
+            public int compare(final Entry<Xid, Long> entry1, final Entry<Xid, Long> entry2)
+            {
+               // sort by creation time, oldest first
+               return (int)(entry1.getValue() - entry2.getValue());
+            }
+         });
+         
+         StringBuilder html = new StringBuilder();
+         html.append("<h3>*** Prepared Transaction Details ***</h3>");
+         
+         for (Map.Entry<Xid, Long> entry : xidsSortedByCreationTime)
+         {
+            Xid xid = entry.getKey();
+            TransactionDetail detail = new CoreTransactionDetail(xid,
+                                                                 resourceManager.getTransaction(xid),
+                                                                 entry.getValue());
+             
+            JSONObject txJson = detail.toJSON();
+            
+            html.append("<table border=\"1\">");
+            html.append("<tr><th>creation_time</th>");
+            html.append("<td>" + txJson.get(TransactionDetail.KEY_CREATION_TIME) + "</td>");
+            html.append("<th>xid_as_base_64</th>");
+            html.append("<td colspan=\"3\">" + txJson.get(TransactionDetail.KEY_XID_AS_BASE64) + "</td></tr>");
+            html.append("<tr><th>xid_format_id</th>");
+            html.append("<td>" + txJson.get(TransactionDetail.KEY_XID_FORMAT_ID) + "</td>");
+            html.append("<th>xid_global_txid</th>");
+            html.append("<td>" + txJson.get(TransactionDetail.KEY_XID_GLOBAL_TXID) + "</td>");
+            html.append("<th>xid_branch_qual</th>");
+            html.append("<td>" + txJson.get(TransactionDetail.KEY_XID_BRANCH_QUAL) + "</td></tr>");
+
+            html.append("<tr><th colspan=\"6\">Message List</th></tr>");
+            html.append("<tr><td colspan=\"6\">");
+            html.append("<table border=\"1\" cellspacing=\"0\" cellpadding=\"0\">");
+
+            JSONArray msgs = txJson.getJSONArray(TransactionDetail.KEY_TX_RELATED_MESSAGES);
+            for(int i=0; i<msgs.length(); i++)
+            {
+               JSONObject msgJson = msgs.getJSONObject(i);
+               JSONObject props = msgJson.getJSONObject(TransactionDetail.KEY_MSG_PROPERTIES);
+               StringBuilder propstr = new StringBuilder();
+               @SuppressWarnings("unchecked")
+               Iterator<String> propkeys = props.keys();
+               while(propkeys.hasNext())
+               {
+                  String key = propkeys.next();
+                  propstr.append(key);
+                  propstr.append("=");
+                  propstr.append(props.get(key));
+                  propstr.append(", ");
+               }
+            
+               html.append("<th>operation_type</th>");
+               html.append("<td>" + msgJson.get(TransactionDetail.KEY_MSG_OP_TYPE) + "</th>");
+               html.append("<th>message_type</th>");
+               html.append("<td>" + msgJson.get(TransactionDetail.KEY_MSG_TYPE) + "</td></tr>");
+               html.append("<tr><th>properties</th>");
+               html.append("<td colspan=\"3\">" + propstr.toString() + "</td></tr>");
+            }
+            html.append("</table></td></tr>");
+            html.append("</table><br/>");
+         }
+      
+         return html.toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
    public String[] listHeuristicCommittedTransactions()
    {
       checkStarted();

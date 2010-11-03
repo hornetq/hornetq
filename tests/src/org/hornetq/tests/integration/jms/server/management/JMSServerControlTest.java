@@ -23,9 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.Topic;
+import javax.jms.XASession;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
@@ -46,6 +52,7 @@ import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.persistence.JMSStorageManager;
@@ -449,6 +456,97 @@ public class JMSServerControlTest extends ManagementTestBase
                                             bindings);
          }
       });
+   }
+   
+   public void testListPreparedTransactionDetails() throws Exception
+   {
+      Xid xid = newXID();
+
+      JMSServerControl control = createManagementControl();
+      TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      String cfJNDIBinding = "/cf";
+       String cfName = "cf";
+
+      control.createConnectionFactory(cfName,
+                                      tc.getFactoryClassName(),
+                                      null,
+                                      tc.getFactoryClassName(),
+                                      null,
+                                      cfJNDIBinding);
+      control.createQueue("q","/q");
+      
+      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      Destination dest = (Destination)context.lookup("/q");
+      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XASession ss = conn.createXASession();
+      TextMessage m1 = ss.createTextMessage("m1");
+      TextMessage m2 = ss.createTextMessage("m2");
+      TextMessage m3 = ss.createTextMessage("m3");
+      TextMessage m4 = ss.createTextMessage("m4");
+      MessageProducer mp = ss.createProducer(dest);
+      XAResource xa = ss.getXAResource();
+      xa.start(xid, XAResource.TMNOFLAGS);
+      mp.send(m1);
+      mp.send(m2);
+      mp.send(m3);
+      mp.send(m4);
+      xa.end(xid, XAResource.TMSUCCESS);
+      xa.prepare(xid);
+
+      ss.close();
+      
+      String txDetails = control.listPreparedTransactionDetailsAsJSON();
+
+      Assert.assertTrue(txDetails.matches(".*m1.*"));
+      Assert.assertTrue(txDetails.matches(".*m2.*"));
+      Assert.assertTrue(txDetails.matches(".*m3.*"));
+      Assert.assertTrue(txDetails.matches(".*m4.*"));
+   }
+   
+   public void testListPreparedTranscationDetailsAsHTML() throws Exception
+   {
+      Xid xid = newXID();
+
+      JMSServerControl control = createManagementControl();
+      TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      String cfJNDIBinding = "/cf";
+       String cfName = "cf";
+
+      control.createConnectionFactory(cfName,
+                                      tc.getFactoryClassName(),
+                                      null,
+                                      tc.getFactoryClassName(),
+                                      null,
+                                      cfJNDIBinding);
+      control.createQueue("q","/q");
+      
+      ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
+      Destination dest = (Destination)context.lookup("/q");
+      HornetQConnection conn = (HornetQConnection)cf.createConnection();
+      XASession ss = conn.createXASession();
+      TextMessage m1 = ss.createTextMessage("m1");
+      TextMessage m2 = ss.createTextMessage("m2");
+      TextMessage m3 = ss.createTextMessage("m3");
+      TextMessage m4 = ss.createTextMessage("m4");
+      MessageProducer mp = ss.createProducer(dest);
+      XAResource xa = ss.getXAResource();
+      xa.start(xid, XAResource.TMNOFLAGS);
+      mp.send(m1);
+      mp.send(m2);
+      mp.send(m3);
+      mp.send(m4);
+      xa.end(xid, XAResource.TMSUCCESS);
+      xa.prepare(xid);
+
+      ss.close();
+      
+      String html = control.listPreparedTransactionDetailsAsHTML();
+
+      Assert.assertTrue(html.matches(".*m1.*"));
+      Assert.assertTrue(html.matches(".*m2.*"));
+      Assert.assertTrue(html.matches(".*m3.*"));
+      Assert.assertTrue(html.matches(".*m4.*"));
+      
    }
 
    // Package protected ---------------------------------------------

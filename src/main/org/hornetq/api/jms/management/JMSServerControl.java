@@ -234,5 +234,19 @@ public interface JMSServerControl
    @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
+   /**
+    * List all the prepared transaction, sorted by date,
+    * oldest first, with details, in text format
+    */
+   @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in JSON format", impact = MBeanOperationInfo.INFO)
+   String listPreparedTransactionDetailsAsJSON() throws Exception;
+   
+   /**
+    * List all the prepared transaction, sorted by date,
+    * oldest first, with details, in HTML format
+    */
+   @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in HTML format", impact = MBeanOperationInfo.INFO)
+   String listPreparedTransactionDetailsAsHTML() throws Exception;
+   
 
 }

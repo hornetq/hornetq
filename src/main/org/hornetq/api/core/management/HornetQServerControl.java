@@ -411,6 +411,20 @@ public interface HornetQServerControl
    String[] listPreparedTransactions() throws Exception;
 
    /**
+    * List all the prepared transaction, sorted by date,
+    * oldest first, with details, in text format.
+    */
+   @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in JSON format")
+   String listPreparedTransactionDetailsAsJSON() throws Exception;
+
+   /**
+    * List all the prepared transaction, sorted by date,
+    * oldest first, with details, in HTML format
+    */
+   @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in HTML format")
+   String listPreparedTransactionDetailsAsHTML() throws Exception;
+
+   /**
     * List transactions which have been heuristically committed.
     */
    String[] listHeuristicCommittedTransactions() throws Exception;
