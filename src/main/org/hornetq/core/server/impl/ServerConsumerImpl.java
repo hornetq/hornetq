@@ -126,6 +126,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
     */
    private AtomicBoolean writeReady = new AtomicBoolean(true);
 
+   private final long creationTime;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerConsumerImpl(final long id,
@@ -170,6 +172,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       
       this.callback.addReadyListener(this);
 
+      this.creationTime = System.currentTimeMillis();
+      
       if (browseOnly)
       {
          browserDeliverer = new BrowserDeliverer(messageQueue.iterator());
@@ -188,6 +192,16 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return id;
    }
    
+   public boolean isBrowseOnly()
+   {
+      return browseOnly;
+   }
+
+   public long getCreationTime()
+   {
+      return creationTime;
+   }
+
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       if (availableCredits != null && availableCredits.get() <= 0)

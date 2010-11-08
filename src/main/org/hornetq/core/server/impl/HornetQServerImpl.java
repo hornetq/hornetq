@@ -1513,6 +1513,11 @@ public class HornetQServerImpl implements HornetQServer
                                     });
       
    }
+
+   public ServerSession getSessionByID(String sessionName)
+   {
+      return sessions.get(sessionName);
+   }
    
 
    // Inner classes

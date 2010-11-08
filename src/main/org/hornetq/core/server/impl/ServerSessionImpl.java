@@ -16,8 +16,10 @@ package org.hornetq.core.server.impl;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +66,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.utils.TypedProperties;
+import org.hornetq.utils.UUID;
 
 /*
  * Session implementation 
@@ -135,6 +138,12 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    private volatile SimpleString defaultAddress;
 
    private volatile int timeoutSeconds;
+   
+   private Map<String, String> metaData;
+
+   private Map<SimpleString, UUID> targetAddressInfos = new HashMap<SimpleString, UUID>();
+   
+   private long creationTime = System.currentTimeMillis();
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -231,6 +240,11 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public Object getConnectionID()
    {
       return remotingConnection.getID();
+   }
+   
+   public Set<ServerConsumer> getServerConsumers() {
+      Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
+      return Collections.unmodifiableSet(consumersClone);
    }
 
    public void removeConsumer(final long consumerID) throws Exception
@@ -1173,8 +1187,58 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
 
       postOffice.route(msg, routingContext, direct);
+      
+      targetAddressInfos.put(msg.getAddress(), msg.getUserID());
 
       routingContext.clear();
    }
 
+   public void addMetaData(String key, String data)
+   {
+      if (metaData == null)
+      {
+         metaData = new HashMap<String, String>();
+      }
+      metaData.put(key, data);
+   }
+
+   public String getMetaData(String key)
+   {
+      String data = null;
+      if (metaData != null)
+      {
+         data = metaData.get(key);
+      }
+      return data;
+   }
+   
+   public String[] getTargetAddresses()
+   {
+      Map<SimpleString, UUID> copy = new HashMap<SimpleString, UUID>(targetAddressInfos);
+      Iterator<SimpleString> iter = copy.keySet().iterator();
+      int num = copy.keySet().size();
+      String[] addresses = new String[num];
+      int i = 0;
+      while (iter.hasNext())
+      {
+         addresses[i] = iter.next().toString();
+         i++;
+      }
+      return addresses;
+   }
+
+   public String getLastSentMessageID(String address)
+   {
+      UUID id = targetAddressInfos.get(SimpleString.toSimpleString(address));
+      if (id != null)
+      {
+         return id.toString();
+      }
+      return null;
+   }
+
+   public long getCreationTime()
+   {
+      return this.creationTime;
+   }
 }

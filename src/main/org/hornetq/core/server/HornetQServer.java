@@ -159,4 +159,6 @@ public interface HornetQServer extends HornetQComponent
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
+
+   ServerSession getSessionByID(String sessionID);
 }

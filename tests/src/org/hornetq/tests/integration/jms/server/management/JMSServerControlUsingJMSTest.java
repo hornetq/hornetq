@@ -21,14 +21,12 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 
 /**
@@ -233,6 +231,16 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (String[])proxy.invokeOperation("listConnectionIDs");
          }
+         
+         public String listConnectionsAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listConnectionsAsJSON");
+         }
+         
+         public String listConsumersAsJSON(String connectionID) throws Exception
+         {
+            return (String)proxy.invokeOperation("listConsumersAsJSON", connectionID);
+         }
 
          public String[] listRemoteAddresses() throws Exception
          {
@@ -273,6 +281,27 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public boolean createTopic(String name, String jndiBinding) throws Exception
          {
             return (Boolean)proxy.invokeOperation("createTopic", name, jndiBinding);
+         }
+
+         public String[] listTargetDestinations(String sessionID) throws Exception
+         {
+            return null;
+         }
+
+         public String getLastSentMessageID(String sessionID, String address) throws Exception
+         {
+            return null;
+         }
+
+         public String getSessionCreationTime(String sessionID) throws Exception
+         {
+            return null;
+         }
+
+         public String listSessionsAsJSON(String connectionID) throws Exception
+         {
+            // TODO Auto-generated method stub
+            return null;
          }
 
          public String listPreparedTransactionDetailsAsJSON() throws Exception

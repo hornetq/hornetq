@@ -1886,4 +1886,13 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public String[] listTargetAddresses(String sessionID)
+   {
+      ServerSession session = server.getSessionByID(sessionID);
+      if (session != null) {
+         return session.getTargetAddresses();
+      }
+      return new String[0];
+   }
+
 }

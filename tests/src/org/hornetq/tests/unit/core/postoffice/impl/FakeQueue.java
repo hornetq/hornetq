@@ -348,6 +348,12 @@ public class FakeQueue implements Queue
       return name;
    }
 
+   public SimpleString getAddress()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+   
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getID()
     */

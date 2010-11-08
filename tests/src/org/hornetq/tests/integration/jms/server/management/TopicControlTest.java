@@ -13,15 +13,22 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import static junit.framework.Assert.assertEquals;
+
 import java.util.Map;
 
 import javax.jms.Connection;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
 import javax.jms.Session;
 import javax.jms.TopicSubscriber;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.SubscriptionInfo;
 import org.hornetq.api.jms.management.TopicControl;
@@ -405,6 +412,76 @@ public class TopicControlTest extends ManagementTestBase
       catch (Exception e)
       {
       }
+   }
+   
+   public void testGetMessagesAdded() throws Exception
+   {
+      Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createConsumer(connection_1, topic);
+      Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
+      Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+
+      TopicControl topicControl = createManagementControl();
+
+      Assert.assertEquals(0, topicControl.getMessagesAdded());
+
+      JMSUtil.sendMessages(topic, 2);
+
+      Assert.assertEquals(3 * 2, topicControl.getMessagesAdded());
+
+      connection_1.close();
+      connection_2.close();
+      connection_3.close();
+   }
+   
+   public void testGetMessagesDelivering() throws Exception
+   {
+      Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      MessageConsumer cons_1 = JMSUtil.createConsumer(connection_1, topic, Session.CLIENT_ACKNOWLEDGE);
+      Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      MessageConsumer cons_2 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName, Session.CLIENT_ACKNOWLEDGE);
+      Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
+
+      TopicControl topicControl = createManagementControl();
+
+      assertEquals(0, topicControl.getDeliveringCount());
+
+      JMSUtil.sendMessages(topic, 2);
+
+      assertEquals(0, topicControl.getDeliveringCount());
+      
+      connection_1.start();
+      connection_2.start();
+      connection_3.start();
+
+      Message msg_1 = null;
+      Message msg_2 = null;
+      Message msg_3 = null;
+      for (int i = 0; i < 2; i++)
+      {
+         msg_1 = cons_1.receive(5000);
+         assertNotNull(msg_1);
+         msg_2 = cons_2.receive(5000);
+         assertNotNull(msg_2);
+         msg_3 = cons_3.receive(5000);         
+         assertNotNull(msg_3);
+      }
+
+      assertEquals(3 * 2, topicControl.getDeliveringCount());
+
+      msg_1.acknowledge();
+      assertEquals(2 * 2, topicControl.getDeliveringCount());
+      msg_2.acknowledge();
+      assertEquals(1 * 2, topicControl.getDeliveringCount());
+      msg_3.acknowledge();
+      assertEquals(0, topicControl.getDeliveringCount());
+      
+      connection_1.close();
+      connection_2.close();
+      connection_3.close();
    }
 
    // Package protected ---------------------------------------------

@@ -21,11 +21,23 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+import javax.jms.Session;
+import javax.jms.TemporaryTopic;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.management.JMSConnectionInfo;
+import org.hornetq.api.jms.management.JMSConsumerInfo;
 import org.hornetq.api.jms.management.JMSServerControl;
+import org.hornetq.api.jms.management.JMSSessionInfo;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -35,6 +47,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -139,7 +152,300 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       doListConnectionIDs(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
    }
+   
+   public void testListConnectionsAsJSONForNetty() throws Exception
+   {
+      doListConnectionsAsJSON(NettyAcceptorFactory.class.getName(), NettyConnectorFactory.class.getName());
+   }
 
+   public void testListConnectionsAsJSONForInVM() throws Exception
+   {
+      doListConnectionsAsJSON(InVMAcceptorFactory.class.getName(), InVMConnectorFactory.class.getName());
+   }
+   
+   public void testListConsumersAsJSON() throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+
+      try
+      {
+         startHornetQServer(NettyAcceptorFactory.class.getName());
+         serverManager.createQueue(false, queueName, null, true, queueName);
+         Queue queue = HornetQJMSClient.createQueue(queueName);
+
+         JMSServerControl control = createManagementControl();
+
+         long startTime = System.currentTimeMillis();
+         
+         String jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(0, infos.length);
+
+         ConnectionFactory cf1 = JMSUtil.createFactory(NettyConnectorFactory.class.getName(),
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf1.createConnection();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         TemporaryTopic temporaryTopic = session.createTemporaryTopic();
+
+         // create a regular message consumer
+         MessageConsumer consumer = session.createConsumer(queue);
+
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(1, infos.length);
+         String connectionID = infos[0].getConnectionID();
+         
+         String consJsonStr = control.listConsumersAsJSON(connectionID);
+         assertNotNull(consJsonStr);
+         JMSConsumerInfo[] consumerInfos = JMSConsumerInfo.from(consJsonStr);
+         assertEquals(1, consumerInfos.length);
+         JMSConsumerInfo consumerInfo = consumerInfos[0];
+         assertNotNull(consumerInfo.getConsumerID());
+         assertEquals(connectionID, consumerInfo.getConnectionID());
+         assertEquals(queue.getQueueName(), consumerInfo.getDestinationName());
+         assertEquals("queue", consumerInfo.getDestinationType());
+         assertNull(consumerInfo.getFilter());
+         assertEquals(false, consumerInfo.isBrowseOnly());
+         assertEquals(false, consumerInfo.isDurable());
+         assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
+
+         consumer.close();
+         
+         consJsonStr = control.listConsumersAsJSON(connectionID);
+         assertNotNull(consJsonStr);
+         consumerInfos = JMSConsumerInfo.from(consJsonStr);
+         assertEquals(0, consumerInfos.length);
+
+         // create a queue browser
+         QueueBrowser browser = session.createBrowser(queue);
+         // the server resources are created when the browser starts enumerating
+         browser.getEnumeration();
+         
+         consJsonStr = control.listConsumersAsJSON(connectionID);
+         assertNotNull(consJsonStr);
+         System.out.println(consJsonStr);
+         consumerInfos = JMSConsumerInfo.from(consJsonStr);
+         assertEquals(1, consumerInfos.length);
+         consumerInfo = consumerInfos[0];
+         assertNotNull(consumerInfo.getConsumerID());
+         assertEquals(connectionID, consumerInfo.getConnectionID());
+         assertEquals(queue.getQueueName(), consumerInfo.getDestinationName());
+         assertEquals("queue", consumerInfo.getDestinationType());
+         assertNull(consumerInfo.getFilter());
+         assertEquals(true, consumerInfo.isBrowseOnly());
+         assertEquals(false, consumerInfo.isDurable());
+         assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
+
+         browser.close();
+         
+         // create a regular consumer w/ filter on a temp topic
+         String filter = "color = 'red'";
+         consumer = session.createConsumer(temporaryTopic, filter);
+         
+         consJsonStr = control.listConsumersAsJSON(connectionID);
+         assertNotNull(consJsonStr);
+         System.out.println(consJsonStr);
+         consumerInfos = JMSConsumerInfo.from(consJsonStr);
+         assertEquals(1, consumerInfos.length);
+         consumerInfo = consumerInfos[0];
+         assertNotNull(consumerInfo.getConsumerID());
+         assertEquals(connectionID, consumerInfo.getConnectionID());
+         assertEquals(temporaryTopic.getTopicName(), consumerInfo.getDestinationName());
+         assertEquals("temptopic", consumerInfo.getDestinationType());
+         assertEquals(filter, consumerInfo.getFilter());
+         assertEquals(false, consumerInfo.isBrowseOnly());
+         assertEquals(false, consumerInfo.isDurable());
+         assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
+
+         consumer.close();
+
+         connection.close();
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.destroyQueue(queueName);
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+
+   /**
+    * test for durable subscriber
+    */
+   public void testListConsumersAsJSON2() throws Exception
+   {
+      String topicName = RandomUtil.randomString();
+      String clientID = RandomUtil.randomString();
+      String subName = RandomUtil.randomString();
+
+      try
+      {
+         startHornetQServer(NettyAcceptorFactory.class.getName());
+         serverManager.createTopic(false, topicName, topicName);
+         Topic topic = HornetQJMSClient.createTopic(topicName);
+         
+         JMSServerControl control = createManagementControl();
+
+         long startTime = System.currentTimeMillis();
+         
+         String jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(0, infos.length);
+
+         ConnectionFactory cf1 = JMSUtil.createFactory(NettyConnectorFactory.class.getName(),
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf1.createConnection();
+         connection.setClientID(clientID);
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         // create a durable subscriber
+         MessageConsumer consumer = session.createDurableSubscriber(topic, subName);
+         
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(1, infos.length);
+         String connectionID = infos[0].getConnectionID();
+         
+         String consJsonStr = control.listConsumersAsJSON(connectionID);
+         assertNotNull(consJsonStr);
+         JMSConsumerInfo[] consumerInfos = JMSConsumerInfo.from(consJsonStr);
+         assertEquals(1, consumerInfos.length);
+         JMSConsumerInfo consumerInfo = consumerInfos[0];
+         assertNotNull(consumerInfo.getConsumerID());
+         assertEquals(connectionID, consumerInfo.getConnectionID());
+         assertEquals(topic.getTopicName(), consumerInfo.getDestinationName());
+         assertEquals("topic", consumerInfo.getDestinationType());
+         assertNull(consumerInfo.getFilter());
+         assertEquals(false, consumerInfo.isBrowseOnly());
+         assertEquals(true, consumerInfo.isDurable());
+         assertTrue(startTime <= consumerInfo.getCreationTime() && consumerInfo.getCreationTime() <= System.currentTimeMillis());
+
+         consumer.close();
+
+         connection.close();
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.destroyTopic(topicName);
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+   
+   //https://jira.jboss.org/browse/HORNETQ-416
+   public void testProducerInfo() throws Exception
+   {
+      String queueName = RandomUtil.randomString();
+
+      System.out.println("queueName is: " + queueName);
+      
+      try
+      {
+         startHornetQServer(NettyAcceptorFactory.class.getName());
+         serverManager.createQueue(false, queueName, null, true, queueName);
+         Queue queue = HornetQJMSClient.createQueue(queueName);
+
+         JMSServerControl control = createManagementControl();
+
+         long startTime = System.currentTimeMillis();
+
+         ConnectionFactory cf1 = JMSUtil.createFactory(NettyConnectorFactory.class.getName(),
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf1.createConnection();
+         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         
+         MessageProducer producer = session.createProducer(queue);
+         
+         for (int i = 0; i < 10; i++)
+         {
+            TextMessage msg = session.createTextMessage("mymessage-" + i);
+            producer.send(msg);
+         }
+
+         connection.start();
+         
+         // create a regular message consumer
+         MessageConsumer consumer = session.createConsumer(queue);
+
+         TextMessage receivedMsg = null;
+         for (int i = 0; i < 10; i++)
+         {
+            receivedMsg = (TextMessage)consumer.receive(3000);
+            System.out.println("receiveMsg: " + receivedMsg);
+         }
+         
+         String lastMsgID = receivedMsg.getJMSMessageID();
+         System.out.println("Last mid: " + lastMsgID);
+         
+         String jsonStr = control.listConnectionsAsJSON();
+         JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
+         
+         JMSConnectionInfo connInfo = infos[0];
+         
+         String sessionsStr = control.listSessionsAsJSON(connInfo.getConnectionID());
+         JMSSessionInfo[] sessInfos = JMSSessionInfo.from(sessionsStr);
+         
+         assertTrue(sessInfos.length > 0);
+         boolean lastMsgFound = false;
+         for (JMSSessionInfo sInfo : sessInfos)
+         {
+            System.out.println("Session name: " + sInfo.getSessionID());
+            assertNotNull(sInfo.getSessionID());
+            long createTime = sInfo.getCreationTime();
+            assertTrue(startTime <= createTime && createTime <= System.currentTimeMillis());
+            String lastID = control.getLastSentMessageID(sInfo.getSessionID(), "jms.queue." + queueName);
+            if (lastID != null)
+            {
+               assertEquals(lastMsgID, lastID);
+               lastMsgFound = true;
+            }
+         }
+         assertTrue(lastMsgFound);
+
+         consumer.close();
+
+         connection.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         throw e;
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.destroyQueue(queueName);
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -207,6 +513,95 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
    }
 
+   private void doListConnectionsAsJSON(final String acceptorFactory, final String connectorFactory) throws Exception
+   {
+      try
+      {
+         startHornetQServer(acceptorFactory);
+
+         JMSServerControl control = createManagementControl();
+
+         long startTime = System.currentTimeMillis();
+         
+         String jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(0, infos.length);
+
+         ConnectionFactory cf1 = JMSUtil.createFactory(connectorFactory,
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
+         Connection connection = cf1.createConnection();
+
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(1, infos.length);
+         for (JMSConnectionInfo info : infos)
+         {
+            assertNotNull(info.getConnectionID());
+            assertNotNull(info.getClientAddress());
+            assertTrue(startTime <= info.getCreationTime() && info.getCreationTime() <= System.currentTimeMillis());
+         }
+
+         ConnectionFactory cf2 = JMSUtil.createFactory(connectorFactory,
+                                                       JMSServerControl2Test.CONNECTION_TTL,
+                                                       JMSServerControl2Test.PING_PERIOD);
+         Connection connection2 = cf2.createConnection();
+
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(2, infos.length);
+         for (JMSConnectionInfo info : infos)
+         {
+            assertNotNull(info.getConnectionID());
+            assertNotNull(info.getClientAddress());
+            assertTrue(startTime <= info.getCreationTime() && info.getCreationTime() <= System.currentTimeMillis());
+            assertNull(info.getClientID());
+            assertNull(info.getUsername());
+         }
+
+         connection.close();
+
+         waitForConnectionIDs(1, control);
+
+         connection2.close();
+
+         waitForConnectionIDs(0, control);
+         
+         Connection connection3 = cf2.createConnection("guest", "guest");
+         connection3.setClientID("MyClient");
+         
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         
+         infos = JMSConnectionInfo.from(jsonStr);
+         JMSConnectionInfo info = infos[0];
+         assertEquals("MyClient", info.getClientID());
+         assertEquals("guest", info.getUsername());
+         
+         connection3.close();
+         
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
+         assertEquals(0, infos.length);
+      }
+      finally
+      {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+   
    private void waitForConnectionIDs(final int num, final JMSServerControl control) throws Exception
    {
       final long timeout = 10000;

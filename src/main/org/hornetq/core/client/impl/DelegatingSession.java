@@ -555,4 +555,9 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.setPacketSize(packetSize);
    }
+
+   public void addMetaData(String key, String data) throws HornetQException
+   {
+      session.addMetaData(key, data);
+   }
 }

@@ -181,6 +181,16 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       }
 
       this.clientID = clientID;
+      try
+      {
+         this.addSessionMetaData(initialSession);
+      }
+      catch (HornetQException e)
+      {
+         JMSException ex = new JMSException("Internal error setting metadata jms-client-id");
+         ex.setLinkedException(e);
+         throw ex;
+      }
 
       justCreated = false;
    }
@@ -537,6 +547,8 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          {
             session.start();
          }
+         
+         this.addSessionMetaData(session);
 
          return jbs;
       }
@@ -562,11 +574,22 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       {
          initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
 
+         addSessionMetaData(initialSession);
+
          initialSession.addFailureListener(listener);
       }
       catch (HornetQException me)
       {
          throw JMSExceptionHelper.convertFromHornetQException(me);
+      }
+   }
+
+   private void addSessionMetaData(ClientSession session) throws HornetQException
+   {
+      session.addMetaData("jms-session", "");
+      if (clientID != null)
+      {
+         session.addMetaData("jms-client-id", clientID);
       }
    }
 

@@ -47,6 +47,10 @@ public interface ServerConsumer extends Consumer
    void forceDelivery(long sequence);   
    
    void setTransferring(boolean transferring);
+
+   boolean isBrowseOnly();
+
+   long getCreationTime();
 }
 
 

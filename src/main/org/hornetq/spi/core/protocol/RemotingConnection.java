@@ -13,6 +13,7 @@
 
 package org.hornetq.spi.core.protocol;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -36,6 +37,11 @@ public interface RemotingConnection extends BufferHandler
     * @return the id
     */
    Object getID();
+
+   /**
+    * Returns the creation time of the Remoting connection
+    */
+   long getCreationTime();
 
    /**
     * returns a string representation of the remote address of this connection

@@ -118,6 +118,28 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       return getMessageCount(DurabilityType.ALL);
    }
 
+   public int getDeliveringCount()
+   {
+      List<QueueControl> queues = getQueues(DurabilityType.ALL);
+      int count = 0;
+      for (QueueControl queue : queues)
+      {
+         count += queue.getDeliveringCount();
+      }
+      return count;
+   }
+   
+   public long getMessagesAdded()
+   {
+      List<QueueControl> queues = getQueues(DurabilityType.ALL);
+      int count = 0;
+      for (QueueControl queue : queues)
+      {
+         count += queue.getMessagesAdded();
+      }
+      return count;
+   }
+   
    public int getDurableMessageCount()
    {
       return getMessageCount(DurabilityType.DURABLE);
@@ -315,6 +337,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
          info.put("name", subName);
          info.put("durable", queue.isDurable());
          info.put("messageCount", queue.getMessageCount());
+         info.put("deliveringCount", queue.getDeliveringCount());
          array.put(info);
       }
 

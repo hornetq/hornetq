@@ -229,10 +229,53 @@ public interface JMSServerControl
    String[] listConnectionIDs() throws Exception;
 
    /**
+    * Lists all the connections connected to this server.
+    * The returned String is a JSON string containing an array of JMSConnectionInfo objects.
+    * 
+    * @see JMSConnectionInfo#from(String)
+    */
+   @Operation(desc = "List all JMS connections")
+   String listConnectionsAsJSON() throws Exception;
+   
+   /**
     * Lists all the sessions IDs for the specified connection ID.
     */
    @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
    String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
+
+   /**
+    * Lists all the consumers which belongs to the JMS Connection specified by the connectionID.
+    * The returned String is a JSON string containing an array of JMSConsumerInfo objects.
+    * 
+    * @see JMSConsumerInfo#from(String)
+    */
+   @Operation(desc = "List all JMS consumers associated to a JMS Connection")
+   String listConsumersAsJSON(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
+   
+   /**
+    * Lists all addresses to which the designated server session has sent messages.
+    */
+   @Operation(desc = "Lists all addresses to which the designated session has sent messages", impact = MBeanOperationInfo.INFO)
+   String[] listTargetDestinations(@Parameter(desc = "a session ID", name = "sessionID") String sessionID) throws Exception;
+   
+   /**
+    * Returns the last sent message's ID from the given session to an address.
+    */
+   @Operation(desc = "Returns the last sent message's ID from the given session to an address", impact = MBeanOperationInfo.INFO)
+   String getLastSentMessageID(@Parameter(desc = "session name", name = "sessionID") String sessionID,
+                               @Parameter(desc = "address", name = "address") String address) throws Exception;
+   
+   /**
+    * Gets the session's creation time.
+    */
+   @Operation(desc = "Gets the sessions creation time", impact = MBeanOperationInfo.INFO)
+   String getSessionCreationTime(@Parameter(desc = "session name", name = "sessionID") String sessionID) throws Exception;
+   
+   /**
+    * Lists all the sessions IDs for the specified connection ID.
+    */
+   @Operation(desc = "List the sessions for the given connectionID", impact = MBeanOperationInfo.INFO)
+   String listSessionsAsJSON(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
    /**
     * List all the prepared transaction, sorted by date,
@@ -247,6 +290,5 @@ public interface JMSServerControl
     */
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first, with details, in HTML format", impact = MBeanOperationInfo.INFO)
    String listPreparedTransactionDetailsAsHTML() throws Exception;
-   
 
 }

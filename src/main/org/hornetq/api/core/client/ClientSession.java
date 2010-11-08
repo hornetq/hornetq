@@ -562,4 +562,9 @@ public interface ClientSession extends XAResource
     */
    void setSendAcknowledgementHandler(SendAcknowledgementHandler handler);
 
+   /**
+    * Attach any metadata to the session.
+    * @throws HornetQException 
+    */
+   void addMetaData(String key, String data) throws HornetQException;
 }

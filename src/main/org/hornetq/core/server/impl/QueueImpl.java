@@ -238,6 +238,11 @@ public class QueueImpl implements Queue
    {
       return name;
    }
+   
+   public SimpleString getAddress()
+   {
+      return address;
+   }
 
    public long getID()
    {

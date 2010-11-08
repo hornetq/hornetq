@@ -40,6 +40,8 @@ public class SubscriptionInfo
 
    private final int messageCount;
 
+   private final int deliveringCount;
+   
    // Static --------------------------------------------------------
 
    /**
@@ -58,7 +60,8 @@ public class SubscriptionInfo
                                                       sub.optString("name", null),
                                                       sub.getBoolean("durable"),
                                                       sub.optString("selector", null),
-                                                      sub.getInt("messageCount"));
+                                                      sub.getInt("messageCount"),
+                                                      sub.getInt("deliveringCount"));
          infos[i] = info;
       }
 
@@ -72,7 +75,8 @@ public class SubscriptionInfo
                             final String name,
                             final boolean durable,
                             final String selector,
-                            final int messageCount)
+                            final int messageCount,
+                            final int deliveringCount)
    {
       this.queueName = queueName;
       this.clientID = clientID;
@@ -80,6 +84,7 @@ public class SubscriptionInfo
       this.durable = durable;
       this.selector = selector;
       this.messageCount = messageCount;
+      this.deliveringCount = deliveringCount;
    }
 
    // Public --------------------------------------------------------
@@ -130,6 +135,14 @@ public class SubscriptionInfo
    public int getMessageCount()
    {
       return messageCount;
+   }
+   
+   /**
+    * Returns the number of messages currently delivered to this subscription.
+    */
+   public int getDeliveringCount()
+   {
+      return deliveringCount;
    }
 
    // Package protected ---------------------------------------------

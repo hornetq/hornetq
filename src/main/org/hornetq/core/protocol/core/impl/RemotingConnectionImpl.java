@@ -89,6 +89,10 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    
    private volatile boolean executing;
 
+   private final long creationTime;
+   
+   private String clientID;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -129,6 +133,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.client = client;
 
       this.executor = executor;
+      
+      this.creationTime = System.currentTimeMillis();
    }
 
    // RemotingConnection implementation
@@ -159,6 +165,11 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    public String getRemoteAddress()
    {
       return transportConnection.getRemoteAddress();
+   }
+   
+   public long getCreationTime()
+   {
+      return creationTime;
    }
 
    public synchronized Channel getChannel(final long channelID, final int confWindowSize)
@@ -546,5 +557,15 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       {
          channel.close();
       }
+   }
+
+   public void setClientID(String cID)
+   {
+      clientID = cID;
+   }
+   
+   public String getClientID()
+   {
+      return clientID;
    }
 }

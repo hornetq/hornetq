@@ -157,4 +157,6 @@ public interface Queue extends Bindable
    void close() throws Exception;
    
    boolean isDirectDeliver();
+
+   SimpleString getAddress();
 }

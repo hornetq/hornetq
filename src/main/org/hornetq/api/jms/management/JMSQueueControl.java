@@ -51,11 +51,6 @@ public interface JMSQueueControl extends DestinationControl
    void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue") String deadLetterAddress) throws Exception;
 
    /**
-    * Returns the number of messages added to this queue since it was created.
-    */
-   long getMessagesAdded();
-
-   /**
     * Returns the number of scheduled messages in this queue.
     */
    long getScheduledCount();
@@ -64,11 +59,6 @@ public interface JMSQueueControl extends DestinationControl
     * Returns the number of consumers consuming messages from this queue.
     */
    int getConsumerCount();
-
-   /**
-    * Returns the number of messages that this queue is currently delivering to its consumers.
-    */
-   int getDeliveringCount();
 
    /**
     * returns the selector for the queue
