@@ -94,7 +94,7 @@
                 <para>In core, there is no concept of a Topic, Topic is a JMS only term. Instead, in
                     core, we just deal with <emphasis>addresses</emphasis> and
                         <emphasis>queues</emphasis>.</para>
-                <para>For example, a JMS topic would implemented by a single address to which many
+                <para>For example, a JMS topic would be implemented by a single address to which many
                     queues are bound. Each queue represents a subscription of the topic. A JMS Queue
                     would be implemented as a single address to which one queue is bound - that
                     queue represents the JMS queue.</para>

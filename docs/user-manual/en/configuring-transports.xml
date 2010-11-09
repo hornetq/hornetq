@@ -96,7 +96,7 @@ org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory
                         <literal>HornetQConnectionFactory</literal> it needs to know what server
                     that connection factory will create connections to.</para>
                 <para>That's defined by the <literal>connector-ref</literal> element in the <literal
-                        >hornetq-jms.xml</literal>file on the server side. Let's take a look at a
+                        >hornetq-jms.xml</literal> file on the server side. Let's take a look at a
                     snipped from a <literal>hornetq-jms.xml</literal> file that shows a JMS
                     connection factory that references our netty connector defined in our <literal
                         >hornetq-configuration.xml</literal> file:</para>
