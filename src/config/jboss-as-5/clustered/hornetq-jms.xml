@@ -3,6 +3,7 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
 
    <connection-factory name="NettyConnectionFactory">
+      <xa>true</xa>
       <connectors>
          <connector-ref connector-name="netty"/>
       </connectors>
@@ -13,6 +14,7 @@
    </connection-factory>
    
    <connection-factory name="NettyThroughputConnectionFactory">
+      <xa>true</xa>
       <connectors>
          <connector-ref connector-name="netty-throughput"/>
       </connectors>
@@ -23,6 +25,7 @@
    </connection-factory>
    
    <connection-factory name="InVMConnectionFactory">
+      <xa>true</xa>
       <connectors>
          <connector-ref connector-name="in-vm"/>
       </connectors>
