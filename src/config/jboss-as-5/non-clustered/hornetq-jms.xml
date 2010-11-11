@@ -8,21 +8,39 @@
          <connector-ref connector-name="netty"/>
       </connectors>
       <entries>
-         <entry name="/ConnectionFactory"/>
          <entry name="/XAConnectionFactory"/>
+      </entries>
+   </connection-factory>
+   
+   <connection-factory name="NettyConnectionFactory">
+      <xa>false</xa>
+      <connectors>
+         <connector-ref connector-name="netty"/>
+      </connectors>
+      <entries>
+         <entry name="/ConnectionFactory"/>
       </entries>
    </connection-factory>
    
    <connection-factory name="NettyThroughputConnectionFactory">
       <xa>true</xa>
-	   <connectors>
+      <connectors>
          <connector-ref connector-name="netty-throughput"/>
-	   </connectors>
-		<entries>
-			<entry name="/ThroughputConnectionFactory"/>
-			<entry name="/XAThroughputConnectionFactory"/>
-		</entries>
-	</connection-factory>
+      </connectors>
+      <entries>
+         <entry name="/XAThroughputConnectionFactory"/>
+      </entries>
+   </connection-factory>
+   
+   <connection-factory name="NettyThroughputConnectionFactory">
+      <xa>false</xa>
+      <connectors>
+         <connector-ref connector-name="netty-throughput"/>
+      </connectors>
+      <entries>
+         <entry name="/ThroughputConnectionFactory"/>
+      </entries>
+   </connection-factory>
    
    <connection-factory name="InVMConnectionFactory">
       <xa>true</xa>
@@ -30,11 +48,20 @@
          <connector-ref connector-name="in-vm"/>
       </connectors>
       <entries>
-         <entry name="java:/ConnectionFactory"/>
          <entry name="java:/XAConnectionFactory"/>
       </entries>
    </connection-factory>
-   
+
+   <connection-factory name="InVMConnectionFactory">
+      <xa>false</xa>
+      <connectors>
+         <connector-ref connector-name="in-vm"/>
+      </connectors>
+      <entries>
+         <entry name="java:/ConnectionFactory"/>
+      </entries>
+   </connection-factory>
+
    <queue name="DLQ">
       <entry name="/queue/DLQ"/>
    </queue>
