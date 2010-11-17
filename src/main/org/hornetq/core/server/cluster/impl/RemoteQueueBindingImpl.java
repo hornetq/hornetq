@@ -16,6 +16,7 @@ package org.hornetq.core.server.cluster.impl;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -199,12 +200,14 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       buff.putLong(remoteQueueID);
 
       message.putBytesProperty(idsHeaderName, ids);
+         
+      List<Queue> durableQueuesOnContext = context.getDurableQueues(address);
 
-      if (!context.getDurableQueues().contains(storeAndForwardQueue))
+      if (!durableQueuesOnContext.contains(storeAndForwardQueue))
       {
          // There can be many remote bindings for the same node, we only want to add the message once to
          // the s & f queue for that node
-         context.addQueue(storeAndForwardQueue);
+         context.addQueue(address, storeAndForwardQueue);
       }
    }
 

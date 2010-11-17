@@ -21,6 +21,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
@@ -28,6 +29,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * A queue that will discard messages if a newer message with the same MessageImpl.HDR_LAST_VALUE_NAME property value.
@@ -49,6 +51,7 @@ public class LastValueQueue extends QueueImpl
                          final SimpleString address,
                          final SimpleString name,
                          final Filter filter,
+                         final PageSubscription pageSubscription,
                          final boolean durable,
                          final boolean temporary,
                          final ScheduledExecutorService scheduledExecutor,
@@ -61,6 +64,7 @@ public class LastValueQueue extends QueueImpl
             address,
             name,
             filter,
+            pageSubscription,
             durable,
             temporary,
             scheduledExecutor,
@@ -89,7 +93,7 @@ public class LastValueQueue extends QueueImpl
 
             try
             {
-               super.acknowledge(oldRef);
+               oldRef.acknowledge();
             }
             catch (Exception e)
             {
@@ -224,6 +228,27 @@ public class LastValueQueue extends QueueImpl
       public void setScheduledDeliveryTime(final long scheduledDeliveryTime)
       {
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+      }
+      
+      public boolean isPaged()
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.server.MessageReference)
+       */
+      public void acknowledge() throws Exception
+      {
+         ref.getQueue().acknowledge(this);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
+       */
+      public void acknowledge(Transaction tx) throws Exception
+      {
+         ref.getQueue().acknowledge(tx, this);
       }
    }
 }

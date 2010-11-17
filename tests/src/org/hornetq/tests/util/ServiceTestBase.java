@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
@@ -333,6 +334,15 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          return createInVMFactory();
       }
+   }
+   
+   protected void createQueue(String address, String queue) throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+      ClientSession session = sf.createSession();
+      session.createQueue(address, queue);
+      session.close();
+      sf.close();
    }
 
    protected ClientSessionFactoryImpl createInVMFactory()

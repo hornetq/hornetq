@@ -548,7 +548,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private void handlePageWrite(final ReplicationPageWriteMessage packet) throws Exception
    {
       PagedMessage pgdMessage = packet.getPagedMessage();
-      ServerMessage msg = pgdMessage.getMessage(storage);
+      pgdMessage.initMessage(storage);
+      ServerMessage msg = pgdMessage.getMessage();
       Page page = getPage(msg.getAddress(), packet.getPageNumber());
       page.write(pgdMessage);
    }

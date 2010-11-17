@@ -14,13 +14,17 @@
 package org.hornetq.core.server;
 
 import java.util.List;
+import java.util.Map;
 
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.transaction.Transaction;
 
 /**
  * A RoutingContext
  *
  * @author Tim Fox
+ * @author Clebert Suconic
  *
  *
  */
@@ -30,14 +34,20 @@ public interface RoutingContext
 
    void setTransaction(Transaction transaction);
 
-   void addQueue(Queue queue);
+   void addQueue(SimpleString address, Queue queue);
 
-   List<Queue> getNonDurableQueues();
+   Map<SimpleString, RouteContextList> getContexListing();
+   
+   RouteContextList getContextListing(SimpleString address);
+   
+   List<Queue> getNonDurableQueues(SimpleString address);
 
-   List<Queue> getDurableQueues();
+   List<Queue> getDurableQueues(SimpleString address);
 
    int getQueueCount();
 
    void clear();
+   
+   
 
 }

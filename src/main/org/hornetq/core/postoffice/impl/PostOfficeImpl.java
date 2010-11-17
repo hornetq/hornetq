@@ -14,10 +14,13 @@
 package org.hornetq.core.postoffice.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -47,6 +50,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
@@ -58,6 +62,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
@@ -508,13 +513,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return binding;
    }
 
-   public Bindings getBindingsForAddress(final SimpleString address)
+   public Bindings getBindingsForAddress(final SimpleString address) throws Exception
    {
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
       if (bindings == null)
       {
-         bindings = createBindings();
+         bindings = createBindings(address);
       }
 
       return bindings;
@@ -525,7 +530,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return addressManager.getBinding(name);
    }
 
-   public Bindings getMatchingBindings(final SimpleString address)
+   public Bindings getMatchingBindings(final SimpleString address) throws Exception
    {
       return addressManager.getMatchingBindings(address);
    }
@@ -606,47 +611,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
 
-      if (context.getTransaction() == null)
-      {
-         if (message.page())
-         {
-            return;
-         }
-      }
-      else
-      {
-         Transaction tx = context.getTransaction();
-
-         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
-
-         // if the TX paged at least one message on a give address, all the other addresses should also go towards
-         // paging cache now
-         boolean alreadyPaging = false;
-
-         if (tx.isPaging())
-         {
-            alreadyPaging = getPageOperation(tx).isPaging(message.getAddress());
-         }
-
-         if (!depage && message.storeIsPaging() || alreadyPaging)
-         {
-            tx.setPaging(true);
-            getPageOperation(tx).addMessageToPage(message);
-            if (startedTx)
-            {
-               tx.commit();
-            }
-
-            return;
-         }
-      }
-
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
       if (bindings != null)
       {
          bindings.route(message, context);
       }
+
       if (context.getQueueCount() == 0)
       {
          // Send to DLA if appropriate
@@ -867,89 +838,133 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          processRoute(message, context, false);
       }
    }
+   
+   
+   private class PageDelivery extends TransactionOperationAbstract
+   {
+      private Set<Queue> queues = new HashSet<Queue>();
+      
+      public void addQueues(List<Queue> queueList)
+      {
+         queues.addAll(queueList);
+      }
+      
+      public void afterCommit(Transaction tx)
+      {
+         // We need to try delivering async after paging, or nothing may start a delivery after paging since nothing is going towards the queues
+         // The queue will try to depage case it's empty
+         for (Queue queue : queues)
+         {
+            queue.deliverAsync();
+         }
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
+       */
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return Collections.emptyList();
+      }
+      
+   }
 
    private void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
    {
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 
       Transaction tx = context.getTransaction();
-
-      for (Queue queue : context.getNonDurableQueues())
+      
+      
+      for (Map.Entry<SimpleString, RouteContextList> entry: context.getContexListing().entrySet())
       {
-         MessageReference reference = message.createReference(queue);
-
-         refs.add(reference);
-
-         if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+         PagingStore store = pagingManager.getPageStore(entry.getKey());
+         
+         if (store.page(message, context, entry.getValue()))
          {
-            Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-
-            reference.setScheduledDeliveryTime(scheduledDeliveryTime);
+            
+            // We need to kick delivery so the Queues may check for the cursors case they are empty
+            schedulePageDelivery(tx, entry);
+            continue;
          }
-
-         message.incrementRefCount();
-      }
-
-      Iterator<Queue> iter = context.getDurableQueues().iterator();
-
-      while (iter.hasNext())
-      {
-         Queue queue = iter.next();
-
-         MessageReference reference = message.createReference(queue);
-
-         refs.add(reference);
-
-         if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+   
+         for (Queue queue : entry.getValue().getNonDurableQueues())
          {
-            Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-
-            reference.setScheduledDeliveryTime(scheduledDeliveryTime);
-         }
-
-         if (message.isDurable())
-         {
-            int durableRefCount = message.incrementDurableRefCount();
-
-            if (durableRefCount == 1)
-            {
-               if (tx != null)
-               {
-                  storageManager.storeMessageTransactional(tx.getID(), message);
-               }
-               else
-               {
-                  storageManager.storeMessage(message);
-               }
-            }
-
-            if (tx != null)
-            {
-               storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
-
-               tx.setContainsPersistent();
-            }
-            else
-            {
-               storageManager.storeReference(queue.getID(), message.getMessageID(), !iter.hasNext());
-            }
-
+            MessageReference reference = message.createReference(queue);
+   
+            refs.add(reference);
+   
             if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
             {
+               Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+   
+               reference.setScheduledDeliveryTime(scheduledDeliveryTime);
+            }
+   
+            message.incrementRefCount();
+         }
+   
+         Iterator<Queue> iter = entry.getValue().getDurableQueues().iterator();
+   
+         while (iter.hasNext())
+         {
+            Queue queue = iter.next();
+   
+            MessageReference reference = message.createReference(queue);
+   
+            refs.add(reference);
+   
+            if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+            {
+               Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+   
+               reference.setScheduledDeliveryTime(scheduledDeliveryTime);
+            }
+   
+            if (message.isDurable())
+            {
+               int durableRefCount = message.incrementDurableRefCount();
+   
+               if (durableRefCount == 1)
+               {
+                  if (tx != null)
+                  {
+                     storageManager.storeMessageTransactional(tx.getID(), message);
+                  }
+                  else
+                  {
+                     storageManager.storeMessage(message);
+                  }
+               }
+   
                if (tx != null)
                {
-                  storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), reference);
+                  storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
+   
+                  tx.setContainsPersistent();
                }
                else
                {
-                  storageManager.updateScheduledDeliveryTime(reference);
+                  storageManager.storeReference(queue.getID(), message.getMessageID(), !iter.hasNext());
+               }
+   
+               if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
+               {
+                  if (tx != null)
+                  {
+                     storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), reference);
+                  }
+                  else
+                  {
+                     storageManager.updateScheduledDeliveryTime(reference);
+                  }
                }
             }
+   
+            message.incrementRefCount();
          }
-
-         message.incrementRefCount();
       }
-
+      
       if (tx != null)
       {
          tx.addOperation(new AddOperation(refs));
@@ -970,6 +985,56 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             public void done()
             {
                addReferences(refs, direct);
+            }
+         });
+      }
+   }
+
+   /**
+    * This will kick a delivery async on the queue, so the queue may have a chance to depage messages
+    * @param tx
+    * @param entry
+    */
+   private void schedulePageDelivery(Transaction tx, Map.Entry<SimpleString, RouteContextList> entry)
+   {
+      if (tx != null)
+      {
+         PageDelivery delivery = (PageDelivery)tx.getProperty(TransactionPropertyIndexes.PAGE_DELIVERY);
+         if (delivery == null)
+         {
+            delivery = new PageDelivery();
+            tx.putProperty(TransactionPropertyIndexes.PAGE_DELIVERY, delivery);
+            tx.addOperation(delivery);
+         }
+         
+         delivery.addQueues(entry.getValue().getDurableQueues());
+         delivery.addQueues(entry.getValue().getNonDurableQueues());
+      }
+      else
+      {
+
+         List<Queue> durableQueues = entry.getValue().getDurableQueues();
+         List<Queue> nonDurableQueues = entry.getValue().getNonDurableQueues();
+         
+         final List<Queue> queues = new ArrayList<Queue>(durableQueues.size() + nonDurableQueues.size());
+         
+         queues.addAll(durableQueues);
+         queues.addAll(nonDurableQueues);
+
+         storageManager.afterCompleteOperations(new IOAsyncTask()
+         {
+            
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+            
+            public void done()
+            {
+               for (Queue queue : queues)
+               {
+                  // in case of paging, we need to kick asynchronous delivery to try delivering
+                  queue.deliverAsync();
+               }
             }
          });
       }
@@ -1012,27 +1077,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       message.putStringProperty(new SimpleString("foobar"), new SimpleString(uid));
 
       return message;
-   }
-
-   private final PageMessageOperation getPageOperation(final Transaction tx)
-   {
-      // you could have races on the case two sessions using the same XID
-      // so this whole operation needs to be atomic per TX
-      synchronized (tx)
-      {
-         PageMessageOperation oper = (PageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION);
-
-         if (oper == null)
-         {
-            oper = new PageMessageOperation();
-
-            tx.putProperty(TransactionPropertyIndexes.PAGE_MESSAGES_OPERATION, oper);
-
-            tx.addOperation(oper);
-         }
-
-         return oper;
-      }
    }
 
    private class Reaper implements Runnable
@@ -1114,189 +1158,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   private class PageMessageOperation implements TransactionOperation
-   {
-      private final HashMap<SimpleString, Pair<PagingStore, List<ServerMessage>>> pagingData = new HashMap<SimpleString, Pair<PagingStore, List<ServerMessage>>>();
-
-      private Transaction subTX = null;
-
-      void addMessageToPage(final ServerMessage message)
-      {
-         Pair<PagingStore, List<ServerMessage>> pagePair = pagingData.get(message.getAddress());
-         if (pagePair == null)
-         {
-            pagePair = new Pair<PagingStore, List<ServerMessage>>(message.getPagingStore(),
-                                                                  new ArrayList<ServerMessage>());
-            pagingData.put(message.getAddress(), pagePair);
-         }
-
-         pagePair.b.add(message);
-      }
-
-      boolean isPaging(final SimpleString address)
-      {
-         return pagingData.get(address) != null;
-      }
-
-      public void afterCommit(final Transaction tx)
-      {
-         // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
-         // transaction until all the messages were added to the queue
-         // or else we could deliver the messages out of order
-
-         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-
-         if (pageTransaction != null)
-         {
-            pageTransaction.commit();
-         }
-
-         if (subTX != null)
-         {
-            subTX.afterCommit();
-         }
-      }
-
-      public void afterPrepare(final Transaction tx)
-      {
-         if (subTX != null)
-         {
-            subTX.afterPrepare();
-         }
-      }
-
-      public void afterRollback(final Transaction tx)
-      {
-         PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-
-         if (tx.getState() == State.PREPARED && pageTransaction != null)
-         {
-            pageTransaction.rollback();
-         }
-
-         if (subTX != null)
-         {
-            subTX.afterRollback();
-         }
-      }
-
-      public void beforeCommit(final Transaction tx) throws Exception
-      {
-         if (tx.getState() != Transaction.State.PREPARED)
-         {
-            pageMessages(tx);
-         }
-
-         if (subTX != null)
-         {
-            subTX.beforeCommit();
-         }
-
-      }
-
-      public void beforePrepare(final Transaction tx) throws Exception
-      {
-         pageMessages(tx);
-
-         if (subTX != null)
-         {
-            subTX.beforePrepare();
-         }
-      }
-
-      public void beforeRollback(final Transaction tx) throws Exception
-      {
-         if (subTX != null)
-         {
-            subTX.beforeRollback();
-         }
-      }
-
-      public List<MessageReference> getRelatedMessageReferences()
-      {
-         return null;
-      }
-      
-      private void pageMessages(final Transaction tx) throws Exception
-      {
-         if (!pagingData.isEmpty())
-         {
-            PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-
-            if (pageTransaction == null)
-            {
-               pageTransaction = new PageTransactionInfoImpl(tx.getID());
-
-               tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransaction);
-
-               // To avoid a race condition where depage happens before the transaction is completed, we need to inform
-               // the pager about this transaction is being processed
-               pagingManager.addTransaction(pageTransaction);
-            }
-
-            boolean pagingPersistent = false;
-
-            ArrayList<ServerMessage> nonPagedMessages = null;
-
-            for (Pair<PagingStore, List<ServerMessage>> pair : pagingData.values())
-            {
-               
-               if (!pair.a.page(pair.b, tx.getID()))
-               {
-                  if (nonPagedMessages == null)
-                  {
-                     nonPagedMessages = new ArrayList<ServerMessage>();
-                  }
-                  nonPagedMessages.addAll(pair.b);
-               }
-               
-               for (ServerMessage msg : pair.b)
-               {
-                  if (msg.isDurable())
-                  {
-                     pageTransaction.increment();
-                     pagingPersistent = true;
-                  }
-               }
-            }
-
-            if (nonPagedMessages != null)
-            {
-               for (ServerMessage message : nonPagedMessages)
-               {
-                  // This could happen when the PageStore left the pageState
-                  // we create a copy of the transaction so that messages are routed with the same tx ID.
-                  // but we can not use directly the tx as it has already its own set of TransactionOperations
-                  if (subTX == null)
-                  {
-                     subTX = tx.copy();
-                  }
-
-                  route(message, subTX, false);
-
-                  if (subTX.isContainsPersistent())
-                  {
-                     // The route wouldn't be able to update the persistent flag on the main TX
-                     // If we don't do this we would eventually miss a commit record
-                     tx.setContainsPersistent();
-                  }
-               }
-            }
-
-            if (pagingPersistent)
-            {
-               tx.setContainsPersistent();
-               for (Pair<PagingStore, List<ServerMessage>> pair : pagingData.values())
-               {
-                  pair.a.sync();
-               }
-
-               pageTransaction.store(storageManager, pagingManager, tx);
-            }
-         }
-      }
-   }
-
    private class AddOperation implements TransactionOperation
    {
       private final List<MessageReference> refs;
@@ -1353,8 +1214,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
    }
 
-   public Bindings createBindings()
+   public Bindings createBindings(final SimpleString address) throws Exception
    {
-      return new BindingsImpl(server.getGroupingHandler());
+      return new BindingsImpl(server.getGroupingHandler(), pagingManager.getPageStore(address));
    }
 }

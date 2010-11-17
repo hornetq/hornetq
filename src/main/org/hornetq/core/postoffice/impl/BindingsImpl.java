@@ -27,6 +27,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.Queue;
@@ -60,10 +61,13 @@ public class BindingsImpl implements Bindings
    private volatile boolean routeWhenNoConsumers;
 
    private final GroupingHandler groupingHandler;
+   
+   private final PagingStore pageStore;
 
-   public BindingsImpl(final GroupingHandler groupingHandler)
+   public BindingsImpl(final GroupingHandler groupingHandler, final PagingStore pageStore)
    {
       this.groupingHandler = groupingHandler;
+      this.pageStore = pageStore;
    }
 
    public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
@@ -218,7 +222,12 @@ public class BindingsImpl implements Bindings
          return false;
       }
    }
-
+   
+   public PagingStore getPagingStore()
+   {
+      return pageStore;
+   }
+   
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       boolean routed = false;

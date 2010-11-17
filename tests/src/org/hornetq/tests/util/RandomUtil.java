@@ -18,6 +18,8 @@ import java.util.UUID;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.transaction.impl.XidImpl;
 
@@ -71,6 +73,26 @@ public class RandomUtil
    {
       return Math.abs(RandomUtil.randomInt());
    }
+   
+
+   public static HornetQBuffer randomBuffer(final int size, final long... data)
+   {
+      HornetQBuffer buffer = HornetQBuffers.fixedBuffer(size + 8 * data.length);
+
+      for (long d : data)
+      {
+         buffer.writeLong(d);
+      }
+
+      for (int i = 0 ; i < size; i++)
+      {
+         buffer.writeByte((byte)randomByte());
+      }
+
+      return buffer;
+   }
+
+
    
    
    public static int randomInterval(final int min, final int max)

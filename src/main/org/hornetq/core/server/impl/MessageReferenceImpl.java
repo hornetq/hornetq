@@ -17,6 +17,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.MemorySize;
 
 /**
@@ -144,6 +145,28 @@ public class MessageReferenceImpl implements MessageReference
    {
       queue.referenceHandled();
    }
+   
+   public boolean isPaged()
+   {
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.server.MessageReference)
+    */
+   public void acknowledge() throws Exception
+   {
+      queue.acknowledge(this);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#acknowledge(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)
+    */
+   public void acknowledge(Transaction tx) throws Exception
+   {
+      queue.acknowledge(tx, this);
+   }
+
 
    // Public --------------------------------------------------------
 
@@ -154,7 +177,6 @@ public class MessageReferenceImpl implements MessageReference
              "]:" +
              (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE");
    }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -14,9 +14,15 @@
 package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.transaction.Transaction;
 
@@ -29,9 +35,9 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class RoutingContextImpl implements RoutingContext
 {
-   private final List<Queue> nonDurableQueues = new ArrayList<Queue>(1);
-
-   private final List<Queue> durableQueues = new ArrayList<Queue>(1);
+   
+   // The pair here is Durable and NonDurable
+   private Map<SimpleString, RouteContextList> map = new HashMap<SimpleString, RouteContextList>();
 
    private Transaction transaction;
 
@@ -41,35 +47,42 @@ public class RoutingContextImpl implements RoutingContext
    {
       this.transaction = transaction;
    }
-
+   
    public void clear()
    {
       transaction = null;
 
-      nonDurableQueues.clear();
-
-      durableQueues.clear();
-
+      map.clear();
+      
       queueCount = 0;
    }
 
-   public void addQueue(final Queue queue)
+   public void addQueue(final SimpleString address, final Queue queue)
    {
+
+      RouteContextList listing = getContextListing(address);
+      
       if (queue.isDurable())
       {
-         durableQueues.add(queue);
+         listing.getDurableQueues().add(queue);
       }
       else
       {
-         nonDurableQueues.add(queue);
+         listing.getNonDurableQueues().add(queue);
       }
 
       queueCount++;
    }
-
-   public void addDurableQueue(final Queue queue)
+   
+   public RouteContextList getContextListing(SimpleString address)
    {
-      durableQueues.add(queue);
+      RouteContextList listing = map.get(address);
+      if (listing == null)
+      {
+         listing = new ContextListing();
+         map.put(address, listing);
+      }
+      return listing;
    }
 
    public Transaction getTransaction()
@@ -82,19 +95,56 @@ public class RoutingContextImpl implements RoutingContext
       transaction = tx;
    }
 
-   public List<Queue> getNonDurableQueues()
+   public List<Queue> getNonDurableQueues(SimpleString address)
    {
-      return nonDurableQueues;
+      return getContextListing(address).getNonDurableQueues();
    }
 
-   public List<Queue> getDurableQueues()
+   public List<Queue> getDurableQueues(SimpleString address)
    {
-      return durableQueues;
+      return getContextListing(address).getDurableQueues();
    }
 
    public int getQueueCount()
    {
       return queueCount;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.RoutingContext#getAddresses()
+    */
+   public Map<SimpleString, RouteContextList> getContexListing()
+   {
+      return this.map;
+   }
+   
+   
+   private class ContextListing implements RouteContextList
+   {
+      private List<Queue> durableQueue = new ArrayList<Queue>(1);
+      
+      private List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
+      
+      public int getNumberOfQueues()
+      {
+         return durableQueue.size() + nonDurableQueue.size();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.RouteContextList#getDurableQueues()
+       */
+      public List<Queue> getDurableQueues()
+      {
+         return durableQueue;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.RouteContextList#getNonDurableQueues()
+       */
+      public List<Queue> getNonDurableQueues()
+      {
+         return nonDurableQueue;
+      }
    }
 
 }

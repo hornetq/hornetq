@@ -15,6 +15,8 @@ package org.hornetq.core.paging;
 
 import java.util.List;
 
+import org.hornetq.core.paging.cursor.LivePageCache;
+
 /**
  * 
  * @see PagingManager
@@ -28,6 +30,8 @@ public interface Page
    void write(PagedMessage message) throws Exception;
 
    List<PagedMessage> read() throws Exception;
+   
+   void setLiveCache(LivePageCache pageCache);
 
    int getSize();
 

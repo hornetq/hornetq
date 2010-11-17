@@ -141,6 +141,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    
    private Map<String, String> metaData;
 
+   // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
    private Map<SimpleString, UUID> targetAddressInfos = new HashMap<SimpleString, UUID>();
    
    private long creationTime = System.currentTimeMillis();
@@ -485,7 +486,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       return response;
    }
 
-   public BindingQueryResult executeBindingQuery(final SimpleString address)
+   public BindingQueryResult executeBindingQuery(final SimpleString address) throws Exception
    {
       if (address == null)
       {

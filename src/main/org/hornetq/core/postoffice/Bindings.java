@@ -15,6 +15,7 @@ package org.hornetq.core.postoffice;
 
 import java.util.Collection;
 
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -41,4 +42,6 @@ public interface Bindings
    boolean redistribute(ServerMessage message, Queue originatingQueue, RoutingContext context) throws Exception;
 
    void route(ServerMessage message, RoutingContext context) throws Exception;
+   
+   PagingStore getPagingStore();
 }

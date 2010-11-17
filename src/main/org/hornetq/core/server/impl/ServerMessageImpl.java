@@ -249,30 +249,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return pagingStore;
    }
 
-   public boolean page() throws Exception
-   {
-      if (pagingStore != null)
-      {
-         return pagingStore.page(this);
-      }
-      else
-      {
-         return false;
-      }
-   }
-
-   public boolean page(final long transactionID) throws Exception
-   {
-      if (pagingStore != null)
-      {
-         return pagingStore.page(Arrays.asList((ServerMessage)this), transactionID);
-      }
-      else
-      {
-         return false;
-      }
-   }
-
    public boolean storeIsPaging()
    {
       if (pagingStore != null)

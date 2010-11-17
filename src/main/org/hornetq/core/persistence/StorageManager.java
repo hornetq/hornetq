@@ -13,7 +13,6 @@
 
 package org.hornetq.core.persistence;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -27,6 +26,7 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
@@ -98,6 +98,8 @@ public interface StorageManager extends HornetQComponent
    void deleteMessage(long messageID) throws Exception;
 
    void storeAcknowledge(long queueID, long messageID) throws Exception;
+   
+   void storeCursorAcknowledge(long queueID, PagePosition position) throws Exception;
 
    void updateDeliveryCount(MessageReference ref) throws Exception;
 
@@ -112,6 +114,10 @@ public interface StorageManager extends HornetQComponent
    void storeReferenceTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
+
+   void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception;
+   
+   void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception;
 
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
@@ -136,6 +142,8 @@ public interface StorageManager extends HornetQComponent
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
    
    void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
+   
+   void updatePageTransaction(PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
    void deletePageTransactional(long recordID) throws Exception;
 
@@ -147,6 +155,7 @@ public interface StorageManager extends HornetQComponent
                                              final PagingManager pagingManager,
                                              final ResourceManager resourceManager,
                                              final Map<Long, Queue> queues,
+                                             Map<Long, QueueBindingInfo> queueInfos,
                                              final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;

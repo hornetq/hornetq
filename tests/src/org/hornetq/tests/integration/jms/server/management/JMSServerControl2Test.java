@@ -47,6 +47,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -359,6 +360,8 @@ public class JMSServerControl2Test extends ManagementTestBase
 
       System.out.println("queueName is: " + queueName);
       
+      Connection connection = null;
+      
       try
       {
          startHornetQServer(NettyAcceptorFactory.class.getName());
@@ -372,16 +375,20 @@ public class JMSServerControl2Test extends ManagementTestBase
          ConnectionFactory cf1 = JMSUtil.createFactory(NettyConnectorFactory.class.getName(),
                                                        JMSServerControl2Test.CONNECTION_TTL,
                                                        JMSServerControl2Test.PING_PERIOD);
-         Connection connection = cf1.createConnection();
+         connection = cf1.createConnection();
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          MessageProducer producer = session.createProducer(queue);
          
+         TextMessage msgSent = null;
          for (int i = 0; i < 10; i++)
          {
-            TextMessage msg = session.createTextMessage("mymessage-" + i);
-            producer.send(msg);
+            msgSent = session.createTextMessage("mymessage-" + i);
+            producer.send(msgSent);
+            System.out.println("sending msgID " + msgSent.getJMSMessageID());
          }
+         
+         
 
          connection.start();
          
@@ -392,11 +399,14 @@ public class JMSServerControl2Test extends ManagementTestBase
          for (int i = 0; i < 10; i++)
          {
             receivedMsg = (TextMessage)consumer.receive(3000);
+            assertNotNull(receivedMsg);
             System.out.println("receiveMsg: " + receivedMsg);
          }
          
-         String lastMsgID = receivedMsg.getJMSMessageID();
-         System.out.println("Last mid: " + lastMsgID);
+         assertEquals(msgSent.getJMSMessageID(), receivedMsg.getJMSMessageID());
+         
+         HornetQMessage jmsMessage = (HornetQMessage)receivedMsg;
+         String lastMsgID = jmsMessage.getCoreMessage().getUserID().toString();
          
          String jsonStr = control.listConnectionsAsJSON();
          JMSConnectionInfo[] infos = JMSConnectionInfo.from(jsonStr);
@@ -434,10 +444,22 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
-         if (serverManager != null)
+         try
          {
-            serverManager.destroyQueue(queueName);
-            serverManager.stop();
+            if (connection != null)
+            {
+               connection.close();
+            }
+            
+            if (serverManager != null)
+            {
+               serverManager.destroyQueue(queueName);
+               serverManager.stop();
+            }
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
          }
 
          if (server != null)

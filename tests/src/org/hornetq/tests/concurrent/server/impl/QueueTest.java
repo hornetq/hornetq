@@ -65,6 +65,7 @@ public class QueueTest extends UnitTestCase
                                              new SimpleString("address1"),
                                              new SimpleString("queue1"),
                                              null,
+                                             null,
                                              false,
                                              false);
 

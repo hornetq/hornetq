@@ -228,6 +228,15 @@ public class PagingManagerImpl implements PagingManager
          }
       }
    }
+   
+   public void processReload() throws Exception
+   {
+      for (PagingStore store: stores.values())
+      {
+         store.processReload();
+      }
+   }
+
 
    // Package protected ---------------------------------------------
 
@@ -235,7 +244,7 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   protected PagingStore newStore(final SimpleString address) throws Exception
+   protected PagingStore newStore(final SimpleString address) 
    {
       return pagingStoreFactory.newStore(address,
                                          addressSettingsRepository.getMatch(address.toString()));

@@ -280,8 +280,12 @@ public class OperationContextImpl implements OperationContext
       if (timeout == 0)
       {
          waitCallback.waitCompletion();
+         return true;
       }
-      return waitCallback.waitCompletion(timeout);
+      else
+      {
+         return waitCallback.waitCompletion(timeout);
+      }
    }
 
 }

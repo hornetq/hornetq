@@ -56,10 +56,6 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
 
    PagingStore getPagingStore();
 
-   boolean page() throws Exception;
-
-   boolean page(long transactionID) throws Exception;
-
    boolean storeIsPaging();
 
    void encodeMessageIDToBuffer();

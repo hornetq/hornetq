@@ -15,6 +15,7 @@ package org.hornetq.core.server;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.postoffice.PostOffice;
 
 /**
@@ -33,6 +34,7 @@ public interface QueueFactory
                      final SimpleString address,
                      SimpleString name,
                      Filter filter,
+                     PageSubscription pageSubscription,
                      boolean durable,
                      boolean temporary);
 

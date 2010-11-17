@@ -111,6 +111,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
+                                    null,
                                     mapDups);
 
          Assert.assertEquals(0, mapDups.size());
@@ -132,6 +133,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
+                                    null,
                                     mapDups);
 
          Assert.assertEquals(1, mapDups.size());
@@ -160,6 +162,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
                                     new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
+                                    null,
                                     mapDups);
 
          Assert.assertEquals(1, mapDups.size());
@@ -318,6 +321,16 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       public Map<Long, PageTransactionInfo> getTransactions()
       {
          return null;
+      }
+
+      
+      
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.paging.PagingManager#processReload()
+       */
+      public void processReload()
+      {
       }
 
    }

@@ -13,10 +13,11 @@
 
 package org.hornetq.core.paging;
 
-import java.util.List;
-
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
@@ -36,10 +37,17 @@ public interface PagingStore extends HornetQComponent
    SimpleString getAddress();
 
    int getNumberOfPages();
+   
+   // The current page in which the system is writing files
+   int getCurrentWritingPage();
 
    SimpleString getStoreName();
 
    AddressFullMessagePolicy getAddressFullMessagePolicy();
+   
+   long getFirstPage();
+   
+   long getTopPage();
 
    long getPageSizeBytes();
 
@@ -51,19 +59,61 @@ public interface PagingStore extends HornetQComponent
 
    void sync() throws Exception;
 
-   boolean page(List<ServerMessage> messages, long transactionId) throws Exception;
+   boolean page(ServerMessage message, RoutingContext ctx) throws Exception;
 
-   boolean page(ServerMessage message) throws Exception;
+   boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
 
    Page createPage(final int page) throws Exception;
+   
+   PagingManager getPagingManager();
+   
+   PageCursorProvider getCursorProvier();
+   
+   void processReload() throws Exception;
+   
+   /** 
+    * Remove the first page from the Writing Queue.
+    * The file will still exist until Page.delete is called, 
+    * So, case the system is reloaded the same Page will be loaded back if delete is not called.
+    *
+    * @throws Exception
+    * 
+    * Note: This should still be part of the interface, even though HornetQ only uses through the 
+    */
+   Page depage() throws Exception;
+
+
+   void forceAnotherPage() throws Exception;
+
+   Page getCurrentPage();
+
 
    /**
     * @return false if a thread was already started, or if not in page mode
     * @throws Exception 
     */
    boolean startDepaging();
+   
+   /** @return true if paging was started, or false if paging was already started before this call */
+   boolean startPaging() throws Exception;
+
+   void stopPaging() throws Exception;
 
    void addSize(int size);
    
    void executeRunnableWhenMemoryAvailable(Runnable runnable);
+   
+   /** This method will hold and producer, but it wait operations to finish before locking (write lock) */
+   void lock();
+   
+   /** 
+    * 
+    * Call this method using the same thread used by the last call of {@link PagingStore#lock()}
+    * 
+    */
+    void unlock();
+
+    /** This is used mostly by tests.
+     *  We will wait any pending runnable to finish its execution */
+    void flushExecutors();
 }

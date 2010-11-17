@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.transaction.Transaction;
 
 /**
@@ -38,6 +39,8 @@ public interface Queue extends Bindable
    long getID();
 
    Filter getFilter();
+   
+   PageSubscription getPageSubscription();
 
    boolean isDurable();
 

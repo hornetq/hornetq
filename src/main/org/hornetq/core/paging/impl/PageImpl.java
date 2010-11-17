@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +26,7 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.utils.DataConstants;
 
@@ -35,7 +35,7 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class PageImpl implements Page
+public class PageImpl implements Page, Comparable<Page>
 {
    // Constants -----------------------------------------------------
 
@@ -58,6 +58,11 @@ public class PageImpl implements Page
    private final SequentialFile file;
 
    private final SequentialFileFactory fileFactory;
+   
+   /**
+    * The page cache that will be filled with data as we write more data
+    */
+   private volatile LivePageCache pageCache;
 
    private final AtomicInteger size = new AtomicInteger(0);
 
@@ -90,13 +95,19 @@ public class PageImpl implements Page
    {
       return pageId;
    }
+   
+   public void setLiveCache(LivePageCache pageCache)
+   {
+      this.pageCache = pageCache;
+   }
 
    public List<PagedMessage> read() throws Exception
    {
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
+      size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer buffer2 = ByteBuffer.allocateDirect((int)file.size());
+      ByteBuffer buffer2 = ByteBuffer.allocateDirect(size.get());
       
       file.position(0);
       file.read(buffer2);
@@ -168,6 +179,11 @@ public class PageImpl implements Page
       buffer.rewind();
 
       file.writeDirect(buffer, false);
+      
+      if (pageCache != null)
+      {
+         pageCache.addLiveMessage(message);
+      }
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
@@ -192,6 +208,12 @@ public class PageImpl implements Page
       if (storageManager != null)
       {
          storageManager.pageClosed(storeName, pageId);
+      }
+      if (pageCache != null)
+      {
+         pageCache.close();
+         // leave it to the soft cache to decide when to release it now
+         pageCache = null;
       }
       file.close();
    }
@@ -241,12 +263,53 @@ public class PageImpl implements Page
    {
       return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
    }
+   
+
+   /* (non-Javadoc)
+    * @see java.lang.Comparable#compareTo(java.lang.Object)
+    */
+   public int compareTo(Page otherPage)
+   {
+      return otherPage.getPageId() - this.pageId;
+   }
+
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + pageId;
+      return result;
+   }
+
 
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      PageImpl other = (PageImpl)obj;
+      if (pageId != other.pageId)
+         return false;
+      return true;
+   }
 
    /**
     * @param position

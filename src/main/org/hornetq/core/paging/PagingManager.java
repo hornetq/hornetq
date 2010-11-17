@@ -81,4 +81,6 @@ public interface PagingManager extends HornetQComponent
    SimpleString[] getStoreNames();
 
    void deletePageStore(SimpleString storeName) throws Exception;
+   
+   void processReload() throws Exception;
 }

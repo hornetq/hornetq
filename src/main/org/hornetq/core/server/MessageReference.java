@@ -13,6 +13,8 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.core.transaction.Transaction;
+
 /**
  * A reference to a message.
  * 
@@ -26,6 +28,9 @@ package org.hornetq.core.server;
  */
 public interface MessageReference
 {
+   
+   boolean isPaged();
+   
    ServerMessage getMessage();
 
    MessageReference copy(Queue queue);
@@ -48,6 +53,11 @@ public interface MessageReference
    void decrementDeliveryCount();
 
    Queue getQueue();
+   
+   void acknowledge() throws Exception;
+   
+   void acknowledge(final Transaction tx) throws Exception;
+
 
    void handled();
 }

@@ -50,6 +50,10 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.PagePosition;
+import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
@@ -133,6 +137,8 @@ public class JournalStorageManager implements StorageManager
    public static final byte DUPLICATE_ID = 37;
 
    public static final byte HEURISTIC_COMPLETION = 38;
+
+   public static final byte ACKNOWLEDGE_CURSOR = 39;
 
    private UUID persistentID;
 
@@ -508,6 +514,15 @@ public class JournalStorageManager implements StorageManager
                                         syncNonTransactional,
                                         getContext(syncNonTransactional));
    }
+   
+   public void storeCursorAcknowledge(long queueID, PagePosition position) throws Exception
+   {
+     long ackID = idGenerator.generateID();
+     position.setRecordID(ackID);
+     messageJournal.appendAddRecord(ackID, ACKNOWLEDGE_CURSOR, new CursorAckRecordEncoding(queueID, position), syncNonTransactional, getContext(syncNonTransactional));
+   }
+
+
 
    public void deleteMessage(final long messageID) throws Exception
    {
@@ -591,6 +606,16 @@ public class JournalStorageManager implements StorageManager
                                                                               depages));
    }
 
+   public void updatePageTransaction(final PageTransactionInfo pageTransaction, final int depages) throws Exception
+   {
+      messageJournal.appendUpdateRecord(pageTransaction.getRecordID(),
+                                        JournalStorageManager.PAGE_TRANSACTION,
+                                        new PageUpdateTXEncoding(pageTransaction.getTransactionID(),
+                                                                 depages),
+                                        syncNonTransactional,
+                                        getContext(syncNonTransactional));
+   }
+
    public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       messageJournal.appendUpdateRecordTransactional(txID,
@@ -606,6 +631,26 @@ public class JournalStorageManager implements StorageManager
                                                      JournalStorageManager.ACKNOWLEDGE_REF,
                                                      new RefEncoding(queueID));
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
+    */
+   public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception
+   {
+      long ackID = idGenerator.generateID();
+      position.setRecordID(ackID);
+      messageJournal.appendAddRecordTransactional(txID, ackID, ACKNOWLEDGE_CURSOR, new CursorAckRecordEncoding(queueID, position));
+   }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
+    */
+   public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, ackID);
+   }
+
 
    public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
    {
@@ -763,6 +808,7 @@ public class JournalStorageManager implements StorageManager
                                                     final PagingManager pagingManager,
                                                     final ResourceManager resourceManager,
                                                     final Map<Long, Queue> queues,
+                                                    Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
@@ -912,7 +958,7 @@ public class JournalStorageManager implements StorageManager
 
                   PageTransactionInfo pageTX = pagingManager.getTransaction(pageUpdate.pageTX);
 
-                  pageTX.update(pageUpdate.recods, null, null);
+                  pageTX.onUpdate(pageUpdate.recods, null, null);
                }
                else
                {
@@ -977,6 +1023,29 @@ public class JournalStorageManager implements StorageManager
                HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
                encoding.decode(buff);
                resourceManager.putHeuristicCompletion(record.id, encoding.xid, encoding.isCommit);
+               break;
+            }
+            case ACKNOWLEDGE_CURSOR:
+            {
+               CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+               encoding.decode(buff);
+               
+               encoding.position.setRecordID(record.id);
+               
+               QueueBindingInfo queueInfo = queueInfos.get(encoding.queueID);
+               
+               if (queueInfo != null)
+               {
+                  SimpleString address = queueInfo.getAddress();
+                  PagingStore store = pagingManager.getPageStore(address);
+                  PageSubscription cursor = store.getCursorProvier().getSubscription(encoding.queueID);
+                  cursor.reloadACK(encoding.position);
+               }
+               else
+               {
+                  log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+               }
+               
                break;
             }
             default:
@@ -1475,8 +1544,6 @@ public class JournalStorageManager implements StorageManager
 
                   pageTransactionInfo.decode(buff);
 
-                  pageTransactionInfo.markIncomplete();
-
                   tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
 
                   pagingManager.addTransaction(pageTransactionInfo);
@@ -1511,6 +1578,12 @@ public class JournalStorageManager implements StorageManager
 
                   ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
 
+                  break;
+               }
+               case ACKNOWLEDGE_CURSOR:
+               {
+                  // TODO: implement and test this case
+                  // and make sure the rollback will work well also
                   break;
                }
                default:
@@ -2201,6 +2274,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
+   
 
    private static final class AddMessageRecord
    {
@@ -2214,8 +2288,53 @@ public class JournalStorageManager implements StorageManager
       long scheduledDeliveryTime;
 
       int deliveryCount;
+   }
 
-      boolean referenced = false;
+   private static final class CursorAckRecordEncoding implements EncodingSupport
+   {
+      public CursorAckRecordEncoding(final long queueID, final PagePosition position)
+      {
+         this.queueID = queueID;
+         this.position = position;
+      }
+      
+      public CursorAckRecordEncoding()
+      {
+         this.position = new PagePositionImpl();
+      }
+
+      long queueID;
+
+      PagePosition position;
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG + DataConstants.SIZE_LONG + DataConstants.SIZE_INT;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeLong(position.getPageNr());
+         buffer.writeInt(position.getMessageNr());
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void decode(HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         long pageNR = buffer.readLong();
+         int messageNR = buffer.readInt();
+         this.position = new PagePositionImpl(pageNR, messageNR);
+      }
    }
 
    private class LargeMessageTXFailureCallback implements TransactionFailureCallback
@@ -2254,5 +2373,4 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
 }

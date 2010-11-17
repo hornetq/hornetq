@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -168,7 +169,7 @@ public class UnitTestCase extends TestCase
       }
    }
 
-   public static void forceGC(WeakReference<?> ref, long timeout)
+   public static void forceGC(Reference<?> ref, long timeout)
    {
       long waitUntil = System.currentTimeMillis() + timeout; 
       // A loop that will wait GC, using the minimal time as possible

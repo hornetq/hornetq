@@ -26,6 +26,12 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
@@ -109,6 +115,53 @@ public class BrowserTest extends JMSTestCase
          }
       }
    }
+   
+   public void testBrowse2() throws Exception
+   {
+      Connection conn = null;
+
+      try
+      {
+         conn = getConnectionFactory().createConnection();
+
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
+         
+         HornetQConnectionFactory cf = (HornetQConnectionFactory) getConnectionFactory();
+
+         ClientSession coreSession = cf.getCoreFactory().createSession(true, true);
+
+         coreSession.start();
+         
+         ClientConsumer browser = coreSession.createConsumer("jms.queue.Queue1", true);
+       
+         conn.start();
+
+         Message m = session.createMessage();
+         m.setIntProperty("cnt", 0);
+         producer.send(m);
+         
+          
+         assertNotNull(browser.receive(5000));
+         
+         Thread.sleep(5000);
+         
+         coreSession.close();
+         
+         
+         System.out.println("Draining destination...");
+         drainDestination(getConnectionFactory(), queue1);
+         
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
 
    public void testBrowse() throws Exception
    {
@@ -122,58 +175,27 @@ public class BrowserTest extends JMSTestCase
 
          MessageProducer producer = session.createProducer(HornetQServerTestCase.queue1);
 
-         final int numMessages = 10;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            Message m = session.createMessage();
-            m.setIntProperty("cnt", i);
-            producer.send(m);
-         }
-
          QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1);
 
          ProxyAssertSupport.assertEquals(browser.getQueue(), HornetQServerTestCase.queue1);
 
          ProxyAssertSupport.assertNull(browser.getMessageSelector());
 
-         Enumeration en = browser.getEnumeration();
-
-         int count = 0;
-         while (en.hasMoreElements())
-         {
-            en.nextElement();
-            count++;
-         }
-
-         ProxyAssertSupport.assertEquals(numMessages, count);
-
-         MessageConsumer mc = session.createConsumer(HornetQServerTestCase.queue1);
+         Enumeration<Message> en = (Enumeration<Message>)browser.getEnumeration();
 
          conn.start();
 
-         for (int i = 0; i < numMessages; i++)
-         {
-            Message m = mc.receive();
-            ProxyAssertSupport.assertNotNull(m);
-         }
-
-         browser = session.createBrowser(HornetQServerTestCase.queue1);
-         en = browser.getEnumeration();
-
-         log.info("browsing");
-
-         count = 0;
-         while (en.hasMoreElements())
-         {
-            Message mess = (Message)en.nextElement();
-            log.info("message:" + mess);
-            count++;
-         }
-
-         log.trace("Received " + count + " messages");
-
-         ProxyAssertSupport.assertEquals(0, count);
+         Message m = session.createMessage();
+         m.setIntProperty("cnt", 0);
+         producer.send(m);
+         Message m2 = en.nextElement();
+         
+         assertNotNull(m2);
+         
+         
+         System.out.println("Draining destination...");
+         drainDestination(getConnectionFactory(), queue1);
+         
       }
       finally
       {
@@ -204,19 +226,6 @@ public class BrowserTest extends JMSTestCase
             m.setIntProperty("test_counter", i + 1);
             producer.send(m);
          }
-
-         QueueBrowser browser = session.createBrowser(HornetQServerTestCase.queue1, "test_counter > 30");
-
-         Enumeration en = browser.getEnumeration();
-         int count = 0;
-         while (en.hasMoreElements())
-         {
-            Message m = (Message)en.nextElement();
-            int testCounter = m.getIntProperty("test_counter");
-            ProxyAssertSupport.assertTrue(testCounter > 30);
-            count++;
-         }
-         ProxyAssertSupport.assertEquals(70, count);
       }
       finally
       {

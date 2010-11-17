@@ -46,7 +46,7 @@ public class SimpleAddressManager implements AddressManager
       this.bindingsFactory = bindingsFactory;
    }
 
-   public boolean addBinding(final Binding binding)
+   public boolean addBinding(final Binding binding) throws Exception
    {
       if (nameMap.putIfAbsent(binding.getUniqueName(), binding) != null)
       {
@@ -56,7 +56,7 @@ public class SimpleAddressManager implements AddressManager
       return addMappingInternal(binding.getAddress(), binding);
    }
 
-   public Binding removeBinding(final SimpleString uniqueName)
+   public Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
       Binding binding = nameMap.remove(uniqueName);
 
@@ -70,7 +70,7 @@ public class SimpleAddressManager implements AddressManager
       return binding;
    }
 
-   public Bindings getBindingsForRoutingAddress(final SimpleString address)
+   public Bindings getBindingsForRoutingAddress(final SimpleString address) throws Exception
    {
       return mappings.get(address);
    }
@@ -85,11 +85,11 @@ public class SimpleAddressManager implements AddressManager
       return nameMap;
    }
 
-   public Bindings getMatchingBindings(final SimpleString address)
+   public Bindings getMatchingBindings(final SimpleString address) throws Exception
    {
       Address add = new AddressImpl(address);
 
-      Bindings bindings = bindingsFactory.createBindings();
+      Bindings bindings = bindingsFactory.createBindings(address);
 
       for (Binding binding : nameMap.values())
       {
@@ -149,7 +149,7 @@ public class SimpleAddressManager implements AddressManager
       return theBinding;
    }
 
-   protected boolean addMappingInternal(final SimpleString address, final Binding binding)
+   protected boolean addMappingInternal(final SimpleString address, final Binding binding) throws Exception
    {
       Bindings bindings = mappings.get(address);
 
@@ -157,7 +157,7 @@ public class SimpleAddressManager implements AddressManager
 
       if (bindings == null)
       {
-         bindings = bindingsFactory.createBindings();
+         bindings = bindingsFactory.createBindings(address);
 
          prevBindings = mappings.putIfAbsent(address, bindings);
 

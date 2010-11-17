@@ -289,6 +289,26 @@ public class LVQTest extends UnitTestCase
       Assert.assertEquals(m.getBodyBuffer().readString(), "m4");
    }
 
+   public void testSingleTXRollback() throws Exception
+   {
+      ClientProducer producer = clientSessionTxReceives.createProducer(address);
+      ClientConsumer consumer = clientSessionTxReceives.createConsumer(qName1);
+      SimpleString messageId1 = new SimpleString("SMID1");
+      ClientMessage m1 = createTextMessage("m1", clientSession);
+      m1.putStringProperty(Message.HDR_LAST_VALUE_NAME, messageId1);
+      producer.send(m1);
+      clientSessionTxReceives.start();
+      ClientMessage m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      clientSessionTxReceives.rollback();
+      m = consumer.receive(1000);
+      Assert.assertNotNull(m);
+      m.acknowledge();
+      Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
+      Assert.assertNull(consumer.receiveImmediate());
+   }
+
    public void testMultipleMessagesInTxSend() throws Exception
    {
       ClientProducer producer = clientSessionTxSends.createProducer(address);

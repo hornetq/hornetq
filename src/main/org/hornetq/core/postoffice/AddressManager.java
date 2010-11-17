@@ -25,13 +25,13 @@ import org.hornetq.api.core.SimpleString;
  */
 public interface AddressManager
 {
-   boolean addBinding(Binding binding);
+   boolean addBinding(Binding binding) throws Exception;
 
-   Binding removeBinding(SimpleString uniqueName);
+   Binding removeBinding(SimpleString uniqueName) throws Exception;
 
-   Bindings getBindingsForRoutingAddress(SimpleString address);
+   Bindings getBindingsForRoutingAddress(SimpleString address) throws Exception;
 
-   Bindings getMatchingBindings(SimpleString address);
+   Bindings getMatchingBindings(SimpleString address) throws Exception;
 
    void clear();
 

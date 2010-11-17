@@ -87,7 +87,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
    }
 
-   public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings) throws Exception
+   public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings)
    {
 
       return new PagingStoreImpl(address,
@@ -98,7 +98,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  this,
                                  address,
                                  settings,
-                                 executorFactory.getExecutor(),
+                                 executorFactory,
                                  syncNonTransactional);
    }
 
@@ -202,7 +202,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                                     this,
                                                     address,
                                                     settings,
-                                                    executorFactory.getExecutor(),
+                                                    executorFactory,
                                                     syncNonTransactional);
 
             storesReturn.add(store);

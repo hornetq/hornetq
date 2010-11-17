@@ -57,7 +57,7 @@ public class WildcardAddressManager extends SimpleAddressManager
    }
 
    @Override
-   public Bindings getBindingsForRoutingAddress(final SimpleString address)
+   public Bindings getBindingsForRoutingAddress(final SimpleString address) throws Exception
    {
       Bindings bindings = super.getBindingsForRoutingAddress(address);
 
@@ -93,7 +93,7 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @return true if the address was a new mapping
     */
    @Override
-   public boolean addBinding(final Binding binding)
+   public boolean addBinding(final Binding binding) throws Exception
    {
       boolean exists = super.addBinding(binding);
       if (!exists)
@@ -129,7 +129,7 @@ public class WildcardAddressManager extends SimpleAddressManager
     * @return true if this was the last mapping for a specific address
     */
    @Override
-   public Binding removeBinding(final SimpleString uniqueName)
+   public Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
       Binding binding = super.removeBinding(uniqueName);
       if (binding != null)
@@ -239,7 +239,7 @@ public class WildcardAddressManager extends SimpleAddressManager
       }
    }
 
-   private synchronized void removeAndUpdateAddressMap(final Address address)
+   private synchronized void removeAndUpdateAddressMap(final Address address) throws Exception
    {
       // we only remove if there are no bindings left
       Bindings bindings = super.getBindingsForRoutingAddress(address.getAddress());

@@ -128,7 +128,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
       
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null);
+      journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null);
    }
 
    /**

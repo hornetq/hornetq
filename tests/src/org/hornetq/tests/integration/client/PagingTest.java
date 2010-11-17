@@ -17,12 +17,10 @@ import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,11 +40,9 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
-import org.hornetq.core.paging.impl.PageImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
@@ -55,7 +51,6 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -118,6 +113,16 @@ public class PagingTest extends ServiceTestBase
 
    public void testWithDiverts() throws Exception
    {
+      internalMultiQueuesTest(true);
+   }
+   
+   public void testWithMultiQueues() throws Exception
+   {
+      internalMultiQueuesTest(false);
+   }
+   
+   public void internalMultiQueuesTest(final boolean divert) throws Exception
+   {
       clearData();
 
       Configuration config = createDefaultConfig();
@@ -128,27 +133,30 @@ public class PagingTest extends ServiceTestBase
                                           PagingTest.PAGE_MAX,
                                           new HashMap<String, AddressSettings>());
 
-      DivertConfiguration divert1 = new DivertConfiguration("dv1",
-                                                            "nm1",
-                                                            PagingTest.ADDRESS.toString(),
-                                                            PagingTest.ADDRESS.toString() + "-1",
-                                                            true,
-                                                            null,
-                                                            null);
-
-      DivertConfiguration divert2 = new DivertConfiguration("dv2",
-                                                            "nm2",
-                                                            PagingTest.ADDRESS.toString(),
-                                                            PagingTest.ADDRESS.toString() + "-2",
-                                                            true,
-                                                            null,
-                                                            null);
-
-      ArrayList<DivertConfiguration> divertList = new ArrayList<DivertConfiguration>();
-      divertList.add(divert1);
-      divertList.add(divert2);
-
-      config.setDivertConfigurations(divertList);
+      if (divert)
+      {   
+         DivertConfiguration divert1 = new DivertConfiguration("dv1",
+                                                               "nm1",
+                                                               PagingTest.ADDRESS.toString(),
+                                                               PagingTest.ADDRESS.toString() + "-1",
+                                                               true,
+                                                               null,
+                                                               null);
+   
+         DivertConfiguration divert2 = new DivertConfiguration("dv2",
+                                                               "nm2",
+                                                               PagingTest.ADDRESS.toString(),
+                                                               PagingTest.ADDRESS.toString() + "-2",
+                                                               true,
+                                                               null,
+                                                               null);
+   
+         ArrayList<DivertConfiguration> divertList = new ArrayList<DivertConfiguration>();
+         divertList.add(divert1);
+         divertList.add(divert2);
+   
+         config.setDivertConfigurations(divertList);
+      }
 
       server.start();
 
@@ -176,9 +184,18 @@ public class PagingTest extends ServiceTestBase
 
             ClientSession session = sf.createSession(false, false, false);
 
-            session.createQueue(PagingTest.ADDRESS + "-1", PagingTest.ADDRESS + "-1", null, true);
+            if (divert)
+            {
+               session.createQueue(PagingTest.ADDRESS + "-1", PagingTest.ADDRESS + "-1", null, true);
 
-            session.createQueue(PagingTest.ADDRESS + "-2", PagingTest.ADDRESS + "-2", null, true);
+               session.createQueue(PagingTest.ADDRESS + "-2", PagingTest.ADDRESS + "-2", null, true);
+            }
+            else
+            {
+               session.createQueue(PagingTest.ADDRESS.toString(), PagingTest.ADDRESS + "-1", null, true);
+
+               session.createQueue(PagingTest.ADDRESS.toString(), PagingTest.ADDRESS + "-2", null, true);
+            }
 
             ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -319,6 +336,8 @@ public class PagingTest extends ServiceTestBase
 
    private void internaltestSendReceivePaging(final boolean persistentMessages) throws Exception
    {
+      
+      System.out.println("PageDir:" + getPageDir());
       clearData();
 
       Configuration config = createDefaultConfig();
@@ -448,7 +467,7 @@ public class PagingTest extends ServiceTestBase
 
       UnitTestCase.assertEqualsByteArrays(body, other);
    }
-
+   
    /**
     * - Make a destination in page mode
     * - Add stuff to a transaction
@@ -903,7 +922,7 @@ public class PagingTest extends ServiceTestBase
                      msg.putIntProperty("count", i);
                      producer.send(msg);
 
-                     if (i % 50 == 0 && i != 0)
+                     if (i % 100 == 0 && i != 0)
                      {
                         sessionProducer.commit();
                         // Thread.sleep(500);
@@ -947,17 +966,17 @@ public class PagingTest extends ServiceTestBase
          ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
 
          for (int i = 0; i < numberOfMessages; i++)
-         {
-            ClientMessage msg = consumer.receive(500000);
+         {  
+            ClientMessage msg = consumer.receive(5000);
             assertNotNull(msg);
             assertEquals(i, msg.getIntProperty("count").intValue());
             msg.acknowledge();
             if (i > 0 && i % 10 == 0)
             {
-               // session.commit();
+              session.commit();
             }
          }
-         // session.commit();
+         session.commit();
 
          session.close();
 
@@ -979,7 +998,7 @@ public class PagingTest extends ServiceTestBase
    }
 
    // This test will force a depage thread as soon as the first message hits the page
-   public void testDepageOnTX5() throws Exception
+   public void testDepageDuringTransaction5() throws Exception
    {
       clearData();
 
@@ -999,7 +1018,7 @@ public class PagingTest extends ServiceTestBase
                          final PagingStoreFactory storeFactory,
                          final SimpleString storeName,
                          final AddressSettings addressSettings,
-                         final Executor executor,
+                         final ExecutorFactory executorFactory,
                          final boolean syncNonTransactional)
          {
             super(address,
@@ -1010,39 +1029,8 @@ public class PagingTest extends ServiceTestBase
                   storeFactory,
                   storeName,
                   addressSettings,
-                  executor,
+                  executorFactory,
                   syncNonTransactional);
-         }
-
-         protected boolean page(final List<ServerMessage> messages, final long transactionID, final boolean sync) throws Exception
-         {
-            boolean paged = super.page(messages, transactionID, sync);
-
-            if (paged)
-            {
-
-               if (countDepage.incrementAndGet() == 1)
-               {
-                  countDepage.set(0);
-
-                  executor.execute(new Runnable()
-                  {
-                     public void run()
-                     {
-                        try
-                        {
-                           while (isStarted() && readPage());
-                        }
-                        catch (Exception e)
-                        {
-                           e.printStackTrace();
-                        }
-                     }
-                  });
-               }
-            }
-
-            return paged;
          }
 
          public boolean startDepaging()
@@ -1062,7 +1050,7 @@ public class PagingTest extends ServiceTestBase
             super(directory, executorFactory, syncNonTransactional);
          }
 
-         public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings) throws Exception
+         public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings)
          {
 
             return new HackPagingStore(address,
@@ -1073,7 +1061,7 @@ public class PagingTest extends ServiceTestBase
                                        this,
                                        address,
                                        settings,
-                                       getExecutorFactory().getExecutor(),
+                                       getExecutorFactory(),
                                        syncNonTransactional);
          }
 
@@ -1308,8 +1296,9 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = consumer.receive(500000);
+            ClientMessage msg = consumer.receive(5000);
             assertNotNull(msg);
+            System.out.println("Received " + i);
             assertEquals(i, msg.getIntProperty("count").intValue());
             msg.acknowledge();
          }

@@ -92,7 +92,7 @@ public interface ServerSession
 
    QueueQueryResult executeQueueQuery(SimpleString name) throws Exception;
 
-   BindingQueryResult executeBindingQuery(SimpleString address);
+   BindingQueryResult executeBindingQuery(SimpleString address) throws Exception;
 
    void closeConsumer(long consumerID) throws Exception;
 

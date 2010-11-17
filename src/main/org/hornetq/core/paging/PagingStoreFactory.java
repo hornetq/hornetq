@@ -30,7 +30,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
  */
 public interface PagingStoreFactory
 {
-   PagingStore newStore(SimpleString address, AddressSettings addressSettings) throws Exception;
+   PagingStore newStore(SimpleString address, AddressSettings addressSettings);
 
    void stop() throws InterruptedException;
 

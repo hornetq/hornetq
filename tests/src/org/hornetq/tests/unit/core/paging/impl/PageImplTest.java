@@ -106,10 +106,10 @@ public class PageImplTest extends UnitTestCase
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage(null).getAddress());
+         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage().getAddress());
 
          UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
-                                                                                        .getMessage(null)
+                                                                                        .getMessage()
                                                                                         .getBodyBuffer()
                                                                                         .toByteBuffer()
                                                                                         .array());
@@ -178,10 +178,10 @@ public class PageImplTest extends UnitTestCase
 
       for (int i = 0; i < msgs.size(); i++)
       {
-         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage(null).getAddress());
+         Assert.assertEquals(simpleDestination, msgs.get(i).getMessage().getAddress());
 
          UnitTestCase.assertEqualsByteArrays(buffers.get(i).toByteBuffer().array(), msgs.get(i)
-                                                                                        .getMessage(null)
+                                                                                        .getMessage()
                                                                                         .getBodyBuffer()
                                                                                         .toByteBuffer()
                                                                                         .array());
@@ -223,7 +223,7 @@ public class PageImplTest extends UnitTestCase
 
          msg.setAddress(simpleDestination);
 
-         page.write(new PagedMessageImpl(msg));
+         page.write(new PagedMessageImpl(msg, new long [0]));
 
          Assert.assertEquals(initialNumberOfMessages + i + 1, page.getNumberOfMessages());
       }

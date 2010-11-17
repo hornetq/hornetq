@@ -47,7 +47,7 @@ public interface PostOffice extends HornetQComponent
 
    Binding getBinding(SimpleString uniqueName);
 
-   Bindings getMatchingBindings(SimpleString address);
+   Bindings getMatchingBindings(SimpleString address) throws Exception;
    
    void route(ServerMessage message, boolean direct) throws Exception;
 

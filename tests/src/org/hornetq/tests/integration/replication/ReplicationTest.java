@@ -288,7 +288,7 @@ public class ReplicationTest extends ServiceTestBase
 
          replicatedJournal.appendAddRecordTransactional(23, 24, (byte)1, new FakeData());
 
-         PagedMessage pgmsg = new PagedMessageImpl(msg, -1);
+         PagedMessage pgmsg = new PagedMessageImpl(msg, new long[0]);
          manager.pageWrite(pgmsg, 1);
          manager.pageWrite(pgmsg, 2);
          manager.pageWrite(pgmsg, 3);
@@ -303,7 +303,7 @@ public class ReplicationTest extends ServiceTestBase
 
          PagingStore store = pagingManager.getPageStore(dummy);
          store.start();
-         Assert.assertEquals(5, store.getNumberOfPages());
+         Assert.assertEquals(4, store.getNumberOfPages());
          store.stop();
 
          manager.pageDeleted(dummy, 1);

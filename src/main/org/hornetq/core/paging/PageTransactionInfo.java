@@ -14,6 +14,8 @@
 package org.hornetq.core.paging;
 
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.transaction.Transaction;
 
@@ -24,8 +26,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface PageTransactionInfo extends EncodingSupport
 {
-   boolean waitCompletion(int timeoutMilliSeconds) throws Exception;
-
    boolean isCommit();
 
    boolean isRollback();
@@ -42,14 +42,25 @@ public interface PageTransactionInfo extends EncodingSupport
    
    void store(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
    
-   void storeUpdate(StorageManager storageManager, PagingManager pagingManager, Transaction tx, int depages) throws Exception;
+   void storeUpdate(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
+   
+   void storeUpdate(StorageManager storageManager, PagingManager pagingManager) throws Exception;
 
    // To be used after the update was stored or reload
-   void update(int update, StorageManager storageManager, PagingManager pagingManager);
+   void onUpdate(int update, StorageManager storageManager, PagingManager pagingManager);
 
    void increment();
+   
+   void increment(int size);
 
    int getNumberOfMessages();
 
-   void markIncomplete();
+   /**
+    * This method will hold the position to be delivered later in case this transaction is pending.
+    * If the tx is not pending, it will return false, so the caller can deliver it right away
+    * @param cursor
+    * @param cursorPos
+    * @return true if the message will be delivered later, false if it should be delivered right away
+    */
+   boolean deliverAfterCommit(PageSubscription cursor, PagePosition cursorPos);
 }

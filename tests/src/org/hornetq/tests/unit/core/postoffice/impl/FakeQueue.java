@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -91,10 +92,18 @@ public class FakeQueue implements Queue
    }
 
    private final SimpleString name;
+   
+   private final long id;
 
    public FakeQueue(final SimpleString name)
    {
+      this(name, 0);
+   }
+   
+   public FakeQueue(final SimpleString name, final long id)
+   {
       this.name = name;
+      this.id = id;
    }
 
    /* (non-Javadoc)
@@ -359,8 +368,7 @@ public class FakeQueue implements Queue
     */
    public long getID()
    {
-      // TODO Auto-generated method stub
-      return 0;
+      return id;
    }
 
    /* (non-Javadoc)
@@ -595,6 +603,15 @@ public class FakeQueue implements Queue
    {
       // TODO Auto-generated method stub
       
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#getPageSubscription()
+    */
+   public PageSubscription getPageSubscription()
+   {
+      // TODO Auto-generated method stub
+      return null;
    }
 
 }

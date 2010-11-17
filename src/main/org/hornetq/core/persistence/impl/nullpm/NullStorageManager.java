@@ -31,6 +31,7 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
@@ -267,6 +268,7 @@ public class NullStorageManager implements StorageManager
                                                     final PagingManager pagingManager,
                                                     final ResourceManager resourceManager,
                                                     final Map<Long, Queue> queues,
+                                                    Map<Long, QueueBindingInfo> queueInfos,
                                                     final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       return new JournalLoadInformation();
@@ -448,6 +450,42 @@ public class NullStorageManager implements StorageManager
     */
    public void updatePageTransaction(long txID, PageTransactionInfo pageTransaction, int depage) throws Exception
    {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledge(long, org.hornetq.core.paging.cursor.PagePosition)
+    */
+   public void storeCursorAcknowledge(long queueID, PagePosition position)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storeCursorAcknowledgeTransactional(long, long, org.hornetq.core.paging.cursor.PagePosition)
+    */
+   public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteCursorAcknowledgeTransactional(long, long)
+    */
+   public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#updatePageTransaction(org.hornetq.core.paging.PageTransactionInfo, int)
+    */
+   public void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
    }
 
 }

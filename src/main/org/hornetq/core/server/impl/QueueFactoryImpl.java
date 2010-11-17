@@ -17,6 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Queue;
@@ -69,6 +70,7 @@ public class QueueFactoryImpl implements QueueFactory
                             final SimpleString address,
                             final SimpleString name,
                             final Filter filter,
+                            final PageSubscription pageSubscription,
                             final boolean durable,
                             final boolean temporary)
    {
@@ -81,6 +83,7 @@ public class QueueFactoryImpl implements QueueFactory
                                     address,
                                     name,
                                     filter,
+                                    pageSubscription,
                                     durable,
                                     temporary,
                                     scheduledExecutor,
@@ -95,6 +98,7 @@ public class QueueFactoryImpl implements QueueFactory
                                address,
                                name,
                                filter,
+                               pageSubscription,
                                durable,
                                temporary,
                                scheduledExecutor,

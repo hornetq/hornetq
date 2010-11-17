@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+	import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,6 +61,7 @@ import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -163,7 +164,7 @@ public class HornetQServerImpl implements HornetQServer
    private volatile QueueFactory queueFactory;
 
    private volatile PagingManager pagingManager;
-
+ 
    private volatile PostOffice postOffice;
 
    private volatile ExecutorService threadPool;
@@ -712,6 +713,8 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       Queue queue = (Queue)binding.getBindable();
+      
+      queue.getPageSubscription().close();
 
       if (queue.getConsumerCount() != 0)
       {
@@ -1113,6 +1116,8 @@ public class HornetQServerImpl implements HornetQServer
          deploymentManager.start();
       }
 
+      pagingManager.processReload();
+      
       pagingManager.resumeDepages();
 
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
@@ -1188,15 +1193,21 @@ public class HornetQServerImpl implements HornetQServer
       setNodeID();
 
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
+      Map<Long, QueueBindingInfo> queueBindingInfosMap = new HashMap<Long, QueueBindingInfo>();
 
       for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
       {
+         queueBindingInfosMap.put(queueBindingInfo.getId(), queueBindingInfo);
+         
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
+         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
+         
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
                                                 queueBindingInfo.getAddress(),
                                                 queueBindingInfo.getQueueName(),
                                                 filter,
+                                                subscription,
                                                 true,
                                                 false);
 
@@ -1208,6 +1219,8 @@ public class HornetQServerImpl implements HornetQServer
 
          managementService.registerAddress(queueBindingInfo.getAddress());
          managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+         
+         
       }
 
       for (GroupingInfo groupingInfo : groupingInfos)
@@ -1226,6 +1239,7 @@ public class HornetQServerImpl implements HornetQServer
                                                          pagingManager,
                                                          resourceManager,
                                                          queues,
+                                                         queueBindingInfosMap,
                                                          duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
@@ -1328,11 +1342,16 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       Filter filter = FilterImpl.createFilter(filterString);
+      
+      long queueID = storageManager.generateUniqueID();
 
-      final Queue queue = queueFactory.createQueue(storageManager.generateUniqueID(),
+      PageSubscription pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+
+      final Queue queue = queueFactory.createQueue(queueID,
                                                    address,
                                                    queueName,
                                                    filter,
+                                                   pageSubscription,
                                                    durable,
                                                    temporary);
 
