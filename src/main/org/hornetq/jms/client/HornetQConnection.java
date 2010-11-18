@@ -60,8 +60,7 @@ import org.hornetq.utils.VersionLoader;
  *          <p/>
  *          $Id$
  */
-public class HornetQConnection implements Connection, QueueConnection, TopicConnection, XAConnection,
-         XAQueueConnection, XATopicConnection
+public class HornetQConnection implements Connection
 {
    // Constants ------------------------------------------------------------------------------------
 

@@ -118,7 +118,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public QueueConnection createQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_QUEUE_CONNECTION);
+      return (QueueConnection)createConnectionInternal(username, password, false, HornetQConnection.TYPE_QUEUE_CONNECTION);
    }
 
    // TopicConnectionFactory implementation --------------------------------------------------------
@@ -130,7 +130,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public TopicConnection createTopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_TOPIC_CONNECTION);
+      return (TopicConnection)createConnectionInternal(username, password, false, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
    // XAConnectionFactory implementation -----------------------------------------------------------
@@ -142,7 +142,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return (XAConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------
@@ -154,7 +154,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public XAQueueConnection createXAQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
+      return (XAQueueConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
    }
 
    // XATopicConnectionFactory implementation ------------------------------------------------------
@@ -166,7 +166,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public XATopicConnection createXATopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
+      return (XATopicConnection)createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
    // Referenceable implementation -----------------------------------------------------------------
@@ -604,13 +604,74 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       // This means there is one underlying remoting connection per jms connection (if not load balanced)
       ClientSessionFactory factory = sessionFactory.copy();
 
-      HornetQConnection connection = new HornetQConnection(username,
-                                                           password,
-                                                           type,
-                                                           clientID,
-                                                           dupsOKBatchSize,
-                                                           transactionBatchSize,
-                                                           factory);
+      HornetQConnection connection = null;
+      
+      if (isXA)
+      {
+         if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
+         {
+            connection = new HornetQXAConnection(username,
+                                                password,
+                                                type,
+                                                clientID,
+                                                dupsOKBatchSize,
+                                                transactionBatchSize,
+                                                factory);
+         }
+         else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
+         {
+            connection = new HornetQXAQueueConnection(username,
+                                                      password,
+                                                      type,
+                                                      clientID,
+                                                      dupsOKBatchSize,
+                                                      transactionBatchSize,
+                                                      factory);
+         }
+         else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
+         {
+            connection = new HornetQXATopicConnection(username,
+                                                      password,
+                                                      type,
+                                                      clientID,
+                                                      dupsOKBatchSize,
+                                                      transactionBatchSize,
+                                                      factory);
+         }
+      }
+      else
+      {
+         if (type == HornetQConnection.TYPE_GENERIC_CONNECTION)
+         {
+            connection = new HornetQConnection(username,
+                                               password,
+                                               type,
+                                               clientID,
+                                               dupsOKBatchSize,
+                                               transactionBatchSize,
+                                               factory);
+         }
+         else if (type == HornetQConnection.TYPE_QUEUE_CONNECTION)
+         {
+            connection = new HornetQQueueConnection(username,
+                                                    password,
+                                                    type,
+                                                    clientID,
+                                                    dupsOKBatchSize,
+                                                    transactionBatchSize,
+                                                    factory);
+         }
+         else if (type == HornetQConnection.TYPE_TOPIC_CONNECTION)
+         {
+            connection = new HornetQTopicConnection(username,
+                                                    password,
+                                                    type,
+                                                    clientID,
+                                                    dupsOKBatchSize,
+                                                    transactionBatchSize,
+                                                    factory);
+         }         
+      }
 
       try
       {
