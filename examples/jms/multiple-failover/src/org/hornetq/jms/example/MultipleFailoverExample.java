@@ -23,7 +23,11 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.common.example.HornetQExample;
+import org.hornetq.core.client.impl.ClientSessionImpl;
+import org.hornetq.core.client.impl.DelegatingSession;
+import org.hornetq.jms.client.HornetQConnection;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -40,7 +44,6 @@ public class MultipleFailoverExample extends HornetQExample
    @Override
    public boolean runExample() throws Exception
    {
-      Thread.sleep(10000);
       final int numMessages = 30;
 
       Connection connection = null;
@@ -95,6 +98,7 @@ public class MultipleFailoverExample extends HornetQExample
 
          // Step 10. Crash server #1, the live server, and wait a little while to make sure
          // it has really crashed
+         Thread.sleep(2000);
          killServer(0);
 
          // Step 11. Acknowledging the 2nd half of the sent messages will fail as failover to the
@@ -108,8 +112,30 @@ public class MultipleFailoverExample extends HornetQExample
             System.err.println("Got exception while acknowledging message: " + e.getMessage());
          }
 
-         // Step 12. Consume again the 2nd half of the messages again. Note that they are not considered as redelivered.
-         for (int i = numMessages / 3; i < numMessages; i++)
+         // Step 12. Consume again the 2nd third of the messages again. Note that they are not considered as redelivered.
+         for (int i = numMessages / 3; i < (numMessages / 3) * 2; i++)
+         {
+            message0 = (TextMessage)consumer.receive(5000);
+            System.out.printf("Got message: %s (redelivered?: %s)\n", message0.getText(), message0.getJMSRedelivered());
+         }
+         message0.acknowledge();
+
+         Thread.sleep(2000);
+         killServer(getServer(connection));
+
+         // Step 11. Acknowledging the 2nd half of the sent messages will fail as failover to the
+         // backup server has occurred
+         try
+         {
+            message0.acknowledge();
+         }
+         catch (JMSException e)
+         {
+            System.err.println("Got exception while acknowledging message: " + e.getMessage());
+         }
+
+         // Step 12. Consume again the 2nd third of the messages again. Note that they are not considered as redelivered.
+         for (int i = (numMessages / 3) * 2; i < numMessages; i++)
          {
             message0 = (TextMessage)consumer.receive(5000);
             System.out.printf("Got message: %s (redelivered?: %s)\n", message0.getText(), message0.getJMSRedelivered());
@@ -132,5 +158,13 @@ public class MultipleFailoverExample extends HornetQExample
             initialContext.close();
          }
       }
+   }
+
+   private int getServer(Connection connection)
+   {
+      DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
+      TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
+      String port = (String) transportConfiguration.getParams().get("port");
+      return Integer.valueOf(port) - 5445;
    }
 }
