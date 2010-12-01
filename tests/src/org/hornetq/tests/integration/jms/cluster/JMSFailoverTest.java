@@ -119,16 +119,28 @@ public class JMSFailoverTest extends UnitTestCase
 
       jbcf.setReconnectAttempts(-1);
 
-      Connection conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
+      Connection conn = null;
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
 
-      ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      JMSUtil.crash(liveService, coreSession);
+         ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
+
+         JMSUtil.crash(liveService, coreSession);
 
 
-      assertNotNull(ctx2.lookup("/queue/queue1"));
+         assertNotNull(ctx2.lookup("/queue/queue1"));
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            conn.close();
+         }
+      }
    }
 
 
@@ -141,15 +153,27 @@ public class JMSFailoverTest extends UnitTestCase
 
       jbcf.setReconnectAttempts(-1);
 
-      Connection conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
+      Connection conn = null;
 
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      try
+      {
+         conn = JMSUtil.createConnectionAndWaitForTopology(jbcf, 2, 5);
 
-      ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      JMSUtil.crash(liveService, coreSession);
+         ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
 
-      assertNotNull(ctx2.lookup("/topic/t1"));
+         JMSUtil.crash(liveService, coreSession);
+
+         assertNotNull(ctx2.lookup("/topic/t1"));
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            conn.close();
+         }
+      }
    }
 
    public void testAutomaticFailover() throws Exception
