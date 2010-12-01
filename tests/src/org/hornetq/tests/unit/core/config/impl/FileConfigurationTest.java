@@ -92,9 +92,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertTrue(conf.getInterceptorClassNames()
                             .contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor2"));
 
-      Assert.assertEquals("backup-connector", conf.getBackupConnectorName());
 
-      Assert.assertEquals(3, conf.getConnectorConfigurations().size());
+      Assert.assertEquals(2, conf.getConnectorConfigurations().size());
 
       TransportConfiguration tc = conf.getConnectorConfigurations().get("connector1");
       Assert.assertNotNull(tc);
@@ -109,12 +108,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals("org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2", tc.getFactoryClassName());
       Assert.assertEquals("w1", tc.getParams().get("b1"));
       Assert.assertEquals("234", tc.getParams().get("b2"));
-
-      tc = conf.getConnectorConfigurations().get("backup-connector");
-      Assert.assertNotNull(tc);
-      Assert.assertEquals("org.hornetq.tests.unit.core.config.impl.TestConnectorFactory3", tc.getFactoryClassName());
-      Assert.assertEquals("x1", tc.getParams().get("c1"));
-      Assert.assertEquals("345", tc.getParams().get("c2"));
 
       Assert.assertEquals(2, conf.getAcceptorConfigurations().size());
       for (TransportConfiguration ac : conf.getAcceptorConfigurations())
@@ -145,8 +138,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("192.168.0.120", bc.getGroupAddress());
             Assert.assertEquals(11999, bc.getGroupPort());
             Assert.assertEquals(12345, bc.getBroadcastPeriod());
-            Assert.assertEquals("connector1", bc.getConnectorInfos().get(0).a);
-            Assert.assertEquals(null, bc.getConnectorInfos().get(0).b);
+            Assert.assertEquals("connector1", bc.getConnectorInfos().get(0));
          }
          else
          {
@@ -155,8 +147,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("192.168.0.121", bc.getGroupAddress());
             Assert.assertEquals(13999, bc.getGroupPort());
             Assert.assertEquals(23456, bc.getBroadcastPeriod());
-            Assert.assertEquals("connector2", bc.getConnectorInfos().get(0).a);
-            Assert.assertEquals("backup-connector", bc.getConnectorInfos().get(0).b);
+            Assert.assertEquals("connector2", bc.getConnectorInfos().get(0));
          }
       }
 
@@ -213,10 +204,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(3, bc.getRetryInterval());
             Assert.assertEquals(0.2, bc.getRetryIntervalMultiplier());
             Assert.assertEquals(2, bc.getReconnectAttempts());
-            Assert.assertEquals(false, bc.isFailoverOnServerShutdown());
             Assert.assertEquals(true, bc.isUseDuplicateDetection());
-            Assert.assertEquals("connector1", bc.getConnectorPair().a);
-            Assert.assertEquals(null, bc.getConnectorPair().b);
+            Assert.assertEquals("connector1", bc.getStaticConnectors().get(0));
             Assert.assertEquals(null, bc.getDiscoveryGroupName());
          }
          else
@@ -226,7 +215,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("bridge-forwarding-address2", bc.getForwardingAddress());
             Assert.assertEquals(null, bc.getFilterString());
             Assert.assertEquals(null, bc.getTransformerClassName());
-            Assert.assertEquals(null, bc.getConnectorPair());
+            Assert.assertEquals(null, bc.getStaticConnectors());
             Assert.assertEquals("dg1", bc.getDiscoveryGroupName());
          }
       }
@@ -242,10 +231,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(true, ccc.isDuplicateDetection());
             Assert.assertEquals(false, ccc.isForwardWhenNoConsumers());
             Assert.assertEquals(1, ccc.getMaxHops());
-            Assert.assertEquals("connector1", ccc.getStaticConnectorNamePairs().get(0).a);
-            Assert.assertEquals("backup-connector", ccc.getStaticConnectorNamePairs().get(0).b);
-            Assert.assertEquals("connector2", ccc.getStaticConnectorNamePairs().get(1).a);
-            Assert.assertEquals(null, ccc.getStaticConnectorNamePairs().get(1).b);
+            Assert.assertEquals("connector1", ccc.getStaticConnectors().get(0));
+            Assert.assertEquals("connector2", ccc.getStaticConnectors().get(1));
             Assert.assertEquals(null, ccc.getDiscoveryGroupName());
          }
          else
@@ -256,7 +243,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(false, ccc.isDuplicateDetection());
             Assert.assertEquals(true, ccc.isForwardWhenNoConsumers());
             Assert.assertEquals(2, ccc.getMaxHops());
-            Assert.assertEquals(null, ccc.getStaticConnectorNamePairs());
+            Assert.assertEquals(null, ccc.getStaticConnectors());
             Assert.assertEquals("dg1", ccc.getDiscoveryGroupName());
          }
       }

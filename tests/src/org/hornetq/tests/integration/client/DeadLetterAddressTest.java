@@ -43,6 +43,7 @@ public class DeadLetterAddressTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession clientSession;
+   private ServerLocator locator;
 
    public void testBasicSend() throws Exception
    {
@@ -241,7 +242,8 @@ public class DeadLetterAddressTest extends UnitTestCase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
       ClientProducer producer = sendSession.createProducer(qName);
       Map<String, Long> origIds = new HashMap<String, Long>();
@@ -464,7 +466,8 @@ public class DeadLetterAddressTest extends UnitTestCase
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       clientSession = sessionFactory.createSession(false, true, false);
    }
 
@@ -478,6 +481,17 @@ public class DeadLetterAddressTest extends UnitTestCase
             clientSession.close();
          }
          catch (HornetQException e1)
+         {
+            //
+         }
+      }
+      if(locator != null)
+      {
+         try
+         {
+            locator.close();
+         }
+         catch (Exception e)
          {
             //
          }

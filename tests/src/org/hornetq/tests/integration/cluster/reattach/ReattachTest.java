@@ -21,11 +21,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
@@ -58,6 +54,8 @@ public class ReattachTest extends ServiceTestBase
 
    private HornetQServer service;
 
+   private ServerLocator locator;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -75,12 +73,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = 1;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -153,12 +150,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -244,12 +240,11 @@ public class ReattachTest extends ServiceTestBase
 
       final long asyncFailDelay = 2000;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -259,7 +254,7 @@ public class ReattachTest extends ServiceTestBase
       {
          volatile boolean failed;
 
-         public void connectionFailed(final HornetQException me)
+         public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             failed = true;
          }
@@ -359,12 +354,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = 3;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -450,12 +444,11 @@ public class ReattachTest extends ServiceTestBase
 
          final int reconnectAttempts = -1;
 
-         final ClientSessionFactoryInternal sf = createFactory(false);
-
-         sf.setRetryInterval(retryInterval);
-         sf.setRetryIntervalMultiplier(retryMultiplier);
-         sf.setReconnectAttempts(reconnectAttempts);
-         sf.setConfirmationWindowSize(1024 * 1024);
+         locator.setRetryInterval(retryInterval);
+         locator.setRetryIntervalMultiplier(retryMultiplier);
+         locator.setReconnectAttempts(reconnectAttempts);
+         locator.setConfirmationWindowSize(1024 * 1024);
+         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
          session = sf.createSession();
 
@@ -561,12 +554,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-      final ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -660,12 +652,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -733,12 +724,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = 10;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -801,12 +791,12 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
 
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -894,12 +884,12 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
 
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -972,13 +962,12 @@ public class ReattachTest extends ServiceTestBase
 
       final long maxRetryInterval = 1000;
 
-      ClientSessionFactoryInternal sf = createFactory(false);
-
-      sf.setRetryInterval(retryInterval);
-      sf.setRetryIntervalMultiplier(retryMultiplier);
-      sf.setReconnectAttempts(reconnectAttempts);
-      sf.setMaxRetryInterval(maxRetryInterval);
-      sf.setConfirmationWindowSize(1024 * 1024);
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setMaxRetryInterval(maxRetryInterval);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -1055,6 +1044,8 @@ public class ReattachTest extends ServiceTestBase
       service = createServer(false, false);
 
       service.start();
+
+      locator =  createFactory(false);
    }
 
    @Override
@@ -1062,6 +1053,8 @@ public class ReattachTest extends ServiceTestBase
    {
       InVMConnector.resetFailures();
 
+      locator.close();
+      
       service.stop();
 
       Assert.assertEquals(0, InVMRegistry.instance.size());

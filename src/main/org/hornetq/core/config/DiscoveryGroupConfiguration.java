@@ -42,18 +42,22 @@ public class DiscoveryGroupConfiguration implements Serializable
    private int groupPort;
 
    private long refreshTimeout;
+   
+   private long discoveryInitialWaitTimeout;
 
    public DiscoveryGroupConfiguration(final String name,
                                       final String localBindAddress,
                                       final String groupAddress,
                                       final int groupPort,
-                                      final long refreshTimeout)
+                                      final long refreshTimeout,
+                                      final long discoveryInitialWaitTimeout)
    {
       this.name = name;
       this.groupAddress = groupAddress;
       this.localBindAddress = localBindAddress;
       this.groupPort = groupPort;
       this.refreshTimeout = refreshTimeout;
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
 
    public String getName()
@@ -120,4 +124,22 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this.refreshTimeout = refreshTimeout;
    }
+
+   /**
+    * @return the discoveryInitialWaitTimeout
+    */
+   public long getDiscoveryInitialWaitTimeout()
+   {
+      return discoveryInitialWaitTimeout;
+   }
+
+   /**
+    * @param discoveryInitialWaitTimeout the discoveryInitialWaitTimeout to set
+    */
+   public void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
+   {
+      this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+   }
+   
+   
 }

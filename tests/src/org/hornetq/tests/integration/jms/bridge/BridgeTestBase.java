@@ -51,10 +51,12 @@ import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -213,7 +215,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          public ConnectionFactory createConnectionFactory() throws Exception
          {
-            HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -221,7 +223,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             cf.setBlockOnDurableSend(true);
             cf.setCacheLargeMessagesClient(true);
 
-            return cf;
+            return (ConnectionFactory) cf;
          }
 
       };
@@ -230,7 +232,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          public Object createConnectionFactory() throws Exception
          {
-            HornetQXAConnectionFactory cf = HornetQJMSClient.createXAConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF,new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -251,7 +253,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          public ConnectionFactory createConnectionFactory() throws Exception
          {
-            HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(),
+            HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                                   params1));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
@@ -269,7 +271,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          public XAConnectionFactory createConnectionFactory() throws Exception
          {
-            HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory) HornetQJMSClient.createXAConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(),
+            HornetQXAConnectionFactory cf = (HornetQXAConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                                   params1));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection

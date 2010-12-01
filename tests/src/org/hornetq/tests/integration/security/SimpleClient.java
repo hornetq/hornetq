@@ -18,6 +18,7 @@ import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * Code to be run in an external VM, via main().
@@ -47,7 +48,8 @@ public class SimpleClient
          String queueName = RandomUtil.randomString();
          String messageText = RandomUtil.randomString();
 
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorFactoryClassName));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorFactoryClassName));
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(queueName, queueName, null, false);

@@ -113,20 +113,6 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
    }
 
    /**
-    * @return the connectionParameters
-    */
-   public String getBackupConnectionParameters()
-   {
-      return strBackupConnectionParameters;
-   }
-
-   public void setBackupConnectionParameters(final String configuration)
-   {
-      strBackupConnectionParameters = configuration;
-      setParsedBackupConnectionParameters(Util.parseConfig(configuration));
-   }
-
-   /**
     * Set the default session type.
     *
     * @param defaultType either javax.jms.Topic or javax.jms.Queue

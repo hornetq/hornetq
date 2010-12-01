@@ -29,64 +29,9 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
 {
-   private static final Logger log = Logger.getLogger(GroupingFailoverReplicationTest.class);
-
    @Override
-   protected void setupReplicatedServer(final int node,
-                                        final boolean fileStorage,
-                                        final boolean netty,
-                                        final int backupNode)
+   boolean isSharedServer()
    {
-      if (servers[node] != null)
-      {
-         throw new IllegalArgumentException("Already a server at node " + node);
-      }
-
-      Configuration configuration = new ConfigurationImpl();
-
-      configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(node, false));
-      configuration.setJournalMinFiles(2);
-      configuration.setJournalMaxIO_AIO(1000);
-      configuration.setJournalDirectory(getJournalDir(node, false));
-      configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(getDefaultJournalType());
-      configuration.setPagingDirectory(getPageDir(node, false));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
-      configuration.setClustered(true);
-      configuration.setJournalCompactMinFiles(0);
-      configuration.setBackup(true);
-      configuration.setSharedStore(false);
-
-      configuration.getAcceptorConfigurations().clear();
-
-      Map<String, Object> params = generateParams(node, netty);
-
-      TransportConfiguration invmtc = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY, params);
-      configuration.getAcceptorConfigurations().add(invmtc);
-
-      if (netty)
-      {
-         TransportConfiguration nettytc = new TransportConfiguration(ServiceTestBase.NETTY_ACCEPTOR_FACTORY, params);
-         configuration.getAcceptorConfigurations().add(nettytc);
-      }
-
-      HornetQServer server;
-
-      if (fileStorage)
-      {
-         server = HornetQServers.newHornetQServer(configuration);
-      }
-      else
-      {
-         server = HornetQServers.newHornetQServer(configuration, false);
-      }
-      servers[node] = server;
-   }
-
-   @Override
-   void setupMasterServer(final int i, final boolean fileStorage, final boolean netty)
-   {
-      setupServer(i, fileStorage, false, netty, false, 2);
+      return false; 
    }
 }

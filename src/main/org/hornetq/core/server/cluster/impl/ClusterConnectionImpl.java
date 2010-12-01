@@ -18,10 +18,9 @@ import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.Pair;
@@ -30,9 +29,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.cluster.DiscoveryEntry;
-import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.cluster.DiscoveryListener;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -48,7 +45,6 @@ import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.core.server.management.Notification;
-import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 
@@ -62,7 +58,7 @@ import org.hornetq.utils.UUID;
  *
  *
  */
-public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListener
+public class ClusterConnectionImpl implements ClusterConnection
 {
    private static final Logger log = Logger.getLogger(ClusterConnectionImpl.class);
 
@@ -78,17 +74,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final SimpleString address;
 
-   private final long retryInterval;
-
    private final boolean useDuplicateDetection;
-
-   private final int confirmationWindowSize;
 
    private final boolean routeWhenNoConsumers;
 
    private final Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
-
-   private final DiscoveryGroup discoveryGroup;
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -96,20 +86,25 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final UUID nodeUUID;
 
-   private final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
-
    private boolean backup;
 
    private volatile boolean started;
-   
+
    private final String clusterUser;
-   
+
    private final String clusterPassword;
 
-   /*
-    * Constructor using static list of connectors
-    */
-   public ClusterConnectionImpl(final SimpleString name,
+   private final ServerLocatorInternal serverLocator;
+   
+   private final TransportConfiguration connector;
+
+   private final boolean allowsDirectConnectionsOnly;
+
+   private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
+   
+   public ClusterConnectionImpl(final ServerLocatorInternal serverLocator,
+                                final TransportConfiguration connector,
+                                final SimpleString name,
                                 final SimpleString address,
                                 final long retryInterval,
                                 final boolean useDuplicateDetection,
@@ -120,38 +115,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
-                                final List<Pair<TransportConfiguration, TransportConfiguration>> connectors,
                                 final int maxHops,
                                 final UUID nodeUUID,
                                 final boolean backup,
                                 final String clusterUser,
                                 final String clusterPassword) throws Exception
    {
-      this.name = name;
-
-      this.address = address;
-
-      this.retryInterval = retryInterval;
-
-      this.useDuplicateDetection = useDuplicateDetection;
-
-      this.routeWhenNoConsumers = routeWhenNoConsumers;
-
-      this.confirmationWindowSize = confirmationWindowSize;
-
-      this.executorFactory = executorFactory;
-
-      this.server = server;
-
-      this.postOffice = postOffice;
-
-      this.managementService = managementService;
-
-      discoveryGroup = null;
-
-      this.scheduledExecutor = scheduledExecutor;
-
-      this.maxHops = maxHops;
 
       if (nodeUUID == null)
       {
@@ -159,47 +128,46 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
 
       this.nodeUUID = nodeUUID;
-
-      this.backup = backup;
-
-      staticConnectors = connectors;
       
-      this.clusterUser = clusterUser;
-      
-      this.clusterPassword = clusterPassword;
+      this.serverLocator = serverLocator;
 
-      if (!backup)
+      if (this.serverLocator != null)
       {
-         updateFromStaticConnectors(connectors);
+         this.serverLocator.setClusterConnection(true);
+         this.serverLocator.setClusterTransportConfiguration(connector);
+         this.serverLocator.setBackup(server.getConfiguration().isBackup());
+         this.serverLocator.setInitialConnectAttempts(-1);
+         if(retryInterval > 0)
+         {
+            this.serverLocator.setRetryInterval(retryInterval);
+         }
+         
+         // a cluster connection will connect to other nodes only if they are directly connected
+         // through a static list of connectors or broadcasting using UDP.
+         TransportConfiguration[] transportConfigurations = serverLocator.getStaticTransportConfigurations();
+         allowsDirectConnectionsOnly = (transportConfigurations != null);
+         if(allowsDirectConnectionsOnly)
+         {
+            for (TransportConfiguration transportConfiguration : transportConfigurations)
+            {
+               allowableConnections.add(transportConfiguration);
+            }
+         }
       }
-   }
+      else
+      {
+         allowsDirectConnectionsOnly = false;
+      }
 
-   /*
-    * Constructor using discovery to get connectors
-    */
-   public ClusterConnectionImpl(final SimpleString name,
-                                final SimpleString address,
-                                final long retryInterval,
-                                final boolean useDuplicateDetection,
-                                final boolean routeWhenNoConsumers,
-                                final int confirmationWindowSize,
-                                final ExecutorFactory executorFactory,
-                                final HornetQServer server,
-                                final PostOffice postOffice,
-                                final ManagementService managementService,
-                                final ScheduledExecutorService scheduledExecutor,
-                                final DiscoveryGroup discoveryGroup,
-                                final int maxHops,
-                                final UUID nodeUUID,
-                                final boolean backup,
-                                final String clusterUser,
-                                final String clusterPassword) throws Exception
-   {
+      this.connector = connector;
+
       this.name = name;
 
       this.address = address;
 
-      this.retryInterval = retryInterval;
+      this.useDuplicateDetection = useDuplicateDetection;
+
+      this.routeWhenNoConsumers = routeWhenNoConsumers;
 
       this.executorFactory = executorFactory;
 
@@ -211,25 +179,13 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       this.scheduledExecutor = scheduledExecutor;
 
-      this.discoveryGroup = discoveryGroup;
-
-      this.useDuplicateDetection = useDuplicateDetection;
-
-      this.routeWhenNoConsumers = routeWhenNoConsumers;
-
-      this.confirmationWindowSize = confirmationWindowSize;
-
       this.maxHops = maxHops;
 
-      this.nodeUUID = nodeUUID;
-
       this.backup = backup;
-      
-      this.clusterUser = clusterUser;
-      
-      this.clusterPassword = clusterPassword;
 
-      staticConnectors = null;
+      this.clusterUser = clusterUser;
+
+      this.clusterPassword = clusterPassword;
    }
 
    public synchronized void start() throws Exception
@@ -239,58 +195,53 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          return;
       }
 
-      if (discoveryGroup != null)
-      {
-         discoveryGroup.registerListener(this);
-      }
-
       started = true;
-
-      if (managementService != null)
+      
+      if(!backup)
       {
-         TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(),
-                                                      NotificationType.CLUSTER_CONNECTION_STARTED,
-                                                      props);
-         managementService.sendNotification(notification);
+         activate();
       }
+
+
    }
 
-   public synchronized void stop() throws Exception
+   public void stop() throws Exception
    {
       if (!started)
       {
          return;
       }
 
-      if (discoveryGroup != null)
+      if (serverLocator != null)
       {
-         discoveryGroup.unregisterListener(this);
+         serverLocator.removeClusterTopologyListener(this);
       }
 
-      for (MessageFlowRecord record : records.values())
+      synchronized (this)
       {
-         try
+         for (MessageFlowRecord record : records.values())
          {
-            record.close();
+            try
+            {
+               record.close();
+            }
+            catch (Exception ignore)
+            {
+            }
          }
-         catch (Exception ignore)
+
+         if (managementService != null)
          {
+            TypedProperties props = new TypedProperties();
+            props.putSimpleStringProperty(new SimpleString("name"), name);
+            Notification notification = new Notification(nodeUUID.toString(),
+                                                         NotificationType.CLUSTER_CONNECTION_STOPPED,
+                                                         props);
+            managementService.sendNotification(notification);
          }
-      }
 
-      if (managementService != null)
-      {
-         TypedProperties props = new TypedProperties();
-         props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(),
-                                                      NotificationType.CLUSTER_CONNECTION_STOPPED,
-                                                      props);
-         managementService.sendNotification(notification);
+         started = false;
       }
-
-      started = false;
    }
 
    public boolean isStarted()
@@ -321,7 +272,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       return nodes;
    }
 
-   public synchronized void activate()
+   public synchronized void activate() throws Exception
    {
       if (!started)
       {
@@ -330,84 +281,116 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       backup = false;
 
-      if (discoveryGroup != null)
+
+      if (serverLocator != null)
       {
-         connectorsChanged();
+         serverLocator.addClusterTopologyListener(this);
+         serverLocator.start();
+         // FIXME Ugly ugly code to connect to other nodes and form the cluster... :(
+         server.getExecutorFactory().getExecutor().execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  serverLocator.connect();
+               }
+               catch (Exception e)
+               {
+                  if(started)
+                  {
+                     log.warn("did not connect the cluster connection to other nodes", e);
+                  }
+               }
+            }
+         });
       }
-      else
+
+      if (managementService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putSimpleStringProperty(new SimpleString("name"), name);
+         Notification notification = new Notification(nodeUUID.toString(),
+                                                      NotificationType.CLUSTER_CONNECTION_STARTED,
+                                                      props);
+         managementService.sendNotification(notification);
+      }
+   }
+   
+   public TransportConfiguration getConnector()
+   {
+      return connector;
+   }
+
+   // ClusterTopologyListener implementation ------------------------------------------------------------------
+
+   public synchronized void nodeDown(final String nodeID)
+   {
+      if (nodeID.equals(nodeUUID.toString()))
+      {
+         return;
+      }
+      
+      //Remove the flow record for that node
+      
+      MessageFlowRecord record = records.get(nodeID);
+
+      if (record != null)
       {
          try
          {
-            updateFromStaticConnectors(staticConnectors);
+            record.reset();
          }
          catch (Exception e)
          {
-            ClusterConnectionImpl.log.error("Failed to update connectors", e);
+            log.error("Failed to close flow record", e);
          }
       }
+      
+      server.getClusterManager().notifyNodeDown(nodeID);
    }
 
-   // DiscoveryListener implementation ------------------------------------------------------------------
-
-   public synchronized void connectorsChanged()
+   public synchronized void nodeUP(final String nodeID,
+                                   final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                                   final boolean last,
+                                   final int distance)
    {
-      if (backup)
+      // discard notifications about ourselves unless its from our backup
+
+      if (nodeID.equals(nodeUUID.toString()))
+      {
+         if(connectorPair.b != null)
+         {
+            server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, distance);
+         }
+         return;
+      }
+
+      // we propagate the node notifications to all cluster topology listeners
+      server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, distance);
+
+      // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
+      if (allowsDirectConnectionsOnly && distance > 1 && !allowableConnections.contains(connectorPair.a))
+      {
+         return;
+      }
+
+      // FIXME required to prevent cluster connections w/o discovery group 
+      // and empty static connectors to create bridges... ulgy!
+      if (serverLocator == null)
       {
          return;
       }
 
       try
       {
-         Map<String, DiscoveryEntry> connectors = discoveryGroup.getDiscoveryEntryMap();
+         MessageFlowRecord record = records.get(nodeID);
 
-         updateConnectors(connectors);
-      }
-      catch (Exception e)
-      {
-         ClusterConnectionImpl.log.error("Failed to update connectors", e);
-      }
-   }
-
-   private void updateFromStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> connectors) throws Exception
-   {
-      Map<String, DiscoveryEntry> map = new HashMap<String, DiscoveryEntry>();
-
-      // TODO - we fudge the node id - it's never updated anyway
-      int i = 0;
-      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectors)
-      {
-         map.put(String.valueOf(i++), new DiscoveryEntry(connectorPair, 0));
-      }
-
-      updateConnectors(map);
-   }
-
-   private void updateConnectors(final Map<String, DiscoveryEntry> connectors) throws Exception
-   {     
-      Iterator<Map.Entry<String, MessageFlowRecord>> iter = records.entrySet().iterator();
-
-      while (iter.hasNext())
-      {
-         Map.Entry<String, MessageFlowRecord> entry = iter.next();
-
-         if (!connectors.containsKey(entry.getKey()))
+         if (record == null)
          {
-            // Connector no longer there - we should remove and close it - we don't delete the queue though - it may
-            // have messages - this is up to the administrator to do this
+            // New node - create a new flow record
 
-            entry.getValue().close();
-
-            iter.remove();
-         }
-      }
-
-      for (final Map.Entry<String, DiscoveryEntry> entry : connectors.entrySet())
-      {
-         if (!records.containsKey(entry.getKey()))
-         {
-            Pair<TransportConfiguration, TransportConfiguration> connectorPair = entry.getValue().getConnectorPair();
-
-            final SimpleString queueName = new SimpleString("sf." + name + "." + entry.getKey());
+            final SimpleString queueName = new SimpleString("sf." + name + "." + nodeID);
 
             Binding queueBinding = postOffice.getBinding(queueName);
 
@@ -416,54 +399,58 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             if (queueBinding != null)
             {
                queue = (Queue)queueBinding.getBindable();
-
-               createNewRecord(entry.getKey(), connectorPair, queueName, queue, true);
             }
             else
             {
                // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
                // actually routed to at that address though
-
                queue = server.createQueue(queueName, queueName, null, true, false);
-
-               createNewRecord(entry.getKey(), connectorPair, queueName, queue, true);
             }
+
+            createNewRecord(nodeID, connectorPair.a, queueName, queue, true);
+         }
+         else
+         {
+            // FIXME apple and orange comparison. I don't understand it...
+            //if (!connectorPair.a.equals(record.getBridge().getForwardingConnection().getTransportConnection()))
+            // {
+            //   // New live node - close it and recreate it - TODO - CAN THIS EVER HAPPEN?
+            //}
          }
       }
+      catch (Exception e)
+      {
+         log.error("Failed to update topology", e);
+      }
    }
-
+   
    private void createNewRecord(final String nodeID,
-                                final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                                final TransportConfiguration connector,
                                 final SimpleString queueName,
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
       MessageFlowRecordImpl record = new MessageFlowRecordImpl(queue);
 
-      Bridge bridge = new BridgeImpl(nodeUUID,
-                                     queueName,
-                                     queue,
-                                     null,
-                                     -1,
-                                     connectorPair,
-                                     executorFactory.getExecutor(),
-                                     null,
-                                     null,
-                                     scheduledExecutor,
-                                     null,
-                                     retryInterval,
-                                     1d,
-                                     -1,
-                                     false,
-                                     useDuplicateDetection,
-                                     confirmationWindowSize,
-                                     managementService.getManagementAddress(),
-                                     managementService.getManagementNotificationAddress(),
-                                     clusterUser,
-                                     clusterPassword,
-                                     record,
-                                     !backup,
-                                     server.getStorageManager());
+      Bridge bridge = new ClusterConnectionBridge(serverLocator,
+                                                  nodeUUID,
+                                                  nodeID,
+                                                  queueName,
+                                                  queue,
+                                                  executorFactory.getExecutor(),
+                                                  null,
+                                                  null,
+                                                  scheduledExecutor,
+                                                  null,
+                                                  useDuplicateDetection,
+                                                  clusterUser,
+                                                  clusterPassword,
+                                                  !backup,
+                                                  server.getStorageManager(),
+                                                  managementService.getManagementAddress(),
+                                                  managementService.getManagementNotificationAddress(),
+                                                  record,
+                                                  connector);
 
       record.setBridge(bridge);
 
@@ -576,11 +563,17 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                   break;
                }
                case PROPOSAL:
+               {
                   doProposalReceived(message);
+
                   break;
+               }
                case PROPOSAL_RESPONSE:
+               {
                   doProposalResponseReceived(message);
+
                   break;
+               }
                default:
                {
                   throw new IllegalArgumentException("Invalid type " + ntype);
@@ -903,5 +896,19 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    public Map<String, MessageFlowRecord> getRecords()
    {
       return records;
+   }
+   
+   public String description()
+   {
+      String out = name + " connected to\n";
+      for (Entry<String, MessageFlowRecord> messageFlow : records.entrySet())
+      {
+         String nodeID = messageFlow.getKey();
+         Bridge bridge = messageFlow.getValue().getBridge();
+         
+         out += "\t" + nodeID + " -- " + bridge.isStarted() + "\n";
+      }
+      
+      return out;
    }
 }

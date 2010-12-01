@@ -19,10 +19,12 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A ClusterConnectionControlUsingCoreTest
@@ -49,7 +51,8 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    @Override
    protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -57,6 +60,16 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_CLUSTER_CONNECTION + name);
+
+         public Object[] getStaticConnectors()
+         {
+            return (Object[]) proxy.retrieveAttributeValue("staticConnectors");
+         }
+
+         public String getStaticConnectorsAsJSON() throws Exception
+         {
+            return (String) proxy.retrieveAttributeValue("staticConnectorsAsJSON");
+         }
 
          public String getAddress()
          {

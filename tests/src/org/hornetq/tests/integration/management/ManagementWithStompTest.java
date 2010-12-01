@@ -27,14 +27,13 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -159,6 +158,8 @@ public class ManagementWithStompTest extends ManagementTestBase
 
    // Protected -----------------------------------------------------
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -176,9 +177,10 @@ public class ManagementWithStompTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnNonDurableSend(true);
+      locator = createInVMNonHALocator();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, false);
       session.start();
 
@@ -192,6 +194,8 @@ public class ManagementWithStompTest extends ManagementTestBase
       session.close();
 
       server.stop();
+      
+      locator.close();
 
       session = null;
 

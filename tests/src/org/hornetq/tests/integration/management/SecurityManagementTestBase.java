@@ -71,7 +71,8 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
    protected void doSendManagementMessage(final String user, final String password, final boolean expectSuccess) throws Exception
    {
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf = locator.createSessionFactory();
       try
       {
          ClientSession session = null;

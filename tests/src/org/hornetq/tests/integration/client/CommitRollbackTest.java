@@ -19,12 +19,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -50,7 +45,9 @@ public class CommitRollbackTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, false, false);
          sendSession.createQueue(addressA, queueA, false);
@@ -90,7 +87,8 @@ public class CommitRollbackTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, false, false);
          sendSession.createQueue(addressA, queueA, false);
@@ -137,7 +135,8 @@ public class CommitRollbackTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, false, false);
          sendSession.createQueue(addressA, queueA, false);
@@ -190,9 +189,10 @@ public class CommitRollbackTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setBlockOnAcknowledge(true);
-         cf.setAckBatchSize(0);
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnAcknowledge(true);
+         locator.setAckBatchSize(0);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          final ClientSession session = cf.createSession(false, true, false);
          sendSession.createQueue(addressA, queueA, false);
@@ -253,9 +253,10 @@ public class CommitRollbackTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setBlockOnAcknowledge(true);
-         cf.setAckBatchSize(0);
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setBlockOnAcknowledge(true);
+         locator.setAckBatchSize(0);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          final ClientSession session = cf.createSession(false, true, false);
          sendSession.createQueue(addressA, queueA, false);

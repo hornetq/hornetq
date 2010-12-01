@@ -159,6 +159,8 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
 
       closeAllSessionFactories();
 
+      closeAllServerLocatorsFactories();
+
       stopServers(0, 1, 2, 3, 4);
    }
 

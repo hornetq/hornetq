@@ -23,6 +23,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
@@ -66,7 +67,7 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 
    protected abstract void stop() throws Exception;
 
-   protected abstract ClientSessionFactoryInternal createSessionFactory();
+   protected abstract ServerLocator createLocator() throws Exception;
 
    @Override
    protected void setUp() throws Exception
@@ -100,7 +101,9 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
 
          start();
 
-         final ClientSessionFactoryInternal sf = createSessionFactory();
+         final ServerLocator locator = createLocator();
+
+         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
          final ClientSession session = sf.createSession(false, true, true);
 
@@ -173,6 +176,8 @@ public abstract class MultiThreadReattachSupport extends ServiceTestBase
          InVMConnector.resetFailures();
 
          session.close();
+
+         locator.close();
 
          Assert.assertEquals(0, sf.numSessions());
 

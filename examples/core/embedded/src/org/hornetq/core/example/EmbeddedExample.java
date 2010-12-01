@@ -13,10 +13,15 @@
 package org.hornetq.core.example;
 
 import java.util.Date;
-import java.util.HashMap;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -51,8 +56,9 @@ public class EmbeddedExample
          server.start();
 
          // Step 3. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-
+         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         ClientSessionFactory sf = serverLocator.createSessionFactory();
+         
          // Step 4. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
 
@@ -94,9 +100,9 @@ public class EmbeddedExample
          finally
          {
             // Step 9. Be sure to close our resources!
-            if (session != null)
+            if (sf != null)
             {
-               session.close();
+               sf.close();
             }
 
             // Step 10. Stop the server
@@ -109,13 +115,4 @@ public class EmbeddedExample
          System.exit(-1);
       }
    }
-
-   {
-      HashMap<String, Object> map = new HashMap<String, Object>();
-      map.put("host", "localhost");
-      map.put("port", 5445);
-      TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map);
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(config);
-   }
-
 }

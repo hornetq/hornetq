@@ -19,11 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -55,6 +51,8 @@ public class LargeJournalStressTest extends ServiceTestBase
    private HornetQServer server;
 
    private ClientSessionFactory sf;
+
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -257,6 +255,8 @@ public class LargeJournalStressTest extends ServiceTestBase
       super.setUp();
 
       clearData();
+
+      locator = createInVMNonHALocator();
    }
 
    /**
@@ -278,10 +278,10 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       server.start();
 
-      sf = createInVMFactory();
-      sf.setBlockOnAcknowledge(false);
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnDurableSend(false);
+      sf = locator.createSessionFactory();
+      sf.getServerLocator().setBlockOnAcknowledge(false);
+      sf.getServerLocator().setBlockOnNonDurableSend(false);
+      sf.getServerLocator().setBlockOnDurableSend(false);
 
       ClientSession sess = sf.createSession();
 
@@ -303,12 +303,14 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       sess.close();
 
-      sf = createInVMFactory();
+      sf = locator.createSessionFactory();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+      
       if (sf != null)
       {
          sf.close();

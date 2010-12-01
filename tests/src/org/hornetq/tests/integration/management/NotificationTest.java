@@ -215,7 +215,8 @@ public class NotificationTest extends UnitTestCase
       service = HornetQServers.newHornetQServer(conf, false);
       service.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
 

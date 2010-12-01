@@ -20,11 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -433,10 +429,12 @@ public class CompactingStressTest extends ServiceTestBase
 
       server.start();
 
-      sf = createInVMFactory();
-      sf.setBlockOnDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
 
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+
+      sf = locator.createSessionFactory();
       ClientSession sess = sf.createSession();
 
       try

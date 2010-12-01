@@ -22,6 +22,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -43,7 +44,7 @@ public class ConcurrentSessionCloseTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
    }
 

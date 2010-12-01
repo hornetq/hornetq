@@ -20,10 +20,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -76,8 +73,9 @@ public class ProducerTest extends ServiceTestBase
             return true;
          }
       });
-      ClientSessionFactory cf = createInVMFactory();
-      cf.setConfirmationWindowSize(100);
+      ServerLocator locator = createInVMNonHALocator();
+      locator.setConfirmationWindowSize(100);
+      ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       ClientProducer producer = session.createProducer(QUEUE);
       ClientMessage message = session.createMessage(true);
@@ -86,6 +84,7 @@ public class ProducerTest extends ServiceTestBase
       producer.send(message);
       Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
       session.close();
+      locator.close();
    }
 
 }

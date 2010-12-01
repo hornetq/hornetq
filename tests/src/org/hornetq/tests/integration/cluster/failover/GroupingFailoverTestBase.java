@@ -21,7 +21,9 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -37,17 +39,17 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFails() throws Exception
    {
-      setupReplicatedServer(2, isFileStorage(), isNetty(), 0);
+     setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
 
-      setupMasterServer(0, isFileStorage(), isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
 
-      setupServer(1, isFileStorage(), isNetty());
+      setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
-      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[] { 0 }, new int[] { 2 });
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 2, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
 
@@ -55,10 +57,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      startServers(2, 0, 1);
 
       try
       {
+         startServers(2, 0, 1);
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
 
@@ -74,28 +76,19 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+         waitForServerTopology(servers[1], 3, 5);
+
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
 
          closeSessionFactory(0);
 
-         final CountDownLatch latch = new CountDownLatch(1);
-
-         class MyListener implements FailureListener
-         {
-            public void connectionFailed(final HornetQException me)
-            {
-               latch.countDown();
-            }
-         }
-
-         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager()
-                                                                                      .getClusterConnection(new SimpleString("cluster1"))).getRecords();
-         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection();
-         rc.addFailureListener(new MyListener());
-         fail(rc, latch);
-
+         servers[0].kill();
+         
          waitForServerRestart(2);
 
          setupSessionFactory(2, isNetty());
@@ -103,12 +96,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          addConsumer(2, 2, "queue0", null);
 
          waitForBindings(2, "queues.testaddress", 1, 1, true);
-
-         waitForBindings(2, "queues.testaddress", 1, 1, false);
-
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-
-         waitForBindings(1, "queues.testaddress", 1, 1, false);
 
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
@@ -122,23 +109,26 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
    }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
-      setupReplicatedServer(2, isFileStorage(), isNetty(), 0);
+      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
 
-      setupMasterServer(0, isFileStorage(), isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
 
-      setupServer(1, isFileStorage(), isNetty());
+      setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
 
-      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[] { 0 }, new int[] { 2 });
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 2, 1);
+
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
 
@@ -146,11 +136,13 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      startServers(2, 0, 1);
 
       try
       {
+         startServers(2, 0, 1);
+
          setupSessionFactory(0, isNetty());
+
          setupSessionFactory(1, isNetty());
 
          createQueue(0, "queues.testaddress", "queue0", null, true);
@@ -167,6 +159,12 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+         waitForServerTopology(servers[1], 3, 5);
+
+
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id3"));
@@ -178,21 +176,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeSessionFactory(0);
 
-         final CountDownLatch latch = new CountDownLatch(1);
-
-         class MyListener implements FailureListener
-         {
-            public void connectionFailed(final HornetQException me)
-            {
-               latch.countDown();
-            }
-         }
-
-         Map<String, MessageFlowRecord> records = ((ClusterConnectionImpl)getServer(1).getClusterManager()
-                                                                                      .getClusterConnection(new SimpleString("cluster1"))).getRecords();
-         RemotingConnection rc = records.get("0").getBridge().getForwardingConnection();
-         rc.addFailureListener(new MyListener());
-         fail(rc, latch);
+         servers[0].kill();
 
          waitForServerRestart(2);
 
@@ -215,7 +199,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id5"));
          sendWithProperty(2, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id6"));
 
-         verifyReceiveAllWithGroupIDRoundRobin(0, 30, 1, 2);
+         verifyReceiveAllWithGroupIDRoundRobin(2, 30, 1, 2);
 
          System.out.println("*****************************************************************************");
       }
@@ -225,18 +209,33 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
    }
 
-   abstract void setupMasterServer(int i, boolean fileStorage, boolean netty);
+   private void waitForServerTopology(HornetQServer server, int nodes, int seconds)
+         throws InterruptedException
+   {
+      Topology topology = server.getClusterManager().getTopology();
+      long timeToWait = System.currentTimeMillis() + (seconds * 1000);
+      while(topology.nodes()!= nodes)
+      {
+         Thread.sleep(100);
+         if(System.currentTimeMillis() > timeToWait)
+         {
+            fail("timed out waiting for server topology");
+         }
+      }
+   }
 
    public boolean isNetty()
    {
       return true;
    }
 
-   abstract void setupReplicatedServer(int node, boolean fileStorage, boolean netty, int backupNode);
+   abstract boolean isSharedServer();
 
    private void fail(final RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
    {

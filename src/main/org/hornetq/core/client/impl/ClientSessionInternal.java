@@ -60,13 +60,13 @@ public interface ClientSessionInternal extends ClientSession
 
    RemotingConnection getConnection();
 
-   void cleanUp() throws Exception;
+   void cleanUp(boolean failingOver) throws Exception;
 
    void returnBlocking();
 
    void setForceNotSameRM(boolean force);
 
-   FailoverManager getConnectionManager();
+   ClientSessionFactoryInternal getSessionFactory();
 
    void workDone();
 

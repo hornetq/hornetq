@@ -30,6 +30,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
@@ -203,19 +204,20 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       try
       {
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(connectorConfig);
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(connectorConfig);
+
 
          if (mustConnect)
          {
-            ClientSession session = sf.createSession(false, true, true);
-            session.close();
+            ClientSessionFactory sf = locator.createSessionFactory();
+            sf.close();
             System.out.println("connection OK");
          }
          else
          {
             try
             {
-               sf.createSession(false, true, true);
+               ClientSessionFactory sf = locator.createSessionFactory();
                Assert.fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
             }
             catch (Exception e)

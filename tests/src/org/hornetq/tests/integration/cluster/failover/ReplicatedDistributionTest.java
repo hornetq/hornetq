@@ -235,7 +235,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       class MyListener implements SessionFailureListener
       {
-         public void connectionFailed(final HornetQException me)
+         public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             latch.countDown();
          }
@@ -267,11 +267,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    {
       super.setUp();
 
-      setupServer(1, true, isShared(), true, false, -1);
-      setupServer(2, true, isShared(), true, true, -1);
-      setupServer(3, true, isShared(), true, true, 2);
+      setupLiveServer(1, true, isShared(), true);
+      setupBackupServer(2, 1, true, isShared(), true);
+      setupBackupServer(3, 1, true, isShared(), true);
 
-      setupClusterConnectionWithBackups("test", "test", false, 1, true, 1, new int[] { 3 }, new int[] { 2 });
+      setupClusterConnectionWithBackups("test", "test", false, 1, true, 1, new int[] { 3 });
 
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(0);

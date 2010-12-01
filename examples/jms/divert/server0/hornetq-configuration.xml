@@ -63,7 +63,9 @@
          <queue-name>jms.queue.priceForwarding</queue-name>
          <forwarding-address>jms.topic.newYorkPriceUpdates</forwarding-address>         
          <reconnect-attempts>-1</reconnect-attempts>
-         <connector-ref connector-name="newyork-connector"/>          
+         <static-connectors>
+            <connector-ref>newyork-connector</connector-ref>
+         </static-connectors>
       </bridge>
    </bridges>
 

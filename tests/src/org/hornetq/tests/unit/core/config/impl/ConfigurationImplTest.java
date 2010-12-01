@@ -221,10 +221,6 @@ public class ConfigurationImplTest extends UnitTestCase
          conf.setThreadPoolMaxSize(i);
          Assert.assertEquals(i, conf.getThreadPoolMaxSize());
 
-         s = RandomUtil.randomString();
-         conf.setBackupConnectorName(s);
-         Assert.assertEquals(s, conf.getBackupConnectorName());
-
          SimpleString ss = RandomUtil.randomSimpleString();
          conf.setManagementNotificationAddress(ss);
          Assert.assertEquals(ss, conf.getManagementNotificationAddress());
@@ -442,9 +438,6 @@ public class ConfigurationImplTest extends UnitTestCase
       conf.setThreadPoolMaxSize(i);
       Assert.assertEquals(i, conf.getThreadPoolMaxSize());
 
-      s = RandomUtil.randomString();
-      conf.setBackupConnectorName(s);
-      Assert.assertEquals(s, conf.getBackupConnectorName());
 
       SimpleString ss = RandomUtil.randomSimpleString();
       conf.setManagementNotificationAddress(ss);

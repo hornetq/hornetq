@@ -22,6 +22,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -97,8 +98,8 @@ public class AcceptorControlTest extends ManagementTestBase
 
       // started by the server
       Assert.assertTrue(acceptorControl.isStarted());
-
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
@@ -119,6 +120,9 @@ public class AcceptorControlTest extends ManagementTestBase
       acceptorControl.start();
 
       Assert.assertTrue(acceptorControl.isStarted());
+
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();

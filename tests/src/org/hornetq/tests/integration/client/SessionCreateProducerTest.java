@@ -17,6 +17,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -26,22 +27,40 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class SessionCreateProducerTest extends ServiceTestBase
 {
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      locator = createInVMNonHALocator();
+      
+      super.setUp();  
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+      
+      super.tearDown();
+   }
+
    public void testCreateAnonProducer() throws Exception
    {
       HornetQServer service = createServer(false);
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer();
          Assert.assertNull(producer.getAddress());
-         Assert.assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         Assert.assertEquals(cf.isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
-         Assert.assertEquals(cf.isBlockOnDurableSend(), producer.isBlockOnDurableSend());
+         Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
+         Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
+         Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
          Assert.assertFalse(producer.isClosed());
          clientSession.close();
       }
@@ -57,16 +76,16 @@ public class SessionCreateProducerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          ClientProducer producer = clientSession.createProducer("testAddress");
          Assert.assertNotNull(producer.getAddress());
-         Assert.assertEquals(cf.getProducerMaxRate(), producer.getMaxRate());
-         Assert.assertEquals(cf.isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
-         Assert.assertEquals(cf.isBlockOnDurableSend(), producer.isBlockOnDurableSend());
+         Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
+         Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
+         Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
          Assert.assertFalse(producer.isClosed());
          clientSession.close();
       }
@@ -82,10 +101,10 @@ public class SessionCreateProducerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.close();
          try

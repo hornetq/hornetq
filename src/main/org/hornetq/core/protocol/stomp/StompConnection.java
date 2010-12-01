@@ -194,7 +194,7 @@ public class StompConnection implements RemotingConnection
       manager.cleanup(this);
    }
 
-   public void disconnect()
+   public void disconnect(boolean clientFailover)
    {
    }
 
@@ -317,7 +317,7 @@ public class StompConnection implements RemotingConnection
       {
          try
          {
-            listener.connectionFailed(me);
+            listener.connectionFailed(me, false);
          }
          catch (final Throwable t)
          {

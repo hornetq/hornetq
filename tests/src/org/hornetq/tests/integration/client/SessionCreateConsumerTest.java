@@ -17,6 +17,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -28,16 +29,34 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 {
    private final String queueName = "ClientSessionCreateConsumerTestQ";
 
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      locator = createInVMNonHALocator();
+      
+      super.setUp();   
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+      
+      super.tearDown();
+   }
+
    public void testCreateConsumer() throws Exception
    {
       HornetQServer service = createServer(false);
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName);
@@ -56,10 +75,10 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          try
          {
@@ -84,10 +103,10 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
@@ -106,10 +125,10 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          try
@@ -135,10 +154,10 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
@@ -157,10 +176,10 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       try
       {
          service.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setProducerMaxRate(99);
-         cf.setBlockOnNonDurableSend(true);
-         cf.setBlockOnNonDurableSend(true);
+         locator.setProducerMaxRate(99);
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnNonDurableSend(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);

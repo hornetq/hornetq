@@ -289,17 +289,18 @@ public class ReSendMessageTest extends JMSTestBase
 
    // Protected -----------------------------------------------------
    @Override
-   protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+   protected void createCF(final List<TransportConfiguration> connectorConfigs,
                            final String ... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
       int callTimeout = 30000;
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                        connectorConfigs,
+                                        false,
+                                        JMSFactoryType.CF,
+                                        registerConnectors(server, connectorConfigs),
                                         null,
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -327,9 +328,7 @@ public class ReSendMessageTest extends JMSTestBase
                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                        failoverOnServerShutdown,
                                         null,
-                                        JMSFactoryType.CF,
                                         jndiBindings);
    }
 

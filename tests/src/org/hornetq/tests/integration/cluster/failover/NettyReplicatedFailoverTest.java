@@ -14,6 +14,8 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.core.config.Configuration;
+import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A NettyReplicatedFailoverTest
@@ -40,6 +42,18 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
    // Protected -----------------------------------------------------
 
    @Override
+   protected TestableServer createLiveServer()
+   {
+      return new SameProcessHornetQServer(createServer(true, liveConfig));
+   }
+   
+   @Override
+   protected TestableServer createBackupServer()
+   {
+      return new SameProcessHornetQServer(createServer(true, backupConfig));
+   }
+   
+   @Override
    protected void createConfigs() throws Exception
    {
       Configuration config1 = super.createDefaultConfig();
@@ -50,20 +64,20 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
-      server1Service = super.createServer(true, config1);
-
+      backupServer = createBackupServer();
+      
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-      config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      config0.setBackupConnectorName("toBackup");
+      /*liveConfig.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
+      liveConfig.setBackupConnectorName("toBackup");*/
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
-      server0Service = super.createServer(true, config0);
-
-      server1Service.start();
-      server0Service.start();
+      liveServer = createLiveServer();
+      
+      backupServer.start();
+      liveServer.start();
    }
 
    // Private -------------------------------------------------------

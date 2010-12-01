@@ -13,13 +13,10 @@
 
 package org.hornetq.jms.management.impl;
 
-import java.util.List;
-
 import javax.management.MBeanInfo;
 import javax.management.NotCompliantMBeanException;
 import javax.management.StandardMBean;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -223,11 +220,6 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       cf.setFailoverOnInitialConnection(failover);
    }
 
-   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
-   {
-      cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
-   }
-
    public boolean isUseGlobalPools()
    {
       return cf.isUseGlobalPools();
@@ -293,16 +285,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       cf.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
 
-   public List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
+   public TransportConfiguration[] getStaticConnectors()
    {
       return cf.getStaticConnectors();
    }
 
-   public void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
-   {
-      cf.setStaticConnectors(staticConnectors);
-   }
-   
    public String getLocalBindAddress()
    {
       return cf.getLocalBindAddress();
@@ -318,19 +305,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getDiscoveryAddress();
    }
 
-   public void setDiscoveryAddress(String discoveryAddress)
-   {
-      cf.setDiscoveryAddress(discoveryAddress);
-   }
-
    public int getDiscoveryPort()
    {
       return cf.getDiscoveryPort();
-   }
-
-   public void setDiscoveryPort(int discoveryPort)
-   {
-      cf.setDiscoveryPort(discoveryPort);
    }
 
    public void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception
@@ -406,11 +383,6 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    public boolean isFailoverOnInitialConnection()
    {
       return cf.isFailoverOnInitialConnection();
-   }
-
-   public boolean isFailoverOnServerShutdown()
-   {
-      return cf.isFailoverOnServerShutdown();
    }
 
    public int getMinLargeMessageSize()

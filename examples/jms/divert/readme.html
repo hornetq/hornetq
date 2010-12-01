@@ -88,7 +88,9 @@
 	        &lt;queue-name&gt;jms.queue.priceForwarding&lt;/queue-name&gt;
 	        &lt;forwarding-address&gt;jms.topic.newYorkPriceUpdates&lt;/forwarding-address&gt;         
 	        &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
-	        &lt;connector-ref connector-name="newyork-connector"/&gt;          
+          &lt;static-connectors>
+             &lt;connector-ref>newyork-connector&lt;/connector-ref>
+          &lt;/static-connectors>
 	     &lt;/bridge&gt;
       &lt;/bridges&gt;
          </code> 

@@ -27,6 +27,7 @@ public interface FailureListener
     * Notifies that a connection has failed due to the specified exception.
     *
     * @param exception exception which has caused the connection to fail
+    * @param failedOver
     */
-   void connectionFailed(HornetQException exception);
+   void connectionFailed(HornetQException exception, boolean failedOver);
 }

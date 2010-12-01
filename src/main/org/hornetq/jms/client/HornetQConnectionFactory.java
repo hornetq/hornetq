@@ -14,7 +14,6 @@
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
-import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -27,10 +26,10 @@ import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.Referenceable;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
@@ -54,7 +53,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final ClientSessionFactory sessionFactory;
+   private final ServerLocator serverLocator;
 
    private String clientID;
 
@@ -68,33 +67,36 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public HornetQConnectionFactory()
    {
-      sessionFactory = HornetQClient.createClientSessionFactory();
+      serverLocator = null;
+   }
+   
+   public HornetQConnectionFactory(final ServerLocator serverLocator)
+   {
+      this.serverLocator = serverLocator;
    }
 
-   public HornetQConnectionFactory(final ClientSessionFactory sessionFactory)
+   public HornetQConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
    {
-      this.sessionFactory = sessionFactory;
+      if (ha)
+      {
+         serverLocator = HornetQClient.createServerLocatorWithHA(discoveryAddress, discoveryPort);
+      }
+      else
+      {
+         serverLocator = HornetQClient.createServerLocatorWithoutHA(discoveryAddress, discoveryPort);         
+      }
    }
 
-   public HornetQConnectionFactory(final String discoveryAddress, final int discoveryPort)
+   public HornetQConnectionFactory(final boolean ha, final TransportConfiguration... initialConnectors)
    {
-      sessionFactory = HornetQClient.createClientSessionFactory(discoveryAddress, discoveryPort);
-   }
-
-   public HornetQConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
-   {
-      sessionFactory = HornetQClient.createClientSessionFactory(staticConnectors);
-   }
-
-   public HornetQConnectionFactory(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConnectorConfig)
-   {
-      sessionFactory = HornetQClient.createClientSessionFactory(connectorConfig, backupConnectorConfig);
-   }
-
-   public HornetQConnectionFactory(final TransportConfiguration connectorConfig)
-   {
-      this(connectorConfig, null);
+      if (ha)
+      {
+         serverLocator = HornetQClient.createServerLocatorWithHA(initialConnectors);
+      }
+      else
+      {
+         serverLocator = HornetQClient.createServerLocatorWithoutHA(initialConnectors);
+      }
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -183,79 +185,61 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public synchronized String getConnectionLoadBalancingPolicyClassName()
    {
-      return sessionFactory.getConnectionLoadBalancingPolicyClassName();
+      return serverLocator.getConnectionLoadBalancingPolicyClassName();
    }
 
    public synchronized void setConnectionLoadBalancingPolicyClassName(final String connectionLoadBalancingPolicyClassName)
    {
       checkWrite();
-      sessionFactory.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+      serverLocator.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
    }
 
-   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
+   public synchronized TransportConfiguration[] getStaticConnectors()
    {
-      return sessionFactory.getStaticConnectors();
+      return serverLocator.getStaticTransportConfigurations();
    }
 
-   public synchronized void setStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
-   {
-      checkWrite();
-      sessionFactory.setStaticConnectors(staticConnectors);
-   }
-   
    public synchronized String getLocalBindAddress()
    {
-      return sessionFactory.getLocalBindAddress();
+      return serverLocator.getLocalBindAddress();
    }
 
    public synchronized void setLocalBindAddress(final String localBindAddress)
    {
       checkWrite();
-      sessionFactory.setLocalBindAddress(localBindAddress);
+      serverLocator.setLocalBindAddress(localBindAddress);
    }
 
    public synchronized String getDiscoveryAddress()
    {
-      return sessionFactory.getDiscoveryAddress();
-   }
-
-   public synchronized void setDiscoveryAddress(final String discoveryAddress)
-   {
-      checkWrite();
-      sessionFactory.setDiscoveryAddress(discoveryAddress);
+      return serverLocator.getDiscoveryAddress();
    }
 
    public synchronized int getDiscoveryPort()
    {
-      return sessionFactory.getDiscoveryPort();
-   }
-
-   public synchronized void setDiscoveryPort(final int discoveryPort)
-   {
-      checkWrite();
-      sessionFactory.setDiscoveryPort(discoveryPort);
+      return serverLocator.getDiscoveryPort();
    }
 
    public synchronized long getDiscoveryRefreshTimeout()
    {
-      return sessionFactory.getDiscoveryRefreshTimeout();
+      return serverLocator.getDiscoveryRefreshTimeout();
    }
 
    public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
    {
       checkWrite();
-      sessionFactory.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
+      serverLocator.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
    }
 
    public synchronized long getDiscoveryInitialWaitTimeout()
    {
-      return sessionFactory.getDiscoveryInitialWaitTimeout();
+      return serverLocator.getDiscoveryInitialWaitTimeout();
    }
 
    public synchronized void setDiscoveryInitialWaitTimeout(final long discoveryInitialWaitTimeout)
    {
       checkWrite();
-      sessionFactory.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
+      serverLocator.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
    }
 
    public synchronized String getClientID()
@@ -293,90 +277,90 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    public synchronized long getClientFailureCheckPeriod()
    {
-      return sessionFactory.getClientFailureCheckPeriod();
+      return serverLocator.getClientFailureCheckPeriod();
    }
 
    public synchronized void setClientFailureCheckPeriod(final long clientFailureCheckPeriod)
    {
       checkWrite();
-      sessionFactory.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+      serverLocator.setClientFailureCheckPeriod(clientFailureCheckPeriod);
    }
 
    public synchronized long getConnectionTTL()
    {
-      return sessionFactory.getConnectionTTL();
+      return serverLocator.getConnectionTTL();
    }
 
    public synchronized void setConnectionTTL(final long connectionTTL)
    {
       checkWrite();
-      sessionFactory.setConnectionTTL(connectionTTL);
+      serverLocator.setConnectionTTL(connectionTTL);
    }
 
    public synchronized long getCallTimeout()
    {
-      return sessionFactory.getCallTimeout();
+      return serverLocator.getCallTimeout();
    }
 
    public synchronized void setCallTimeout(final long callTimeout)
    {
       checkWrite();
-      sessionFactory.setCallTimeout(callTimeout);
+      serverLocator.setCallTimeout(callTimeout);
    }
 
    public synchronized int getConsumerWindowSize()
    {
-      return sessionFactory.getConsumerWindowSize();
+      return serverLocator.getConsumerWindowSize();
    }
 
    public synchronized void setConsumerWindowSize(final int consumerWindowSize)
    {
       checkWrite();
-      sessionFactory.setConsumerWindowSize(consumerWindowSize);
+      serverLocator.setConsumerWindowSize(consumerWindowSize);
    }
 
    public synchronized int getConsumerMaxRate()
    {
-      return sessionFactory.getConsumerMaxRate();
+      return serverLocator.getConsumerMaxRate();
    }
 
    public synchronized void setConsumerMaxRate(final int consumerMaxRate)
    {
       checkWrite();
-      sessionFactory.setConsumerMaxRate(consumerMaxRate);
+      serverLocator.setConsumerMaxRate(consumerMaxRate);
    }
 
    public synchronized int getConfirmationWindowSize()
    {
-      return sessionFactory.getConfirmationWindowSize();
+      return serverLocator.getConfirmationWindowSize();
    }
 
    public synchronized void setConfirmationWindowSize(final int confirmationWindowSize)
    {
       checkWrite();
-      sessionFactory.setConfirmationWindowSize(confirmationWindowSize);
+      serverLocator.setConfirmationWindowSize(confirmationWindowSize);
    }
 
    public synchronized int getProducerMaxRate()
    {
-      return sessionFactory.getProducerMaxRate();
+      return serverLocator.getProducerMaxRate();
    }
 
    public synchronized void setProducerMaxRate(final int producerMaxRate)
    {
       checkWrite();
-      sessionFactory.setProducerMaxRate(producerMaxRate);
+      serverLocator.setProducerMaxRate(producerMaxRate);
    }
 
    public synchronized int getProducerWindowSize()
    {
-      return sessionFactory.getProducerWindowSize();
+      return serverLocator.getProducerWindowSize();
    }
 
    public synchronized void setProducerWindowSize(final int producerWindowSize)
    {
       checkWrite();
-      sessionFactory.setProducerWindowSize(producerWindowSize);
+      serverLocator.setProducerWindowSize(producerWindowSize);
    }
 
    /**
@@ -385,210 +369,231 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    public synchronized void setCacheLargeMessagesClient(final boolean cacheLargeMessagesClient)
    {
       checkWrite();
-      sessionFactory.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+      serverLocator.setCacheLargeMessagesClient(cacheLargeMessagesClient);
    }
 
    public synchronized boolean isCacheLargeMessagesClient()
    {
-      return sessionFactory.isCacheLargeMessagesClient();
+      return serverLocator.isCacheLargeMessagesClient();
    }
 
    public synchronized int getMinLargeMessageSize()
    {
-      return sessionFactory.getMinLargeMessageSize();
+      return serverLocator.getMinLargeMessageSize();
    }
 
    public synchronized void setMinLargeMessageSize(final int minLargeMessageSize)
    {
       checkWrite();
-      sessionFactory.setMinLargeMessageSize(minLargeMessageSize);
+      serverLocator.setMinLargeMessageSize(minLargeMessageSize);
    }
 
    public synchronized boolean isBlockOnAcknowledge()
    {
-      return sessionFactory.isBlockOnAcknowledge();
+      return serverLocator.isBlockOnAcknowledge();
    }
 
    public synchronized void setBlockOnAcknowledge(final boolean blockOnAcknowledge)
    {
       checkWrite();
-      sessionFactory.setBlockOnAcknowledge(blockOnAcknowledge);
+      serverLocator.setBlockOnAcknowledge(blockOnAcknowledge);
    }
 
    public synchronized boolean isBlockOnNonDurableSend()
    {
-      return sessionFactory.isBlockOnNonDurableSend();
+      return serverLocator.isBlockOnNonDurableSend();
    }
 
    public synchronized void setBlockOnNonDurableSend(final boolean blockOnNonDurableSend)
    {
       checkWrite();
-      sessionFactory.setBlockOnNonDurableSend(blockOnNonDurableSend);
+      serverLocator.setBlockOnNonDurableSend(blockOnNonDurableSend);
    }
 
    public synchronized boolean isBlockOnDurableSend()
    {
-      return sessionFactory.isBlockOnDurableSend();
+      return serverLocator.isBlockOnDurableSend();
    }
 
    public synchronized void setBlockOnDurableSend(final boolean blockOnDurableSend)
    {
       checkWrite();
-      sessionFactory.setBlockOnDurableSend(blockOnDurableSend);
+      serverLocator.setBlockOnDurableSend(blockOnDurableSend);
    }
 
    public synchronized boolean isAutoGroup()
    {
-      return sessionFactory.isAutoGroup();
+      return serverLocator.isAutoGroup();
    }
 
    public synchronized void setAutoGroup(final boolean autoGroup)
    {
       checkWrite();
-      sessionFactory.setAutoGroup(autoGroup);
+      serverLocator.setAutoGroup(autoGroup);
    }
 
    public synchronized boolean isPreAcknowledge()
    {
-      return sessionFactory.isPreAcknowledge();
+      return serverLocator.isPreAcknowledge();
    }
 
    public synchronized void setPreAcknowledge(final boolean preAcknowledge)
    {
       checkWrite();
-      sessionFactory.setPreAcknowledge(preAcknowledge);
+      serverLocator.setPreAcknowledge(preAcknowledge);
    }
 
    public synchronized long getRetryInterval()
    {
-      return sessionFactory.getRetryInterval();
+      return serverLocator.getRetryInterval();
    }
 
    public synchronized void setRetryInterval(final long retryInterval)
    {
       checkWrite();
-      sessionFactory.setRetryInterval(retryInterval);
+      serverLocator.setRetryInterval(retryInterval);
    }
 
    public synchronized long getMaxRetryInterval()
    {
-      return sessionFactory.getMaxRetryInterval();
+      return serverLocator.getMaxRetryInterval();
    }
 
    public synchronized void setMaxRetryInterval(final long retryInterval)
    {
       checkWrite();
-      sessionFactory.setMaxRetryInterval(retryInterval);
+      serverLocator.setMaxRetryInterval(retryInterval);
    }
 
    public synchronized double getRetryIntervalMultiplier()
    {
-      return sessionFactory.getRetryIntervalMultiplier();
+      return serverLocator.getRetryIntervalMultiplier();
    }
 
    public synchronized void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
    {
       checkWrite();
-      sessionFactory.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      serverLocator.setRetryIntervalMultiplier(retryIntervalMultiplier);
    }
 
    public synchronized int getReconnectAttempts()
    {
-      return sessionFactory.getReconnectAttempts();
+      return serverLocator.getReconnectAttempts();
    }
 
    public synchronized void setReconnectAttempts(final int reconnectAttempts)
    {
       checkWrite();
-      sessionFactory.setReconnectAttempts(reconnectAttempts);
+      serverLocator.setReconnectAttempts(reconnectAttempts);
+   }
+
+   public synchronized void setInitialConnectAttempts(final int reconnectAttempts)
+   {
+      checkWrite();
+      serverLocator.setInitialConnectAttempts(reconnectAttempts);
+   }
+
+   public synchronized int getInitialConnectAttempts()
+   {
+      checkWrite();
+      return serverLocator.getInitialConnectAttempts();
    }
    
    public synchronized boolean isFailoverOnInitialConnection()
    {
-      return sessionFactory.isFailoverOnInitialConnection();
+      return serverLocator.isFailoverOnInitialConnection();
    }
 
    public synchronized void setFailoverOnInitialConnection(final boolean failover)
    {
       checkWrite();
-      sessionFactory.setFailoverOnInitialConnection(failover);
-   }
-
-   public synchronized boolean isFailoverOnServerShutdown()
-   {
-      return sessionFactory.isFailoverOnServerShutdown();
-   }
-
-   public synchronized void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
-   {
-      checkWrite();
-      sessionFactory.setFailoverOnServerShutdown(failoverOnServerShutdown);
+      serverLocator.setFailoverOnInitialConnection(failover);
    }
 
    public synchronized boolean isUseGlobalPools()
    {
-      return sessionFactory.isUseGlobalPools();
+      return serverLocator.isUseGlobalPools();
    }
 
    public synchronized void setUseGlobalPools(final boolean useGlobalPools)
    {
       checkWrite();
-      sessionFactory.setUseGlobalPools(useGlobalPools);
+      serverLocator.setUseGlobalPools(useGlobalPools);
    }
 
    public synchronized int getScheduledThreadPoolMaxSize()
    {
-      return sessionFactory.getScheduledThreadPoolMaxSize();
+      return serverLocator.getScheduledThreadPoolMaxSize();
    }
 
    public synchronized void setScheduledThreadPoolMaxSize(final int scheduledThreadPoolMaxSize)
    {
       checkWrite();
-      sessionFactory.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+      serverLocator.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
    }
 
    public synchronized int getThreadPoolMaxSize()
    {
-      return sessionFactory.getThreadPoolMaxSize();
+      return serverLocator.getThreadPoolMaxSize();
    }
 
    public synchronized void setThreadPoolMaxSize(final int threadPoolMaxSize)
    {
       checkWrite();
-      sessionFactory.setThreadPoolMaxSize(threadPoolMaxSize);
+      serverLocator.setThreadPoolMaxSize(threadPoolMaxSize);
    }
 
    public synchronized int getInitialMessagePacketSize()
    {
-      return sessionFactory.getInitialMessagePacketSize();
+      return serverLocator.getInitialMessagePacketSize();
    }
 
    public synchronized void setInitialMessagePacketSize(final int size)
    {
       checkWrite();
-      sessionFactory.setInitialMessagePacketSize(size);
-   }
-
-   public ClientSessionFactory getCoreFactory()
-   {
-      return sessionFactory;
+      serverLocator.setInitialMessagePacketSize(size);
    }
 
    public void setGroupID(final String groupID)
    {
-      sessionFactory.setGroupID(groupID);
+      serverLocator.setGroupID(groupID);
    }
 
    public String getGroupID()
    {
-      return sessionFactory.getGroupID();
+      return serverLocator.getGroupID();
    }
    
    public void close()
    {
-      sessionFactory.close();
+      serverLocator.close();
    }
-
+   
+   public ServerLocator getServerLocator()
+   {
+      return serverLocator;
+   }
+   
+   /**
+    * 
+    * @deprecated use {@link ServerLocator#createSessionFactory()}
+    * @return
+    */
+   @Deprecated
+   public ClientSessionFactory getCoreFactory() throws JMSException
+   {
+      try
+      {
+         return serverLocator.createSessionFactory();
+      }
+      catch (Exception e)
+      {
+         JMSException ex = new JMSException (e.getMessage());
+         ex.initCause(e);
+         throw ex;
+      }
+   }
+   
    // Package protected ----------------------------------------------------------------------------
 
    // Protected ------------------------------------------------------------------------------------
@@ -600,9 +605,20 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    {
       readOnly = true;
 
-      // Note that each JMS connection gets it's own copy of the connection factory
-      // This means there is one underlying remoting connection per jms connection (if not load balanced)
-      ClientSessionFactory factory = sessionFactory.copy();
+      ClientSessionFactory factory;
+      
+      try
+      {
+         factory = serverLocator.createSessionFactory();
+      }
+      catch (Exception e)
+      {
+         JMSException jmse = new JMSException("Failed to create session factory");
+         
+         jmse.setLinkedException(e);
+         
+         throw jmse;
+      }
 
       HornetQConnection connection = null;
       

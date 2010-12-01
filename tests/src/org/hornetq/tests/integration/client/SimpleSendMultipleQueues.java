@@ -14,11 +14,7 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -51,6 +47,8 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
    private ClientConsumer consumer2;
 
    private ClientConsumer consumer3;
+
+   private ServerLocator locator;
 
    public void test() throws Exception
    {
@@ -89,7 +87,9 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory cf = createFactory();
+      locator = createNettyNonHALocator();
+
+      ClientSessionFactory cf = locator.createSessionFactory();
 
       session = cf.createSession();
 
@@ -108,11 +108,6 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
       session.start();
    }
 
-   protected ClientSessionFactory createFactory()
-   {
-      return createNettyFactory();
-   }
-
    @Override
    protected void tearDown() throws Exception
    {
@@ -129,6 +124,8 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
          session.deleteQueue("queue3");
 
          session.close();
+
+         locator.close();
       }
 
       if (server.isStarted())

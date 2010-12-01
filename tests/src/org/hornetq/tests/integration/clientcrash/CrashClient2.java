@@ -16,13 +16,10 @@ package org.hornetq.tests.integration.clientcrash;
 import java.util.Arrays;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
 /**
  * Code to be run in an external VM, via main().
@@ -46,10 +43,11 @@ public class CrashClient2
       {
          log.debug("args = " + Arrays.asList(args));
 
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         locator.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
+         locator.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
+         ClientSessionFactory sf = locator.createSessionFactory();
 
-         sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
-         sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
 
          ClientSession session = sf.createSession(true, true, 1000000);
          ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);

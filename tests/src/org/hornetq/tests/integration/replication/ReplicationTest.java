@@ -36,8 +36,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.FailoverManager;
-import org.hornetq.core.client.impl.FailoverManagerImpl;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -112,13 +112,13 @@ public class ReplicationTest extends ServiceTestBase
 
       HornetQServer server = new HornetQServerImpl(config);
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       server.start();
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
          manager.stop();
       }
@@ -137,13 +137,13 @@ public class ReplicationTest extends ServiceTestBase
 
       HornetQServer server = new HornetQServerImpl(config);
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       server.start();
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
          try
          {
@@ -178,19 +178,19 @@ public class ReplicationTest extends ServiceTestBase
 
       HornetQServer server = new HornetQServerImpl(config);
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       server.start();
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
 
          manager.start();
 
          try
          {
-            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager, factory);
+            ReplicationManagerImpl manager2 = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
 
             manager2.start();
             Assert.fail("Exception was expected");
@@ -219,11 +219,11 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
 
          try
          {
@@ -253,13 +253,13 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       try
       {
          StorageManager storage = getStorage();
 
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -359,12 +359,12 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -514,11 +514,11 @@ public class ReplicationTest extends ServiceTestBase
 
    public void testNoServer() throws Exception
    {
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
          Assert.fail("Exception expected");
       }
@@ -539,12 +539,12 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -587,14 +587,14 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
-      FailoverManager failoverManager = createFailoverManager();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       final ArrayList<Integer> executions = new ArrayList<Integer>();
 
       try
       {
          StorageManager storage = getStorage();
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, factory);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl((ClientSessionFactoryInternal) locator.createSessionFactory(), factory);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -702,33 +702,6 @@ public class ReplicationTest extends ServiceTestBase
 
    }
 
-   private FailoverManagerImpl createFailoverManager()
-   {
-      return createFailoverManager(null);
-   }
-
-   private FailoverManagerImpl createFailoverManager(final List<Interceptor> interceptors)
-   {
-      TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                          new HashMap<String, Object>(),
-                                                                          RandomUtil.randomString());
-
-      return new FailoverManagerImpl((ClientSessionFactory)null,
-                                     connectorConfig,
-                                     null,
-                                     false,
-                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
-                                     HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                     HornetQClient.DEFAULT_CONNECTION_TTL,
-                                     0,
-                                     1.0d,
-                                     0,
-                                     1,
-                                     HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                     executor,
-                                     scheduledExecutor,
-                                     interceptors);
-   }
 
    protected PagingManager createPageManager(final StorageManager storageManager,
                                              final Configuration configuration,

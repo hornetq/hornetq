@@ -13,22 +13,37 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.ActivateCallback;
-import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -46,9 +61,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected HornetQServer server0Service;
+   protected TestableServer liveServer;
 
-   protected HornetQServer server1Service;
+   protected TestableServer backupServer;
+
+   protected Configuration backupConfig;
+
+   protected Configuration liveConfig;
+   
+   protected NodeManager nodeManager;
 
    // Static --------------------------------------------------------
 
@@ -76,15 +97,25 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+      clearData();
       createConfigs();
 
-      if (server1Service != null)
-      {
-         server1Service.start();
-      }
+      liveServer.start();
 
-      server0Service.start();
+      if (backupServer != null)
+      {
+         backupServer.start();
+      }
+   }
+
+   protected TestableServer createLiveServer()
+   {
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager));
+   }
+
+   protected TestableServer createBackupServer()
+   {
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
    }
 
    /**
@@ -92,41 +123,61 @@ public abstract class FailoverTestBase extends ServiceTestBase
     */
    protected void createConfigs() throws Exception
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(true);
-      config1.setBackup(true);
-      server1Service = createServer(true, config1);
+      nodeManager = new InVMNodeManager();
+
+      backupConfig = super.createDefaultConfig();
+      backupConfig.getAcceptorConfigurations().clear();
+      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
+      backupConfig.setSecurityEnabled(false);
+      backupConfig.setSharedStore(true);
+      backupConfig.setBackup(true);
+      backupConfig.setClustered(true);
+      TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
+      TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+      backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
+      backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
+      ArrayList<String> staticConnectors = new ArrayList<String>();
+      staticConnectors.add(liveConnector.getName());
+      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
+               staticConnectors);
+      backupConfig.getClusterConfigurations().add(cccLive);
+      backupServer = createBackupServer();
       
+      // FIXME
+      /*
       server1Service.registerActivateCallback(new ActivateCallback()
       {
          
          public void preActivate()
          {
             // To avoid two servers messing up with the same journal at any single point
+
+         }
+         
+         public void activated()
+         {
             try
             {
-               server0Service.getStorageManager().stop();
+               liveServer.getStorageManager().stop();
             }
             catch (Exception ignored)
             {
             }
          }
-         
-         public void activated()
-         {
-         }
       });
-
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(true);
-      server0Service = createServer(true, config0);
-
+*/
+      liveConfig = super.createDefaultConfig();
+      liveConfig.getAcceptorConfigurations().clear();
+      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
+      liveConfig.setSecurityEnabled(false);
+      liveConfig.setSharedStore(true);
+      liveConfig.setClustered(true);
+       List<String> pairs = null;
+      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
+               pairs);
+      liveConfig.getClusterConfigurations().add(ccc0);
+      liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
+      liveServer = createLiveServer();
    }
 
    protected void createReplicatedConfigs() throws Exception
@@ -141,39 +192,104 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
-      server1Service = super.createServer(true, config1);
-
+      backupServer = createBackupServer();
+      
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
       config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      config0.setBackupConnectorName("toBackup");
+      //liveConfig.setBackupConnectorName("toBackup");
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
-      server0Service = super.createServer(true, config0);
+      liveServer = createLiveServer();
 
-      server1Service.start();
-      server0Service.start();
+      backupServer.start();
+      liveServer.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      server1Service.stop();
+      backupServer.stop();
 
-      server0Service.stop();
+      liveServer.stop();
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
-      server1Service = null;
+      backupServer = null;
 
-      server0Service = null;
+      liveServer = null;
+
+      nodeManager = null;
 
       InVMConnector.failOnCreateConnection = false;
 
       super.tearDown();
+      try
+      {
+         ServerSocket serverSocket = new ServerSocket(5445);
+         serverSocket.close();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+         System.exit(9);
+      }
+      try
+      {
+         ServerSocket serverSocket = new ServerSocket(5446);
+         serverSocket.close();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+         System.exit(9);
+      }
    }
+
+   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
+           throws Exception
+     {
+        ClientSessionFactoryInternal sf;
+        CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
+
+        locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+
+        sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+
+        boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
+        assertTrue(ok);
+        return sf;
+     }
+
+   protected void waitForBackup(long seconds)
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while(!backupServer.isInitialised())
+      {
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+         if(backupServer.isInitialised())
+         {
+            break;
+         }
+         else if(System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup server never started");
+         }
+      }
+      System.out.println("FailoverTestBase.waitForNewLive");
+   }
+   
+   
 
    protected TransportConfiguration getInVMConnectorTransportConfiguration(final boolean live)
    {
@@ -247,13 +363,60 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected abstract TransportConfiguration getConnectorTransportConfiguration(final boolean live);
 
-   protected ClientSessionFactoryInternal getSessionFactory()
+   protected ServerLocatorInternal getServerLocator() throws Exception
    {
-      return (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      return (ServerLocatorInternal) locator;
    }
 
+   protected void crash(final ClientSession... sessions) throws Exception
+   {
+      liveServer.crash(sessions);
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   abstract class BaseListener implements SessionFailureListener
+   {
+      public void beforeReconnect(final HornetQException me)
+      {
+      }
+   }
+   
+   class LatchClusterTopologyListener implements ClusterTopologyListener
+   {
+      final CountDownLatch latch;
+      int liveNodes = 0;
+      int backUpNodes = 0;
+      List<String> liveNode = new ArrayList<String>();
+      List<String> backupNode = new ArrayList<String>();
+
+      public LatchClusterTopologyListener(CountDownLatch latch)
+      {
+         this.latch = latch;
+      }
+
+      public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last, int distance)
+      {
+         if(connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
+         {
+            liveNode.add(connectorPair.a.getName());
+            latch.countDown();
+         }
+         if(connectorPair.b != null && !backupNode.contains(connectorPair.b.getName()))
+         {
+            backupNode.add(connectorPair.b.getName());
+            latch.countDown();
+         }
+      }
+
+      public void nodeDown(String nodeID)
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+   }
+
 
 }

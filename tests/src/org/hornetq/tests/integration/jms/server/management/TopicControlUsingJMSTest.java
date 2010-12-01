@@ -39,6 +39,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -167,14 +168,12 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       Assert.assertEquals(3, proxy.retrieveAttributeValue("messageCount"));
 
-      Assert.assertEquals(2, proxy.invokeOperation("countMessagesForSubscription",
-                                                   clientID,
-                                                   subscriptionName,
-                                                   key + " =" + matchingValue));
-      Assert.assertEquals(1, proxy.invokeOperation("countMessagesForSubscription",
-                                                   clientID,
-                                                   subscriptionName,
-                                                   key + " =" + unmatchingValue));
+      Assert.assertEquals(2,
+                          proxy.invokeOperation("countMessagesForSubscription", clientID, subscriptionName, key + " =" +
+                                                                                                            matchingValue));
+      Assert.assertEquals(1,
+                          proxy.invokeOperation("countMessagesForSubscription", clientID, subscriptionName, key + " =" +
+                                                                                                            unmatchingValue));
 
       connection.close();
    }
@@ -301,7 +300,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       Object[] data = (Object[])proxy.invokeOperation("listMessagesForSubscription",
                                                       HornetQDestination.createQueueNameForDurableSubscription(clientID,
-                                                                                                         subscriptionName));
+                                                                                                               subscriptionName));
       Assert.assertEquals(3, data.length);
 
       connection.close();
@@ -314,7 +313,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       try
       {
          proxy.invokeOperation("listMessagesForSubscription",
-                               HornetQDestination.createQueueNameForDurableSubscription(unknownClientID, subscriptionName));
+                               HornetQDestination.createQueueNameForDurableSubscription(unknownClientID,
+                                                                                        subscriptionName));
          Assert.fail();
       }
       catch (Exception e)
@@ -356,22 +356,30 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       connection_2.close();
       connection_3.close();
    }
-   
+
    public void testGetMessagesDelivering() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       MessageConsumer cons_1 = JMSUtil.createConsumer(connection_1, topic, Session.CLIENT_ACKNOWLEDGE);
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      MessageConsumer cons_2 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName, Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons_2 = JMSUtil.createDurableSubscriber(connection_2,
+                                                               topic,
+                                                               clientID,
+                                                               subscriptionName,
+                                                               Session.CLIENT_ACKNOWLEDGE);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3,
+                                                               topic,
+                                                               clientID,
+                                                               subscriptionName + "2",
+                                                               Session.CLIENT_ACKNOWLEDGE);
 
       assertEquals(0, proxy.retrieveAttributeValue("deliveringCount"));
 
       JMSUtil.sendMessages(topic, 2);
 
       assertEquals(0, proxy.retrieveAttributeValue("deliveringCount"));
-      
+
       connection_1.start();
       connection_2.start();
       connection_3.start();
@@ -385,7 +393,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
          assertNotNull(msg_1);
          msg_2 = cons_2.receive(5000);
          assertNotNull(msg_2);
-         msg_3 = cons_3.receive(5000);         
+         msg_3 = cons_3.receive(5000);
          assertNotNull(msg_3);
       }
 
@@ -397,11 +405,12 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       assertEquals(1 * 2, proxy.retrieveAttributeValue("deliveringCount"));
       msg_3.acknowledge();
       assertEquals(0, proxy.retrieveAttributeValue("deliveringCount"));
-      
+
       connection_1.close();
       connection_2.close();
       connection_3.close();
    }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -428,10 +437,11 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       subscriptionName = RandomUtil.randomString();
 
       String topicName = RandomUtil.randomString();
-      serverManager.createTopic(false, topicName, topicBinding );
+      serverManager.createTopic(false, topicName, topicBinding);
       topic = (HornetQTopic)HornetQJMSClient.createTopic(topicName);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();

@@ -31,6 +31,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
@@ -71,7 +72,7 @@ public class JMSServerStartStopTest extends UnitTestCase
 
          start();
 
-         HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+         HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
          jbcf.setBlockOnDurableSend(true);
          jbcf.setBlockOnNonDurableSend(true);
@@ -98,7 +99,7 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       start();
 
-      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
       jbcf.setBlockOnDurableSend(true);
       jbcf.setBlockOnNonDurableSend(true);
@@ -134,7 +135,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    {
       start();
       
-      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
       jbcf.setBlockOnDurableSend(true);
       jbcf.setBlockOnNonDurableSend(true);

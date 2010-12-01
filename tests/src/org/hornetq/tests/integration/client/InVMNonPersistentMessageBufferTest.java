@@ -14,11 +14,7 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -203,15 +199,15 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
    }
 
-   protected ClientSessionFactory createFactory()
+   protected ServerLocator createFactory() throws Exception
    {
       if (isNetty())
       {
-         return createNettyFactory();
+         return createNettyNonHALocator();
       }
       else
       {
-         return createInVMFactory();
+         return createInVMNonHALocator();
       }
    }
 
@@ -234,7 +230,9 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory cf = createFactory();
+      ServerLocator locator = createFactory();
+
+      ClientSessionFactory cf = locator.createSessionFactory();
 
       session = cf.createSession();
 

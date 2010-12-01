@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -10,52 +10,69 @@
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 package org.hornetq.core.client.impl;
 
-import java.io.Serializable;
-import java.net.InetAddress;
+import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.*;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
-import org.hornetq.core.cluster.DiscoveryEntry;
-import org.hornetq.core.cluster.DiscoveryGroup;
-import org.hornetq.core.cluster.DiscoveryListener;
-import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.HornetQThreadFactory;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.Ping;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.version.Version;
+import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.BufferHandler;
+import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.spi.core.remoting.Connector;
+import org.hornetq.spi.core.remoting.ConnectorFactory;
+import org.hornetq.utils.ConcurrentHashSet;
+import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
+import org.hornetq.utils.VersionLoader;
 
 /**
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @version <tt>$Revision: 3602 $</tt>
- * 
+ * A ClientSessionFactoryImpl
+ *
+ * Encapsulates a connection to a server
+ *
+ * @author Tim Fox
+ *
+ *
  */
-public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, DiscoveryListener, Serializable
+public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, ConnectionLifeCycleListener
 {
+
    // Constants
    // ------------------------------------------------------------------------------------
 
@@ -66,221 +83,69 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private final Map<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager> failoverManagerMap = new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager>();
+   private final ServerLocatorInternal serverLocator;
 
-   private volatile boolean receivedBroadcast = false;
+   private TransportConfiguration connectorConfig;
 
-   private ExecutorService threadPool;
+   private TransportConfiguration backupConfig;
 
-   private ScheduledExecutorService scheduledThreadPool;
+   private ConnectorFactory connectorFactory;
 
-   private DiscoveryGroup discoveryGroup;
+   private Map<String, Object> transportParams;
 
-   private ConnectionLoadBalancingPolicy loadBalancingPolicy;
+   private final long callTimeout;
 
-   private FailoverManager[] failoverManagerArray;
+   private final long clientFailureCheckPeriod;
 
-   private boolean readOnly;
+   private final long connectionTTL;
 
-   // Settable attributes:
+   private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
 
-   private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+   private final Object exitLock = new Object();
 
-   private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
+   private final Object createSessionLock = new Object();
 
-   private String localBindAddress;
+   private boolean inCreateSession;
 
-   private String discoveryAddress;
+   private final Object failoverLock = new Object();
 
-   private int discoveryPort;
+   private final ExecutorFactory orderedExecutorFactory;
 
-   private long discoveryRefreshTimeout;
+   private final ExecutorService threadPool;
 
-   private long discoveryInitialWaitTimeout;
+   private final ScheduledExecutorService scheduledThreadPool;
 
-   private long clientFailureCheckPeriod;
+   private final Executor closeExecutor;
 
-   private long connectionTTL;
+   private CoreRemotingConnection connection;
 
-   private long callTimeout;
+   private final long retryInterval;
 
-   private int minLargeMessageSize;
+   private final double retryIntervalMultiplier; // For exponential backoff
 
-   private int consumerWindowSize;
+   private final long maxRetryInterval;
 
-   private int consumerMaxRate;
+   private final int reconnectAttempts;
 
-   private int confirmationWindowSize;
+   private final Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
 
-   private int producerWindowSize;
+   private Connector connector;
 
-   private int producerMaxRate;
+   private Future<?> pingerFuture;
 
-   private boolean blockOnAcknowledge;
+   private PingRunnable pingRunnable;
 
-   private boolean blockOnDurableSend;
+   private volatile boolean exitLoop;
 
-   private boolean blockOnNonDurableSend;
+   private final List<Interceptor> interceptors;
 
-   private boolean autoGroup;
-
-   private boolean preAcknowledge;
-
-   private String connectionLoadBalancingPolicyClassName;
-
-   private int ackBatchSize;
-
-   private boolean useGlobalPools;
-
-   private int scheduledThreadPoolMaxSize;
-
-   private int threadPoolMaxSize;
-
-   private long retryInterval;
-
-   private double retryIntervalMultiplier;
-
-   private long maxRetryInterval;
-
-   private int reconnectAttempts;
-
-   private boolean failoverOnInitialConnection;
-
-   private int initialMessagePacketSize;
+   private volatile boolean stopPingingAfterOne;
 
    private volatile boolean closed;
 
-   private boolean failoverOnServerShutdown;
+   public final Exception e = new Exception();
 
-   private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
-
-   private static ExecutorService globalThreadPool;
-
-   private static ScheduledExecutorService globalScheduledThreadPool;
-
-   private String groupID;
-
-   private static synchronized ExecutorService getGlobalThreadPool()
-   {
-      if (ClientSessionFactoryImpl.globalThreadPool == null)
-      {
-         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-threads", true, getThisClassLoader());
-
-         ClientSessionFactoryImpl.globalThreadPool = Executors.newCachedThreadPool(factory);
-      }
-
-      return ClientSessionFactoryImpl.globalThreadPool;
-   }
-
-   private static synchronized ScheduledExecutorService getGlobalScheduledThreadPool()
-   {
-      if (ClientSessionFactoryImpl.globalScheduledThreadPool == null)
-      {
-         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-global-scheduled-threads", true, getThisClassLoader());
-
-         ClientSessionFactoryImpl.globalScheduledThreadPool = Executors.newScheduledThreadPool(HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-
-                                                                                               factory);
-      }
-
-      return ClientSessionFactoryImpl.globalScheduledThreadPool;
-   }
-
-   private void setThreadPools()
-   {
-      if (useGlobalPools)
-      {
-         threadPool = ClientSessionFactoryImpl.getGlobalThreadPool();
-
-         scheduledThreadPool = ClientSessionFactoryImpl.getGlobalScheduledThreadPool();
-      }
-      else
-      {
-         ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-factory-threads-" + System.identityHashCode(this),
-                                                          true, getThisClassLoader());
-
-         if (threadPoolMaxSize == -1)
-         {
-            threadPool = Executors.newCachedThreadPool(factory);
-         }
-         else
-         {
-            threadPool = Executors.newFixedThreadPool(threadPoolMaxSize, factory);
-         }
-
-         factory = new HornetQThreadFactory("HornetQ-client-factory-pinger-threads-" + System.identityHashCode(this),
-                                            true, getThisClassLoader());
-
-         scheduledThreadPool = Executors.newScheduledThreadPool(scheduledThreadPoolMaxSize, factory);
-      }
-   }
-
-   private synchronized void initialise() throws Exception
-   {
-      if (!readOnly)
-      {
-         setThreadPools();
-
-         instantiateLoadBalancingPolicy();
-
-         if (discoveryAddress != null)
-         {
-            InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
-
-            InetAddress lbAddress;
-
-            if (localBindAddress != null)
-            {
-               lbAddress = InetAddress.getByName(localBindAddress);
-            }
-            else
-            {
-               lbAddress = null;
-            }
-
-            discoveryGroup = new DiscoveryGroupImpl(UUIDGenerator.getInstance().generateStringUUID(),
-                                                    discoveryAddress,
-                                                    lbAddress,
-                                                    groupAddress,
-                                                    discoveryPort,
-                                                    discoveryRefreshTimeout);
-
-            discoveryGroup.registerListener(this);
-
-            discoveryGroup.start();
-         }
-         else if (staticConnectors != null)
-         {
-            for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
-            {
-               FailoverManager cm = new FailoverManagerImpl(this,
-                                                            pair.a,
-                                                            pair.b,
-                                                            failoverOnServerShutdown,
-                                                            callTimeout,
-                                                            clientFailureCheckPeriod,
-                                                            connectionTTL,
-                                                            retryInterval,
-                                                            retryIntervalMultiplier,
-                                                            maxRetryInterval,
-                                                            reconnectAttempts,
-                                                            failoverOnInitialConnection,
-                                                            threadPool,
-                                                            scheduledThreadPool,
-                                                            interceptors);
-
-               failoverManagerMap.put(pair, cm);
-            }
-
-            updatefailoverManagerArray();
-         }
-         else
-         {
-            throw new IllegalStateException("Before using a session factory you must either set discovery address and port or " + "provide some static transport configuration");
-         }
-         readOnly = true;
-      }
-   }
+   private final Object waitLock = new Object();
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -288,554 +153,101 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final ClientSessionFactory other)
+   public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+                                   final TransportConfiguration connectorConfig,
+                                   final long callTimeout,
+                                   final long clientFailureCheckPeriod,
+                                   final long connectionTTL,
+                                   final long retryInterval,
+                                   final double retryIntervalMultiplier,
+                                   final long maxRetryInterval,
+                                   final int reconnectAttempts,
+                                   final ExecutorService threadPool,
+                                   final ScheduledExecutorService scheduledThreadPool,
+                                   final List<Interceptor> interceptors)
    {
-      localBindAddress = other.getLocalBindAddress();
 
-      discoveryAddress = other.getDiscoveryAddress();
+      e.fillInStackTrace();
 
-      discoveryPort = other.getDiscoveryPort();
+      this.serverLocator = serverLocator;
 
-      staticConnectors = other.getStaticConnectors();
+      this.connectorConfig = connectorConfig;
 
-      discoveryRefreshTimeout = other.getDiscoveryRefreshTimeout();
+      connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
-      clientFailureCheckPeriod = other.getClientFailureCheckPeriod();
+      transportParams = connectorConfig.getParams();
 
-      connectionTTL = other.getConnectionTTL();
+      checkTransportKeys(connectorFactory, transportParams);
 
-      callTimeout = other.getCallTimeout();
-
-      minLargeMessageSize = other.getMinLargeMessageSize();
-
-      consumerWindowSize = other.getConsumerWindowSize();
-
-      consumerMaxRate = other.getConsumerMaxRate();
-
-      confirmationWindowSize = other.getConfirmationWindowSize();
-
-      producerWindowSize = other.getProducerWindowSize();
-
-      producerMaxRate = other.getProducerMaxRate();
-
-      blockOnAcknowledge = other.isBlockOnAcknowledge();
-
-      blockOnDurableSend = other.isBlockOnDurableSend();
-
-      blockOnNonDurableSend = other.isBlockOnNonDurableSend();
-
-      autoGroup = other.isAutoGroup();
-
-      preAcknowledge = other.isPreAcknowledge();
-
-      ackBatchSize = other.getAckBatchSize();
-
-      connectionLoadBalancingPolicyClassName = other.getConnectionLoadBalancingPolicyClassName();
-
-      discoveryInitialWaitTimeout = other.getDiscoveryInitialWaitTimeout();
-
-      useGlobalPools = other.isUseGlobalPools();
-
-      scheduledThreadPoolMaxSize = other.getScheduledThreadPoolMaxSize();
-
-      threadPoolMaxSize = other.getThreadPoolMaxSize();
-
-      retryInterval = other.getRetryInterval();
-
-      retryIntervalMultiplier = other.getRetryIntervalMultiplier();
-
-      maxRetryInterval = other.getMaxRetryInterval();
-
-      reconnectAttempts = other.getReconnectAttempts();
-
-      failoverOnInitialConnection = other.isFailoverOnInitialConnection();
-
-      failoverOnServerShutdown = other.isFailoverOnServerShutdown();
-
-      cacheLargeMessagesClient = other.isCacheLargeMessagesClient();
-
-      initialMessagePacketSize = other.getInitialMessagePacketSize();
-
-      groupID = other.getGroupID();
-   }
-
-   public ClientSessionFactoryImpl()
-   {
-      discoveryRefreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
-
-      clientFailureCheckPeriod = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
-
-      connectionTTL = HornetQClient.DEFAULT_CONNECTION_TTL;
-
-      callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
-
-      minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-
-      consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
-
-      consumerMaxRate = HornetQClient.DEFAULT_CONSUMER_MAX_RATE;
-
-      confirmationWindowSize = HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE;
-
-      producerWindowSize = HornetQClient.DEFAULT_PRODUCER_WINDOW_SIZE;
-
-      producerMaxRate = HornetQClient.DEFAULT_PRODUCER_MAX_RATE;
-
-      blockOnAcknowledge = HornetQClient.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-
-      blockOnDurableSend = HornetQClient.DEFAULT_BLOCK_ON_DURABLE_SEND;
-
-      blockOnNonDurableSend = HornetQClient.DEFAULT_BLOCK_ON_NON_DURABLE_SEND;
-
-      autoGroup = HornetQClient.DEFAULT_AUTO_GROUP;
-
-      preAcknowledge = HornetQClient.DEFAULT_PRE_ACKNOWLEDGE;
-
-      ackBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
-
-      connectionLoadBalancingPolicyClassName = HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-
-      discoveryInitialWaitTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
-
-      useGlobalPools = HornetQClient.DEFAULT_USE_GLOBAL_POOLS;
-
-      scheduledThreadPoolMaxSize = HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
-
-      threadPoolMaxSize = HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE;
-
-      retryInterval = HornetQClient.DEFAULT_RETRY_INTERVAL;
-
-      retryIntervalMultiplier = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-
-      maxRetryInterval = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
-
-      reconnectAttempts = HornetQClient.DEFAULT_RECONNECT_ATTEMPTS;
-
-      failoverOnInitialConnection = HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION;
-
-      failoverOnServerShutdown = HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-
-      cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-
-      initialMessagePacketSize = HornetQClient.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE;
-   }
-
-   public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)
-   {
-      this();
-
-      this.discoveryAddress = discoveryAddress;
-
-      this.discoveryPort = discoveryPort;
-   }
-
-   public ClientSessionFactoryImpl(final String localBindAddress, final String discoveryAddress, final int discoveryPort)
-   {
-      this();
-
-      this.localBindAddress = localBindAddress;
-
-      this.discoveryAddress = discoveryAddress;
-
-      this.discoveryPort = discoveryPort;
-   }
-
-   public ClientSessionFactoryImpl(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
-   {
-      this();
-
-      this.staticConnectors = staticConnectors;
-   }
-
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConnectorConfig)
-   {
-      this();
-
-      staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-
-      staticConnectors.add(new Pair<TransportConfiguration, TransportConfiguration>(connectorConfig,
-                                                                                    backupConnectorConfig));
-   }
-
-   public ClientSessionFactoryImpl(final TransportConfiguration connectorConfig)
-   {
-      this(connectorConfig, null);
-   }
-
-   // ClientSessionFactory implementation------------------------------------------------------------
-
-   public synchronized boolean isCacheLargeMessagesClient()
-   {
-      return cacheLargeMessagesClient;
-   }
-
-   public synchronized void setCacheLargeMessagesClient(final boolean cached)
-   {
-      cacheLargeMessagesClient = cached;
-   }
-
-   public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
-   {
-      return staticConnectors;
-   }
-
-   public synchronized void setStaticConnectors(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
-   {
-      checkWrite();
-
-      this.staticConnectors = staticConnectors;
-   }
-
-   public synchronized long getClientFailureCheckPeriod()
-   {
-      return clientFailureCheckPeriod;
-   }
-
-   public synchronized void setClientFailureCheckPeriod(final long clientFailureCheckPeriod)
-   {
-      checkWrite();
-      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
-   }
-
-   public synchronized long getConnectionTTL()
-   {
-      return connectionTTL;
-   }
-
-   public synchronized void setConnectionTTL(final long connectionTTL)
-   {
-      checkWrite();
-      this.connectionTTL = connectionTTL;
-   }
-
-   public synchronized long getCallTimeout()
-   {
-      return callTimeout;
-   }
-
-   public synchronized void setCallTimeout(final long callTimeout)
-   {
-      checkWrite();
       this.callTimeout = callTimeout;
-   }
 
-   public synchronized int getMinLargeMessageSize()
-   {
-      return minLargeMessageSize;
-   }
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
 
-   public synchronized void setMinLargeMessageSize(final int minLargeMessageSize)
-   {
-      checkWrite();
-      this.minLargeMessageSize = minLargeMessageSize;
-   }
+      this.connectionTTL = connectionTTL;
 
-   public synchronized int getConsumerWindowSize()
-   {
-      return consumerWindowSize;
-   }
-
-   public synchronized void setConsumerWindowSize(final int consumerWindowSize)
-   {
-      checkWrite();
-      this.consumerWindowSize = consumerWindowSize;
-   }
-
-   public synchronized int getConsumerMaxRate()
-   {
-      return consumerMaxRate;
-   }
-
-   public synchronized void setConsumerMaxRate(final int consumerMaxRate)
-   {
-      checkWrite();
-      this.consumerMaxRate = consumerMaxRate;
-   }
-
-   public synchronized int getConfirmationWindowSize()
-   {
-      return confirmationWindowSize;
-   }
-
-   public synchronized void setConfirmationWindowSize(final int confirmationWindowSize)
-   {
-      checkWrite();
-      this.confirmationWindowSize = confirmationWindowSize;
-   }
-
-   public synchronized int getProducerWindowSize()
-   {
-      return producerWindowSize;
-   }
-
-   public synchronized void setProducerWindowSize(final int producerWindowSize)
-   {
-      checkWrite();
-      this.producerWindowSize = producerWindowSize;
-   }
-
-   public synchronized int getProducerMaxRate()
-   {
-      return producerMaxRate;
-   }
-
-   public synchronized void setProducerMaxRate(final int producerMaxRate)
-   {
-      checkWrite();
-      this.producerMaxRate = producerMaxRate;
-   }
-
-   public synchronized boolean isBlockOnAcknowledge()
-   {
-      return blockOnAcknowledge;
-   }
-
-   public synchronized void setBlockOnAcknowledge(final boolean blockOnAcknowledge)
-   {
-      checkWrite();
-      this.blockOnAcknowledge = blockOnAcknowledge;
-   }
-
-   public synchronized boolean isBlockOnDurableSend()
-   {
-      return blockOnDurableSend;
-   }
-
-   public synchronized void setBlockOnDurableSend(final boolean blockOnDurableSend)
-   {
-      checkWrite();
-      this.blockOnDurableSend = blockOnDurableSend;
-   }
-
-   public synchronized boolean isBlockOnNonDurableSend()
-   {
-      return blockOnNonDurableSend;
-   }
-
-   public synchronized void setBlockOnNonDurableSend(final boolean blockOnNonDurableSend)
-   {
-      checkWrite();
-      this.blockOnNonDurableSend = blockOnNonDurableSend;
-   }
-
-   public synchronized boolean isAutoGroup()
-   {
-      return autoGroup;
-   }
-
-   public synchronized void setAutoGroup(final boolean autoGroup)
-   {
-      checkWrite();
-      this.autoGroup = autoGroup;
-   }
-
-   public synchronized boolean isPreAcknowledge()
-   {
-      return preAcknowledge;
-   }
-
-   public synchronized void setPreAcknowledge(final boolean preAcknowledge)
-   {
-      checkWrite();
-      this.preAcknowledge = preAcknowledge;
-   }
-
-   public synchronized int getAckBatchSize()
-   {
-      return ackBatchSize;
-   }
-
-   public synchronized void setAckBatchSize(final int ackBatchSize)
-   {
-      checkWrite();
-      this.ackBatchSize = ackBatchSize;
-   }
-
-   public synchronized long getDiscoveryInitialWaitTimeout()
-   {
-      return discoveryInitialWaitTimeout;
-   }
-
-   public synchronized void setDiscoveryInitialWaitTimeout(final long initialWaitTimeout)
-   {
-      checkWrite();
-      discoveryInitialWaitTimeout = initialWaitTimeout;
-   }
-
-   public synchronized boolean isUseGlobalPools()
-   {
-      return useGlobalPools;
-   }
-
-   public synchronized void setUseGlobalPools(final boolean useGlobalPools)
-   {
-      checkWrite();
-      this.useGlobalPools = useGlobalPools;
-   }
-
-   public synchronized int getScheduledThreadPoolMaxSize()
-   {
-      return scheduledThreadPoolMaxSize;
-   }
-
-   public synchronized void setScheduledThreadPoolMaxSize(final int scheduledThreadPoolMaxSize)
-   {
-      checkWrite();
-      this.scheduledThreadPoolMaxSize = scheduledThreadPoolMaxSize;
-   }
-
-   public synchronized int getThreadPoolMaxSize()
-   {
-      return threadPoolMaxSize;
-   }
-
-   public synchronized void setThreadPoolMaxSize(final int threadPoolMaxSize)
-   {
-      checkWrite();
-      this.threadPoolMaxSize = threadPoolMaxSize;
-   }
-
-   public synchronized long getRetryInterval()
-   {
-      return retryInterval;
-   }
-
-   public synchronized void setRetryInterval(final long retryInterval)
-   {
-      checkWrite();
       this.retryInterval = retryInterval;
-   }
 
-   public synchronized long getMaxRetryInterval()
-   {
-      return maxRetryInterval;
-   }
-
-   public synchronized void setMaxRetryInterval(final long retryInterval)
-   {
-      checkWrite();
-      maxRetryInterval = retryInterval;
-   }
-
-   public synchronized double getRetryIntervalMultiplier()
-   {
-      return retryIntervalMultiplier;
-   }
-
-   public synchronized void setRetryIntervalMultiplier(final double retryIntervalMultiplier)
-   {
-      checkWrite();
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-   }
 
-   public synchronized int getReconnectAttempts()
-   {
-      return reconnectAttempts;
-   }
+      this.maxRetryInterval = maxRetryInterval;
 
-   public synchronized void setReconnectAttempts(final int reconnectAttempts)
-   {
-      checkWrite();
       this.reconnectAttempts = reconnectAttempts;
+
+      this.scheduledThreadPool = scheduledThreadPool;
+
+      this.threadPool = threadPool;
+
+      orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
+
+      closeExecutor = orderedExecutorFactory.getExecutor();
+
+      this.interceptors = interceptors;
+
    }
 
-   public synchronized boolean isFailoverOnInitialConnection()
+   public void connect(int initialConnectAttempts, boolean failoverOnInitialConnection) throws HornetQException
    {
-      return this.failoverOnInitialConnection;
+      // Get the connection
+
+      getConnectionWithRetry(initialConnectAttempts);
+
+      if (connection == null && failoverOnInitialConnection)
+      {
+         if (backupConfig != null)
+         {
+            // Try and connect to the backup
+
+            log.warn("Server is not available to make initial connection to. Will try backup server instead.");
+
+            this.connectorConfig = backupConfig;
+
+            connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+
+            transportParams = this.connectorConfig.getParams();
+
+            getConnectionWithRetry(initialConnectAttempts);
+         }
+      }
+
+      if (connection == null)
+      {
+         throw new HornetQException(HornetQException.NOT_CONNECTED,
+                                    "Unable to connect to server using configuration " + connectorConfig);
+      }
+
    }
 
-   public synchronized void setFailoverOnInitialConnection(final boolean failover)
+   public TransportConfiguration getConnectorConfiguration()
    {
-      checkWrite();
-      this.failoverOnInitialConnection = failover;
+      return connectorConfig;
    }
 
-   public synchronized boolean isFailoverOnServerShutdown()
+   public void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp)
    {
-      return failoverOnServerShutdown;
-   }
-
-   public synchronized void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
-   {
-      checkWrite();
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-   }
-
-   public synchronized String getConnectionLoadBalancingPolicyClassName()
-   {
-      return connectionLoadBalancingPolicyClassName;
-   }
-
-   public synchronized void setConnectionLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
-   {
-      checkWrite();
-      connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
-   }
-
-   public synchronized String getLocalBindAddress()
-   {
-      return localBindAddress;
-   }
-
-   public synchronized void setLocalBindAddress(final String localBindAddress)
-   {
-      checkWrite();
-      this.localBindAddress = localBindAddress;
-   }
-
-   public synchronized String getDiscoveryAddress()
-   {
-      return discoveryAddress;
-   }
-
-   public synchronized void setDiscoveryAddress(final String discoveryAddress)
-   {
-      checkWrite();
-      this.discoveryAddress = discoveryAddress;
-   }
-
-   public synchronized int getDiscoveryPort()
-   {
-      return discoveryPort;
-   }
-
-   public synchronized void setDiscoveryPort(final int discoveryPort)
-   {
-      checkWrite();
-      this.discoveryPort = discoveryPort;
-   }
-
-   public synchronized long getDiscoveryRefreshTimeout()
-   {
-      return discoveryRefreshTimeout;
-   }
-
-   public void addInterceptor(final Interceptor interceptor)
-   {
-      interceptors.add(interceptor);
-   }
-
-   public boolean removeInterceptor(final Interceptor interceptor)
-   {
-      return interceptors.remove(interceptor);
-   }
-
-   public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
-   {
-      checkWrite();
-      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
-   }
-
-   public synchronized int getInitialMessagePacketSize()
-   {
-      return initialMessagePacketSize;
-   }
-
-   public synchronized void setInitialMessagePacketSize(final int size)
-   {
-      checkWrite();
-      initialMessagePacketSize = size;
+      if(live.equals(connectorConfig) && backUp != null)
+      {
+         backupConfig = backUp;
+      }
    }
 
    public ClientSession createSession(final String username,
@@ -859,32 +271,68 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                       final boolean autoCommitAcks,
                                       final int ackBatchSize) throws HornetQException
    {
-      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   false,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   serverLocator.isPreAcknowledge(),
+                                   ackBatchSize);
    }
 
    public ClientSession createXASession() throws HornetQException
    {
-      return createSessionInternal(null, null, true, false, false, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   true,
+                                   false,
+                                   false,
+                                   serverLocator.isPreAcknowledge(),
+                                   serverLocator.getAckBatchSize());
    }
 
    public ClientSession createTransactedSession() throws HornetQException
    {
-      return createSessionInternal(null, null, false, false, false, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   false,
+                                   false,
+                                   false,
+                                   serverLocator.isPreAcknowledge(),
+                                   serverLocator.getAckBatchSize());
    }
 
    public ClientSession createSession() throws HornetQException
    {
-      return createSessionInternal(null, null, false, true, true, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   false,
+                                   true,
+                                   true,
+                                   serverLocator.isPreAcknowledge(),
+                                   serverLocator.getAckBatchSize());
    }
 
    public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
-      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   false,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   serverLocator.isPreAcknowledge(),
+                                   serverLocator.getAckBatchSize());
    }
 
    public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   xa,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   serverLocator.isPreAcknowledge(),
+                                   serverLocator.getAckBatchSize());
    }
 
    public ClientSession createSession(final boolean xa,
@@ -892,31 +340,83 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge) throws HornetQException
    {
-      return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   xa,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   preAcknowledge,
+                                   serverLocator.getAckBatchSize());
+   }
+
+   // ConnectionLifeCycleListener implementation --------------------------------------------------
+
+   public void connectionCreated(final Connection connection, final ProtocolType protocol)
+   {
+   }
+
+   public void connectionDestroyed(final Object connectionID)
+   {
+      handleConnectionFailure(connectionID,
+                              new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected"));
+   }
+
+   public void connectionException(final Object connectionID, final HornetQException me)
+   {
+      handleConnectionFailure(connectionID, me);
+   }
+
+   // Must be synchronized to prevent it happening concurrently with failover which can lead to
+   // inconsistencies
+   public void removeSession(final ClientSessionInternal session, boolean failingOver)
+   {
+      if (!failingOver)
+      {
+         synchronized (createSessionLock)
+         {
+            synchronized (failoverLock)
+            {
+               sessions.remove(session);
+            }
+         }
+      }
+      else
+      {
+         sessions.remove(session);
+      }
+   }
+
+   public void connectionReadyForWrites(final Object connectionID, final boolean ready)
+   {
+   }
+
+   public synchronized int numConnections()
+   {
+      return connection != null ? 1 : 0;
    }
 
    public int numSessions()
    {
-      int num = 0;
-
-      for (FailoverManager failoverManager : failoverManagerMap.values())
-      {
-         num += failoverManager.numSessions();
-      }
-
-      return num;
+      return sessions.size();
    }
 
-   public int numConnections()
+   public void addFailureListener(final SessionFailureListener listener)
    {
-      int num = 0;
+      listeners.add(listener);
+   }
 
-      for (FailoverManager failoverManager : failoverManagerMap.values())
+   public boolean removeFailureListener(final SessionFailureListener listener)
+   {
+      return listeners.remove(listener);
+   }
+
+   public void causeExit()
+   {
+      exitLoop = true;
+      synchronized (waitLock)
       {
-         num += failoverManager.numConnections();
+         waitLock.notify();
       }
-
-      return num;
    }
 
    public void close()
@@ -926,158 +426,234 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          return;
       }
 
-      if (discoveryGroup != null)
+      // we need to stopthe factory from connecting if it is in the middle aof trying to failover before we get the lock
+      causeExit();
+      synchronized (createSessionLock)
       {
-         try
+         synchronized (failoverLock)
          {
-            discoveryGroup.stop();
-         }
-         catch (Exception e)
-         {
-            ClientSessionFactoryImpl.log.error("Failed to stop discovery group", e);
-         }
-      }
-
-      for (FailoverManager failoverManager : failoverManagerMap.values())
-      {
-         failoverManager.causeExit();
-      }
-
-      failoverManagerMap.clear();
-
-      if (!useGlobalPools)
-      {
-         if (threadPool != null)
-         {
-            threadPool.shutdown();
-
-            try
+            // work on a copied set. the session will be removed from sessions when session.close() is called
+            for (ClientSession session : new HashSet<ClientSession>(sessions))
             {
-               if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+               try
                {
-                  ClientSessionFactoryImpl.log.warn("Timed out waiting for pool to terminate");
+                  session.close();
+               }
+               catch (HornetQException e)
+               {
+                  log.warn("Unable to close session", e);
                }
             }
-            catch (InterruptedException ignore)
-            {
-            }
-         }
 
-         if (scheduledThreadPool != null)
-         {
-            scheduledThreadPool.shutdown();
-
-            try
-            {
-               if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
-               {
-                  ClientSessionFactoryImpl.log.warn("Timed out waiting for scheduled pool to terminate");
-               }
-            }
-            catch (InterruptedException ignore)
-            {
-            }
+            checkCloseConnection();
          }
       }
 
       closed = true;
    }
 
-   public ClientSessionFactory copy()
+   public ServerLocator getServerLocator()
    {
-      return new ClientSessionFactoryImpl(this);
+      return serverLocator;
    }
 
-   public void setGroupID(final String groupID)
+   // Public
+   // ---------------------------------------------------------------------------------------
+
+   public void stopPingingAfterOne()
    {
-      this.groupID = groupID;
+      stopPingingAfterOne = true;
    }
 
-   public String getGroupID()
+   // Protected
+   // ------------------------------------------------------------------------------------
+
+   // Package Private
+   // ------------------------------------------------------------------------------
+
+   // Private
+   // --------------------------------------------------------------------------------------
+
+   private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
-      return groupID;
+      failoverOrReconnect(connectionID, me);
    }
 
-   // DiscoveryListener implementation --------------------------------------------------------
-
-   public synchronized void connectorsChanged()
+   private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
-      receivedBroadcast = true;
+      Set<ClientSessionInternal> sessionsToClose = null;
 
-      Map<String, DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntryMap();
-
-      Set<Pair<TransportConfiguration, TransportConfiguration>> connectorSet = new HashSet<Pair<TransportConfiguration, TransportConfiguration>>();
-
-      for (DiscoveryEntry entry : newConnectors.values())
+      synchronized (failoverLock)
       {
-         connectorSet.add(entry.getConnectorPair());
-      }
-
-      Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager>> iter = failoverManagerMap.entrySet()
-                                                                                                                          .iterator();
-      while (iter.hasNext())
-      {
-         Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager> entry = iter.next();
-
-         if (!connectorSet.contains(entry.getKey()))
+         if (connection == null || connection.getID() != connectionID)
          {
-            // failoverManager no longer there - we should remove it
+            // We already failed over/reconnected - probably the first failure came in, all the connections were failed
+            // over then a async connection exception or disconnect
+            // came in for one of the already exitLoop connections, so we return true - we don't want to call the
+            // listeners again
 
-            iter.remove();
+            return;
+         }
+
+         // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
+         callFailureListeners(me, false, false);
+
+         // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
+         // There are either no threads executing in createSession, or one is blocking on a createSession
+         // result.
+
+         // Then interrupt the channel 1 that is blocking (could just interrupt them all)
+
+         // Then release all channel 1 locks - this allows the createSession to exit the monitor
+
+         // Then get all channel 1 locks again - this ensures the any createSession thread has executed the section and
+         // returned all its connections to the connection manager (the code to return connections to connection manager
+         // must be inside the lock
+
+         // Then perform failover
+
+         // Then release failoverLock
+
+         // The other side of the bargain - during createSession:
+         // The calling thread must get the failoverLock and get its' connections when this is locked.
+         // While this is still locked it must then get the channel1 lock
+         // It can then release the failoverLock
+         // It should catch HornetQException.INTERRUPTED in the call to channel.sendBlocking
+         // It should then return its connections, with channel 1 lock still held
+         // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
+         // until failover is complete
+
+         boolean serverShutdown = me.getCode() == HornetQException.DISCONNECTED;
+
+         // We will try to failover if there is a backup connector factory, but we don't do this if the server
+         // has been shutdown cleanly unless failoverOnServerShutdown is true
+         boolean attemptFailover = (backupConfig != null) && !serverShutdown;
+
+         boolean attemptReconnect;
+
+         if (attemptFailover)
+         {
+            attemptReconnect = false;
+         }
+         else
+         {
+            attemptReconnect = reconnectAttempts != 0;
+         }
+
+         if (attemptFailover || attemptReconnect)
+         {
+            lockChannel1();
+
+            final boolean needToInterrupt;
+
+            synchronized (exitLock)
+            {
+               needToInterrupt = inCreateSession;
+            }
+
+            unlockChannel1();
+
+            if (needToInterrupt)
+            {
+               // Forcing return all channels won't guarantee that any blocked thread will return immediately
+               // So we need to wait for it
+               forceReturnChannel1();
+
+               // Now we need to make sure that the thread has actually exited and returned it's connections
+               // before failover occurs
+
+               synchronized (exitLock)
+               {
+                  while (inCreateSession)
+                  {
+                     try
+                     {
+                        exitLock.wait(5000);
+                     }
+                     catch (InterruptedException e)
+                     {
+                     }
+                  }
+               }
+            }
+
+            // Now we absolutely know that no threads are executing in or blocked in createSession, and no
+            // more will execute it until failover is complete
+
+            // So.. do failover / reconnection
+
+            CoreRemotingConnection oldConnection = connection;
+
+            connection = null;
+
+            try
+            {
+               connector.close();
+            }
+            catch (Exception ignore)
+            {
+            }
+
+            cancelScheduledTasks();
+
+            connector = null;
+
+            if (attemptFailover)
+            {
+               // Now try failing over to backup
+
+               this.connectorConfig = backupConfig;
+
+               backupConfig = null;
+
+               connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
+
+               transportParams = connectorConfig.getParams();
+
+               reconnectSessions(oldConnection, reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
+            }
+            else
+            {
+               reconnectSessions(oldConnection, reconnectAttempts);
+            }
+
+            oldConnection.destroy();
+         }
+         else
+         {
+            connection.destroy();
+
+            connection = null;
+         }
+
+         if (connection == null)
+         {
+            sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+            callFailureListeners(me, true, false);
          }
       }
 
-      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorSet)
+      // This needs to be outside the failover lock to prevent deadlock
+      if (connection != null)
       {
-         if (!failoverManagerMap.containsKey(connectorPair))
-         {
-            // Create a new failoverManager
-
-            FailoverManager failoverManager = new FailoverManagerImpl(this,
-                                                                      connectorPair.a,
-                                                                      connectorPair.b,
-                                                                      failoverOnServerShutdown,
-                                                                      callTimeout,
-                                                                      clientFailureCheckPeriod,
-                                                                      connectionTTL,
-                                                                      retryInterval,
-                                                                      retryIntervalMultiplier,
-                                                                      maxRetryInterval,
-                                                                      reconnectAttempts,
-                                                                      failoverOnInitialConnection,
-                                                                      threadPool,
-                                                                      scheduledThreadPool,
-                                                                      interceptors);
-
-            failoverManagerMap.put(connectorPair, failoverManager);
-         }
+         callFailureListeners(me, true, true);
       }
-
-      updatefailoverManagerArray();
-   }
-
-   public FailoverManager[] getFailoverManagers()
-   {
-      return failoverManagerArray;
-   }
-
-   // Protected ------------------------------------------------------------------------------
-
-   @Override
-   protected void finalize() throws Throwable
-   {
-      close();
-
-      super.finalize();
-   }
-
-   // Private --------------------------------------------------------------------------------
-
-   private void checkWrite()
-   {
-      if (readOnly)
+      if (sessionsToClose != null)
       {
-         throw new IllegalStateException("Cannot set attribute on SessionFactory after it has been used");
+         // If connection is null it means we didn't succeed in failing over or reconnecting
+         // so we close all the sessions, so they will throw exceptions when attempted to be used
+
+         for (ClientSessionInternal session : sessionsToClose)
+         {
+            try
+            {
+               session.cleanUp(true);
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to cleanup session");
+            }
+         }
       }
    }
 
@@ -1089,83 +665,489 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                final boolean preAcknowledge,
                                                final int ackBatchSize) throws HornetQException
    {
-      if (closed)
+      synchronized (createSessionLock)
       {
-         throw new IllegalStateException("Cannot create session, factory is closed (maybe it has been garbage collected)");
-      }
+         String name = UUIDGenerator.getInstance().generateStringUUID();
 
-      try
-      {
-         initialise();
-      }
-      catch (Exception e)
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-      }
-
-      if (discoveryGroup != null && !receivedBroadcast)
-      {
-         boolean ok = discoveryGroup.waitForBroadcast(discoveryInitialWaitTimeout);
-
-         if (!ok)
+         boolean retry = false;
+         do
          {
-            throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                       "Timed out waiting to receive initial broadcast from discovery group");
+            Version clientVersion = VersionLoader.getVersion();
+
+            Lock lock = null;
+
+            try
+            {
+               Channel channel1;
+
+               synchronized (failoverLock)
+               {
+                  if (connection == null)
+                  {
+                     throw new IllegalStateException("Connection is null");
+                  }
+
+                  channel1 = connection.getChannel(1, -1);
+
+                  // Lock it - this must be done while the failoverLock is held
+                  channel1.getLock().lock();
+
+                  lock = channel1.getLock();
+               } // We can now release the failoverLock
+
+               // We now set a flag saying createSession is executing
+               synchronized (exitLock)
+               {
+                  inCreateSession = true;
+               }
+
+               long sessionChannelID = connection.generateChannelID();
+
+               Packet request = new CreateSessionMessage(name,
+                                                         sessionChannelID,
+                                                         clientVersion.getIncrementingVersion(),
+                                                         username,
+                                                         password,
+                                                         serverLocator.getMinLargeMessageSize(),
+                                                         xa,
+                                                         autoCommitSends,
+                                                         autoCommitAcks,
+                                                         preAcknowledge,
+                                                         serverLocator.getConfirmationWindowSize(),
+                                                         null);
+
+               Packet pResponse;
+               try
+               {
+                  pResponse = channel1.sendBlocking(request);
+               }
+               catch (HornetQException e)
+               {
+                  if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
+                  {
+                     connection.destroy();
+                  }
+
+                  if (e.getCode() == HornetQException.UNBLOCKED)
+                  {
+                     // This means the thread was blocked on create session and failover unblocked it
+                     // so failover could occur
+
+                     retry = true;
+
+                     continue;
+                  }
+                  else
+                  {
+                     throw e;
+                  }
+               }
+
+               CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
+
+               Channel sessionChannel = connection.getChannel(sessionChannelID,
+                                                              serverLocator.getConfirmationWindowSize());
+
+               ClientSessionInternal session = new ClientSessionImpl(this,
+                                                                     name,
+                                                                     username,
+                                                                     password,
+                                                                     xa,
+                                                                     autoCommitSends,
+                                                                     autoCommitAcks,
+                                                                     preAcknowledge,
+                                                                     serverLocator.isBlockOnAcknowledge(),
+                                                                     serverLocator.isAutoGroup(),
+                                                                     ackBatchSize,
+                                                                     serverLocator.getConsumerWindowSize(),
+                                                                     serverLocator.getConsumerMaxRate(),
+                                                                     serverLocator.getConfirmationWindowSize(),
+                                                                     serverLocator.getProducerWindowSize(),
+                                                                     serverLocator.getProducerMaxRate(),
+                                                                     serverLocator.isBlockOnNonDurableSend(),
+                                                                     serverLocator.isBlockOnDurableSend(),
+                                                                     serverLocator.isCacheLargeMessagesClient(),
+                                                                     serverLocator.getMinLargeMessageSize(),
+                                                                     serverLocator.getInitialMessagePacketSize(),
+                                                                     serverLocator.getGroupID(),
+                                                                     connection,
+                                                                     response.getServerVersion(),
+                                                                     sessionChannel,
+                                                                     orderedExecutorFactory.getExecutor());
+
+               sessions.add(session);
+
+               ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
+
+               sessionChannel.setHandler(handler);
+
+               return new DelegatingSession(session);
+            }
+            catch (Throwable t)
+            {
+               if (lock != null)
+               {
+                  lock.unlock();
+
+                  lock = null;
+               }
+
+               if (t instanceof HornetQException)
+               {
+                  throw (HornetQException)t;
+               }
+               else
+               {
+                  HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
+                                                             "Failed to create session",
+                                                             t);
+
+                  throw me;
+               }
+            }
+            finally
+            {
+               if (lock != null)
+               {
+                  lock.unlock();
+               }
+
+               // Execution has finished so notify any failover thread that may be waiting for us to be done
+               synchronized (exitLock)
+               {
+                  inCreateSession = false;
+
+                  exitLock.notify();
+               }
+            }
          }
+         while (retry);
       }
 
-      synchronized (this)
+      // Should never get here
+      throw new IllegalStateException("Oh my God it's full of stars!");
+   }
+
+   private void callFailureListeners(final HornetQException me, final boolean afterReconnect, boolean failedOver)
+   {
+      final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
+
+      for (final SessionFailureListener listener : listenersClone)
       {
-         int pos = loadBalancingPolicy.select(failoverManagerArray.length);
-
-         FailoverManager failoverManager = failoverManagerArray[pos];
-
-         ClientSession session = failoverManager.createSession(username,
-                                                               password,
-                                                               xa,
-                                                               autoCommitSends,
-                                                               autoCommitAcks,
-                                                               preAcknowledge,
-                                                               ackBatchSize,
-                                                               cacheLargeMessagesClient,
-                                                               minLargeMessageSize,
-                                                               blockOnAcknowledge,
-                                                               autoGroup,
-                                                               confirmationWindowSize,
-                                                               producerWindowSize,
-                                                               consumerWindowSize,
-                                                               producerMaxRate,
-                                                               consumerMaxRate,
-                                                               blockOnNonDurableSend,
-                                                               blockOnDurableSend,
-                                                               initialMessagePacketSize,
-                                                               groupID);
-
-         return session;
+         try
+         {
+            if (afterReconnect)
+            {
+               listener.connectionFailed(me, failedOver);
+            }
+            else
+            {
+               listener.beforeReconnect(me);
+            }
+         }
+         catch (final Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others
+            // from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
       }
    }
 
-   private void instantiateLoadBalancingPolicy()
+   /*
+    * Re-attach sessions all pre-existing sessions to the new remoting connection
+    */
+   private void reconnectSessions(final CoreRemotingConnection oldConnection, final int reconnectAttempts)
    {
-      if (connectionLoadBalancingPolicyClassName == null)
+      getConnectionWithRetry(reconnectAttempts);
+
+      if (connection == null)
       {
-         throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
+         log.warn("Failed to connect to server.");
+
+         return;
       }
 
-      AccessController.doPrivileged(new PrivilegedAction<Object>()
+      List<FailureListener> oldListeners = oldConnection.getFailureListeners();
+
+      List<FailureListener> newListeners = new ArrayList<FailureListener>(connection.getFailureListeners());
+
+      for (FailureListener listener : oldListeners)
       {
-         public Object run()
+         // Add all apart from the first one which is the old DelegatingFailureListener
+
+         if (listener instanceof DelegatingFailureListener == false)
+         {
+            newListeners.add(listener);
+         }
+      }
+
+      connection.setFailureListeners(newListeners);
+
+      for (ClientSessionInternal session : sessions)
+      {
+         session.handleFailover(connection);
+      }
+   }
+
+   private void getConnectionWithRetry(final int reconnectAttempts)
+   {
+      long interval = retryInterval;
+
+      int count = 0;
+
+      synchronized (waitLock)
+      {
+         while (true)
+         {
+            if (exitLoop)
+            {
+               return;
+            }
+
+            getConnection();
+
+            if (connection == null)
+            {
+               // Failed to get connection
+
+               if (reconnectAttempts != 0)
+               {
+                  count++;
+
+                  if (reconnectAttempts != -1 && count == reconnectAttempts)
+                  {
+                     log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up.");
+
+                     return;
+                  }
+
+                  try
+                  {
+                     waitLock.wait(interval);
+                  }
+                  catch (InterruptedException ignore)
+                  {
+                  }
+
+                  // Exponential back-off
+                  long newInterval = (long)(interval * retryIntervalMultiplier);
+
+                  if (newInterval > maxRetryInterval)
+                  {
+                     newInterval = maxRetryInterval;
+                  }
+
+                  interval = newInterval;
+               }
+               else
+               {
+                  return;
+               }
+            }
+            else
+            {
+               return;
+            }
+         }
+      }
+   }
+
+   private void cancelScheduledTasks()
+   {
+      if (pingerFuture != null)
+      {
+         pingRunnable.cancel();
+
+         pingerFuture.cancel(false);
+
+         pingRunnable = null;
+
+         pingerFuture = null;
+      }
+   }
+
+   private void checkCloseConnection()
+   {
+      if (connection != null && sessions.size() == 0)
+      {
+         cancelScheduledTasks();
+
+         try
+         {
+            connection.destroy();
+         }
+         catch (Throwable ignore)
+         {
+         }
+
+         connection = null;
+
+         try
+         {
+            if (connector != null)
+            {
+               connector.close();
+            }
+         }
+         catch (Throwable ignore)
+         {
+         }
+
+         connector = null;
+      }
+   }
+
+   public CoreRemotingConnection getConnection()
+   {
+      if (connection == null)
+      {
+         Connection tc = null;
+
+         try
+         {
+            DelegatingBufferHandler handler = new DelegatingBufferHandler();
+
+            connector = connectorFactory.createConnector(transportParams,
+                                                         handler,
+                                                         this,
+                                                         closeExecutor,
+                                                         threadPool,
+                                                         scheduledThreadPool);
+
+            if (connector != null)
+            {
+               connector.start();
+
+               tc = connector.createConnection();
+
+               if (tc == null)
+               {
+                  try
+                  {
+                     connector.close();
+                  }
+                  catch (Throwable t)
+                  {
+                  }
+
+                  connector = null;
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            // Sanity catch for badly behaved remoting plugins
+
+            log.warn("connector.create or connectorFactory.createConnector should never throw an exception, implementation is badly behaved, but we'll deal with it anyway.",
+                     e);
+
+            if (tc != null)
+            {
+               try
+               {
+                  tc.close();
+               }
+               catch (Throwable t)
+               {
+               }
+            }
+
+            if (connector != null)
+            {
+               try
+               {
+                  connector.close();
+               }
+               catch (Throwable t)
+               {
+               }
+            }
+
+            tc = null;
+
+            connector = null;
+         }
+
+         if (tc == null)
+         {
+            return connection;
+         }
+
+         connection = new RemotingConnectionImpl(tc, callTimeout, interceptors);
+
+         connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
+
+         Channel channel0 = connection.getChannel(0, -1);
+
+         channel0.setHandler(new Channel0Handler(connection));
+
+         if (clientFailureCheckPeriod != -1)
+         {
+            if (pingerFuture == null)
+            {
+               pingRunnable = new PingRunnable();
+
+               pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduledPinger(pingRunnable),
+                                                                         0,
+                                                                         clientFailureCheckPeriod,
+                                                                         TimeUnit.MILLISECONDS);
+            }
+            // send a ping every time we create a new remoting connection
+            // to set up its TTL on the server side
+            else
+            {
+               pingRunnable.run();
+            }
+         }
+
+         if (serverLocator.isHA())
+         {
+            channel0.send(new SubscribeClusterTopologyUpdatesMessage(serverLocator.isClusterConnection()));
+            if (serverLocator.isClusterConnection())
+            {
+               TransportConfiguration config = serverLocator.getClusterTransportConfiguration();
+               channel0.send(new NodeAnnounceMessage(serverLocator.getNodeID(),
+                                                     serverLocator.isBackup(),
+                                                     config));
+            }
+         }
+      }
+
+      return connection;
+   }
+
+   public void finalize() throws Throwable
+   {
+      if (!closed)
+      {
+         log.warn("I'm closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly " + "before letting them go out of scope! " +
+                  System.identityHashCode(this));
+
+         log.warn("The ClientSessionFactory you didn't close was created here:", e);
+
+         close();
+      }
+
+      super.finalize();
+   }
+
+   private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ConnectorFactory>()
+      {
+         public ConnectorFactory run()
          {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             try
             {
-               Class<?> clazz = loader.loadClass(connectionLoadBalancingPolicyClassName);
-               loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
-               return null;
+               Class<?> clazz = loader.loadClass(connectorFactoryClassName);
+               return (ConnectorFactory)clazz.newInstance();
             }
             catch (Exception e)
             {
-               throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
+               throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
                                                            "\"",
                                                   e);
             }
@@ -1173,23 +1155,207 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       });
    }
 
-   private static ClassLoader getThisClassLoader()
+   private void lockChannel1()
    {
-      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
-                                    {
-                                       public ClassLoader run()
-                                       {
-                                          return ClientSessionFactoryImpl.class.getClassLoader();
-                                       }
-                                    });
-      
+      Channel channel1 = connection.getChannel(1, -1);
+
+      channel1.getLock().lock();
    }
 
-   private synchronized void updatefailoverManagerArray()
+   private void unlockChannel1()
    {
-      failoverManagerArray = new FailoverManager[failoverManagerMap.size()];
+      Channel channel1 = connection.getChannel(1, -1);
 
-      failoverManagerMap.values().toArray(failoverManagerArray);
+      channel1.getLock().unlock();
    }
 
+   private void forceReturnChannel1()
+   {
+      Channel channel1 = connection.getChannel(1, -1);
+
+      channel1.returnBlocking();
+   }
+
+   private void checkTransportKeys(final ConnectorFactory factory, final Map<String, Object> params)
+   {
+      if (params != null)
+      {
+         Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), params.keySet());
+
+         if (!invalid.isEmpty())
+         {
+            String msg = ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring a connector: ",
+                                                                        invalid);
+
+            throw new IllegalStateException(msg);
+
+         }
+      }
+   }
+
+   private class Channel0Handler implements ChannelHandler
+   {
+      private final CoreRemotingConnection conn;
+
+      private Channel0Handler(final CoreRemotingConnection conn)
+      {
+         this.conn = conn;
+      }
+
+      public void handlePacket(final Packet packet)
+      {
+         final byte type = packet.getType();
+
+         if (type == PacketImpl.DISCONNECT)
+         {
+            final DisconnectMessage msg = (DisconnectMessage)packet;
+            
+            closeExecutor.execute(new Runnable()
+            {
+               // Must be executed on new thread since cannot block the netty thread for a long time and fail can
+               // cause reconnect loop
+               public void run()
+               {
+                  SimpleString nodeID = msg.getNodeID();
+                  if (nodeID != null)
+                  {
+                     serverLocator.notifyNodeDown(msg.getNodeID().toString());
+                  }
+
+                  conn.fail(new HornetQException(msg.isFailoverOnServerShutdown() ? HornetQException.NOT_CONNECTED
+                                                                                 : HornetQException.DISCONNECTED,
+                                                 "The connection was disconnected because of server shutdown"));
+
+               }
+            });
+         }
+         else if (type == PacketImpl.CLUSTER_TOPOLOGY)
+         {
+            ClusterTopologyChangeMessage topMessage = (ClusterTopologyChangeMessage)packet;
+
+            if (topMessage.isExit())
+            {
+               serverLocator.notifyNodeDown(topMessage.getNodeID());
+            }
+            else
+            {
+               serverLocator.notifyNodeUp(topMessage.getNodeID(),
+                                          topMessage.getPair(),
+                                          topMessage.isLast(),
+                                          topMessage.getDistance());
+            }
+         }
+      }
+   }
+
+   private class DelegatingBufferHandler implements BufferHandler
+   {
+      public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
+      {
+         CoreRemotingConnection theConn = connection;
+
+         if (theConn != null && connectionID == theConn.getID())
+         {
+            theConn.bufferReceived(connectionID, buffer);
+         }
+      }
+   }
+
+   private class DelegatingFailureListener implements FailureListener
+   {
+      private final Object connectionID;
+
+      DelegatingFailureListener(final Object connectionID)
+      {
+         this.connectionID = connectionID;
+      }
+
+      public void connectionFailed(final HornetQException me, boolean failedOver)
+      {
+         handleConnectionFailure(connectionID, me);
+      }
+   }
+
+   private static final class ActualScheduledPinger implements Runnable
+   {
+      private final WeakReference<PingRunnable> pingRunnable;
+
+      ActualScheduledPinger(final PingRunnable runnable)
+      {
+         pingRunnable = new WeakReference<PingRunnable>(runnable);
+      }
+
+      public void run()
+      {
+         PingRunnable runnable = pingRunnable.get();
+
+         if (runnable != null)
+         {
+            runnable.run();
+         }
+      }
+
+   }
+
+   private final class PingRunnable implements Runnable
+   {
+      private boolean cancelled;
+
+      private boolean first;
+
+      private long lastCheck = System.currentTimeMillis();
+
+      public synchronized void run()
+      {
+         if (cancelled || stopPingingAfterOne && !first)
+         {
+            return;
+         }
+
+         first = false;
+
+         long now = System.currentTimeMillis();
+
+         if (clientFailureCheckPeriod != -1 && now >= lastCheck + clientFailureCheckPeriod)
+         {
+            if (!connection.checkDataReceived())
+            {
+               final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
+                                                                "Did not receive data from server for " + connection.getTransportConnection());
+
+               cancelled = true;
+
+               threadPool.execute(new Runnable()
+               {
+                  // Must be executed on different thread
+                  public void run()
+                  {
+                     connection.fail(me);
+                  }
+               });
+
+               return;
+            }
+            else
+            {
+               lastCheck = now;
+            }
+         }
+
+         // Send a ping
+
+         Ping ping = new Ping(connectionTTL);
+
+         Channel channel0 = connection.getChannel(0, -1);
+
+         channel0.send(ping);
+
+         connection.flush();
+      }
+
+      public synchronized void cancel()
+      {
+         cancelled = true;
+      }
+   }
 }

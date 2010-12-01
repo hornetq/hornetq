@@ -1,5 +1,7 @@
 package org.hornetq.rest.test;
 
+import java.util.HashMap;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -7,7 +9,8 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -19,8 +22,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.HashMap;
-
 /**
  * Play with HornetQ
  *
@@ -30,6 +31,7 @@ import java.util.HashMap;
 public class RawAckTest
 {
    protected static HornetQServer hornetqServer;
+   static ServerLocator serverLocator;
    static ClientSessionFactory sessionFactory;
    static ClientSessionFactory consumerSessionFactory;
    static ClientProducer producer;
@@ -47,8 +49,10 @@ public class RawAckTest
       hornetqServer.start();
 
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
-      consumerSessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      
+      serverLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      sessionFactory = serverLocator.createSessionFactory();
+      consumerSessionFactory = serverLocator.createSessionFactory();
 
       hornetqServer.createQueue(new SimpleString("testQueue"), new SimpleString("testQueue"), null, false, false);
       session = sessionFactory.createSession(true, true);
@@ -59,6 +63,7 @@ public class RawAckTest
    @AfterClass
    public static void shutdown() throws Exception
    {
+	  serverLocator.close();
       hornetqServer.stop();
 
    }

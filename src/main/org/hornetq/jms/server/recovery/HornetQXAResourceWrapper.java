@@ -21,7 +21,11 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -56,6 +60,8 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
    private final String password;
 
+   private ServerLocator serverLocator;
+   
    private ClientSessionFactory csf;
 
    private XAResource delegate;
@@ -210,7 +216,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
    }
 
-   public void connectionFailed(final HornetQException me)
+   public void connectionFailed(final HornetQException me, boolean failedOver)
    {
       HornetQXAResourceWrapper.log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName,
                                         me);
@@ -274,7 +280,8 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
       }
 
       TransportConfiguration config = new TransportConfiguration(connectorFactoryClassName, connectorConfig);
-      csf = HornetQClient.createClientSessionFactory(config);
+      serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration[]{config});
+      csf = serverLocator.createSessionFactory();
       ClientSession cs = null;
 
       if (username == null)
@@ -302,16 +309,20 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
    {
       try
       {
+         ServerLocator oldServerLocator = null;
          ClientSessionFactory oldCSF = null;
          synchronized (HornetQXAResourceWrapper.lock)
          {
             oldCSF = csf;
             csf = null;
             delegate = null;
+            oldServerLocator = serverLocator;
+            serverLocator = null;
          }
          if (oldCSF != null)
          {
             oldCSF.close();
+            oldServerLocator.close();
          }
       }
       catch (Exception ignored)

@@ -18,6 +18,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -39,6 +40,8 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -46,11 +49,15 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
       server = createServer(false);
       server.start();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      //locator.close();
+      
       server.stop();
 
       server = null;
@@ -64,7 +71,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
+         ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
@@ -78,6 +85,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          s1 = null;
          s2 = null;
 
+         locator.close();
+
+         locator = null;
          UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
@@ -105,9 +115,10 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
 
-         factory.setUseGlobalPools(false);
+         locator.setUseGlobalPools(false);
+
+         ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
@@ -121,6 +132,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          s1 = null;
          s2 = null;
 
+         locator.close();
+
+         locator = null;
          UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
@@ -148,7 +162,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
+         ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
@@ -162,6 +176,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          s1 = null;
          s2 = null;
 
+         locator.close();
+
+         locator = null;
          UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
@@ -187,7 +204,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
+         ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
@@ -198,6 +215,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          s1 = null;
          s2 = null;
 
+         locator.close();
+
+         locator = null;
          UnitTestCase.checkWeakReferences(wrs1, wrs2);
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
@@ -223,12 +243,15 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
+         ClientSessionFactory factory = locator.createSessionFactory();
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
          factory = null;
 
+         locator.close();
+
+         locator = null;
          UnitTestCase.checkWeakReferences(fref);
       }
       finally
@@ -246,7 +269,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
    public void testCloseOneSessionOnGC() throws Exception
    {
-      ClientSessionFactoryImpl sf = createInVMFactory();
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -259,13 +282,13 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       UnitTestCase.checkWeakReferences(wses);
 
       Assert.assertEquals(0, sf.numSessions());
-      Assert.assertEquals(0, sf.numConnections());
-      Assert.assertEquals(0, server.getRemotingService().getConnections().size());
+      Assert.assertEquals(1, sf.numConnections());
+      Assert.assertEquals(1, server.getRemotingService().getConnections().size());
    }
 
    public void testCloseSeveralSessionOnGC() throws Exception
    {
-      ClientSessionFactoryImpl sf = createInVMFactory();
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
 
       ClientSession session1 = sf.createSession(false, true, true);
       ClientSession session2 = sf.createSession(false, true, true);
@@ -284,8 +307,8 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       UnitTestCase.checkWeakReferences(ref1, ref2, ref3);
 
       Assert.assertEquals(0, sf.numSessions());
-      Assert.assertEquals(0, sf.numConnections());
-      Assert.assertEquals(0, server.getRemotingService().getConnections().size());
+      Assert.assertEquals(1, sf.numConnections());
+      Assert.assertEquals(1, server.getRemotingService().getConnections().size());
    }
 
 }

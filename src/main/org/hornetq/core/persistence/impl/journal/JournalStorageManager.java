@@ -105,8 +105,6 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte QUEUE_BINDING_RECORD = 21;
 
-   public static final byte PERSISTENT_ID_RECORD = 23;
-
    public static final byte ID_COUNTER_RECORD = 24;
 
    public static final byte ADDRESS_SETTING_RECORD = 25;
@@ -174,6 +172,8 @@ public class JournalStorageManager implements StorageManager
    private final String journalDir;
 
    private final String largeMessagesDirectory;
+
+   private boolean journalLoaded = false;
 
    // Persisted core configuration
    private final Map<SimpleString, PersistedRoles> mapPersistedRoles = new ConcurrentHashMap<SimpleString, PersistedRoles>();
@@ -267,15 +267,14 @@ public class JournalStorageManager implements StorageManager
          throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
 
-      if (config.isBackup())
+      if (config.isBackup() && !config.isSharedStore())
       {
          idGenerator = null;
       }
       else
       {
-         idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
+         idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);      
       }
-
       Journal localMessage = new JournalImpl(config.getJournalFileSize(),
                                              config.getJournalMinFiles(),
                                              config.getJournalCompactMinFiles(),
@@ -397,26 +396,6 @@ public class JournalStorageManager implements StorageManager
    public void afterCompleteOperations(final IOAsyncTask run)
    {
       getContext().executeOnCompletion(run);
-   }
-
-   public UUID getPersistentID()
-   {
-      return persistentID;
-   }
-
-   public void setPersistentID(final UUID id) throws Exception
-   {
-      long recordID = generateUniqueID();
-
-      if (id != null)
-      {
-         bindingsJournal.appendAddRecord(recordID,
-                                         JournalStorageManager.PERSISTENT_ID_RECORD,
-                                         new PersistentIDEncoding(id),
-                                         true);
-      }
-
-      persistentID = id;
    }
 
    public long generateUniqueID()
@@ -1128,6 +1107,14 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
+      
+      // To recover positions on Iterators
+      if (pagingManager != null)
+      {
+         // it could be null on certain tests that are not dealing with paging
+         // This could also be the case in certain embedded conditions
+         pagingManager.processReload();
+      }
 
       if (perfBlastPages != -1)
       {
@@ -1138,7 +1125,7 @@ public class JournalStorageManager implements StorageManager
       {
          messageJournal.runDirectJournalBlast();
       }
-
+      journalLoaded = true;
       return info;
    }
 
@@ -1208,14 +1195,6 @@ public class JournalStorageManager implements StorageManager
 
             queueBindingInfos.add(bindingEncoding);
          }
-         else if (rec == JournalStorageManager.PERSISTENT_ID_RECORD)
-         {
-            PersistentIDEncoding encoding = new PersistentIDEncoding();
-
-            encoding.decode(buffer);
-
-            persistentID = encoding.uuid;
-         }
          else if (rec == JournalStorageManager.ID_COUNTER_RECORD)
          {
             idGenerator.loadState(record.id, buffer);
@@ -1282,9 +1261,9 @@ public class JournalStorageManager implements StorageManager
          return;
       }
 
-      // Must call close to make sure last id is persisted
-      if (idGenerator != null)
+      if (journalLoaded && idGenerator != null)
       {
+         // Must call close to make sure last id is persisted
          idGenerator.close();
       }
 
@@ -1292,7 +1271,7 @@ public class JournalStorageManager implements StorageManager
 
       messageJournal.stop();
 
-      persistentID = null;
+      journalLoaded = false;
 
       started = false;
    }

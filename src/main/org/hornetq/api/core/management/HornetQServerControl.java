@@ -13,6 +13,8 @@
 
 package org.hornetq.api.core.management;
 
+import java.util.List;
+
 import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
@@ -26,11 +28,11 @@ public interface HornetQServerControl
    // Attributes ----------------------------------------------------
 
    /**
-    * Returns the name of the connector used to connect to the backup.
+    * Returns the name of the connector used to connect to the live.
     * <br>
-    * If this server has no backup or is itself a backup, the value is {@code null}.
+    * If this server is not a backup that uses shared nothing HA, it's value is null
     */
-   String getBackupConnectorName();
+   String getLiveConnectorName() throws Exception;
 
    /**
     * Returns this server's version.
@@ -560,12 +562,11 @@ public interface HornetQServerControl
                      @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
                      @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
                      @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
-                     @Parameter(name="failoverOnServerShutdown", desc="Failover when the server shuts down?") boolean failoverOnServerShutdown,
                      @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
                      @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
                      @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
-                     @Parameter(name="liveConnector", desc="Name of the connector to the live server") String liveConnector,
-                     @Parameter(name="backupConnector", desc="Name of the connector to the backup server") String backupConnector,
+                     @Parameter(name="liveConnector", desc="Name of the connector to the live server") List<String> staticConnectors,
+                     @Parameter(name="ha", desc="Is it using HA") boolean ha,
                      @Parameter(name="user", desc="User name") String user,
                      @Parameter(name="password", desc="User password") String password) throws Exception;
 
@@ -578,11 +579,11 @@ public interface HornetQServerControl
                      @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
                      @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
                      @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
-                     @Parameter(name="failoverOnServerShutdown", desc="Failover when the server shuts down?") boolean failoverOnServerShutdown,
                      @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
                      @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
                      @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
                      @Parameter(name="name", desc="Name of the discovery group") String discoveryGroupName,
+                     @Parameter(name="ha", desc="Is it using HA") boolean ha,
                      @Parameter(name="user", desc="User name") String user,
                      @Parameter(name="password", desc="User password") String password) throws Exception;
 

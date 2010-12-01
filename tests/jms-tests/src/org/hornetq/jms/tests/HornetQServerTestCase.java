@@ -35,6 +35,7 @@ import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -61,7 +62,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
    protected final Logger log = Logger.getLogger(getClass());
 
    // Static --------------------------------------------------------
-
+  
    /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
    public static void forceGC()
    {

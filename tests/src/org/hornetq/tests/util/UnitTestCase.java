@@ -48,6 +48,7 @@ import junit.framework.TestSuite;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -94,7 +95,7 @@ public class UnitTestCase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
    // Static --------------------------------------------------------
    
@@ -327,6 +328,15 @@ public class UnitTestCase extends TestCase
          Assert.assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
+   
+   public static void assertEqualsTransportConfigurations(final TransportConfiguration[] expected, final TransportConfiguration[] actual)
+   {
+      assertEquals(expected.length, actual.length);
+      for (int i = 0; i < expected.length; i++)
+      {
+         Assert.assertEquals("TransportConfiguration at index " + i, expected[i], actual[i]);
+      }
+   }
 
    public static void assertEqualsBuffers(final int size, final HornetQBuffer expected, final HornetQBuffer actual)
    {
@@ -390,6 +400,28 @@ public class UnitTestCase extends TestCase
       Assert.assertNotNull(o);
       return o;
    }
+   
+   /**
+    * @param connectorConfigs
+    * @return
+    */
+   protected ArrayList<String> registerConnectors(final HornetQServer server, final List<TransportConfiguration> connectorConfigs)
+   {
+      // The connectors need to be pre-configured at main config object but this method is taking TransportConfigurations directly
+      // So this will first register them at the config and then generate a list of objects
+      ArrayList<String> connectors = new ArrayList<String>();
+      for (TransportConfiguration tnsp : connectorConfigs)
+      {
+         String name = RandomUtil.randomString();
+         
+         server.getConfiguration().getConnectorConfigurations().put(name, tnsp);
+         
+         connectors.add(name);
+      }
+      return connectors;
+   }
+
+
 
    protected static void checkFreePort(final int... ports)
    {
@@ -402,7 +434,8 @@ public class UnitTestCase extends TestCase
          }
          catch (Exception e)
          {
-            Assert.fail("port " + port + " is already bound");
+            System.out.println("port " + port + " is already bound");
+            System.exit(0);
          }
          finally
          {
@@ -451,22 +484,24 @@ public class UnitTestCase extends TestCase
       recreateDirectory(getLargeMessagesDir(testDir));
       recreateDirectory(getClientLargeMessagesDir(testDir));
       recreateDirectory(getTemporaryDir(testDir));
+      
+      System.out.println("deleted " + testDir);
    }
 
    /**
     * @return the journalDir
     */
-   protected String getJournalDir()
+   public static String getJournalDir()
    {
       return getJournalDir(testDir);
    }
 
-   protected String getJournalDir(final String testDir)
+   protected static String getJournalDir(final String testDir)
    {
       return testDir + "/journal";
    }
 
-   protected String getJournalDir(final int index, final boolean backup)
+   protected static String getJournalDir(final int index, final boolean backup)
    {
       String dir = getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
 
@@ -476,7 +511,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir()
+   protected static String getBindingsDir()
    {
       return getBindingsDir(testDir);
    }
@@ -484,7 +519,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(final String testDir)
+   protected static String getBindingsDir(final String testDir)
    {
       return testDir + "/bindings";
    }
@@ -500,7 +535,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the pageDir
     */
-   protected String getPageDir()
+   protected static String getPageDir()
    {
       return getPageDir(testDir);
    }
@@ -508,7 +543,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the pageDir
     */
-   protected String getPageDir(final String testDir)
+   protected static String getPageDir(final String testDir)
    {
       return testDir + "/page";
    }
@@ -521,7 +556,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the largeMessagesDir
     */
-   protected String getLargeMessagesDir()
+   protected static String getLargeMessagesDir()
    {
       return getLargeMessagesDir(testDir);
    }
@@ -529,12 +564,12 @@ public class UnitTestCase extends TestCase
    /**
     * @return the largeMessagesDir
     */
-   protected String getLargeMessagesDir(final String testDir)
+   protected static String getLargeMessagesDir(final String testDir)
    {
       return testDir + "/large-msg";
    }
 
-   protected String getLargeMessagesDir(final int index, final boolean backup)
+   protected static String getLargeMessagesDir(final int index, final boolean backup)
    {
       return getLargeMessagesDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
@@ -741,6 +776,21 @@ public class UnitTestCase extends TestCase
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
 
+      /*Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
+      for (Thread thread : threads.keySet())
+      {
+         if(thread.isAlive())
+         {
+            StackTraceElement[] elements = threads.get(thread);
+            for (StackTraceElement element : elements)
+            {
+               if(element.getMethodName().contains("getConnectionWithRetry"))
+               {
+                  System.out.println("UnitTestCase.tearDown");
+               }
+            }
+         }
+      }*/
       super.tearDown();
    }
 

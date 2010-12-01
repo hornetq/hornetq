@@ -76,7 +76,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       liveConf.setJournalType(getDefaultJournalType());
       
       liveConf.getConnectorConfigurations().put("toBackup", new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams)); 
-      liveConf.setBackupConnectorName("toBackup");
+      //liveConf.setBackupConnectorName("toBackup");
 
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));

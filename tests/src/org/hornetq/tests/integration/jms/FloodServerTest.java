@@ -24,7 +24,6 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
@@ -122,15 +121,15 @@ public class FloodServerTest extends UnitTestCase
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
       long callTimeout = 30000;
 
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
-                                                                                    null));
+      List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
+      connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
       serverManager.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                            connectorConfigs,
+                                          false,
+                                          JMSFactoryType.CF,
+                                            registerConnectors(server, connectorConfigs),
                                             null,
                                             1000,
                                             HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -158,9 +157,7 @@ public class FloodServerTest extends UnitTestCase
                                             1000,
                                             reconnectAttempts,
                                             HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                            failoverOnServerShutdown,
                                             null,
-                                            JMSFactoryType.CF,
                                             "/cf");
    }
 

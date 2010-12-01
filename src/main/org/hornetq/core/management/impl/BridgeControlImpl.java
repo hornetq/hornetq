@@ -15,7 +15,6 @@ package org.hornetq.core.management.impl;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.persistence.StorageManager;
@@ -54,17 +53,12 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
 
    // BridgeControlMBean implementation ---------------------------
 
-   public String[] getConnectorPair() throws Exception
+   public String[] getStaticConnectors() throws Exception
    {
       clearIO();
       try
       {
-         String[] pair = new String[2];
-
-         pair[0] = configuration.getConnectorPair().a;
-         pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
-
-         return pair;
+         return configuration.getStaticConnectors().toArray(new String[0]);                 
       }
       finally
       {
@@ -130,19 +124,6 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
       try
       {
          return configuration.getReconnectAttempts();
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
-
-   public boolean isFailoverOnServerShutdown()
-   {
-      clearIO();
-      try
-      {
-         return configuration.isFailoverOnServerShutdown();
       }
       finally
       {
@@ -221,6 +202,19 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
       try
       {
          return configuration.isUseDuplicateDetection();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+   
+   public boolean isHA()
+   {
+      clearIO();
+      try
+      {
+         return configuration.isHA();
       }
       finally
       {

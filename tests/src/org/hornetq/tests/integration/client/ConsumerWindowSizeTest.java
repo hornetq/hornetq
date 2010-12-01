@@ -21,12 +21,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
@@ -53,14 +48,34 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private static final boolean isTrace = ConsumerWindowSizeTest.log.isTraceEnabled();
 
+   private ServerLocator locator;
+
    protected boolean isNetty()
    {
       return false;
    }
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = createFactory(isNetty());
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+         
+      
+      super.tearDown();
+   }
+
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
-      ClientSessionFactory cf = createFactory(isNetty());
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
@@ -80,9 +95,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
+         locator.setConsumerWindowSize(0);
 
-         sf.setConsumerWindowSize(0);
+         ClientSessionFactory sf = locator.createSessionFactory();
+
 
          ClientSession session = sf.createSession(false, false, false);
          session.createQueue("testWindow", "testWindow", true);
@@ -140,14 +156,14 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void testReceiveImmediateWithZeroWindow2() throws Exception
    {
       HornetQServer server = createServer(true);
-
+      ServerLocator locator = createInVMNonHALocator();
       try
       {
          server.start();
-         
-         ClientSessionFactory sf = createFactory(false);
-         sf.setConsumerWindowSize(0);
 
+         locator.setConsumerWindowSize(0);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, false, false);
          session.createQueue("testReceive", "testReceive", true);
          session.close();
@@ -186,6 +202,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       }
       finally
       {
+         locator.close();
          server.stop();
       }
    }
@@ -198,9 +215,10 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
+         locator.setConsumerWindowSize(0);
 
-         sf.setConsumerWindowSize(0);
+         ClientSessionFactory sf = locator.createSessionFactory();
+
 
          ClientSession session = sf.createSession(false, false, false);
          session.createQueue("testWindow", "testWindow", true);
@@ -261,9 +279,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
+         locator.setConsumerWindowSize(0);
 
-         sf.setConsumerWindowSize(0);
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(false, false, false);
          session.createQueue("testWindow", "testWindow", true);
@@ -326,13 +344,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void testSendWindowSize() throws Exception
    {
       HornetQServer messagingService = createServer(false, isNetty());
-      ClientSessionFactory cf = createFactory(isNetty());
+      locator.setBlockOnNonDurableSend(false);
       try
       {
          messagingService.start();
-         cf.setBlockOnNonDurableSend(false);
          int numMessage = 100;
-         cf.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
+         locator.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession receiveSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -391,8 +409,9 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
-         sf.setConsumerWindowSize(1);
+         locator.setConsumerWindowSize(1);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          session = sf.createSession(false, true, true);
 
@@ -484,12 +503,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
-         sf.setConsumerWindowSize(0);
+         locator.setConsumerWindowSize(0);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          if (largeMessages)
          {
-            sf.setMinLargeMessageSize(100);
+            sf.getServerLocator().setMinLargeMessageSize(100);
          }
 
          session = sf.createSession(false, true, true);
@@ -614,15 +634,17 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
 
-         sf.setConsumerWindowSize(0);
+         locator.setConsumerWindowSize(0);
+
 
          if (largeMessages)
          {
-            sf.setMinLargeMessageSize(100);
+            locator.setMinLargeMessageSize(100);
          }
 
+         ClientSessionFactory sf = locator.createSessionFactory();
+         
          session1 = sf.createSession(false, true, true);
 
          session2 = sf.createSession(false, true, true);
@@ -812,14 +834,15 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
-         sf.setConsumerWindowSize(0);
+         locator.setConsumerWindowSize(0);
 
          if (largeMessages)
          {
-            sf.setMinLargeMessageSize(100);
+            locator.setMinLargeMessageSize(100);
          }
 
+         ClientSessionFactory sf = locator.createSessionFactory();
+         
          session = sf.createSession(false, true, true);
 
          SimpleString ADDRESS = new SimpleString("some-queue");
@@ -977,13 +1000,14 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
-         sf.setConsumerWindowSize(1);
+         locator.setConsumerWindowSize(1);
 
          if (largeMessage)
          {
-            sf.setMinLargeMessageSize(100);
+            locator.setMinLargeMessageSize(100);
          }
+
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          session = sf.createSession(false, true, true);
 
@@ -1149,12 +1173,13 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createFactory(isNetty());
-         sf.setConsumerWindowSize(-1);
+         locator.setConsumerWindowSize(-1);
          if (largeMessages)
          {
-            sf.setMinLargeMessageSize(100);
+            locator.setMinLargeMessageSize(100);
          }
+
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          sessionA = sf.createSession(false, true, true);
 

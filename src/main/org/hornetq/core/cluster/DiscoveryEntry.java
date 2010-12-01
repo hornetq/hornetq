@@ -13,7 +13,6 @@
 
 package org.hornetq.core.cluster;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 
 /**
@@ -25,23 +24,36 @@ import org.hornetq.api.core.TransportConfiguration;
  */
 public class DiscoveryEntry
 {
-   private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
-
+   private final String nodeID;
+   private final TransportConfiguration connector;
    private final long lastUpdate;
 
-   public DiscoveryEntry(final Pair<TransportConfiguration, TransportConfiguration> connectorPair, final long lastUpdate)
+
+   public DiscoveryEntry(final String nodeID, final TransportConfiguration connector, final long lastUpdate)
    {
-      this.connectorPair = connectorPair;
+      this.nodeID = nodeID;
+      this.connector = connector;
       this.lastUpdate = lastUpdate;
    }
 
-   public Pair<TransportConfiguration, TransportConfiguration> getConnectorPair()
+   public String getNodeID()
    {
-      return connectorPair;
+      return nodeID;
+   }
+
+   public TransportConfiguration getConnector()
+   {
+      return connector;
    }
 
    public long getLastUpdate()
    {
       return lastUpdate;
+   }
+   
+   @Override
+   public String toString()
+   {
+      return "DiscoveryEntry[nodeID=" + nodeID + ", connector=" + connector + ", lastUpdate=" + lastUpdate + "]";
    }
 }

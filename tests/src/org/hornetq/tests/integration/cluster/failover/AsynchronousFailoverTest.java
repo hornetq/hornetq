@@ -16,7 +16,6 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -24,11 +23,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
@@ -58,7 +53,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    {
       CountDownLatch latch = new CountDownLatch(1);
 
-      public void connectionFailed(final HornetQException me)
+      public void connectionFailed(final HornetQException me, boolean failedOver)
       {
          latch.countDown();
       }
@@ -171,11 +166,12 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          for (int i = 0; i < numIts; i++)
          {
             AsynchronousFailoverTest.log.info("Iteration " + i);
+            ServerLocator locator = getServerLocator();
+            locator.setBlockOnNonDurableSend(true);
+            locator.setBlockOnDurableSend(true);
+            locator.setReconnectAttempts(-1);
+            sf = (ClientSessionFactoryInternal) createSessionFactoryAndWaitForTopology(locator, 2);
 
-            sf = getSessionFactory();
-
-            sf.setBlockOnNonDurableSend(true);
-            sf.setBlockOnDurableSend(true);
 
             ClientSession createSession = sf.createSession(true, true);
 
@@ -202,15 +198,15 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             // Simulate failure on connection
             synchronized (lockFail)
             {
-               conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+               crash((ClientSession) createSession);
             }
 
-            if (listener != null)
+            /*if (listener != null)
             {
                boolean ok = listener.latch.await(10000, TimeUnit.MILLISECONDS);
 
                Assert.assertTrue(ok);
-            }
+            }*/
 
             runnable.setFailed();
 
@@ -229,6 +225,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             Assert.assertEquals(0, sf.numSessions());
 
+            locator.close();
+            
             Assert.assertEquals(0, sf.numConnections());
 
             if (i != numIts - 1)
@@ -284,6 +282,10 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                catch (HornetQException e)
                {
                   AsynchronousFailoverTest.log.info("exception when sending message with counter " + i);
+                  if(e.getCode() != HornetQException.UNBLOCKED)
+                  {
+                     e.printStackTrace();
+                  }
                   Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                   retry = true;

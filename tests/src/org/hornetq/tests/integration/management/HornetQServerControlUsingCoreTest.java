@@ -13,18 +13,17 @@
 
 package org.hornetq.tests.integration.management;
 
-import java.util.Set;
+import java.util.List;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.security.Role;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A HornetQServerControlUsingCoreTest
@@ -57,13 +56,15 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    // HornetQServerControlTest overrides --------------------------
 
    private ClientSession session;
-
+   private ServerLocator locator;
+   
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -75,17 +76,20 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
       session.close();
 
       session = null;
+      
+      locator.close();
 
       super.tearDown();
    }
-   
+
    protected void restartServer() throws Exception
    {
       session.close();
-      
+
       super.restartServer();
-      
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
 
@@ -153,19 +157,9 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             proxy.invokeOperation("enableMessageCounters");
          }
 
-         public String getBackupConnectorName()
-         {
-            return (String)proxy.retrieveAttributeValue("backupConnectorName");
-         }
-
          public String getBindingsDirectory()
          {
             return (String)proxy.retrieveAttributeValue("bindingsDirectory");
-         }
-
-         public Configuration getConfiguration()
-         {
-            return (Configuration)proxy.retrieveAttributeValue("configuration");
          }
 
          public int getConnectionCount()
@@ -246,11 +240,6 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public String getManagementNotificationAddress()
          {
             return (String)proxy.retrieveAttributeValue("managementNotificationAddress");
-         }
-
-         public long getManagementRequestTimeout()
-         {
-            return (Long)proxy.retrieveAttributeValue("managementRequestTimeout", Long.class);
          }
 
          public int getMessageCounterMaxDayCount()
@@ -472,7 +461,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (Boolean)proxy.retrieveAttributeValue("PersistenceEnabled");
          }
-         
+
          public void addSecuritySettings(String addressMatch,
                                          String sendRoles,
                                          String consumeRoles,
@@ -482,60 +471,61 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                          String deleteNonDurableQueueRoles,
                                          String manageRoles) throws Exception
          {
-            proxy.invokeOperation("addSecuritySettings", addressMatch, 
-                                  sendRoles, consumeRoles,
-                                  createDurableQueueRoles, deleteDurableQueueRoles,
-                                  createNonDurableQueueRoles, deleteNonDurableQueueRoles,
+            proxy.invokeOperation("addSecuritySettings",
+                                  addressMatch,
+                                  sendRoles,
+                                  consumeRoles,
+                                  createDurableQueueRoles,
+                                  deleteDurableQueueRoles,
+                                  createNonDurableQueueRoles,
+                                  deleteNonDurableQueueRoles,
                                   manageRoles);
          }
-         
-         public void removeSecuritySettings(String addressMatch) throws Exception {
-            proxy.invokeOperation("removeSecuritySettings", addressMatch); 
+
+         public void removeSecuritySettings(String addressMatch) throws Exception
+         {
+            proxy.invokeOperation("removeSecuritySettings", addressMatch);
          }
 
-         public Set<Role> getSecuritySettings(String addressMatch) throws Exception
-         {
-            return (Set<Role>)proxy.invokeOperation("removeSecuritySettings", addressMatch);
-         }
-         
          public Object[] getRoles(String addressMatch) throws Exception
          {
             return (Object[])proxy.invokeOperation("getRoles", addressMatch);
          }
-         
+
          public String getRolesAsJSON(String addressMatch) throws Exception
          {
             return (String)proxy.invokeOperation("getRolesAsJSON", addressMatch);
          }
 
          public void addAddressSettings(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch,
-                                        @Parameter(desc = "the dead letter address setting", name = "DLA") String DLA, 
-                                        @Parameter(desc = "the expiry address setting", name = "expiryAddress") String expiryAddress, 
+                                        @Parameter(desc = "the dead letter address setting", name = "DLA") String DLA,
+                                        @Parameter(desc = "the expiry address setting", name = "expiryAddress") String expiryAddress,
                                         @Parameter(desc = "are any queues created for this address a last value queue", name = "lastValueQueue") boolean lastValueQueue,
-                                        @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts, 
-                                        @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes, 
-                                        @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes, 
+                                        @Parameter(desc = "the delivery attempts", name = "deliveryAttempts") int deliveryAttempts,
+                                        @Parameter(desc = "the max size in bytes", name = "maxSizeBytes") long maxSizeBytes,
+                                        @Parameter(desc = "the page size in bytes", name = "pageSizeBytes") int pageSizeBytes,
                                         @Parameter(desc = "the redelivery delay", name = "redeliveryDelay") long redeliveryDelay,
                                         @Parameter(desc = "the redistribution delay", name = "redistributionDelay") long redistributionDelay,
                                         @Parameter(desc = "do we send to the DLA when there is no where to route the message", name = "sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
                                         @Parameter(desc = "the ploicy to use when the address is full", name = "addressFullMessagePolicy") String addressFullMessagePolicy) throws Exception
          {
-            proxy.invokeOperation("addAddressSettings", addressMatch, DLA, expiryAddress, lastValueQueue, deliveryAttempts, maxSizeBytes, pageSizeBytes, redeliveryDelay, redistributionDelay, sendToDLAOnNoRoute, addressFullMessagePolicy);
+            proxy.invokeOperation("addAddressSettings",
+                                  addressMatch,
+                                  DLA,
+                                  expiryAddress,
+                                  lastValueQueue,
+                                  deliveryAttempts,
+                                  maxSizeBytes,
+                                  pageSizeBytes,
+                                  redeliveryDelay,
+                                  redistributionDelay,
+                                  sendToDLAOnNoRoute,
+                                  addressFullMessagePolicy);
          }
 
          public void removeAddressSettings(String addressMatch) throws Exception
          {
             proxy.invokeOperation("removeAddressSettings", addressMatch);
-         }
-
-         public String getAddressSettingsAsJSON(@Parameter(desc = "an address match", name = "addressMatch") String addressMatch) throws Exception
-         {
-            return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
-         }
-         
-         public String[] getDivertNames()
-         {
-            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("divertNames"));
          }
 
          public void createDivert(String name,
@@ -546,20 +536,47 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   String filterString,
                                   String transformerClassName) throws Exception
          {
-            proxy.invokeOperation("createDivert", name, routingName, address, forwardingAddress, exclusive, filterString, transformerClassName);
+            proxy.invokeOperation("createDivert",
+                                  name,
+                                  routingName,
+                                  address,
+                                  forwardingAddress,
+                                  exclusive,
+                                  filterString,
+                                  transformerClassName);
          }
-         
+
          public void destroyDivert(String name) throws Exception
          {
             proxy.invokeOperation("destroyDivert", name);
          }
-         
 
          public String[] getBridgeNames()
          {
             return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("bridgeNames"));
          }
 
+         public void destroyBridge(String name) throws Exception
+         {
+            proxy.invokeOperation("destroyBridge", name);
+
+         }
+
+         public String getLiveConnectorName() throws Exception
+         {
+            return (String)proxy.retrieveAttributeValue("liveConnectorName");
+         }
+
+         public String getAddressSettingsAsJSON(String addressMatch) throws Exception
+         {
+            return (String)proxy.invokeOperation("getAddressSettingsAsJSON", addressMatch);
+         }
+
+         public String[] getDivertNames()
+         {
+            return HornetQServerControlUsingCoreTest.toStringArray((Object[])proxy.retrieveAttributeValue("divertNames"));
+         }
+
          public void createBridge(String name,
                                   String queueName,
                                   String forwardingAddress,
@@ -568,15 +585,50 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   long retryInterval,
                                   double retryIntervalMultiplier,
                                   int reconnectAttempts,
-                                  boolean failoverOnServerShutdown,
+                                  boolean useDuplicateDetection,
+                                  int confirmationWindowSize,
+                                  long clientFailureCheckPeriod,
+                                  List<String> staticConnectors,
+                                  boolean ha,
+                                  String user,
+                                  String password) throws Exception
+         {
+            proxy.invokeOperation("createBridge",
+                                  name,
+                                  queueName,
+                                  forwardingAddress,
+                                  filterString,
+                                  transformerClassName,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  useDuplicateDetection,
+                                  confirmationWindowSize,
+                                  clientFailureCheckPeriod,
+                                  staticConnectors,
+                                  ha,
+                                  user,
+                                  password);
+         }
+
+         public void createBridge(String name,
+                                  String queueName,
+                                  String forwardingAddress,
+                                  String filterString,
+                                  String transformerClassName,
+                                  long retryInterval,
+                                  double retryIntervalMultiplier,
+                                  int reconnectAttempts,
                                   boolean useDuplicateDetection,
                                   int confirmationWindowSize,
                                   long clientFailureCheckPeriod,
                                   String discoveryGroupName,
+                                  boolean ha,
                                   String user,
                                   String password) throws Exception
          {
-            proxy.invokeOperation("createBridge", name,
+            proxy.invokeOperation("createBridge",
+                                  name,
                                   queueName,
                                   forwardingAddress,
                                   filterString,
@@ -584,53 +636,13 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   retryInterval,
                                   retryIntervalMultiplier,
                                   reconnectAttempts,
-                                  failoverOnServerShutdown,
                                   useDuplicateDetection,
                                   confirmationWindowSize,
                                   clientFailureCheckPeriod,
                                   discoveryGroupName,
+                                  ha,
                                   user,
                                   password);
-         }
-         
-         public void createBridge(String name,
-                                  String queueName,
-                                  String forwardingAddress,
-                                  String filterString,
-                                  String transformerClassName,
-                                  long retryInterval,
-                                  double retryIntervalMultiplier,
-                                  int reconnectAttempts,
-                                  boolean failoverOnServerShutdown,
-                                  boolean useDuplicateDetection,
-                                  int confirmationWindowSize,
-                                  long clientFailureCheckPeriod,
-                                  String liveConnector,
-                                  String backupConnector,
-                                  String user,
-                                  String password) throws Exception
-         {
-            proxy.invokeOperation("createBridge", name,
-                                  queueName,
-                                  forwardingAddress,
-                                  filterString,
-                                  transformerClassName,
-                                  retryInterval,
-                                  retryIntervalMultiplier,
-                                  reconnectAttempts,
-                                  failoverOnServerShutdown,
-                                  useDuplicateDetection,
-                                  confirmationWindowSize,
-                                  clientFailureCheckPeriod,
-                                  liveConnector,
-                                  backupConnector,
-                                  user,
-                                  password);
-         }
-         
-         public void destroyBridge(String name) throws Exception {
-            proxy.invokeOperation("destroyBridge", name);
-
          }
       };
    }

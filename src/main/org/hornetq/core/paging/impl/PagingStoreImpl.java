@@ -940,7 +940,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       if (tx == null)
       {
-         return 0l;
+         return -1;
       }
       else
       {

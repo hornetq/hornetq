@@ -95,6 +95,12 @@
                 consumers receive the sent messages in a round-robin fashion.</para>
         </section>
         <section>
+            <title>Static Clustered Queue</title>
+            <para>The <literal>static-clustered-queue</literal> example demonstrates a JMS queue deployed
+                on two different nodes. Conversely to the <literal>clustered-queue</literal> example which uses
+                UDP to create the cluster, this example uses a list of static connectors for each cluster node.</para>
+        </section>
+        <section>
             <title>Clustered Standalone</title>
             <para>The <literal>clustered-standalone</literal> example demonstrates how to configure
                 and starts 3 cluster nodes on the same machine to form a cluster. A subscriber for a

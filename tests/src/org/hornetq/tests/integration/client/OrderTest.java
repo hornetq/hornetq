@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -43,15 +39,20 @@ public class OrderTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
+
+      locator = createNettyNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
       server.stop();
       super.tearDown();
    }
@@ -77,11 +78,12 @@ public class OrderTest extends ServiceTestBase
       server = createServer(persistent, true);
       server.start();
 
-      ClientSessionFactory sf = createNettyFactory();
 
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnDurableSend(false);
-      sf.setBlockOnAcknowledge(true);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -110,6 +112,7 @@ public class OrderTest extends ServiceTestBase
                started = true;
                server.stop();
                server.start();
+               sf = locator.createSessionFactory();
             }
 
             session = sf.createSession(true, true);
@@ -169,12 +172,12 @@ public class OrderTest extends ServiceTestBase
       server = createServer(persistent, true);
       server.start();
 
-      ClientSessionFactory sf = createNettyFactory();
 
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
 
+      ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(true, true, 0);
 
       int numberOfMessages = 500;

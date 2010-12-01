@@ -149,7 +149,7 @@
 
    <target name="upload-local-target">
        <!-- install the jar -->
-       <exec executable="mvn">
+       <exec executable="mvn" dir="./build">
         <arg value="install:install-file"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
         <!-- arg value="-Dmaven.repo.local=/work/eap-location/maven-repository"/ -->
@@ -157,10 +157,10 @@
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
         <arg value="-Dpackaging=jar"/>
-        <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
+        <arg value="-Dfile=./jars/${artifact.id}.jar"/>
        </exec>
        <!-- install the sources jar -->
-       <exec executable="mvn">
+       <exec executable="mvn" dir="./build">
         <arg value="install:install-file"/>
         <arg value="-DgroupId=org.hornetq"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
@@ -169,7 +169,7 @@
         <arg value="-Dversion=${hornetq.version}"/>
         <arg value="-Dpackaging=jar"/>
         <arg value="-Dclassifier=sources"/>
-        <arg value="-Dfile=./build/jars/${artifact.id}-sources.jar"/>
+        <arg value="-Dfile=./jars/${artifact.id}-sources.jar"/>
        </exec>
    </target>
 

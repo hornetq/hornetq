@@ -24,12 +24,7 @@ import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
@@ -86,12 +81,12 @@ public class OrderReattachTest extends ServiceTestBase
       server = createServer(false, isNetty);
 
       server.start();
-
-      ClientSessionFactory sf = createFactory(isNetty);
-      sf.setReconnectAttempts(-1);
-      sf.setConfirmationWindowSize(100 * 1024 * 1024);
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
+      ServerLocator locator = createFactory(isNetty);
+      locator.setReconnectAttempts(-1);
+      locator.setConfirmationWindowSize(100 * 1024 * 1024);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -165,6 +160,14 @@ public class OrderReattachTest extends ServiceTestBase
             e.printStackTrace();
          }
 
+         try
+         {
+            locator.close();
+         }
+         catch (Exception e)
+         {
+            //
+         }
          try
          {
             sf.close();

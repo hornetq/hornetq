@@ -52,7 +52,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   public static BroadcastGroupConfiguration randomBroadcastGroupConfiguration(final List<Pair<String, String>> connectorInfos)
+   public static BroadcastGroupConfiguration randomBroadcastGroupConfiguration(final List<String> connectorInfos)
    {
       return new BroadcastGroupConfiguration(RandomUtil.randomString(),
                                              null,
@@ -75,8 +75,8 @@ public class BroadcastGroupControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName());
-      List<Pair<String, String>> connectorInfos = new ArrayList<Pair<String, String>>();
-      connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
+      List<String> connectorInfos = new ArrayList<String>();
+      connectorInfos.add(connectorConfiguration.getName());
       BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
       Configuration conf = new ConfigurationImpl();
@@ -99,26 +99,23 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
       Object[] connectorPairs = broadcastGroupControl.getConnectorPairs();
       Assert.assertEquals(1, connectorPairs.length);
-      Object[] connectorPairData = (Object[])connectorPairs[0];
-      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData[0]);
-      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData[1]);
-
+      System.out.println(connectorPairs);
+      String connectorPairData = (String)connectorPairs[0];
+      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0), connectorPairData);
       String jsonString = broadcastGroupControl.getConnectorPairsAsJSON();
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(1, array.length());
-      JSONObject data = array.getJSONObject(0);
-      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, data.optString("a"));
-      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, data.optString("b", null));
-
+      Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0), array.getString(0));
+      
       Assert.assertTrue(broadcastGroupControl.isStarted());
    }
 
    public void testStartStop() throws Exception
    {
       TransportConfiguration connectorConfiguration = new TransportConfiguration(NettyConnectorFactory.class.getName());
-      List<Pair<String, String>> connectorInfos = new ArrayList<Pair<String, String>>();
-      connectorInfos.add(new Pair<String, String>(connectorConfiguration.getName(), null));
+      List<String> connectorInfos = new ArrayList<String>();
+      connectorInfos.add(connectorConfiguration.getName());
       BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
       Configuration conf = new ConfigurationImpl();

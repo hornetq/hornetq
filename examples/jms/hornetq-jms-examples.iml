@@ -68,6 +68,7 @@
       <sourceFolder url="file://$MODULE_DIR$/send-acknowledgements/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/static-selector-jms/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/transaction-failover/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/multiple-failover/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/browser/build" />
       <excludeFolder url="file://$MODULE_DIR$/browser/logs" />
       <excludeFolder url="file://$MODULE_DIR$/browser/server0/build" />

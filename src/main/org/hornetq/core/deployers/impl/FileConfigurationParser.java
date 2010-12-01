@@ -27,13 +27,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
-import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.*;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
@@ -169,6 +163,8 @@ public class FileConfigurationParser
 
       config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
 
+      config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
+
       config.setBackup(XMLConfigurationUtil.getBoolean(e, "backup", config.isBackup()));
 
       config.setSharedStore(XMLConfigurationUtil.getBoolean(e, "shared-store", config.isSharedStore()));
@@ -296,15 +292,15 @@ public class FileConfigurationParser
 
       config.setInterceptorClassNames(interceptorList);
 
-      NodeList backups = e.getElementsByTagName("backup-connector-ref");
+      NodeList lives = e.getElementsByTagName("live-connector-ref");
 
-      // There should be only one - this will be enforced by the DTD
+      // There should be at most one - this will be enforced by the DTD
 
-      if (backups.getLength() > 0)
+      if (lives.getLength() > 0)
       {
-         Node backupNode = backups.item(0);
+         Node liveNode = lives.item(0);
 
-         config.setBackupConnectorName(backupNode.getAttributes().getNamedItem("connector-name").getNodeValue());
+         config.setLiveConnectorName(liveNode.getAttributes().getNamedItem("connector-name").getNodeValue());
       }
 
       NodeList connectorNodes = e.getElementsByTagName("connector");
@@ -905,7 +901,7 @@ public class FileConfigurationParser
 
       NodeList children = e.getChildNodes();
 
-      List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
+      List<String> connectorNames = new ArrayList<String>();
 
       for (int j = 0; j < children.getLength(); j++)
       {
@@ -913,20 +909,9 @@ public class FileConfigurationParser
 
          if (child.getNodeName().equals("connector-ref"))
          {
-            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
+            String connectorName = XMLConfigurationUtil.getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
 
-            Node backupConnectorNode = child.getAttributes().getNamedItem("backup-connector-name");
-
-            String backupConnectorName = null;
-
-            if (backupConnectorNode != null)
-            {
-               backupConnectorName = backupConnectorNode.getNodeValue();
-            }
-
-            Pair<String, String> connectorInfo = new Pair<String, String>(connectorName, backupConnectorName);
-
-            connectorNames.add(connectorInfo);
+            connectorNames.add(connectorName);
          }
       }
 
@@ -950,6 +935,11 @@ public class FileConfigurationParser
       String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
+      
+      long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
+                                                                      "initial-wait-timeout",
+                                                                      HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                                                                      Validators.GT_ZERO);
 
       long refreshTimeout = XMLConfigurationUtil.getLong(e,
                                                          "refresh-timeout",
@@ -960,7 +950,8 @@ public class FileConfigurationParser
                                                                            localBindAddress,
                                                                            groupAddress,
                                                                            groupPort,
-                                                                           refreshTimeout);
+                                                                           refreshTimeout,
+                                                                           discoveryInitialWaitTimeout);
 
       if (mainConfig.getDiscoveryGroupConfigurations().containsKey(name))
       {
@@ -980,6 +971,8 @@ public class FileConfigurationParser
       String name = e.getAttribute("name");
 
       String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
+      
+      String connectorName = XMLConfigurationUtil.getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
 
       boolean duplicateDetection = XMLConfigurationUtil.getBoolean(e,
                                                                    "use-duplicate-detection",
@@ -1006,8 +999,8 @@ public class FileConfigurationParser
 
       String discoveryGroupName = null;
 
-      List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
-
+      List<String> staticConnectorNames = new ArrayList<String>();
+      
       NodeList children = e.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
@@ -1018,22 +1011,9 @@ public class FileConfigurationParser
          {
             discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
-         else if (child.getNodeName().equals("connector-ref"))
+         else if (child.getNodeName().equals("static-connectors"))
          {
-            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-
-            Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
-
-            String backupConnectorName = null;
-
-            if (backupNode != null)
-            {
-               backupConnectorName = backupNode.getNodeValue();
-            }
-
-            Pair<String, String> connectorPair = new Pair<String, String>(connectorName, backupConnectorName);
-
-            connectorPairs.add(connectorPair);
+            getStaticConnectors(staticConnectorNames, child);
          }
       }
 
@@ -1043,17 +1023,19 @@ public class FileConfigurationParser
       {
          config = new ClusterConnectionConfiguration(name,
                                                      address,
+                                                     connectorName,
                                                      retryInterval,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
                                                      confirmationWindowSize,
-                                                     connectorPairs);
+                                                     staticConnectorNames);
       }
       else
       {
          config = new ClusterConnectionConfiguration(name,
                                                      address,
+                                                     connectorName,
                                                      retryInterval,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
@@ -1115,10 +1097,6 @@ public class FileConfigurationParser
                                                               ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
                                                               Validators.MINUS_ONE_OR_GE_ZERO);
 
-      boolean failoverOnServerShutdown = XMLConfigurationUtil.getBoolean(brNode,
-                                                                         "failover-on-server-shutdown",
-                                                                         HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-
       boolean useDuplicateDetection = XMLConfigurationUtil.getBoolean(brNode,
                                                                       "use-duplicate-detection",
                                                                       ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION);
@@ -1132,10 +1110,12 @@ public class FileConfigurationParser
                                                        "password",
                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
                                                        Validators.NO_CHECK);
+      
+      boolean ha = XMLConfigurationUtil.getBoolean(brNode, "ha", false);
 
       String filterString = null;
-
-      Pair<String, String> connectorPair = null;
+  
+      List<String> staticConnectorNames = new ArrayList<String>();
 
       String discoveryGroupName = null;
 
@@ -1153,26 +1133,15 @@ public class FileConfigurationParser
          {
             discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
-         else if (child.getNodeName().equals("connector-ref"))
+         else if (child.getNodeName().equals("static-connectors"))
          {
-            String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-
-            Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
-
-            String backupConnectorName = null;
-
-            if (backupNode != null)
-            {
-               backupConnectorName = backupNode.getNodeValue();
-            }
-
-            connectorPair = new Pair<String, String>(connectorName, backupConnectorName);
+            getStaticConnectors(staticConnectorNames, child);
          }
       }
 
       BridgeConfiguration config;
 
-      if (connectorPair != null)
+      if (!staticConnectorNames.isEmpty())
       {
          config = new BridgeConfiguration(name,
                                           queueName,
@@ -1182,11 +1151,11 @@ public class FileConfigurationParser
                                           retryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
-                                          failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                          connectorPair,
+                                          staticConnectorNames,
+                                          ha,
                                           user,
                                           password);
       }
@@ -1200,16 +1169,30 @@ public class FileConfigurationParser
                                           retryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
-                                          failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           discoveryGroupName,
+                                          ha,
                                           user,
                                           password);
       }
 
       mainConfig.getBridgeConfigurations().add(config);
+   }
+
+   private void getStaticConnectors(List<String> staticConnectorNames, Node child)
+   {
+      NodeList children2 = ((Element) child).getElementsByTagName("connector-ref");
+
+      for (int k = 0; k < children2.getLength(); k++)
+      {
+         Element child2 = (Element) children2.item(k);
+
+         String connectorName = child2.getChildNodes().item(0).getNodeValue();
+
+         staticConnectorNames.add(connectorName);
+      }
    }
 
    private void parseDivertConfiguration(final Element e, final Configuration mainConfig)

@@ -44,10 +44,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A AppletExample
@@ -108,8 +107,7 @@ public class AppletExample extends JApplet implements ActionListener
 
       Map<String, Object> params = new HashMap<String, Object>();
       TransportConfiguration connector = new TransportConfiguration(NettyConnectorFactory.class.getName(), params);
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(connector);
-      ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(sf);
+      ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, connector);
       destination = HornetQJMSClient.createTopic("exampleTopic");
 
       try

@@ -441,9 +441,9 @@ public class ConnectionFactoryTest extends JMSTestCase
          //generic
          assertTrue(conn instanceof Connection);
          assertFalse(conn instanceof XAConnection);
-         assertFalse(conn instanceof QueueConnection);
+         assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
-         assertFalse(conn instanceof TopicConnection);
+         assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
       }
       else if ("queue".equals(type))
@@ -452,14 +452,14 @@ public class ConnectionFactoryTest extends JMSTestCase
          assertFalse(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
-         assertFalse(conn instanceof TopicConnection);
+         assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
       }
       else if ("topic".equals(type))
       {
          assertTrue(conn instanceof Connection);
          assertFalse(conn instanceof XAConnection);
-         assertFalse(conn instanceof QueueConnection);
+         assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
          assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
@@ -468,9 +468,9 @@ public class ConnectionFactoryTest extends JMSTestCase
       {
          assertTrue(conn instanceof Connection);
          assertTrue(conn instanceof XAConnection);
-         assertFalse(conn instanceof QueueConnection);
+         assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
-         assertFalse(conn instanceof TopicConnection);
+         assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
       }
       else if ("xa-queue".equals(type))
@@ -479,14 +479,14 @@ public class ConnectionFactoryTest extends JMSTestCase
          assertTrue(conn instanceof XAConnection);
          assertTrue(conn instanceof QueueConnection);
          assertTrue(conn instanceof XAQueueConnection);
-         assertFalse(conn instanceof TopicConnection);
+         assertTrue(conn instanceof TopicConnection);
          assertFalse(conn instanceof XATopicConnection);
       }
       else if ("xa-topic".equals(type))
       {
          assertTrue(conn instanceof Connection);
          assertTrue(conn instanceof XAConnection);
-         assertFalse(conn instanceof QueueConnection);
+         assertTrue(conn instanceof QueueConnection);
          assertFalse(conn instanceof XAQueueConnection);
          assertTrue(conn instanceof TopicConnection);
          assertTrue(conn instanceof XATopicConnection);

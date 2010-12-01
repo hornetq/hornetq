@@ -55,7 +55,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = createFactory(false).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -86,7 +86,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = createFactory(false).createSession();
+      ClientSession session = locator.createSessionFactory().createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");

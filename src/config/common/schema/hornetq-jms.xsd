@@ -28,7 +28,6 @@
    		<xsd:all>
            	<xsd:element name="xa" type="xsd:boolean" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0"></xsd:element>
-           	<xsd:element name="discovery-initial-wait-timeout" type="xsd:long" maxOccurs="1" minOccurs="0"></xsd:element>
 	
             <xsd:element name="connectors" maxOccurs="1" minOccurs="0">
                 <xsd:complexType>
@@ -132,6 +131,9 @@
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="group-id" type="xsd:string"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+            <xsd:element name="ha" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
    		</xsd:all>

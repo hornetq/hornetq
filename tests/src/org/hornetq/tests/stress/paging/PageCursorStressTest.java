@@ -25,6 +25,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
@@ -981,12 +982,16 @@ public class PageCursorStressTest extends ServiceTestBase
 
       int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
 
-      ClientSessionFactory sf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession();
       session.deleteQueue(ADDRESS);
 
       System.out.println("NumberOfPages = " + numberOfPages);
 
+      session.close();
+      sf.close();
+      locator.close();
       server.stop();
       createServer();
       waitCleanup();

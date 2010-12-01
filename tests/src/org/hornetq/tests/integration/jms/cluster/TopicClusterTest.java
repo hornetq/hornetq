@@ -83,7 +83,7 @@ public class TopicClusterTest extends JMSClusteredTestBase
          // topic1 and 2 should be the same. 
          // Using a different instance here just to make sure it is implemented correctly
          MessageConsumer cons2 = session2.createDurableSubscriber(topic2, "sub2");
-         
+         Thread.sleep(2000);
          MessageProducer prod1 = session1.createProducer(topic1);
          
          prod1.setDeliveryMode(DeliveryMode.PERSISTENT);

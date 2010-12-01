@@ -158,6 +158,22 @@ public class ServerSessionPacketHandler implements ChannelHandler
       return channel.getID();
    }
 
+   public void connectionFailed(final HornetQException exception, boolean failedOver)
+   {
+      log.warn("Client connection failed, clearing up resources for session " + session.getName());
+
+      try
+      {
+         session.close(true);
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to close session", e);
+      }
+
+      log.warn("Cleared up resources for session " + session.getName());
+   }
+
    public void close()
    {
       channel.flushConfirmations();

@@ -15,7 +15,13 @@ package org.hornetq.core.example;
 import java.util.Date;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.common.example.SpawnedVMSupport;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
@@ -42,7 +48,8 @@ public class EmbeddedRemoteExample
          process = EmbeddedRemoteExample.startRemoteEmbedded();
 
          // Step 4. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ClientSessionFactory sf = serverLocator.createSessionFactory();
 
          // Step 5. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
@@ -85,9 +92,9 @@ public class EmbeddedRemoteExample
          finally
          {
             // Step 10. Be sure to close our resources!
-            if (session != null)
+            if (sf != null)
             {
-               session.close();
+               sf.close();
             }
 
             if (process != null)

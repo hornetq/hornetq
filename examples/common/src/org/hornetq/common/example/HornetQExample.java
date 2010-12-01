@@ -106,6 +106,9 @@ public abstract class HornetQExample
       File file = new File("server" + id + "/KILL_ME");
 
       file.createNewFile();
+      
+      // Sleep longer than the KillChecker check period
+      Thread.sleep(1000);
    }
 
    protected void stopServer(final int id) throws Exception
@@ -141,6 +144,8 @@ public abstract class HornetQExample
    {
       String config = configs[index];
       HornetQExample.log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      String debugProp = System.getProperty("server" + index);
+      boolean debugServer= "true".equals(debugProp);
       servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
                                                 "HornetQServer_" + index,
                                                 SpawnedHornetQServer.class.getName(),
@@ -149,6 +154,7 @@ public abstract class HornetQExample
                                                 "STARTED::",
                                                 "FAILED::",
                                                 config,
+                                                debugServer,
                                                 "hornetq-beans.xml");
    }
 

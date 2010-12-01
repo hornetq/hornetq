@@ -20,6 +20,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.SpawnedVMSupport;
 
@@ -53,13 +55,15 @@ public class ClientCrashTest extends ClientTestBase
 
    private ClientSessionFactory sf;
 
+   private ServerLocator locator;
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
    public void testCrashClient() throws Exception
    {
-      assertActiveConnections(0);
+      assertActiveConnections(1);
 
       // spawn a JVM that creates a Core client, which sends a message
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
@@ -72,7 +76,7 @@ public class ClientCrashTest extends ClientTestBase
       session.start();
 
       // receive a message from the queue
-      Message messageFromClient = consumer.receive(5000);
+      Message messageFromClient = consumer.receive(500000);
       Assert.assertNotNull("no message received", messageFromClient);
       Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
@@ -105,14 +109,14 @@ public class ClientCrashTest extends ClientTestBase
       Thread.sleep(2 * ClientCrashTest.CONNECTION_TTL);
 
       // the crash must have been detected and the resources cleaned up
-      assertActiveConnections(0);
+      assertActiveConnections(1);
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       assertActiveSession(0);
    }
    
    public void testCrashClient2() throws Exception
    {     
-      assertActiveConnections(0);
+      assertActiveConnections(1);
 
       ClientSession session = sf.createSession(false, true, true);
            
@@ -152,10 +156,11 @@ public class ClientCrashTest extends ClientTestBase
    {
       super.setUp();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
-      sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
-      sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
+      locator.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
+      locator.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
+      sf = locator.createSessionFactory();
    }
 
    @Override
@@ -164,7 +169,7 @@ public class ClientCrashTest extends ClientTestBase
       // sf.close();
 
       sf = null;
-
+      locator.close();
       super.tearDown();
    }
 

@@ -25,7 +25,6 @@ import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.api.core.management.ClusterConnectionControl;
-import org.hornetq.api.core.management.DiscoveryGroupControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
@@ -61,13 +60,6 @@ public class ManagementControlHelper
    {
       return (BroadcastGroupControl)ManagementControlHelper.createProxy(ObjectNameBuilder.DEFAULT.getBroadcastGroupObjectName(name),
                                                                         BroadcastGroupControl.class,
-                                                                        mbeanServer);
-   }
-
-   public static DiscoveryGroupControl createDiscoveryGroupControl(final String name, final MBeanServer mbeanServer) throws Exception
-   {
-      return (DiscoveryGroupControl)ManagementControlHelper.createProxy(ObjectNameBuilder.DEFAULT.getDiscoveryGroupObjectName(name),
-                                                                        DiscoveryGroupControl.class,
                                                                         mbeanServer);
    }
 

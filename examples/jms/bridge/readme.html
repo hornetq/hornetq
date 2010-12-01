@@ -44,7 +44,9 @@
           &lt;filter string="name='aardvark'"/&gt;
           &lt;transformer-class-name&gt;org.hornetq.jms.example.HatColourChangeTransformer&lt;/transformer-class-name&gt;
           &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
-          &lt;connector-ref connector-name="remote-connector"/&gt;          
+          &lt;static-connectors>
+             &lt;connector-ref>remote-connector&lt;/connector-ref>
+          &lt;/static-connectors>
      &lt;/bridge&gt;
      </code>
      </pre>              

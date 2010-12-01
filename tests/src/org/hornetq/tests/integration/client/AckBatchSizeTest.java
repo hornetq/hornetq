@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -48,7 +44,8 @@ public class AckBatchSizeTest extends ServiceTestBase
 
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
-      ClientSessionFactory cf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
@@ -66,10 +63,11 @@ public class AckBatchSizeTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
          int numMessages = 100;
-         cf.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
-         cf.setBlockOnAcknowledge(true);
+         locator.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
+         locator.setBlockOnAcknowledge(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
 
          ClientSession session = cf.createSession(false, true, true);
@@ -116,9 +114,10 @@ public class AckBatchSizeTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setAckBatchSize(0);
-         cf.setBlockOnAcknowledge(true);
+         ServerLocator locator = createInVMNonHALocator();
+         locator.setAckBatchSize(0);
+         locator.setBlockOnAcknowledge(true);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          int numMessages = 100;
 

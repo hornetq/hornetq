@@ -1,19 +1,12 @@
 <configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
-   <backup-connector-ref connector-name="backup-connector"/>
-   
    <!-- Connectors -->
 
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
          <param key="port" value="5446"/>
-      </connector>
-   
-      <connector name="backup-connector">
-        <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-        <param key="port" value="5445"/>
       </connector>
    </connectors>
    

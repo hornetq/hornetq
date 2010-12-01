@@ -37,6 +37,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession clientSession;
+   private ServerLocator locator;
 
    public void testSendToDLAWhenNoRoute() throws Exception
    {
@@ -71,7 +72,8 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       clientSession = sessionFactory.createSession(false, true, false);
    }
 
@@ -89,6 +91,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
             //
          }
       }
+      locator.close();
       if (server != null && server.isStarted())
       {
          try

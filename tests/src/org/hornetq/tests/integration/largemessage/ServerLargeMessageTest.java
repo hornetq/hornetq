@@ -49,7 +49,9 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createFactory(false);
+      ServerLocator locator = createFactory(false);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false);
 
@@ -99,6 +101,7 @@ public class ServerLargeMessageTest extends ServiceTestBase
       finally
       {
          sf.close();
+         locator.close();
          server.stop();
       }
    }

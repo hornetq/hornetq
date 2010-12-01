@@ -24,6 +24,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
@@ -50,7 +51,7 @@ public class CloseConnectionOnGCTest extends JMSTestBase
    {
       super.setUp();
 
-      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnDurableSend(true);
       cf.setPreAcknowledge(true);
    }

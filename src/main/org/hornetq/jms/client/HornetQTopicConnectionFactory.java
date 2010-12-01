@@ -13,13 +13,10 @@
 
 package org.hornetq.jms.client;
 
-import java.util.List;
-
 import javax.jms.TopicConnectionFactory;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-
+import org.hornetq.api.core.client.ServerLocator;
 
 /**
  * A class that represents a TopicConnectionFactory.
@@ -31,19 +28,40 @@ public class HornetQTopicConnectionFactory extends HornetQConnectionFactory impl
 {
    private static final long serialVersionUID = 7317051989866548455L;
 
-   public HornetQTopicConnectionFactory(String discoveryAddress, int discoveryPort)
+   /**
+    * 
+    */
+   public HornetQTopicConnectionFactory()
    {
-      super(discoveryAddress, discoveryPort);
+      super();
    }
 
-   public HornetQTopicConnectionFactory(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
+   /**
+    * @param serverLocator
+    */
+   public HornetQTopicConnectionFactory(ServerLocator serverLocator)
    {
-      super(connectorConfigs);
+      super(serverLocator);
+    }
+
+
+   /**
+    * @param ha
+    * @param discoveryAddress
+    * @param discoveryPort
+    */
+   public HornetQTopicConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
+   {
+      super(ha, discoveryAddress, discoveryPort);
    }
 
-   public HornetQTopicConnectionFactory(TransportConfiguration connectorConfig,
-                                        TransportConfiguration backupConnectorConfig)
+   /**
+    * @param ha
+    * @param initialConnectors
+    */
+   public HornetQTopicConnectionFactory(final boolean ha, final TransportConfiguration... initialConnectors)
    {
-      super(connectorConfig, backupConnectorConfig);
+      super(ha, initialConnectors);
    }
+
 }

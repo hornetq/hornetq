@@ -17,10 +17,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -45,6 +42,8 @@ public class MessageDurabilityTest extends ServiceTestBase
    private ClientSession session;
 
    private ClientSessionFactory sf;
+
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -187,15 +186,15 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       server = createServer(true);
       server.start();
-
-      sf = createInVMFactory();
+      locator = createInVMNonHALocator();
+      sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      sf.close();
+      locator.close();
 
       session.close();
 
@@ -219,7 +218,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       server.stop();
       server.start();
 
-      sf = createInVMFactory();
+      sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
    }
    // Inner classes -------------------------------------------------

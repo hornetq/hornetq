@@ -22,7 +22,6 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
@@ -59,7 +58,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private DatagramSocket socket;
 
-   private final List<Pair<TransportConfiguration, TransportConfiguration>> connectorPairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+   private final List<TransportConfiguration> connectors = new ArrayList<TransportConfiguration>();
 
    private boolean started;
 
@@ -181,19 +180,19 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       return name;
    }
 
-   public synchronized void addConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
+   public synchronized void addConnector(final TransportConfiguration tcConfig)
    {
-      connectorPairs.add(connectorPair);
+      connectors.add(tcConfig);
    }
 
-   public synchronized void removeConnectorPair(final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
+   public synchronized void removeConnector(final TransportConfiguration tcConfig)
    {
-      connectorPairs.remove(connectorPair);
+      connectors.remove(tcConfig);
    }
 
    public synchronized int size()
    {
-      return connectorPairs.size();
+      return connectors.size();
    }
 
    public synchronized void activate()
@@ -214,22 +213,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
       buff.writeString(uniqueID);
 
-      buff.writeInt(connectorPairs.size());
+      buff.writeInt(connectors.size());
 
-      for (Pair<TransportConfiguration, TransportConfiguration> connectorPair : connectorPairs)
+      for (TransportConfiguration tcConfig : connectors)
       {
-         connectorPair.a.encode(buff);
-
-         if (connectorPair.b != null)
-         {
-            buff.writeBoolean(true);
-
-            connectorPair.b.encode(buff);
-         }
-         else
-         {
-            buff.writeBoolean(false);
-         }
+         tcConfig.encode(buff);
       }
 
       byte[] data = buff.toByteBuffer().array();

@@ -131,6 +131,8 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
 
       closeAllSessionFactories();
 
+      closeAllServerLocatorsFactories();
+
       stopServers(0, 1);
    }
 

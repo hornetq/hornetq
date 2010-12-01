@@ -31,6 +31,7 @@ public class WildCardRoutingTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession clientSession;
+   private ServerLocator locator;
 
    public void testBasicWildcardRouting() throws Exception
    {
@@ -763,7 +764,8 @@ public class WildCardRoutingTest extends UnitTestCase
       server.start();
       server.getManagementService().enableNotifications(false);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       clientSession = sessionFactory.createSession(false, true, true);
    }
 
@@ -794,7 +796,7 @@ public class WildCardRoutingTest extends UnitTestCase
       }
       server = null;
       clientSession = null;
-
+      locator.close();
       super.tearDown();
    }
 }

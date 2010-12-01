@@ -14,14 +14,11 @@
 package org.hornetq.tests.integration.jms.cluster;
 
 import javax.jms.Connection;
-import javax.jms.DeliveryMode;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 
 import org.hornetq.tests.util.JMSClusteredTestBase;
 
@@ -54,6 +51,55 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
    {
       super.setUp();
    }
+   
+   
+
+   public void testClusteredQueue() throws Exception
+   {
+      System.out.println("Server1 = " + server1.getNodeID());
+      System.out.println("Server2 = " + server2.getNodeID());
+      jmsServer1.createQueue(false, "target", null, true, "/queue/target");
+      jmsServer2.createQueue(false, "target", null, true, "/queue/target");
+
+      Connection conn1 = cf1.createConnection();
+      Connection conn2 = cf2.createConnection();
+
+      conn1.start();
+      
+      conn2.start();
+
+      try
+      {
+         Session session1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Queue targetQueue1 = session1.createQueue("target");
+
+         Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Queue targetQueue2 = session2.createQueue("target");
+
+         // sleep a little bit to have the temp queue propagated to server #2
+         Thread.sleep(3000);
+         MessageProducer prod1 = session1.createProducer(targetQueue1);
+         MessageConsumer cons2 = session2.createConsumer(targetQueue2);
+
+         TextMessage msg = session1.createTextMessage("hello");
+
+         prod1.send(msg);
+
+         prod1.send(msg);
+
+         TextMessage msgReceived = (TextMessage)cons2.receive(5000);
+
+         assertNotNull(msgReceived);
+         assertEquals(msgReceived.getText(), msg.getText());
+
+      }
+      finally
+      {
+         conn1.close();
+         conn2.close();
+      }
+   }
+
 
    public void testTemporaryQueue() throws Exception
    {
@@ -75,11 +121,11 @@ public class TemporaryQueueClusterTest extends JMSClusteredTestBase
          Session session2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
          Queue targetQueue2 = session2.createQueue("target");
 
-         // sleep a little bit to have the temp queue propagated to server #2
-         Thread.sleep(3000);
          MessageProducer prod1 = session1.createProducer(targetQueue1);
          MessageConsumer cons2 = session2.createConsumer(targetQueue2);
          MessageConsumer tempCons1 = session1.createConsumer(tempQueue);
+         // sleep a little bit to have the temp queue propagated to server #2
+         Thread.sleep(3000);
 
          for (int i = 0; i < 10; i++)
          {

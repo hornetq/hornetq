@@ -19,8 +19,10 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -72,9 +74,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 1, true);
          waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         /*waitForBindings(0, "queues.testaddress", 2, 2, false);
+         waitForBindings(0, "queues.testaddress", 2, 2, false);
          waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);*/
+         waitForBindings(2, "queues.testaddress", 2, 2, false);
 
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
@@ -87,6 +89,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -171,9 +176,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 1, true);
          waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         /*waitForBindings(0, "queues.testaddress", 2, 2, false);
+         waitForBindings(0, "queues.testaddress", 2, 2, false);
          waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);*/
+         waitForBindings(2, "queues.testaddress", 2, 2, false);
 
          try
          {
@@ -192,6 +197,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -251,6 +258,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -314,6 +323,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
    }
@@ -373,6 +384,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -436,6 +449,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
    }
@@ -492,6 +507,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -572,6 +589,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -675,6 +694,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
    }
@@ -757,7 +778,12 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          stopServers(1);
 
+         closeSessionFactory(1);
+         
          startServers(1);
+
+         setupSessionFactory(1, isNetty());
+         
          Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                       TimeUnit.SECONDS));
          getServer(0).getManagementService().removeNotificationListener(listener);
@@ -777,6 +803,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -855,9 +883,11 @@ public class ClusteredGroupingTest extends ClusterTestBase
          getServer(2).getManagementService().addNotificationListener(listener);
          stopServers(1);
 
+         closeSessionFactory(1);
          startServers(1);
          Assert.assertTrue("timed out waiting for bindings to be removed and added back", latch.await(5,
                                                                                                       TimeUnit.SECONDS));
+         setupSessionFactory(1, isNetty());
          getServer(0).getManagementService().removeNotificationListener(listener);
          getServer(2).getManagementService().removeNotificationListener(listener);
          addConsumer(1, 1, "queue0", null);
@@ -878,6 +908,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -942,6 +974,8 @@ public class ClusteredGroupingTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1, 2);
       }
@@ -1009,8 +1043,16 @@ public class ClusteredGroupingTest extends ClusterTestBase
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers(0, 1, 2);
       }
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
    }
 
    public boolean isNetty()

@@ -167,13 +167,13 @@ public class TransportConfiguration implements Serializable
 
       if (factoryClassName.equals(kother.factoryClassName))
       {
-         if (params == null)
+         if (params == null || params.isEmpty())
          {
-            return kother.params == null;
+            return kother.params == null || kother.params.isEmpty();
          }
          else
          {
-            if (kother.params == null)
+            if (kother.params == null || kother.params.isEmpty())
             {
                return false;
             }

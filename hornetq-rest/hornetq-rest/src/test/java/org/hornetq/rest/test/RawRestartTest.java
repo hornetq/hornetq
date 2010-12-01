@@ -8,7 +8,9 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -32,6 +34,7 @@ import java.util.UUID;
 public class RawRestartTest
 {
    protected static HornetQServer hornetqServer;
+   static ServerLocator serverLocator;
    static ClientSessionFactory sessionFactory;
    static ClientSessionFactory consumerSessionFactory;
    static ClientProducer producer;
@@ -51,11 +54,12 @@ public class RawRestartTest
       session.start();
    }
 
-   private static void createFactories()
+   private static void createFactories() throws Exception
    {
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
-      sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
-      consumerSessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      serverLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      sessionFactory = serverLocator.createSessionFactory();
+      consumerSessionFactory = serverLocator.createSessionFactory();
    }
 
    private static void startupTheServer()

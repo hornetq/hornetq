@@ -254,6 +254,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void stop() throws Exception
    {
+      stop(false);
+   }
+
+   public void stop(boolean clientFailover) throws Exception
+   {
       if (!started)
       {
          return;
@@ -278,7 +283,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.connection;
 
-         conn.disconnect();
+         conn.disconnect(clientFailover);
       }
 
       for (Acceptor acceptor : acceptors)
@@ -374,9 +379,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (config.isBackup())
       {
          serverSideReplicatingConnection = entry.connection;
-      }
+      }      
    }
-
+   
    public void connectionDestroyed(final Object connectionID)
    {
       ConnectionEntry conn = connections.get(connectionID);

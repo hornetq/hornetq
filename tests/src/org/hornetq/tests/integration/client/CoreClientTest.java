@@ -25,6 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 public class CoreClientTest extends UnitTestCase
@@ -66,8 +67,9 @@ public class CoreClientTest extends UnitTestCase
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
 
       server.start();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorFactoryClassName));
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorFactoryClassName));
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -116,6 +118,8 @@ public class CoreClientTest extends UnitTestCase
       }
 
       session.close();
+
+      locator.close();
 
       server.stop();
    }

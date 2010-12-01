@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.management;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.xa.XAResource;
@@ -29,24 +31,24 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.AddressSettingsInfo;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
+import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.utils.UUIDGenerator;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -110,7 +112,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.isAsyncConnectionExecutionEnabled(), serverControl.isAsyncConnectionExecutionEnabled());
       Assert.assertEquals(conf.getInterceptorClassNames().size(), serverControl.getInterceptorClassNames().length);
       Assert.assertEquals(conf.getConnectionTTLOverride(), serverControl.getConnectionTTLOverride());
-      Assert.assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
+      //Assert.assertEquals(conf.getBackupConnectorName(), serverControl.getBackupConnectorName());
       Assert.assertEquals(conf.getManagementAddress().toString(), serverControl.getManagementAddress());
       Assert.assertEquals(conf.getManagementNotificationAddress().toString(),
                           serverControl.getManagementNotificationAddress());
@@ -541,7 +543,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(name, divertNames[0]);
       
       // check that a message sent to the address is diverted exclusively
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      
+      ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession session = csf.createSession();
 
       String divertQueue = RandomUtil.randomString();
@@ -587,6 +591,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       session.deleteQueue(divertQueue);
       session.close();
       
+      locator.close();
+      
    }
 
    public void testCreateAndDestroyBridge() throws Exception
@@ -602,26 +608,29 @@ public class HornetQServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(name));
       assertEquals(0, serverControl.getBridgeNames().length);
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession session = csf.createSession();
 
       session.createQueue(sourceAddress, sourceQueue);
       session.createQueue(targetAddress, targetQueue);
 
+      List<String> listName = new ArrayList<String>();
+      listName.add(connectorConfig.getName());
+      
       serverControl.createBridge(name,
                                  sourceQueue,
                                  targetAddress,
-                                 null,
-                                 null,
-                                 HornetQClient.DEFAULT_RETRY_INTERVAL,
+                                 null, // forwardingAddress
+                                 null, // filterString
+                                 HornetQClient.DEFAULT_RETRY_INTERVAL, 
                                  HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                  HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
-                                 HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                 false,
-                                 1,
+                                  false, // duplicateDetection
+                                 1, // confirmationWindowSize
                                  HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                 connectorConfig.getName(),
-                                 null,
+                                 listName, // liveConnector
+                                 false,
                                  null,
                                  null);
 
@@ -674,6 +683,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       session.deleteQueue(targetQueue);
       
       session.close();
+      
+      locator.close();
    }
 
    public void testListPreparedTransactionDetails() throws Exception
@@ -681,7 +692,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       SimpleString atestq = new SimpleString("BasicXaTestq");
       Xid xid = newXID();
       
-      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
@@ -703,6 +715,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       clientSession.prepare(xid);
 
       clientSession.close();
+      locator.close();
 
       HornetQServerControl serverControl = createManagementControl();
       String txDetails = serverControl.listPreparedTransactionDetailsAsJSON();
@@ -718,7 +731,8 @@ public class HornetQServerControlTest extends ManagementTestBase
       SimpleString atestq = new SimpleString("BasicXaTestq");
       Xid xid = newXID();
       
-      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
@@ -740,6 +754,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       clientSession.prepare(xid);
 
       clientSession.close();
+      locator.close();
 
       HornetQServerControl serverControl = createManagementControl();
       String html = serverControl.listPreparedTransactionDetailsAsHTML();

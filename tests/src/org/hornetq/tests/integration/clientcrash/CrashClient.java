@@ -18,6 +18,8 @@ import java.util.Arrays;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
@@ -42,10 +44,11 @@ public class CrashClient
       {
          CrashClient.log.debug("args = " + Arrays.asList(args));
 
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         locator.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
+         locator.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
+         ClientSessionFactory sf = locator.createSessionFactory();
 
-         sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
-         sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
 
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(ClientCrashTest.QUEUE);

@@ -20,12 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -42,13 +37,30 @@ public class DeliveryOrderTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      locator = createInVMNonHALocator();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+      locator = null;
+      super.tearDown();
+   }
+
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
       HornetQServer server = createServer(false);
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, false, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          int numMessages = 1000;
@@ -89,7 +101,8 @@ public class DeliveryOrderTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          int numMessages = 1000;
@@ -121,6 +134,7 @@ public class DeliveryOrderTest extends ServiceTestBase
       }
       finally
       {
+         locator.close();
          if (server.isStarted())
          {
             server.stop();
@@ -134,7 +148,7 @@ public class DeliveryOrderTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession recSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);

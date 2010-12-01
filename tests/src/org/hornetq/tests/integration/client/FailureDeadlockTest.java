@@ -28,6 +28,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
@@ -66,9 +67,10 @@ public class FailureDeadlockTest extends UnitTestCase
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
-      cf1 = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      cf2 = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf1 = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      cf2 =  HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 
    @Override
@@ -92,6 +94,10 @@ public class FailureDeadlockTest extends UnitTestCase
 
       }
 
+      cf1.close();
+
+      cf2.close();
+      
       server = null;
 
       jmsServer = null;
@@ -187,7 +193,15 @@ public class FailureDeadlockTest extends UnitTestCase
 
          rc1.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
 
-         Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         try
+         {
+            Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail("should throw exception");
+         }
+         catch (JMSException e)
+         {
+            //pass
+         }
 
          conn1.close();
       }

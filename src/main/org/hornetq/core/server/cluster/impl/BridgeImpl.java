@@ -14,41 +14,30 @@
 package org.hornetq.core.server.cluster.impl;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Bridge;
-import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
@@ -56,18 +45,18 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
-import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A Core BridgeImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 12 Nov 2008 11:37:35
  *
  *
  */
+
 public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowledgementHandler
 {
    // Constants -----------------------------------------------------
@@ -76,13 +65,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Attributes ----------------------------------------------------
 
+   protected final ServerLocatorInternal serverLocator;
+
    private final UUID nodeUUID;
 
    private final SimpleString name;
 
    private Queue queue;
 
-   private final Executor executor;
+   protected final Executor executor;
 
    private final Filter filter;
 
@@ -94,7 +85,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private volatile ClientSessionFactory csf;
 
-   private volatile ClientSessionInternal session;
+   protected volatile ClientSessionInternal session;
 
    private volatile ClientProducer producer;
 
@@ -104,30 +95,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private volatile boolean active;
 
-   private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
-
-   private final String discoveryAddress;
-
-   private final int discoveryPort;
-
-   private final long retryInterval;
-
-   private final double retryIntervalMultiplier;
-
-   private final int reconnectAttempts;
-
-   private final boolean failoverOnServerShutdown;
-
-   private final int confirmationWindowSize;
-
-   private final SimpleString idsHeaderName;
-
-   private final MessageFlowRecord flowRecord;
-
-   private final SimpleString managementAddress;
-
-   private final SimpleString managementNotificationAddress;
-
    private final String user;
 
    private final String password;
@@ -136,44 +103,29 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private NotificationService notificationService;
 
-   private ClientConsumer notifConsumer;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   /**
-    * discoveryAddress (+ discoveryPort) and connectorPair are mutually exclusive.
-    * If discoveryAddress is != null, it will be used to create the bridge's client session factory.
-    * Otherwise, the connectorPair will be used
-    */
-   public BridgeImpl(final UUID nodeUUID,
+   public BridgeImpl(final ServerLocatorInternal serverLocator,
+                     final UUID nodeUUID,
                      final SimpleString name,
                      final Queue queue,
-                     final String discoveryAddress,
-                     final int discoveryPort,
-                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
                      final SimpleString filterString,
                      final SimpleString forwardingAddress,
                      final ScheduledExecutorService scheduledExecutor,
                      final Transformer transformer,
-                     final long retryInterval,
-                     final double retryIntervalMultiplier,
-                     final int reconnectAttempts,
-                     final boolean failoverOnServerShutdown,
                      final boolean useDuplicateDetection,
-                     final int confirmationWindowSize,
-                     final SimpleString managementAddress,
-                     final SimpleString managementNotificationAddress,
                      final String user,
                      final String password,
-                     final MessageFlowRecord flowRecord,
                      final boolean activated,
                      final StorageManager storageManager) throws Exception
    {
+      this.serverLocator = serverLocator;
+
       this.nodeUUID = nodeUUID;
 
       this.name = name;
@@ -190,38 +142,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       this.useDuplicateDetection = useDuplicateDetection;
 
-      if (!(confirmationWindowSize > 0))
-      {
-         throw new IllegalStateException("confirmation-window-size must be > 0 for a bridge");
-      }
-
-      this.confirmationWindowSize = confirmationWindowSize;
-
-      this.discoveryAddress = discoveryAddress;
-
-      this.discoveryPort = discoveryPort;
-
-      this.connectorPair = connectorPair;
-
-      this.retryInterval = retryInterval;
-
-      this.retryIntervalMultiplier = retryIntervalMultiplier;
-
-      this.reconnectAttempts = reconnectAttempts;
-
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
-
-      idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(name);
-
-      this.managementAddress = managementAddress;
-
-      this.managementNotificationAddress = managementNotificationAddress;
-
       this.user = user;
 
       this.password = password;
-
-      this.flowRecord = flowRecord;
 
       this.activated = activated;
    }
@@ -242,7 +165,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       if (activated)
       {
-         executor.execute(new CreateObjectsRunnable());
+         activate();
       }
 
       if (notificationService != null)
@@ -390,6 +313,38 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Consumer implementation ---------------------------------------
 
+   /* Hook for processing message before forwarding */
+   protected ServerMessage beforeForward(ServerMessage message)
+   {
+      if (useDuplicateDetection && !message.containsProperty(Message.HDR_DUPLICATE_DETECTION_ID))
+      {
+         // If we are using duplicate detection and there's not already a duplicate detection header, then
+         // we add a header composed of the persistent node id and the message id, which makes it globally unique
+         // between restarts.
+         // If you use a cluster connection then a guid based duplicate id will be used since it is added *before*
+         // the
+         // message goes into the store and forward queue.
+         // But with this technique it also works when the messages don't already have such a header in them in the
+         // queue.
+         byte[] bytes = new byte[24];
+
+         ByteBuffer bb = ByteBuffer.wrap(bytes);
+
+         bb.put(nodeUUID.asBytes());
+
+         bb.putLong(message.getMessageID());
+
+         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
+      }
+
+      if (transformer != null)
+      {
+         message = transformer.transform(message);
+      }
+
+      return message;
+   }
+
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
       if (filter != null && !filter.match(ref.getMessage()))
@@ -410,57 +365,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          refs.add(ref);
 
-         if (flowRecord != null)
-         {
-            // We make a copy of the message, then we strip out the unwanted routing id headers and leave
-            // only
-            // the one pertinent for the address node - this is important since different queues on different
-            // nodes could have same queue ids
-            // Note we must copy since same message may get routed to other nodes which require different headers
-            message = message.copy();
-            
-            // TODO - we can optimise this
-
-            Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
-
-            byte[] queueIds = message.getBytesProperty(idsHeaderName);
-
-            for (SimpleString propName : propNames)
-            {
-               if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
-               {
-                  message.removeProperty(propName);
-               }
-            }
-
-            message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
-         }
-
-         if (useDuplicateDetection && !message.containsProperty(Message.HDR_DUPLICATE_DETECTION_ID))
-         {
-            // If we are using duplicate detection and there's not already a duplicate detection header, then
-            // we add a header composed of the persistent node id and the message id, which makes it globally unique
-            // between restarts.
-            // If you use a cluster connection then a guid based duplicate id will be used since it is added *before*
-            // the
-            // message goes into the store and forward queue.
-            // But with this technique it also works when the messages don't already have such a header in them in the
-            // queue.
-            byte[] bytes = new byte[24];
-
-            ByteBuffer bb = ByteBuffer.wrap(bytes);
-
-            bb.put(nodeUUID.asBytes());
-
-            bb.putLong(message.getMessageID());
-
-            message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
-         }
-
-         if (transformer != null)
-         {
-            message = transformer.transform(message);
-         }
+         message = beforeForward(message);
 
          SimpleString dest;
 
@@ -482,7 +387,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // FailureListener implementation --------------------------------
 
-   public void connectionFailed(final HornetQException me)
+   public void connectionFailed(final HornetQException me, boolean failedOver)
    {
       fail(false);
    }
@@ -539,7 +444,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
             else
             {
-               setupNotificationConsumer();
+               afterConnect();
 
                active = true;
 
@@ -556,84 +461,20 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
-   // connection is opened and closed - we can use
-   // a callback to tell us that
-   private void setupNotificationConsumer() throws Exception
+   /* Hook for doing extra stuff after connection */
+   protected void afterConnect() throws Exception
    {
-      if (flowRecord != null)
-      {
-         flowRecord.reset();
-
-         if (notifConsumer != null)
-         {
-            try
-            {
-               notifConsumer.close();
-
-               notifConsumer = null;
-            }
-            catch (HornetQException e)
-            {
-               BridgeImpl.log.error("Failed to close consumer", e);
-            }
-         }
-
-         // Get the queue data
-
-         String qName = "notif." + UUIDGenerator.getInstance().generateStringUUID();
-
-         SimpleString notifQueueName = new SimpleString(qName);
-
-         SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                BindingType.DIVERT.toInt() +
-                                                " AND " +
-                                                ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                " IN ('" +
-                                                NotificationType.BINDING_ADDED +
-                                                "','" +
-                                                NotificationType.BINDING_REMOVED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CREATED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CLOSED +
-                                                "','" +
-                                                NotificationType.PROPOSAL +
-                                                "','" +
-                                                NotificationType.PROPOSAL_RESPONSE +
-                                                "') AND " +
-                                                ManagementHelper.HDR_DISTANCE +
-                                                "<" +
-                                                flowRecord.getMaxHops() +
-                                                " AND (" +
-                                                ManagementHelper.HDR_ADDRESS +
-                                                " LIKE '" +
-                                                flowRecord.getAddress() +
-                                                "%')");
-
-         session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
-
-         notifConsumer = session.createConsumer(notifQueueName);
-
-         notifConsumer.setMessageHandler(flowRecord);
-
-         session.start();
-
-         ClientMessage message = session.createMessage(false);
-
-         ManagementHelper.putOperationInvocation(message,
-                                                 ResourceNames.CORE_SERVER,
-                                                 "sendQueueInfoToQueue",
-                                                 notifQueueName.toString(),
-                                                 flowRecord.getAddress());
-
-         ClientProducer prod = session.createProducer(managementAddress);
-
-         prod.send(message);
-      }
+      //NOOP
    }
 
-   private synchronized boolean createObjects()
+   /* Hook for creating session factory */
+   protected ClientSessionFactory createSessionFactory() throws Exception
+   {
+      return serverLocator.createSessionFactory();
+   }
+
+   /* This is called only when the bridge is activated */
+   protected synchronized boolean createObjects()
    {
       if (!started)
       {
@@ -644,29 +485,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       do
       {
-         BridgeImpl.log.info("Connecting bridge " + name + " to its destination");
+         BridgeImpl.log.info("Connecting bridge " + name + " to its destination [" + nodeUUID.toString() + "]");
 
          try
          {
-            if (discoveryAddress != null)
-            {
-               csf = HornetQClient.createClientSessionFactory(discoveryAddress, discoveryPort);
-            }
-            else
-            {
-               csf = HornetQClient.createClientSessionFactory(connectorPair.a, connectorPair.b);
-            }
-
-            csf.setFailoverOnServerShutdown(failoverOnServerShutdown);
-            csf.setRetryInterval(retryInterval);
-            csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
-            csf.setReconnectAttempts(reconnectAttempts);
-            csf.setBlockOnDurableSend(false);
-
-            // Must have confirmations enabled so we get send acks
-
-            csf.setConfirmationWindowSize(confirmationWindowSize);
-
+            csf = createSessionFactory();
             // Session is pre-acknowledge
             session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
 
@@ -677,26 +500,26 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             }
 
             producer = session.createProducer();
-
             session.addFailureListener(BridgeImpl.this);
-
             session.setSendAcknowledgementHandler(BridgeImpl.this);
 
-            setupNotificationConsumer();
+            afterConnect();
 
             active = true;
 
             queue.addConsumer(BridgeImpl.this);
-
             queue.deliverAsync();
 
-            BridgeImpl.log.info("Bridge " + name + " is connected to its destination");
+            BridgeImpl.log.info("Bridge " + name + " is connected [" + nodeUUID + "-> " +  name +"]");
 
             return true;
          }
          catch (HornetQException e)
          {
-            csf.close();
+            if (csf != null)
+            {
+               csf.close();
+            }
 
             // the session was created while its server was starting, retry it:
             if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
@@ -769,6 +592,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                queue.deliverAsync();
             }
+
+            log.info("stopped bridge " + name);
          }
          catch (Exception e)
          {

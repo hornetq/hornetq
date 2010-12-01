@@ -16,12 +16,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -34,13 +29,31 @@ public class ReceiveTest extends ServiceTestBase
 
    SimpleString queueA = new SimpleString("queueA");
 
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = createInVMNonHALocator();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+
+      super.tearDown();
+   }
+
    public void testBasicReceive() throws Exception
    {
       HornetQServer server = createServer(false);
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientSession session = cf.createSession(false, true, true);
@@ -67,7 +80,7 @@ public class ReceiveTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -93,7 +106,7 @@ public class ReceiveTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -126,7 +139,7 @@ public class ReceiveTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -164,9 +177,9 @@ public class ReceiveTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
          // forces perfect round robin
-         cf.setConsumerWindowSize(1);
+         locator.setConsumerWindowSize(1);
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientSession session = cf.createSession(false, true, true);

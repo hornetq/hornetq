@@ -13,6 +13,7 @@
 package org.hornetq.tests.integration.ra;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQMessage;
@@ -41,6 +42,8 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    protected Configuration configuration;
 
    protected HornetQServer server;
+   
+   protected ServerLocator locator;
 
    protected static final String MDBQUEUE = "mdbQueue";
    protected static final String MDBQUEUEPREFIXED = "jms.queue.mdbQueue";
@@ -51,6 +54,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    {
       super.setUp();
       clearData();
+      locator = createInVMNonHALocator();
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(isSecure());
       server = createServer(true, configuration);
@@ -61,6 +65,9 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+      
+      locator = null;
       if (server != null)
       {
          try

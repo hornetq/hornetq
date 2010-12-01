@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -73,7 +69,8 @@ public class AddressSettingsTest extends ServiceTestBase
          HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch(addressB.toString(), addressSettings2);
-         ClientSessionFactory sf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -136,7 +133,8 @@ public class AddressSettingsTest extends ServiceTestBase
          HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("#", addressSettings2);
-         ClientSessionFactory sf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -199,7 +197,8 @@ public class AddressSettingsTest extends ServiceTestBase
          HierarchicalRepository<AddressSettings> repos = server.getAddressSettingsRepository();
          repos.addMatch(addressA.toString(), addressSettings);
          repos.addMatch("*", addressSettings2);
-         ClientSessionFactory sf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA, queueA, false);
          session.createQueue(addressB, queueB, false);
@@ -266,7 +265,8 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch(addressA2.toString(), addressSettings);
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
-         ClientSessionFactory sf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA2, queueA, false);
          session.createQueue(addressB2, queueB, false);
@@ -346,7 +346,8 @@ public class AddressSettingsTest extends ServiceTestBase
          repos.addMatch(addressA2.toString(), addressSettings);
          repos.addMatch("add.*", addressSettings2);
          repos.addMatch("#", addressSettings3);
-         ClientSessionFactory sf = createInVMFactory();
+         ServerLocator locator = createInVMNonHALocator();
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, false);
          session.createQueue(addressA2, queueA, false);
          session.createQueue(addressB2, queueB, false);

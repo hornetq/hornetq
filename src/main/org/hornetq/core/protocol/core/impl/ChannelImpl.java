@@ -250,7 +250,7 @@ public class ChannelImpl implements Channel
 
             long start = System.currentTimeMillis();
 
-            while (response == null && toWait > 0)
+            while (!closed && response == null && toWait > 0)
             {
                try
                {

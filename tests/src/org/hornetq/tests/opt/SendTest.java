@@ -43,6 +43,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -144,7 +145,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -242,7 +243,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -363,7 +364,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, tc);
 
       cf.setProducerWindowSize(1024 * 1024);
 
@@ -463,7 +464,7 @@ public class SendTest
 
       // TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), params);
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(tc);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, tc);
 
       Connection conn = cf.createConnection();
 

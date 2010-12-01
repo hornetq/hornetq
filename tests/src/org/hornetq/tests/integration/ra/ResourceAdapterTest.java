@@ -100,8 +100,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setUseLocalTx(b);
       qResourceAdapter.setConnectorClassName(className);
       qResourceAdapter.setAutoGroup(b);
-      qResourceAdapter.setBackupConnectorClassName(backupConn);
-      qResourceAdapter.setBackupTransportConfiguration(testConfig);
       qResourceAdapter.setBlockOnAcknowledge(b);
       qResourceAdapter.setBlockOnDurableSend(b);
       qResourceAdapter.setBlockOnNonDurableSend(b);
@@ -137,7 +135,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getUseLocalTx(), b);
       assertEquals(qResourceAdapter.getConnectorClassName(), className);
       assertEquals(qResourceAdapter.getAutoGroup(), b);
-      assertEquals(qResourceAdapter.getBackupConnectorClassName(), backupConn);
       //assertEquals(qResourceAdapter.getBackupTransportConfiguration(),"testConfig");
       assertEquals(qResourceAdapter.getBlockOnAcknowledge(), b);
       assertEquals(qResourceAdapter.getBlockOnDurableSend(), b);

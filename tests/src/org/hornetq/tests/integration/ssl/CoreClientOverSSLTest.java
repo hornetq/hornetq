@@ -70,7 +70,8 @@ public class CoreClientOverSSLTest extends UnitTestCase
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PASSWORD);
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
+      ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(false, true, true);
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
@@ -84,6 +85,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       Message m = consumer.receive(1000);
       Assert.assertNotNull(m);
       Assert.assertEquals(text, m.getBodyBuffer().readString());
+      locator.close();
    }
 
    public void testSSLWithIncorrectKeyStorePassword() throws Exception
@@ -93,15 +95,19 @@ public class CoreClientOverSSLTest extends UnitTestCase
       tc.getParams().put(TransportConstants.KEYSTORE_PATH_PROP_NAME, TransportConstants.DEFAULT_KEYSTORE_PATH);
       tc.getParams().put(TransportConstants.KEYSTORE_PASSWORD_PROP_NAME, "invalid password");
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
       try
       {
-         sf.createSession(false, true, true);
+         ClientSessionFactory sf = locator.createSessionFactory();
          Assert.fail();
       }
       catch (HornetQException e)
       {
          Assert.assertEquals(HornetQException.NOT_CONNECTED, e.getCode());
+      }
+      finally
+      {
+         locator.close();
       }
    }
 
@@ -111,8 +117,9 @@ public class CoreClientOverSSLTest extends UnitTestCase
       TransportConfiguration tc = new TransportConfiguration(NettyConnectorFactory.class.getName());
       tc.getParams().put(TransportConstants.SSL_ENABLED_PROP_NAME, false);
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tc);
-      sf.setCallTimeout(2000);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
+      locator.setCallTimeout(2000);
+      ClientSessionFactory sf = locator.createSessionFactory();
       try
       {
          sf.createSession(false, true, true);
@@ -121,6 +128,10 @@ public class CoreClientOverSSLTest extends UnitTestCase
       catch (HornetQException e)
       {
          Assert.assertEquals(HornetQException.CONNECTION_TIMEDOUT, e.getCode());
+      }
+      finally
+      {
+         locator.close();
       }
    }
 

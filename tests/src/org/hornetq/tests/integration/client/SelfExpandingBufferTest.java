@@ -17,11 +17,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -82,14 +78,9 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
       ClientSessionFactory factory;
 
-      if (netty)
-      {
-         factory = createNettyFactory();
-      }
-      else
-      {
-         factory = createInVMFactory();
-      }
+      ServerLocator locator = createFactory(netty);
+
+      factory = locator.createSessionFactory();
 
       ClientSession session = factory.createSession(false, true, true);
 
@@ -147,6 +138,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
       finally
       {
          session.close();
+         locator.close();
       }
    }
 

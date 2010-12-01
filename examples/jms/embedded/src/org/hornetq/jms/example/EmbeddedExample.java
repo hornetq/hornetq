@@ -12,6 +12,18 @@
  */
 package org.hornetq.jms.example;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -24,15 +36,6 @@ import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.config.impl.JMSQueueConfigurationImpl;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
-
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import java.util.Date;
 
 /**
  * This example demonstrates how to run a HornetQ embedded with JMS
@@ -56,12 +59,18 @@ public class EmbeddedExample
          configuration.getAcceptorConfigurations()
                       .add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 
+         TransportConfiguration connectorConfig = new TransportConfiguration(NettyConnectorFactory.class.getName());
+
+         configuration.getConnectorConfigurations().put("connector", connectorConfig);
+
+         
          // Step 2. Create the JMS configuration
          JMSConfiguration jmsConfig = new JMSConfigurationImpl();
 
          // Step 3. Configure the JMS ConnectionFactory
-         TransportConfiguration connectorConfig = new TransportConfiguration(NettyConnectorFactory.class.getName());
-         ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf", connectorConfig, "/cf");
+         ArrayList<String> connectorNames = new ArrayList<String>();
+         connectorNames.add("connector");
+         ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf", false,  connectorNames, "/cf");
          jmsConfig.getConnectionFactoryConfigurations().add(cfConfig);
 
          // Step 4. Configure the JMS Queue

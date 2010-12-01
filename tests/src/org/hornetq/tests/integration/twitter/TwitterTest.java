@@ -26,6 +26,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
@@ -162,6 +163,7 @@ public class TwitterTest extends ServiceTestBase
    {
       HornetQServer server0 = null;
       ClientSession session = null;
+      ServerLocator locator = null;
       String queue = "TwitterTestQueue";
       int interval = 5;
       Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
@@ -217,7 +219,8 @@ public class TwitterTest extends ServiceTestBase
          twitter.updateStatus(testMessage);
 
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+         locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
+         ClientSessionFactory sf = locator.createSessionFactory();
          session = sf.createSession(false, true, true);
          ClientConsumer consumer = session.createConsumer(queue);
          session.start();
@@ -237,6 +240,15 @@ public class TwitterTest extends ServiceTestBase
          catch(Throwable t)
          {
          }
+         
+         try
+         {
+            locator.close();
+         }
+         catch(Throwable ignored)
+         {
+         }
+         
          try
          {
             server0.stop();
@@ -324,6 +336,7 @@ public class TwitterTest extends ServiceTestBase
    protected void internalTestOutgoing(boolean createQueue, boolean restart) throws Exception
    {
       HornetQServer server0 = null;
+      ServerLocator locator = null;
       ClientSession session = null;
       String queue = "TwitterTestQueue";
       Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
@@ -375,7 +388,8 @@ public class TwitterTest extends ServiceTestBase
          }
 
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+         locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
+         ClientSessionFactory sf = locator.createSessionFactory();
          session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(queue);
          ClientMessage msg = session.createMessage(false);
@@ -400,6 +414,15 @@ public class TwitterTest extends ServiceTestBase
          catch(Throwable t)
          {
          }
+         
+         try
+         {
+            locator.close();
+         }
+         catch(Throwable t)
+         {
+         }
+         
          try
          {
             server0.stop();
@@ -482,6 +505,7 @@ public class TwitterTest extends ServiceTestBase
    {
       HornetQServer server0 = null;
       ClientSession session = null;
+      ServerLocator locator = null;
       String queue = "TwitterTestQueue";
       Twitter twitter = new TwitterFactory().getOAuthAuthorizedInstance(TWITTER_CONSUMER_KEY,
                                                                         TWITTER_CONSUMER_SECRET,
@@ -512,7 +536,9 @@ public class TwitterTest extends ServiceTestBase
          server0.start();
          
          TransportConfiguration tpconf = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY);
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(tpconf);
+         locator = HornetQClient.createServerLocatorWithoutHA(tpconf);
+         
+         ClientSessionFactory sf = locator.createSessionFactory();
          session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(queue);
          ClientMessage msg = session.createMessage(false);
@@ -537,6 +563,13 @@ public class TwitterTest extends ServiceTestBase
          try
          {
             session.close();
+         }
+         catch(Throwable t)
+         {
+         }
+         try
+         {
+            locator.close();
          }
          catch(Throwable t)
          {

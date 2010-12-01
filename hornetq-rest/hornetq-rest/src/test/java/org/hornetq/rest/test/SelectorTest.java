@@ -39,7 +39,7 @@ public class SelectorTest extends MessageTestBase
    @BeforeClass
    public static void setup() throws Exception
    {
-      connectionFactory = new HornetQJMSConnectionFactory(manager.getQueueManager().getSessionFactory());
+      connectionFactory = new HornetQJMSConnectionFactory(manager.getQueueManager().getServerLocator());
       System.out.println("Queue name: " + topicName);
       TopicDeployment deployment = new TopicDeployment();
       deployment.setDuplicatesAllowed(true);

@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -49,6 +45,7 @@ public class BlockingSendTest extends ServiceTestBase
       ClientSession session = null;
       ClientSessionFactory factory = null;
 
+      ServerLocator locator = null;
       try
       {
 
@@ -58,9 +55,9 @@ public class BlockingSendTest extends ServiceTestBase
          server.start();
 
          System.out.println("sync = " + server.getConfiguration().isJournalSyncNonTransactional());
-
-         factory = createFactory(false);
-         factory.setBlockOnDurableSend(true);
+         locator = createFactory(false);
+         locator.setBlockOnDurableSend(true);
+         factory = locator.createSessionFactory();
 
          session = factory.createSession();
 
@@ -85,6 +82,10 @@ public class BlockingSendTest extends ServiceTestBase
       }
       finally
       {
+         if (locator != null)
+         {
+            locator.close();
+         }
          if (factory != null)
          {
             factory.close();

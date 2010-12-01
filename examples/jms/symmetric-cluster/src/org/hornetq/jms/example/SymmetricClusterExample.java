@@ -80,7 +80,7 @@ public class SymmetricClusterExample extends HornetQExample
          // connection factory directly we avoid having to worry about a JNDI look-up.
          // In an app server environment you could use HA-JNDI to lookup from the clustered JNDI servers without
          // having to know about a specific one.
-         ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactory("231.7.7.7", 9876, JMSFactoryType.CF);
+         ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA("231.7.7.7", 9876, JMSFactoryType.CF);
 
          // We give a little while for each server to broadcast its whereabouts to the client
          Thread.sleep(2000);

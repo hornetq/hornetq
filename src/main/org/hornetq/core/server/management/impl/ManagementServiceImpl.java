@@ -15,12 +15,7 @@ package org.hornetq.core.server.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -34,17 +29,14 @@ import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.api.core.management.ClusterConnectionControl;
-import org.hornetq.api.core.management.DiscoveryGroupControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
-import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.AcceptorControlImpl;
@@ -52,7 +44,6 @@ import org.hornetq.core.management.impl.AddressControlImpl;
 import org.hornetq.core.management.impl.BridgeControlImpl;
 import org.hornetq.core.management.impl.BroadcastGroupControlImpl;
 import org.hornetq.core.management.impl.ClusterConnectionControlImpl;
-import org.hornetq.core.management.impl.DiscoveryGroupControlImpl;
 import org.hornetq.core.management.impl.DivertControlImpl;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.management.impl.QueueControlImpl;
@@ -357,23 +348,6 @@ public class ManagementServiceImpl implements ManagementService
       unregisterFromRegistry(ResourceNames.CORE_BROADCAST_GROUP + name);
    }
 
-   public synchronized void registerDiscoveryGroup(final DiscoveryGroup discoveryGroup,
-                                                   final DiscoveryGroupConfiguration configuration) throws Exception
-   {
-      discoveryGroup.setNotificationService(this);
-      ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(configuration.getName());
-      DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, storageManager, configuration);
-      registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControl.class));
-      registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
-   }
-
-   public synchronized void unregisterDiscoveryGroup(final String name) throws Exception
-   {
-      ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(name);
-      unregisterFromJMX(objectName);
-      unregisterFromRegistry(ResourceNames.CORE_DISCOVERY_GROUP + name);
-   }
-
    public synchronized void registerBridge(final Bridge bridge, final BridgeConfiguration configuration) throws Exception
    {
       bridge.setNotificationService(this);
@@ -495,7 +469,8 @@ public class ManagementServiceImpl implements ManagementService
    public Object[] getResources(final Class<?> resourceType)
    {
       List<Object> resources = new ArrayList<Object>();
-      for (Object entry : registry.values())
+      Collection<Object> clone = new ArrayList<Object>(registry.values());
+      for (Object entry : clone)
       {
          if (resourceType.isAssignableFrom(entry.getClass()))
          {

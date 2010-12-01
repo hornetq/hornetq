@@ -19,6 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.protocol.core.Channel;
@@ -26,7 +29,11 @@ import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
@@ -61,7 +68,8 @@ public class CoreProtocolManager implements ProtocolManager
                                                                    interceptors,
                                                                    config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
                                                                                                                       .getExecutor()
-                                                                                                             : null);
+                                                                                                             : null,
+                                                                                                             server.getNodeID());
 
       Channel channel1 = rc.getChannel(1, -1);
 
@@ -97,8 +105,54 @@ public class CoreProtocolManager implements ProtocolManager
                // Just send a ping back
                channel0.send(packet);
             }
+            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY)
+            {
+               SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
+               
+               final ClusterTopologyListener listener = new ClusterTopologyListener()
+               {
+                  public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last, int distance)
+                  {
+                     channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last, distance + 1));
+                  }
+                  
+                  public void nodeDown(String nodeID)
+                  {
+                     channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                  }
+               };
+               
+               final boolean isCC = msg.isClusterConnection();
+               
+               server.getClusterManager().addClusterTopologyListener(listener, isCC);
+               
+               rc.addCloseListener(new CloseListener()
+               {
+                  public void connectionClosed()
+                  {
+                     server.getClusterManager().removeClusterTopologyListener(listener, isCC);
+                  }
+               });
+            }
+            else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
+            {
+               NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
+
+               Pair<TransportConfiguration, TransportConfiguration> pair;
+               if (msg.isBackup())
+               {
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
+               }
+               else
+               {
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
+               }
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, 1);
+            }
          }
       });
+      
+      
 
       return entry;
    }

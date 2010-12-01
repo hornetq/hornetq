@@ -68,17 +68,16 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
 
       createJMSStorage();
       
-      List<Pair<TransportConfiguration, TransportConfiguration>> transportConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+      List<String> transportConfigs = new ArrayList<String>();
       
       for (int i = 0 ; i < 5; i++)
       {
-         TransportConfiguration config1 = new TransportConfiguration("c1-" + i);
-         TransportConfiguration config2 = new TransportConfiguration("c2-" + i);
-         transportConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(config1, config2));
+         transportConfigs.add("c1-" + i);
+         transportConfigs.add("c2-" + i);
       }
       
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", transportConfigs);
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false,  transportConfigs);
 
       addSetting(new PersistedConnectionFactory(config));
 
@@ -94,16 +93,12 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       
       PersistedConnectionFactory cf1 = cfs.get(0);
       
-      assertEquals(5, cf1.getConfig().getConnectorConfigs().size());
+      assertEquals(5, cf1.getConfig().getConnectorNames().size());
       
       int i = 0 ;
-      for (Pair<TransportConfiguration, TransportConfiguration> itemCf : cf1.getConfig().getConnectorConfigs())
-      {
-         
-         assertEquals(itemCf.a.toString(), "c1-" + i);
-         assertEquals(itemCf.b.toString(), "c2-" + i);
-         i++;
-      }
+      List<String> configs = cf1.getConfig().getConnectorNames();
+      assertEquals(configs.get(0), "c1-" + i);
+      assertEquals(configs.get(1), "c2-" + i);
    }
 
    public void testSizeOfCF() throws Exception
@@ -115,7 +110,7 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
          str[i] = "str" + i;
       }
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", str);
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, new ArrayList<String>(),  "");
 
       int size = config.getEncodeSize();
 
@@ -148,25 +143,19 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
          str[i] = "str" + i;
       }
 
-      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", str);
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration,TransportConfiguration>>();
+      List<String> connectorConfigs = new ArrayList<String>();
       Map<String, Object> liveParams = new HashMap<String, Object>();
       liveParams.put(TransportConstants.PORT_PROP_NAME, 5665);
-      TransportConfiguration live1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), liveParams );
       Map<String, Object> backupParams = new HashMap<String, Object>();
       backupParams.put(TransportConstants.PORT_PROP_NAME, 5775);
-      TransportConfiguration backup1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), backupParams);
       Map<String, Object> liveParams2 = new HashMap<String, Object>();
       liveParams2.put(TransportConstants.PORT_PROP_NAME, 6665);
-      TransportConfiguration live2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), liveParams2);
-      
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(live1, backup1));
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(live2, null));
 
-      config.setConnectorConfigs(connectorConfigs );
+      ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl("some-name", false, connectorConfigs, str);
+      config.setConnectorNames(connectorConfigs );
       List<Pair<String, String>> connectors = new ArrayList<Pair<String,String>>();
       connectors.add(new Pair<String, String>(RandomUtil.randomString(), null));
-      config.setConnectorNames(connectors);
+      //config.setConnectorNames(connectors);
       config.setCallTimeout(RandomUtil.randomPositiveLong());
       
       addSetting(new PersistedConnectionFactory(config));

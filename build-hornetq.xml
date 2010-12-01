@@ -1672,6 +1672,12 @@
       </antcall>
    </target>
 
+    <target name="cluster-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
    <target name="concurrent-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/concurrent/**/*${test-mask}.class"/>
@@ -1734,6 +1740,21 @@
             <fileset dir="${test.classes.dir}">
                <!-- excluded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
                <exclude name="**/cluster/failover/*StaticClusterWithBackupFailoverTest.class" />
+
+                  <!--exclude any replication tests for now-->
+                <exclude name="**/cluster/failover/*ClusterWithBackupFailoverTestBase.class"/>
+
+                <exclude name="**/cluster/failover/*DiscoveryClusterWithBackupFailoverTest.class"/>
+                <exclude name="**/cluster/failover/*GroupingFailoverReplicationTest.class"/>
+                <exclude name="**/cluster/failover/*Replicated*.class"/>
+                <exclude name="**/cluster/replication/**.class"/>
+                <exclude name="**/cluster/failover/*ReplicatedDistributionTest.class"/>
+                <exclude name="**/cluster/failover/*SharedStoreDistributionTest.class"/>
+                <exclude name="**/cluster/failover/*ReplicatedNettyAsynchronousFailoverTest.class"/>
+                <exclude name="**/cluster/*ReplicatedJMSFailoverTest.class"/>
+                <exclude  name="**/integration/replication/*.class"/>
+                <exclude name="**/cluster/failover/Remote*.class"/>
+                <exclude name="**/failover/remote/**.class"/>
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>

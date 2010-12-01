@@ -114,9 +114,9 @@ public interface ManagementService extends NotificationService, HornetQComponent
 
    void unregisterBroadcastGroup(String name) throws Exception;
 
-   void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception;
+ //  void registerDiscoveryGroup(DiscoveryGroup discoveryGroup, DiscoveryGroupConfiguration configuration) throws Exception;
 
-   void unregisterDiscoveryGroup(String name) throws Exception;
+   //void unregisterDiscoveryGroup(String name) throws Exception;
 
    void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception;
 

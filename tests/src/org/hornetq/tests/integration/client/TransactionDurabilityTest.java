@@ -65,7 +65,9 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session1 = sf.createSession(false, true, true);
 
@@ -113,7 +115,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = locator.createSessionFactory();
 
       session1 = sf.createSession(false, true, true);
 
@@ -145,7 +147,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf = locator.createSessionFactory();
 
       session1 = sf.createSession(false, true, true);
 
@@ -170,6 +172,8 @@ public class TransactionDurabilityTest extends ServiceTestBase
       session1.close();
 
       session2.close();
+
+      locator.close();
 
       server.stop();
 

@@ -42,12 +42,14 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   /**
+    * test does not pass in eclipse (because it can not find hornetq-configuration.xsd).
+    * It runs fine on the CLI with the proper env setting.
+    */
    public void testMinimalConfiguration() throws Exception
    {
       String xml = "<configuration xmlns='urn:hornetq'>" + "</configuration>";
-      Element element = org.hornetq.utils.XMLUtil.stringToElement(xml);
-      Assert.assertNotNull(element);
-      element = XMLUtil.stringToElement(xml);
+      Element element = XMLUtil.stringToElement(xml);
       Assert.assertNotNull(element);
       XMLUtil.validate(element, "hornetq-configuration.xsd");
    }

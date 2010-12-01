@@ -25,6 +25,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -51,6 +52,7 @@ public class String64KLimitTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSession session;
+   private ServerLocator locator;
 
    // Constructors --------------------------------------------------
 
@@ -205,8 +207,8 @@ public class String64KLimitTest extends UnitTestCase
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       server = HornetQServers.newHornetQServer(config, false);
       server.start();
-
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      sf = locator.createSessionFactory();
       session = sf.createSession();
    }
 
@@ -216,6 +218,8 @@ public class String64KLimitTest extends UnitTestCase
       session.close();
 
       sf.close();
+
+      locator.close();
 
       server.stop();
 

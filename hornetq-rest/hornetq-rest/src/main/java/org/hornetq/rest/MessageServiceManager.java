@@ -2,7 +2,9 @@ package org.hornetq.rest;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -140,13 +142,20 @@ public class MessageServiceManager
 
       HashMap<String, Object> transportConfig = new HashMap<String, Object>();
       transportConfig.put(TransportConstants.SERVER_ID_PROP_NAME, configuration.getInVmId());
-      ClientSessionFactory consumerSessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      
+      
+      ServerLocator consumerLocator = new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      
       if (configuration.getConsumerWindowSize() != -1)
       {
-         consumerSessionFactory.setConsumerWindowSize(configuration.getConsumerWindowSize());
+    	  consumerLocator.setConsumerWindowSize(configuration.getConsumerWindowSize());
       }
 
-      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+      ClientSessionFactory consumerSessionFactory = consumerLocator.createSessionFactory();
+      
+      ServerLocator defaultLocator =  new ServerLocatorImpl(false, new TransportConfiguration(InVMConnectorFactory.class.getName(), transportConfig));
+
+      ClientSessionFactory sessionFactory = defaultLocator.createSessionFactory();
 
       LinkStrategy linkStrategy = new LinkHeaderLinkStrategy();
       if (configuration.isUseLinkHeaders())
@@ -158,8 +167,10 @@ public class MessageServiceManager
          linkStrategy = new CustomHeaderLinkStrategy();
       }
 
+      queueManager.setServerLocator(defaultLocator);
       queueManager.setSessionFactory(sessionFactory);
       queueManager.setTimeoutTask(timeoutTask);
+      queueManager.setConsumerServerLocator(consumerLocator);
       queueManager.setConsumerSessionFactory(consumerSessionFactory);
       queueManager.setDefaultSettings(defaultSettings);
       queueManager.setPushStoreFile(configuration.getQueuePushStoreDirectory());
@@ -167,8 +178,10 @@ public class MessageServiceManager
       queueManager.setLinkStrategy(linkStrategy);
       queueManager.setRegistry(registry);
 
+      queueManager.setServerLocator(defaultLocator);
       topicManager.setSessionFactory(sessionFactory);
       topicManager.setTimeoutTask(timeoutTask);
+      topicManager.setConsumerServerLocator(consumerLocator);
       topicManager.setConsumerSessionFactory(consumerSessionFactory);
       topicManager.setDefaultSettings(defaultSettings);
       topicManager.setPushStoreFile(configuration.getTopicPushStoreDirectory());

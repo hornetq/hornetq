@@ -27,7 +27,7 @@
          <group-address>231.7.7.7</group-address>
          <group-port>9876</group-port>
          <broadcast-period>100</broadcast-period>
-         <connector-ref connector-name="netty-connector"/>
+         <connector-ref>netty-connector</connector-ref>
       </broadcast-group>
    </broadcast-groups>
    
@@ -42,6 +42,7 @@
    <cluster-connections>
       <cluster-connection name="my-cluster">
          <address>jms</address>
+         <connector-ref>netty-connector</connector-ref>
          <retry-interval>500</retry-interval>
          <use-duplicate-detection>true</use-duplicate-detection>
          <forward-when-no-consumers>false</forward-when-no-consumers>

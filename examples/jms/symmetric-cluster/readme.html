@@ -32,6 +32,7 @@
      <code>
    &lt;cluster-connection name="my-cluster"&gt;
       &lt;address&gt;jms&lt;/address&gt;
+      &lt;connector-ref>netty-connector&lt;/connector-ref>
 	   &lt;retry-interval&gt;500&lt;/retry-interval&gt;
 	   &lt;use-duplicate-detection&gt;true&lt;/use-duplicate-detection&gt;
 	   &lt;forward-when-no-consumers&gt;true&lt;/forward-when-no-consumers&gt;
@@ -62,7 +63,7 @@
         
         <pre class="prettyprint">
            <code>
-   ConnectionFactory cf = HornetQJMSClient.createConnectionFactory("231.7.7.7", 9876); 
+   ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA("231.7.7.7", 9876); 
    </code>
         </pre>
 

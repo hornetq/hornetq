@@ -88,6 +88,8 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
 
          closeAllSessionFactories();
 
+         closeAllServerLocatorsFactories();
+
          stopServers();
 
          startServers();
@@ -131,6 +133,8 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
       }
       catch (Throwable e)
       {
@@ -257,10 +261,12 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       closeAllConsumers();
 
       closeAllSessionFactories();
+
+      closeAllServerLocatorsFactories();
    }
 
-   @Override
-   public void testStartStopServers() throws Exception
+   //@Override
+   public void _testStartStopServers() throws Exception
    {
       setupCluster();
 
@@ -387,9 +393,9 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       closeSessionFactory(0);
       closeSessionFactory(3);
 
-      stopServers(0, 3, 5, 8);
+      stopServers(5, 8, 0, 3);
 
-      startServers(5, 8, 0, 3);
+      startServers(0, 3, 5, 8);
 
       Thread.sleep(2000);
 
@@ -459,6 +465,8 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       closeAllConsumers();
 
       closeAllSessionFactories();
+
+      closeAllServerLocatorsFactories();
    }
 
    @Override
@@ -471,8 +479,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         0,
-                                        new int[] { 1, 2, 3, 4 },
-                                        new int[] { 6, 7, 8, 9 });
+                                        new int[] { 1, 2, 3, 4 });
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -480,8 +487,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         1,
-                                        new int[] { 0, 2, 3, 4 },
-                                        new int[] { 5, 7, 8, 9 });
+                                        new int[] { 0, 2, 3, 4 });
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -489,8 +495,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         2,
-                                        new int[] { 0, 1, 3, 4 },
-                                        new int[] { 5, 6, 8, 9 });
+                                        new int[] { 0, 1, 3, 4 });
 
       setupClusterConnectionWithBackups("cluster3",
                                         "queues",
@@ -498,8 +503,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         3,
-                                        new int[] { 0, 1, 2, 4 },
-                                        new int[] { 5, 6, 7, 9 });
+                                        new int[] { 0, 1, 2, 4 });
 
       setupClusterConnectionWithBackups("cluster4",
                                         "queues",
@@ -507,8 +511,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         4,
-                                        new int[] { 0, 1, 2, 3 },
-                                        new int[] { 5, 6, 7, 8 });
+                                        new int[] { 0, 1, 2, 3 });
 
       // The backups
 
@@ -518,8 +521,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         5,
-                                        new int[] { 1, 2, 3, 4 },
-                                        new int[] { 6, 7, 8, 9 });
+                                        new int[] {0, 1, 2, 3, 4 });
 
       setupClusterConnectionWithBackups("cluster1",
                                         "queues",
@@ -527,8 +529,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         6,
-                                        new int[] { 0, 2, 3, 4 },
-                                        new int[] { 5, 7, 8, 9 });
+                                        new int[] {0, 1, 2, 3, 4 });
 
       setupClusterConnectionWithBackups("cluster2",
                                         "queues",
@@ -536,8 +537,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         7,
-                                        new int[] { 0, 1, 3, 4 },
-                                        new int[] { 5, 6, 8, 9 });
+                                        new int[] { 0, 1, 2, 3, 4  });
 
       setupClusterConnectionWithBackups("cluster3",
                                         "queues",
@@ -545,8 +545,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         8,
-                                        new int[] { 0, 1, 2, 4 },
-                                        new int[] { 5, 6, 7, 9 });
+                                        new int[] { 0, 1, 2, 3, 4  });
 
       setupClusterConnectionWithBackups("cluster4",
                                         "queues",
@@ -554,26 +553,25 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
                                         1,
                                         isNetty(),
                                         9,
-                                        new int[] { 0, 1, 2, 3 },
-                                        new int[] { 5, 6, 7, 8 });
+                                        new int[] { 0, 1, 2, 3, 4  });
    }
 
    @Override
    protected void setupServers() throws Exception
    {
       // The backups
-      setupServer(5, isFileStorage(), isNetty(), true);
-      setupServer(6, isFileStorage(), isNetty(), true);
-      setupServer(7, isFileStorage(), isNetty(), true);
-      setupServer(8, isFileStorage(), isNetty(), true);
-      setupServer(9, isFileStorage(), isNetty(), true);
+      setupBackupServer(5, 0, isFileStorage(), true, isNetty());
+      setupBackupServer(6, 1, isFileStorage(), true, isNetty());
+      setupBackupServer(7, 2, isFileStorage(), true, isNetty());
+      setupBackupServer(8, 3, isFileStorage(), true, isNetty());
+      setupBackupServer(9, 4, isFileStorage(), true, isNetty());
 
       // The lives
-      setupServer(0, isFileStorage(), isNetty(), 5);
-      setupServer(1, isFileStorage(), isNetty(), 6);
-      setupServer(2, isFileStorage(), isNetty(), 7);
-      setupServer(3, isFileStorage(), isNetty(), 8);
-      setupServer(4, isFileStorage(), isNetty(), 9);
+      setupLiveServer(0, isFileStorage(), true, isNetty());
+      setupLiveServer(1, isFileStorage(), true, isNetty());
+      setupLiveServer(2, isFileStorage(), true, isNetty());
+      setupLiveServer(3, isFileStorage(), true, isNetty());
+      setupLiveServer(4, isFileStorage(), true, isNetty());
    }
 
    @Override
@@ -587,7 +585,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       getServer(8).getConfiguration().setBackup(true);
       getServer(9).getConfiguration().setBackup(true);
 
-      startServers(5, 6, 7, 8, 9, 0, 1, 2, 3, 4);
+      startServers( 0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
    }
 
    @Override
@@ -597,7 +595,9 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
 
       closeAllSessionFactories();
 
-      stopServers(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+      closeAllServerLocatorsFactories();
+
+      stopServers(5, 6, 7, 8, 9, 0, 1, 2, 3, 4);
    }
 
 }

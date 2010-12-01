@@ -23,11 +23,7 @@ import javax.transaction.xa.Xid;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -58,6 +54,8 @@ public class HeuristicXATest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    private MBeanServer mbeanServer;
+
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -111,7 +109,7 @@ public class HeuristicXATest extends ServiceTestBase
          server.start();
          Xid xid = newXID();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(true, false, false);
 
@@ -216,7 +214,7 @@ public class HeuristicXATest extends ServiceTestBase
          server.start();
          Xid xid = newXID();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(true, false, false);
 
@@ -324,7 +322,7 @@ public class HeuristicXATest extends ServiceTestBase
          server.start();
          Xid xid = newXID();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(true, false, false);
 
@@ -387,7 +385,8 @@ public class HeuristicXATest extends ServiceTestBase
          server.stop();
 
          server.start();
-
+         //we need to recreate the locator and session factory
+         sf = locator.createSessionFactory();
          jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
          if (heuristicCommit)
          {
@@ -440,7 +439,7 @@ public class HeuristicXATest extends ServiceTestBase
          server.start();
          Xid xid = newXID();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(true, false, false);
 
@@ -495,7 +494,8 @@ public class HeuristicXATest extends ServiceTestBase
          server.stop();
 
          server.start();
-
+         //we need to recreate the sf
+         sf = locator.createSessionFactory();
          session = sf.createSession(true, false, false);
          Xid[] recoveredXids = session.recover(XAResource.TMSTARTRSCAN);
          Assert.assertEquals(0, recoveredXids.length);
@@ -527,6 +527,7 @@ public class HeuristicXATest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
       super.tearDown();
    }
@@ -536,6 +537,7 @@ public class HeuristicXATest extends ServiceTestBase
    {
       super.setUp();
       mbeanServer = MBeanServerFactory.createMBeanServer();
+      locator = createInVMNonHALocator();
    }
 
    // Private -------------------------------------------------------

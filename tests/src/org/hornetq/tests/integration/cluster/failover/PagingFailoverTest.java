@@ -26,17 +26,20 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.replication.impl.ReplicationEndpointImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A PagingFailoverTest
+ * 
+ * TODO: validate replication failover also
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -54,12 +57,33 @@ public class PagingFailoverTest extends FailoverTestBase
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    // Attributes ----------------------------------------------------
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      locator = getServerLocator();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+      super.tearDown();
+   }
+
+   public void testPageFailBeforeConsume() throws Exception
+   {
+      internalTestPage(false, true);
+   }
+
 
    public void testPage() throws Exception
    {
@@ -78,32 +102,17 @@ public class PagingFailoverTest extends FailoverTestBase
 
    public void internalTestPage(final boolean transacted, final boolean failBeforeConsume) throws Exception
    {
-      ClientSessionFactoryInternal factory = getSessionFactory();
-      factory.setBlockOnDurableSend(true);
-      factory.setBlockOnAcknowledge(true);
-      ClientSession session = factory.createSession(!transacted, !transacted, 0);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setReconnectAttempts(-1);
+
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      ClientSession session = sf.createSession(!transacted, !transacted, 0);
 
       try
       {
 
          session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
-
-         final CountDownLatch latch = new CountDownLatch(1);
-
-         class MyListener implements SessionFailureListener
-         {
-            public void connectionFailed(final HornetQException me)
-            {
-               latch.countDown();
-            }
-
-            public void beforeReconnect(final HornetQException exception)
-            {
-            }
-
-         }
-
-         session.addFailureListener(new MyListener());
 
          ClientProducer prod = session.createProducer(PagingFailoverTest.ADDRESS);
 
@@ -122,12 +131,15 @@ public class PagingFailoverTest extends FailoverTestBase
 
          session.commit();
 
-         ReplicationEndpointImpl endpoint = null;
-
          if (failBeforeConsume)
          {
-            failSession(session, latch);
+            crash(session);
          }
+         
+         
+         session.close();
+         
+         session = sf.createSession(!transacted, !transacted, 0);
 
          session.start();
 
@@ -137,6 +149,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < MIDDLE; i++)
          {
+            System.out.println("msg " + i);
             ClientMessage msg = cons.receive(20000);
             Assert.assertNotNull(msg);
             msg.acknowledge();
@@ -148,20 +161,20 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.commit();
-
-         if (endpoint != null)
-         {
-            endpoint.setDeletePages(true);
-         }
+         
+         cons.close();
+         
+         Thread.sleep(1000);
 
          if (!failBeforeConsume)
          {
-            failSession(session, latch);
+            crash(session);
+            // failSession(session, latch);
          }
 
          session.close();
-
-         session = factory.createSession(true, true, 0);
+         
+         session = sf.createSession(true, true, 0);
 
          cons = session.createConsumer(PagingFailoverTest.ADDRESS);
 
@@ -210,18 +223,12 @@ public class PagingFailoverTest extends FailoverTestBase
 
    // Protected -----------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.FailoverTestBase#getAcceptorTransportConfiguration(boolean)
-    */
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
       return getInVMTransportAcceptorConfiguration(live);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.FailoverTestBase#getConnectorTransportConfiguration(boolean)
-    */
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
@@ -231,34 +238,24 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createServer(realFiles,
-                          configuration,
-                          PagingFailoverTest.PAGE_SIZE,
-                          PagingFailoverTest.PAGE_MAX,
-                          new HashMap<String, AddressSettings>());
+      return createInVMFailoverServer(true,
+                                      configuration,
+                                      PagingFailoverTest.PAGE_SIZE,
+                                      PagingFailoverTest.PAGE_MAX,
+                                      new HashMap<String, AddressSettings>(),
+                                      nodeManager);
    }
 
-   /**
-    * @throws Exception
-    */
    @Override
-   protected void createConfigs() throws Exception
+   protected TestableServer createBackupServer()
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(true);
-      config1.setBackup(true);
-      server1Service = createServer(true, config1);
+      return new SameProcessHornetQServer(createServer(true, backupConfig));
+   }
 
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(true);
-      server0Service = createServer(true, config0);
-
+   @Override
+   protected TestableServer createLiveServer()
+   {
+      return new SameProcessHornetQServer(createServer(true, liveConfig));
    }
 
    // Private -------------------------------------------------------

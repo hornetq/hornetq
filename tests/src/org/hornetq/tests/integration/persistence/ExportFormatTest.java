@@ -20,6 +20,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.ImportJournal;
 import org.hornetq.core.server.HornetQServer;
@@ -91,8 +92,10 @@ public class ExportFormatTest extends ServiceTestBase
    {
       HornetQServer server = createServer(true);
       server.start();
+      
+      ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory factory = createInVMFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession(false, false, false);
       session.createQueue("A1", "A1");
 
@@ -118,6 +121,7 @@ public class ExportFormatTest extends ServiceTestBase
          producer.send(msg);
       }
 
+      locator.close();
       server.stop();
 
       System.out.println("copy & paste the following as bindingsFile:");
@@ -142,7 +146,8 @@ public class ExportFormatTest extends ServiceTestBase
       HornetQServer server = createServer(true);
       server.start();
 
-      ClientSessionFactory factory = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = factory.createSession();
       session.start();
 
@@ -157,6 +162,8 @@ public class ExportFormatTest extends ServiceTestBase
 
       session.commit();
 
+      locator.close();
+      
       server.stop();
    }
 

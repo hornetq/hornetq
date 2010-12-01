@@ -19,14 +19,9 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -43,6 +38,8 @@ public class PageStressTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    private HornetQServer messagingService;
+
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -66,10 +63,10 @@ public class PageStressTest extends ServiceTestBase
       messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
-      ClientSessionFactory factory = createInVMFactory();
-      factory.setBlockOnAcknowledge(true);
-      factory.setBlockOnDurableSend(false);
-      factory.setBlockOnNonDurableSend(false);
+      ClientSessionFactory factory = locator.createSessionFactory();
+      factory.getServerLocator().setBlockOnAcknowledge(true);
+      factory.getServerLocator().setBlockOnDurableSend(false);
+      factory.getServerLocator().setBlockOnNonDurableSend(false);
       ClientSession session = null;
 
       try
@@ -130,7 +127,7 @@ public class PageStressTest extends ServiceTestBase
 
          messagingService.start();
 
-         factory = createInVMFactory();
+         factory = locator.createSessionFactory();
 
          session = factory.createSession(false, false, false);
 
@@ -185,7 +182,7 @@ public class PageStressTest extends ServiceTestBase
       messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
-      ClientSessionFactory factory = createInVMFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
       ClientSession session = null;
 
       try
@@ -304,11 +301,15 @@ public class PageStressTest extends ServiceTestBase
       super.setUp();
 
       clearData();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+
       super.tearDown();
    }
 

@@ -397,26 +397,6 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setConnectionParameters(configuration);
    }
 
-   public String getBackupConnectorClassName()
-   {
-      return mcfProperties.getBackupConnectorClassName();
-   }
-
-   public void setBackupConnectorClassName(final String backupConnectorClassName)
-   {
-      mcfProperties.setBackupConnectorClassName(backupConnectorClassName);
-   }
-
-   public String getBackupConnectionParameters()
-   {
-      return mcfProperties.getBackupConnectionParameters();
-   }
-
-   public void setBackupConnectionParameters(final String configuration)
-   {
-      mcfProperties.setBackupConnectionParameters(configuration);
-   }
-
    /**
     * @return the transportType
     */

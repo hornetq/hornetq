@@ -40,8 +40,10 @@
           <forwarding-address>jms.queue.mincing-machine</forwarding-address>
           <filter string="name='aardvark'"/>
           <transformer-class-name>org.hornetq.jms.example.HatColourChangeTransformer</transformer-class-name>
-          <reconnect-attempts>-1</reconnect-attempts>                           
-          <connector-ref connector-name="remote-connector"/>          
+          <reconnect-attempts>-1</reconnect-attempts> 
+          <static-connectors>
+             <connector-ref>remote-connector</connector-ref>
+          </static-connectors>
        </bridge>
    </bridges>
 

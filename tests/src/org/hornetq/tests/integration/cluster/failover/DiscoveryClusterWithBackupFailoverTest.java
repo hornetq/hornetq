@@ -63,39 +63,39 @@ public class DiscoveryClusterWithBackupFailoverTest extends ClusterWithBackupFai
    protected void setupServers() throws Exception
    {
       // The lives
-      setupServerWithDiscovery(0,
+      setupLiveServerWithDiscovery(0,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),
                                isNetty(),
-                               3);
-      setupServerWithDiscovery(1,
+                                 true);
+      setupLiveServerWithDiscovery(1,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),
                                isNetty(),
-                               4);
-      setupServerWithDiscovery(2,
+                               true);
+      setupLiveServerWithDiscovery(2,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),
                                isNetty(),
-                               5);
+                               true);
 
       // The backups
-      setupServerWithDiscovery(3,
+      setupBackupServerWithDiscovery(3,0,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),
                                isNetty(),
                                true);
-      setupServerWithDiscovery(4,
+      setupBackupServerWithDiscovery(4,1,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),
                                isNetty(),
                                true);
-      setupServerWithDiscovery(5,
+      setupBackupServerWithDiscovery(5,2,
                                DiscoveryClusterWithBackupFailoverTest.groupAddress,
                                DiscoveryClusterWithBackupFailoverTest.groupPort,
                                isFileStorage(),

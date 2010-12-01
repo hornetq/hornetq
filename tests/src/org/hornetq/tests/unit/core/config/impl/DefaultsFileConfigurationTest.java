@@ -63,8 +63,6 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       Assert.assertEquals(Collections.emptyMap(), conf.getConnectorConfigurations());
 
-      Assert.assertEquals(null, conf.getBackupConnectorName());
-
       Assert.assertEquals(Collections.emptyList(), conf.getBroadcastGroupConfigurations());
 
       Assert.assertEquals(Collections.emptyMap(), conf.getDiscoveryGroupConfigurations());

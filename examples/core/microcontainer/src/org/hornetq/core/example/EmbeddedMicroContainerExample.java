@@ -42,7 +42,8 @@ public class EmbeddedMicroContainerExample
          hornetQ.run();
 
          // Step 2. As we are not using a JNDI environment we instantiate the objects directly
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ClientSessionFactory sf = serverLocator.createSessionFactory();
 
          // Step 3. Create a core queue
          ClientSession coreSession = sf.createSession(false, false, false);
@@ -86,9 +87,9 @@ public class EmbeddedMicroContainerExample
          finally
          {
             // Step 8. Be sure to close our resources!
-            if (session != null)
+            if (sf != null)
             {
-               session.close();
+               sf.close();
             }
 
             // Step 9. Shutdown the container

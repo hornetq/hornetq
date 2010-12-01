@@ -40,7 +40,7 @@ public class JMSTest extends MessageTestBase
    @BeforeClass
    public static void setup() throws Exception
    {
-      connectionFactory = new HornetQJMSConnectionFactory(manager.getQueueManager().getSessionFactory());
+      connectionFactory = new HornetQJMSConnectionFactory(manager.getQueueManager().getServerLocator());
    }
 
    @XmlRootElement

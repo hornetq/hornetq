@@ -22,7 +22,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.client.impl.FailoverManager;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
@@ -67,7 +67,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
-   private final FailoverManager failoverManager;
+   private final ClientSessionFactoryInternal sessionFactory;
 
    private CoreRemotingConnection replicatingConnection;
 
@@ -89,10 +89,10 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Constructors --------------------------------------------------
 
-   public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory)
+   public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory, final ExecutorFactory executorFactory)
    {
       super();
-      this.failoverManager = failoverManager;
+      this.sessionFactory = sessionFactory;
       this.executorFactory = executorFactory;
    }
 
@@ -304,7 +304,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          throw new IllegalStateException("ReplicationManager is already started");
       }
 
-      replicatingConnection = failoverManager.getConnection();
+      replicatingConnection = sessionFactory.getConnection();
 
       if (replicatingConnection == null)
       {
@@ -327,7 +327,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       failureListener = new SessionFailureListener()
       {
-         public void connectionFailed(final HornetQException me)
+         public void connectionFailed(final HornetQException me, boolean failedOver)
          {
             if (me.getCode() == HornetQException.DISCONNECTED)
             {
@@ -353,7 +353,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          {
          }
       };
-      failoverManager.addFailureListener(failureListener);
+      sessionFactory.addFailureListener(failureListener);
 
       started = true;
 
@@ -392,8 +392,8 @@ public class ReplicationManagerImpl implements ReplicationManager
          replicatingChannel.close();
       }
 
-      failoverManager.causeExit();
-      failoverManager.removeFailureListener(failureListener);
+      sessionFactory.causeExit();
+      sessionFactory.removeFailureListener(failureListener);
       if (replicatingConnection != null)
       {
          replicatingConnection.destroy();

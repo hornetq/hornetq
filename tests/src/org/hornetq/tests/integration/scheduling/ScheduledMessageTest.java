@@ -19,11 +19,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -49,6 +45,8 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private HornetQServer server;
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -59,11 +57,14 @@ public class ScheduledMessageTest extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       server = createServer(true, configuration);
       server.start();
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+      
       if (server != null)
       {
          try
@@ -132,7 +133,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testPagedMessageDeliveredCorrectly() throws Exception
    {
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -168,7 +169,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       qs.setRedeliveryDelay(5000l);
       server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       session.createQueue(atestq, atestq2, null, true);
@@ -217,7 +218,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       qs.setRedeliveryDelay(5000l);
       server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       session.createQueue(atestq, atestq2, null, true);
@@ -247,7 +248,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       server = null;
       server = createServer(true, configuration);
       server.start();
-      sessionFactory = createInVMFactory();
+      sessionFactory = locator.createSessionFactory();
       session = sessionFactory.createSession(false, true, true);
       consumer = session.createConsumer(atestq);
       consumer2 = session.createConsumer(atestq2);
@@ -276,7 +277,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    {
 
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -301,7 +302,7 @@ public class ScheduledMessageTest extends ServiceTestBase
          server = null;
          server = createServer(true, configuration);
          server.start();
-         sessionFactory = createInVMFactory();
+         sessionFactory = locator.createSessionFactory();
          session = sessionFactory.createSession(false, true, true);
       }
       ClientConsumer consumer = session.createConsumer(atestq);
@@ -325,7 +326,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testScheduledMessagesDeliveredCorrectly(final boolean recover) throws Exception
    {
 
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -360,7 +361,7 @@ public class ScheduledMessageTest extends ServiceTestBase
          server = createServer(true, configuration);
          server.start();
 
-         sessionFactory = createInVMFactory();
+         sessionFactory = locator.createSessionFactory();
 
          session = sessionFactory.createSession(false, true, true);
       }
@@ -405,7 +406,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testScheduledMessagesDeliveredCorrectlyDifferentOrder(final boolean recover) throws Exception
    {
 
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -441,7 +442,7 @@ public class ScheduledMessageTest extends ServiceTestBase
          server = createServer(true, configuration);
          server.start();
 
-         sessionFactory = createInVMFactory();
+         sessionFactory = locator.createSessionFactory();
 
          session = sessionFactory.createSession(false, true, true);
 
@@ -486,7 +487,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testScheduledAndNormalMessagesDeliveredCorrectly(final boolean recover) throws Exception
    {
 
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
@@ -518,7 +519,7 @@ public class ScheduledMessageTest extends ServiceTestBase
          server = createServer(true, configuration);
          server.start();
 
-         sessionFactory = createInVMFactory();
+         sessionFactory = locator.createSessionFactory();
 
          session = sessionFactory.createSession(false, true, true);
       }
@@ -560,7 +561,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
       Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(true, false, false);
       session.createQueue(atestq, atestq, null, true);
       session.start(xid, XAResource.TMNOFLAGS);
@@ -580,7 +581,7 @@ public class ScheduledMessageTest extends ServiceTestBase
          server = createServer(true, configuration);
          server.start();
 
-         sessionFactory = createInVMFactory();
+         sessionFactory = locator.createSessionFactory();
 
          session = sessionFactory.createSession(true, false, false);
       }
@@ -625,7 +626,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(tx, false, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);

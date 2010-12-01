@@ -15,11 +15,7 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -36,6 +32,24 @@ public class RoutingTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = createInVMNonHALocator();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+
+      super.tearDown();
+   }
+
    public void testRouteToMultipleQueues() throws Exception
    {
       HornetQServer server = createServer(false);
@@ -43,7 +57,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          sendSession.createQueue(addressA, queueB, false);
@@ -93,7 +107,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          int numMessages = 300;
@@ -131,7 +145,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, true);
          int numMessages = 300;
@@ -169,7 +183,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
          int numMessages = 300;
@@ -209,7 +223,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
          sendSession.createQueue(addressA, queueB, new SimpleString("x = 1"), false);
@@ -272,7 +286,7 @@ public class RoutingTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createTemporaryQueue(addressA, queueA);
          int numMessages = 300;

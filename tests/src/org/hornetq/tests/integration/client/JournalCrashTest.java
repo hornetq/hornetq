@@ -18,11 +18,7 @@ import java.util.ArrayList;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -61,6 +57,8 @@ public class JournalCrashTest extends ServiceTestBase
 
    private final SimpleString QUEUE = new SimpleString("queue");
 
+   private ServerLocator locator;
+
    @Override
    protected void tearDown() throws Exception
    {
@@ -88,13 +86,13 @@ public class JournalCrashTest extends ServiceTestBase
       server = super.createServer(true, config);
 
       server.start();
-
-      factory = createInVMFactory();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
    }
 
    protected void stopServer() throws Exception
    {
-
+      locator.close();
       try
       {
          factory.close();

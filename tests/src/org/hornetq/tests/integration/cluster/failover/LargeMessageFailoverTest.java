@@ -17,7 +17,9 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -84,11 +86,11 @@ public class LargeMessageFailoverTest extends FailoverTest
    }
    
 
-   protected ClientSessionFactoryInternal getSessionFactory()
+   protected ServerLocatorInternal getServerLocator() throws Exception
    {
-      ClientSessionFactoryInternal sf = super.getSessionFactory();
-      sf.setMinLargeMessageSize(LARGE_MESSAGE_SIZE);
-      return sf;
+      ServerLocator locator = super.getServerLocator();
+      locator.setMinLargeMessageSize(LARGE_MESSAGE_SIZE);
+      return (ServerLocatorInternal) locator;
    }
 
 

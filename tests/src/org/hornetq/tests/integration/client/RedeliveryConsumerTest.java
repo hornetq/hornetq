@@ -17,11 +17,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -50,6 +46,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    final SimpleString ADDRESS = new SimpleString("address");
 
    ClientSessionFactory factory;
+
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -138,6 +136,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          session.close();
          server.stop();
          server.start();
+         factory = locator.createSessionFactory();
          session = factory.createSession(false, false, false);
          session.start();
          consumer = session.createConsumer(ADDRESS);
@@ -160,6 +159,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
                session.close();
                server.stop();
                server.start();
+               factory = locator.createSessionFactory();
                session = factory.createSession(false, false, false);
                session.start();
                consumer = session.createConsumer(ADDRESS);
@@ -212,7 +212,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       server.start();
 
-      factory = createInVMFactory();
+      factory = locator.createSessionFactory();
 
       session = factory.createSession(false, true, false);
       session.start();
@@ -240,8 +240,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       server = createServer(true, config);
 
       server.start();
-
-      factory = createInVMFactory();
+      locator = createInVMNonHALocator();
+      factory = locator.createSessionFactory();
 
       ClientSession session = factory.createSession(false, false, false);
       session.createQueue(ADDRESS, ADDRESS, true);
@@ -252,7 +252,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-
+      locator.close();
       if (factory != null)
       {
          factory.close();

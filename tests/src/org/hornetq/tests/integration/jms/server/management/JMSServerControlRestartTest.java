@@ -37,6 +37,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -109,7 +110,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      Connection connection = HornetQJMSClient.createConnectionFactory(config).createConnection();
+      Connection connection = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, config).createConnection();
       connection.start();
       Queue managementQueue = HornetQJMSClient.createQueue("hornetq.management");
       QueueSession session = (QueueSession) connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

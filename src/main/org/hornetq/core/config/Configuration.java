@@ -51,6 +51,19 @@ public interface Configuration extends Serializable
    void setClustered(boolean clustered);
 
    /**
+    * returns whether a backup will auto die when a live server is failing back
+    * @return
+    */
+   public boolean isAllowAutoFailBack();
+
+   /**
+    * whether a backup will auto die when a live server is failing back
+    *
+    * @param allowAutoFailBack true if allowed
+    */
+   public void setAllowAutoFailBack(boolean allowAutoFailBack);
+
+   /**
     * Returns whether delivery count is persisted before messages are delivered to the consumers.
     * <br>
     * Default value is {@value org.hornetq.core.config.impl.ConfigurationImpl#DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY}.
@@ -258,16 +271,15 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    /**
-    * Returns the name of the connector used to connect to the backup.
-    * <br>
-    * If this server has no backup or is itself a backup, the value is {@code null}.
+    * Returns the name of the connector used to connect to the live node - only used when using shared nothing (shared store = false).
+    * <br> 
     */
-   String getBackupConnectorName();
+   String getLiveConnectorName();
 
    /**
-    * Sets the name of the connector used to connect to the backup.
+    * Sets the name of the connector used to connect to the live node - only used when using shared nothing (shared store = false).
     */
-   void setBackupConnectorName(String name);
+   void setLiveConnectorName(String name);
 
    /**
     * Returns the broadcast groups configured for this server.

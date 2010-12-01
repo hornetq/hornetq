@@ -66,12 +66,14 @@
 				<xsd:element maxOccurs="1" minOccurs="0" ref="remoting-interceptors">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="backup" type="xsd:boolean">
-				</xsd:element>		
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xsd:boolean">
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
 				</xsd:element>			
 				<xsd:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xsd:boolean">
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="backup-connector-ref" type="backup-connectorType">
+				<xsd:element maxOccurs="1" minOccurs="0" name="live-connector-ref" type="live-connectorType">
 				</xsd:element>				
 				<xsd:element maxOccurs="1" minOccurs="0" name="connectors">
                     <xsd:complexType>
@@ -207,9 +209,6 @@
 
 	<xsd:element name="broadcast-period" type="xsd:long"/>
 
-	<xsd:element name="connector-ref" type="connector-refType">
-	</xsd:element>
-
 	<xsd:element name="broadcast-group">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -223,7 +222,7 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="broadcast-period">
 				</xsd:element>
-				<xsd:element maxOccurs="unbounded" minOccurs="0" ref="connector-ref">
+				<xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xsd:string">
 				</xsd:element>
 			</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
@@ -231,6 +230,8 @@
 	</xsd:element>
 
 	<xsd:element name="refresh-timeout" type="xsd:int"/>
+
+	<xsd:element name="initial-wait-timeout" type="xsd:int"/>
 
 	<xsd:element name="discovery-group">
 		<xsd:complexType>
@@ -243,6 +244,8 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="refresh-timeout">
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" ref="initial-wait-timeout">
+				</xsd:element>
 			</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:ID" use="required"/>
 		</xsd:complexType>
@@ -254,13 +257,6 @@
 			</xsd:attribute>
 		</xsd:complexType>
 	</xsd:element>
-
-	<xsd:complexType name="connector-refType">
-		<xsd:attribute name="connector-name" type="xsd:IDREF" use="required">
-		</xsd:attribute>
-		<xsd:attribute name="backup-connector-name" type="xsd:IDREF" use="optional">
-		</xsd:attribute>
-	</xsd:complexType>
 
 	<xsd:element name="remoting-interceptors">
 		<xsd:complexType>
@@ -302,6 +298,8 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="forwarding-address" type="xsd:string">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="ha" type="xsd:boolean">
+			</xsd:element>
             <xsd:element maxOccurs="1" minOccurs="0" name="filter">
                 <xsd:complexType>
                    <xsd:attribute name="string" type="xsd:string" use="required"/>
@@ -325,9 +323,14 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="password" type="xsd:string">
 			</xsd:element>
-			<xsd:choice>
-				<xsd:element maxOccurs="1" minOccurs="1" name="connector-ref" type="connector-refType">
-				</xsd:element>
+			<xsd:choice>				
+				<xsd:element maxOccurs="1" minOccurs="1" name="static-connectors">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element maxOccurs="unbounded" minOccurs="1" name="connector-ref" type="xsd:string"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>				
 				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
@@ -343,6 +346,8 @@
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="address" type="xsd:string">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="1" name="connector-ref" type="xsd:string">
+			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xsd:long">
 			</xsd:element>			
 			<xsd:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xsd:boolean">
@@ -354,8 +359,13 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int">
 			</xsd:element>
 			<xsd:choice>
-				<xsd:element maxOccurs="unbounded" minOccurs="1" name="connector-ref" type="connector-refType">
-				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="1" name="static-connectors">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xsd:string"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>	
 				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
@@ -499,7 +509,7 @@
        </xsd:complexType>
     </xsd:element>
     
-	<xsd:complexType name="backup-connectorType">
+	<xsd:complexType name="live-connectorType">
 		<xsd:attribute name="connector-name" type="xsd:IDREF" use="required">
 		</xsd:attribute>
 	</xsd:complexType>

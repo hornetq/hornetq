@@ -20,12 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -43,6 +38,8 @@ public class MessageRateTest extends ServiceTestBase
 
    private final SimpleString ADDRESS = new SimpleString("ADDRESS");
 
+   private ServerLocator locator;
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -59,8 +56,8 @@ public class MessageRateTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
-         sf.setProducerMaxRate(10);
+         locator.setProducerMaxRate(10);
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(ADDRESS, ADDRESS, true);
@@ -95,8 +92,8 @@ public class MessageRateTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
-         sf.setConsumerMaxRate(10);
+         locator.setConsumerMaxRate(10);
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(false, true, true);
 
@@ -144,8 +141,8 @@ public class MessageRateTest extends ServiceTestBase
       {
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
-         sf.setConsumerMaxRate(10);
+         locator.setConsumerMaxRate(10);
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          ClientSession session = sf.createSession(false, true, true);
 
@@ -209,6 +206,8 @@ public class MessageRateTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+
       super.tearDown();
    }
 
@@ -216,6 +215,8 @@ public class MessageRateTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
+
+      locator = createInVMNonHALocator();
    }
 
    // Private -------------------------------------------------------

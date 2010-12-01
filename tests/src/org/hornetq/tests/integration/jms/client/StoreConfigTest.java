@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.jms.client;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -24,7 +25,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.NamingException;
 
-import org.hornetq.api.core.Pair;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -55,22 +56,19 @@ public class StoreConfigTest extends JMSTestBase
 
    public void testCreateCF() throws Exception
    {
-      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst");
-
-      ArrayList<Pair<String, String>> listStr = new ArrayList<Pair<String, String>>();
-      listStr.add(new Pair<String, String>("netty", null));
-
-      factCFG.setConnectorNames(listStr);
-
+      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+      server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+      List<String> transportConfigurations = new ArrayList<String>();
+      transportConfigurations.add("tst");
+      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst", false, transportConfigurations);
+      
       jmsServer.createConnectionFactory(true, factCFG, "/someCF", "/someCF2" );
       
       
-      ConnectionFactoryConfigurationImpl nonPersisted = new ConnectionFactoryConfigurationImpl("np");
+      ConnectionFactoryConfigurationImpl nonPersisted = new ConnectionFactoryConfigurationImpl("np", false, transportConfigurations);
 
-      listStr = new ArrayList<Pair<String, String>>();
-      listStr.add(new Pair<String, String>("netty", null));
-      
-      nonPersisted.setConnectorNames(listStr);
       
       jmsServer.createConnectionFactory(false, nonPersisted, "/nonPersisted" );
 
@@ -110,12 +108,14 @@ public class StoreConfigTest extends JMSTestBase
 
    public void testCreateTopic() throws Exception
    {
-      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst");
+      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+      server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+      List<String> transportConfigurations = new ArrayList<String>();
+      transportConfigurations.add("tst");
 
-      ArrayList<Pair<String, String>> listStr = new ArrayList<Pair<String, String>>();
-      listStr.add(new Pair<String, String>("netty", null));
-
-      factCFG.setConnectorNames(listStr);
+      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst", false, transportConfigurations);
 
       jmsServer.createConnectionFactory(true, factCFG, "/someCF");
       
@@ -220,12 +220,15 @@ public class StoreConfigTest extends JMSTestBase
 
    public void testCreateQueue() throws Exception
    {
-      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst");
+      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+//      server.getConfiguration().getConnectorConfigurations().put("np", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      
+      List<String> transportConfigurations = new ArrayList<String>();
+      transportConfigurations.add("tst");
 
-      ArrayList<Pair<String, String>> listStr = new ArrayList<Pair<String, String>>();
-      listStr.add(new Pair<String, String>("netty", null));
+      ConnectionFactoryConfigurationImpl factCFG = new ConnectionFactoryConfigurationImpl("tst", false, transportConfigurations);
 
-      factCFG.setConnectorNames(listStr);
 
       jmsServer.createConnectionFactory(true, factCFG, "/someCF");
       

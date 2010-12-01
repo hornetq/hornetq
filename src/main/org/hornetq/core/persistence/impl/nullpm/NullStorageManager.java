@@ -13,7 +13,6 @@
 
 package org.hornetq.core.persistence.impl.nullpm;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.utils.UUID;
 
 /**
  * 
@@ -61,19 +59,7 @@ public class NullStorageManager implements StorageManager
 {
    private final AtomicLong idSequence = new AtomicLong(0);
 
-   private UUID id;
-
    private volatile boolean started;
-
-   public UUID getPersistentID()
-   {
-      return id;
-   }
-
-   public void setPersistentID(final UUID id)
-   {
-      this.id = id;
-   }
 
    public void sync()
    {
@@ -247,8 +233,6 @@ public class NullStorageManager implements StorageManager
       {
          throw new IllegalStateException("Not started");
       }
-
-      id = null;
 
       idSequence.set(0);
 

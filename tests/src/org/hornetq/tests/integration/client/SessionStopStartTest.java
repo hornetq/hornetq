@@ -18,12 +18,7 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -39,6 +34,8 @@ public class SessionStopStartTest extends ServiceTestBase
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -47,11 +44,15 @@ public class SessionStopStartTest extends ServiceTestBase
       server = createServer(false);
 
       server.start();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+      
       server.stop();
 
       server = null;
@@ -61,7 +62,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerSyncReceiveImmediate() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -105,7 +106,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerSyncReceive() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -152,7 +153,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncSyncStoppedByHandler() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -242,7 +243,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncSync() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -340,7 +341,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncASyncStoppeeByHandler() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -442,7 +443,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncASync() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -544,7 +545,8 @@ public class SessionStopStartTest extends ServiceTestBase
 
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
-      ClientSessionFactory cf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
@@ -557,8 +559,8 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartMultipleConsumers() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
-      sf.setConsumerWindowSize(getMessageEncodeSize(QUEUE) * 33);
+      locator.setConsumerWindowSize(getMessageEncodeSize(QUEUE) * 33);
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -611,7 +613,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartAlreadyStartedSession() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -652,7 +654,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopAlreadyStoppedSession() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       final ClientSession session = sf.createSession(false, true, true);
 

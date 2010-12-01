@@ -24,7 +24,8 @@
      
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
         <pre class="prettyprint">
-           ClientSessionFactory sf = HornetQClient.createClientSessionFactory (new TransportConfiguration(NettyConnectorFactory.class.getName()));
+           ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+           ClientSessionFactory sf = serverLocator.createSessionFactory();
         </pre>
 
         <li>Create a Core Queue</li>
@@ -65,12 +66,9 @@
         <li>Be sure to close our resources!</li>
 
         <pre class="prettyprint">
-           finally
+           if (sf != null)
            {
-              if (connection != null)
-              {
-                 connection.close();
-              }
+              sf.close();
            }
         </pre>
 

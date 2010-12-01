@@ -13,7 +13,7 @@
 
 package org.hornetq.core.cluster;
 
-import java.util.Map;
+import java.util.List;
 
 import org.hornetq.core.server.management.NotificationService;
 
@@ -32,7 +32,7 @@ public interface DiscoveryGroup
 
    String getName();
 
-   Map<String, DiscoveryEntry> getDiscoveryEntryMap();
+   List<DiscoveryEntry> getDiscoveryEntries();
 
    void start() throws Exception;
 

@@ -3,6 +3,8 @@
 	       xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 	
 	<clustered>true</clustered>
+
+    <shared-store>true</shared-store>
 	
 	<journal-min-files>10</journal-min-files>
 	
@@ -12,13 +14,6 @@
 			<param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
 			<param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
 		</connector>
-		
-		<connector name="netty-throughput">
-            <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-            <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
-            <param key="port"  value="${hornetq.remoting.netty.port:5455}"/>
-            <param key="batch-delay" value="50"/>
-      </connector>
 	</connectors>
 	
 	<acceptors>
@@ -27,14 +22,6 @@
 			<param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
 			<param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
 		</acceptor>
-		
-		<acceptor name="netty-throughput">
-            <factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory</factory-class>
-            <param key="host"  value="${jboss.bind.address:localhost}"/>
-            <param key="port"  value="${hornetq.remoting.netty.port:5455}"/>
-            <param key="batch-delay" value="50"/>
-            <param key="direct-deliver" value="false"/>
-      </acceptor>
 	</acceptors>
 	
 	<broadcast-groups>
@@ -42,7 +29,7 @@
 			<group-address>231.7.7.7</group-address>
 			<group-port>9876</group-port>
 			<broadcast-period>5000</broadcast-period>
-			<connector-ref connector-name="netty"/>
+         <connector-ref>netty</connector-ref>
 		</broadcast-group>
 	</broadcast-groups>
 	
@@ -50,13 +37,14 @@
 		<discovery-group name="dg-group1">
 			<group-address>231.7.7.7</group-address>
 			<group-port>9876</group-port>
-			<refresh-timeout>10000</refresh-timeout>
+			<refresh-timeout>60000</refresh-timeout>
 		</discovery-group>
 	</discovery-groups>
 	
 	<cluster-connections>
 		<cluster-connection name="my-cluster">
 			<address>jms</address>	 
+         <connector-ref>netty</connector-ref>
 			<discovery-group-ref discovery-group-name="dg-group1"/>
 		</cluster-connection>
 	</cluster-connections>

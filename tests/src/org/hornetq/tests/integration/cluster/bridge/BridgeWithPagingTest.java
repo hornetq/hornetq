@@ -24,12 +24,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -110,8 +105,9 @@ public class BridgeWithPagingTest extends BridgeTestBase
       final int reconnectAttempts = -1;
       final int confirmationWindowSize = 1024; // 1 kiB
 
-      Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
+      ArrayList<String> staticConnectors = new ArrayList<String>();
+      staticConnectors.add(server1tc.getName());
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration(bridgeName,
                                                                         queueName0,
                                                                         forwardAddress,
@@ -120,11 +116,11 @@ public class BridgeWithPagingTest extends BridgeTestBase
                                                                         retryInterval,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        true,
                                                                         false,
                                                                         confirmationWindowSize,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                        connectorPair,
+            staticConnectors,
+                                                                        false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
@@ -154,11 +150,11 @@ public class BridgeWithPagingTest extends BridgeTestBase
 
       server1.start();
       server0.start();
-
-      ClientSessionFactory csf0 = HornetQClient.createClientSessionFactory(server0tc);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
+      ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
       ClientSession session0 = csf0.createSession(false, true, true);
 
-      ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(server1tc);
+      ClientSessionFactory csf1 = locator.createSessionFactory(server1tc);
       //csf1.setAckBatchSize(20480); // 20 kiB
       ClientSession session1 = csf1.createSession(false, true, true);
 

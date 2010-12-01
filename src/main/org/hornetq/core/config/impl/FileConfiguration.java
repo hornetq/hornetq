@@ -47,7 +47,7 @@ public class FileConfiguration extends ConfigurationImpl
 
    // Attributes ----------------------------------------------------------------------
 
-   private String configurationUrl = FileConfiguration.DEFAULT_CONFIGURATION_URL;
+   private String configurationUrl = DEFAULT_CONFIGURATION_URL;
 
    private boolean started;
 

@@ -101,7 +101,8 @@ public class ClientExitTest extends ClientTestBase
    {
       super.setUp();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.createQueue(ClientExitTest.QUEUE, ClientExitTest.QUEUE, null, false);
       consumer = session.createConsumer(ClientExitTest.QUEUE);

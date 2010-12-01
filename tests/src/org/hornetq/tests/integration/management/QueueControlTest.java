@@ -34,6 +34,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
 
 /**
@@ -1280,9 +1281,10 @@ public class QueueControlTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnNonDurableSend(true);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, false);
       session.start();
    }

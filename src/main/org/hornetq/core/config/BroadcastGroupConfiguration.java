@@ -16,7 +16,6 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -45,7 +44,7 @@ public class BroadcastGroupConfiguration implements Serializable
 
    private long broadcastPeriod;
 
-   private List<Pair<String, String>> connectorInfos;
+   private List<String> connectorInfos;
 
    public BroadcastGroupConfiguration(final String name,
                                       final String localBindAddress,
@@ -53,7 +52,7 @@ public class BroadcastGroupConfiguration implements Serializable
                                       final String groupAddress,
                                       final int groupPort,
                                       final long broadcastPeriod,
-                                      final List<Pair<String, String>> connectorInfos)
+                                      final List<String> connectorInfos)
    {
       super();
       this.name = name;
@@ -95,7 +94,7 @@ public class BroadcastGroupConfiguration implements Serializable
       return broadcastPeriod;
    }
 
-   public List<Pair<String, String>> getConnectorInfos()
+   public List<String> getConnectorInfos()
    {
       return connectorInfos;
    }
@@ -151,7 +150,7 @@ public class BroadcastGroupConfiguration implements Serializable
    /**
     * @param connectorInfos the connectorInfos to set
     */
-   public void setConnectorInfos(final List<Pair<String, String>> connectorInfos)
+   public void setConnectorInfos(final List<String> connectorInfos)
    {
       this.connectorInfos = connectorInfos;
    }

@@ -19,6 +19,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 
@@ -40,6 +41,7 @@ public class TwitterConnectorExample extends HornetQExample
    @Override
    public boolean runExample() throws Exception
    {
+      ServerLocator locator = null;
       ClientSessionFactory csf = null;
       ClientSession session = null;
       try
@@ -49,8 +51,12 @@ public class TwitterConnectorExample extends HornetQExample
             testMessage = System.currentTimeMillis() + ": ### Hello, HornetQ fans!! We are now experiencing so fast, so reliable and so exciting messaging never seen before ;-) ###";
          }
 
-         // Step 1. Create a ClientSessionFactory.
-         csf = HornetQClient.createClientSessionFactory (new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         // Step 1. Create a ClientSessionFactory
+         
+         
+         locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         
+         csf = locator.createSessionFactory();
 
          // Step 2. Create a core session.
          session = csf.createSession(true,true);
@@ -107,6 +113,11 @@ public class TwitterConnectorExample extends HornetQExample
          if(csf != null)
          {
             csf.close();
+         }
+         
+         if (locator != null)
+         {
+            locator.close();
          }
       }
    }

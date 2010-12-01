@@ -50,7 +50,7 @@
          <group-address>231.7.7.7</group-address>
          <group-port>9876</group-port>
          <broadcast-period>5000</broadcast-period>
-         <connector-ref connector-name="netty"/>
+         <connector-ref>netty</connector-ref>
       </broadcast-group>
    </broadcast-groups>
 
@@ -65,6 +65,7 @@
    <cluster-connections>
       <cluster-connection name="my-cluster">
          <address>jms</address>	 
+         <connector-ref>netty</connector-ref>
 	      <discovery-group-ref discovery-group-name="dg-group1"/>
       </cluster-connection>
    </cluster-connections>

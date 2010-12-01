@@ -21,6 +21,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -69,7 +70,9 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createFactory(SimpleSendReceiveSoakTest.IS_NETTY);
+      ServerLocator locator = createFactory(IS_NETTY);
+      
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
 
@@ -90,7 +93,9 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
 
    public void testSoakClientTransactions() throws Exception
    {
-      final ClientSessionFactory sf = createFactory(IS_NETTY);
+      final ServerLocator locator = createFactory(IS_NETTY);
+      
+      final ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true);
 
@@ -135,6 +140,7 @@ public class SimpleSendReceiveSoakTest extends ServiceTestBase
       sessionConsumer.close();
       session.close();
       sf.close();
+      locator.close();
 
    }
    

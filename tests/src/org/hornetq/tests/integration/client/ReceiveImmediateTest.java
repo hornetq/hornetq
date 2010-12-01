@@ -17,14 +17,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -46,6 +45,8 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    private final SimpleString ADDRESS = new SimpleString("ReceiveImmediateTest.address");
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -55,11 +56,15 @@ public class ReceiveImmediateTest extends ServiceTestBase
       server = HornetQServers.newHornetQServer(config, false);
 
       server.start();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+
       server.stop();
 
       server = null;
@@ -91,11 +96,11 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    public void testConsumerReceiveImmediateWithSessionStop() throws Exception
    {
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnAcknowledge(true);
-      sf.setAckBatchSize(0);
 
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+      locator.setAckBatchSize(0);
+      sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
@@ -125,8 +130,8 @@ public class ReceiveImmediateTest extends ServiceTestBase
    // https://jira.jboss.org/browse/HORNETQ-450
    public void testReceivedImmediateFollowedByReceive() throws Exception
    {
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
+      sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -160,8 +165,9 @@ public class ReceiveImmediateTest extends ServiceTestBase
    // https://jira.jboss.org/browse/HORNETQ-450
    public void testReceivedImmediateFollowedByAsyncConsume() throws Exception
    {
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonDurableSend(true);
+      
+      locator.setBlockOnNonDurableSend(true);
+      sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -204,10 +210,10 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    private void doConsumerReceiveImmediateWithNoMessages(final boolean browser) throws Exception
    {
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnAcknowledge(true);
-      sf.setAckBatchSize(0);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+      locator.setAckBatchSize(0);
+      sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, false);
 
@@ -226,11 +232,11 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    private void doConsumerReceiveImmediate(final boolean browser) throws Exception
    {
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnAcknowledge(true);
-      sf.setAckBatchSize(0);
 
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+      locator.setAckBatchSize(0);
+      sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);

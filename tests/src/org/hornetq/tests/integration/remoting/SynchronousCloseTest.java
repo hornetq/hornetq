@@ -19,6 +19,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -81,19 +82,19 @@ public class SynchronousCloseTest extends ServiceTestBase
       return false;
    }
 
-   protected ClientSessionFactory createSessionFactory()
+   protected ClientSessionFactory createSessionFactory() throws Exception
    {
-      ClientSessionFactory sf;
+      ServerLocator locator;
       if (isNetty())
       {
-         sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY));
       }
       else
       {
-         sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       }
 
-      return sf;
+      return locator.createSessionFactory();
    }
 
    /*

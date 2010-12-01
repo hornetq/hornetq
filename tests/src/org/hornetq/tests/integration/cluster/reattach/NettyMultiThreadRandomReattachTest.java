@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.reattach;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
@@ -46,13 +47,13 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
    }
 
    @Override
-   protected ClientSessionFactoryInternal createSessionFactory()
+   protected ServerLocator createLocator() throws Exception
    {
-      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
-      sf.setReconnectAttempts(-1);
-      sf.setConfirmationWindowSize(1024 * 1024);
-      sf.setAckBatchSize(0);
-      return sf;
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory")) ;
+      locator.setReconnectAttempts(-1);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      locator.setAckBatchSize(0);
+      return  locator;
    }
 
 }

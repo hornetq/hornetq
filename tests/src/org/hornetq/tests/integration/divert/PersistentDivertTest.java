@@ -20,12 +20,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
@@ -109,11 +104,13 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
 
-      sf.setBlockOnAcknowledge(true);
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -312,11 +309,12 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator.setBlockOnAcknowledge(true);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
 
-      sf.setBlockOnAcknowledge(true);
-      sf.setBlockOnNonDurableSend(true);
-      sf.setBlockOnDurableSend(true);
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, true, 0);
 
@@ -364,10 +362,10 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator2.setBlockOnDurableSend(true);
 
-      sf.setBlockOnDurableSend(true);
-
+      sf = locator2.createSessionFactory();
       session = sf.createSession(false, true, true);
 
       session.start();
@@ -460,9 +458,10 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      sf = HornetQClient.createClientSessionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      ServerLocator locator3 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator3.setBlockOnDurableSend(true);
 
-      sf.setBlockOnDurableSend(true);
+      sf = locator3.createSessionFactory();
 
       session = sf.createSession(false, true, true);
 
@@ -485,6 +484,12 @@ public class PersistentDivertTest extends ServiceTestBase
       session.close();
 
       sf.close();
+
+      locator3.close();
+
+      locator2.close();
+
+      locator.close();
 
       messagingService.stop();
    }

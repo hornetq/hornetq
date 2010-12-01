@@ -413,7 +413,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          }
       }
 
-      public void connectionFailed(HornetQException exception)
+      public void connectionFailed(HornetQException exception, boolean failedOver)
       {
          run();
       }
@@ -1069,7 +1069,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    // FailureListener implementation
    // --------------------------------------------------------------------
 
-   public void connectionFailed(final HornetQException me)
+   public void connectionFailed(final HornetQException me, boolean failedOver)
    {
       try
       {

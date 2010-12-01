@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import java.util.Map;
 import java.util.Set;
 
 import javax.jms.QueueConnection;
@@ -28,6 +27,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A JMSServerControlUsingCoreTest
@@ -66,7 +66,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    {
       super.setUp();
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
@@ -93,74 +93,6 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       return new JMSServerControl()
       {
 
-
-         public void createConnectionFactory(final String name,
-                                             final String discoveryAddress,
-                                             final int discoveryPort,
-                                             final Object[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                  name,
-                                  discoveryAddress,
-                                  discoveryPort,
-                                  jndiBindings);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final String discoveryAddress,
-                                             final int discoveryPort,
-                                             final String jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                  name,
-                                  discoveryAddress,
-                                  discoveryPort,
-                                  jndiBindings);
-         }
-
-         public void createConnectionFactory(final String name,
-                                             final Object[] liveConnectorsTransportClassNames,
-                                             final Object[] liveConnectorTransportParams,
-                                             final Object[] backupConnectorsTransportClassNames,
-                                             final Object[] backupConnectorTransportParams,
-                                             final Object[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                  name,
-                                  liveConnectorsTransportClassNames,
-                                  liveConnectorTransportParams,
-                                  backupConnectorsTransportClassNames,
-                                  backupConnectorTransportParams,
-                                  jndiBindings);
-         }
-
-         public void createConnectionFactory(String name,
-                                             String liveTransportClassNames,
-                                             String liveTransportParams,
-                                             String backupTransportClassNames,
-                                             String backupTransportParams,
-                                             String jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                  name,
-                  liveTransportClassNames,
-                  liveTransportParams,
-                  backupTransportClassNames,
-                  backupTransportParams,
-                  jndiBindings);
-         }
-
-         public void createConnectionFactory(String name,
-                                             String liveTransportClassName,
-                                             Map<String, Object> liveTransportParams,
-                                             Object[] jndiBindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory",
-                                  name,
-                                  liveTransportClassName,
-                                  liveTransportParams,
-                                  jndiBindings);
-         }
 
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
@@ -295,13 +227,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public String getSessionCreationTime(String sessionID) throws Exception
          {
-            return null;
+            return (String)proxy.invokeOperation("getSessionCreationTime", sessionID);
          }
 
          public String listSessionsAsJSON(String connectionID) throws Exception
          {
-            // TODO Auto-generated method stub
-            return null;
+            return (String)proxy.invokeOperation("listSessionsAsJSON", connectionID);
          }
 
          public String listPreparedTransactionDetailsAsJSON() throws Exception
@@ -312,6 +243,40 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          public String listPreparedTransactionDetailsAsHTML() throws Exception
          {
             return (String)proxy.invokeOperation("listPreparedTransactionDetailsAsHTML");
+         }
+
+         public void createConnectionFactory(String name,
+                                             boolean ha,
+                                             int cfType,
+                                             String[] connectorNames,
+                                             Object[] bindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, connectorNames, bindings);
+            
+         }
+
+         public void createConnectionFactory(String name, boolean ha, int cfType, String connectors, String jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, connectors, jndiBindings);
+         }
+
+         public void createConnectionFactoryDiscovery(String name,
+                                                      boolean ha,
+                                                      int cfType,
+                                                      String discoveryGroupName,
+                                                      String bindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, discoveryGroupName, bindings);
+         }
+
+         public void createConnectionFactoryDiscovery(String name,
+                                                      boolean ha,
+                                                      int cfType,
+                                                      String discoveryGroupName,
+                                                      Object[] bindings) throws Exception
+         {
+            // TODO Auto-generated method stub
+            
          }
 
       };

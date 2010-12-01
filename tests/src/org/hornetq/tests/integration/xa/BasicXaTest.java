@@ -25,12 +25,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -59,6 +54,8 @@ public class BasicXaTest extends ServiceTestBase
 
    private final SimpleString atestq = new SimpleString("BasicXaTestq");
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -76,7 +73,9 @@ public class BasicXaTest extends ServiceTestBase
       // start the server
       messagingService.start();
 
-      sessionFactory = createInVMFactory();
+      locator = createInVMNonHALocator();
+      sessionFactory = locator.createSessionFactory();
+
       clientSession = sessionFactory.createSession(true, false, false);
 
       clientSession.createQueue(atestq, atestq, null, true);
@@ -118,8 +117,8 @@ public class BasicXaTest extends ServiceTestBase
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
 
-
-      ClientSessionFactory factory = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory factory = locator.createSessionFactory();
       
       ClientSession session = null;
       
@@ -154,7 +153,7 @@ public class BasicXaTest extends ServiceTestBase
       // Since both resources have same RM, TM will probably use 1PC optimization
 
 
-      ClientSessionFactory factory = createInVMFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
       
       ClientSession session = null;
       
@@ -211,10 +210,12 @@ public class BasicXaTest extends ServiceTestBase
 
    public void testIsSameRM() throws Exception
    {
-      ClientSessionFactory nettyFactory = createNettyFactory();
+      ServerLocator locator = createNettyNonHALocator();
+      ClientSessionFactory nettyFactory = locator.createSessionFactory();
       validateRM(nettyFactory, nettyFactory);
       validateRM(sessionFactory, sessionFactory);
       validateRM(nettyFactory, sessionFactory);
+      locator.close();
    }
 
    private void validateRM(final ClientSessionFactory factory1, final ClientSessionFactory factory2) throws Exception
@@ -501,7 +502,7 @@ public class BasicXaTest extends ServiceTestBase
 
       messagingService.start();
 
-      sessionFactory = createInVMFactory();
+      sessionFactory = locator.createSessionFactory();
 
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
@@ -528,7 +529,7 @@ public class BasicXaTest extends ServiceTestBase
 
       messagingService.start();
 
-      sessionFactory = createInVMFactory();
+      sessionFactory = locator.createSessionFactory();
 
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
@@ -542,7 +543,7 @@ public class BasicXaTest extends ServiceTestBase
       messagingService.start();
 
       // This is not really necessary... But since the server has stopped, I would prefer to keep recreating the factory
-      sessionFactory = createInVMFactory();
+      sessionFactory = locator.createSessionFactory();
 
       session = sessionFactory.createSession(true, false, false);
 

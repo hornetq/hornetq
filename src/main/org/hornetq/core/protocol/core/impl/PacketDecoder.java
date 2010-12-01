@@ -13,6 +13,7 @@
 
 package org.hornetq.core.protocol.core.impl;
 
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
@@ -20,6 +21,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_REPLICATION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.NODE_ANNOUNCE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.NULL_RESPONSE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.PACKETS_CONFIRMED;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.PING;
@@ -78,16 +80,20 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
@@ -143,6 +149,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 
 /**
  * A PacketDecoder
@@ -170,7 +177,7 @@ public class PacketDecoder
          }
          case DISCONNECT:
          {
-            packet = new PacketImpl(PacketImpl.DISCONNECT);
+            packet = new DisconnectMessage();
             break;
          }
          case EXCEPTION:
@@ -486,6 +493,21 @@ public class PacketDecoder
          case SESS_FORCE_CONSUMER_DELIVERY:
          {
             packet = new SessionForceConsumerDelivery();
+            break;
+         }
+         case CLUSTER_TOPOLOGY:
+         {
+            packet = new ClusterTopologyChangeMessage();
+            break;
+         }
+         case NODE_ANNOUNCE:
+         {
+            packet = new NodeAnnounceMessage();
+            break;
+         }
+         case SUBSCRIBE_TOPOLOGY:
+         {
+            packet = new SubscribeClusterTopologyUpdatesMessage();
             break;
          }
          case SESS_ADD_METADATA:

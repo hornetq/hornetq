@@ -39,6 +39,9 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A JMSConfigurationTest
  *
@@ -67,8 +70,11 @@ public class JMSConfigurationTest extends ServiceTestBase
       JMSConfiguration jmsConfiguration = new JMSConfigurationImpl();
       jmsConfiguration.setContext(context);
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      List<TransportConfiguration> transportConfigs = new ArrayList<TransportConfiguration>();
+      transportConfigs.add(connectorConfig);
       ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl(RandomUtil.randomString(),
-                                                                                       connectorConfig,
+                                                                                       false,
+                                                                                       registerConnectors(coreServer, transportConfigs),
                                                                                        "/cf/binding1",
                                                                                        "/cf/binding2");
       jmsConfiguration.getConnectionFactoryConfigurations().add(cfConfig);

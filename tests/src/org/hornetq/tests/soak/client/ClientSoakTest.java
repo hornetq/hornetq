@@ -22,6 +22,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.server.HornetQServer;
@@ -96,8 +97,10 @@ public class ClientSoakTest extends ServiceTestBase
       config.setDivertConfigurations(divertList);
 
       server.start();
+      
+      ServerLocator locator = createFactory(IS_NETTY);
 
-      ClientSessionFactory sf = createFactory(ClientSoakTest.IS_NETTY);
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
 
@@ -110,6 +113,8 @@ public class ClientSoakTest extends ServiceTestBase
       session.close();
 
       sf.close();
+      
+      locator.close();
 
    }
 
@@ -122,7 +127,8 @@ public class ClientSoakTest extends ServiceTestBase
 
    public void testSoakClient() throws Exception
    {
-      final ClientSessionFactory sf = createFactory(IS_NETTY);
+      final ServerLocator locator = createFactory(IS_NETTY);
+      final ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false);
 
@@ -147,10 +153,10 @@ public class ClientSoakTest extends ServiceTestBase
       session.close();
       sf.close();
 
-      Receiver rec1 = new Receiver(createFactory(IS_NETTY), DIVERTED_AD1.toString());
-      Receiver rec2 = new Receiver(createFactory(IS_NETTY), DIVERTED_AD2.toString());
+      Receiver rec1 = new Receiver(locator.createSessionFactory(), DIVERTED_AD1.toString());
+      Receiver rec2 = new Receiver(locator.createSessionFactory(), DIVERTED_AD2.toString());
 
-      Sender send = new Sender(createFactory(IS_NETTY), ADDRESS.toString(), new Receiver[] { rec1, rec2 });
+      Sender send = new Sender(locator.createSessionFactory(), ADDRESS.toString(), new Receiver[] { rec1, rec2 });
 
       send.start();
       rec1.start();
@@ -178,6 +184,8 @@ public class ClientSoakTest extends ServiceTestBase
       assertEquals(0, send.getErrorsCount());
       assertEquals(0, rec1.getErrorsCount());
       assertEquals(0, rec2.getErrorsCount());
+      
+      locator.close();
 
    }
 

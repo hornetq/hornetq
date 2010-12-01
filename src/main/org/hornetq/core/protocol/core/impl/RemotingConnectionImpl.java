@@ -25,10 +25,12 @@ import java.util.concurrent.Executor;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.remoting.BufferHandler;
@@ -88,6 +90,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    private final Executor executor;
    
    private volatile boolean executing;
+   
+   private final SimpleString nodeID;
 
    private final long creationTime;
    
@@ -103,7 +107,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                                  final long blockingCallTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, interceptors, true, null);
+      this(transportConnection, blockingCallTimeout, interceptors, true, null, null);
    }
 
    /*
@@ -111,17 +115,19 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
-                                 final Executor executor)
+                                 final Executor executor,
+                                 final SimpleString nodeID)
 
    {
-      this(transportConnection, -1, interceptors, false, executor);
+      this(transportConnection, -1, interceptors, false, executor, nodeID);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final List<Interceptor> interceptors,
                                   final boolean client,
-                                  final Executor executor)
+                                  final Executor executor,
+                                  final SimpleString nodeID)
 
    {
       this.transportConnection = transportConnection;
@@ -133,6 +139,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.client = client;
 
       this.executor = executor;
+      
+      this.nodeID = nodeID;
       
       this.creationTime = System.currentTimeMillis();
    }
@@ -316,7 +324,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       callClosingListeners();
    }
    
-   public void disconnect()
+   public void disconnect(boolean failoverOnServerShutdown)
    {
       Channel channel0 = getChannel(0, -1);
 
@@ -335,7 +343,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          channel.flushConfirmations();
       }
 
-      channel0.sendAndFlush(new PacketImpl(PacketImpl.DISCONNECT));
+      Packet disconnect = new DisconnectMessage(nodeID, failoverOnServerShutdown);
+      channel0.sendAndFlush(disconnect);
    }
 
    public long generateChannelID()
@@ -516,7 +525,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       {
          try
          {
-            listener.connectionFailed(me);
+            listener.connectionFailed(me, false);
          }
          catch (final Throwable t)
          {

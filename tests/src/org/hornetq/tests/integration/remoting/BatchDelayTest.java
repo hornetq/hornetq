@@ -17,12 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -91,13 +86,13 @@ public class BatchDelayTest extends ServiceTestBase
       super.tearDown();
    }
 
-   protected ClientSessionFactory createSessionFactory()
+   protected ClientSessionFactory createSessionFactory() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.BATCH_DELAY, DELAY);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params));
 
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName(),
-                                                                                                    params));
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       return sf;
    }

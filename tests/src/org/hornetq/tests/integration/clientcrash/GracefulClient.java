@@ -48,7 +48,8 @@ public class GracefulClient
 
       try
       {
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);

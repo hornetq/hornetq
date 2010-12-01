@@ -18,14 +18,11 @@ import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ClusterConnectionControl;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.utils.json.JSONArray;
-import org.hornetq.utils.json.JSONObject;
 
 /**
  * A ClusterConnectionControl
@@ -141,32 +138,19 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       }
    }
 
-   public Object[] getStaticConnectorNamePairs()
+   public String[] getStaticConnectors()
    {
       clearIO();
       try
       {
-         List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
-
-         if (pairs == null)
+         if (configuration.getStaticConnectors() == null)
          {
             return null;
          }
-
-         Object[] ret = new Object[pairs.size()];
-
-         int i = 0;
-         for (Pair<String, String> pair : configuration.getStaticConnectorNamePairs())
+         else
          {
-            String[] opair = new String[2];
-
-            opair[0] = pair.a;
-            opair[1] = pair.b != null ? pair.b : null;
-
-            ret[i++] = opair;
+         return configuration.getStaticConnectors().toArray(new String[0]);                 
          }
-
-         return ret;
       }
       finally
       {
@@ -174,26 +158,23 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       }
    }
 
-   public String getStaticConnectorNamePairsAsJSON() throws Exception
+   public String getStaticConnectorsAsJSON() throws Exception
    {
       clearIO();
       try
       {
-         List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
+         List<String> connectors = configuration.getStaticConnectors();
 
-         if (pairs == null)
+         if (connectors == null)
          {
             return null;
          }
 
          JSONArray array = new JSONArray();
-
-         for (Pair<String, String> pair : pairs)
-         {
-            JSONObject p = new JSONObject();
-            p.put("a", pair.a);
-            p.put("b", pair.b);
-            array.put(p);
+         
+         for (String connector : connectors)
+         {            
+            array.put(connector);
          }
          return array.toString();
       }

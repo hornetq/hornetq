@@ -1,7 +1,7 @@
 <configuration 
    xmlns="urn:hornetq" 
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="urn:hornetq ../../src/schemas/hornetq-configuration.xsd">
+   xsi:schemaLocation="urn:hornetq ../../src/config/common/schema/hornetq-configuration.xsd">
       <clustered>true</clustered>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>             
       <thread-pool-max-size>54321</thread-pool-max-size>
@@ -53,8 +53,7 @@
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor1</class-name>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor2</class-name>
       </remoting-interceptors>
-      
-      <backup-connector-ref connector-name="backup-connector" />     
+
       <connectors>
          <connector name="connector1">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
@@ -67,11 +66,6 @@
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
             <param key="b1" value="w1"/>
             <param key="b2" value="234"/>
-         </connector>
-         <connector name="backup-connector">
-            <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory3</factory-class>
-            <param key="c1" value="x1"/>
-            <param key="c2" value="345"/>
          </connector>
       </connectors>
       <acceptors>
@@ -92,14 +86,14 @@
 	        <group-address>192.168.0.120</group-address>
 	        <group-port>11999</group-port>
             <broadcast-period>12345</broadcast-period>
-            <connector-ref connector-name="connector1"/>
+            <connector-ref>connector1</connector-ref>
 	     </broadcast-group>
          <broadcast-group name="bg2">
             <local-bind-port>12999</local-bind-port>
             <group-address>192.168.0.121</group-address>
             <group-port>13999</group-port>
             <broadcast-period>23456</broadcast-period>
-            <connector-ref connector-name="connector2" backup-connector-name="backup-connector"/>
+            <connector-ref>connector2</connector-ref>
          </broadcast-group>
       </broadcast-groups>
       <discovery-groups>
@@ -157,7 +151,9 @@
              <reconnect-attempts>2</reconnect-attempts>
              <failover-on-server-shutdown>false</failover-on-server-shutdown>
              <use-duplicate-detection>true</use-duplicate-detection>
-             <connector-ref connector-name="connector1"/>
+             <static-connectors>
+               <connector-ref>connector1</connector-ref>
+             </static-connectors>
          </bridge>
          <bridge name="bridge2">
              <queue-name>queue2</queue-name>
@@ -168,15 +164,19 @@
       <cluster-connections>
          <cluster-connection name="cluster-connection1">
              <address>queues1</address>
+             <connector-ref>connector1</connector-ref>
              <retry-interval>3</retry-interval>
              <use-duplicate-detection>true</use-duplicate-detection>
              <forward-when-no-consumers>false</forward-when-no-consumers>
              <max-hops>1</max-hops>
-             <connector-ref connector-name="connector1" backup-connector-name="backup-connector"/>
-             <connector-ref connector-name="connector2"/>
+            <static-connectors>
+               <connector-ref>connector1</connector-ref>
+               <connector-ref>connector2</connector-ref>
+            </static-connectors>
          </cluster-connection>
          <cluster-connection name="cluster-connection2">
              <address>queues2</address>
+             <connector-ref>connector2</connector-ref>
              <retry-interval>4</retry-interval>
              <use-duplicate-detection>false</use-duplicate-detection>
              <forward-when-no-consumers>true</forward-when-no-consumers>

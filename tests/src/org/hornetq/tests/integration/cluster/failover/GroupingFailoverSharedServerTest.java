@@ -19,6 +19,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -27,63 +28,10 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
 {
-   @Override
-   protected void setupReplicatedServer(final int node,
-                                        final boolean fileStorage,
-                                        final boolean netty,
-                                        final int backupNode)
-   {
-      if (servers[node] != null)
-      {
-         throw new IllegalArgumentException("Already a server at node " + node);
-      }
-
-      Configuration configuration = new ConfigurationImpl();
-
-      configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(backupNode, false));
-      configuration.setJournalMinFiles(2);
-      configuration.setJournalMaxIO_AIO(1000);
-      configuration.setJournalDirectory(getJournalDir(backupNode, false));
-      configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(getDefaultJournalType());
-      configuration.setPagingDirectory(getPageDir(backupNode, false));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(backupNode, false));
-      configuration.setClustered(true);
-      configuration.setJournalCompactMinFiles(0);
-      configuration.setBackup(true);
-      configuration.setSharedStore(true);
-
-      configuration.getAcceptorConfigurations().clear();
-
-      Map<String, Object> params = generateParams(node, netty);
-
-      TransportConfiguration invmtc = new TransportConfiguration(ServiceTestBase.INVM_ACCEPTOR_FACTORY, params);
-      configuration.getAcceptorConfigurations().add(invmtc);
-
-      if (netty)
-      {
-         TransportConfiguration nettytc = new TransportConfiguration(ServiceTestBase.NETTY_ACCEPTOR_FACTORY, params);
-         configuration.getAcceptorConfigurations().add(nettytc);
-      }
-
-      HornetQServer server;
-
-      if (fileStorage)
-      {
-         server = HornetQServers.newHornetQServer(configuration);
-      }
-      else
-      {
-         server = HornetQServers.newHornetQServer(configuration, false);
-      }
-      servers[node] = server;
-   }
 
    @Override
-   public void setupMasterServer(final int i, final boolean fileStorage, final boolean netty)
+   boolean isSharedServer()
    {
-      setupServer(i, fileStorage, netty);
+      return true;
    }
-
 }

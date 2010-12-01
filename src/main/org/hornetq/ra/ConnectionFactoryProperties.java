@@ -31,6 +31,8 @@ public class ConnectionFactoryProperties
     */
    private static boolean trace = ConnectionFactoryProperties.log.isTraceEnabled();
 
+   private final static Boolean IS_HA = false;
+
    private boolean hasBeenUpdated = false;
 
    /**
@@ -42,13 +44,8 @@ public class ConnectionFactoryProperties
     * The transport config, changing the default configured from the RA
     */
    private Map<String, Object> connectionParameters;
-
-   /**
-    * The transport config, changing the default configured from the RA
-    */
-   private Map<String, Object> backupConnectionParameters;
-
-   private String backupConnectorClassName;
+   
+   private Boolean ha = IS_HA;
 
    private String connectionLoadBalancingPolicyClassName;
 
@@ -131,35 +128,23 @@ public class ConnectionFactoryProperties
       hasBeenUpdated = true;
    }
 
-   public String getBackupConnectorClassName()
+   public Boolean isHA()
    {
-      return backupConnectorClassName;
+      return ha;
    }
-
-   public Map<String, Object> getParsedBackupConnectionParameters()
+   
+   public void setHA(final Boolean ha)
    {
-      return backupConnectionParameters;
-   }
-
-   public void setParsedBackupConnectionParameters(final Map<String, Object> backupConnectionParameters)
-   {
-      this.backupConnectionParameters = backupConnectionParameters;
       hasBeenUpdated = true;
+      this.ha = ha;
    }
-
-   public void setBackupConnectorClassName(final String backupConnectorClassName)
-   {
-      this.backupConnectorClassName = backupConnectorClassName;
-      hasBeenUpdated = true;
-   }
-
+   
    public String getConnectionLoadBalancingPolicyClassName()
    {
       if (ConnectionFactoryProperties.trace)
       {
          ConnectionFactoryProperties.log.trace("getConnectionLoadBalancingPolicyClassName()");
       }
-      hasBeenUpdated = true;
       return connectionLoadBalancingPolicyClassName;
    }
 

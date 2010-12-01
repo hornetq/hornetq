@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.jms.Connection;
 import javax.jms.MessageConsumer;
@@ -27,8 +29,10 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A PreACKJMSTest
@@ -190,17 +194,20 @@ public class PreACKJMSTest extends JMSTestBase
    }
 
    @Override
-   protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+   protected void createCF(final List<TransportConfiguration> connectorConfigs,
                            final String ... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
       int callTimeout = 30000;
+     
+      ArrayList<String> connectors = registerConnectors(server, connectorConfigs);
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                        connectorConfigs,
+                                       false,
+                                       JMSFactoryType.CF,
+                                       connectors,
                                         null,
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -228,9 +235,7 @@ public class PreACKJMSTest extends JMSTestBase
                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                        failoverOnServerShutdown,
                                         null,
-                                        JMSFactoryType.CF,
                                         jndiBindings);
    }
 

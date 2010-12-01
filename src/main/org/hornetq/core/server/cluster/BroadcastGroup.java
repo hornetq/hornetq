@@ -13,7 +13,6 @@
 
 package org.hornetq.core.server.cluster;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.NotificationService;
@@ -34,9 +33,9 @@ public interface BroadcastGroup extends HornetQComponent
 
    String getName();
 
-   void addConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);
+   void addConnector(TransportConfiguration tcConfig);
 
-   void removeConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);
+   void removeConnector(TransportConfiguration tcConfig);
 
    int size();
 

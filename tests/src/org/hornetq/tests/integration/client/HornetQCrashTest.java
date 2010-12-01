@@ -18,6 +18,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * 
@@ -31,6 +32,7 @@ public class HornetQCrashTest extends TestCase
    public HornetQServer server;
 
    private volatile boolean ackReceived;
+   private ServerLocator locator;
 
    public void testHang() throws Exception
    {
@@ -45,10 +47,13 @@ public class HornetQCrashTest extends TestCase
 
       server.getRemotingService().addInterceptor(new AckInterceptor(server));
 
-      ClientSessionFactory clientSessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
+
 
       // Force an ack at once - this means the send call will block
-      clientSessionFactory.setConfirmationWindowSize(1);
+      locator.setConfirmationWindowSize(1);
+
+      ClientSessionFactory clientSessionFactory = locator.createSessionFactory();
 
       ClientSession session = clientSessionFactory.createSession();
 
@@ -110,8 +115,19 @@ public class HornetQCrashTest extends TestCase
    }
 
    @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+   }
+
+   @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+
       super.tearDown();
 
       server = null;

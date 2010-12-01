@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.management;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanServerFactory;
@@ -25,6 +27,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.BridgeConfiguration;
@@ -83,14 +86,11 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                           proxy.retrieveAttributeValue("retryIntervalMultiplier"));
       Assert.assertEquals(bridgeConfig.getReconnectAttempts(),
                           ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
-      Assert.assertEquals(bridgeConfig.isFailoverOnServerShutdown(),
-                          ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
       Assert.assertEquals(bridgeConfig.isUseDuplicateDetection(),
                           ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
 
-      Object[] data = (Object[])proxy.retrieveAttributeValue("connectorPair");
-      Assert.assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
-      Assert.assertEquals(bridgeConfig.getConnectorPair().b, data[1]);
+      Object[] data = (Object[])proxy.retrieveAttributeValue("staticConnectors");
+      Assert.assertEquals(bridgeConfig.getStaticConnectors().get(0), data[0]);
 
       Assert.assertTrue((Boolean)proxy.retrieveAttributeValue("started"));
    }
@@ -137,7 +137,8 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                                                     RandomUtil.randomString(),
                                                                     null,
                                                                     false);
-      Pair<String, String> connectorPair = new Pair<String, String>(connectorConfig.getName(), null);
+      List<String> connectors = new ArrayList<String>();
+      connectors.add(connectorConfig.getName());
       bridgeConfig = new BridgeConfiguration(RandomUtil.randomString(),
                                              sourceQueueConfig.getName(),
                                              targetQueueConfig.getAddress(),
@@ -147,10 +148,10 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                              RandomUtil.randomDouble(),
                                              RandomUtil.randomPositiveInt(),
                                              RandomUtil.randomBoolean(),
-                                             RandomUtil.randomBoolean(),
                                              RandomUtil.randomPositiveInt(),
                                              HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                             connectorPair,
+                                             connectors,
+                                             false,
                                              ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
@@ -175,8 +176,8 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
       server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
-
-      ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
    }

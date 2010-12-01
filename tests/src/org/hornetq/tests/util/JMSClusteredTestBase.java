@@ -23,9 +23,7 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.NamingException;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -34,8 +32,9 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
-import org.hornetq.jms.server.config.impl.TopicConfigurationImpl;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -103,7 +102,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       return (Topic)context1.lookup("/topic/" + name);
    }
-
+ 
    @Override
    protected void setUp() throws Exception
    {
@@ -112,16 +111,16 @@ public class JMSClusteredTestBase extends ServiceTestBase
       setupServer2();
       setupServer1();
 
-      jmsServer2.start();
-      jmsServer2.activated();
-
       jmsServer1.start();
       jmsServer1.activated();
 
-      cf1 = HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(),
+      jmsServer2.start();
+      jmsServer2.activated();
+
+      cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                generateInVMParams(0)));
+      cf2 = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                 generateInVMParams(1)));
-      cf2 = HornetQJMSClient.createConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                                generateInVMParams(2)));
    }
 
    /**
@@ -130,15 +129,18 @@ public class JMSClusteredTestBase extends ServiceTestBase
     */
    private void setupServer2() throws Exception
    {
-      List<Pair<String, String>> toOtherServerPair = new ArrayList<Pair<String, String>>();
-      toOtherServerPair.add(new Pair<String, String>("toServer1", null));
+      List<String> toOtherServerPair = new ArrayList<String>();
+      toOtherServerPair.add("toServer1");
 
-      Configuration conf2 = createDefaultConfig(1, generateInVMParams(2), InVMAcceptorFactory.class.getCanonicalName());
+      Configuration conf2 = createDefaultConfig(1, generateInVMParams(1), InVMAcceptorFactory.class.getCanonicalName());
       conf2.setSecurityEnabled(false);
       conf2.setJMXManagementEnabled(true);
       conf2.setPersistenceEnabled(false);
 
       conf2.getConnectorConfigurations().put("toServer1",
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(0)));
+      conf2.getConnectorConfigurations().put("server2",
                                              new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                         generateInVMParams(1)));
 
@@ -146,6 +148,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
       
       conf2.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server1",
                                                                               "jms",
+                                                                                 "server2",
                                                                               1000,
                                                                               true,
                                                                               true,
@@ -170,10 +173,10 @@ public class JMSClusteredTestBase extends ServiceTestBase
     */
    private void setupServer1() throws Exception
    {
-      List<Pair<String, String>> toOtherServerPair = new ArrayList<Pair<String, String>>();
-      toOtherServerPair.add(new Pair<String, String>("toServer2", null));
+      List<String> toOtherServerPair = new ArrayList<String>();
+      toOtherServerPair.add("toServer2");
 
-      Configuration conf1 = createDefaultConfig(1, generateInVMParams(1), InVMAcceptorFactory.class.getCanonicalName());
+      Configuration conf1 = createDefaultConfig(0, generateInVMParams(0), InVMAcceptorFactory.class.getCanonicalName());
       
       conf1.setSecurityEnabled(false);
       conf1.setJMXManagementEnabled(true);
@@ -181,14 +184,16 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       conf1.getConnectorConfigurations().put("toServer2",
                                              new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                        generateInVMParams(2)));
-
-      // TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
+                                                                        generateInVMParams(1)));
+      conf1.getConnectorConfigurations().put("server1",
+                                             new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                        generateInVMParams(0)));
 
       conf1.setClustered(true);
 
       conf1.getClusterConfigurations().add(new ClusterConnectionConfiguration("to-server2",
                                                                               "jms",
+                                                                              "server1",
                                                                               1000,
                                                                               true,
                                                                               true,
@@ -222,6 +227,10 @@ public class JMSClusteredTestBase extends ServiceTestBase
       {
          log.warn("Can't stop server2", e);
       }
+      
+      ((HornetQConnectionFactory)cf1).close();
+      
+      ((HornetQConnectionFactory)cf2).close();
 
       server2 = null;
 

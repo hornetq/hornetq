@@ -13,13 +13,10 @@
 
 package org.hornetq.jms.client;
 
-import java.util.List;
-
 import javax.jms.ConnectionFactory;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 
 
 /**
@@ -32,29 +29,39 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
 
    private final static long serialVersionUID = -2810634789345348326L;
 
-   public HornetQJMSConnectionFactory(TransportConfiguration transportConfiguration)
+   /**
+    * 
+    */
+   public HornetQJMSConnectionFactory()
    {
-      super(transportConfiguration);
+      super();
    }
 
-   public HornetQJMSConnectionFactory(ClientSessionFactory sessionFactory)
+   /**
+    * @param serverLocator
+    */
+   public HornetQJMSConnectionFactory(ServerLocator serverLocator)
    {
-      super(sessionFactory);
+      super(serverLocator);
+    }
+
+   /**
+    * @param ha
+    * @param discoveryAddress
+    * @param discoveryPort
+    */
+   public HornetQJMSConnectionFactory(boolean ha, String discoveryAddress, int discoveryPort)
+   {
+      super(ha, discoveryAddress, discoveryPort);
    }
 
-   public HornetQJMSConnectionFactory(String discoveryAddress, int discoveryPort)
+   /**
+    * @param ha
+    * @param initialConnectors
+    */
+   public HornetQJMSConnectionFactory(boolean ha, TransportConfiguration... initialConnectors)
    {
-      super(discoveryAddress, discoveryPort);
+      super(ha, initialConnectors);
    }
 
-   public HornetQJMSConnectionFactory(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
-   {
-      super(connectorConfigs);
-   }
-
-   public HornetQJMSConnectionFactory(TransportConfiguration connectorConfig,
-                                      TransportConfiguration backupConnectorConfig)
-   {
-      super(connectorConfig, backupConnectorConfig);
-   }
 }

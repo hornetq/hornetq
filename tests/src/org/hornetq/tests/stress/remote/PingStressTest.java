@@ -21,6 +21,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -120,12 +121,12 @@ public class PingStressTest extends ServiceTestBase
       };
 
       server.getRemotingService().addInterceptor(noPongInterceptor);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      final ClientSessionFactory csf1 = locator.createSessionFactory();
 
-      final ClientSessionFactory csf1 = HornetQClient.createClientSessionFactory(transportConfig);
-
-      csf1.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
-      csf1.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
-      csf1.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
+      csf1.getServerLocator().setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+      csf1.getServerLocator().setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+      csf1.getServerLocator().setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
       final int numberOfSessions = 1;
       final int numberOfThreads = 30;
@@ -151,11 +152,12 @@ public class PingStressTest extends ServiceTestBase
             try
             {
 
-               final ClientSessionFactory csf2 = HornetQClient.createClientSessionFactory(transportConfig);
+               ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+               final ClientSessionFactory csf2 = locator.createSessionFactory();
 
-               csf2.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
-               csf2.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
-               csf2.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
+               csf2.getServerLocator().setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+               csf2.getServerLocator().setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+               csf2.getServerLocator().setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
                // Start all at once to make concurrency worst
                flagAligned.countDown();

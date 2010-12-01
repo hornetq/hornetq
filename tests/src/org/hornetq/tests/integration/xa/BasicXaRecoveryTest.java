@@ -23,11 +23,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -62,6 +58,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    private Configuration configuration;
 
    private final SimpleString atestq = new SimpleString("atestq");
+
+   private ServerLocator locator;
 
    @Override
    protected void setUp() throws Exception
@@ -1258,15 +1256,15 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       return message;
    }
 
-   private void createClients() throws HornetQException
+   private void createClients() throws Exception
    {
       createClients(false, true);
    }
 
-   private void createClients(final boolean createQueue, final boolean commitACKs) throws HornetQException
+   private void createClients(final boolean createQueue, final boolean commitACKs) throws Exception
    {
-
-      sessionFactory = createInVMFactory();
+      locator = createInVMNonHALocator();
+      sessionFactory = locator.createSessionFactory();
       clientSession = sessionFactory.createSession(true, false, commitACKs);
       if (createQueue)
       {

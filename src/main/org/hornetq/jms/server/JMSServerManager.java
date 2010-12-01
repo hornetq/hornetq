@@ -18,7 +18,6 @@ import java.util.Set;
 
 import javax.naming.Context;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
@@ -160,40 +159,18 @@ public interface JMSServerManager extends HornetQComponent
     */
    boolean destroyTopic(String name) throws Exception;
 
-   void createConnectionFactory(String name, String discoveryAddress, int discoveryPort, String ... bindings) throws Exception;
+   void createConnectionFactory(String name, boolean ha, JMSFactoryType cfType, String discoveryGroupName, String ... jndiBindings) throws Exception;
 
    void createConnectionFactory(String name,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                boolean ha,
+                                JMSFactoryType cfType, 
+                                List<String> connectorNames,
                                 String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
-                                TransportConfiguration liveTC,
-                                TransportConfiguration backupTC,
-                                String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name, TransportConfiguration liveTC, JMSFactoryType cfType, String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                String clientID,
-                                String discoveryAddress,
-                                int discoveryPort,
-                                String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                String clientID,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                                String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                String clientID,
-                                TransportConfiguration liveTC,
-                                TransportConfiguration backupTC,
-                                String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name, String clientID, TransportConfiguration liveTC,  String ... bindings) throws Exception;
-
-   void createConnectionFactory(String name,
-                                List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                                boolean ha,
+                                JMSFactoryType cfType, 
+                                List<String> connectorNames,                                
                                 String clientID,
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
@@ -221,18 +198,14 @@ public interface JMSServerManager extends HornetQComponent
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnInitialConnection,
-                                boolean failoverOnServerShutdown,
                                 String groupId,
-                                JMSFactoryType factoryType,
                                 String ... bindings) throws Exception;
 
    void createConnectionFactory(String name,
-                                String localBindAdress,
-                                String discoveryAddress,
-                                int discoveryPort,
+                                boolean ha,
+                                JMSFactoryType cfType, 
+                                String discoveryGroupName,
                                 String clientID,
-                                long discoveryRefreshTimeout,
-                                long discoveryInitialWaitTimeout,
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
                                 long callTimeout,
@@ -259,7 +232,6 @@ public interface JMSServerManager extends HornetQComponent
                                 long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnInitialConnection,
-                                boolean failoverOnServerShutdown,
                                 String groupId,
                                 String ... bindings) throws Exception;
    

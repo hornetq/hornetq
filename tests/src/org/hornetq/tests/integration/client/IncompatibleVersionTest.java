@@ -23,7 +23,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.client.impl.FailoverManagerImpl;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
@@ -52,6 +52,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
    private HornetQServer server;
 
    private CoreRemotingConnection connection;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -66,32 +67,18 @@ public class IncompatibleVersionTest extends ServiceTestBase
       server.getConfiguration().setConnectionTTLOverride(500);
       server.start();
 
-      TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      ClientSessionFactory csf = HornetQClient.createClientSessionFactory(config);
-      ExecutorService executorService = Executors.newFixedThreadPool(1);
-      ScheduledExecutorService scheduledexecutorService = Executors.newScheduledThreadPool(1);
-      FailoverManagerImpl failoverManager = new FailoverManagerImpl(csf,
-                                                                    config,
-                                                                    null,
-                                                                    HornetQClient.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
-                                                                    HornetQClient.DEFAULT_CALL_TIMEOUT,
-                                                                    HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                    500,
-                                                                    HornetQClient.DEFAULT_RETRY_INTERVAL,
-                                                                    HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
-                                                                    HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
-                                                                    HornetQClient.DEFAULT_RECONNECT_ATTEMPTS,
-                                                                    HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                                                    executorService,
-                                                                    scheduledexecutorService,
-                                                                    null);
-      connection = failoverManager.getConnection();
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory csf = locator.createSessionFactory();
+
+      connection = csf.getConnection();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       connection.destroy();
+
+      locator.close();
 
       server.stop();
    }

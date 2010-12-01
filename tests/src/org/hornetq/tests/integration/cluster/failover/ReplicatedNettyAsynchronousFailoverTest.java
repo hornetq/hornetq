@@ -14,6 +14,8 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import org.hornetq.core.config.Configuration;
+import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A ReplicatedNettyAsynchronousFailoverTest
@@ -40,30 +42,42 @@ public class ReplicatedNettyAsynchronousFailoverTest extends NettyAsynchronousFa
    // Protected -----------------------------------------------------
 
    @Override
+   protected TestableServer createLiveServer()
+   {
+      return new SameProcessHornetQServer(createServer(true, liveConfig));
+   }
+   
+   @Override
+   protected TestableServer createBackupServer()
+   {
+      return new SameProcessHornetQServer(createServer(true, backupConfig));
+   }
+   
+   @Override
    protected void createConfigs() throws Exception
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
-      config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(false);
-      config1.setBackup(true);
-      server1Service = super.createServer(true, config1);
+      backupConfig = super.createDefaultConfig();
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + "_backup");
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + "_backup");
+      backupConfig.getAcceptorConfigurations().clear();
+      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
+      backupConfig.setSecurityEnabled(false);
+      backupConfig.setSharedStore(false);
+      backupConfig.setBackup(true);
+      backupServer = createBackupServer();
+      
+      liveConfig = super.createDefaultConfig();
+      liveConfig.getAcceptorConfigurations().clear();
+      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-
-      config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      config0.setBackupConnectorName("toBackup");
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(false);
-      server0Service = super.createServer(true, config0);
-
-      server1Service.start();
-      server0Service.start();
+      //liveConfig.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
+      //liveConfig.setBackupConnectorName("toBackup");
+      liveConfig.setSecurityEnabled(false);
+      liveConfig.setSharedStore(false);
+      liveServer = createLiveServer();
+      
+      backupServer.start();
+      liveServer.start();
    }
 
    // Private -------------------------------------------------------

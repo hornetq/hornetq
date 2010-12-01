@@ -15,14 +15,11 @@ package org.hornetq.core.management.impl;
 
 import javax.management.MBeanOperationInfo;
 
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.json.JSONArray;
-import org.hornetq.utils.json.JSONObject;
 
 /**
  * A BroadcastGroupControl
@@ -91,14 +88,9 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
          Object[] ret = new Object[configuration.getConnectorInfos().size()];
 
          int i = 0;
-         for (Pair<String, String> pair : configuration.getConnectorInfos())
+         for (String connector : configuration.getConnectorInfos())
          {
-            String[] opair = new String[2];
-
-            opair[0] = pair.a;
-            opair[1] = pair.b != null ? pair.b : null;
-
-            ret[i++] = opair;
+            ret[i++] = connector;
          }
 
          return ret;
@@ -116,12 +108,9 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
       {
          JSONArray array = new JSONArray();
 
-         for (Pair<String, String> pair : configuration.getConnectorInfos())
+         for (String connector : configuration.getConnectorInfos())
          {
-            JSONObject p = new JSONObject();
-            p.put("a", pair.a);
-            p.put("b", pair.b);
-            array.put(p);
+            array.put(connector);
          }
          return array.toString();
       }

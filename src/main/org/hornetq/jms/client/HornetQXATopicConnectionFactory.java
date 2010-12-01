@@ -13,13 +13,10 @@
 
 package org.hornetq.jms.client;
 
-import java.util.List;
-
 import javax.jms.XATopicConnectionFactory;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
-
+import org.hornetq.api.core.client.ServerLocator;
 
 /**
  * A class that represents a XATopicConnectionFactory.
@@ -31,19 +28,39 @@ public class HornetQXATopicConnectionFactory extends HornetQConnectionFactory im
 {
    private static final long serialVersionUID = -7018290426884419693L;
 
-   public HornetQXATopicConnectionFactory(String discoveryAddress, int discoveryPort)
+   /**
+    * 
+    */
+   public HornetQXATopicConnectionFactory()
    {
-      super(discoveryAddress, discoveryPort);
+      super();
    }
 
-   public HornetQXATopicConnectionFactory(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs)
+   /**
+    * @param serverLocator
+    */
+   public HornetQXATopicConnectionFactory(final ServerLocator serverLocator)
    {
-      super(connectorConfigs);
+      super(serverLocator);
+  }
+
+   /**
+    * @param ha
+    * @param discoveryAddress
+    * @param discoveryPort
+    */
+   public HornetQXATopicConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
+   {
+      super(ha, discoveryAddress, discoveryPort);
    }
 
-   public HornetQXATopicConnectionFactory(TransportConfiguration connectorConfig,
-                                          TransportConfiguration backupConnectorConfig)
+   /**
+    * @param ha
+    * @param initialConnectors
+    */
+   public HornetQXATopicConnectionFactory(final boolean ha, final TransportConfiguration... initialConnectors)
    {
-      super(connectorConfig, backupConnectorConfig);
+      super(ha, initialConnectors);
    }
+
 }

@@ -18,12 +18,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -47,6 +42,8 @@ public class MessageConcurrencyTest extends ServiceTestBase
    
    private final SimpleString QUEUE_NAME = new SimpleString("MessageConcurrencyTestQueue");
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -55,11 +52,15 @@ public class MessageConcurrencyTest extends ServiceTestBase
       server = createServer(false);
 
       server.start();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
+
       server.stop();
 
       server = null;
@@ -70,7 +71,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    // Test that a created message can be sent via multiple producers on different sessions concurrently
    public void testMessageConcurrency() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession createSession = sf.createSession();
       
@@ -131,7 +132,7 @@ public class MessageConcurrencyTest extends ServiceTestBase
    // Test that a created message can be sent via multiple producers after being consumed from a single consumer
    public void testMessageConcurrencyAfterConsumption() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession consumeSession = sf.createSession();
       

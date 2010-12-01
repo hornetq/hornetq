@@ -55,6 +55,7 @@ public class SpawnedVMSupport
                                       success,
                                       failure,
                                       configDir,
+                                      false,
                                       args);
    }
 
@@ -66,6 +67,7 @@ public class SpawnedVMSupport
                                  final String success,
                                  final String failure,
                                  final String configDir,
+                                 boolean debug,
                                  final String... args) throws Exception
    {
       StringBuffer sb = new StringBuffer();
@@ -98,6 +100,10 @@ public class SpawnedVMSupport
          libPath = "\"" + libPath + "\"";
       }
       sb.append("-Djava.library.path=").append(libPath).append(" ");
+      if(debug)
+      {
+         sb.append("-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 ");
+      }
 
       sb.append(className).append(' ');
 

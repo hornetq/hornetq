@@ -28,6 +28,7 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * 
@@ -65,7 +66,7 @@ public class InstantiateConnectionFactoryExample extends HornetQExample
                                                                                     connectionParams);
 
          // Step 3 Directly instantiate the JMS ConnectionFactory object using that TransportConfiguration
-         ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
+         ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
 
          // Step 4.Create a JMS Connection
          connection = cf.createConnection();

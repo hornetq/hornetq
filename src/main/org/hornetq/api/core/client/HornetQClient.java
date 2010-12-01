@@ -16,6 +16,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 
 import java.util.List;
 
@@ -68,8 +69,6 @@ public class HornetQClient
 
    public static final long DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT = 10000;
 
-   public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
-
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
@@ -77,10 +76,10 @@ public class HornetQClient
    public static final long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
+
+   public static final int INITIAL_CONNECT_ATTEMPTS = 1;
    
    public static final boolean DEFAULT_FAILOVER_ON_INITIAL_CONNECTION = false;
-
-   public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
    public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
 
@@ -94,73 +93,63 @@ public class HornetQClient
 
    public static final boolean DEFAULT_XA = false;
    
+   public static final boolean DEFAULT_HA = false;
+   
    /**
-    * Creates a ClientSessionFactory using all the defaults.
-    *
-    * @return the ClientSessionFactory.
+    * Create a ServerLocator which creates session factories using a static list of transportConfigurations, the ServerLocator is not updated automatically
+    * as the cluster topology changes, and no HA backup information is propagated to the client
+    * 
+    * @param transportConfigurations
+    * @return the ServerLocator
     */
-   public static ClientSessionFactory createClientSessionFactory()
+   public static ServerLocator createServerLocatorWithoutHA(TransportConfiguration... transportConfigurations)
    {
-      return new ClientSessionFactoryImpl();
+      return new ServerLocatorImpl(false, transportConfigurations);
    }
-
+   
    /**
-    * Creates a new ClientSessionFactory using the same configuration as the one passed in.
-    *
-    * @param other The ClientSessionFactory to copy
-    * @return The new ClientSessionFactory
+    * Create a ServerLocator which creates session factories from a set of live servers, no HA backup information is propagated to the client
+    * 
+    * The UDP address and port are used to listen for live servers in the cluster
+    * 
+    * @param discoveryAddress The UDP group address to listen for updates
+    * @param discoveryPort the UDP port to listen for updates
+    * @return the ServerLocator
     */
-   public static ClientSessionFactory createClientSessionFactory(final ClientSessionFactory other)
+   public static ServerLocator createServerLocatorWithoutHA(String discoveryAddress, final int discoveryPort)
    {
-      return new ClientSessionFactoryImpl(other);
+      return new ServerLocatorImpl(false, discoveryAddress, discoveryPort);
    }
-
+   
    /**
-    * Creates a ClientSessionFactory that uses discovery to connect to the servers.
-    *
-    * @param discoveryAddress The address to use for discovery
-    * @param discoveryPort The port to use for discovery.
-    * @return The ClientSessionFactory.
+    * Create a ServerLocator which will receive cluster topology updates from the cluster as servers leave or join and new backups are appointed or removed.
+    * The initial list of servers supplied in this method is simply to make an initial connection to the cluster, once that connection is made, up to date
+    * cluster topology information is downloaded and automatically updated whenever the cluster topology changes. If the topology includes backup servers
+    * that information is also propagated to the client so that it can know which server to failover onto in case of live server failure.
+    * @param initialServers The initial set of servers used to make a connection to the cluster. Each one is tried in turn until a successful connection is made. Once
+    * a connection is made, the cluster topology is downloaded and the rest of the list is ignored.
+    * @return the ServerLocator
     */
-   public static ClientSessionFactory createClientSessionFactory(final String discoveryAddress, final int discoveryPort)
+   public static ServerLocator createServerLocatorWithHA(TransportConfiguration... initialServers)
    {
-      return new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+      return new ServerLocatorImpl(true, initialServers);
    }
-
+   
    /**
-    * Creates a ClientSessionFactory using a List of TransportConfigurations and backups.
-    *
-    * @param staticConnectors The list of TransportConfiguration's to use.
-    * @return The ClientSessionFactory.
+    * Create a ServerLocator which will receive cluster topology updates from the cluster as servers leave or join and new backups are appointed or removed.
+    * The discoveryAddress and discoveryPort parameters in this method are used to listen for UDP broadcasts which contain connection information for members of the cluster.
+    * The broadcasted connection information is simply used to make an initial connection to the cluster, once that connection is made, up to date
+    * cluster topology information is downloaded and automatically updated whenever the cluster topology changes. If the topology includes backup servers
+    * that information is also propagated to the client so that it can know which server to failover onto in case of live server failure.
+    * @param discoveryAddress The UDP group address to listen for updates
+    * @param discoveryPort the UDP port to listen for updates
+    * @return the ServerLocator
     */
-   public static ClientSessionFactory createClientSessionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public static ServerLocator createServerLocatorWithHA(String discoveryAddress, final int discoveryPort)
    {
-      return new ClientSessionFactoryImpl(staticConnectors);
+      return new ServerLocatorImpl(true, discoveryAddress, discoveryPort);
    }
-
-   /**
-    * Creates a ClientConnectionFactory using a TransportConfiguration of the server and a backup if needed.
-    *
-    * @param connectorConfig The TransportConfiguration of the server to connect to.
-    * @param backupConnectorConfig The TransportConfiguration of the backup server to connect to (or {@code null} if there is no backup)
-    * @return The ClientSessionFactory.
-    */
-   public static ClientSessionFactory createClientSessionFactory(final TransportConfiguration connectorConfig,
-                                   final TransportConfiguration backupConnectorConfig)
-   {
-      return new ClientSessionFactoryImpl(connectorConfig, backupConnectorConfig);
-   }
-
-   /**
-    * Creates a ClientSessionFactory using the TransportConfiguration of the server to connect to.
-    *
-    * @param connectorConfig The TransportConfiguration of the server.
-    * @return The ClientSessionFactory.
-    */
-   public static ClientSessionFactory createClientSessionFactory(final TransportConfiguration connectorConfig)
-   {
-      return new ClientSessionFactoryImpl(connectorConfig);
-   }
+   
 
    private HornetQClient()
    {

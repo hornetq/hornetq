@@ -18,6 +18,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -35,13 +36,31 @@ public class TransactionalSendTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
+   private ServerLocator locator;
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = createInVMNonHALocator();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      locator.close();
+
+      super.tearDown();
+   }
+
    public void testSendWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = session.createProducer(addressA);
@@ -79,7 +98,7 @@ public class TransactionalSendTest extends ServiceTestBase
       try
       {
          server.start();
-         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = session.createProducer(addressA);

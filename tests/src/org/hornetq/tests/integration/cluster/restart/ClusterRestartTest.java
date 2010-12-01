@@ -41,7 +41,7 @@ public class ClusterRestartTest extends ClusterTestBase
       try
       {
 
-         setupSessionFactory(0, isNetty());
+         setupSessionFactory(0, isNetty(), -1);
          setupSessionFactory(1, isNetty());
 
          // create some dummy queues to ensure that the test queue has a high numbered binding
@@ -77,8 +77,6 @@ public class ClusterRestartTest extends ClusterTestBase
          startServers(0);
 
          
-         addConsumer(1, 0, "queue10", null);
-         
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);
 
@@ -89,7 +87,7 @@ public class ClusterRestartTest extends ClusterTestBase
 
          sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
-         verifyReceiveAllInRange(10, 20, 1);
+         verifyReceiveAllInRange(10, 20, 0);
          System.out.println("*****************************************************************************");
       }
       finally
@@ -97,6 +95,8 @@ public class ClusterRestartTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1);
       }
@@ -119,7 +119,7 @@ public class ClusterRestartTest extends ClusterTestBase
       try
       {
 
-         setupSessionFactory(0, isNetty());
+         setupSessionFactory(0, isNetty(), -1);
          setupSessionFactory(1, isNetty());
 
          // create some dummy queues to ensure that the test queue has a high numbered binding
@@ -170,6 +170,8 @@ public class ClusterRestartTest extends ClusterTestBase
          closeAllConsumers();
 
          closeAllSessionFactories();
+
+         closeAllServerLocatorsFactories();
 
          stopServers(0, 1);
       }

@@ -54,15 +54,14 @@ public interface ClusterConnectionControl extends HornetQComponentControl
    int getMaxHops();
 
    /**
-    * Returns the pairs of live-backup connectors used by this cluster connection.
+    * Returns the list of static connectors
     */
-   Object[] getStaticConnectorNamePairs();
+   Object[] getStaticConnectors();
 
    /**
-    * Returns the pairs of live-backup connectors used by this cluster connection
-    * using JSON serialization.
+    * Returns the list of static connectors as JSON
     */
-   String getStaticConnectorNamePairsAsJSON() throws Exception;
+   String getStaticConnectorsAsJSON() throws Exception;
 
    /**
     * Returns the name of the discovery group used by this cluster connection.

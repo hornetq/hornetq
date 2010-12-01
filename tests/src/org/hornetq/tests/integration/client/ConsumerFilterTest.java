@@ -17,6 +17,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.QueueImpl;
@@ -58,7 +59,9 @@ public class ConsumerFilterTest extends ServiceTestBase
 
    public void testNonMatchingMessagesFollowedByMatchingMessages() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
 
@@ -95,11 +98,17 @@ public class ConsumerFilterTest extends ServiceTestBase
       assertNull(consumer.receiveImmediate());
       
       session.close();
+      
+      sf.close();
+      
+      locator.close();
    }
 
    public void testNonMatchingMessagesFollowedByMatchingMessagesMany() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
 
@@ -143,11 +152,17 @@ public class ConsumerFilterTest extends ServiceTestBase
       assertNull(consumer.receiveImmediate());
 
       session.close();
+      
+      sf.close();
+      
+      locator.close();
    }
    
    public void testTwoConsumers() throws Exception
    {
-      ClientSessionFactory sf = createInVMFactory();
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession();
 
@@ -229,5 +244,9 @@ public class ConsumerFilterTest extends ServiceTestBase
       assertNull(consumer2.receiveImmediate());
       
       session.close();
+      
+      sf.close();
+      
+      locator.close();
    }
 }

@@ -14,11 +14,7 @@ package org.hornetq.tests.integration.scheduling;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -42,6 +38,8 @@ public class DelayedMessageTest extends ServiceTestBase
 
    private final String qName = "DelayedMessageTestQueue";
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -58,7 +56,7 @@ public class DelayedMessageTest extends ServiceTestBase
       newSets.setRedeliveryDelay(DelayedMessageTest.DELAY);
       newSets.merge(qs);
       server.getAddressSettingsRepository().addMatch(qName, newSets);
-
+      locator = createInVMNonHALocator();
    }
 
    @Override
@@ -83,7 +81,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    public void testDelayedRedeliveryDefaultOnClose() throws Exception
    {
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, false, false);
 
       session.createQueue(qName, qName, null, true);
@@ -154,7 +152,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    public void testDelayedRedeliveryDefaultOnRollback() throws Exception
    {
-      ClientSessionFactory sessionFactory = createInVMFactory();
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession session = sessionFactory.createSession(false, false, false);
 
       session.createQueue(qName, qName, null, true);

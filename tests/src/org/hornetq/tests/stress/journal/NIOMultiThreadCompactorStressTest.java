@@ -25,11 +25,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -63,6 +59,8 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
 
+   private ServerLocator locator;
+
    protected int getNumberOfIterations()
    {
       return 3;
@@ -72,11 +70,14 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
+
+      locator = createInVMNonHALocator();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      locator.close();
       stopServer();
       super.tearDown();
    }
@@ -149,11 +150,11 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
     * @throws HornetQException
     * @throws XAException
     */
-   private void addEmptyTransaction(final Xid xid) throws HornetQException, XAException
+   private void addEmptyTransaction(final Xid xid) throws Exception, XAException
    {
-      ClientSessionFactory sf = createInVMFactory();
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
+      ClientSessionFactory sf = locator.createSessionFactory();
+      sf.getServerLocator().setBlockOnNonDurableSend(false);
+      sf.getServerLocator().setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
@@ -162,11 +163,11 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       sf.close();
    }
 
-   private void checkEmptyXID(final Xid xid) throws HornetQException, XAException
+   private void checkEmptyXID(final Xid xid) throws Exception, XAException
    {
-      ClientSessionFactory sf = createInVMFactory();
-      sf.setBlockOnNonDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
+      ClientSessionFactory sf = locator.createSessionFactory();
+      sf.getServerLocator().setBlockOnNonDurableSend(false);
+      sf.getServerLocator().setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
@@ -375,9 +376,11 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
       server.start();
 
-      sf = createNettyFactory();
-      sf.setBlockOnDurableSend(false);
-      sf.setBlockOnAcknowledge(false);
+      ServerLocator locator = createNettyNonHALocator();
+
+      sf = locator.createSessionFactory();
+      sf.getServerLocator().setBlockOnDurableSend(false);
+      sf.getServerLocator().setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
 
@@ -391,7 +394,9 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
       sess.close();
 
-      sf = createInVMFactory();
+      locator.close();
+
+      sf = locator.createSessionFactory();
    }
 
    // Static --------------------------------------------------------

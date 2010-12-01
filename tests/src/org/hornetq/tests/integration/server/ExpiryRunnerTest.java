@@ -31,6 +31,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -49,6 +50,7 @@ public class ExpiryRunnerTest extends UnitTestCase
    private SimpleString expiryQueue;
 
    private SimpleString expiryAddress;
+   private ServerLocator locator;
 
    public void testBasicExpire() throws Exception
    {
@@ -255,8 +257,10 @@ public class ExpiryRunnerTest extends UnitTestCase
       // start the server
       server.start();
       // then we create a client as normal
-      ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      sessionFactory.setBlockOnAcknowledge(true);
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator.setBlockOnAcknowledge(true);
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+
       clientSession = sessionFactory.createSession(false, true, true);
       clientSession.createQueue(qName, qName, null, false);
       expiryAddress = new SimpleString("EA");
@@ -282,6 +286,7 @@ public class ExpiryRunnerTest extends UnitTestCase
             //
          }
       }
+      locator.close();
       if (server != null && server.isStarted())
       {
          try

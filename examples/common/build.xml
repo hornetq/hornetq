@@ -146,6 +146,7 @@
          <jvmarg value="-Dhornetq.example.server.args=${server.args}"/>
          <jvmarg value="-Dhornetq.example.logserveroutput=${hornetq.example.logserveroutput}"/>
          <jvmarg value="-Dhornetq.example.runServer=${hornetq.example.runServer}"/>
+         <!--<jvmarg value="-Dserver1=true"/>-->
          <arg line="${hornetq.example.beans.file}"/>
          <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <classpath refid="client.classpath"/>

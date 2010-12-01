@@ -90,7 +90,7 @@ public class JMSTestBase extends ServiceTestBase
 
       return (Queue)context.lookup("/jms/" + name);
    }
-   
+
    protected Topic createTopic(final String name) throws Exception, NamingException
    {
       jmsServer.createTopic(false, name, "/jms/" + name);
@@ -159,9 +159,8 @@ public class JMSTestBase extends ServiceTestBase
 
    protected void registerConnectionFactory() throws Exception
    {
-      List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-      connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
-                                                                                    null));
+      List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
+      connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
       createCF(connectorConfigs, "/cf");
 
@@ -174,17 +173,17 @@ public class JMSTestBase extends ServiceTestBase
     * @param jndiBindings
     * @throws Exception
     */
-   protected void createCF(final List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                           final String ... jndiBindings) throws Exception
+   protected void createCF(final List<TransportConfiguration> connectorConfigs, final String... jndiBindings) throws Exception
    {
       int retryInterval = 1000;
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
       int callTimeout = 30000;
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                        connectorConfigs,
+                                        false,
+                                        JMSFactoryType.CF,
+                                        registerConnectors(server, connectorConfigs),
                                         null,
                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -212,9 +211,7 @@ public class JMSTestBase extends ServiceTestBase
                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                         reconnectAttempts,
                                         HornetQClient.DEFAULT_FAILOVER_ON_INITIAL_CONNECTION,
-                                        failoverOnServerShutdown,
                                         null,
-                                        JMSFactoryType.CF,
                                         jndiBindings);
    }
 

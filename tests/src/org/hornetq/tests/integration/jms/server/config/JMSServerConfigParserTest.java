@@ -83,7 +83,6 @@ public class JMSServerConfigParserTest extends ServiceTestBase
       assertEquals(false, cfConfig.isAutoGroup());
       assertEquals(true, cfConfig.isPreAcknowledge());
       assertEquals(2345, cfConfig.getConnectionTTL());
-      assertEquals(false, cfConfig.isFailoverOnServerShutdown());
       assertEquals("FooClass", cfConfig.getLoadBalancingPolicyClassName());
       assertEquals(34, cfConfig.getReconnectAttempts());
       assertEquals(5, cfConfig.getRetryInterval());

@@ -32,10 +32,10 @@ import javax.resource.spi.work.WorkManager;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -348,7 +348,7 @@ public class HornetQActivation
 
       try
       {
-         result = ra.createSession(factory.getCoreFactory(),
+         result = ra.createSession(factory.getServerLocator().createSessionFactory(),
                                    spec.getAcknowledgeModeInt(),
                                    spec.getUser(),
                                    spec.getPassword(),

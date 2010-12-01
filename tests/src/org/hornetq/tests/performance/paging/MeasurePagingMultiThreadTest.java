@@ -18,10 +18,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -69,10 +66,11 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
       HornetQServer messagingService = createServer(true, config, 10 * 1024, 20 * 1024, settings);
       messagingService.start();
+      ServerLocator locator = createInVMNonHALocator();
       try
       {
 
-         final ClientSessionFactory factory = createInVMFactory();
+         final ClientSessionFactory factory = locator.createSessionFactory();
          final SimpleString adr = new SimpleString("test-adr");
 
          createDestination(factory, adr);
@@ -177,6 +175,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
       }
       finally
       {
+         locator.close();
          messagingService.stop();
 
       }

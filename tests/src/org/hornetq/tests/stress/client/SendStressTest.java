@@ -15,11 +15,7 @@ package org.hornetq.tests.stress.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -57,8 +53,8 @@ public class SendStressTest extends ServiceTestBase
    public void doTestStressSend(final boolean netty) throws Exception
    {
       HornetQServer server = createServer(false, netty);
-
-      ClientSessionFactory sf = createFactory(netty);
+      ServerLocator locator = createFactory(netty);
+      ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = null;
 
@@ -129,6 +125,7 @@ public class SendStressTest extends ServiceTestBase
                e.printStackTrace();
             }
          }
+         locator.close();
          server.stop();
       }
 

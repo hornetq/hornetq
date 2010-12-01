@@ -22,13 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import junit.framework.TestSuite;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -93,7 +87,9 @@ public class NIOvsOIOTest extends UnitTestCase
       
       for (int i = 0; i < numReceivers; i++)
       {
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorFactoryClassName));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+         ClientSessionFactory sf = locator.createSessionFactory();
          
          factories.add(sf);
 
@@ -106,7 +102,9 @@ public class NIOvsOIOTest extends UnitTestCase
       
       for (int i = 0; i < numSenders; i++)
       {
-         ClientSessionFactory sf = HornetQClient.createClientSessionFactory(new TransportConfiguration(connectorFactoryClassName));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+
+         ClientSessionFactory sf = locator.createSessionFactory();
 
          factories.add(sf);
          

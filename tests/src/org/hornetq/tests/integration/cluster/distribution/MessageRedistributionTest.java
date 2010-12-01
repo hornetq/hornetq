@@ -609,9 +609,6 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       setupSessionFactory(0, isNetty());
       
-      setupSessionFactory(1, isNetty());
-      setupSessionFactory(2, isNetty());
-
       createQueue(0, "queues.testaddress", "queue0", null, false);
       
       waitForBindings(0, "queues.testaddress", 1, 0, true);
@@ -621,7 +618,9 @@ public class MessageRedistributionTest extends ClusterTestBase
       //Now bring up node 1
       
       startServers(1);
-      
+
+      setupSessionFactory(1, isNetty());
+
       createQueue(1, "queues.testaddress", "queue0", null, false);
       
       waitForBindings(1, "queues.testaddress", 1, 0, true);
@@ -664,6 +663,8 @@ public class MessageRedistributionTest extends ClusterTestBase
       closeAllConsumers();
 
       closeAllSessionFactories();
+
+      closeAllServerLocatorsFactories();
 
       stopServers(0, 1, 2);
 
