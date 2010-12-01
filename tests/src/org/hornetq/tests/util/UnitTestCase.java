@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.naming.Context;
@@ -96,6 +97,10 @@ public class UnitTestCase extends TestCase
    // Attributes ----------------------------------------------------
 
    private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+
+   
+   // There is a verification about thread leakages. We only fail a single thread when this happens
+   private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
    // Static --------------------------------------------------------
 
@@ -782,8 +787,9 @@ public class UnitTestCase extends TestCase
          StackTraceElement[] stack = threadMap.get(thread);
          for (StackTraceElement stackTraceElement : stack)
          {
-            if (stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
+            if (stackTraceElement.getMethodName().contains("getConnectionWithRetry") && !alreadyFailedThread.contains(thread))
             {
+               alreadyFailedThread.add(thread);
                System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
                                              thread.getName() +
                                              " id = " +
