@@ -98,36 +98,33 @@ public class UnitTestCase extends TestCase
    private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
    // Static --------------------------------------------------------
-   
-   
+
    protected static String getUDPDiscoveryAddress()
    {
       return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
    }
-   
+
    protected static String getUDPDiscoveryAddress(int variant)
    {
       String value = getUDPDiscoveryAddress();
-      
+
       int posPoint = value.lastIndexOf('.');
-      
-      int last = Integer.valueOf( value.substring(posPoint + 1) );
-      
+
+      int last = Integer.valueOf(value.substring(posPoint + 1));
+
       return value.substring(0, posPoint + 1) + (last + variant);
    }
-   
+
    public static int getUDPDiscoveryPort()
    {
       return Integer.parseInt(System.getProperty("TEST-UDP-PORT", "6750"));
    }
 
-   
    public static int getUDPDiscoveryPort(final int variant)
    {
       return getUDPDiscoveryPort() + 1;
    }
 
-   
    protected static JournalType getDefaultJournalType()
    {
       if (AsynchronousFileImpl.isLoaded())
@@ -139,7 +136,7 @@ public class UnitTestCase extends TestCase
          return JournalType.NIO;
       }
    }
-   
+
    /**
     * @param name
     */
@@ -172,14 +169,14 @@ public class UnitTestCase extends TestCase
 
    public static void forceGC(Reference<?> ref, long timeout)
    {
-      long waitUntil = System.currentTimeMillis() + timeout; 
+      long waitUntil = System.currentTimeMillis() + timeout;
       // A loop that will wait GC, using the minimal time as possible
       while (ref.get() != null && System.currentTimeMillis() < waitUntil)
       {
          ArrayList<String> list = new ArrayList<String>();
-         for (int i = 0 ; i < 1000; i++)
+         for (int i = 0; i < 1000; i++)
          {
-            list.add("Some string with garbage with concatenation "  + i);
+            list.add("Some string with garbage with concatenation " + i);
          }
          list.clear();
          list = null;
@@ -242,6 +239,8 @@ public class UnitTestCase extends TestCase
          out.println("Thread " + el.getKey() +
                      " name = " +
                      el.getKey().getName() +
+                     " id = " +
+                     el.getKey().getId() +
                      " group = " +
                      el.getKey().getThreadGroup());
          out.println();
@@ -328,8 +327,9 @@ public class UnitTestCase extends TestCase
          Assert.assertEquals("byte at index " + i, expected[i], actual[i]);
       }
    }
-   
-   public static void assertEqualsTransportConfigurations(final TransportConfiguration[] expected, final TransportConfiguration[] actual)
+
+   public static void assertEqualsTransportConfigurations(final TransportConfiguration[] expected,
+                                                          final TransportConfiguration[] actual)
    {
       assertEquals(expected.length, actual.length);
       for (int i = 0; i < expected.length; i++)
@@ -400,28 +400,28 @@ public class UnitTestCase extends TestCase
       Assert.assertNotNull(o);
       return o;
    }
-   
+
    /**
     * @param connectorConfigs
     * @return
     */
-   protected ArrayList<String> registerConnectors(final HornetQServer server, final List<TransportConfiguration> connectorConfigs)
+   protected ArrayList<String> registerConnectors(final HornetQServer server,
+                                                  final List<TransportConfiguration> connectorConfigs)
    {
-      // The connectors need to be pre-configured at main config object but this method is taking TransportConfigurations directly
+      // The connectors need to be pre-configured at main config object but this method is taking
+      // TransportConfigurations directly
       // So this will first register them at the config and then generate a list of objects
       ArrayList<String> connectors = new ArrayList<String>();
       for (TransportConfiguration tnsp : connectorConfigs)
       {
          String name = RandomUtil.randomString();
-         
+
          server.getConfiguration().getConnectorConfigurations().put(name, tnsp);
-         
+
          connectors.add(name);
       }
       return connectors;
    }
-
-
 
    protected static void checkFreePort(final int... ports)
    {
@@ -484,7 +484,7 @@ public class UnitTestCase extends TestCase
       recreateDirectory(getLargeMessagesDir(testDir));
       recreateDirectory(getClientLargeMessagesDir(testDir));
       recreateDirectory(getTemporaryDir(testDir));
-      
+
       System.out.println("deleted " + testDir);
    }
 
@@ -776,18 +776,24 @@ public class UnitTestCase extends TestCase
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
 
-
-      Map<Thread, StackTraceElement[]> threadMap  = Thread.getAllStackTraces();
+      Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
       {
          StackTraceElement[] stack = threadMap.get(thread);
          for (StackTraceElement stackTraceElement : stack)
          {
-            if(stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
+            if (stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
             {
                System.out.println(this.getName() + " has left threads running");
+               System.out.println(threadDump("Thread : " + thread +
+                                             ", name = " +
+                                             thread.getName() +
+                                             " id = " +
+                                             thread.getId() +
+                                             " has running locators on test " +
+                                             this.getName()));
                fail("test left serverlocator running, this could effect other tests");
-               //System.exit(0);
+               // System.exit(0);
             }
          }
       }
