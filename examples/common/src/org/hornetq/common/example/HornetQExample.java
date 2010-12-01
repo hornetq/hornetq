@@ -158,6 +158,26 @@ public abstract class HornetQExample
                                                 "hornetq-beans.xml");
    }
 
+   protected void reStartServer(final int index) throws Exception
+   {
+      String config = configs[index];
+      HornetQExample.log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      File f = new File(config + "/KILL_ME");
+      f.delete();
+      String debugProp = System.getProperty("server" + index);
+      boolean debugServer= "true".equals(debugProp);
+      servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
+                                                "HornetQServer_" + index,
+                                                SpawnedHornetQServer.class.getName(),
+                                                serverProps,
+                                                logServerOutput,
+                                                "STARTED::",
+                                                "FAILED::",
+                                                config,
+                                                debugServer,
+                                                "hornetq-beans.xml");
+   }
+
    protected void startServers() throws Exception
    {
       servers = new Process[configs.length];
