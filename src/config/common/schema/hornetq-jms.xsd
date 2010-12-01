@@ -144,7 +144,6 @@
 
     <xsd:complexType name="connector-refType">
     	<xsd:attribute name="connector-name" type="xsd:string" use="required"></xsd:attribute>
-    	<xsd:attribute name="backup-connector-name" type="xsd:string" use="optional"></xsd:attribute>
     </xsd:complexType>
     
     <xsd:complexType name="entryType">
