@@ -784,14 +784,12 @@ public class UnitTestCase extends TestCase
          {
             if (stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
             {
-               System.out.println(this.getName() + " has left threads running");
-               System.out.println(threadDump("Thread : " + thread +
-                                             ", name = " +
+               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
                                              thread.getName() +
                                              " id = " +
                                              thread.getId() +
                                              " has running locators on test " +
-                                             this.getName()));
+                                             this.getName() + " on this following dump"));
                fail("test left serverlocator running, this could effect other tests");
                // System.exit(0);
             }
