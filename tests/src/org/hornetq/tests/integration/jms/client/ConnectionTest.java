@@ -45,6 +45,8 @@ public class ConnectionTest extends JMSTestBase
       conn.getClientID();
       
       conn.setClientID("somethingElse");
+
+      conn.close();
    }
 
 
