@@ -98,20 +98,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          System.exit(0);
       }
-      Map<Thread, StackTraceElement[]> threadMap  = Thread.getAllStackTraces();
-      for (Thread thread : threadMap.keySet())
-      {
-         StackTraceElement[] stack = threadMap.get(thread);
-         for (StackTraceElement stackTraceElement : stack)
-         {
-            if(stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
-            {
-               System.out.println(this.getName() + " has left threads running");
-               fail("test left serverlocator running, this could effect other tests");
-               //System.exit(0);
-            }
-         }
-      }
    }
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)

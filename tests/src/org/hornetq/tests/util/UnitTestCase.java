@@ -776,21 +776,21 @@ public class UnitTestCase extends TestCase
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
 
-      /*Map<Thread, StackTraceElement[]> threads = Thread.getAllStackTraces();
-      for (Thread thread : threads.keySet())
+
+      Map<Thread, StackTraceElement[]> threadMap  = Thread.getAllStackTraces();
+      for (Thread thread : threadMap.keySet())
       {
-         if(thread.isAlive())
+         StackTraceElement[] stack = threadMap.get(thread);
+         for (StackTraceElement stackTraceElement : stack)
          {
-            StackTraceElement[] elements = threads.get(thread);
-            for (StackTraceElement element : elements)
+            if(stackTraceElement.getMethodName().contains("getConnectionWithRetry"))
             {
-               if(element.getMethodName().contains("getConnectionWithRetry"))
-               {
-                  System.out.println("UnitTestCase.tearDown");
-               }
+               System.out.println(this.getName() + " has left threads running");
+               fail("test left serverlocator running, this could effect other tests");
+               //System.exit(0);
             }
          }
-      }*/
+      }
       super.tearDown();
    }
 
