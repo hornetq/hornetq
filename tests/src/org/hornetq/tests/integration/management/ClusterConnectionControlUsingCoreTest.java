@@ -41,6 +41,7 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    // Attributes ----------------------------------------------------
 
    private ClientSession session;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -51,7 +52,6 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    @Override
    protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
@@ -150,6 +150,15 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
 
    // Protected -----------------------------------------------------
 
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+   }
+
    @Override
    protected void tearDown() throws Exception
    {
@@ -157,6 +166,13 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
       {
          session.close();
       }
+
+      if(locator != null)
+      {
+         locator.close();
+      }
+
+      locator = null;
 
       session = null;
 
