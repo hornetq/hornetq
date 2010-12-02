@@ -44,6 +44,8 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
    protected ClientSession session;
 
+   private ServerLocator locator;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -271,7 +273,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    {
       super.setUp();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
@@ -283,6 +285,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
       if (session != null)
       {
          session.close();
+      }
+
+      if(locator != null)
+      {
+         locator.close();
       }
 
       session = null;
