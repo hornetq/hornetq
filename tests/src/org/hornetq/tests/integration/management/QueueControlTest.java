@@ -53,6 +53,7 @@ public class QueueControlTest extends ManagementTestBase
    protected HornetQServer server;
 
    protected ClientSession session;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -1281,7 +1282,7 @@ public class QueueControlTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -1294,9 +1295,13 @@ public class QueueControlTest extends ManagementTestBase
    {
       session.close();
 
+      locator.close();
+
       server.stop();
 
       session = null;
+
+      locator = null;
 
       server = null;
 
