@@ -773,7 +773,12 @@ public class UnitTestCase extends TestCase
 
       deleteDirectory(new File(getTestDir()));
 
-      Assert.assertEquals(0, InVMRegistry.instance.size());
+      int invmSize =  InVMRegistry.instance.size();
+      if(invmSize > 0)
+      {
+         InVMRegistry.instance.clear();
+         fail("invm registry still had acceptors registered");
+      }
 
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
