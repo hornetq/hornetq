@@ -115,6 +115,8 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       sf.close();
 
+      locator.close();
+
       server.stop();
    }
 
@@ -196,6 +198,8 @@ public class PredefinedQueueTest extends ServiceTestBase
       session.close();
 
       sf.close();
+
+      locator.close();
 
       server.stop();
    }
@@ -303,6 +307,8 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       sf.close();
 
+      locator.close();
+
       server.stop();
    }
 
@@ -393,6 +399,8 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       sf.close();
 
+      locator.close();
+
       server.stop();
    }
 
@@ -473,6 +481,8 @@ public class PredefinedQueueTest extends ServiceTestBase
       session.close();
 
       sf.close();
+
+      locator.close();
 
       server.stop();
    }
