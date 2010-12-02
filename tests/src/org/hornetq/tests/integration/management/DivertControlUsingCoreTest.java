@@ -39,6 +39,7 @@ public class DivertControlUsingCoreTest extends DivertControlTest
    // Attributes ----------------------------------------------------
 
    private ClientSession session;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -49,7 +50,6 @@ public class DivertControlUsingCoreTest extends DivertControlTest
    @Override
    protected DivertControl createManagementControl(final String name) throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       ClientSessionFactory sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
@@ -102,12 +102,26 @@ public class DivertControlUsingCoreTest extends DivertControlTest
 
    // Protected -----------------------------------------------------
 
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+   }
+
    @Override
    protected void tearDown() throws Exception
    {
       if (session != null)
       {
          session.close();
+      }
+
+      if(locator != null)
+      {
+         locator.close();
       }
 
       super.tearDown();
