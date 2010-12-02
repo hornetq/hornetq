@@ -58,6 +58,7 @@ public class AddressControlTest extends ManagementTestBase
    private HornetQServer server;
 
    protected ClientSession session;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -305,7 +306,7 @@ public class AddressControlTest extends ManagementTestBase
       server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -317,6 +318,8 @@ public class AddressControlTest extends ManagementTestBase
    protected void tearDown() throws Exception
    {
       session.close();
+
+      locator.close();
 
       server.stop();
 
