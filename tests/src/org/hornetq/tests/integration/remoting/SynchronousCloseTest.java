@@ -115,6 +115,8 @@ public class SynchronousCloseTest extends ServiceTestBase
       }
 
       sf.close();
+
+      sf.getServerLocator().close();
    }
 
    // Private -------------------------------------------------------
