@@ -46,6 +46,7 @@ public class LVQRecoveryTest extends ServiceTestBase
    private Configuration configuration;
 
    private AddressSettings qs;
+   private ServerLocator locator;
 
    public void testMultipleMessagesAfterRecovery() throws Exception
    {
@@ -180,6 +181,10 @@ public class LVQRecoveryTest extends ServiceTestBase
             //
          }
       }
+      if(locator != null)
+      {
+         locator.close();
+      }
       if (server != null && server.isStarted())
       {
          try
@@ -213,7 +218,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
@@ -236,7 +241,8 @@ public class LVQRecoveryTest extends ServiceTestBase
       qs.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), qs);
       // then we create a client as normal
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator.close();
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
