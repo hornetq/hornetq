@@ -155,6 +155,8 @@ public class PingTest extends ServiceTestBase
       session.close();
 
       csf.close();
+
+      locator.close();
    }
 
    /*
@@ -211,6 +213,8 @@ public class PingTest extends ServiceTestBase
       session.close();
 
       csf.close();
+
+      locator.close();
    }
 
    /*
@@ -288,6 +292,8 @@ public class PingTest extends ServiceTestBase
       session.close();
 
       csf.close();
+
+      locator.close();
    }
 
    /*
@@ -393,6 +399,8 @@ public class PingTest extends ServiceTestBase
       session.close();
 
       csf.close();
+
+      locator.close();
    }
 
    // Package protected ---------------------------------------------
