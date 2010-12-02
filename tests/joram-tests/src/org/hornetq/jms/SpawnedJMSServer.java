@@ -23,6 +23,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.JMSServerManager;
@@ -67,6 +68,9 @@ public class SpawnedJMSServer
          conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
          conf.setSecurityEnabled(false);
          conf.setFileDeploymentEnabled(false);
+         
+         
+         conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
          // disable server persistence since JORAM tests do not restart server
          final HornetQServer server = HornetQServers.newHornetQServer(conf, false);

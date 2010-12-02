@@ -103,15 +103,20 @@ public class HornetQAdmin implements Admin
 
    public void createConnectionFactory(final String name)
    {
+      createConnection(name, 0);
+   }
+   
+   private void createConnection(final String name, final int cfType)
+   {
       try
       {
          invokeSyncOperation(ResourceNames.JMS_SERVER,
                              "createConnectionFactory",
                              name,
                              false,
-                             NettyConnectorFactory.class.getName(),
-                             new HashMap<String, Object>(),
-                             new String[] { name });
+                             cfType,
+                             "netty",
+                             name);
       }
       catch (Exception e)
       {
@@ -141,19 +146,7 @@ public class HornetQAdmin implements Admin
 
    public void createQueueConnectionFactory(final String name)
    {
-      try
-      {
-         invokeSyncOperation(ResourceNames.JMS_SERVER,
-                             "createQueueConnectionFactory",
-                             name,
-                             NettyConnectorFactory.class.getName(),
-                             new HashMap<String, Object>(),
-                             new String[] { name });
-      }
-      catch (Exception e)
-      {
-         throw new IllegalStateException(e);
-      }
+      createConnection(name, 1);
    }
 
    public void createTopic(final String name)
@@ -172,19 +165,7 @@ public class HornetQAdmin implements Admin
 
    public void createTopicConnectionFactory(final String name)
    {
-      try
-      {
-         invokeSyncOperation(ResourceNames.JMS_SERVER,
-                             "createTopicConnectionFactory",
-                             name,
-                             NettyConnectorFactory.class.getName(),
-                             new HashMap<String, Object>(),
-                             new String[] { name });
-      }
-      catch (Exception e)
-      {
-         throw new IllegalStateException(e);
-      }
+      createConnection(name, 2);
    }
 
    public void deleteConnectionFactory(final String name)
