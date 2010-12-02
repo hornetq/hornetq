@@ -201,10 +201,10 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       params = new HashMap<String, Object>();
       params.put(getHostPropertyKey(), connectorHost);
       TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
-
+      ServerLocator locator = null;
       try
       {
-         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(connectorConfig);
+         locator = HornetQClient.createServerLocatorWithoutHA(connectorConfig);
 
 
          if (mustConnect)
@@ -227,6 +227,10 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       }
       finally
       {
+         if(locator != null)
+         {
+            locator.close();
+         }
          if (messagingService != null)
          {
             messagingService.stop();
