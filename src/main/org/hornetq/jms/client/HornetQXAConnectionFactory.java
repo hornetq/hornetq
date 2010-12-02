@@ -13,7 +13,12 @@
 
 package org.hornetq.jms.client;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
+import javax.jms.XAQueueConnectionFactory;
+import javax.jms.XATopicConnectionFactory;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
@@ -21,9 +26,11 @@ import org.hornetq.api.core.client.ServerLocator;
 /**
  * A class that represents a XAConnectionFactory.
  * 
+ * We consider the XAConnectionFactory to be the most complete possible option. It can be casted to any other connection factory since it is fully functional
+ * 
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-public class HornetQXAConnectionFactory extends HornetQConnectionFactory implements XAConnectionFactory
+public class HornetQXAConnectionFactory extends HornetQConnectionFactory implements XAConnectionFactory, XATopicConnectionFactory, XAQueueConnectionFactory, ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory
 {
    private static final long serialVersionUID = 743611571839154115L;
 
