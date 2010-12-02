@@ -16,6 +16,7 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -46,32 +47,32 @@ public class HornetQJMSClient
     * @param discoveryPort the UDP port to listen for updates
     * @return the HornetQConnectionFactory
     */
-   public static HornetQConnectionFactory createConnectionFactoryWithHA(final String discoveryAddress, final int discoveryPort, JMSFactoryType jmsFactoryType)
+   public static HornetQConnectionFactory createConnectionFactoryWithHA(final DiscoveryGroupConfiguration groupConfiguration, JMSFactoryType jmsFactoryType)
    {
       HornetQConnectionFactory factory = null;
       if (jmsFactoryType.equals(JMSFactoryType.CF))
       {
-         factory = new HornetQJMSConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQJMSConnectionFactory(true, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_CF))
       {
-         factory = new HornetQQueueConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQQueueConnectionFactory(true, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_CF))
       {
-         factory = new HornetQTopicConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQTopicConnectionFactory(true, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.XA_CF))
       {
-         factory = new HornetQXAConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQXAConnectionFactory(true, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_XA_CF))
       {
-         factory = new HornetQXAQueueConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQXAQueueConnectionFactory(true, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_XA_CF))
       {
-         factory = new HornetQXATopicConnectionFactory(true, discoveryAddress, discoveryPort);
+         factory = new HornetQXATopicConnectionFactory(true, groupConfiguration);
       }
       
       return factory;
@@ -86,32 +87,32 @@ public class HornetQJMSClient
     * @param discoveryPort the UDP port to listen for updates
     * @return the HornetQConnectionFactory
     */
-   public static HornetQConnectionFactory createConnectionFactoryWithoutHA(final String discoveryAddress, final int discoveryPort, JMSFactoryType jmsFactoryType)
+   public static HornetQConnectionFactory createConnectionFactoryWithoutHA(final DiscoveryGroupConfiguration groupConfiguration, JMSFactoryType jmsFactoryType)
    {
       HornetQConnectionFactory factory = null;
       if (jmsFactoryType.equals(JMSFactoryType.CF))
       {
-         factory = new HornetQJMSConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQJMSConnectionFactory(false, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_CF))
       {
-         factory = new HornetQQueueConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQQueueConnectionFactory(false, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_CF))
       {
-         factory = new HornetQTopicConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQTopicConnectionFactory(false, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.XA_CF))
       {
-         factory = new HornetQXAConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQXAConnectionFactory(false, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.QUEUE_XA_CF))
       {
-         factory = new HornetQXAQueueConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQXAQueueConnectionFactory(false, groupConfiguration);
       }
       else if (jmsFactoryType.equals(JMSFactoryType.TOPIC_XA_CF))
       {
-         factory = new HornetQXATopicConnectionFactory(false, discoveryAddress, discoveryPort);
+         factory = new HornetQXATopicConnectionFactory(false, groupConfiguration);
       }
       
       return factory;

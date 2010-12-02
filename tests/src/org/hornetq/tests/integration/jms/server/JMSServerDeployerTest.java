@@ -309,11 +309,6 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals(5, cf.getRetryInterval());
          Assert.assertEquals(6.0, cf.getRetryIntervalMultiplier());
          Assert.assertEquals(true, cf.isCacheLargeMessagesClient());
-         
-         assertEquals("243.7.7.7", cf.getDiscoveryAddress());
-         assertEquals("172.16.8.10", cf.getLocalBindAddress());
-         assertEquals(12345, cf.getDiscoveryPort());
-         assertEquals(5432, cf.getDiscoveryRefreshTimeout());
       }
 
       for (String binding : queueBindings)

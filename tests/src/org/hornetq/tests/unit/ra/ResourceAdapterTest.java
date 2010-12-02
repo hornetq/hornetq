@@ -82,10 +82,6 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConnectionTTL(), HornetQClient.DEFAULT_CONNECTION_TTL);
       Assert.assertEquals(factory.getConsumerMaxRate(), HornetQClient.DEFAULT_CONSUMER_MAX_RATE);
       Assert.assertEquals(factory.getConsumerWindowSize(), HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE);
-      Assert.assertEquals(factory.getDiscoveryAddress(), null);
-      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(),
-                          HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
-      Assert.assertEquals(factory.getDiscoveryPort(), -1);
       Assert.assertEquals(factory.getDupsOKBatchSize(), HornetQClient.DEFAULT_ACK_BATCH_SIZE);
       Assert.assertEquals(factory.getMinLargeMessageSize(), HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       Assert.assertEquals(factory.getProducerMaxRate(), HornetQClient.DEFAULT_PRODUCER_MAX_RATE);
@@ -132,10 +128,6 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConnectionTTL(), HornetQClient.DEFAULT_CONNECTION_TTL);
       Assert.assertEquals(factory.getConsumerMaxRate(), HornetQClient.DEFAULT_CONSUMER_MAX_RATE);
       Assert.assertEquals(factory.getConsumerWindowSize(), HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE);
-      Assert.assertEquals(factory.getDiscoveryAddress(), null);
-      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(),
-                          HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
-      Assert.assertEquals(factory.getDiscoveryPort(), -1);
       Assert.assertEquals(factory.getDupsOKBatchSize(), HornetQClient.DEFAULT_ACK_BATCH_SIZE);
       Assert.assertEquals(factory.getMinLargeMessageSize(), HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       Assert.assertEquals(factory.getProducerMaxRate(), HornetQClient.DEFAULT_PRODUCER_MAX_RATE);
@@ -196,10 +188,6 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConnectionTTL(), 3);
       Assert.assertEquals(factory.getConsumerMaxRate(), 4);
       Assert.assertEquals(factory.getConsumerWindowSize(), 5);
-      Assert.assertEquals(factory.getDiscoveryAddress(), null);
-      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
-      Assert.assertEquals(factory.getDiscoveryPort(), -1);
-      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
       Assert.assertEquals(factory.getDupsOKBatchSize(), 8);
       Assert.assertEquals(factory.getMinLargeMessageSize(), 10);
       Assert.assertEquals(factory.getProducerMaxRate(), 11);
@@ -257,10 +245,6 @@ public class ResourceAdapterTest extends ServiceTestBase
       Assert.assertEquals(factory.getConnectionTTL(), 3);
       Assert.assertEquals(factory.getConsumerMaxRate(), 4);
       Assert.assertEquals(factory.getConsumerWindowSize(), 5);
-      Assert.assertEquals(factory.getDiscoveryAddress(), null);
-      Assert.assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
-      Assert.assertEquals(factory.getDiscoveryPort(), -1);
-      Assert.assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
       Assert.assertEquals(factory.getDupsOKBatchSize(), 8);
       Assert.assertEquals(factory.getMinLargeMessageSize(), 10);
       Assert.assertEquals(factory.getProducerMaxRate(), 11);

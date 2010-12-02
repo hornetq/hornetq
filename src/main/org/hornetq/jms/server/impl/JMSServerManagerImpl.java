@@ -1012,19 +1012,12 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
             if (cfConfig.isHA())
             {
-               cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfig.getGroupAddress(), 
-                                                                   groupConfig.getGroupPort(), 
-                                                                   cfConfig.getFactoryType());
+               cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfig, cfConfig.getFactoryType());
             }
             else
             {
-               cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfig.getGroupAddress(), 
-                                                                      groupConfig.getGroupPort(), 
-                                                                      cfConfig.getFactoryType());
+               cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfig, cfConfig.getFactoryType());
             }
-            cf.setLocalBindAddress(groupConfig.getLocalBindAddress());
-            cf.setDiscoveryRefreshTimeout(groupConfig.getRefreshTimeout());
-            cf.setDiscoveryInitialWaitTimeout(groupConfig.getDiscoveryInitialWaitTimeout());
          }
          else
          {

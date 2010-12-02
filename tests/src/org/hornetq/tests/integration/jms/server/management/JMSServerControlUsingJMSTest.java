@@ -247,37 +247,20 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public void createConnectionFactory(String name,
                                              boolean ha,
+                                             boolean useDiscovery,
                                              int cfType,
                                              String[] connectorNames,
                                              Object[] bindings) throws Exception
          {
-            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, connectorNames, bindings);
+            proxy.invokeOperation("createConnectionFactory", name, ha, useDiscovery, cfType, connectorNames, bindings);
             
          }
 
-         public void createConnectionFactory(String name, boolean ha, int cfType, String connectors, String jndiBindings) throws Exception
+         public void createConnectionFactory(String name, boolean ha, boolean useDiscovery, int cfType, String connectors, String jndiBindings) throws Exception
          {
-            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, connectors, jndiBindings);
+            proxy.invokeOperation("createConnectionFactory", name, ha, useDiscovery, cfType, connectors, jndiBindings);
          }
 
-         public void createConnectionFactoryDiscovery(String name,
-                                                      boolean ha,
-                                                      int cfType,
-                                                      String discoveryGroupName,
-                                                      String bindings) throws Exception
-         {
-            proxy.invokeOperation("createConnectionFactory", name, ha, cfType, discoveryGroupName, bindings);
-         }
-
-         public void createConnectionFactoryDiscovery(String name,
-                                                      boolean ha,
-                                                      int cfType,
-                                                      String discoveryGroupName,
-                                                      Object[] bindings) throws Exception
-         {
-            // TODO Auto-generated method stub
-            
-         }
 
       };
    }

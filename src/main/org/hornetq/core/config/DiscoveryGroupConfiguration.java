@@ -15,7 +15,9 @@ package org.hornetq.core.config;
 
 import java.io.Serializable;
 
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A DiscoveryGroupConfiguration
@@ -58,6 +60,12 @@ public class DiscoveryGroupConfiguration implements Serializable
       this.groupPort = groupPort;
       this.refreshTimeout = refreshTimeout;
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
+   }
+
+   public DiscoveryGroupConfiguration(final String groupAddress,
+                                      final int groupPort)
+   {
+      this(UUIDGenerator.getInstance().generateStringUUID(), null, groupAddress, groupPort, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT, HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
    }
 
    public String getName()
@@ -140,6 +148,35 @@ public class DiscoveryGroupConfiguration implements Serializable
    {
       this.discoveryInitialWaitTimeout = discoveryInitialWaitTimeout;
    }
-   
-   
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      DiscoveryGroupConfiguration that = (DiscoveryGroupConfiguration) o;
+
+      if (discoveryInitialWaitTimeout != that.discoveryInitialWaitTimeout) return false;
+      if (groupPort != that.groupPort) return false;
+      if (refreshTimeout != that.refreshTimeout) return false;
+      if (groupAddress != null ? !groupAddress.equals(that.groupAddress) : that.groupAddress != null) return false;
+      if (localBindAddress != null ? !localBindAddress.equals(that.localBindAddress) : that.localBindAddress != null)
+         return false;
+      if (name != null ? !name.equals(that.name) : that.name != null) return false;
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      int result = name != null ? name.hashCode() : 0;
+      result = 31 * result + (localBindAddress != null ? localBindAddress.hashCode() : 0);
+      result = 31 * result + (groupAddress != null ? groupAddress.hashCode() : 0);
+      result = 31 * result + groupPort;
+      result = 31 * result + (int) (refreshTimeout ^ (refreshTimeout >>> 32));
+      result = 31 * result + (int) (discoveryInitialWaitTimeout ^ (discoveryInitialWaitTimeout >>> 32));
+      return result;
+   }
 }

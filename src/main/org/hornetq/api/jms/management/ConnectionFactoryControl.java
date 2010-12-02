@@ -17,6 +17,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A ConnectionFactoryControl is used to manage a JMS ConnectionFactory.
@@ -40,6 +41,12 @@ public interface ConnectionFactoryControl
     * Returns the JNDI bindings associated  to this connection factory.
     */
    String[] getJNDIBindings();
+
+   /**
+    * does ths cf support HA
+    * @return true if it supports HA
+    */
+   boolean isHA();
 
    /**
     * Returns the Client ID of this connection factory (or {@code null} if it is not set.
@@ -247,25 +254,6 @@ public interface ConnectionFactoryControl
     */
    void setFailoverOnInitialConnection(boolean failoverOnInitialConnection);
 
-    /**
-    * @see org.hornetq.api.core.client.ClientSessionFactory#getDiscoveryRefreshTimeout()
-    */
-   long getDiscoveryRefreshTimeout();
-
-    /**
-    * @see ClientSessionFactory#setDiscoveryRefreshTimeout(long)
-    */
-   void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
-
-    /**
-    * @see org.hornetq.api.core.client.ClientSessionFactory#getDiscoveryInitialWaitTimeout()
-    */
-   long getDiscoveryInitialWaitTimeout();
-
-    /**
-    * @see ClientSessionFactory#setDiscoveryInitialWaitTimeout(long)
-    */
-   void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout);
 
     /**
     * @see org.hornetq.api.core.client.ClientSessionFactory#getProducerWindowSize()
@@ -363,24 +351,9 @@ public interface ConnectionFactoryControl
    TransportConfiguration[] getStaticConnectors();
 
    /**
-    * @see ClientSessionFactory#getLocalBindAddress()
+    * get the discovery group configuration
     */
-   String getLocalBindAddress();
-
-    /**
-    * @see ClientSessionFactory#setLocalBindAddress(String)
-    */
-   void setLocalBindAddress(String localBindAddress);
-   
-    /**
-    * @see ClientSessionFactory#getDiscoveryAddress()
-    */
-   String getDiscoveryAddress();
-
-    /**
-    * @see ClientSessionFactory#getDiscoveryPort()
-    */
-   int getDiscoveryPort();
+   DiscoveryGroupConfiguration getDiscoveryGroupConfiguration();
 
    /**
     * Add the JNDI binding to this destination

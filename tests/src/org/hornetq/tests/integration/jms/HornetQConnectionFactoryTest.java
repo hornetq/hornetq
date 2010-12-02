@@ -25,6 +25,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
@@ -63,8 +64,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertFactoryParams(cf,
                           null,
                           null,
-                          -1,
-                          0,
                           null,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -121,8 +120,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
                           null,
-                          -1,
-                          0,
                           null,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -159,12 +156,11 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testDiscoveryConstructor() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(groupAddress, groupPort, JMSFactoryType.CF);
+      DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration("test", "foo", "192.168.5.4", 3456, 5000, 1000);
+      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
-                          groupAddress,
-                          groupPort,
-                          0,
+                          groupConfiguration,
                           null,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -204,8 +200,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
                           null,
-                          -1,
-                          0,
                           null,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -246,8 +240,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
                           null,
-                          -1,
-                          0,
                           null,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
@@ -288,7 +280,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    {
       HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
 
-      long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
@@ -303,16 +294,12 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       boolean autoGroup = RandomUtil.randomBoolean();
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
-      long initialWaitTimeout = RandomUtil.randomPositiveLong();
       boolean useGlobalPools = RandomUtil.randomBoolean();
       int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
       int threadPoolMaxSize = RandomUtil.randomPositiveInt();
       long retryInterval = RandomUtil.randomPositiveLong();
       double retryIntervalMultiplier = RandomUtil.randomDouble();
       int reconnectAttempts = RandomUtil.randomPositiveInt();
-      boolean failoverOnServerShutdown = RandomUtil.randomBoolean();
-
-      cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
       cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cf.setConnectionTTL(connectionTTL);
       cf.setCallTimeout(callTimeout);
@@ -327,17 +314,12 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setAutoGroup(autoGroup);
       cf.setPreAcknowledge(preAcknowledge);
       cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-      cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
       cf.setUseGlobalPools(useGlobalPools);
       cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
       cf.setThreadPoolMaxSize(threadPoolMaxSize);
       cf.setRetryInterval(retryInterval);
       cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
       cf.setReconnectAttempts(reconnectAttempts);
-
-      Assert.assertEquals(null, cf.getDiscoveryAddress());
-      Assert.assertEquals(-1, cf.getDiscoveryPort());
-      Assert.assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
       Assert.assertEquals(clientFailureCheckPeriod, cf.getClientFailureCheckPeriod());
       Assert.assertEquals(connectionTTL, cf.getConnectionTTL());
       Assert.assertEquals(callTimeout, cf.getCallTimeout());
@@ -352,7 +334,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(autoGroup, cf.isAutoGroup());
       Assert.assertEquals(preAcknowledge, cf.isPreAcknowledge());
       Assert.assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
-      Assert.assertEquals(initialWaitTimeout, cf.getDiscoveryInitialWaitTimeout());
       Assert.assertEquals(useGlobalPools, cf.isUseGlobalPools());
       Assert.assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(threadPoolMaxSize, cf.getThreadPoolMaxSize());
@@ -395,15 +376,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       int reconnectAttempts = RandomUtil.randomPositiveInt();
       boolean failoverOnServerShutdown = RandomUtil.randomBoolean();
 
-      try
-      {
-         cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-         Assert.fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         // OK
-      }
       try
       {
          cf.setClientID(clientID);
@@ -559,15 +531,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       }
       try
       {
-         cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
-         Assert.fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         // OK
-      }
-      try
-      {
          cf.setUseGlobalPools(useGlobalPools);
          Assert.fail("Should throw exception");
       }
@@ -622,9 +585,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       }
 
       cf.getStaticConnectors();
-      cf.getDiscoveryAddress();
-      cf.getDiscoveryPort();
-      cf.getDiscoveryRefreshTimeout();
       cf.getClientID();
       cf.getClientFailureCheckPeriod();
       cf.getConnectionTTL();
@@ -642,7 +602,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.getConnectionLoadBalancingPolicyClassName();
       cf.getDupsOKBatchSize();
       cf.getTransactionBatchSize();
-      cf.getDiscoveryInitialWaitTimeout();
       cf.isUseGlobalPools();
       cf.getScheduledThreadPoolMaxSize();
       cf.getThreadPoolMaxSize();
@@ -655,9 +614,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    private void assertFactoryParams(final HornetQConnectionFactory cf,
                                     final TransportConfiguration[] staticConnectors,
-                                    final String discoveryAddress,
-                                    final int discoveryPort,
-                                    final long discoveryRefreshTimeout,
+                                    final DiscoveryGroupConfiguration discoveryGroupConfiguration,
                                     final String clientID,
                                     final long clientFailureCheckPeriod,
                                     final long connectionTTL,
@@ -697,9 +654,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
             Assert.assertEquals(staticConnectors[i], cfStaticConnectors[i]);
          }
       }
-      Assert.assertEquals(cf.getDiscoveryAddress(), discoveryAddress);
-      Assert.assertEquals(cf.getDiscoveryPort(), discoveryPort);
-      Assert.assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
       Assert.assertEquals(cf.getClientID(), clientID);
       Assert.assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
       Assert.assertEquals(cf.getConnectionTTL(), connectionTTL);
@@ -717,7 +671,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       Assert.assertEquals(cf.getConnectionLoadBalancingPolicyClassName(), loadBalancingPolicyClassName);
       Assert.assertEquals(cf.getDupsOKBatchSize(), dupsOKBatchSize);
       Assert.assertEquals(cf.getTransactionBatchSize(), transactionBatchSize);
-      Assert.assertEquals(cf.getDiscoveryInitialWaitTimeout(), initialWaitTimeout);
       Assert.assertEquals(cf.isUseGlobalPools(), useGlobalPools);
       Assert.assertEquals(cf.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       Assert.assertEquals(cf.getThreadPoolMaxSize(), threadPoolMaxSize);

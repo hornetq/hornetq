@@ -159,9 +159,10 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
     */
    public void createConnectionFactory(String name,
                                        boolean ha,
+                                       boolean useDiscovery,
                                        int cfType,
                                        String[] connectorNames,
-                                       Object[] jndiBindings) throws Exception
+                                       Object[] bindings) throws Exception
    {
       checkStarted();
 
@@ -169,18 +170,34 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
       try
       {
-         List<String> connectorList = new ArrayList<String>(connectorNames.length);
-
-         for (String str : connectorNames)
+         if(useDiscovery)
          {
-            connectorList.add(str);
-         }
-
-         server.createConnectionFactory(name,
+            if(connectorNames == null || connectorNames.length == 0)
+            {
+               throw new IllegalArgumentException("no discovery group name supplied");
+            }
+            server.createConnectionFactory(name,
                                         ha,
                                         JMSFactoryType.valueOf(cfType),
-                                        connectorList,
-                                        JMSServerControlImpl.convert(jndiBindings));
+                                        connectorNames[0],
+                                        JMSServerControlImpl.convert(bindings));
+         }
+         else
+         {
+            List<String> connectorList = new ArrayList<String>(connectorNames.length);
+
+            for (String str : connectorNames)
+            {
+               connectorList.add(str);
+            }
+
+            server.createConnectionFactory(name,
+                  ha,
+                  JMSFactoryType.valueOf(cfType),
+                  connectorList,
+                  JMSServerControlImpl.convert(bindings));
+         }
+
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
@@ -196,53 +213,9 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
     * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
     *  
     */
-   public void createConnectionFactory(String name, boolean ha, int cfType, String connectors, String jndiBindings) throws Exception
+   public void createConnectionFactory(String name, boolean ha, boolean useDiscovery, int cfType, String connectors, String jndiBindings) throws Exception
    {
-
-      createConnectionFactory(name, ha, cfType, toArray(connectors), toArray(jndiBindings));
-
-   }
-
-   /**
-    * Look at the iterface for the javadoc
-    */
-   public void createConnectionFactoryDiscovery(String name,
-                                                boolean ha,
-                                                int cfType,
-                                                String discoveryGroupName,
-                                                Object[] bindings) throws Exception
-   {
-      checkStarted();
-
-      clearIO();
-
-      try
-      {
-         server.createConnectionFactory(name,
-                                        ha,
-                                        JMSFactoryType.valueOf(cfType),
-                                        discoveryGroupName,
-                                        JMSServerControlImpl.convert(bindings));
-
-         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-
-   }
-
-   /**
-    * Look at the iterface for the javadoc
-    */
-   public void createConnectionFactoryDiscovery(String name,
-                                                boolean ha,
-                                                int cfType,
-                                                String discoveryGroupName,
-                                                String jndiBindings) throws Exception
-   {
-      createConnectionFactoryDiscovery(name, ha, cfType, discoveryGroupName, toArray(jndiBindings));
+      createConnectionFactory(name, ha, useDiscovery, cfType, toArray(connectors), toArray(jndiBindings));
    }
 
    public boolean createQueue(final String name) throws Exception

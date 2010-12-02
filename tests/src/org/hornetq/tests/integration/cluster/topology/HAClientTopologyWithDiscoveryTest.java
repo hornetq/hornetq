@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.topology;
 
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -59,7 +60,7 @@ public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
    @Override
    protected ServerLocator createHAServerLocator()
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithHA(groupAddress, groupPort);
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(new DiscoveryGroupConfiguration(groupAddress, groupPort));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       return locator;

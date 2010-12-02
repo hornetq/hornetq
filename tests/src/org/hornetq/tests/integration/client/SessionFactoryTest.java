@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -50,9 +51,7 @@ public class SessionFactoryTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionFactoryTest.class);
 
-   private final String groupAddress = getUDPDiscoveryAddress();
-
-   private final int groupPort = getUDPDiscoveryPort();
+   private DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort());
 
    private HornetQServer liveService;
 
@@ -113,13 +112,11 @@ public class SessionFactoryTest extends ServiceTestBase
 
    public void testDiscoveryConstructor() throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(groupAddress, groupPort);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(groupConfiguration);
 
       assertFactoryParams(locator,
                           null,
-                          groupAddress,
-                          groupPort,
-                          0,
+                          groupConfiguration,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
@@ -135,7 +132,6 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
                           HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                           HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                          HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                           HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
                           HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                           HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -160,8 +156,6 @@ public class SessionFactoryTest extends ServiceTestBase
       assertFactoryParams(locator,
                           tc,
                           null,
-                          -1,
-                          0,
                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           HornetQClient.DEFAULT_CONNECTION_TTL,
                           HornetQClient.DEFAULT_CALL_TIMEOUT,
@@ -177,7 +171,6 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_PRE_ACKNOWLEDGE,
                           HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
                           HornetQClient.DEFAULT_ACK_BATCH_SIZE,
-                          HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
                           HornetQClient.DEFAULT_USE_GLOBAL_POOLS,
                           HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                           HornetQClient.DEFAULT_THREAD_POOL_MAX_SIZE,
@@ -200,7 +193,6 @@ public class SessionFactoryTest extends ServiceTestBase
       TransportConfiguration[] tc = new TransportConfiguration[] { liveTC };
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(tc);
 
-      long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
@@ -216,7 +208,6 @@ public class SessionFactoryTest extends ServiceTestBase
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
       int ackBatchSize = RandomUtil.randomPositiveInt();
-      long initialWaitTimeout = RandomUtil.randomPositiveLong();
       boolean useGlobalPools = RandomUtil.randomBoolean();
       int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
       int threadPoolMaxSize = RandomUtil.randomPositiveInt();
@@ -224,7 +215,6 @@ public class SessionFactoryTest extends ServiceTestBase
       double retryIntervalMultiplier = RandomUtil.randomDouble();
       int reconnectAttempts = RandomUtil.randomPositiveInt();
 
-      locator.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
       locator.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       locator.setConnectionTTL(connectionTTL);
       locator.setCallTimeout(callTimeout);
@@ -240,7 +230,6 @@ public class SessionFactoryTest extends ServiceTestBase
       locator.setPreAcknowledge(preAcknowledge);
       locator.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
       locator.setAckBatchSize(ackBatchSize);
-      locator.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
       locator.setUseGlobalPools(useGlobalPools);
       locator.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
       locator.setThreadPoolMaxSize(threadPoolMaxSize);
@@ -249,9 +238,6 @@ public class SessionFactoryTest extends ServiceTestBase
       locator.setReconnectAttempts(reconnectAttempts);
 
       assertEqualsTransportConfigurations(tc, locator.getStaticTransportConfigurations());
-      Assert.assertEquals(null, locator.getDiscoveryAddress());
-      Assert.assertEquals(-1, locator.getDiscoveryPort());
-      Assert.assertEquals(discoveryRefreshTimeout, locator.getDiscoveryRefreshTimeout());
       Assert.assertEquals(clientFailureCheckPeriod, locator.getClientFailureCheckPeriod());
       Assert.assertEquals(connectionTTL, locator.getConnectionTTL());
       Assert.assertEquals(callTimeout, locator.getCallTimeout());
@@ -268,7 +254,6 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertEquals(loadBalancingPolicyClassName, locator
                                                           .getConnectionLoadBalancingPolicyClassName());
       Assert.assertEquals(ackBatchSize, locator.getAckBatchSize());
-      Assert.assertEquals(initialWaitTimeout, locator.getDiscoveryInitialWaitTimeout());
       Assert.assertEquals(useGlobalPools, locator.isUseGlobalPools());
       Assert.assertEquals(scheduledThreadPoolMaxSize, locator.getScheduledThreadPoolMaxSize());
       Assert.assertEquals(threadPoolMaxSize, locator.getThreadPoolMaxSize());
@@ -280,7 +265,6 @@ public class SessionFactoryTest extends ServiceTestBase
 
    private void testSettersThrowException(final ClientSessionFactory cf)
    {
-      long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
@@ -296,7 +280,6 @@ public class SessionFactoryTest extends ServiceTestBase
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
       int ackBatchSize = RandomUtil.randomPositiveInt();
-      long initialWaitTimeout = RandomUtil.randomPositiveLong();
       boolean useGlobalPools = RandomUtil.randomBoolean();
       int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
       int threadPoolMaxSize = RandomUtil.randomPositiveInt();
@@ -304,15 +287,6 @@ public class SessionFactoryTest extends ServiceTestBase
       double retryIntervalMultiplier = RandomUtil.randomDouble();
       int reconnectAttempts = RandomUtil.randomPositiveInt();
 
-      try
-      {
-         cf.getServerLocator().setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-         Assert.fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         // OK
-      }
       try
       {
          cf.getServerLocator().setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -450,15 +424,6 @@ public class SessionFactoryTest extends ServiceTestBase
       }
       try
       {
-         cf.getServerLocator().setDiscoveryInitialWaitTimeout(initialWaitTimeout);
-         Assert.fail("Should throw exception");
-      }
-      catch (IllegalStateException e)
-      {
-         // OK
-      }
-      try
-      {
          cf.getServerLocator().setUseGlobalPools(useGlobalPools);
          Assert.fail("Should throw exception");
       }
@@ -513,9 +478,6 @@ public class SessionFactoryTest extends ServiceTestBase
       }
 
       cf.getServerLocator().getStaticTransportConfigurations();
-      cf.getServerLocator().getDiscoveryAddress();
-      cf.getServerLocator().getDiscoveryPort();
-      cf.getServerLocator().getDiscoveryRefreshTimeout();
       cf.getServerLocator().getClientFailureCheckPeriod();
       cf.getServerLocator().getConnectionTTL();
       cf.getServerLocator().getCallTimeout();
@@ -531,7 +493,6 @@ public class SessionFactoryTest extends ServiceTestBase
       cf.getServerLocator().isPreAcknowledge();
       cf.getServerLocator().getConnectionLoadBalancingPolicyClassName();
       cf.getServerLocator().getAckBatchSize();
-      cf.getServerLocator().getDiscoveryInitialWaitTimeout();
       cf.getServerLocator().isUseGlobalPools();
       cf.getServerLocator().getScheduledThreadPoolMaxSize();
       cf.getServerLocator().getThreadPoolMaxSize();
@@ -543,9 +504,7 @@ public class SessionFactoryTest extends ServiceTestBase
 
    private void assertFactoryParams(final ServerLocator locator,
                                     final TransportConfiguration[] staticConnectors,
-                                    final String discoveryAddress,
-                                    final int discoveryPort,
-                                    final long discoveryRefreshTimeout,
+                                    final DiscoveryGroupConfiguration discoveryGroupConfiguration,
                                     final long clientFailureCheckPeriod,
                                     final long connectionTTL,
                                     final long callTimeout,
@@ -561,7 +520,6 @@ public class SessionFactoryTest extends ServiceTestBase
                                     final boolean preAcknowledge,
                                     final String loadBalancingPolicyClassName,
                                     final int ackBatchSize,
-                                    final long initialWaitTimeout,
                                     final boolean useGlobalPools,
                                     final int scheduledThreadPoolMaxSize,
                                     final int threadPoolMaxSize,
@@ -577,9 +535,7 @@ public class SessionFactoryTest extends ServiceTestBase
       {
          assertEqualsTransportConfigurations(staticConnectors, locator.getStaticTransportConfigurations());
       }
-      Assert.assertEquals(locator.getDiscoveryAddress(), discoveryAddress);
-      Assert.assertEquals(locator.getDiscoveryPort(), discoveryPort);
-      Assert.assertEquals(locator.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
+      Assert.assertEquals(locator.getDiscoveryGroupConfiguration(), discoveryGroupConfiguration);
       Assert.assertEquals(locator.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
       Assert.assertEquals(locator.getConnectionTTL(), connectionTTL);
       Assert.assertEquals(locator.getCallTimeout(), callTimeout);
@@ -596,7 +552,6 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertEquals(locator.getConnectionLoadBalancingPolicyClassName(),
                           loadBalancingPolicyClassName);
       Assert.assertEquals(locator.getAckBatchSize(), ackBatchSize);
-      Assert.assertEquals(locator.getDiscoveryInitialWaitTimeout(), initialWaitTimeout);
       Assert.assertEquals(locator.isUseGlobalPools(), useGlobalPools);
       Assert.assertEquals(locator.getScheduledThreadPoolMaxSize(), scheduledThreadPoolMaxSize);
       Assert.assertEquals(locator.getThreadPoolMaxSize(), threadPoolMaxSize);
@@ -624,8 +579,8 @@ public class SessionFactoryTest extends ServiceTestBase
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
                                                                               null,
                                                                               localBindPort,
-                                                                              groupAddress,
-                                                                              groupPort,
+                                                                              getUDPDiscoveryAddress(),
+                                                                              getUDPDiscoveryPort(),
                                                                               broadcastPeriod,
                                                                               Arrays.asList(liveTC.getName()));
 

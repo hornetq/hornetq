@@ -115,6 +115,8 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
    private final Exception creationStack;
 
+   private HornetQConnectionFactory factoryReference;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public HornetQConnection(final String username,
@@ -587,6 +589,11 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          session.addMetaData("jms-client-id", clientID);
       }
+   }
+
+   public void setReference(HornetQConnectionFactory factory)
+   {
+      this.factoryReference = factory;
    }
 
    // Inner classes --------------------------------------------------------------------------------

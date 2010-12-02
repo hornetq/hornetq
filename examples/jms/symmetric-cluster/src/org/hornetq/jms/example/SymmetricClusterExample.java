@@ -23,6 +23,7 @@ import javax.jms.Topic;
 
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.common.example.HornetQExample;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
@@ -80,7 +81,9 @@ public class SymmetricClusterExample extends HornetQExample
          // connection factory directly we avoid having to worry about a JNDI look-up.
          // In an app server environment you could use HA-JNDI to lookup from the clustered JNDI servers without
          // having to know about a specific one.
-         ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA("231.7.7.7", 9876, JMSFactoryType.CF);
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration("231.7.7.7", 9876);
+         
+         ConnectionFactory cf = (ConnectionFactory)HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.CF);
 
          // We give a little while for each server to broadcast its whereabouts to the client
          Thread.sleep(2000);

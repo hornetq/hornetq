@@ -19,6 +19,7 @@ import javax.jms.TopicConnectionFactory;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 
 /**
@@ -52,9 +53,9 @@ public class HornetQJMSConnectionFactory extends HornetQConnectionFactory implem
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public HornetQJMSConnectionFactory(boolean ha, String discoveryAddress, int discoveryPort)
+   public HornetQJMSConnectionFactory(boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      super(ha, discoveryAddress, discoveryPort);
+      super(ha, groupConfiguration);
    }
 
    /**

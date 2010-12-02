@@ -636,13 +636,11 @@ public class ClusterManagerImpl implements ClusterManager
 
          if (config.isHA())
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(discoveryGroupConfiguration.getGroupAddress(),
-                                                                    discoveryGroupConfiguration.getGroupPort());
+            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(discoveryGroupConfiguration);
          }
          else
          {
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(discoveryGroupConfiguration.getGroupAddress(),
-                                                                       discoveryGroupConfiguration.getGroupPort());
+            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(discoveryGroupConfiguration);
          }
 
       }
@@ -755,7 +753,7 @@ public class ClusterManagerImpl implements ClusterManager
                                         "'. The cluster connection will not be deployed.");
          }
 
-         serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(dg.getGroupAddress(), dg.getGroupPort());
+         serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(dg);
          serverLocator.setNodeID(nodeUUID.toString());
          serverLocator.setReconnectAttempts(-1);
          clusterLocators.add(serverLocator);
@@ -818,9 +816,8 @@ public class ClusterManagerImpl implements ClusterManager
                                         "'. The cluster connection will not be deployed.");
          }
 
-         backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(dg.getGroupAddress(), dg.getGroupPort());
+         backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(dg);
          backupServerLocator.setReconnectAttempts(-1);
-         backupServerLocator.setDiscoveryInitialWaitTimeout(0);
       }
       else
       {

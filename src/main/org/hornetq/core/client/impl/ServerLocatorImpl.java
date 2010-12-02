@@ -33,6 +33,7 @@ import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
@@ -52,15 +53,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private boolean clusterConnection;
 
-   private final String discoveryAddress;
-
-   private final int discoveryPort;
-
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
 
    private Set<ClientSessionFactory> factories = new HashSet<ClientSessionFactory>();
 
    private TransportConfiguration[] initialConnectors;
+
+   private DiscoveryGroupConfiguration discoveryGroupConfiguration;
 
    private StaticConnector staticConnector = new StaticConnector();
 
@@ -83,12 +82,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    // Settable attributes:
 
    private boolean cacheLargeMessagesClient;
-
-   private String localBindAddress;
-
-   private long discoveryRefreshTimeout;
-
-   private long discoveryInitialWaitTimeout;
 
    private long clientFailureCheckPeriod;
 
@@ -267,15 +260,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          instantiateLoadBalancingPolicy();
 
-         if (discoveryAddress != null)
+         if (discoveryGroupConfiguration != null)
          {
-            InetAddress groupAddress = InetAddress.getByName(discoveryAddress);
+            InetAddress groupAddress = InetAddress.getByName(discoveryGroupConfiguration.getGroupAddress());
 
             InetAddress lbAddress;
 
-            if (localBindAddress != null)
+            if (discoveryGroupConfiguration.getLocalBindAddress() != null)
             {
-               lbAddress = InetAddress.getByName(localBindAddress);
+               lbAddress = InetAddress.getByName(discoveryGroupConfiguration.getLocalBindAddress());
             }
             else
             {
@@ -283,11 +276,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
 
             discoveryGroup = new DiscoveryGroupImpl(nodeID,
-                  discoveryAddress,
+                  discoveryGroupConfiguration.getName(),
                   lbAddress,
                   groupAddress,
-                  discoveryPort,
-                  discoveryRefreshTimeout);
+                  discoveryGroupConfiguration.getGroupPort(),
+                  discoveryGroupConfiguration.getRefreshTimeout());
 
             discoveryGroup.registerListener(this);
 
@@ -299,16 +292,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    }
 
    private ServerLocatorImpl(final boolean useHA,
-                             final String discoveryAddress,
-                             final int discoveryPort,
+                             final DiscoveryGroupConfiguration discoveryGroupConfiguration,
                              final TransportConfiguration[] transportConfigs)
    {
       e.fillInStackTrace();
       this.ha = useHA;
 
-      this.discoveryAddress = discoveryAddress;
-
-      this.discoveryPort = discoveryPort;
+      this.discoveryGroupConfiguration = discoveryGroupConfiguration;
 
       this.initialConnectors = transportConfigs;
 
@@ -346,8 +336,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       connectionLoadBalancingPolicyClassName = HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 
-      discoveryInitialWaitTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
-
       useGlobalPools = HornetQClient.DEFAULT_USE_GLOBAL_POOLS;
 
       scheduledThreadPoolMaxSize = HornetQClient.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -381,9 +369,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public ServerLocatorImpl(final boolean useHA, final String discoveryAddress, final int discoveryPort)
+   public ServerLocatorImpl(final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      this(useHA, discoveryAddress, discoveryPort, null);
+      this(useHA, groupConfiguration, null);
    }
 
    /**
@@ -393,7 +381,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     */
    public ServerLocatorImpl(final boolean useHA, final TransportConfiguration... transportConfigs)
    {
-      this(useHA, null, -1, transportConfigs);
+      this(useHA, null, transportConfigs);
    }
 
    private TransportConfiguration selectConnector()
@@ -493,7 +481,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       if (initialConnectors == null && discoveryGroup != null)
       {
          // Wait for an initial broadcast to give us at least one node in the cluster
-         long timeout = clusterConnection?0:discoveryInitialWaitTimeout;
+         long timeout = clusterConnection?0:discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout();
          boolean ok = discoveryGroup.waitForBroadcast(timeout);
 
          if (!ok)
@@ -777,17 +765,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       this.ackBatchSize = ackBatchSize;
    }
 
-   public synchronized long getDiscoveryInitialWaitTimeout()
-   {
-      return discoveryInitialWaitTimeout;
-   }
-
-   public synchronized void setDiscoveryInitialWaitTimeout(final long initialWaitTimeout)
-   {
-      checkWrite();
-      discoveryInitialWaitTimeout = initialWaitTimeout;
-   }
-
    public synchronized boolean isUseGlobalPools()
    {
       return useGlobalPools;
@@ -898,35 +875,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       connectionLoadBalancingPolicyClassName = loadBalancingPolicyClassName;
    }
 
-   public synchronized String getLocalBindAddress()
-   {
-      return localBindAddress;
-   }
-
-   public synchronized void setLocalBindAddress(final String localBindAddress)
-   {
-      checkWrite();
-      this.localBindAddress = localBindAddress;
-   }
-
-   public synchronized String getDiscoveryAddress()
-   {
-      return discoveryAddress;
-   }
-
-   public synchronized int getDiscoveryPort()
-   {
-      return discoveryPort;
-   }
-
    public TransportConfiguration[] getStaticTransportConfigurations()
    {
       return this.initialConnectors;
    }
 
-   public synchronized long getDiscoveryRefreshTimeout()
+   public DiscoveryGroupConfiguration getDiscoveryGroupConfiguration()
    {
-      return discoveryRefreshTimeout;
+      return discoveryGroupConfiguration;
    }
 
    public void addInterceptor(final Interceptor interceptor)
@@ -937,12 +893,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public boolean removeInterceptor(final Interceptor interceptor)
    {
       return interceptors.remove(interceptor);
-   }
-
-   public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
-   {
-      checkWrite();
-      this.discoveryRefreshTimeout = discoveryRefreshTimeout;
    }
 
    public synchronized int getInitialMessagePacketSize()

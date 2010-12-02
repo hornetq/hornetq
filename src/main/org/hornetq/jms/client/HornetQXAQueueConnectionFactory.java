@@ -17,6 +17,7 @@ import javax.jms.XAQueueConnectionFactory;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A class that represents a XAQueueConnectionFactory.
@@ -49,9 +50,9 @@ public class HornetQXAQueueConnectionFactory extends HornetQConnectionFactory im
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public HornetQXAQueueConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
+   public HornetQXAQueueConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      super(ha, discoveryAddress, discoveryPort);
+      super(ha, groupConfiguration);
    }
 
    /**

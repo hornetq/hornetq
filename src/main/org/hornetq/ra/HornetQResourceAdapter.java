@@ -35,6 +35,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.impl.JMSFactoryType;
@@ -1404,14 +1405,26 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
-         
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
+
+         long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+
+         long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
+
+         groupConfiguration.setRefreshTimeout(refreshTimeout);
+
          if (ha)
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(discoveryAddress, discoveryPort, JMSFactoryType.XA_CF);
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
          else
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(discoveryAddress, discoveryPort, JMSFactoryType.XA_CF);
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
       }
       else
@@ -1583,18 +1596,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setConnectionTTL(val3);
       }
-      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
-      if (val3 != null)
-      {
-         cf.setDiscoveryInitialWaitTimeout(val3);
-      }
-      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-                                                                    : raProperties.getDiscoveryRefreshTimeout();
-      if (val3 != null)
-      {
-         cf.setDiscoveryRefreshTimeout(val3);
-      }
+
       val3 = overrideProperties.getRetryInterval() != null ? overrideProperties.getRetryInterval()
                                                           : raProperties.getRetryInterval();
       if (val3 != null)

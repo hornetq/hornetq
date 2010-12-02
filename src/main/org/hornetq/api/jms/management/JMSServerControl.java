@@ -143,6 +143,7 @@ public interface JMSServerControl
     */
    void createConnectionFactory(String name,
                                 boolean ha,
+                                boolean useDiscovery,
                                 @Parameter(name = "cfType", desc = "RegularCF=0, QueueCF=1, TopicCF=2, XACF=3, QueueXACF=4, TopicXACF=5") int cfType,
                                 String[] connectorNames,
                                 Object[] bindings) throws Exception;
@@ -156,43 +157,11 @@ public interface JMSServerControl
    @Operation(desc = "Create a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void createConnectionFactory(@Parameter(name = "name") String name,
                                 @Parameter(name = "ha") boolean ha,
+                                @Parameter(name = "useDiscovery", desc = "should we use discovery or a connector configuration") boolean useDiscovery,
                                 @Parameter(name = "cfType", desc = "RegularCF=0, QueueCF=1, TopicCF=2, XACF=3, QueueXACF=4, TopicXACF=5") int cfType,
-                                @Parameter(name = "connectorNames", desc = "comma-separated list of connectorNames") String connectors,
+                                @Parameter(name = "connectorNames", desc = "comma-separated list of connectorNames or the discovery group name") String connectors,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings (use '&comma;' if u need to use commas in your jndi name)") String jndiBindings) throws Exception;
 
-   /**
-    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
-    * <br>
-    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    * <br>
-    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
-    * 
-    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[])
-    */
-   void createConnectionFactoryDiscovery(String name,
-                                boolean ha,
-                                @Parameter(name = "cfType", desc = "RegularCF=0, QueueCF=1, TopicCF=2, XACF=3, QueueXACF=4, TopicXACF=5") int cfType,
-                                @Parameter(name = "discoveryGroupName", desc="Refereced at the main configuration, it's the name of the config with automatic discovery") String discoveryGroupName,
-                                @Parameter(name = "jndiBindings", desc="Comma separated JNDI Bindings") String bindings) throws Exception;
-
-   /**
-    * Create a JMS ConnectionFactory with the specified name using a discovery group to discover HornetQ servers.
-    * <br>
-    * The ConnectionFactory is bound to JNDI for all the specified bindings Strings.
-    * <br>
-    * This factory listens to the specified {@code discoveryAddress} and {@code discoveryPort} to discover which servers it can connect to.
-    * 
-    * @see #createConnectionFactory(String, Object[], Object[], Object[], Object[])
-    */
-   void createConnectionFactoryDiscovery(String name,
-                                boolean ha,
-                                @Parameter(name = "cfType", desc = "RegularCF=0, QueueCF=1, TopicCF=2, XACF=3, QueueXACF=4, TopicXACF=5") int cfType,
-                                @Parameter(name = "discoveryGroupName", desc="Refereced at the main configuration, it's the name of the config with automatic discovery") String discoveryGroupName,
-                                Object[] bindings) throws Exception;
-
-   /**
-    * Destroy the ConnectionFactory corresponding to the specified name.
-    */
    @Operation(desc = "Destroy a JMS ConnectionFactory", impact = MBeanOperationInfo.ACTION)
    void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to destroy") String name) throws Exception;
 

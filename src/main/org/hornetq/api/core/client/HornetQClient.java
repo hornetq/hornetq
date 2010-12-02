@@ -17,6 +17,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 import java.util.List;
 
@@ -116,9 +117,9 @@ public class HornetQClient
     * @param discoveryPort the UDP port to listen for updates
     * @return the ServerLocator
     */
-   public static ServerLocator createServerLocatorWithoutHA(String discoveryAddress, final int discoveryPort)
+   public static ServerLocator createServerLocatorWithoutHA(final DiscoveryGroupConfiguration groupConfiguration)
    {
-      return new ServerLocatorImpl(false, discoveryAddress, discoveryPort);
+      return new ServerLocatorImpl(false, groupConfiguration);
    }
    
    /**
@@ -145,9 +146,9 @@ public class HornetQClient
     * @param discoveryPort the UDP port to listen for updates
     * @return the ServerLocator
     */
-   public static ServerLocator createServerLocatorWithHA(String discoveryAddress, final int discoveryPort)
+   public static ServerLocator createServerLocatorWithHA(final DiscoveryGroupConfiguration groupConfiguration)
    {
-      return new ServerLocatorImpl(true, discoveryAddress, discoveryPort);
+      return new ServerLocatorImpl(true, groupConfiguration);
    }
    
 

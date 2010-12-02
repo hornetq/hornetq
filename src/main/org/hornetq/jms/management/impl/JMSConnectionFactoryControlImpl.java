@@ -20,6 +20,7 @@ import javax.management.StandardMBean;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
@@ -65,6 +66,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return jmsManager.getJNDIOnConnectionFactory(name);
    }
 
+   public boolean isHA()
+   {
+      return cf.isHA();
+   }
+
    public String getClientID()
    {
       return cf.getClientID();
@@ -75,29 +81,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getClientFailureCheckPeriod();
    }
 
-   public long getDiscoveryRefreshTimeout()
-   {
-      return cf.getDiscoveryRefreshTimeout();
-   }
-
    public String getConnectionLoadBalancingPolicyClassName()
    {
       return cf.getConnectionLoadBalancingPolicyClassName();
-   }
-
-   public void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
-   {
-      cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-   }
-
-   public long getDiscoveryInitialWaitTimeout()
-   {
-      return cf.getDiscoveryInitialWaitTimeout();
-   }
-
-   public void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
-   {
-      cf.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
    }
 
    public void setClientID(String clientID)
@@ -290,24 +276,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getStaticConnectors();
    }
 
-   public String getLocalBindAddress()
+   public DiscoveryGroupConfiguration getDiscoveryGroupConfiguration()
    {
-      return cf.getLocalBindAddress();
-   }
-
-   public void setLocalBindAddress(String localBindAddress)
-   {
-      cf.setLocalBindAddress(localBindAddress);
-   }
-
-   public String getDiscoveryAddress()
-   {
-      return cf.getDiscoveryAddress();
-   }
-
-   public int getDiscoveryPort()
-   {
-      return cf.getDiscoveryPort();
+      return cf.getDiscoveryGroupConfiguration();
    }
 
    public void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception

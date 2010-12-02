@@ -420,6 +420,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
             control.createConnectionFactory(cfName,
                                             false,
+                                            false,
                                             0,
                                             "tst",
                                             jndiBindings);
@@ -437,7 +438,7 @@ public class JMSServerControlTest extends ManagementTestBase
       
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
@@ -480,7 +481,7 @@ public class JMSServerControlTest extends ManagementTestBase
       
       server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, 0, "tst", cfJNDIBinding);
+      control.createConnectionFactory(cfName, false, false,  0, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 

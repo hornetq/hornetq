@@ -22,6 +22,7 @@ import javax.jms.XATopicConnectionFactory;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A class that represents a XAConnectionFactory.
@@ -55,9 +56,9 @@ public class HornetQXAConnectionFactory extends HornetQConnectionFactory impleme
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public HornetQXAConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
+   public HornetQXAConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      super(ha, discoveryAddress, discoveryPort);
+      super(ha, groupConfiguration);
    }
 
    /**

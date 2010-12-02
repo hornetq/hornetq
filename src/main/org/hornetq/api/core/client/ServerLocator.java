@@ -17,6 +17,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A ServerLocator
@@ -358,39 +359,6 @@ public interface ServerLocator
    void setAckBatchSize(int ackBatchSize);
 
    /**
-    * Returns the local bind address to which the multicast socket is bound for discovery.
-    * 
-    * This is null if the multicast socket is not bound, or no discovery is being used
-    * 
-    * @return the local bind address to which the multicast socket is bound for discovery
-    */
-   String getLocalBindAddress();
-
-   /**
-    * Sets the local bind address to which the multicast socket is bound for discovery.
-    * 
-    * @param localBindAddress the local bind address
-    */
-   void setLocalBindAddress(String localBindAddress);
-   
-   /**
-    * Returns the address to listen to discover which connectors this factory can use.
-    * The discovery address must be set to enable this factory to discover HornetQ servers.
-    * 
-    * @return the address to listen to discover which connectors this factory can use
-    */
-   String getDiscoveryAddress();
-
-   /**
-    * Returns the port to listen to discover which connectors this factory can use.
-    * The discovery port must be set to enable this factory to discover HornetQ servers.
-    * 
-    * @return the port to listen to discover which connectors this factory can use
-    */   
-   int getDiscoveryPort();
-
-
-   /**
     * Returns an array of TransportConfigurations representing the static list of live servers used when
     * creating this object
     * @return
@@ -398,43 +366,9 @@ public interface ServerLocator
    TransportConfiguration[] getStaticTransportConfigurations();
 
    /**
-    * Returns the refresh timeout for discovered HornetQ servers.
-    * 
-    * If this factory uses discovery to find HornetQ servers, the list of discovered servers
-    * will be refreshed according to this timeout.
-    * 
-    * Value is in milliseconds, default value is {@link HornetQClient#DEFAULT_DISCOVERY_REFRESH_TIMEOUT}.
-    * 
-    * @return the refresh timeout for discovered HornetQ servers
+    * The discovery group configuration
     */
-   long getDiscoveryRefreshTimeout();
-
-   /**
-    * Sets the refresh timeout for discovered HornetQ servers.
-    * 
-    * Value must be greater than 0.
-    * 
-    * @param discoveryRefreshTimeout refresh timeout (in milliseconds) for discovered HornetQ servers
-    */
-   void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
-
-   /**
-    * Returns the initial wait timeout if this factory is configured to use discovery.
-    * 
-    * Value is in milliseconds, default value is  {@link HornetQClient#DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT}.
-    * 
-    * @return the initial wait timeout if this factory is configured to use discovery 
-    */
-   long getDiscoveryInitialWaitTimeout();
-
-   /**
-    * Sets the initial wait timeout if this factory is configured to use discovery.
-    * 
-    * Value is in milliseconds and must be greater than 0.
-    * 
-    * @param initialWaitTimeout initial wait timeout when using discovery 
-    */
-   void setDiscoveryInitialWaitTimeout(long initialWaitTimeout);
+   DiscoveryGroupConfiguration getDiscoveryGroupConfiguration();
 
    /**
     * Returns whether this factory will use global thread pools (shared among all the factories in the same JVM)

@@ -30,6 +30,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
@@ -75,15 +76,15 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       this.serverLocator = serverLocator;
    }
 
-   public HornetQConnectionFactory(final boolean ha, final String discoveryAddress, final int discoveryPort)
+   public HornetQConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
    {
       if (ha)
       {
-         serverLocator = HornetQClient.createServerLocatorWithHA(discoveryAddress, discoveryPort);
+         serverLocator = HornetQClient.createServerLocatorWithHA(groupConfiguration);
       }
       else
       {
-         serverLocator = HornetQClient.createServerLocatorWithoutHA(discoveryAddress, discoveryPort);         
+         serverLocator = HornetQClient.createServerLocatorWithoutHA(groupConfiguration);
       }
    }
 
@@ -183,6 +184,11 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    // Public ---------------------------------------------------------------------------------------
 
+   public boolean isHA()
+   {
+      return serverLocator.isHA();
+   }
+
    public synchronized String getConnectionLoadBalancingPolicyClassName()
    {
       return serverLocator.getConnectionLoadBalancingPolicyClassName();
@@ -199,47 +205,9 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       return serverLocator.getStaticTransportConfigurations();
    }
 
-   public synchronized String getLocalBindAddress()
+   public synchronized DiscoveryGroupConfiguration getDiscoveryGroupConfiguration()
    {
-      return serverLocator.getLocalBindAddress();
-   }
-
-   public synchronized void setLocalBindAddress(final String localBindAddress)
-   {
-      checkWrite();
-      serverLocator.setLocalBindAddress(localBindAddress);
-   }
-
-   public synchronized String getDiscoveryAddress()
-   {
-      return serverLocator.getDiscoveryAddress();
-   }
-
-   public synchronized int getDiscoveryPort()
-   {
-      return serverLocator.getDiscoveryPort();
-   }
-
-   public synchronized long getDiscoveryRefreshTimeout()
-   {
-      return serverLocator.getDiscoveryRefreshTimeout();
-   }
-
-   public synchronized void setDiscoveryRefreshTimeout(final long discoveryRefreshTimeout)
-   {
-      checkWrite();
-      serverLocator.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-   }
-
-   public synchronized long getDiscoveryInitialWaitTimeout()
-   {
-      return serverLocator.getDiscoveryInitialWaitTimeout();
-   }
-
-   public synchronized void setDiscoveryInitialWaitTimeout(final long discoveryInitialWaitTimeout)
-   {
-      checkWrite();
-      serverLocator.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
+      return serverLocator.getDiscoveryGroupConfiguration();
    }
 
    public synchronized String getClientID()
@@ -688,7 +656,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
                                                     factory);
          }         
       }
-
+      connection.setReference(this);
       try
       {
          connection.authorize();
@@ -718,6 +686,18 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       }
    }
 
+   public void finalize() throws Throwable
+   {
+      try
+      {
+         serverLocator.close();
+      }
+      catch (Exception e)
+      {
+         //not much we can do here
+      }
+      super.finalize();
+   }
    // Inner classes --------------------------------------------------------------------------------
 
 }
