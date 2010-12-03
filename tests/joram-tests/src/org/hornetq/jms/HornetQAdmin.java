@@ -114,6 +114,7 @@ public class HornetQAdmin implements Admin
                              "createConnectionFactory",
                              name,
                              false,
+                             false,
                              cfType,
                              "netty",
                              name);
