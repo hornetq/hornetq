@@ -15,9 +15,9 @@ package org.hornetq.jms.client;
 
 import javax.jms.XAQueueConnectionFactory;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A class that represents a XAQueueConnectionFactory.

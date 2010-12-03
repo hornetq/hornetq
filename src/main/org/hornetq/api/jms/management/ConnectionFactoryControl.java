@@ -13,11 +13,11 @@
 
 package org.hornetq.api.jms.management;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A ConnectionFactoryControl is used to manage a JMS ConnectionFactory.

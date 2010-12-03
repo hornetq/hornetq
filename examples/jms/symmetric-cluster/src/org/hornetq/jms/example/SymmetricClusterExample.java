@@ -21,9 +21,9 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**

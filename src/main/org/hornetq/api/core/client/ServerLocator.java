@@ -13,11 +13,11 @@
 
 package org.hornetq.api.core.client;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A ServerLocator

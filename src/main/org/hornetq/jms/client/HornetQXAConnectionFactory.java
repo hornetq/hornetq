@@ -20,9 +20,9 @@ import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.config.DiscoveryGroupConfiguration;
 
 /**
  * A class that represents a XAConnectionFactory.
