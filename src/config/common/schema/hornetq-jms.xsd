@@ -75,7 +75,11 @@
             </xsd:element>
    			<xsd:element name="min-large-message-size" type="xsd:long"
    				maxOccurs="1" minOccurs="0">
-   			</xsd:element>   			          
+   			</xsd:element>   			 
+   			<xsd:element name="compress-large-messages" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
+   			         
             <xsd:element name="client-id" type="xsd:string"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>            

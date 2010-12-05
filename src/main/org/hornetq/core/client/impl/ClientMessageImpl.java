@@ -21,11 +21,11 @@ import java.nio.ByteBuffer;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -117,6 +117,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       return largeMessage;
    }
+   
+   public boolean isCompressed()
+   {
+      return properties.getBooleanProperty(Message.HDR_LARGE_COMPRESSED);
+   }
 
    /**
     * @param largeMessage the largeMessage to set
@@ -142,7 +147,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
              "]";
    }
 
-   // FIXME - only used for large messages - move it!
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
@@ -150,7 +154,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferInternal)getWholeBuffer()).saveBuffer(out);
+          ((LargeMessageBufferInternal)getWholeBuffer()).saveBuffer(out);
       }
       else
       {

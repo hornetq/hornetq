@@ -138,4 +138,7 @@ public interface ClientSessionFactory
    
    CoreRemotingConnection getConnection();
 
+   void setCompressLargeMessages(boolean compressLargeMessage);
+   
+   boolean isCompressLargeMessages();
 }

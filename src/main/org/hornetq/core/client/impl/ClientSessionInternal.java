@@ -39,6 +39,8 @@ public interface ClientSessionInternal extends ClientSession
    boolean isCacheLargeMessageClient();
 
    int getMinLargeMessageSize();
+   
+   boolean isCompressLargeMessages();
 
    void expire(long consumerID, long messageID) throws HornetQException;
 

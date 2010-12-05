@@ -43,6 +43,8 @@ public class HornetQClient
    // Any message beyond this size is considered a large message (to be sent in chunks)
    
    public static final int DEFAULT_MIN_LARGE_MESSAGE_SIZE = 100 * 1024;
+   
+   public static final boolean DEFAULT_COMPRESS_LARGE_MESSAGES = false;
 
    public static final int DEFAULT_CONSUMER_WINDOW_SIZE = 1024 * 1024;
 

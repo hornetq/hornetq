@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.client.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -35,12 +36,14 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.LargeMessageBufferImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.HornetQBufferInputStream;
 
 /**
  * A LargeMessageBufferUnitTest
@@ -56,7 +59,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   static int tmpFileCounter = 0; 
+   static int tmpFileCounter = 0;
 
    // Static --------------------------------------------------------
 
@@ -67,13 +70,13 @@ public class LargeMessageBufferTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       tmpFileCounter++;
 
       File tmp = new File(getTestDir());
       tmp.mkdirs();
    }
-   
+
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -166,6 +169,20 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
    }
 
+   public void testReadIntegersOverStream() throws Exception
+   {
+      LargeMessageBufferImpl buffer = createBufferWithIntegers(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+      HornetQBufferInputStream is = new HornetQBufferInputStream(buffer);
+      DataInputStream dataInput = new DataInputStream(is);
+
+      for (int i = 1; i <= 15; i++)
+      {
+         Assert.assertEquals(i, dataInput.readInt());
+      }
+
+      assertEquals(-1, dataInput.read());
+   }
+
    // testing void getBytes(int index, ChannelBuffer dst, int dstIndex, int length)
    public void testReadLongs() throws Exception
    {
@@ -184,6 +201,20 @@ public class LargeMessageBufferTest extends UnitTestCase
       catch (IndexOutOfBoundsException e)
       {
       }
+   }
+
+   public void testReadLongsOverStream() throws Exception
+   {
+      LargeMessageBufferImpl buffer = createBufferWithLongs(3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
+      HornetQBufferInputStream is = new HornetQBufferInputStream(buffer);
+      DataInputStream dataInput = new DataInputStream(is);
+
+      for (int i = 1; i <= 15; i++)
+      {
+         Assert.assertEquals(i, dataInput.readLong());
+      }
+
+      assertEquals(-1, dataInput.read());
    }
 
    public void testReadData() throws Exception
@@ -315,14 +346,14 @@ public class LargeMessageBufferTest extends UnitTestCase
          Assert.assertEquals(i, bytes[i]);
       }
    }
-   
+
    public void testSplitBufferOnFile() throws Exception
    {
       LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(),
-                                                                          1024 * 1024,
-                                                                          1,
-                                                                          getTestFile(),
-                                                                          1024);
+                                                                    1024 * 1024,
+                                                                    1,
+                                                                    getTestFile(),
+                                                                    1024);
       try
       {
 
@@ -523,6 +554,36 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       Assert.assertTrue("It waited too much", System.currentTimeMillis() - start < 30000);
 
+   }
+
+   public void testReadBytesOnStreaming() throws Exception
+   {
+      byte[] byteArray = new byte[1024];
+      for (int i = 0; i < byteArray.length; i++)
+      {
+         byteArray[i] = getSamplebyte(i);
+      }
+
+      HornetQBuffer splitbuffer = splitBuffer(3, byteArray);
+
+      HornetQBufferInputStream is = new HornetQBufferInputStream(splitbuffer);
+
+      for (int i = 0; i < 100; i++)
+      {
+         assertEquals(getSamplebyte(i), (byte)is.read());
+      }
+
+      for (int i = 100; i < byteArray.length; i += 10)
+      {
+         byte readBytes[] = new byte[10];
+         
+         int size = is.read(readBytes);
+         
+         for (int j = 0; j < size; j++)
+         {
+            assertEquals(getSamplebyte(i + j), readBytes[j]);
+         }
+      }
    }
 
    /**
@@ -790,6 +851,15 @@ public class LargeMessageBufferTest extends UnitTestCase
       }
 
       public SessionQueueQueryResponseMessage getQueueInfo()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.impl.ClientConsumerInternal#getSession()
+       */
+      public ClientSessionInternal getSession()
       {
          // TODO Auto-generated method stub
          return null;

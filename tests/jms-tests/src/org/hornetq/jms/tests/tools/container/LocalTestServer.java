@@ -303,6 +303,7 @@ public class LocalTestServer implements Server, Runnable
                                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                     HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                     HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                                     prefetchSize,
                                                     HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                                     HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,

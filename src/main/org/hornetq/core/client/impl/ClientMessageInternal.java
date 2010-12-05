@@ -44,4 +44,6 @@ public interface ClientMessageInternal extends ClientMessage, MessageInternal
    void discardLargeBody();
 
    void setBuffer(HornetQBuffer buffer);
+   
+   boolean isCompressed();
 }

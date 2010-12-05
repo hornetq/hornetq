@@ -60,6 +60,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    private boolean cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+   
+   private boolean compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
 
    private int consumerWindowSize = HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE;
 
@@ -246,6 +248,16 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setMinLargeMessageSize(final int minLargeMessageSize)
    {
       this.minLargeMessageSize = minLargeMessageSize;
+   }
+
+   public boolean isCompressLargeMessages()
+   {
+      return compressLargeMessage;
+   }
+
+   public void setCompressLargeMessages(final boolean compress)
+   {
+      this.compressLargeMessage = compress;
    }
 
    public int getConsumerWindowSize()

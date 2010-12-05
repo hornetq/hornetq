@@ -49,8 +49,6 @@ import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
-import static org.hornetq.tests.util.ServiceTestBase.*;
-
 /**
  * 
  * Base class with basic utilities on starting up a basic server

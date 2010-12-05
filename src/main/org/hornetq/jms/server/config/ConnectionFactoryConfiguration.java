@@ -69,6 +69,10 @@ public interface ConnectionFactoryConfiguration extends EncodingSupport
    int getMinLargeMessageSize();
 
    void setMinLargeMessageSize(int minLargeMessageSize);
+   
+   boolean isCompressLargeMessages();
+   
+   void setCompressLargeMessages(boolean compress);   
 
    int getConsumerWindowSize();
 

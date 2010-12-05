@@ -561,4 +561,9 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.addMetaData(key, data);
    }
+
+   public boolean isCompressLargeMessages()
+   {
+      return session.isCompressLargeMessages();
+   }
 }

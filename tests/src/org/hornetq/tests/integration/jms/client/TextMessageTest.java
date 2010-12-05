@@ -242,6 +242,7 @@ public class TextMessageTest extends JMSTestBase
                                         callTimeout,
                                         true,
                                         HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                         HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                         HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                         HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,

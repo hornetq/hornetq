@@ -287,7 +287,6 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
     */
    public synchronized boolean waitCompletion(final long timeWait) throws HornetQException
    {
-
       if (outStream == null)
       {
          // There is no stream.. it will never achieve the end of streaming
@@ -1258,11 +1257,12 @@ public class LargeMessageBufferImpl implements LargeMessageBufferInternal
    {
       try
       {
+         output.write(packet.getBody());
          if (!packet.isContinues())
          {
             streamEnded = true;
+            output.close();
          }
-         output.write(packet.getBody());
       }
       catch (IOException e)
       {

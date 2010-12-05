@@ -14,15 +14,10 @@
 package org.hornetq.jms.tests;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import javax.naming.InitialContext;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 import org.hornetq.jms.client.HornetQTopicConnectionFactory;
@@ -81,6 +76,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                     HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                     HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                                     HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                     HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                                     HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
@@ -115,6 +111,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                     HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                     HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                                     HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                     HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                                     HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,
@@ -149,6 +146,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     HornetQClient.DEFAULT_CALL_TIMEOUT,
                                                     HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                     HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                    HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                                     HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                                     HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                                     HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,

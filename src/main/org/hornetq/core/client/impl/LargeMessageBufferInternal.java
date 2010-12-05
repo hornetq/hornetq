@@ -17,6 +17,7 @@ import java.io.OutputStream;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 
 /**
  * A LargeMessageBufferInternal
@@ -55,6 +56,8 @@ public interface LargeMessageBufferInternal extends HornetQBuffer
     * Saves this buffer to the specified output.
     */
    void saveBuffer(final OutputStream output) throws HornetQException;
+   
+   public void addPacket(final SessionReceiveContinuationMessage packet);
 
    /**
     * Waits for the completion for the specified waiting time (in milliseconds).

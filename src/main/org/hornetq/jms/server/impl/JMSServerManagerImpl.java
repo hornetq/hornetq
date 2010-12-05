@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.transaction.xa.Xid;
 
@@ -723,6 +722,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long callTimeout,
                                                     final boolean cacheLargeMessagesClient,
                                                     final int minLargeMessageSize,
+                                                    final boolean compressLargeMessage,
                                                     final int consumerWindowSize,
                                                     final int consumerMaxRate,
                                                     final int confirmationWindowSize,
@@ -761,6 +761,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setCallTimeout(callTimeout);
          configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
+         configuration.setCompressLargeMessages(compressLargeMessage);
          configuration.setConsumerWindowSize(consumerWindowSize);
          configuration.setConsumerMaxRate(consumerMaxRate);
          configuration.setConfirmationWindowSize(confirmationWindowSize);
@@ -797,6 +798,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     final long callTimeout,
                                                     final boolean cacheLargeMessagesClient,
                                                     final int minLargeMessageSize,
+                                                    final boolean compressLargeMessages,
                                                     final int consumerWindowSize,
                                                     final int consumerMaxRate,
                                                     final int confirmationWindowSize,
@@ -836,6 +838,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          configuration.setCallTimeout(callTimeout);
          configuration.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          configuration.setMinLargeMessageSize(minLargeMessageSize);
+         configuration.setCompressLargeMessages(compressLargeMessages);
          configuration.setConsumerWindowSize(consumerWindowSize);
          configuration.setConsumerMaxRate(consumerMaxRate);
          configuration.setConfirmationWindowSize(confirmationWindowSize);

@@ -136,6 +136,7 @@ public class FloodServerTest extends UnitTestCase
                                             callTimeout,
                                             HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                             HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES,
                                             HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE,
                                             HornetQClient.DEFAULT_CONSUMER_MAX_RATE,
                                             HornetQClient.DEFAULT_CONFIRMATION_WINDOW_SIZE,

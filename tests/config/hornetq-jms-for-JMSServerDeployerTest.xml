@@ -20,6 +20,7 @@
       <producer-window-size>7712652</producer-window-size>
       <producer-max-rate>789</producer-max-rate>
       <min-large-message-size>12</min-large-message-size>
+      <compress-large-messages>true</compress-large-messages>
       <client-id>TestClientID</client-id>
       <dups-ok-batch-size>3456</dups-ok-batch-size>
       <transaction-batch-size>4567</transaction-batch-size>
