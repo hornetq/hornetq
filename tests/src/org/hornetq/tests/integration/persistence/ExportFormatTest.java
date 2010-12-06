@@ -41,36 +41,36 @@ public class ExportFormatTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    // Case the format was changed, and the change was agreed, use _testCreateFormat to recreate this field
-   String bindingsFile = "#File,JournalFileImpl: (hornetq-bindings-1.bindings id = 1, recordID = 1)\n" + "operation@AddRecord,id@2,userRecordType@24,length@8,isUpdate@false,data@AAAAAH____8=\n"
-                         + "operation@AddRecord,id@0,userRecordType@23,length@16,isUpdate@false,data@jhbeVKTqEd-gYwAi-v8IyA==\n"
-                         + "operation@AddRecord,id@4,userRecordType@21,length@17,isUpdate@false,data@AAAABEEAMQAAAAAEQQAxAAA=\n"
-                         + "operation@AddRecord,id@109,userRecordType@24,length@8,isUpdate@false,data@AAAAAAAAAG0=\n"
-                         + "#File,JournalFileImpl: (hornetq-bindings-2.bindings id = 2, recordID = 2)\n";
+   String bindingsFile = "#File,JournalFileImpl: (hornetq-bindings-1.bindings id = 1, recordID = 1)\n" +
+         "operation@AddRecord,id@2,userRecordType@24,length@8,isUpdate@false,compactCount@0,data@AAAAAH____8=\n" +
+         "operation@AddRecord,id@2,userRecordType@21,length@17,isUpdate@false,compactCount@0,data@AAAABEEAMQAAAAAEQQAxAAA=\n" +
+         "operation@AddRecord,id@20,userRecordType@24,length@8,isUpdate@false,compactCount@0,data@AAAAAAAAABQ=\n" +
+         "#File,JournalFileImpl: (hornetq-bindings-2.bindings id = 2, recordID = 2)";
 
    // Case the format was changed, and the change was agreed, use _testCreateFormat to recreate this field
-   String journalFile = "#File,JournalFileImpl: (hornetq-data-1.hq id = 1, recordID = 1)\n" 
-                        + "operation@AddRecordTX,txID@3,id@6,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAABgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rANMEAQAAAAEAAAAGawBlAHkABgAAAAA=\n"
-                        + "operation@UpdateTX,txID@3,id@6,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecordTX,txID@3,id@7,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAABwEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rANcEAQAAAAEAAAAGawBlAHkABgAAAAE=\n"
-                        + "operation@UpdateTX,txID@3,id@7,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecordTX,txID@3,id@8,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAACAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rANcEAQAAAAEAAAAGawBlAHkABgAAAAI=\n"
-                        + "operation@UpdateTX,txID@3,id@8,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecordTX,txID@3,id@9,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAACQEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rANcEAQAAAAEAAAAGawBlAHkABgAAAAM=\n"
-                        + "operation@UpdateTX,txID@3,id@9,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecordTX,txID@3,id@10,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAACgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rANcEAQAAAAEAAAAGawBlAHkABgAAAAQ=\n"
-                        + "operation@UpdateTX,txID@3,id@10,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@Commit,txID@3,numberOfRecords@10\n"
-                        + "operation@AddRecord,id@14,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAADgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rAOEEAQAAAAEAAAAGawBlAHkABgAAAAU=\n"
-                        + "operation@Update,id@14,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecord,id@15,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAADwEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rAOQEAQAAAAEAAAAGawBlAHkABgAAAAY=\n"
-                        + "operation@Update,id@15,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecord,id@16,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAAEAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rAOUEAQAAAAEAAAAGawBlAHkABgAAAAc=\n"
-                        + "operation@Update,id@16,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecord,id@17,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAAEQEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rAOcEAQAAAAEAAAAGawBlAHkABgAAAAg=\n"
-                        + "operation@Update,id@17,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "operation@AddRecord,id@18,userRecordType@31,length@65,isUpdate@false,data@AAAAEQAAAE4AAAAAAAAAEgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABKl7rAOgEAQAAAAEAAAAGawBlAHkABgAAAAk=\n"
-                        + "operation@Update,id@18,userRecordType@32,length@8,isUpdate@true,data@AAAAAAAAAAQ=\n"
-                        + "#File,JournalFileImpl: (hornetq-data-2.hq id = 2, recordID = 2)\n";
+   String journalFile = "#File,JournalFileImpl: (hornetq-data-1.hq id = 1, recordID = 1)\n" +
+         "operation@AddRecordTX,txID@0,id@4,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAABAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP40EAQAAAAEAAAAGawBlAHkABgAAAAA=\n" +
+         "operation@UpdateTX,txID@0,id@4,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecordTX,txID@0,id@5,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAABQEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP5EEAQAAAAEAAAAGawBlAHkABgAAAAE=\n" +
+         "operation@UpdateTX,txID@0,id@5,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecordTX,txID@0,id@6,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAABgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP5EEAQAAAAEAAAAGawBlAHkABgAAAAI=\n" +
+         "operation@UpdateTX,txID@0,id@6,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecordTX,txID@0,id@7,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAABwEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP5EEAQAAAAEAAAAGawBlAHkABgAAAAM=\n" +
+         "operation@UpdateTX,txID@0,id@7,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecordTX,txID@0,id@8,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAACAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP5EEAQAAAAEAAAAGawBlAHkABgAAAAQ=\n" +
+         "operation@UpdateTX,txID@0,id@8,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@Commit,txID@0,numberOfRecords@10\n" +
+         "operation@AddRecord,id@12,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAADAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP6gEAQAAAAEAAAAGawBlAHkABgAAAAU=\n" +
+         "operation@Update,id@12,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecord,id@13,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAADQEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP6oEAQAAAAEAAAAGawBlAHkABgAAAAY=\n" +
+         "operation@Update,id@13,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecord,id@14,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAADgEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP6sEAQAAAAEAAAAGawBlAHkABgAAAAc=\n" +
+         "operation@Update,id@14,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecord,id@15,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAADwEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP60EAQAAAAEAAAAGawBlAHkABgAAAAg=\n" +
+         "operation@Update,id@15,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "operation@AddRecord,id@16,userRecordType@31,length@65,isUpdate@false,compactCount@0,data@AAAAEQAAAE4AAAAAAAAAEAEAAAAEQQAxAAAA_wAAAAAAAAAAAAABLLxYP64EAQAAAAEAAAAGawBlAHkABgAAAAk=\n" +
+         "operation@Update,id@16,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
+         "#File,JournalFileImpl: (hornetq-data-2.hq id = 2, recordID = 2)";
 
    // Static --------------------------------------------------------
 
