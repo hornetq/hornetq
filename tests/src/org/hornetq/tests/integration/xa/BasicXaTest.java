@@ -95,6 +95,28 @@ public class BasicXaTest extends ServiceTestBase
             //
          }
       }
+      if(sessionFactory != null)
+      {
+         try
+         {
+            sessionFactory.close();
+         }
+         catch (Exception e)
+         {
+            //
+         }
+      }
+      if(locator != null)
+      {
+         try
+         {
+            locator.close();
+         }
+         catch (Exception e)
+         {
+            //
+         }
+      }
       if (messagingService != null && messagingService.isStarted())
       {
          try
@@ -390,7 +412,7 @@ public class BasicXaTest extends ServiceTestBase
       int numSessions = 100;
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
-      for (int i = 0; i < 10 * numSessions; i++)
+      for (int i = 0; i < numSessions; i++)
       {
          clientProducer.send(createTextMessage(clientSession2, "m" + i));
       }
@@ -410,7 +432,8 @@ public class BasicXaTest extends ServiceTestBase
          session.start();
       }
 
-      Assert.assertTrue(latch.await(10, TimeUnit.SECONDS));
+      boolean ok = latch.await(10, TimeUnit.SECONDS);
+      Assert.assertTrue(ok);
       for (TxMessageHandler messageHandler : handlers)
       {
          Assert.assertFalse(messageHandler.failedToAck);
@@ -419,6 +442,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession2.close();
       for (ClientSession session : clientSessions)
       {
+         session.stop();
          session.close();
       }
 
@@ -962,6 +986,8 @@ public class BasicXaTest extends ServiceTestBase
       }
    }
 
+   private static volatile int received = 0;
+
    class TxMessageHandler implements MessageHandler
    {
       boolean failedToAck = false;
@@ -969,6 +995,7 @@ public class BasicXaTest extends ServiceTestBase
       final ClientSession session;
 
       private final CountDownLatch latch;
+
 
       public TxMessageHandler(final ClientSession session, final CountDownLatch latch)
       {
@@ -993,6 +1020,7 @@ public class BasicXaTest extends ServiceTestBase
          try
          {
             message.acknowledge();
+            BasicXaTest.log.info("processed message " + (received++));
          }
          catch (HornetQException e)
          {
