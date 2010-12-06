@@ -156,7 +156,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testDiscoveryConstructor() throws Exception
    {
-      DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration("test", "foo", "192.168.5.4", 3456, 5000, 1000);
+      DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(groupAddress, groupPort);
       HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
