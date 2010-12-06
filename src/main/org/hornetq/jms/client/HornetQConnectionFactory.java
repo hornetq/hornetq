@@ -34,6 +34,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * HornetQ implementation of a JMS ConnectionFactory.
@@ -541,7 +542,11 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    {
       return serverLocator;
    }
-   
+
+   public int getFactoryType()
+   {
+      return JMSFactoryType.CF.intValue();
+   }
    /**
     * 
     * @deprecated use {@link ServerLocator#createSessionFactory()}

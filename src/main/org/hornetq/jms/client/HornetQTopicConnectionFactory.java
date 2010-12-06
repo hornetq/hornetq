@@ -18,6 +18,7 @@ import javax.jms.TopicConnectionFactory;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A class that represents a TopicConnectionFactory.
@@ -65,4 +66,8 @@ public class HornetQTopicConnectionFactory extends HornetQConnectionFactory impl
       super(ha, initialConnectors);
    }
 
+   public int getFactoryType()
+   {
+      return JMSFactoryType.TOPIC_CF.intValue();
+   }
 }

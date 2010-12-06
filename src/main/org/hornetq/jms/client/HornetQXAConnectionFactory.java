@@ -23,6 +23,7 @@ import javax.jms.XATopicConnectionFactory;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A class that represents a XAConnectionFactory.
@@ -68,6 +69,11 @@ public class HornetQXAConnectionFactory extends HornetQConnectionFactory impleme
    public HornetQXAConnectionFactory(final boolean ha, final TransportConfiguration... initialConnectors)
    {
       super(ha, initialConnectors);
+   }
+
+   public int getFactoryType()
+   {
+      return JMSFactoryType.XA_CF.intValue();
    }
 
 }

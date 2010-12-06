@@ -49,6 +49,12 @@ public interface ConnectionFactoryControl
    boolean isHA();
 
    /**
+   * return the type of factory
+    * @return 0 = jms cf, 1 = queue cf, 2 = topic cf, 3 = xa cf, 4 = xa queue cf, 5 = xa topic cf
+   */
+   int getFactoryType();
+
+   /**
     * Returns the Client ID of this connection factory (or {@code null} if it is not set.
     */
    String getClientID();

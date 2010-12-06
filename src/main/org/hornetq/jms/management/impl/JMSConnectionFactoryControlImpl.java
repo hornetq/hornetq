@@ -71,6 +71,11 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.isHA();
    }
 
+   public int getFactoryType()
+   {
+      return cf.getFactoryType();
+   }
+
    public String getClientID()
    {
       return cf.getClientID();
