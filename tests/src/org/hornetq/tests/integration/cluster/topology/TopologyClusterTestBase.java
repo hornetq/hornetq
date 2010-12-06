@@ -414,7 +414,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       final List<String> nodes = new ArrayList<String>();
       final CountDownLatch upLatch = new CountDownLatch(5);
-      final CountDownLatch downLatch = new CountDownLatch(5);
+      final CountDownLatch downLatch = new CountDownLatch(4);
 
       locator.addClusterTopologyListener(new ClusterTopologyListener()
       {
@@ -454,11 +454,16 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       waitForClusterConnections(2, 4);
       waitForClusterConnections(3, 4);
       waitForClusterConnections(4, 4);
+      //we cant close all of the servers, we need to leave one up to notify us
+      stopServers(4, 2, 3, 1);
 
-      stopServers(0, 4, 2, 3, 1);
-
-      assertTrue("Was not notified that all servers are Down", upLatch.await(10, SECONDS));
-      checkContains(new int[] { }, nodeIDs, nodes);
+      boolean ok = downLatch.await(10, SECONDS);
+      if(!ok)
+      {
+         System.out.println("TopologyClusterTestBase.testMultipleClientSessionFactories");
+      }
+      assertTrue("Was not notified that all servers are Down", ok);
+      checkContains(new int[] { 0 }, nodeIDs, nodes);
       
       for (int i = 0; i < sfs.length; i++)
       {
@@ -467,6 +472,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       }
       
       locator.close();
+
+      stopServers(0);
    }
 
    // Private -------------------------------------------------------
