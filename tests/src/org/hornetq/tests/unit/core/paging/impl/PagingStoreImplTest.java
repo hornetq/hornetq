@@ -40,6 +40,7 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -75,7 +76,6 @@ import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ExecutorFactory;
-import org.hornetq.utils.UUID;
 
 /**
  * 
@@ -1387,7 +1387,7 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#createLargeMessage(byte[])
        */
-      public LargeServerMessage createLargeMessage(final long messageId, final byte[] header)
+      public LargeServerMessage createLargeMessage(final long messageId, final MessageInternal msg)
       {
 
          return null;

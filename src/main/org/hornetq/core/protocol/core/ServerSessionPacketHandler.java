@@ -451,7 +451,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                case SESS_SEND_LARGE:
                {
                   SessionSendLargeMessage message = (SessionSendLargeMessage)packet;
-                  session.sendLarge(message.getLargeMessageHeader());
+                  session.sendLarge(message.getLargeMessage());
                   break;
                }
                case SESS_SEND_CONTINUATION:

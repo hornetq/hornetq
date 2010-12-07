@@ -24,7 +24,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuation
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface LargeMessageBufferInternal extends HornetQBuffer
+public interface LargeMessageController extends HornetQBuffer
 {
    /**
     * Returns the size of this buffer.

@@ -29,7 +29,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditM
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
-import org.hornetq.utils.DecompressedLargeMessageBuffer;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.PriorityLinkedList;
 import org.hornetq.utils.PriorityLinkedListImpl;
@@ -83,7 +82,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Runner runner = new Runner();
 
-   private LargeMessageBufferImpl currentLargeMessageBuffer;
+   private LargeMessageControllerImpl currentLargeMessageController;
 
    // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard the body
    // before moving to the next message.
@@ -539,13 +538,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       flowControl(packet.getPacketSize(), false);
 
-      ClientMessageInternal currentChunkMessage = new ClientMessageImpl();
+      ClientMessageInternal currentChunkMessage = (ClientMessageInternal)packet.getLargeMessage();
 
       currentChunkMessage.setDeliveryCount(packet.getDeliveryCount());
-
-      // FIXME - this is really inefficient - decoding from a buffer to a byte[] then from the byte[] to another buffer
-      // which is then decoded to form the message! Clebert, what were you thinking?
-      currentChunkMessage.decodeHeadersAndProperties(HornetQBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
 
       currentChunkMessage.setLargeMessage(true);
 
@@ -558,15 +553,15 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          largeMessageCache.deleteOnExit();
       }
 
-      currentLargeMessageBuffer = new LargeMessageBufferImpl(this, packet.getLargeMessageSize(), 60, largeMessageCache);
+      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 60, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
       {
-         currentChunkMessage.setBuffer(new DecompressedLargeMessageBuffer(currentLargeMessageBuffer));
+         currentChunkMessage.setBuffer(new DecompressedLargeMessageControllerImpl(currentLargeMessageController));
       }
       else
       {
-         currentChunkMessage.setBuffer(currentLargeMessageBuffer);
+         currentChunkMessage.setBuffer(currentLargeMessageController);
       }
 
       currentChunkMessage.setFlowControlSize(0);
@@ -580,7 +575,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-      currentLargeMessageBuffer.addPacket(chunk);
+      currentLargeMessageController.addPacket(chunk);
    }
 
    public void clear(boolean waitForOnMessage) throws HornetQException
@@ -904,10 +899,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete(true);
 
-         if (currentLargeMessageBuffer != null)
+         if (currentLargeMessageController != null)
          {
-            currentLargeMessageBuffer.cancel();
-            currentLargeMessageBuffer = null;
+            currentLargeMessageController.cancel();
+            currentLargeMessageController = null;
          }
 
          closed = true;

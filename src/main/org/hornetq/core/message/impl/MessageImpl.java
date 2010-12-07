@@ -24,7 +24,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.PropertyConversionException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
-import org.hornetq.core.client.impl.LargeMessageBufferInternal;
+import org.hornetq.core.client.impl.LargeMessageController;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -245,11 +245,24 @@ public abstract class MessageImpl implements MessageInternal
       properties.decode(buffer);
    }
    
+   public void copyHeadersAndProperties(final MessageInternal msg)
+   {
+      messageID = msg.getMessageID();
+      address = msg.getAddress();
+      userID = msg.getUserID();
+      type = msg.getType();
+      durable = msg.isDurable();
+      expiration = msg.getExpiration();
+      timestamp = msg.getTimestamp();
+      priority = msg.getPriority();
+      properties = msg.getTypedProperties();
+   }
+   
    public HornetQBuffer getBodyBuffer()
    {
       if (bodyBuffer == null)
       {
-         if (buffer instanceof LargeMessageBufferInternal == false)
+         if (buffer instanceof LargeMessageController == false)
          {
             bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
          }
@@ -844,6 +857,11 @@ public abstract class MessageImpl implements MessageInternal
    public BodyEncoder getBodyEncoder() throws HornetQException
    {
       return new DecodingContext();
+   }
+   
+   public TypedProperties getTypedProperties()
+   {
+      return this.properties;
    }
 
    // Public --------------------------------------------------------

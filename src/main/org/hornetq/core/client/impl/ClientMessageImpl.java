@@ -47,6 +47,9 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    private ClientConsumerInternal consumer;
 
    private boolean largeMessage;
+   
+   // Used only when receiving large messages
+   private LargeMessageController largeMessageController;
 
    private int flowControlSize = -1;
 
@@ -159,7 +162,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-          ((LargeMessageBufferInternal)getWholeBuffer()).saveBuffer(out);
+          ((LargeMessageController)getWholeBuffer()).saveBuffer(out);
       }
       else
       {
@@ -184,7 +187,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferInternal)getWholeBuffer()).setOutputStream(out);
+         ((LargeMessageController)getWholeBuffer()).setOutputStream(out);
       }
       else
       {
@@ -200,7 +203,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         return ((LargeMessageBufferInternal)getWholeBuffer()).waitCompletion(timeMilliseconds);
+         return ((LargeMessageController)getWholeBuffer()).waitCompletion(timeMilliseconds);
       }
       else
       {
@@ -215,7 +218,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       if (largeMessage)
       {
-         ((LargeMessageBufferInternal)getWholeBuffer()).discardUnusedPackets();
+         ((LargeMessageController)getWholeBuffer()).discardUnusedPackets();
       }
    }
 

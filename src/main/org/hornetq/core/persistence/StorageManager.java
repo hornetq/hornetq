@@ -23,6 +23,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -127,7 +128,14 @@ public interface StorageManager extends HornetQComponent
 
    LargeServerMessage createLargeMessage();
 
-   LargeServerMessage createLargeMessage(long id, byte[] header);
+   /**
+    * 
+    * @param id
+    * @param message This is a temporary message that holds the parsed properties. 
+    *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
+    * @return
+    */
+   LargeServerMessage createLargeMessage(long id, MessageInternal message);
 
    void prepare(long txID, Xid xid) throws Exception;
 

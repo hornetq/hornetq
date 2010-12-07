@@ -30,7 +30,7 @@ public interface SessionCallback
 
    int sendMessage(ServerMessage message, long consumerID, int deliveryCount);
 
-   int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount);
+   int sendLargeMessage(ServerMessage message, long consumerID, long bodySize, int deliveryCount);
 
    int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse);
    

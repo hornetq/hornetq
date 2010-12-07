@@ -49,9 +49,9 @@ public final class CoreSessionCallback implements SessionCallback
       this.channel = channel;
    }
 
-   public int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount)
+   public int sendLargeMessage(ServerMessage message, long consumerID, long bodySize, int deliveryCount)
    {
-      Packet packet = new SessionReceiveLargeMessage(consumerID, headerBuffer, bodySize, deliveryCount);
+      Packet packet = new SessionReceiveLargeMessage(consumerID, message, bodySize, deliveryCount);
 
       channel.send(packet);
 

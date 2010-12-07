@@ -149,7 +149,7 @@ class StompSession implements SessionCallback
       return 0;
    }
 
-   public int sendLargeMessage(long consumerID, byte[] headerBuffer, long bodySize, int deliveryCount)
+   public int sendLargeMessage(ServerMessage msg, long consumerID, long bodySize, int deliveryCount)
    {
       return 0;
    }

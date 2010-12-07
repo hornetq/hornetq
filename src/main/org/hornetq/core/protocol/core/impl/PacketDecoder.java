@@ -84,7 +84,9 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -161,7 +163,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 public class PacketDecoder
 {
    private static final Logger log = Logger.getLogger(PacketDecoder.class);
-
+   
    public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
@@ -372,6 +374,8 @@ public class PacketDecoder
          }
          case SESS_SEND_LARGE:
          {
+            // Using a ClientMessage, but that will be replaced later..
+            // This is just to avoid reading a byte[] to read the message
             packet = new SessionSendLargeMessage();
             break;
          }

@@ -14,7 +14,9 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -28,7 +30,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
 {
    private static final Logger log = Logger.getLogger(SessionReceiveLargeMessage.class);
 
-   private byte[] largeMessageHeader;
+   private MessageInternal message;
 
    /** Since we receive the message before the entire message was received, */
    private long largeMessageSize;
@@ -37,13 +39,15 @@ public class SessionReceiveLargeMessage extends PacketImpl
 
    private int deliveryCount;
 
+   // To be used on decoding at the client while receiving a large message
    public SessionReceiveLargeMessage()
    {
       super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
+      this.message = new ClientMessageImpl();
    }
 
    public SessionReceiveLargeMessage(final long consumerID,
-                                     final byte[] largeMessageHeader,
+                                     final MessageInternal message,
                                      final long largeMessageSize,
                                      final int deliveryCount)
    {
@@ -51,16 +55,16 @@ public class SessionReceiveLargeMessage extends PacketImpl
       
       this.consumerID = consumerID;
 
-      this.largeMessageHeader = largeMessageHeader;
+      this.message = message;
 
       this.deliveryCount = deliveryCount;
 
       this.largeMessageSize = largeMessageSize;
    }
 
-   public byte[] getLargeMessageHeader()
+   public MessageInternal getLargeMessage()
    {
-      return largeMessageHeader;
+      return message;
    }
 
    public long getConsumerID()
@@ -87,8 +91,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
       buffer.writeLong(consumerID);
       buffer.writeInt(deliveryCount);
       buffer.writeLong(largeMessageSize);
-      buffer.writeInt(largeMessageHeader.length);
-      buffer.writeBytes(largeMessageHeader);
+      message.encodeHeadersAndProperties(buffer);
    }
 
    @Override
@@ -97,9 +100,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
       consumerID = buffer.readLong();
       deliveryCount = buffer.readInt();
       largeMessageSize = buffer.readLong();
-      int size = buffer.readInt();
-      largeMessageHeader = new byte[size];
-      buffer.readBytes(largeMessageHeader);
+      message.decodeHeadersAndProperties(buffer);
    }
 
 }

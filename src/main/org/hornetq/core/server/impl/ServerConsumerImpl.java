@@ -768,10 +768,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
             if (!sentInitialPacket)
             {
-               HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(largeMessage.getHeadersAndPropertiesEncodeSize());
-
-               largeMessage.encodeHeadersAndProperties(headerBuffer);
-
                context = largeMessage.getBodyEncoder();
 
                sizePendingLargeMessage = context.getLargeBodySize();
@@ -780,8 +776,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
                sentInitialPacket = true;
 
-               int packetSize = callback.sendLargeMessage(id,
-                                                          headerBuffer.toByteBuffer().array(),
+               int packetSize = callback.sendLargeMessage(largeMessage,
+                                                          id,
                                                           context.getLargeBodySize(),
                                                           ref.getDeliveryCount());
 

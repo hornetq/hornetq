@@ -47,6 +47,7 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -427,7 +428,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public LargeServerMessage createLargeMessage(final long id, final byte[] header)
+   public LargeServerMessage createLargeMessage(final long id, final MessageInternal message)
    {
       if (isReplicated())
       {
@@ -435,10 +436,8 @@ public class JournalStorageManager implements StorageManager
       }
 
       LargeServerMessageImpl largeMessage = (LargeServerMessageImpl)createLargeMessage();
-
-      HornetQBuffer headerBuffer = HornetQBuffers.wrappedBuffer(header);
-
-      largeMessage.decodeHeadersAndProperties(headerBuffer);
+      
+      largeMessage.copyHeadersAndProperties(message);
 
       largeMessage.setMessageID(id);
 

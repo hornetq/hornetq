@@ -27,6 +27,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -187,13 +188,11 @@ public class NullStorageManager implements StorageManager
       return new NullStorageLargeServerMessage();
    }
 
-   public LargeServerMessage createLargeMessage(final long id, final byte[] header)
+   public LargeServerMessage createLargeMessage(final long id, final MessageInternal message)
    {
       NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
-
-      HornetQBuffer headerBuffer = HornetQBuffers.wrappedBuffer(header);
-
-      largeMessage.decodeHeadersAndProperties(headerBuffer);
+      
+      largeMessage.copyHeadersAndProperties(message);
 
       largeMessage.setMessageID(id);
 

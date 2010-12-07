@@ -37,6 +37,7 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -965,19 +966,19 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       consumer.receiveCredits(credits);
    }
 
-   public void sendLarge(final byte[] largeMessageHeader) throws Exception
+   public void sendLarge(final MessageInternal message) throws Exception
    {
       // need to create the LargeMessage before continue
       long id = storageManager.generateUniqueID();
-
-      LargeServerMessage msg = storageManager.createLargeMessage(id, largeMessageHeader);
-
+      
+      LargeServerMessage largeMsg = storageManager.createLargeMessage(id, message);
+ 
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
       }
 
-      currentLargeMessage = msg;
+      currentLargeMessage = largeMsg;
    }
 
    public void send(final ServerMessage message, final boolean direct) throws Exception

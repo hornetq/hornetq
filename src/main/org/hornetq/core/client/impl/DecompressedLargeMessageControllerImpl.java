@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.utils;
+package org.hornetq.core.client.impl;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -20,14 +20,17 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
-import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.client.impl.LargeMessageBufferInternal;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
+import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.HornetQBufferInputStream;
+import org.hornetq.utils.InflaterReader;
+import org.hornetq.utils.InflaterWriter;
+import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
@@ -37,7 +40,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  *
  */
-public class DecompressedLargeMessageBuffer implements LargeMessageBufferInternal
+public class DecompressedLargeMessageControllerImpl implements LargeMessageController
 {
 
    // Constants -----------------------------------------------------
@@ -48,13 +51,13 @@ public class DecompressedLargeMessageBuffer implements LargeMessageBufferInterna
 
    // Attributes ----------------------------------------------------
 
-   final LargeMessageBufferInternal bufferDelegate;
+   final LargeMessageController bufferDelegate;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DecompressedLargeMessageBuffer(final LargeMessageBufferInternal bufferDelegate)
+   public DecompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
    {
       this.bufferDelegate = bufferDelegate;
    }

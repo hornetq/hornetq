@@ -19,6 +19,7 @@ import java.util.Set;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.message.impl.MessageInternal;
 
 /**
  *
@@ -102,7 +103,7 @@ public interface ServerSession
 
    void send(ServerMessage message, boolean direct) throws Exception;
 
-   void sendLarge(byte[] largeMessageHeader) throws Exception;
+   void sendLarge(MessageInternal msg) throws Exception;
 
    void forceConsumerDelivery(long consumerID, long sequence) throws Exception;
 

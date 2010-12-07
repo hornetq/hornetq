@@ -335,7 +335,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       int headerSize = msgI.getHeadersAndPropertiesEncodeSize();
 
-      if (headerSize >= minLargeMessageSize)
+      if (msgI.getHeadersAndPropertiesEncodeSize() >= minLargeMessageSize)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Header size (" + headerSize +
                                                                     ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
@@ -347,10 +347,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          msgI.getWholeBuffer().readerIndex(0);
       }
 
-      HornetQBuffer headerBuffer = HornetQBuffers.fixedBuffer(headerSize);
-
-      msgI.encodeHeadersAndProperties(headerBuffer);
-      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.toByteBuffer().array());
+      SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(msgI);
 
       channel.send(initialChunk);
 

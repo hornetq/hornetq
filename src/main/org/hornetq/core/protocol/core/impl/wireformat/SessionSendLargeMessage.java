@@ -14,7 +14,9 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -30,46 +32,42 @@ public class SessionSendLargeMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    /** Used only if largeMessage */
-   private byte[] largeMessageHeader;
+   private MessageInternal largeMessage;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public SessionSendLargeMessage(final byte[] largeMessageHeader)
-   {
-      super(PacketImpl.SESS_SEND_LARGE);
-
-      this.largeMessageHeader = largeMessageHeader;
-   }
-
+   
+   // To be used by the PacketDecoder
    public SessionSendLargeMessage()
    {
+      this(new ServerMessageImpl());
+   }
+
+   public SessionSendLargeMessage(final MessageInternal largeMessage)
+   {
       super(PacketImpl.SESS_SEND_LARGE);
+
+      this.largeMessage = largeMessage;
    }
 
    // Public --------------------------------------------------------
 
-   public byte[] getLargeMessageHeader()
+   public MessageInternal getLargeMessage()
    {
-      return largeMessageHeader;
+      return largeMessage;
    }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeInt(largeMessageHeader.length);
-      buffer.writeBytes(largeMessageHeader);
+      largeMessage.encodeHeadersAndProperties(buffer);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      int largeMessageLength = buffer.readInt();
-
-      largeMessageHeader = new byte[largeMessageLength];
-
-      buffer.readBytes(largeMessageHeader);
+      largeMessage.decodeHeadersAndProperties(buffer);
    }
 
    // Package protected ---------------------------------------------
