@@ -591,7 +591,7 @@ public class HornetQServerImpl implements HornetQServer
       stop(false);
    }
 
-   public void stop(boolean permanently) throws Exception
+   public void stop(boolean failoverOnServerShutdown) throws Exception
    {
       System.out.println("*** stop called on server");
 
@@ -624,7 +624,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          System.out.println("HornetQServerImpl.stop");
       }
-      remotingService.stop(permanently);
+      remotingService.stop(failoverOnServerShutdown);
 
       synchronized (this)
       {
@@ -728,7 +728,7 @@ public class HornetQServerImpl implements HornetQServer
 
          if (activation != null)
          {
-            activation.close(permanently);
+            activation.close(failoverOnServerShutdown);
          }
 
          if (backupActivationThread != null)
