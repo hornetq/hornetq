@@ -13,12 +13,9 @@
 
 package org.hornetq.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 /**
@@ -35,15 +32,17 @@ import java.util.zip.Inflater;
  */
 public class InflaterWriter extends OutputStream
 {
-   private Inflater inflater = new Inflater();
-   private OutputStream output;
-   
-   private byte[] writeBuffer = new byte[1024];
+   private final Inflater inflater = new Inflater();
+
+   private final OutputStream output;
+
+   private final byte[] writeBuffer = new byte[1024];
+
    private int writePointer = 0;
-   
-   private byte[] outputBuffer = new byte[writeBuffer.length*2];
-   
-   public InflaterWriter(OutputStream output)
+
+   private final byte[] outputBuffer = new byte[writeBuffer.length * 2];
+
+   public InflaterWriter(final OutputStream output)
    {
       this.output = output;
    }
@@ -52,11 +51,11 @@ public class InflaterWriter extends OutputStream
     * Write a compressed byte.
     */
    @Override
-   public void write(int b) throws IOException
+   public void write(final int b) throws IOException
    {
       writeBuffer[writePointer] = (byte)(b & 0xFF);
       writePointer++;
-      
+
       if (writePointer == writeBuffer.length)
       {
          writePointer = 0;
@@ -70,7 +69,7 @@ public class InflaterWriter extends OutputStream
          }
       }
    }
-   
+
    @Override
    public void close() throws IOException
    {
@@ -93,12 +92,12 @@ public class InflaterWriter extends OutputStream
          }
       }
    }
-   
+
    private void doWrite() throws DataFormatException, IOException
    {
       inflater.setInput(writeBuffer);
       int n = inflater.inflate(outputBuffer);
-      
+
       while (n > 0)
       {
          output.write(outputBuffer, 0, n);
