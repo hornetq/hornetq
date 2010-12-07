@@ -147,8 +147,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public final Exception e = new Exception();
 
    private final Object waitLock = new Object();
-   
-   private boolean compressLargeMessages;
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -205,9 +203,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       closeExecutor = orderedExecutorFactory.getExecutor();
 
       this.interceptors = interceptors;
-      
-      compressLargeMessages = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
-
+ 
    }
 
    public void connect(int initialConnectAttempts, boolean failoverOnInitialConnection) throws HornetQException
@@ -773,7 +769,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      serverLocator.isBlockOnDurableSend(),
                                                                      serverLocator.isCacheLargeMessagesClient(),
                                                                      serverLocator.getMinLargeMessageSize(),
-                                                                     compressLargeMessages,
+                                                                     serverLocator.isCompressLargeMessage(),
                                                                      serverLocator.getInitialMessagePacketSize(),
                                                                      serverLocator.getGroupID(),
                                                                      connection,
@@ -1363,15 +1359,5 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          cancelled = true;
       }
-   }
-
-   public void setCompressLargeMessages(boolean compressLargeMessage)
-   {
-      this.compressLargeMessages = compressLargeMessage;
-   }
-
-   public boolean isCompressLargeMessages()
-   {
-      return this.compressLargeMessages;
    }
 }

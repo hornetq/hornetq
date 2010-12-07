@@ -89,6 +89,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       super(other);
    }
+   
+   public boolean isServerMessage()
+   {
+      return true;
+   }
 
    public void setMessageID(final long id)
    {

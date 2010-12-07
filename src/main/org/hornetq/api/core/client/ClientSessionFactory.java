@@ -137,8 +137,4 @@ public interface ClientSessionFactory
    ServerLocator getServerLocator();
    
    CoreRemotingConnection getConnection();
-
-   void setCompressLargeMessages(boolean compressLargeMessage);
-   
-   boolean isCompressLargeMessages();
 }

@@ -43,6 +43,8 @@ public interface MessageInternal extends Message
    void bodyChanged();
 
    void resetCopied();
+   
+   boolean isServerMessage();
 
    HornetQBuffer getEncodedBuffer();
    

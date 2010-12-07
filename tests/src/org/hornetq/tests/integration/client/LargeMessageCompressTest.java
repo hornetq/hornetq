@@ -26,6 +26,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 
 /**
  * A LargeMessageCompressTest
@@ -45,13 +46,12 @@ public class LargeMessageCompressTest extends LargeMessageTest
       return false;
    }
 
-   protected ClientSessionFactory createSessionFactory() throws Exception
+   protected ServerLocator createFactory(final boolean isNetty) throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
-      sf.setCompressLargeMessages(true);
-      return sf;
+      ServerLocator locator = super.createFactory(isNetty);
+      locator.setCompressLargeMessage(true);
+      return locator;
    }
-
 
    public void testLargeMessageCompression() throws Exception
    {
@@ -66,7 +66,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
          server.start();
 
          ClientSessionFactory sf = locator.createSessionFactory();
-         sf.setCompressLargeMessages(true);
 
          session = sf.createSession(false, false, false);
 
@@ -134,7 +133,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
          server.start();
 
          ClientSessionFactory sf = locator.createSessionFactory();
-         sf.setCompressLargeMessages(true);
 
          session = sf.createSession(false, false, false);
 
@@ -214,7 +212,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
          server.start();
 
          ClientSessionFactory sf = locator.createSessionFactory();
-         sf.setCompressLargeMessages(true);
 
          session = sf.createSession(false, false, false);
 
@@ -280,7 +277,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
    }
 
 
-   // below are large message tests that are not applied to compressed messages 
+   // TODO: Fix these tests on LargeMessageCompression
 
    public void testResendSmallStreamMessage() throws Exception
    {
@@ -306,5 +303,8 @@ public class LargeMessageCompressTest extends LargeMessageTest
    {
    }
 
-
+   public void testSendServerMessage() throws Exception
+   {
+      // doesn't make sense as compressed
+   }
 }

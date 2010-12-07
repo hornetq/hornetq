@@ -22,6 +22,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
@@ -363,6 +364,12 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       InputStream input = msgI.getBodyInputStream();
 
+      
+      if (msgI.isServerMessage())
+      {
+         largeMessageSendServer(sendBlocking, msgI, credits);
+      }
+      else
       if (input != null)
       {
          largeMessageSendStreamed(sendBlocking, msgI, input, credits);
@@ -372,6 +379,71 @@ public class ClientProducerImpl implements ClientProducerInternal
          largeMessageSendBuffered(sendBlocking, msgI, credits);
       }
    }
+   
+   /**
+    * Used to send serverMessages through the bridges.
+    * No need to validate compression here since the message is only compressed at the client
+    * @param sendBlocking
+    * @param msgI
+    * @throws HornetQException
+    */
+   private void largeMessageSendServer(final boolean sendBlocking,
+                                         final MessageInternal msgI,
+                                         final ClientProducerCredits credits) throws HornetQException
+   {
+      BodyEncoder context = msgI.getBodyEncoder();
+
+      final long bodySize = context.getLargeBodySize();
+
+      context.open();
+      try
+      {
+
+         for (int pos = 0; pos < bodySize;)
+         {
+            final boolean lastChunk;
+
+            final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
+
+            final HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(chunkLength);
+
+            context.encode(bodyBuffer, chunkLength);
+
+            pos += chunkLength;
+
+            lastChunk = pos >= bodySize;
+
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.toByteBuffer()
+                                                                                                      .array(),
+                                                                                            !lastChunk,
+                                                                                            lastChunk && sendBlocking);
+
+            if (sendBlocking && lastChunk)
+            {
+               // When sending it blocking, only the last chunk will be blocking.
+               channel.sendBlocking(chunk);
+            }
+            else
+            {
+               channel.send(chunk);
+            }
+
+            try
+            {
+               credits.acquireCredits(chunk.getPacketSize());
+            }
+            catch (InterruptedException e)
+            {
+            }
+         }
+      }
+      finally
+      {
+         context.close();
+      }
+   }
+
+   
 
    /**
     * @param sendBlocking

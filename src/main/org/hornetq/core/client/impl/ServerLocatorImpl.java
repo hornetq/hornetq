@@ -68,6 +68,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
    private boolean receivedTopology;
+   
+   private boolean compressLargeMessage;
 
    private ExecutorService threadPool;
 
@@ -359,6 +361,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       initialMessagePacketSize = HornetQClient.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE;
 
       cacheLargeMessagesClient = HornetQClient.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+      
+      compressLargeMessage = HornetQClient.DEFAULT_COMPRESS_LARGE_MESSAGES;
 
       clusterConnection = false;
    }
@@ -915,6 +919,22 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public String getGroupID()
    {
       return groupID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.client.ServerLocator#isCompressLargeMessage()
+    */
+   public boolean isCompressLargeMessage()
+   {
+      return compressLargeMessage;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.client.ServerLocator#setCompressLargeMessage(boolean)
+    */
+   public void setCompressLargeMessage(boolean compress)
+   {
+      this.compressLargeMessage = compress;
    }
 
    private void checkWrite()

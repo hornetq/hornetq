@@ -73,6 +73,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       super(type, durable, expiration, timestamp, priority, initialMessageBufferSize);
    }
 
+   public boolean isServerMessage()
+   {
+      return false;
+   }
+   
    public void onReceipt(final ClientConsumerInternal consumer)
    {
       this.consumer = consumer;

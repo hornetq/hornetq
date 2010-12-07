@@ -974,6 +974,15 @@ public class BindingsImplTest extends UnitTestCase
          
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.impl.MessageInternal#isServerMessage()
+       */
+      public boolean isServerMessage()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
    }
 
    class FakeFilter implements Filter

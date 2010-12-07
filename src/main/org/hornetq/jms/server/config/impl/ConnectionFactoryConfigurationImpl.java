@@ -17,17 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.utils.BufferHelper;
 import org.hornetq.utils.DataConstants;
 
-import org.hornetq.api.core.SimpleString;;
-
 /**
- * A ConnectionFactoryConfigurationImpl
+ * This class contains the configuration properties of a connection factory.
+ * 
+ * It is also persisted on the journal at the time of management is used to created a connection factory and set to store.
+ * 
+ * Every property on this class has to be also set through encoders through EncodingSupport implementation at this class.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
@@ -570,6 +572,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       reconnectAttempts = buffer.readInt();
 
       failoverOnInitialConnection = buffer.readBoolean();
+      
+      compressLargeMessage = buffer.readBoolean();
 
       groupID = BufferHelper.readNullableSimpleStringAsString(buffer);
 
@@ -654,6 +658,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       buffer.writeInt(reconnectAttempts);
 
       buffer.writeBoolean(failoverOnInitialConnection);
+      
+      buffer.writeBoolean(compressLargeMessage);
 
       BufferHelper.writeAsNullableSimpleString(buffer, groupID);
 
@@ -760,6 +766,9 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
               DataConstants.SIZE_BOOLEAN +
               // failoverOnInitialConnection
+              
+              DataConstants.SIZE_BOOLEAN + 
+              // compress-large-message
 
               BufferHelper.sizeOfNullableSimpleString(groupID) +
 

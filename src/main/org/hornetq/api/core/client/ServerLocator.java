@@ -574,6 +574,10 @@ public interface ServerLocator
    void close();
 
    boolean isHA();
+   
+   boolean isCompressLargeMessage();
+   
+   void setCompressLargeMessage(boolean compress);
 
    void addClusterTopologyListener(ClusterTopologyListener listener);
 

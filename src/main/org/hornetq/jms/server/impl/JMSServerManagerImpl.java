@@ -1079,6 +1079,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setMaxRetryInterval(cfConfig.getMaxRetryInterval());
          cf.setReconnectAttempts(cfConfig.getReconnectAttempts());
          cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
+         cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
       }
       
       connectionFactories.put(cfConfig.getName(), cf);
