@@ -40,7 +40,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  *
  */
-public class DecompressedLargeMessageControllerImpl implements LargeMessageController
+public class CompressedLargeMessageControllerImpl implements LargeMessageController
 {
 
    // Constants -----------------------------------------------------
@@ -57,7 +57,7 @@ public class DecompressedLargeMessageControllerImpl implements LargeMessageContr
 
    // Constructors --------------------------------------------------
 
-   public DecompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
+   public CompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
    {
       this.bufferDelegate = bufferDelegate;
    }

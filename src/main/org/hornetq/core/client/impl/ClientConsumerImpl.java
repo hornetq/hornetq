@@ -557,7 +557,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (currentChunkMessage.isCompressed())
       {
-         currentChunkMessage.setBuffer(new DecompressedLargeMessageControllerImpl(currentLargeMessageController));
+         currentChunkMessage.setBuffer(new CompressedLargeMessageControllerImpl(currentLargeMessageController));
       }
       else
       {
