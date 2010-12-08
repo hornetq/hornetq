@@ -14,7 +14,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.client.impl.ClientMessageImpl;
+import org.hornetq.core.client.impl.ClientLargeMessageImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -43,7 +43,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
    public SessionReceiveLargeMessage()
    {
       super(PacketImpl.SESS_RECEIVE_LARGE_MSG);
-      this.message = new ClientMessageImpl();
+      this.message = new ClientLargeMessageImpl();
    }
 
    public SessionReceiveLargeMessage(final long consumerID,

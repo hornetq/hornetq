@@ -423,8 +423,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
 
    public long getSize()
    {
-      // TODO
-      return 0;
+      return this.bufferDelegate.getSize();
    }
 
    public void writerIndex(final int writerIndex)

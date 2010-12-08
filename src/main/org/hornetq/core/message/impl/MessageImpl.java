@@ -262,14 +262,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       if (bodyBuffer == null)
       {
-         if (buffer instanceof LargeMessageController == false)
-         {
-            bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
-         }
-         else
-         {
-            return buffer;
-         }
+         bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
       }
 
       return bodyBuffer;
@@ -938,7 +931,7 @@ public abstract class MessageImpl implements MessageInternal
       bufferValid = true;
    }
 
-   private void createBody(final int initialMessageBufferSize)
+   protected void createBody(final int initialMessageBufferSize)
    {
       buffer = HornetQBuffers.dynamicBuffer(initialMessageBufferSize);
 

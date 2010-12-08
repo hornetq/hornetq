@@ -277,32 +277,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
    }
 
 
-   // TODO: Fix these tests on LargeMessageCompression
-
-   public void testResendSmallStreamMessage() throws Exception
-   {
-   }
-
-   public void testResendLargeStreamMessage() throws Exception
-   {
-   }
-
-   public void testResendCachedSmallStreamMessage() throws Exception
-   {
-   }
-
-   public void testResendCachedLargeStreamMessage() throws Exception
-   {
-   }
-
-   public void testSimpleRollback() throws Exception
-   {
-   }
-
-   public void testSimpleRollbackXA() throws Exception
-   {
-   }
-
    public void testSendServerMessage() throws Exception
    {
       // doesn't make sense as compressed

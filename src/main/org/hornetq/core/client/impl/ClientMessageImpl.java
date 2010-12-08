@@ -46,11 +46,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
 
    private ClientConsumerInternal consumer;
 
-   private boolean largeMessage;
-   
-   // Used only when receiving large messages
-   private LargeMessageController largeMessageController;
-
    private int flowControlSize = -1;
 
    /** Used on LargeMessages only */
@@ -80,7 +75,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       return false;
    }
-   
+
    public void onReceipt(final ClientConsumerInternal consumer)
    {
       this.consumer = consumer;
@@ -123,20 +118,12 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
     */
    public boolean isLargeMessage()
    {
-      return largeMessage;
+      return false;
    }
-   
+
    public boolean isCompressed()
    {
       return properties.getBooleanProperty(Message.HDR_LARGE_COMPRESSED);
-   }
-
-   /**
-    * @param largeMessage the largeMessage to set
-    */
-   public void setLargeMessage(final boolean largeMessage)
-   {
-      this.largeMessage = largeMessage;
    }
 
    public int getBodySize()
@@ -147,12 +134,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    @Override
    public String toString()
    {
-      return "ClientMessage[messageID=" + messageID +
-             ", durable=" +
-             durable +
-             ", address=" +
-             getAddress() +
-             "]";
+      return "ClientMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress() + "]";
    }
 
    /* (non-Javadoc)
@@ -160,24 +142,16 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
     */
    public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
-      if (largeMessage)
+      try
       {
-          ((LargeMessageController)getWholeBuffer()).saveBuffer(out);
+         byte readBuffer[] = new byte[getBodySize()];
+         getBodyBuffer().readBytes(readBuffer);
+         out.write(readBuffer);
       }
-      else
+      catch (IOException e)
       {
-         try
-         {
-            byte readBuffer[] = new byte[getBodySize()];
-            getBodyBuffer().readBytes(readBuffer);
-            out.write(readBuffer);
-         }
-         catch (IOException e)
-         {
-            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
-         }
+         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
       }
-
    }
 
    /* (non-Javadoc)
@@ -185,15 +159,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
     */
    public void setOutputStream(final OutputStream out) throws HornetQException
    {
-      if (largeMessage)
-      {
-         ((LargeMessageController)getWholeBuffer()).setOutputStream(out);
-      }
-      else
-      {
-         saveToOutputStream(out);
-      }
-
+      saveToOutputStream(out);
    }
 
    /* (non-Javadoc)
@@ -201,25 +167,14 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
     */
    public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
-      if (largeMessage)
-      {
-         return ((LargeMessageController)getWholeBuffer()).waitCompletion(timeMilliseconds);
-      }
-      else
-      {
-         return true;
-      }
+      return true;
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.impl.ClientMessageInternal#discardLargeBody()
     */
-   public void discardLargeBody()
+   public void discardBody()
    {
-      if (largeMessage)
-      {
-         ((LargeMessageController)getWholeBuffer()).discardUnusedPackets();
-      }
    }
 
    /**

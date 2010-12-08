@@ -166,7 +166,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (largeMessageReceived != null)
       {
          // Check if there are pending packets to be received
-         largeMessageReceived.discardLargeBody();
+         largeMessageReceived.discardBody();
          largeMessageReceived = null;
       }
 
@@ -280,7 +280,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                if (expired)
                {
-                  m.discardLargeBody();
+                  m.discardBody();
 
                   session.expire(id, m.getMessageID());
 
@@ -538,11 +538,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       flowControl(packet.getPacketSize(), false);
 
-      ClientMessageInternal currentChunkMessage = (ClientMessageInternal)packet.getLargeMessage();
+      ClientLargeMessageInternal currentChunkMessage = (ClientLargeMessageInternal)packet.getLargeMessage();
 
       currentChunkMessage.setDeliveryCount(packet.getDeliveryCount());
-
-      currentChunkMessage.setLargeMessage(true);
 
       File largeMessageCache = null;
 
@@ -557,11 +555,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (currentChunkMessage.isCompressed())
       {
-         currentChunkMessage.setBuffer(new CompressedLargeMessageControllerImpl(currentLargeMessageController));
+         currentChunkMessage.setLargeMessageController(new CompressedLargeMessageControllerImpl(currentLargeMessageController));
       }
       else
       {
-         currentChunkMessage.setBuffer(currentLargeMessageController);
+         currentChunkMessage.setLargeMessageController(currentLargeMessageController);
       }
 
       currentChunkMessage.setFlowControlSize(0);
@@ -852,7 +850,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                if (message.isLargeMessage())
                {
-                  message.discardLargeBody();
+                  message.discardBody();
                }
             }
             else

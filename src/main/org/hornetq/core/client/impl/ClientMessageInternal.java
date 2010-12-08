@@ -36,12 +36,10 @@ public interface ClientMessageInternal extends ClientMessage, MessageInternal
 
    void onReceipt(ClientConsumerInternal consumer);
 
-   void setLargeMessage(boolean largeMessage);
-
    /**
     * Discard unused packets (used on large-message)
     */
-   void discardLargeBody();
+   void discardBody();
 
    void setBuffer(HornetQBuffer buffer);
    

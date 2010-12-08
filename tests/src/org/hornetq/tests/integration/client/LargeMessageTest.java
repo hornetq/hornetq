@@ -841,6 +841,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void internalTestResendMessage(final long messageSize) throws Exception
    {
+      clearData();
       ClientSession session = null;
 
       try
@@ -879,18 +880,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          producer2.send(msg1);
 
-         boolean failed = false;
-
-         try
-         {
-            producer2.send(msg1);
-         }
-         catch (Throwable e)
-         {
-            failed = true;
-         }
-
-         Assert.assertTrue("Exception expected", failed);
 
          session.commit();
 
@@ -2206,7 +2195,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
                Assert.assertNotNull(clientMessage);
 
-               Assert.assertEquals(numberOfBytes, clientMessage.getBodyBuffer().writerIndex());
+               Assert.assertEquals(numberOfBytes, clientMessage.getBodySize());
 
                clientMessage.acknowledge();
 

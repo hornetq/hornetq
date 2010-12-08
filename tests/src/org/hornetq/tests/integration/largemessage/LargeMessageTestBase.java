@@ -432,9 +432,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                                          ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                   }
 
-                  HornetQBuffer buffer = message.getBodyBuffer();
-                  buffer.resetReaderIndex();
-
                   if (useStreamOnConsume)
                   {
                      final AtomicLong bytesRead = new AtomicLong(0);
@@ -477,6 +474,9 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                   }
                   else
                   {
+                     HornetQBuffer buffer = message.getBodyBuffer();
+                     buffer.resetReaderIndex();
+
                      for (long b = 0; b < numberOfBytes; b++)
                      {
                         if (b % (1024l * 1024l) == 0l)
