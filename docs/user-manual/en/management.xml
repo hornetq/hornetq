@@ -71,7 +71,7 @@
          <title>Core Management API</title>
          <para>HornetQ defines a core management API to manage core resources. For full details of
             the API please consult the javadoc. In summary:</para>
-         <section>
+         <section id="management.core.server">
             <title>Core Server Management</title>
             <itemizedlist>
                <listitem>
@@ -142,7 +142,17 @@
                         >org.hornetq:module=Core,type=Server</literal> or the resource name <literal
                         >core.server</literal>).</para>
                </listitem>
-               
+               <listitem>
+                   <para>It is possible to stop the server and force failover to occur with any currently attached clients.</para>
+                   <para>to do this use the <literal>forceFailover()</literal> on the <literal
+                        >HornetQServerControl</literal> (with the ObjectName <literal
+                        >org.hornetq:module=Core,type=Server</literal> or the resource name <literal
+                        >core.server</literal>) </para>
+                   <para>
+                       <note>Since this method actually stops the server you will probably receive some sort of error
+                       depending on which management service you use to call it.</note>
+                   </para>
+               </listitem>
             </itemizedlist>
          </section>
          <section>

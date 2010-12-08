@@ -42,21 +42,6 @@
                     </thead>
                     <tbody>
                         <row>
-                            <entry><link linkend="configuring.live.backup">backup</link></entry>
-                            <entry>Boolean</entry>
-                            <entry>true means that this server is a backup to another node in the
-                                cluster</entry>
-                            <entry>false</entry>
-                        </row>
-                        <row>
-                            <entry><link linkend="configuring.live.backup"
-                                    >backup-connector-ref</link></entry>
-                            <entry>String</entry>
-                            <entry>the name of the remoting connector to connect to the backup
-                                node</entry>
-                            <entry/>
-                        </row>
-                        <row>
                             <entry><link linkend="configuring.bindings.journal"
                                     >bindings-directory</link></entry>
                             <entry>String</entry>
