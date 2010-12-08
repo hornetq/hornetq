@@ -74,7 +74,11 @@ public class SpawnedVMSupport
 
       sb.append("java").append(' ');
       String vmarg = vmargs;
-      if (System.getProperty("os.name").contains("Windows"))
+
+      String osName = System.getProperty("os.name");
+      osName = (osName != null) ? osName.toLowerCase() : "";
+      boolean isWindows = osName.contains("win");      
+      if (isWindows)
       {
          vmarg = vmarg.replaceAll("/", "\\\\");
       }
@@ -82,7 +86,6 @@ public class SpawnedVMSupport
       String pathSeparater = System.getProperty("path.separator");
       classPath = classPath + pathSeparater + ".";
 
-      boolean isWindows = System.getProperty("os.name").contains("Windows");
       if (isWindows)
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
