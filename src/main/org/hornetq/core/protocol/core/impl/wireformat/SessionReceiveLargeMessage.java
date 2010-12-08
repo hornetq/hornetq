@@ -15,6 +15,7 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.client.impl.ClientLargeMessageImpl;
+import org.hornetq.core.client.impl.ClientLargeMessageInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -101,6 +102,7 @@ public class SessionReceiveLargeMessage extends PacketImpl
       deliveryCount = buffer.readInt();
       largeMessageSize = buffer.readLong();
       message.decodeHeadersAndProperties(buffer);
+      ((ClientLargeMessageInternal)message).setLargeMessageSize(largeMessageSize);
    }
 
 }

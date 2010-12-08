@@ -28,7 +28,7 @@ public interface ClientLargeMessageInternal extends ClientMessageInternal
 
    LargeMessageController getLargeMessageController();
    
-   void setLargeMessageSize(int size);
+   void setLargeMessageSize(long size);
    
-   int getLargeMessageSize();
+   long getLargeMessageSize();
 }

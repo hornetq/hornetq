@@ -39,7 +39,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    // Used only when receiving large messages
    private LargeMessageController largeMessageController;
    
-   private int largeMessageSize;
+   private long largeMessageSize;
 
    // Static --------------------------------------------------------
 
@@ -48,7 +48,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @return the largeMessageSize
     */
-   public int getLargeMessageSize()
+   public long getLargeMessageSize()
    {
       return largeMessageSize;
    }
@@ -56,7 +56,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @param largeMessageSize the largeMessageSize to set
     */
-   public void setLargeMessageSize(int largeMessageSize)
+   public void setLargeMessageSize(long largeMessageSize)
    {
       this.largeMessageSize = largeMessageSize;
    }
@@ -184,7 +184,13 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    {
       if (bodyBuffer == null)
       {
-         createBody(this.largeMessageSize + BODY_OFFSET);
+         
+         long bodySize = this.largeMessageSize + BODY_OFFSET;
+         if (bodySize > Integer.MAX_VALUE)
+         {
+            bodySize = Integer.MAX_VALUE;
+         }
+         createBody((int)bodySize);
          
          bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
          
@@ -217,7 +223,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       @Override
       public void write(int b) throws IOException
       {
-         bufferOut.writeByte((byte)(b & Byte.MAX_VALUE));
+         bufferOut.writeByte((byte)(b & 0xff));
       }
       
    }
