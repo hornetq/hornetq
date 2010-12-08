@@ -49,7 +49,7 @@ public class NonTransactionFailoverExample extends HornetQExample
       try
       {
          // Step 1. Get an initial context for looking up JNDI from the server #1
-         initialContext = getContext(1);
+         initialContext = getContext(0);
 
          // Step 2. Look up the JMS resources from JNDI
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
@@ -94,8 +94,8 @@ public class NonTransactionFailoverExample extends HornetQExample
 
          // Step 10. Crash server #1, the live server, and wait a little while to make sure
          // it has really crashed
-         killServer(1);
-         Thread.sleep(5000);
+         Thread.sleep(2000);
+         killServer(0);
 
          // Step 11. Acknowledging the 2nd half of the sent messages will fail as failover to the
          // backup server has occured
