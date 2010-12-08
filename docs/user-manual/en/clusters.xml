@@ -45,249 +45,274 @@
     </section>
     <section id="clusters.server-discovery">
         <title>Server discovery</title>
-        <para>Server discovery is a mechanism by which servers can broadcast their connection
-            settings across the network. This is useful for two purposes:</para>
+        <para>Server discovery is a mechanism by which servers can propagate their connection details to:</para>
         <itemizedlist>
             <listitem>
-                <para>Discovery by messaging clients. A messaging client wants to be able to connect
+                <para>
+                    Messaging clients. A messaging client wants to be able to connect
                     to the servers of the cluster without having specific knowledge of which servers
-                    in the cluster are up at any one time. Messaging clients
-                        <emphasis>can</emphasis> be initialised with an explicit list of the servers
-                    in a cluster, but this is not flexible or maintainable as servers are added or
-                    removed from the cluster.</para>
+                    in the cluster are up at any one time.
+                </para>
             </listitem>
             <listitem>
-                <para>Discovery by other servers. Servers in a cluster want to be able to create
+                <para>Other servers. Servers in a cluster want to be able to create
                     cluster connections to each other without having prior knowledge of all the
-                    other servers in the cluster. </para>
+                    other servers in the cluster.</para>
             </listitem>
         </itemizedlist>
-        <para>Server discovery uses <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol"
-                >UDP</ulink> multicast to broadcast server connection settings. If UDP is disabled
-            on your network you won't be able to use this, and will have to specify servers
-            explicitly when setting up a cluster or using a messaging client.</para>
-        <section id="clusters.broadcast-groups">
-            <title>Broadcast Groups</title>
-            <para>A broadcast group is the means by which a server broadcasts connectors over the
-                network. A connector defines a way in which a client (or other server) can make
-                connections to the server. For more information on what a connector is, please see
-                    <xref linkend="configuring-transports"/>.</para>
-            <para>The broadcast group takes a set of connector pairs, each connector pair contains
-                connection settings for a live and (optional) backup server and broadcasts them on
-                the network. It also defines the UDP address and port settings. </para>
-            <para>Broadcast groups are defined in the server configuration file <literal
-                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per
-                HornetQ server. All broadcast groups must be defined in a <literal
-                    >broadcast-groups</literal> element.</para>
-            <para>Let's take a look at an example broadcast group from <literal
-                    >hornetq-configuration.xml</literal>:</para>
-            <programlisting>&lt;broadcast-groups>
-   &lt;broadcast-group name="my-broadcast-group">
-      &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
-      &lt;local-bind-port>5432&lt;/local-bind-port>
-      &lt;group-address>231.7.7.7&lt;/group-address>
-      &lt;group-port>9876&lt;/group-port>
-      &lt;broadcast-period>2000&lt;/broadcast-period>
-      &lt;connector-ref connector-name="netty-connector" 
-        backup-connector-name="backup-connector"/>
-   &lt;/broadcast-group>
-&lt;/broadcast-groups></programlisting>
-            <para>Some of the broadcast group parameters are optional and you'll normally use the
-                defaults, but we specify them all in the above example for clarity. Let's discuss
-                each one in turn:</para>
-            <itemizedlist>
-                <listitem>
-                    <para><literal>name</literal> attribute. Each broadcast group in the server must
-                        have a unique name. </para>
-                </listitem>
-                <listitem>
-                    <para><literal>local-bind-address</literal>. This is the local bind address that
-                        the datagram socket is bound to. If you have multiple network interfaces on
-                        your server, you would specify which one you wish to use for broadcasts by
-                        setting this property. If this property is not specified then the socket
-                        will be bound to the wildcard address, an IP address chosen by the
-                        kernel.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>local-bind-port</literal>. If you want to specify a local port to
-                        which the datagram socket is bound you can specify it here. Normally you
-                        would just use the default value of <literal>-1</literal> which signifies
-                        that an anonymous port should be used. This parameter is alawys specified in conjunction with
-                    <literal>local-bind-address</literal>.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>group-address</literal>. This is the multicast address to which
-                        the data will be broadcast. It is a class D IP address in the range <literal
-                            >224.0.0.0</literal> to <literal>239.255.255.255</literal>, inclusive.
-                        The address <literal>224.0.0.0</literal> is reserved and is not available
-                        for use. This parameter is mandatory.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>group-port</literal>. This is the UDP port number used for
-                        broadcasting. This parameter is mandatory.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>broadcast-period</literal>. This is the period in milliseconds
-                        between consecutive broadcasts. This parameter is optional, the default
-                        value is <literal>2000</literal> milliseconds.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>connector-ref</literal>. This specifies the connector and
-                        optional backup connector that will be broadcasted (see <xref
-                            linkend="configuring-transports"/> for more information on connectors).
-                        The connector to be broadcasted is specified by the <literal
-                            >connector-name</literal> attribute, and the backup connector to be
-                        broadcasted is specified by the <literal>backup-connector</literal>
-                        attribute. The <literal>backup-connector</literal> attribute is
-                        optional.</para>
-                </listitem>
-            </itemizedlist>
-        </section>
-        <section id="clusters.discovery-groups">
-            <title>Discovery Groups</title>
-            <para>While the broadcast group defines how connector information is broadcasted from a
-                server, a discovery group defines how connector information is received from a
-                multicast address.</para>
-            <para>A discovery group maintains a list of connector pairs - one for each broadcast by
-                a different server. As it receives broadcasts on the multicast group address from a
-                particular server it updates its entry in the list for that server.</para>
-            <para>If it has not received a broadcast from a particular server for a length of time
-                it will remove that server's entry from its list.</para>
-            <para>Discovery groups are used in two places in HornetQ:</para>
-            <itemizedlist>
-                <listitem>
-                    <para>By cluster connections so they know what other servers in the cluster they
-                        should make connections to.</para>
-                </listitem>
-                <listitem>
-                    <para>By messaging clients so they can discovery what servers in the cluster
-                        they can connect to.</para>
-                </listitem>
-            </itemizedlist>
-        </section>
+        <para>
+            This information, lets call it the Cluster Topology, is actually sent around normal HornetQ
+            connections to clients and to other servers over cluster connections. This being the case we need a
+            way of establishing the initial first connection. This can either be done using
+            <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink> or by
+            providing a list of initial connectors.
+        </para>
         <section>
-            <title>Defining Discovery Groups on the Server</title>
-            <para>For cluster connections, discovery groups are defined in the server side
-                configuration file <literal>hornetq-configuration.xml</literal>. All discovery
-                groups must be defined inside a <literal>discovery-groups</literal> element. There
-                can be many discovery groups defined by HornetQ server. Let's look at an
-                example:</para>
-            <programlisting>&lt;discovery-groups>
-   &lt;discovery-group name="my-discovery-group">
-      &lt;local-bind-address>172.16.9.7&lt;/local-bind-address>
-      &lt;group-address>231.7.7.7&lt;/group-address>
-      &lt;group-port>9876&lt;/group-port>
-      &lt;refresh-timeout>10000&lt;/refresh-timeout>
-   &lt;/discovery-group>
-&lt;/discovery-groups></programlisting>
-            <para>We'll consider each parameter of the discovery group:</para>
-            <itemizedlist>
-                <listitem>
-                    <para><literal>name</literal> attribute. Each discovery group must have a unique
-                        name per server.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>local-bind-address</literal>. If you are running with multiple network interfaces on the same machine, you 
-                    may want to specify that the discovery group listens only only a specific interface. To do this you can specify the interface
-                    address with this parameter. This parameter is optional.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>group-address</literal>. This is the multicast ip address of the
-                        group to listen on. It should match the <literal>group-address</literal> in
-                        the broadcast group that you wish to listen from. This parameter is
-                        mandatory.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>group-port</literal>. This is the UDP port of the multicast
-                        group. It should match the <literal>group-port</literal> in the broadcast
-                        group that you wish to listen from. This parameter is mandatory.</para>
-                </listitem>
-                <listitem>
-                    <para><literal>refresh-timeout</literal>. This is the period the discovery group
-                        waits after receiving the last broadcast from a particular server before
-                        removing that servers connector pair entry from its list. You would normally
-                        set this to a value significantly higher than the <literal
-                            >broadcast-period</literal> on the broadcast group otherwise servers
-                        might intermittently disappear from the list even though they are still
-                        broadcasting due to slight differences in timing. This parameter is
-                        optional, the default value is <literal>10000</literal> milliseconds (10
-                        seconds).</para>
-                </listitem>
-            </itemizedlist>
-        </section>
-        <section id="clusters-discovery.groups.clientside">
-            <title>Discovery Groups on the Client Side</title>
-            <para>Let's discuss how to configure a HornetQ client to use discovery to discover a
-                list of servers to which it can connect. The way to do this differs depending on
-                whether you're using JMS or the core API.</para>
-            <section>
-                <title>Configuring client discovery using JMS</title>
-                <para>If you're using JMS and you're also using the JMS Service on the server to
-                    load your JMS connection factory instances into JNDI, then you can specify which
-                    discovery group to use for your JMS connection factory in the server side xml
-                    configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
-                    example:</para>
-                <programlisting>&lt;connection-factory name="ConnectionFactory">
-   &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
-    &lt;entries>
-       &lt;entry name="ConnectionFactory"/>
-    &lt;/entries>
-&lt;/connection-factory></programlisting>
-                <para>The element <literal>discovery-group-ref</literal> specifies the name of a
-                    discovery group defined in <literal>hornetq-configuration.xml</literal>.</para>
-                <para>When this connection factory is downloaded from JNDI by a client application
-                    and JMS connections are created from it, those connections will be load-balanced
-                    across the list of servers that the discovery group maintains by listening on
-                    the multicast address specified in the discovery group configuration.</para>
-                <para>If you're using JMS, but you're not using JNDI to lookup a connection factory
-                    - you're instantiating the JMS connection factory directly then you can specify
-                    the discovery group parameters directly when creating the JMS connection
-                    factory. Here's an
-                    example:<programlisting>final String groupAddress = "231.7.7.7";
-
-final int groupPort = 9876;
-
-ConnectionFactory jmsConnectionFactory = 
-        HornetQJMSClient.createConnectionFactory(groupAddress, groupPort);
-
-Connection jmsConnection1 = jmsConnectionFactory.createConnection();
-
-Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
-                <para>The <literal>refresh-timeout</literal> can be set directly on the connection
-                    factory by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
-                        want to change the default value.</para>
-                <para>There is also a further parameter settable on the connection factory using the
-                    setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the connection
-                    factory is used immediately after creation then it may not have had enough time
-                    to received broadcasts from all the nodes in the cluster. On first usage, the
-                    connection factory will make sure it waits this long since creation before
-                    creating the first connection. The default value for this parameter is <literal
-                        >10000</literal> milliseconds.</para>
+            <title>Discovery using UDP</title>
+            <para>
+                Server discovery uses <ulink url="http://en.wikipedia.org/wiki/User_Datagram_Protocol" >UDP</ulink>
+                multicast to broadcast server connection settings. If UDP is disabled
+                on your network you won't be able to use this, and will have to specify servers
+                explicitly when setting up a cluster or using a messaging client.
+            </para>
+            <section id="clusters.broadcast-groups">
+                <title>Broadcast Groups</title>
+                <para>A broadcast group is the means by which a server broadcasts connectors over the
+                    network. A connector defines a way in which a client (or other server) can make
+                    connections to the server. For more information on what a connector is, please see
+                        <xref linkend="configuring-transports"/>.</para>
+                <para>The broadcast group takes a set of connector pairs, each connector pair contains
+                    connection settings for a live and backup server (if one exists) and broadcasts them on
+                    the network. It also defines the UDP address and port settings. </para>
+                <para>Broadcast groups are defined in the server configuration file <literal
+                        >hornetq-configuration.xml</literal>. There can be many broadcast groups per
+                    HornetQ server. All broadcast groups must be defined in a <literal
+                        >broadcast-groups</literal> element.</para>
+                <para>Let's take a look at an example broadcast group from <literal
+                        >hornetq-configuration.xml</literal>:</para>
+                <programlisting>&lt;broadcast-groups>
+       &lt;broadcast-group name="my-broadcast-group">
+          &lt;local-bind-address>172.16.9.3&lt;/local-bind-address>
+          &lt;local-bind-port>5432&lt;/local-bind-port>
+          &lt;group-address>231.7.7.7&lt;/group-address>
+          &lt;group-port>9876&lt;/group-port>
+          &lt;broadcast-period>2000&lt;/broadcast-period>
+          &lt;connector-ref connector-name="netty-connector"/>
+       &lt;/broadcast-group>
+    &lt;/broadcast-groups></programlisting>
+                <para>Some of the broadcast group parameters are optional and you'll normally use the
+                    defaults, but we specify them all in the above example for clarity. Let's discuss
+                    each one in turn:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para><literal>name</literal> attribute. Each broadcast group in the server must
+                            have a unique name. </para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>local-bind-address</literal>. This is the local bind address that
+                            the datagram socket is bound to. If you have multiple network interfaces on
+                            your server, you would specify which one you wish to use for broadcasts by
+                            setting this property. If this property is not specified then the socket
+                            will be bound to the wildcard address, an IP address chosen by the
+                            kernel.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>local-bind-port</literal>. If you want to specify a local port to
+                            which the datagram socket is bound you can specify it here. Normally you
+                            would just use the default value of <literal>-1</literal> which signifies
+                            that an anonymous port should be used. This parameter is alawys specified in conjunction with
+                        <literal>local-bind-address</literal>.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>group-address</literal>. This is the multicast address to which
+                            the data will be broadcast. It is a class D IP address in the range <literal
+                                >224.0.0.0</literal> to <literal>239.255.255.255</literal>, inclusive.
+                            The address <literal>224.0.0.0</literal> is reserved and is not available
+                            for use. This parameter is mandatory.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>group-port</literal>. This is the UDP port number used for
+                            broadcasting. This parameter is mandatory.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>broadcast-period</literal>. This is the period in milliseconds
+                            between consecutive broadcasts. This parameter is optional, the default
+                            value is <literal>2000</literal> milliseconds.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>connector-ref</literal>. This specifies the connector and
+                            optional backup connector that will be broadcasted (see <xref
+                                linkend="configuring-transports"/> for more information on connectors).
+                            The connector to be broadcasted is specified by the <literal
+                                >connector-name</literal> attribute..</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+            <section id="clusters.discovery-groups">
+                <title>Discovery Groups</title>
+                <para>While the broadcast group defines how connector information is broadcasted from a
+                    server, a discovery group defines how connector information is received from a
+                    multicast address.</para>
+                <para>A discovery group maintains a list of connector pairs - one for each broadcast by
+                    a different server. As it receives broadcasts on the multicast group address from a
+                    particular server it updates its entry in the list for that server.</para>
+                <para>If it has not received a broadcast from a particular server for a length of time
+                    it will remove that server's entry from its list.</para>
+                <para>Discovery groups are used in two places in HornetQ:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para>By cluster connections so they know how to obtain an initial connection to download the topology</para>
+                    </listitem>
+                    <listitem>
+                        <para>By messaging clients so they know how to obtain an initial connection to download the topology</para>
+                    </listitem>
+                </itemizedlist>
+                <para>
+                    Although a discovery group will always accept broadcasts, its current list of avaliable live and
+                    backup servers is only ever used when an initial connection is made, from then server discovery is
+                    done over the normal HornetQ connections. 
+                </para>
             </section>
             <section>
-                <title>Configuring client discovery using Core</title>
-                <para>If you're using the core API to directly instantiate <literal
-                        >ClientSessionFactory</literal> instances, then you can specify the
-                    discovery group parameters directly when creating the session factory. Here's an
-                    example:
-                    <programlisting>
-                    final String groupAddress = "231.7.7.7"; 
-                    final int groupPort = 9876;
-                    SessionFactory factory = HornetQClient.createClientSessionFactory(groupAddress, groupPort);
-                    ClientSession session1 = factory.createClientSession(...); ClientSession
-                    session2 = factory.createClientSession(...);
-                
-                </programlisting></para>
-                <para>The <literal>refresh-timeout</literal> can be set directly on the session
-                    factory by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
-                        want to change the default value.</para>
-                <para>There is also a further parameter settable on the session factory using the
-                    setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the session factory
-                    is used immediately after creation then it may not have had enough time to
-                    received broadcasts from all the nodes in the cluster. On first usage, the
-                    session factory will make sure it waits this long since creation before creating
-                    the first session. The default value for this parameter is <literal
-                        >10000</literal> milliseconds.</para>
+                <title>Defining Discovery Groups on the Server</title>
+                <para>For cluster connections, discovery groups are defined in the server side
+                    configuration file <literal>hornetq-configuration.xml</literal>. All discovery
+                    groups must be defined inside a <literal>discovery-groups</literal> element. There
+                    can be many discovery groups defined by HornetQ server. Let's look at an
+                    example:</para>
+                <programlisting>&lt;discovery-groups>
+       &lt;discovery-group name="my-discovery-group">
+          &lt;local-bind-address>172.16.9.7&lt;/local-bind-address>
+          &lt;group-address>231.7.7.7&lt;/group-address>
+          &lt;group-port>9876&lt;/group-port>
+          &lt;refresh-timeout>10000&lt;/refresh-timeout>
+       &lt;/discovery-group>
+    &lt;/discovery-groups></programlisting>
+                <para>We'll consider each parameter of the discovery group:</para>
+                <itemizedlist>
+                    <listitem>
+                        <para><literal>name</literal> attribute. Each discovery group must have a unique
+                            name per server.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>local-bind-address</literal>. If you are running with multiple network interfaces on the same machine, you
+                        may want to specify that the discovery group listens only only a specific interface. To do this you can specify the interface
+                        address with this parameter. This parameter is optional.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>group-address</literal>. This is the multicast ip address of the
+                            group to listen on. It should match the <literal>group-address</literal> in
+                            the broadcast group that you wish to listen from. This parameter is
+                            mandatory.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>group-port</literal>. This is the UDP port of the multicast
+                            group. It should match the <literal>group-port</literal> in the broadcast
+                            group that you wish to listen from. This parameter is mandatory.</para>
+                    </listitem>
+                    <listitem>
+                        <para><literal>refresh-timeout</literal>. This is the period the discovery group
+                            waits after receiving the last broadcast from a particular server before
+                            removing that servers connector pair entry from its list. You would normally
+                            set this to a value significantly higher than the <literal
+                                >broadcast-period</literal> on the broadcast group otherwise servers
+                            might intermittently disappear from the list even though they are still
+                            broadcasting due to slight differences in timing. This parameter is
+                            optional, the default value is <literal>10000</literal> milliseconds (10
+                            seconds).</para>
+                    </listitem>
+                </itemizedlist>
+            </section>
+            <section id="clusters-discovery.groups.clientside">
+                <title>Discovery Groups on the Client Side</title>
+                <para>Let's discuss how to configure a HornetQ client to use discovery to discover a
+                    list of servers to which it can connect. The way to do this differs depending on
+                    whether you're using JMS or the core API.</para>
+                <section>
+                    <title>Configuring client discovery using JMS</title>
+                    <para>If you're using JMS and you're also using the JMS Service on the server to
+                        load your JMS connection factory instances into JNDI, then you can specify which
+                        discovery group to use for your JMS connection factory in the server side xml
+                        configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
+                        example:</para>
+                    <programlisting>&lt;connection-factory name="ConnectionFactory">
+       &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
+        &lt;entries>
+           &lt;entry name="ConnectionFactory"/>
+        &lt;/entries>
+    &lt;/connection-factory></programlisting>
+                    <para>The element <literal>discovery-group-ref</literal> specifies the name of a
+                        discovery group defined in <literal>hornetq-configuration.xml</literal>.</para>
+                    <para>When this connection factory is downloaded from JNDI by a client application
+                        and JMS connections are created from it, those connections will be load-balanced
+                        across the list of servers that the discovery group maintains by listening on
+                        the multicast address specified in the discovery group configuration.</para>
+                    <para>If you're using JMS, but you're not using JNDI to lookup a connection factory
+                        - you're instantiating the JMS connection factory directly then you can specify
+                        the discovery group parameters directly when creating the JMS connection
+                        factory. Here's an
+                        example:<programlisting>final String groupAddress = "231.7.7.7";
+
+    final int groupPort = 9876;
+
+    ConnectionFactory jmsConnectionFactory =
+            HornetQJMSClient.createConnectionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort), , JMSFactoryType.CF);
+
+    Connection jmsConnection1 = jmsConnectionFactory.createConnection();
+
+    Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
+                    <para>The <literal>refresh-timeout</literal> can be set directly on the DiscoveryGroupConfiguration
+                         by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
+                            want to change the default value.</para>
+                    <para>There is also a further parameter settable on the DiscoveryGroupConfiguration using the
+                        setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the connection
+                        factory is used immediately after creation then it may not have had enough time
+                        to received broadcasts from all the nodes in the cluster. On first usage, the
+                        connection factory will make sure it waits this long since creation before
+                        creating the first connection. The default value for this parameter is <literal
+                            >10000</literal> milliseconds.</para>
+                </section>
+                <section>
+                    <title>Configuring client discovery using Core</title>
+                    <para>If you're using the core API to directly instantiate <literal
+                            >ClientSessionFactory</literal> instances, then you can specify the
+                        discovery group parameters directly when creating the session factory. Here's an
+                        example:
+                        <programlisting>
+                        final String groupAddress = "231.7.7.7";
+                        final int groupPort = 9876;
+                        SessionFactory factory = HornetQClient.createClientSessionFactory(new DiscoveryGroupConfiguration(groupAddress, groupPort));
+                        ClientSession session1 = factory.createClientSession(...); ClientSession
+                        session2 = factory.createClientSession(...);
+
+                    </programlisting></para>
+                    <para>The <literal>refresh-timeout</literal> can be set directly on the DiscoveryGroupConfiguration
+                         by using the setter method <literal>setDiscoveryRefreshTimeout()</literal> if you
+                            want to change the default value.</para>
+                    <para>There is also a further parameter settable on the DiscoveryGroupConfiguration using the
+                        setter method <literal>setDiscoveryInitialWaitTimeout()</literal>. If the session factory
+                        is used immediately after creation then it may not have had enough time to
+                        received broadcasts from all the nodes in the cluster. On first usage, the
+                        session factory will make sure it waits this long since creation before creating
+                        the first session. The default value for this parameter is <literal
+                            >10000</literal> milliseconds.</para>
+                </section>
+            </section>
+        </section>
+        <section>
+            <title>Discovery using static Connectors</title>
+            <para>Sometimes it may be impossible to use UDP on the network you are using. In this case its
+            possible to configure a connection with an initial list if possible servers. This could be just
+            one server that you know will always be available or a list of servers where at least one will
+            be available.</para>
+            <para>This doesn't mean that you have to know where all your servers are going to be hosted, you
+            can configure these server to use the reliable servers to connect to. Once they are connected and
+            there where abouts will be propagated via the server it connects to</para>
+            <section>
+                <title>Configuring a Cluster Connection</title>
+            </section>
+            <section>
+                <title>Configuring a Client Connection</title>
             </section>
         </section>
     </section>
