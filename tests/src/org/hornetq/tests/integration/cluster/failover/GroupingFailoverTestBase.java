@@ -87,7 +87,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeSessionFactory(0);
 
-         servers[0].kill();
+         servers[0].stop(true);
          
          waitForServerRestart(2);
 
@@ -176,7 +176,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeSessionFactory(0);
 
-         servers[0].kill();
+         servers[0].stop(true);
 
          waitForServerRestart(2);
 

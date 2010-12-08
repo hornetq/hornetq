@@ -562,6 +562,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          }
 
+         public void forceFailover() throws Exception
+         {
+            proxy.invokeOperation("forceFailover");
+         }
+
          public String getLiveConnectorName() throws Exception
          {
             return (String)proxy.retrieveAttributeValue("liveConnectorName");

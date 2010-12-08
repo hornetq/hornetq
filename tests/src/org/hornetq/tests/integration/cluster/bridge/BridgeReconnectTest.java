@@ -155,10 +155,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          BridgeReconnectTest.log.info("** failing connection");
          // Now we will simulate a failure of the bridge connection between server0 and server1
-         /*Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
-           RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-           forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));*/
-         server0.kill();
+         server0.stop(true);
 
          waitForServerStart(service2);
 
@@ -300,7 +297,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          server1.start();
          server0.start();
          // Now we will simulate a failure of the bridge connection between server0 and server1
-         server0.kill();
+         server0.stop(true);
 
 
          locator = HornetQClient.createServerLocatorWithHA(server2tc);

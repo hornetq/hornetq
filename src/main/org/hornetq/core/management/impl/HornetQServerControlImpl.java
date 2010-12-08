@@ -1715,6 +1715,21 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public void forceFailover() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         server.stop(true);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

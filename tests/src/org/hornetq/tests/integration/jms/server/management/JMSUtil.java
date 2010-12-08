@@ -235,16 +235,10 @@ public class JMSUtil
       {
          session.addFailureListener(new MyListener());
       }
-      /*Set<RemotingConnection> connections = server.getRemotingService().getConnections();
-      for (RemotingConnection remotingConnection : connections)
-      {
-         remotingConnection.destroy();
-         server.getRemotingService().removeConnection(remotingConnection.getID());
-      }*/
 
       ClusterManagerImpl clusterManager = (ClusterManagerImpl)server.getClusterManager();
       clusterManager.clear();
-      server.kill();
+      server.stop(true);
 
       // Wait to be informed of failure
       boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);

@@ -162,5 +162,5 @@ public interface HornetQServer extends HornetQComponent
 
    ServerSession getSessionByID(String sessionID);
 
-   void kill() throws Exception;
+   void stop(boolean failoverOnServerShutdown) throws Exception;
 }

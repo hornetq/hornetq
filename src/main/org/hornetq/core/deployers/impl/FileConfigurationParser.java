@@ -164,6 +164,8 @@ public class FileConfigurationParser
       config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
 
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
+      
+      config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e, "failover-on-shutdown", config.isFailoverOnServerShutdown()));
 
       config.setBackup(XMLConfigurationUtil.getBoolean(e, "backup", config.isBackup()));
 

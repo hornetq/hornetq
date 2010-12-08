@@ -400,6 +400,17 @@ public interface Configuration extends Serializable
    String getClusterPassword();
 
    /**
+    * should we notify any clients on close that they should failover
+    * @return true if clients should failover
+    */
+   boolean isFailoverOnServerShutdown();
+
+   /*
+   * set to allow clients to failover on server shutdown
+   * */
+   void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);
+
+   /**
     * Sets the cluster password for this server.
     */
    void setClusterPassword(String password);

@@ -19,6 +19,9 @@
 
    <shared-store>true</shared-store>
 
+   <!--we kill the server process so don't need this set to true-->
+   <failover-on-shutdown>false</failover-on-shutdown>
+
    <allow-failback>true</allow-failback>
    <!-- Connectors -->
 

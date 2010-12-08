@@ -348,9 +348,8 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       ClusterManagerImpl clusterManager = (ClusterManagerImpl) server.getClusterManager();
       clusterManager.clear();
-      //FailoverManagerImpl.failAllConnectionsForConnector(serverTC);
 
-      server.kill();
+      server.stop(true);
    }
 
    public void testFailAllNodes() throws Exception

@@ -581,14 +581,9 @@ public class HornetQServerImpl implements HornetQServer
       super.finalize();
    }
 
-   public void kill() throws Exception
-   {
-      stop(true);
-   }
-
    public void stop() throws Exception
    {
-      stop(false);
+      stop(configuration.isFailoverOnServerShutdown());
    }
 
    public void stop(boolean failoverOnServerShutdown) throws Exception

@@ -4,6 +4,8 @@
 	
 	<clustered>true</clustered>
 
+    <failover-on-shutdown>false</failover-on-shutdown>
+
     <shared-store>true</shared-store>
 	
 	<journal-min-files>10</journal-min-files>

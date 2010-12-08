@@ -174,6 +174,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_SERVER_DUMP_INTERVAL = -1;
 
+   private static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
+
    public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
 
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
@@ -315,6 +317,8 @@ public class ConfigurationImpl implements Configuration
    protected String clusterPassword = ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD;
 
    protected long serverDumpInterval = ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL;
+
+   protected boolean failoverOnServerShutdown = ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
    // percentage of free memory which triggers warning from the memory manager
    protected int memoryWarningThreshold = ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD;
@@ -879,6 +883,16 @@ public class ConfigurationImpl implements Configuration
       return clusterPassword;
    }
 
+   public boolean isFailoverOnServerShutdown()
+   {
+      return failoverOnServerShutdown;
+   }
+
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+   }
+
    public void setClusterPassword(final String theclusterPassword)
    {
       clusterPassword = theclusterPassword;
@@ -1186,6 +1200,10 @@ public class ConfigurationImpl implements Configuration
          }
       }
       else if (!managementAddress.equals(other.managementAddress))
+      {
+         return false;
+      }
+      if (failoverOnServerShutdown != other.isFailoverOnServerShutdown())
       {
          return false;
       }

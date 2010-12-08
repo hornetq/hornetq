@@ -589,4 +589,7 @@ public interface HornetQServerControl
 
    @Operation(desc= "Destroy a bridge", impact = MBeanOperationInfo.ACTION)
    void destroyBridge(@Parameter(name="name", desc="Name of the bridge") String name) throws Exception;
+
+   @Operation(desc = "force the server to stop and notify clients to failover", impact = MBeanOperationInfo.UNKNOWN)
+   void forceFailover() throws Exception;
 }
