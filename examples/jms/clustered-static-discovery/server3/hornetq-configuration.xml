@@ -46,7 +46,7 @@
          <use-duplicate-detection>true</use-duplicate-detection>
          <forward-when-no-consumers>true</forward-when-no-consumers>
          <max-hops>1</max-hops>
-         <static-connectors allow-direct-connections-only="false">
+         <static-connectors>
             <connector-ref>server0-connector</connector-ref>
          </static-connectors>
       </cluster-connection>

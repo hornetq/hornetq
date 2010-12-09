@@ -1003,7 +1003,7 @@ public class FileConfigurationParser
 
       List<String> staticConnectorNames = new ArrayList<String>();
 
-      boolean allowDirectConnectionsOnly = true;
+      boolean allowDirectConnectionsOnly = false;
       
       NodeList children = e.getChildNodes();
 
@@ -1018,8 +1018,10 @@ public class FileConfigurationParser
          else if (child.getNodeName().equals("static-connectors"))
          {
             Node attr = child.getAttributes().getNamedItem("allow-direct-connections-only");
-
-            allowDirectConnectionsOnly = "true".equalsIgnoreCase(attr.getNodeValue()) || allowDirectConnectionsOnly;
+            if(attr != null)
+            {
+               allowDirectConnectionsOnly = "true".equalsIgnoreCase(attr.getNodeValue()) || allowDirectConnectionsOnly;
+            }
             getStaticConnectors(staticConnectorNames, child);
          }
       }
