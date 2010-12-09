@@ -361,7 +361,7 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int">
 			</xsd:element>
 			<xsd:choice>
-				<xsd:element maxOccurs="1" minOccurs="1" name="static-connectors">
+				<xsd:element maxOccurs="1" minOccurs="0" name="static-connectors">
                     <xsd:complexType>
                         <xsd:sequence>
                             <xsd:element maxOccurs="unbounded" minOccurs="0" name="connector-ref" type="xsd:string"/>
@@ -369,7 +369,7 @@
                         <xsd:attribute name="allow-direct-connections-only" type="xsd:boolean" use="optional"/>
                     </xsd:complexType>
                 </xsd:element>	
-				<xsd:element maxOccurs="1" minOccurs="1" name="discovery-group-ref">
+				<xsd:element maxOccurs="1" minOccurs="0" name="discovery-group-ref">
 					<xsd:complexType>
 						<xsd:attribute name="discovery-group-name" type="xsd:IDREF" use="required">
 						</xsd:attribute>
