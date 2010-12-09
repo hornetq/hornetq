@@ -734,7 +734,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       ServerLocatorInternal serverLocator;
 
-      if (config.getStaticConnectors() != null)
+      if (config.getStaticConnectors() != null && config.getStaticConnectors().size() > 0)
       {
          TransportConfiguration[] tcConfigs = connectorNameListToArray(config.getStaticConnectors());
 
