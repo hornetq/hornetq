@@ -160,11 +160,4 @@ public class MultipleFailoverExample extends HornetQExample
       }
    }
 
-   private int getServer(Connection connection)
-   {
-      DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
-      TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
-      String port = (String) transportConfiguration.getParams().get("port");
-      return Integer.valueOf(port) - 5445;
-   }
 }

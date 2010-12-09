@@ -77,7 +77,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
                                                                                   false,
                                                                                   1,
                                                                                   1,
-                                                                                  new ArrayList<String>()));
+                                                                                  new ArrayList<String>(), false));
          return config;
       }
 
@@ -111,7 +111,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
                                                                                   false,
                                                                                   1,
                                                                                   1,
-                                                                                  connectors));
+                                                                                  connectors, false));
          return config;
       }
 

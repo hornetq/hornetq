@@ -154,7 +154,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                               true,
                                                                               MAX_HOPS,
                                                                               1024,
-                                                                              toOtherServerPair));
+                                                                              toOtherServerPair, false));
 
 
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();
@@ -199,7 +199,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                               true,
                                                                               MAX_HOPS,
                                                                               1024,
-                                                                              toOtherServerPair));
+                                                                              toOtherServerPair, false));
 
       
       JMSConfigurationImpl jmsconfig = new JMSConfigurationImpl();

@@ -63,7 +63,7 @@ public class RemoteFailoverTest extends FailoverTest
                                                                                   false,
                                                                                   1,
                                                                                   1,
-                                                                                  new ArrayList<String>()));
+                                                                                  new ArrayList<String>(), false));
          return config;
       }
 

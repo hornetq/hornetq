@@ -55,8 +55,8 @@ public class ClusterHeadersRemovedTest extends ClusterTestBase
    
    public void testHeadersRemoved() throws Exception
    {
-      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
-      setupClusterConnection("clusterX", 1, -1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty(), false);
+      setupClusterConnection("clusterX", 1, -1, "queues", false, 1, isNetty(), false);
       startServers(1, 0);
 
       setupSessionFactory(0, isNetty());

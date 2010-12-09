@@ -1619,7 +1619,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                          final String address,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
-                                         final boolean netty)
+                                         final boolean netty,
+                                         final boolean allowDirectConnectionsOnly)
    {
       HornetQServer serverFrom = servers[nodeFrom];
 
@@ -1649,7 +1650,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
                                                                                       1024,
-                                                                                      pairs);
+                                                                                      pairs, allowDirectConnectionsOnly);
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
 
@@ -1688,7 +1689,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
                                                                                       1024,
-                                                                                      pairs);
+                                                                                      pairs, false);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
@@ -1727,7 +1728,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
                                                                                       1024,
-                                                                                      pairs);
+                                                                                      pairs, false);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }

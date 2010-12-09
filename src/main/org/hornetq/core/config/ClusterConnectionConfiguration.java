@@ -49,6 +49,8 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final int confirmationWindowSize;
 
+   private final boolean allowDirectConnectionsOnly;
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -57,7 +59,8 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
                                          final int confirmationWindowSize,
-                                         final List<String> staticConnectors)
+                                         final List<String> staticConnectors,
+                                         final boolean allowDirectConnectionsOnly)
    {
       this.name = name;
       this.address = address;
@@ -69,6 +72,7 @@ public class ClusterConnectionConfiguration implements Serializable
       discoveryGroupName = null;
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
+      this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
    }
 
    public ClusterConnectionConfiguration(final String name,
@@ -91,6 +95,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.staticConnectors = null;
       this.maxHops = maxHops;
       this.confirmationWindowSize = confirmationWindowSize;
+      allowDirectConnectionsOnly = false;
    }
 
    public String getName()
@@ -141,5 +146,10 @@ public class ClusterConnectionConfiguration implements Serializable
    public long getRetryInterval()
    {
       return retryInterval;
+   }
+
+   public boolean isAllowDirectConnectionsOnly()
+   {
+      return allowDirectConnectionsOnly;
    }
 }

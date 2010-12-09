@@ -139,7 +139,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(liveConnector.getName());
       ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
-               staticConnectors);
+               staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupServer = createBackupServer();
       
@@ -174,7 +174,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setClustered(true);
        List<String> pairs = null;
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-               pairs);
+               pairs, false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createLiveServer();

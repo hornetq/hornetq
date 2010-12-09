@@ -783,7 +783,8 @@ public class ClusterManagerImpl implements ClusterManager
                                                                       nodeUUID,
                                                                       backup,
                                                                       server.getConfiguration().getClusterUser(),
-                                                                      server.getConfiguration().getClusterPassword());
+                                                                      server.getConfiguration().getClusterPassword(),
+                                                                      config.isAllowDirectConnectionsOnly());
 
       managementService.registerCluster(clusterConnection, config);
 

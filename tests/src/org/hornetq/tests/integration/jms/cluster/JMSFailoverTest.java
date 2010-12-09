@@ -363,7 +363,7 @@ public class JMSFailoverTest extends UnitTestCase
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(livetc.getName());
       ClusterConnectionConfiguration cccBackup = new ClusterConnectionConfiguration("cluster1", "jms", backuptc.getName(), -1, false, false, 1, 1,
-               staticConnectors);
+               staticConnectors, false);
 
       backupConf.getClusterConfigurations().add(cccBackup);
       backupConf.setSecurityEnabled(false);
@@ -396,7 +396,7 @@ public class JMSFailoverTest extends UnitTestCase
               .add(liveAcceptortc);
        List<String> pairs = null;
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", livetc.getName(), -1, false, false, 1, 1,
-               pairs);
+               pairs, false);
       liveConf.getClusterConfigurations().add(ccc0);
       liveConf.setSharedStore(true);
       liveConf.setJournalType(getDefaultJournalType());

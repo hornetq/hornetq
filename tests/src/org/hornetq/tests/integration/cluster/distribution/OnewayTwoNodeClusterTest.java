@@ -39,9 +39,9 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
       
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", false, 1,  isNetty(), true);
       // server #1 is connected to nobody
-      setupClusterConnection("clusterX", 1, -1, "queues", false, 1, isNetty());
+      setupClusterConnection("clusterX", 1, -1, "queues", false, 1,  isNetty(), true);
    }
 
    @Override
@@ -58,7 +58,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       super.tearDown();
    }
 
-   protected boolean isNetty()
+   protected boolean  isNetty()
    {
       return false;
    }
@@ -80,8 +80,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String myFilter = "zebra";
 
@@ -102,8 +102,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(0, 1);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String myFilter = "bison";
 
@@ -124,8 +124,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(0, 1);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String myFilter = "bison";
 
@@ -161,7 +161,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       Assert.assertTrue("Took too long to restart", end - start <= 5000);
 
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(1,  isNetty(), true);
 
       waitForBindings(0, "queues.testaddress", 0, 0, false);
 
@@ -185,8 +185,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       addConsumer(0, 0, "queue0", null);
@@ -205,8 +205,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
 
@@ -234,8 +234,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
@@ -273,8 +273,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -314,8 +314,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -377,8 +377,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -457,7 +457,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1);
 
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(1, "queues.testaddress", "queue5", null, false);
       createQueue(1, "queues.testaddress", "queue6", null, false);
@@ -483,7 +483,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       waitForBindings(0, "queues.testaddress", 8, 8, false);
 
-      setupSessionFactory(0, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -520,7 +520,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(0);
 
-      setupSessionFactory(0, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -544,7 +544,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       startServers(1);
 
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(1, "queues.testaddress", "queue5", null, false);
       createQueue(1, "queues.testaddress", "queue6", null, false);
@@ -583,8 +583,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue1", null, false);
@@ -618,8 +618,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String filter1 = "giraffe";
       String filter2 = "aardvark";
@@ -679,8 +679,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String filter1 = "giraffe";
       String filter2 = "aardvark";
@@ -743,8 +743,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -775,14 +775,14 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    public void testRouteWhenNoConsumersTrueNonBalancedQueues() throws Exception
    {
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", true, 1, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", true, 1,  isNetty(), true);
       // server #1 is connected to nobody
-      setupClusterConnection("clusterX", 1, -1, "queues", false, 1, isNetty());
+      setupClusterConnection("clusterX", 1, -1, "queues", false, 1,  isNetty(), true);
    
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -814,8 +814,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -853,8 +853,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -888,8 +888,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -918,8 +918,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -953,12 +953,12 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       servers[0].getConfiguration().getClusterConfigurations().clear();
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", true, 1, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", true, 1,  isNetty(), true);
 
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -992,12 +992,12 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       servers[0].getConfiguration().getClusterConfigurations().clear();
       // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", true, 1, isNetty());
+      setupClusterConnection("cluster1", 0, 1, "queues", true, 1,  isNetty(), true);
 
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(0, "queues.testaddress", "queue1", null, false);
@@ -1026,8 +1026,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String filter1 = "giraffe";
       String filter2 = "aardvark";
@@ -1083,8 +1083,8 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    {
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       String filter1 = "giraffe";
       String filter2 = "aardvark";
@@ -1146,13 +1146,13 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    public void testMultipleClusterConnections() throws Exception
    {
-      setupClusterConnection("cluster2", 0, 1, "q2", false, 1, isNetty());
-      setupClusterConnection("cluster3", 0, 1, "q3", false, 1, isNetty());
+      setupClusterConnection("cluster2", 0, 1, "q2", false, 1,  isNetty(), true);
+      setupClusterConnection("cluster3", 0, 1, "q3", false, 1,  isNetty(), true);
 
       startServers(1, 0);
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
+      setupSessionFactory(0,  isNetty(), true);
+      setupSessionFactory(1,  isNetty(), true);
 
       // Make sure the different connections don't conflict
 

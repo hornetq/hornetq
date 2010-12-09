@@ -12,11 +12,16 @@
  */
 package org.hornetq.common.example;
 
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.core.client.impl.DelegatingSession;
+import org.hornetq.jms.client.HornetQConnection;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.jms.Connection;
 import javax.naming.InitialContext;
 
 /**
@@ -214,6 +219,15 @@ public abstract class HornetQExample
       server.destroy();
    }
 
+
+   protected int getServer(Connection connection)
+   {
+      DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
+      TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
+      String port = (String) transportConfiguration.getParams().get("port");
+      return Integer.valueOf(port) - 5445;
+   }
+   
    private void reportResultAndExit()
    {
       if (failure)

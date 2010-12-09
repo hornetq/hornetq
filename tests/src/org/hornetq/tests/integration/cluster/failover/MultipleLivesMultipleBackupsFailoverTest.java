@@ -149,7 +149,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
          config1.getConnectorConfigurations().put(connector.getName(), connector);
          clusterNodes.add(connector.getName());
       }
-      ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1, clusterNodes);
+      ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1, clusterNodes, false);
       config1.getClusterConfigurations().add(ccc1);
 
       config1.setBindingsDirectory(config1.getBindingsDirectory() + "_" + liveNode);
@@ -178,7 +178,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
 
       }
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-            pairs);
+            pairs, false);
       config0.getClusterConfigurations().add(ccc0);
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 

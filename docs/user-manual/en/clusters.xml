@@ -306,8 +306,8 @@
             one server that you know will always be available or a list of servers where at least one will
             be available.</para>
             <para>This doesn't mean that you have to know where all your servers are going to be hosted, you
-            can configure these server to use the reliable servers to connect to. Once they are connected and
-            there where abouts will be propagated via the server it connects to</para>
+            can configure these servers to use the reliable servers to connect to. Once they are connected
+            there connection details will be propagated via the server it connects to</para>
             <section>
                 <title>Configuring a Cluster Connection</title>
             </section>

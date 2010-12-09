@@ -183,7 +183,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
 
          }
          ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-               pairs);
+               pairs, false);
          config0.getClusterConfigurations().add(ccc0);
          config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 
@@ -270,7 +270,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       TransportConfiguration backupConnector = createTransportConfiguration(true, false, generateParams(nodeid, true));
       List<String> pairs = null;
       ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
-           createClusterConnections? staticConnectors:pairs);
+           createClusterConnections? staticConnectors:pairs, false);
       config1.getClusterConfigurations().add(ccc1);
       config1.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
 

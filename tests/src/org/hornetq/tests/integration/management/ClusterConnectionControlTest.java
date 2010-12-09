@@ -211,7 +211,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                     RandomUtil.randomBoolean(),
                                                                     RandomUtil.randomPositiveInt(),
                                                                     RandomUtil.randomPositiveInt(),
-                                                                    connectors);
+                                                                    connectors, false);
 
       String discoveryGroupName = RandomUtil.randomString();
       DiscoveryGroupConfiguration discoveryGroupConfig = new DiscoveryGroupConfiguration(discoveryGroupName, null, "230.1.2.3", 6745, 500, 0);
