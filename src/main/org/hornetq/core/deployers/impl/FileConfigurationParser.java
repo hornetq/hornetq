@@ -1003,7 +1003,7 @@ public class FileConfigurationParser
 
       List<String> staticConnectorNames = new ArrayList<String>();
 
-      boolean allowDirectConnectionsOnly = false;;
+      boolean allowDirectConnectionsOnly = true;
       
       NodeList children = e.getChildNodes();
 
