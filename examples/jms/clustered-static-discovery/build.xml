@@ -21,7 +21,7 @@
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.jms.example.StaticClusteredQueueExample"/>
-         <param name="hornetq.example.beans.file" value="server0 server1"/>
+         <param name="hornetq.example.beans.file" value="server0 server1 server2 server3"/>
       </antcall>
    </target>
 
