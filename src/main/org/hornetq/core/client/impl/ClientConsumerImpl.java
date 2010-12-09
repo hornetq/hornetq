@@ -654,7 +654,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
    {
-      System.err.println("Flow Control being called with clientWindowsize = " + clientWindowSize + " flowControl = " + messageBytes);
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
