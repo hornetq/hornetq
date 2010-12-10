@@ -93,12 +93,14 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
       
       PersistedConnectionFactory cf1 = cfs.get(0);
       
-      assertEquals(5, cf1.getConfig().getConnectorNames().size());
+      assertEquals(10, cf1.getConfig().getConnectorNames().size());
       
-      int i = 0 ;
       List<String> configs = cf1.getConfig().getConnectorNames();
-      assertEquals(configs.get(0), "c1-" + i);
-      assertEquals(configs.get(1), "c2-" + i);
+      for (int i = 0, j = 0; i < 10; i+=2, j++)
+      {
+         assertEquals(configs.get(i), "c1-" + j);
+         assertEquals(configs.get(i+1), "c2-" + j);
+      }
    }
 
    public void testSizeOfCF() throws Exception
