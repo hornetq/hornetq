@@ -19,6 +19,8 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 
+import java.util.concurrent.Executor;
+
 /**
  * A ServerLocatorInternal
  *
@@ -28,7 +30,7 @@ import org.hornetq.api.core.client.ServerLocator;
  */
 public interface ServerLocatorInternal extends ServerLocator
 {
-   void start() throws Exception;
+   void start(Executor executor) throws Exception;
    
    void factoryClosed(final ClientSessionFactory factory);
 

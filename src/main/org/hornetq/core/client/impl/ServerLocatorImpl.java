@@ -139,6 +139,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private volatile boolean closed;
 
+   private volatile boolean closing;
+
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
    private static ExecutorService globalThreadPool;
@@ -408,9 +410,27 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   public void start() throws Exception
+   public void start(Executor executor) throws Exception
    {
       initialise();
+
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            try
+            {
+               connect();
+            }
+            catch (Exception e)
+            {
+               if(!closing)
+               {
+                  log.warn("did not connect the cluster connection to other nodes", e);
+               }
+            }
+         }
+      });
    }
 
    public ClientSessionFactory connect() throws Exception
@@ -1000,6 +1020,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          return;
       }
 
+      closing = true;
+
       if (discoveryGroup != null)
       {
          try
@@ -1057,6 +1079,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
          }
       }
+      readOnly = false;
 
       closed = true;
    }

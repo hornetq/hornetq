@@ -732,18 +732,16 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-      ServerLocatorInternal serverLocator;
 
-      if (config.getStaticConnectors() != null && config.getStaticConnectors().size() > 0)
+      if(clusterConnections.containsKey(config.getName()))
       {
-         TransportConfiguration[] tcConfigs = connectorNameListToArray(config.getStaticConnectors());
-
-         serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(tcConfigs);
-         serverLocator.setNodeID(nodeUUID.toString());
-         serverLocator.setReconnectAttempts(-1);
-         clusterLocators.add(serverLocator);
+         log.warn("Clustwer Configuration  '" + config.getConnectorName() + "' already exists. The cluster connection will not be deployed.");
+         return;
       }
-      else if (config.getDiscoveryGroupName() != null)
+
+      ClusterConnectionImpl clusterConnection;
+
+      if (config.getDiscoveryGroupName() != null)
       {
          DiscoveryGroupConfiguration dg = configuration.getDiscoveryGroupConfigurations()
                                                        .get(config.getDiscoveryGroupName());
@@ -754,37 +752,50 @@ public class ClusterManagerImpl implements ClusterManager
                                         "'. The cluster connection will not be deployed.");
          }
 
-         serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(dg);
-         serverLocator.setNodeID(nodeUUID.toString());
-         serverLocator.setReconnectAttempts(-1);
-         clusterLocators.add(serverLocator);
+         clusterConnection = new ClusterConnectionImpl(dg,
+                                                       connector,
+                                                       new SimpleString(config.getName()),
+                                                       new SimpleString(config.getAddress()),
+                                                       config.getRetryInterval(),
+                                                       config.isDuplicateDetection(),
+                                                       config.isForwardWhenNoConsumers(),
+                                                       config.getConfirmationWindowSize(),
+                                                       executorFactory,
+                                                       server,
+                                                       postOffice,
+                                                       managementService,
+                                                       scheduledExecutor,
+                                                       config.getMaxHops(),
+                                                       nodeUUID,
+                                                       backup,
+                                                       server.getConfiguration().getClusterUser(),
+                                                       server.getConfiguration().getClusterPassword(),
+                                                       config.isAllowDirectConnectionsOnly());
       }
       else
       {
-         // no connector or discovery group are defined. The cluster connection will only be a target and will
-         // no connect to other nodes in the cluster
-         serverLocator = null;
-      }
+         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null? connectorNameListToArray(config.getStaticConnectors()):null;
 
-      ClusterConnectionImpl clusterConnection = new ClusterConnectionImpl(serverLocator,
-                                                                      connector,
-                                                                      new SimpleString(config.getName()),
-                                                                      new SimpleString(config.getAddress()),
-                                                                      config.getRetryInterval(),
-                                                                      config.isDuplicateDetection(),
-                                                                      config.isForwardWhenNoConsumers(),
-                                                                      config.getConfirmationWindowSize(),
-                                                                      executorFactory,
-                                                                      server,
-                                                                      postOffice,
-                                                                      managementService,
-                                                                      scheduledExecutor,
-                                                                      config.getMaxHops(),
-                                                                      nodeUUID,
-                                                                      backup,
-                                                                      server.getConfiguration().getClusterUser(),
-                                                                      server.getConfiguration().getClusterPassword(),
-                                                                      config.isAllowDirectConnectionsOnly());
+         clusterConnection = new ClusterConnectionImpl(tcConfigs,
+                                                       connector,
+                                                       new SimpleString(config.getName()),
+                                                       new SimpleString(config.getAddress()),
+                                                       config.getRetryInterval(),
+                                                       config.isDuplicateDetection(),
+                                                       config.isForwardWhenNoConsumers(),
+                                                       config.getConfirmationWindowSize(),
+                                                       executorFactory,
+                                                       server,
+                                                       postOffice,
+                                                       managementService,
+                                                       scheduledExecutor,
+                                                       config.getMaxHops(),
+                                                       nodeUUID,
+                                                       backup,
+                                                       server.getConfiguration().getClusterUser(),
+                                                       server.getConfiguration().getClusterPassword(),
+                                                       config.isAllowDirectConnectionsOnly());
+      }
 
       managementService.registerCluster(clusterConnection, config);
 

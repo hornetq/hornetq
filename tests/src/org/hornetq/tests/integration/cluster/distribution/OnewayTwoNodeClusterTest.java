@@ -774,11 +774,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
    public void testRouteWhenNoConsumersTrueNonBalancedQueues() throws Exception
    {
-      // server #0 is connected to server #1
-      setupClusterConnection("cluster1", 0, 1, "queues", true, 1,  isNetty(), true);
-      // server #1 is connected to nobody
-      setupClusterConnection("clusterX", 1, -1, "queues", false, 1,  isNetty(), true);
-   
       startServers(1, 0);
 
       setupSessionFactory(0,  isNetty(), true);

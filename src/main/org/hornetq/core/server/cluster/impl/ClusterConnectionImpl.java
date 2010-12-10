@@ -16,17 +16,16 @@ package org.hornetq.core.server.cluster.impl;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -35,6 +34,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -75,6 +75,8 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    private final SimpleString address;
 
+   private final long retryInterval;
+
    private final boolean useDuplicateDetection;
 
    private final boolean routeWhenNoConsumers;
@@ -95,7 +97,9 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    private final String clusterPassword;
 
-   private final ServerLocatorInternal serverLocator;
+   private final ClusterConnector clusterConnector;
+
+   private ServerLocatorInternal serverLocator;
    
    private final TransportConfiguration connector;
 
@@ -103,7 +107,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
    
-   public ClusterConnectionImpl(final ServerLocatorInternal serverLocator,
+   public ClusterConnectionImpl(final TransportConfiguration[] tcConfigs,
                                 final TransportConfiguration connector,
                                 final SimpleString name,
                                 final SimpleString address,
@@ -130,38 +134,14 @@ public class ClusterConnectionImpl implements ClusterConnection
       }
 
       this.nodeUUID = nodeUUID;
-      
-      this.serverLocator = serverLocator;
-
-      this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
-      if (this.serverLocator != null)
-      {
-         this.serverLocator.setClusterConnection(true);
-         this.serverLocator.setClusterTransportConfiguration(connector);
-         this.serverLocator.setBackup(server.getConfiguration().isBackup());
-         this.serverLocator.setInitialConnectAttempts(-1);
-         if(retryInterval > 0)
-         {
-            this.serverLocator.setRetryInterval(retryInterval);
-         }
-         
-         // a cluster connection will connect to other nodes only if they are directly connected
-         // through a static list of connectors or broadcasting using UDP.
-         TransportConfiguration[] transportConfigurations = serverLocator.getStaticTransportConfigurations();
-         if(this.allowDirectConnectionsOnly)
-         {
-            for (TransportConfiguration transportConfiguration : transportConfigurations)
-            {
-               allowableConnections.add(transportConfiguration);
-            }
-         }
-      }
 
       this.connector = connector;
 
       this.name = name;
 
       this.address = address;
+
+      this.retryInterval = retryInterval;
 
       this.useDuplicateDetection = useDuplicateDetection;
 
@@ -184,6 +164,84 @@ public class ClusterConnectionImpl implements ClusterConnection
       this.clusterUser = clusterUser;
 
       this.clusterPassword = clusterPassword;
+
+      this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
+
+      clusterConnector = new StaticClusterConnector(tcConfigs);
+
+      if (tcConfigs != null && tcConfigs.length > 0)
+      {
+         // a cluster connection will connect to other nodes only if they are directly connected
+         // through a static list of connectors or broadcasting using UDP.
+         if(allowDirectConnectionsOnly)
+         {
+            allowableConnections.addAll(Arrays.asList(tcConfigs));
+         }
+      }
+
+   }
+
+   public ClusterConnectionImpl(DiscoveryGroupConfiguration dg,
+                                final TransportConfiguration connector,
+                                final SimpleString name,
+                                final SimpleString address,
+                                final long retryInterval,
+                                final boolean useDuplicateDetection,
+                                final boolean routeWhenNoConsumers,
+                                final int confirmationWindowSize,
+                                final ExecutorFactory executorFactory,
+                                final HornetQServer server,
+                                final PostOffice postOffice,
+                                final ManagementService managementService,
+                                final ScheduledExecutorService scheduledExecutor,
+                                final int maxHops,
+                                final UUID nodeUUID,
+                                final boolean backup,
+                                final String clusterUser,
+                                final String clusterPassword,
+                                final boolean allowDirectConnectionsOnly) throws Exception
+   {
+
+      if (nodeUUID == null)
+      {
+         throw new IllegalArgumentException("node id is null");
+      }
+
+      this.nodeUUID = nodeUUID;
+
+      this.connector = connector;
+
+      this.name = name;
+
+      this.address = address;
+
+      this.retryInterval = retryInterval;
+
+      this.useDuplicateDetection = useDuplicateDetection;
+
+      this.routeWhenNoConsumers = routeWhenNoConsumers;
+
+      this.executorFactory = executorFactory;
+
+      this.server = server;
+
+      this.postOffice = postOffice;
+
+      this.managementService = managementService;
+
+      this.scheduledExecutor = scheduledExecutor;
+
+      this.maxHops = maxHops;
+
+      this.backup = backup;
+
+      this.clusterUser = clusterUser;
+
+      this.clusterPassword = clusterPassword;
+
+      this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
+
+      clusterConnector = new DiscoveryClusterConnector(dg);
    }
 
    public synchronized void start() throws Exception
@@ -238,6 +296,12 @@ public class ClusterConnectionImpl implements ClusterConnection
             managementService.sendNotification(notification);
          }
 
+         if(serverLocator != null)
+         {
+            serverLocator.close();
+            serverLocator = null;
+         }
+
          started = false;
       }
    }
@@ -279,29 +343,28 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       backup = false;
 
+      serverLocator = clusterConnector.createServerLocator();
+
 
       if (serverLocator != null)
       {
-         serverLocator.addClusterTopologyListener(this);
-         serverLocator.start();
-         // FIXME Ugly ugly code to connect to other nodes and form the cluster... :(
-         server.getExecutorFactory().getExecutor().execute(new Runnable()
+         serverLocator.setNodeID(nodeUUID.toString());
+
+         serverLocator.setReconnectAttempts(-1);
+
+         serverLocator.setClusterConnection(true);
+         serverLocator.setClusterTransportConfiguration(connector);
+         serverLocator.setBackup(server.getConfiguration().isBackup());
+         serverLocator.setInitialConnectAttempts(-1);
+
+         if(retryInterval > 0)
          {
-            public void run()
-            {
-               try
-               {
-                  serverLocator.connect();
-               }
-               catch (Exception e)
-               {
-                  if(started)
-                  {
-                     log.warn("did not connect the cluster connection to other nodes", e);
-                  }
-               }
-            }
-         });
+            this.serverLocator.setRetryInterval(retryInterval);
+         }
+
+         serverLocator.addClusterTopologyListener(this);
+
+         serverLocator.start(server.getExecutorFactory().getExecutor());
       }
 
       if (managementService != null)
@@ -908,5 +971,47 @@ public class ClusterConnectionImpl implements ClusterConnection
       }
       
       return out;
+   }
+
+   interface ClusterConnector
+   {
+      ServerLocatorInternal createServerLocator();
+   }
+
+   private class StaticClusterConnector implements ClusterConnector
+   {
+      private final TransportConfiguration[] tcConfigs;
+
+      public StaticClusterConnector(TransportConfiguration[] tcConfigs)
+      {
+         this.tcConfigs = tcConfigs;
+      }
+
+      public ServerLocatorInternal createServerLocator()
+      {
+         if(tcConfigs != null && tcConfigs.length > 0)
+         {
+            return (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(tcConfigs);
+         }
+         else
+         {
+            return null;
+         }
+      }
+   }
+
+   private class DiscoveryClusterConnector implements ClusterConnector
+   {
+      private final DiscoveryGroupConfiguration dg;
+
+      public DiscoveryClusterConnector(DiscoveryGroupConfiguration dg)
+      {
+         this.dg = dg;
+      }
+
+      public ServerLocatorInternal createServerLocator()
+      {
+         return (ServerLocatorInternal) HornetQClient.createServerLocatorWithHA(dg);
+      }
    }
 }
