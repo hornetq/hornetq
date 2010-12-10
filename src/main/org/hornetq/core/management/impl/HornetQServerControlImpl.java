@@ -1623,7 +1623,8 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                             final boolean useDuplicateDetection,
                             final int confirmationWindowSize,
                             final long clientFailureCheckPeriod,
-                            final List<String> staticConnectors,
+                            final String connectorNames,
+                            boolean useDiscoveryGroup,
                             final boolean ha,
                             final String user,
                             final String password) throws Exception
@@ -1631,23 +1632,48 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       checkStarted();
 
       clearIO();
+
+
       try
       {
-         BridgeConfiguration config = new BridgeConfiguration(name,
-                                                              queueName,
-                                                              forwardingAddress,
-                                                              filterString,
-                                                              transformerClassName,
-                                                              retryInterval,
-                                                              retryIntervalMultiplier,
-                                                              reconnectAttempts,
-                                                              useDuplicateDetection,
-                                                              confirmationWindowSize,
-                                                              clientFailureCheckPeriod,
-                                                              staticConnectors,
-                                                              ha,
-                                                              user,
-                                                              password);
+         BridgeConfiguration config = null;
+         if (useDiscoveryGroup)
+         {
+            config = new BridgeConfiguration(name,
+                                            queueName,
+                                            forwardingAddress,
+                                            filterString,
+                                            transformerClassName,
+                                            retryInterval,
+                                            retryIntervalMultiplier,
+                                            reconnectAttempts,
+                                            useDuplicateDetection,
+                                            confirmationWindowSize,
+                                            clientFailureCheckPeriod,
+                                            connectorNames,
+                                            ha,
+                                            user,
+                                            password);
+         }
+         else
+         {
+            List<String> connectors = toList(connectorNames);
+            config = new BridgeConfiguration(name,
+                                            queueName,
+                                            forwardingAddress,
+                                            filterString,
+                                            transformerClassName,
+                                            retryInterval,
+                                            retryIntervalMultiplier,
+                                            reconnectAttempts,
+                                            useDuplicateDetection,
+                                            confirmationWindowSize,
+                                            clientFailureCheckPeriod,
+                                            connectors,
+                                            ha,
+                                            user,
+                                            password);
+         }
          server.deployBridge(config);
       }
       finally
@@ -1656,49 +1682,6 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
-   public void createBridge(final String name,
-                            final String queueName,
-                            final String forwardingAddress,
-                            final String filterString,
-                            final String transformerClassName,
-                            final long retryInterval,
-                            final double retryIntervalMultiplier,
-                            final int reconnectAttempts,
-                            final boolean useDuplicateDetection,
-                            final int confirmationWindowSize,
-                            final long clientFailureCheckPeriod,
-                            final String discoveryGroupName,
-                            final boolean ha,
-                            final String user,
-                            final String password) throws Exception
-   {
-      checkStarted();
-
-      clearIO();
-      try
-      {
-         BridgeConfiguration config = new BridgeConfiguration(name,
-                                                              queueName,
-                                                              forwardingAddress,
-                                                              filterString,
-                                                              transformerClassName,
-                                                              retryInterval,
-                                                              retryIntervalMultiplier,
-                                                              reconnectAttempts,
-                                                              useDuplicateDetection,
-                                                              confirmationWindowSize,
-                                                              clientFailureCheckPeriod,
-                                                              discoveryGroupName,
-                                                              ha,
-                                                              user,
-                                                              password);
-         server.deployBridge(config);
-      }
-      finally
-      {
-         blockOnIO();
-      }
-   }
 
    public void destroyBridge(final String name) throws Exception
    {
@@ -1906,6 +1889,21 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          return session.getTargetAddresses();
       }
       return new String[0];
+   }
+
+   private static List<String> toList(final String commaSeparatedString)
+   {
+      List<String> list = new ArrayList<String>();
+      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
+      {
+         return list;
+      }
+      String[] values = commaSeparatedString.split(",");
+      for (int i = 0; i < values.length; i++)
+      {
+         list.add(values[i].trim());
+      }
+      return list;
    }
 
 }

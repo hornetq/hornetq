@@ -553,7 +553,7 @@ public interface HornetQServerControl
 
    String[] getBridgeNames();
    
-   @Operation(desc= "Create a Bridge using a pair of connectors", impact = MBeanOperationInfo.ACTION)
+   @Operation(desc= "Create a Bridge", impact = MBeanOperationInfo.ACTION)
    void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
                      @Parameter(name="queueName", desc="Name of the source queue") String queueName,
                      @Parameter(name="forwardingAddress", desc="Forwarding address") String forwardingAddress,
@@ -565,27 +565,12 @@ public interface HornetQServerControl
                      @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
                      @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
                      @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
-                     @Parameter(name="liveConnector", desc="Name of the connector to the live server") List<String> staticConnectors,
+                     @Parameter(name="staticConnectorNames", desc="comma separated list of connector names or name of discovery group if 'useDiscoveryGroup' is set to true") String connectorNames,
+                     @Parameter(name="useDiscoveryGroup", desc="use discovery  group")boolean useDiscoveryGroup,
                      @Parameter(name="ha", desc="Is it using HA") boolean ha,
                      @Parameter(name="user", desc="User name") String user,
                      @Parameter(name="password", desc="User password") String password) throws Exception;
 
-   @Operation(desc= "Create a Bridge using a discovery group", impact = MBeanOperationInfo.ACTION)
-   void createBridge(@Parameter(name="name", desc="Name of the bridge") String name,
-                     @Parameter(name="queueName", desc="Name of the source queue") String queueName,
-                     @Parameter(name="forwardingAddress", desc="Forwarding address") String forwardingAddress,
-                     @Parameter(name="filterString", desc="Filter of the brdige") String filterString,
-                     @Parameter(name="transformerClassName", desc="Class name of the bridge transformer") String transformerClassName,
-                     @Parameter(name="retryInterval", desc="Connection retry interval") long retryInterval,
-                     @Parameter(name="retryIntervalMultiplier", desc="Connection retry interval multiplier") double retryIntervalMultiplier,
-                     @Parameter(name="reconnectAttempts", desc="Number of reconnection attempts") int reconnectAttempts,
-                     @Parameter(name="useDuplicateDetection", desc="Use duplicate detection") boolean useDuplicateDetection,
-                     @Parameter(name="confirmationWindowSize", desc="Confirmation window size") int confirmationWindowSize,
-                     @Parameter(name="clientFailureCheckPeriod", desc="Period to check client failure") long clientFailureCheckPeriod,
-                     @Parameter(name="name", desc="Name of the discovery group") String discoveryGroupName,
-                     @Parameter(name="ha", desc="Is it using HA") boolean ha,
-                     @Parameter(name="user", desc="User name") String user,
-                     @Parameter(name="password", desc="User password") String password) throws Exception;
 
    @Operation(desc= "Destroy a bridge", impact = MBeanOperationInfo.ACTION)
    void destroyBridge(@Parameter(name="name", desc="Name of the bridge") String name) throws Exception;

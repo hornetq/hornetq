@@ -250,6 +250,15 @@ Copyright 2009 Red Hat, Inc.
       <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
+   <target name="management-tests" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="management-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
+   </target>
+
+   <target name="jms-management-tests" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="jms-management-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
+   </target>
 
    <target name="cluster-tests" depends="createthirdparty">
       <ant antfile="build-hornetq.xml" target="cluster-tests"/>

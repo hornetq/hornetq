@@ -593,7 +593,8 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   boolean useDuplicateDetection,
                                   int confirmationWindowSize,
                                   long clientFailureCheckPeriod,
-                                  List<String> staticConnectors,
+                                  String connectorNames,
+                                  boolean useDiscovery,
                                   boolean ha,
                                   String user,
                                   String password) throws Exception
@@ -610,7 +611,8 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   useDuplicateDetection,
                                   confirmationWindowSize,
                                   clientFailureCheckPeriod,
-                                  staticConnectors,
+                                  connectorNames,
+                                  useDiscovery,
                                   ha,
                                   user,
                                   password);

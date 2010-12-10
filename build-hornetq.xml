@@ -1654,6 +1654,19 @@
       </antcall>
    </target>
 
+    <target name="management-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/management/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+
+    <target name="jms-management-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/jms/server/management/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
     <target name="spring-tests" depends="jar, compile-unit-tests">
        <antcall inheritall="true" inheritrefs="true" target="tests">
           <param name="tests.param" value="**/org/hornetq/tests/integration/spring/*${test-mask}.class"/>
@@ -1743,7 +1756,7 @@
 
                   <!--exclude any replication tests for now-->
                 <exclude name="**/cluster/failover/*ClusterWithBackupFailoverTestBase.class"/>
-
+                <exclude  name="**/cluster/**/*/class"/>
                 <exclude name="**/cluster/failover/*DiscoveryClusterWithBackupFailoverTest.class"/>
                 <exclude name="**/cluster/failover/*GroupingFailoverReplicationTest.class"/>
                 <exclude name="**/cluster/failover/*Replicated*.class"/>
