@@ -310,9 +310,73 @@
             there connection details will be propagated via the server it connects to</para>
             <section>
                 <title>Configuring a Cluster Connection</title>
+                <para>For cluster connections there is no extra configuration needed, you just need to make sure that any
+                    connectors are defined in the usual manner, (see <xref linkend="configuring-transports"/> for more
+                    information on connectors). These are then referenced by the cluster connection configuration.</para>
             </section>
             <section>
                 <title>Configuring a Client Connection</title>
+                <para>A static list of possible servers can also be used by a normal client.</para>
+                 <section>
+                    <title>Configuring client discovery using JMS</title>
+                    <para>If you're using JMS and you're also using the JMS Service on the server to
+                        load your JMS connection factory instances into JNDI, then you can specify which
+                        connectors to use for your JMS connection factory in the server side xml
+                        configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
+                        example:</para>
+                    <programlisting>
+    &lt;connection-factory name="ConnectionFactory">
+        &lt;connectors>
+           &lt;connector-ref connector-name="netty-connector"/>
+           &lt;connector-ref connector-name="netty-connector2"/>
+           &lt;connector-ref connector-name="netty-connector3"/>
+        &lt;/connectors>
+        &lt;entries>
+           &lt;entry name="ConnectionFactory"/>
+        &lt;/entries>
+    &lt;/connection-factory></programlisting>
+                     <para>
+                         The element <literal>connectors</literal> contains a list of pre defined connectors in the
+                         <literal>hornetq-configuration.xml</literal> file. When this connection factory is downloaded
+                         from JNDI by a client application and JMS connections are created from it, those connections will
+                         be load-balanced across the list of servers defined by these connectors.
+                     </para>
+                     <para>
+                         If you're using JMS, but you're not using JNDI to lookup a connection factory - you're instantiating
+                         the JMS connection factory directly then you can specify the connector list directly when creating
+                         the JMS connection factory. Here's an example:
+                     </para>
+                     <programlisting>
+      HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
+      map.put("host", "myhost");
+      map.put("port", "5445");
+      TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+      HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
+      map2.put("host", "myhost2");
+      map2.put("port", "5446");
+      TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
+
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.CF, server1, server2);
+                     </programlisting>
+                     </section>
+                     <section>
+                         <title>Configuring client discovery using JMS</title>
+                         <para>If you are using the core API then the same can be done as follows:</para>
+                         <programlisting>
+      HashMap&lt;String, Object> map = new HashMap&lt;String, Object>();
+      map.put("host", "myhost");
+      map.put("port", "5445");
+      TransportConfiguration server1 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
+      HashMap&lt;String, Object> map2 = new HashMap&lt;String, Object>();
+      map2.put("host", "myhost2");
+      map2.put("port", "5446");
+      TransportConfiguration server2 = new TransportConfiguration(NettyConnectorFactory.class.getName(), map2);
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(server1, server2);
+      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSession session = factory.createSession();
+                         </programlisting>
+                     </section>
             </section>
         </section>
     </section>
@@ -452,6 +516,29 @@
                         that this cluster connection will make connections to.</para>
                 </listitem>
             </itemizedlist>
+            <para>
+                Alternatively if you would like your cluster connections to use a static list of
+                servers for discovery then you can do it like this.
+            </para>
+            <programlisting>
+        &lt;cluster-connection name="my-cluster">
+            &lt;address>jms&lt;/address>
+            &lt;connector-ref>netty-connector&lt;/connector-ref>
+            &lt;retry-interval>500&lt;/retry-interval>
+            &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
+            &lt;forward-when-no-consumers>true&lt;/forward-when-no-consumers>
+            &lt;max-hops>1&lt;/max-hops>
+            &lt;static-connectors>
+                &lt;connector-ref>server0-connector&lt;/connector-ref>
+                &lt;connector-ref>server1-connector&lt;/connector-ref>
+            &lt;/static-connectors>
+        &lt;/cluster-connection>
+            </programlisting>
+            <para>
+                Here we have defined 2 servers that we know for sure will that at least one will be available. There may
+                be many more servers in the cluster but these will; be discovered via one of these connectors once an
+                initial connection has been made. 
+            </para>
         </section>
         <section id="clusters.clusteruser">
             <title>Cluster User Credentials</title>
@@ -538,138 +625,30 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
     </section>
     <section>
         <title>Specifying Members of a Cluster Explicitly</title>
-        <para>Sometimes UDP is not enabled on a network so it's not possible to use UDP server
-            discovery for clients to discover the list of servers in the cluster, or for servers to
-            discover what other servers are in the cluster.</para>
-        <para>In this case, the list of servers in the cluster can be specified explicitly on each
-            node and on the client side. Let's look at how we do this:</para>
-        <section>
-            <title>Specify List of Servers on the Client Side</title>
-            <para>This differs depending on whether you're using JMS or the Core API</para>
-            <section>
-                <title>Specifying List of Servers using JMS</title>
-                <para>If you're using JMS, and you're using the JMS Service to load your JMS
-                    connection factory instances directly into JNDI on the server, then you can
-                    specify the list of servers in the server side configuration file <literal
-                        >hornetq-jms.xml</literal>. Let's take a look at an example:</para>
-                <programlisting>&lt;connection-factory name="ConnectionFactory">
-   &lt;connectors>
-      &lt;connector-ref connector-name="my-connector1" 
-           backup-connector-name="my-backup-connector1"/>
-      &lt;connector-ref connector-name="my-connector2" 
-           backup-connector-name="my-backup-connector2"/>
-      &lt;connector-ref connector-name="my-connector3" 
-           backup-connector-name="my-backup-connector3"/>
-   &lt;/connectors>
-   &lt;entries>
-      &lt;entry name="ConnectionFactory"/>
-   &lt;/entries>
-&lt;/connection-factory></programlisting>
-                <para>The <literal>connection-factory</literal> element can contain zero or more
-                        <literal>connector-ref</literal> elements, each one of which specifies a
-                        <literal>connector-name</literal> attribute and an optional <literal
-                        >backup-connector-name</literal> attribute. The <literal
-                        >connector-name</literal> attribute references a connector defined in
-                        <literal>hornetq-configuration.xml</literal> which will be used as a live
-                    connector. The <literal>backup-connector-name</literal> is optional, and if
-                    specified it also references a connector defined in <literal
-                        >hornetq-configuration.xml</literal>. For more information on connectors
-                    please see <xref linkend="configuring-transports"/>.</para>
-                <para>The connection factory thus maintains a list of [connector, backup connector]
-                    pairs, these pairs are then used by the client connection load balancing policy
-                    on the client side when creating connections to the cluster.</para>
-                <para>If you're using JMS but you're not using JNDI then you can also specify the
-                    list of [connector, backup connector] pairs directly when instantiating the
-                        <literal>HornetQConnectionFactory</literal>, here's an
-                    example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
-        new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
-
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC0, backupTC0));
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC1, backupTC1));
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC2, backupTC2));
-
-ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(serverList);
-
-Connection jmsConnection1 = jmsConnectionFactory.createConnection();
-
-Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
-                <para>In the above snippet we create a list of pairs of <literal
-                        >TransportConfiguration</literal> objects. Each <literal
-                        >TransportConfiguration</literal> object contains knowledge of how to make a
-                    connection to a specific server.</para>
-                <para>A <literal>HornetQConnectionFactory</literal> instance is then created passing
-                    the list of servers in the constructor. Any connections subsequently created by
-                    this factory will create connections according to the client connection load
-                    balancing policy applied to that list of servers.</para>
-            </section>
-            <section>
-                <title>Specifying List of Servers using the Core API</title>
-                <para>If you're using the core API you can also specify the list of servers directly
-                    when creating the <literal>ClientSessionFactory</literal> instance. Here's an
-                    example:</para>
-                <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
-        new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
-
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC0, backupTC0));
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC1, backupTC1));
-serverList.add(new Pair&lt;TransportConfiguration, 
-        TransportConfiguration>(liveTC2, backupTC2));
-
-ClientSessionFactory factory = HornetQClient.createClientSessionFactory(serverList);
-
-ClientSession sesison1 = factory.createClientSession(...);
-
-ClientSession session2 = factory.createClientSession(...);</programlisting>
-                <para>In the above snippet we create a list of pairs of <literal
-                        >TransportConfiguration</literal> objects. Each <literal
-                        >TransportConfiguration</literal> object contains knowledge of how to make a
-                    connection to a specific server. For more information on this, please see <xref
-                        linkend="configuring-transports"/>.</para>
-                <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing
-                    the list of servers in the constructor. Any sessions subsequently created by
-                    this factory will create sessions according to the client connection load
-                    balancing policy applied to that list of servers.</para>
-            </section>
-        </section>
-        <section id="clusters.static.servers">
-            <title>Specifying List of Servers to form a Cluster</title>
-            <para>Let's take a look at an example where each cluster connection is defined for a
-                symmetric cluster, but we're not using discovery for each node to discover its
-                neighbours, instead we'll configure each cluster connection to have explicit
-                knowledge of all the other nodes in the cluster.</para>
-            <para>Here's an example cluster connection definition showing that:</para>
-            <programlisting>&lt;cluster-connections&gt;
-    &lt;cluster-connection name="my-explicit-cluster"&gt;
-        &lt;address&gt;jms&lt;/address&gt;
-        &lt;connector-ref connector-name="my-connector1" 
-            backup-connector-name="my-backup-connector1"/>
-        &lt;connector-ref connector-name="my-connector2" 
-            backup-connector-name="my-backup-connector2"/>
-        &lt;connector-ref connector-name="my-connector3" 
-            backup-connector-name="my-backup-connector3"/>
-    &lt;/cluster-connection&gt;
-&lt;/cluster-connections&gt;</programlisting>
-            <para>The <literal>cluster-connection</literal> element can contain zero or more
-                    <literal>connector-ref</literal> elements, each one of which specifies a
-                    <literal>connector-name</literal> attribute and an optional <literal
-                    >backup-connector-name</literal> attribute. The <literal
-                    >connector-name</literal> attribute references a connector defined in <literal
-                    >hornetq-configuration.xml</literal> which will be used as a live connector. The
-                    <literal>backup-connector-name</literal> is optional, and if specified it also
-                references a connector defined in <literal>hornetq-configuration.xml</literal>. For
-                more information on connectors please see <xref linkend="configuring-transports"
-                />.</para>
-            <note>
-                <para>Due to a limitation in HornetQ 2.0.0, failover is not supported for clusters
-                    defined using a static set of nodes. To support failover over cluster nodes,
-                    they must be configured to use a discovery group.</para>
-            </note>
-        </section>
+        <para>
+            Sometimes you want to explicitly define a cluster more explicitly, that is control which
+            server connect to each other in the cluster. This is typically used to form non symmetrical clusters
+            such as chain cluster or ring clusters. This can only be done using a static list of connectors and is
+            configured as follows:
+        </para>
+        <programlisting>
+        &lt;cluster-connection name="my-cluster">
+            &lt;address>jms&lt;/address>
+            &lt;connector-ref>netty-connector&lt;/connector-ref>
+            &lt;retry-interval>500&lt;/retry-interval>
+            &lt;use-duplicate-detection>true&lt;/use-duplicate-detection>
+            &lt;forward-when-no-consumers>true&lt;/forward-when-no-consumers>
+            &lt;max-hops>1&lt;/max-hops>
+            &lt;static-connectors allow-direct-connections-only="true">
+                &lt;connector-ref>server1-connector&lt;/connector-ref>
+            &lt;/static-connectors>
+        &lt;/cluster-connection>
+        </programlisting>
+        <para>
+            In this example we have set the attribute <literal>allow-direct-connections-only</literal> which means that
+            the only server that this server can create a cluster connection to is server1-connector. This means you can
+            explicitly create any cluster topology you want.
+        </para>
     </section>
     <section id="clusters.message-redistribution">
         <title>Message Redistribution</title>
