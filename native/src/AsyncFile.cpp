@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <libaio.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "AsyncFile.h"
 #include "AIOController.h"
 #include "AIOException.h"
