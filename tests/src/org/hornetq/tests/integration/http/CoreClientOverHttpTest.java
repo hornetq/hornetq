@@ -13,6 +13,7 @@
 package org.hornetq.tests.integration.http;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import junit.framework.Assert;
 
@@ -127,4 +128,80 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.stop();
    }
+
+   //https://issues.jboss.org/browse/JBPAPP-5542
+   public void testCoreHttpClient8kPlus() throws Exception
+   {
+      final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
+
+      Configuration conf = new ConfigurationImpl();
+
+      conf.setSecurityEnabled(false);
+
+      HashMap<String, Object> params = new HashMap<String, Object>();
+      params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+
+      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+
+      server.start();
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      String[] content = new String[numMessages];
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
+                                                             false,
+                                                             0,
+                                                             System.currentTimeMillis(),
+                                                             (byte)1);
+         content[i] = this.getFixedSizeString(i*1024*8);
+         message.getBodyBuffer().writeString(content[i]);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+
+      session.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive();
+
+         Assert.assertEquals(content[i], message2.getBodyBuffer().readString());
+
+         message2.acknowledge();
+      }
+
+      session.close();
+
+      locator.close();
+
+      server.stop();
+   }
+
+   private String getFixedSizeString(int size)
+   {
+      StringBuffer sb = new StringBuffer();
+      Random r = new Random();
+      for (int i = 0; i < size; i++)
+      {
+         char chr = (char)r.nextInt(256);
+         sb.append(chr);
+      }
+      String result = sb.toString();
+      return result;
+   }
+
 }

@@ -66,6 +66,7 @@ import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
 import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
+import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -354,6 +355,8 @@ public class NettyConnector implements Connector
                handlers.add(new HttpRequestEncoder());
 
                handlers.add(new HttpResponseDecoder());
+               
+               handlers.add(new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.add(new HttpHandler());
             }

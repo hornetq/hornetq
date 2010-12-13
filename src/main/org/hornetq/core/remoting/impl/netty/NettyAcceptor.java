@@ -347,6 +347,8 @@ public class NettyAcceptor implements Acceptor
             if (httpEnabled)
             {
                handlers.put("http-decoder", new HttpRequestDecoder());
+               
+               handlers.put("http-aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.put("http-encoder", new HttpResponseEncoder());
 
