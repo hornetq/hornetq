@@ -28,6 +28,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;

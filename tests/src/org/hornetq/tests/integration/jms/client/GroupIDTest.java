@@ -18,9 +18,9 @@ import javax.jms.Message;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A GroupIDTest

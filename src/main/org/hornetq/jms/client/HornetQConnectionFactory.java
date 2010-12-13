@@ -31,10 +31,10 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * HornetQ implementation of a JMS ConnectionFactory.

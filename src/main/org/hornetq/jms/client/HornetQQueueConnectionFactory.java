@@ -18,7 +18,7 @@ import javax.jms.QueueConnectionFactory;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.jms.server.impl.JMSFactoryType;
+import org.hornetq.api.jms.JMSFactoryType;
 
 /**
  * A class that represents a QueueConnectionFactory.

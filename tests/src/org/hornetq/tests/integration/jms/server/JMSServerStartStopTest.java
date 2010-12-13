@@ -24,6 +24,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -31,7 +32,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;

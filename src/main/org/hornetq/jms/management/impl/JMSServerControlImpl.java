@@ -31,6 +31,7 @@ import javax.management.NotificationListener;
 import javax.management.StandardMBean;
 
 import org.hornetq.api.core.management.Parameter;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.DestinationControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
@@ -43,7 +44,6 @@ import org.hornetq.core.server.ServerSession;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;

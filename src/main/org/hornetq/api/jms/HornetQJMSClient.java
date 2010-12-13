@@ -26,7 +26,6 @@ import org.hornetq.jms.client.HornetQTopicConnectionFactory;
 import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.jms.client.HornetQXAQueueConnectionFactory;
 import org.hornetq.jms.client.HornetQXATopicConnectionFactory;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * A utility class for creating HornetQ client-side JMS managed resources.

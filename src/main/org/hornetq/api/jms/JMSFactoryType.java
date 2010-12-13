@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.server.impl;
+package org.hornetq.api.jms;
 
 /**
  * A JMSFactoryType

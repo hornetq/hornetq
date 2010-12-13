@@ -23,9 +23,9 @@ import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * Safeguards for previously detected TCK failures.

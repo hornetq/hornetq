@@ -38,6 +38,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
@@ -56,7 +57,6 @@ import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQXAConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;

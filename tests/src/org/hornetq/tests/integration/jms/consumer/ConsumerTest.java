@@ -28,11 +28,11 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.HornetQJMSConstants;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**

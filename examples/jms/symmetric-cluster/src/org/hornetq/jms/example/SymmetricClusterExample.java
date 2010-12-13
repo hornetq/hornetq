@@ -23,8 +23,8 @@ import javax.jms.Topic;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each node

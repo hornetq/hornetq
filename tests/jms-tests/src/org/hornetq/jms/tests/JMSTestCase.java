@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import javax.naming.InitialContext;
 
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 import org.hornetq.jms.client.HornetQTopicConnectionFactory;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

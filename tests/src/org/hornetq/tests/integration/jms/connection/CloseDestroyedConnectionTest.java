@@ -24,11 +24,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
 

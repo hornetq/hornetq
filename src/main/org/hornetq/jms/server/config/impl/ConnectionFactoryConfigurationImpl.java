@@ -19,8 +19,8 @@ import java.util.List;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.utils.BufferHelper;
 import org.hornetq.utils.DataConstants;
 

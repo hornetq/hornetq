@@ -30,6 +30,7 @@ import javax.jms.TextMessage;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
@@ -43,7 +44,6 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
-import org.hornetq.jms.server.impl.JMSFactoryType;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
