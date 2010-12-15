@@ -54,6 +54,8 @@ public class JMSServerDeployer extends XmlDeployer
 
    protected static final String TOPIC_NODE_NAME = "topic";
 
+   protected static final String JMX_DOMAIN_NAME = "jmx-domain";
+
    protected static final boolean DEFAULT_QUEUE_DURABILITY = true;
 
    public JMSServerDeployer(final JMSServerManager jmsServerManager,

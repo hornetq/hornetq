@@ -10,6 +10,7 @@
    <xsd:element name="configuration">
    	<xsd:complexType>
    		<xsd:sequence>
+            <xsd:element ref="jmx-domain" minOccurs="0" maxOccurs="1"/>
    			<xsd:element ref="connection-factory"
    				maxOccurs="unbounded" minOccurs="0">
    			</xsd:element>
@@ -22,6 +23,8 @@
    		</xsd:sequence>
    	</xsd:complexType>
    </xsd:element>
+
+   <xsd:element name="jmx-domain" type="xsd:string"/> 
 
    <xsd:element name="connection-factory">
    	<xsd:complexType>

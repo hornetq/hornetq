@@ -25,6 +25,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.server.JMSServerConfigParser;
@@ -90,6 +91,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
       ArrayList<JMSQueueConfiguration> queues = new ArrayList<JMSQueueConfiguration>();
       ArrayList<TopicConfiguration> topics = new ArrayList<TopicConfiguration>();
       ArrayList<ConnectionFactoryConfiguration> cfs = new ArrayList<ConnectionFactoryConfiguration>();
+      String domain = ConfigurationImpl.DEFAULT_JMX_DOMAIN;
 
       Element e = (Element)rootnode;
 
@@ -97,7 +99,7 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
 
       String elements[] = new String[] { JMSServerDeployer.QUEUE_NODE_NAME,
                                         JMSServerDeployer.TOPIC_NODE_NAME,
-                                        JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME };
+                                        JMSServerDeployer.CONNECTION_FACTORY_NODE_NAME};
       for (String element : elements)
       {
          NodeList children = e.getElementsByTagName(element);
@@ -126,7 +128,10 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
          }
       }
 
-      JMSConfiguration value = newConfig(queues, topics, cfs);
+      domain = XMLConfigurationUtil.getString(e, JMSServerDeployer.JMX_DOMAIN_NAME, ConfigurationImpl.DEFAULT_JMX_DOMAIN, Validators.NO_CHECK);
+
+
+      JMSConfiguration value = newConfig(queues, topics, cfs, domain);
 
       return value;
    }
@@ -521,13 +526,14 @@ public class JMSServerConfigParserImpl implements JMSServerConfigParser
     * @param queues
     * @param topics
     * @param cfs
+    * @param domain
     * @return
     */
    protected JMSConfiguration newConfig(final ArrayList<JMSQueueConfiguration> queues,
                                         final ArrayList<TopicConfiguration> topics,
-                                        final ArrayList<ConnectionFactoryConfiguration> cfs)
+                                        final ArrayList<ConnectionFactoryConfiguration> cfs, String domain)
    {
-      JMSConfiguration value = new JMSConfigurationImpl(cfs, queues, topics);
+      JMSConfiguration value = new JMSConfigurationImpl(cfs, queues, topics, domain);
       return value;
    }
 

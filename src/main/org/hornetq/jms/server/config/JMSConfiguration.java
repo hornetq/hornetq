@@ -35,4 +35,6 @@ public interface JMSConfiguration
    List<TopicConfiguration> getTopicConfigurations();
 
    List<ConnectionFactoryConfiguration> getConnectionFactoryConfigurations();
+
+   String getDomain();
 }

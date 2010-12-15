@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.naming.Context;
 
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.JMSConfiguration;
 import org.hornetq.jms.server.config.JMSQueueConfiguration;
@@ -40,6 +41,8 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    private final List<TopicConfiguration> topicConfigurations = new ArrayList<TopicConfiguration>();
 
+   private final String domain;
+
    private Context context = null;
 
    // Constants -----------------------------------------------------
@@ -52,15 +55,18 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    public JMSConfigurationImpl()
    {
+      domain = null;
    }
 
    public JMSConfigurationImpl(final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations,
                                final List<JMSQueueConfiguration> queueConfigurations,
-                               final List<TopicConfiguration> topicConfigurations)
+                               final List<TopicConfiguration> topicConfigurations,
+                               final String domain)
    {
       this.connectionFactoryConfigurations.addAll(connectionFactoryConfigurations);
       this.queueConfigurations.addAll(queueConfigurations);
       this.topicConfigurations.addAll(topicConfigurations);
+      this.domain = domain;
    }
 
    // JMSConfiguration implementation -------------------------------
@@ -88,6 +94,11 @@ public class JMSConfigurationImpl implements JMSConfiguration
    public void setContext(final Context context)
    {
       this.context = context;
+   }
+
+   public String getDomain()
+   {
+      return domain;
    }
 
    // Public --------------------------------------------------------
