@@ -13,7 +13,7 @@
   -->
 
 <project default="upload" name="HornetQ">
-   <property name="hornetq.version" value="2.2.0.QA-10035"/>
+   <property name="hornetq.version" value="2.2.0.QA-10041"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
@@ -107,42 +107,55 @@
    <target name="install">
       <antcall target="upload-local-target">
           <param name="artifact.id" value="hornetq-resources"/>
+      	  <param name="file-name" value="hornetq-resources"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-jms"/>
+        <param name="artifact.id" value="hornetq-jms"/>
+        <param name="file-name" value="hornetq-jms"/>
+      </antcall>
+
+
+      <!-- we upload the JDK1.5 version since that should be compatible with both JDK 1.6 and 1.5 -->
+      <antcall target="upload-local-target">
+        <param name="artifact.id" value="hornetq-jms-client"/>
+        <param name="file-name" value="hornetq-jms-client-java5"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-jms-client"/>
+        <param name="artifact.id" value="hornetq-core"/>
+        <param name="file-name" value="hornetq-core"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-core"/>
+        <param name="artifact.id" value="hornetq-jboss-as-integration"/>
+        <param name="file-name" value="hornetq-jboss-as-integration"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-jboss-as-integration"/>
+        <param name="artifact.id" value="hornetq-bootstrap"/>
+        <param name="file-name" value="hornetq-bootstrap"/>
       </antcall>
 
-      <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-bootstrap"/>
-      </antcall>
-
+      <!-- we upload the JDK1.5 version since that should be compatible with both JDK 1.6 and 1.5 -->
       <antcall target="upload-local-target">
           <param name="artifact.id" value="hornetq-core-client"/>
+        <param name="file-name" value="hornetq-core-client-java5"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-logging"/>
+        <param name="artifact.id" value="hornetq-logging"/>
+        <param name="file-name" value="hornetq-logging"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-ra"/>
+        <param name="artifact.id" value="hornetq-ra"/>
+        <param name="file-name" value="hornetq-ra"/>
       </antcall>
 
       <antcall target="upload-local-target">
-          <param name="artifact.id" value="hornetq-spring-integration"/>
+        <param name="artifact.id" value="hornetq-spring-integration"/>
+        <param name="file-name" value="hornetq-spring-integration"/>
       </antcall>
 
    </target>
@@ -157,7 +170,7 @@
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
         <arg value="-Dpackaging=jar"/>
-        <arg value="-Dfile=./jars/${artifact.id}.jar"/>
+        <arg value="-Dfile=./jars/${file-name}.jar"/>
        </exec>
        <!-- install the sources jar -->
        <exec executable="mvn" dir="./build">
@@ -169,7 +182,7 @@
         <arg value="-Dversion=${hornetq.version}"/>
         <arg value="-Dpackaging=jar"/>
         <arg value="-Dclassifier=sources"/>
-        <arg value="-Dfile=./jars/${artifact.id}-sources.jar"/>
+        <arg value="-Dfile=./jars/${file-name}-sources.jar"/>
        </exec>
    </target>
 
@@ -208,42 +221,54 @@
    	
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-resources"/>
+        <param name="file-name" value="hornetq-resources"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-jms"/>
+        <param name="file-name" value="hornetq-jms"/>
     </antcall>
 
+    <!-- we upload the JDK1.5 version since that should be compatible with both JDK 1.6 and 1.5 -->
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-jms-client"/>
+        <param name="file-name" value="hornetq-jms-client-java5"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-core"/>
+        <param name="file-name" value="hornetq-core"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-jboss-as-integration"/>
+        <param name="file-name" value="hornetq-jboss-as-integration"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-bootstrap"/>
+        <param name="file-name" value="hornetq-bootstrap"/>
     </antcall>
-
+ 
+    <!-- we upload the JDK1.5 version since that should be compatible with both JDK 1.6 and 1.5 -->
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-core-client"/>
+        <param name="file-name" value="hornetq-core-client-java5"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-logging"/>
+        <param name="file-name" value="hornetq-logging"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-ra"/>
+        <param name="file-name" value="hornetq-ra"/>
     </antcall>
 
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-spring-integration"/>
+        <param name="file-name" value="hornetq-spring-integration"/>
     </antcall>
 
    </target>
@@ -266,7 +291,7 @@
      <arg value="-DartifactId=${artifact.id}"/>
      <arg value="-Dversion=${hornetq.version}"/>
      <arg value="-Dpackaging=jar"/>
-     <arg value="-Dfile=./build/jars/${artifact.id}.jar"/>
+     <arg value="-Dfile=./build/jars/${file-name}.jar"/>
      <arg value="-DrepositoryId=jboss-releases-repository"/>
      <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>
@@ -280,7 +305,7 @@
      <arg value="-Dversion=${hornetq.version}"/>
      <arg value="-Dpackaging=jar"/>
      <arg value="-Dclassifier=sources"/>
-     <arg value="-Dfile=./build/jars/${artifact.id}-sources.jar"/>
+     <arg value="-Dfile=./build/jars/${file-name}-sources.jar"/>
      <arg value="-DrepositoryId=jboss-releases-repository"/>
      <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>   	
