@@ -169,13 +169,16 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public void processReload()
    {
-      for (Pair<Long, Integer> incElement : loadList)
+      if (loadList != null)
       {
-         value.addAndGet(incElement.b);
-         incrementRecords.add(incElement.a);
+         for (Pair<Long, Integer> incElement : loadList)
+         {
+            value.addAndGet(incElement.b);
+            incrementRecords.add(incElement.a);
+         }
+         loadList.clear();
+         loadList = null;
       }
-      loadList.clear();
-      loadList = null;
    }
 
    /* (non-Javadoc)

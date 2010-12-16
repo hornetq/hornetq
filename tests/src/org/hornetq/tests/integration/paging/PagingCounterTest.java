@@ -13,14 +13,14 @@
 
 package org.hornetq.tests.integration.paging;
 
+import javax.transaction.xa.Xid;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
-import org.hornetq.core.paging.cursor.impl.PageSubscriptionCounterImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -85,6 +85,66 @@ public class PagingCounterTest extends ServiceTestBase
       }
    }
 
+   public void testCleanupCounter() throws Exception
+   {
+      ClientSessionFactory sf = sl.createSessionFactory();
+      ClientSession session = sf.createSession();
+
+      try
+      {
+         Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
+
+         PageSubscriptionCounter counter = locateCounter(queue);
+
+         StorageManager storage = server.getStorageManager();
+
+         Transaction tx = new TransactionImpl(server.getStorageManager());
+
+         for (int i = 0 ; i < 2100; i++)
+         {
+
+            counter.increment(tx, 1);
+   
+            if (i % 200 == 0)
+            {
+               tx.commit();
+      
+               storage.waitOnOperations();
+
+               assertEquals(i + 1, counter.getValue());
+               
+               tx = new TransactionImpl(server.getStorageManager());
+            }
+         }
+
+         tx.commit();
+         
+         storage.waitOnOperations();
+         
+         assertEquals(2100, counter.getValue());
+         
+         server.stop();
+
+         server = newHornetQServer();
+
+         server.start();
+
+         queue = server.locateQueue(new SimpleString("A1"));
+
+         assertNotNull(queue);
+
+         counter = locateCounter(queue);
+
+         assertEquals(2100, counter.getValue());
+
+      }
+      finally
+      {
+         sf.close();
+         session.close();
+      }
+   }
+
    public void testRestartCounter() throws Exception
    {
       Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
@@ -112,13 +172,13 @@ public class PagingCounterTest extends ServiceTestBase
       server = newHornetQServer();
 
       server.start();
-      
+
       queue = server.locateQueue(new SimpleString("A1"));
-      
+
       assertNotNull(queue);
-      
+
       counter = locateCounter(queue);
-      
+
       assertEquals(1, counter.getValue());
 
    }
@@ -141,34 +201,52 @@ public class PagingCounterTest extends ServiceTestBase
 
    public void testPrepareCounter() throws Exception
    {
-      ClientSessionFactory sf = sl.createSessionFactory();
-      ClientSession session = sf.createSession();
+      Xid xid = newXID();
 
-      try
+      Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
+
+      PageSubscriptionCounter counter = locateCounter(queue);
+
+      StorageManager storage = server.getStorageManager();
+
+      Transaction tx = new TransactionImpl(xid, server.getStorageManager(), 300);
+
+      for (int i = 0 ; i < 2000; i++)
       {
-         Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
-
-         PageSubscriptionCounter counter = locateCounter(queue);
-
-         StorageManager storage = server.getStorageManager();
-
-         Transaction tx = new TransactionImpl(server.getStorageManager());
-
          counter.increment(tx, 1);
-
-         assertEquals(0, counter.getValue());
-
-         tx.commit();
-
-         storage.waitOnOperations();
-
-         assertEquals(1, counter.getValue());
       }
-      finally
-      {
-         sf.close();
-         session.close();
-      }
+
+      assertEquals(0, counter.getValue());
+
+      tx.prepare();
+
+      storage.waitOnOperations();
+
+      assertEquals(0, counter.getValue());
+      
+      server.stop();
+      
+      server = newHornetQServer();
+      
+      server.start();
+      
+      queue = server.locateQueue(new SimpleString("A1"));
+      
+      assertNotNull(queue);
+      
+      counter = locateCounter(queue);
+      
+      tx = server.getResourceManager().removeTransaction(xid);
+      
+      assertNotNull(tx);
+      
+      assertEquals(0, counter.getValue());
+      
+      tx.commit(false);
+      
+      assertEquals(2000, counter.getValue());
+      
+      
    }
 
    // Package protected ---------------------------------------------

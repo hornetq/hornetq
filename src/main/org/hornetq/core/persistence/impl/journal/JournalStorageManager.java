@@ -1064,7 +1064,7 @@ public class JournalStorageManager implements StorageManager
 
                if (sub != null)
                {
-                  sub.getCounter().loadValue(record.id, encoding.value);
+                  sub.getCounter().loadInc(record.id, encoding.value);
                }
                else
                {
@@ -1127,6 +1127,11 @@ public class JournalStorageManager implements StorageManager
       }
 
       loadPreparedTransactions(postOffice, pagingManager, resourceManager, queues, queueInfos, preparedTransactions, duplicateIDMap, pageSubscriptions);
+      
+      for (PageSubscription sub: pageSubscriptions.values())
+      {
+         sub.getCounter().processReload();
+      }
 
       for (LargeServerMessage msg : largeMessages)
       {
