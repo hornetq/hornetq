@@ -119,7 +119,7 @@ public class PagingCounterTest extends ServiceTestBase
       
       counter = locateCounter(queue);
       
-      //assertEquals(1, counter.getValue());
+      assertEquals(1, counter.getValue());
 
    }
 

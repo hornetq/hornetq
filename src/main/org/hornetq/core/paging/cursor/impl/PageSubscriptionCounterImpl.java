@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
@@ -58,6 +59,8 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    private final AtomicLong value = new AtomicLong(0);
 
    private final LinkedList<Long> incrementRecords = new LinkedList<Long>();
+   
+   private LinkedList<Pair<Long, Integer>> loadList;
 
    private final Executor executor;
    
@@ -96,6 +99,22 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public void increment(Transaction tx, int add) throws Exception
    {
+      tx.setContainsPersistent();
+      
+      long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
+
+      replayIncrement(tx, id, add);
+
+   }
+
+   /**
+    * This method will install the prepared TXs
+    * @param tx
+    * @param recordID
+    * @param add
+    */
+   public void replayIncrement(Transaction tx, long recordID, int add)
+   {
       CounterOperations oper = (CounterOperations)tx.getProperty(TransactionPropertyIndexes.PAGE_COUNT_INC);
 
       if (oper == null)
@@ -105,18 +124,16 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          tx.addOperation(oper);
       }
 
-      long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
-
-      oper.operations.add(new ItemOper(this, id, add));
-
+      oper.operations.add(new ItemOper(this, recordID, add));
    }
    
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#loadValue(long, long)
     */
-   public synchronized void loadValue(final long recordValueID, final long value)
+   public synchronized void loadValue(final long recordID, final long value)
    {
       this.value.set(value);
+      this.recordID = recordID;
    }
    
    
@@ -124,14 +141,41 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.impl.PagingSubscriptionCounterInterface#incrementProcessed(long, int)
     */
-   public synchronized void incrementProcessed(long id, int variance)
+   public synchronized void incrementProcessed(long id, int add)
    {
-      addInc(id, variance);
+      addInc(id, add);
       if (incrementRecords.size() > FLUSH_COUNTER)
       {
          executor.execute(cleanupCheck);
       }
 
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#loadInc(long, int)
+    */
+   public void loadInc(long id, int add)
+   {
+      if (loadList == null)
+      {
+         loadList = new LinkedList<Pair<Long,Integer>>();
+      }
+      
+      loadList.add(new Pair<Long, Integer>(id, add));
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.cursor.PageSubscriptionCounter#processReload()
+    */
+   public void processReload()
+   {
+      for (Pair<Long, Integer> incElement : loadList)
+      {
+         value.addAndGet(incElement.b);
+         incrementRecords.add(incElement.a);
+      }
+      loadList.clear();
+      loadList = null;
    }
 
    /* (non-Javadoc)
@@ -211,14 +255,14 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    static class ItemOper
    {
 
-      public ItemOper(PageSubscriptionCounter counter, long id, int add)
+      public ItemOper(PageSubscriptionCounterImpl counter, long id, int add)
       {
          this.counter = counter;
          this.id = id;
          this.ammount = add;
       }
 
-      PageSubscriptionCounter counter;
+      PageSubscriptionCounterImpl counter;
 
       long id;
 

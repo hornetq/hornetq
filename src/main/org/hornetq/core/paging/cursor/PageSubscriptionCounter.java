@@ -25,13 +25,18 @@ import org.hornetq.core.transaction.Transaction;
 public interface PageSubscriptionCounter
 {
 
-   public abstract long getValue();
+   long getValue();
 
-   public abstract void increment(Transaction tx, int add) throws Exception;
+   void increment(Transaction tx, int add) throws Exception;
 
-   public abstract void loadValue(final long recordValueID, final long value);
-
-   public abstract void incrementProcessed(long id, int variance);
+   void loadValue(final long recordValueID, final long value);
+   
+   void loadInc(final long recordInd, final int add);
+   
+   void replayIncrement(Transaction tx, long recordID, int add);
+   
+   /** This will process the reload */
+   void processReload();
 
    /**
     * 
@@ -39,6 +44,6 @@ public interface PageSubscriptionCounter
     * @param id
     * @param variance
     */
-   public abstract void addInc(long id, int variance);
+   void addInc(long id, int variance);
 
 }
