@@ -50,7 +50,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    // the journal record id that is holding the current value
    private long recordID = -1;
 
-   private final boolean persistent;
+   private boolean persistent;
 
    private final StorageManager storage;
 
@@ -100,19 +100,20 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public void increment(Transaction tx, int add) throws Exception
    {
-      tx.setContainsPersistent();
 
-      if (!persistent)
+      if (persistent)
       {
-         replayIncrement(tx, -1, add);
+         tx.setContainsPersistent();
+         long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
+         replayIncrement(tx, id, add);
       }
       else
       {
-         long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
-
-         replayIncrement(tx, id, add);
+         replayIncrement(tx, -1, add);
       }
 
+
+      
    }
 
    /**
@@ -198,6 +199,12 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       {
          incrementRecords.add(id);
       }
+   }
+   
+   /** used on testing only */
+   public void setPersistent(final boolean persistent)
+   {
+      this.persistent = persistent;
    }
 
    /** This method sould alwas be called from a single threaded executor */

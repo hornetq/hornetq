@@ -21,6 +21,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
+import org.hornetq.core.paging.cursor.impl.PageSubscriptionCounterImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -136,6 +137,69 @@ public class PagingCounterTest extends ServiceTestBase
          counter = locateCounter(queue);
 
          assertEquals(2100, counter.getValue());
+
+      }
+      finally
+      {
+         sf.close();
+         session.close();
+      }
+   }
+
+
+   public void testCleanupCounterNonPersistent() throws Exception
+   {
+      ClientSessionFactory sf = sl.createSessionFactory();
+      ClientSession session = sf.createSession();
+
+      try
+      {
+         Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
+
+         PageSubscriptionCounter counter = locateCounter(queue);
+         
+         ((PageSubscriptionCounterImpl)counter).setPersistent(false);
+
+         StorageManager storage = server.getStorageManager();
+
+         Transaction tx = new TransactionImpl(server.getStorageManager());
+
+         for (int i = 0 ; i < 2100; i++)
+         {
+
+            counter.increment(tx, 1);
+   
+            if (i % 200 == 0)
+            {
+               tx.commit();
+      
+               storage.waitOnOperations();
+
+               assertEquals(i + 1, counter.getValue());
+               
+               tx = new TransactionImpl(server.getStorageManager());
+            }
+         }
+
+         tx.commit();
+         
+         storage.waitOnOperations();
+         
+         assertEquals(2100, counter.getValue());
+         
+         server.stop();
+
+         server = newHornetQServer();
+
+         server.start();
+
+         queue = server.locateQueue(new SimpleString("A1"));
+
+         assertNotNull(queue);
+
+         counter = locateCounter(queue);
+
+         assertEquals(0, counter.getValue());
 
       }
       finally

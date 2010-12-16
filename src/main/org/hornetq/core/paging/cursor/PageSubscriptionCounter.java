@@ -40,7 +40,6 @@ public interface PageSubscriptionCounter
 
    /**
     * 
-    * This method is also used by Journal.loadMessageJournal
     * @param id
     * @param variance
     */
