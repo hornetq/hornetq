@@ -34,12 +34,8 @@
          <title>Colocated Live and Backup in Symmetrical cluster</title>
          <para>
             The colocated symmetrical topology will be the most widely used topology, this is where an EAP instance has
-            a
-            live
-            node running plus 1 or
-            more backup nodes. Each backup node will belong to a live node on another EAP instance. In a simple cluster
-            of
-            2
+            a live node running plus 1 or more backup nodes. Each backup node will belong to a live node on another EAP
+            instance. In a simple cluster o  2
             EAP instances this would mean that each EAP instance would have a live server and 1 backup server as in
             diagram1.
          </para>
@@ -51,13 +47,16 @@
             configured
             with 2 backups, 1 for each of the other live servers, or you may just want to have 1 backup for each live.
          </para>
+         <para>
+            The reason for having the backup server colocated is so they work with MDB's, when a back up server comes ive
+            it forwards any messages to the live server who deals with them in the normal fashion. If your application was
+            pure JMS you could, if chosen, use a dedicated backup server.
+         </para>
          <section>
             <title>Configuration</title>
             <para>
                First lets start with the configuration of the live server, we will use the EAP 'all' configuration as
-               our
-               starting
-               point. Since this version only supports shared store for failover we need to configure this in the
+               our starting point. Since this version only supports shared store for failover we need to configure this in the
                <literal>hornetq-configuration.xml</literal>
                file like so:
             </para>
@@ -74,16 +73,16 @@
                something like:
             </para>
             <programlisting>
-               &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
-               &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
-               &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
-               &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
+   &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
+   &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
+   &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
+   &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
             </programlisting>
             <para>
                How these paths are configured will of course depend on your network settings or file system.
             </para>
             <para>
-               Now we need to configure how remote JMS clients wull behave if the server is shutdown in a normal
+               Now we need to configure how remote JMS clients will behave if the server is shutdown in a normal
                fashion.
                By
                default
@@ -97,7 +96,7 @@
                file like so:
             </para>
             <programlisting>
-               &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
+   &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
             </programlisting>
             <para>Don't worry if you have this set to false (which is the default) but still want failover to occur,
                simply
@@ -124,44 +123,43 @@
                directory but in reality it doesn't matter where this is put. This will look like:
             </para>
             <programlisting>
-               &lt;?xml version="1.0" encoding="UTF-8"?>
+   &lt;?xml version="1.0" encoding="UTF-8"?>
 
-               &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+   &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-               &lt;!-- The core configuration -->
-               &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
-               &lt;property
-               name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
-               &lt;/bean>
+      &lt;!-- The core configuration -->
+      &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
+         &lt;property name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
+      &lt;/bean>
 
 
-               &lt;!-- The core server -->
-               &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
-               &lt;constructor>
-               &lt;parameter>
+      &lt;!-- The core server -->
+      &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+         &lt;constructor>
+            &lt;parameter>
                &lt;inject bean="BackupConfiguration"/>
-               &lt;/parameter>
-               &lt;parameter>
+            &lt;/parameter>
+            &lt;parameter>
                &lt;inject bean="MBeanServer"/>
-               &lt;/parameter>
-               &lt;parameter>
+            &lt;/parameter>
+            &lt;parameter>
                &lt;inject bean="HornetQSecurityManager"/>
-               &lt;/parameter>
-               &lt;/constructor>
-               &lt;start ignored="true"/>
-               &lt;stop ignored="true"/>
-               &lt;/bean>
+            &lt;/parameter>
+         &lt;/constructor>
+         &lt;start ignored="true"/>
+         &lt;stop ignored="true"/>
+      &lt;/bean>
 
-               &lt;!-- The JMS server -->
-               &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
-               &lt;constructor>
-               &lt;parameter>
+      &lt;!-- The JMS server -->
+      &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+         &lt;constructor>
+            &lt;parameter>
                &lt;inject bean="BackupHornetQServer"/>
-               &lt;/parameter>
-               &lt;/constructor>
-               &lt;/bean>
+            &lt;/parameter>
+         &lt;/constructor>
+      &lt;/bean>
 
-               &lt;/deployment>
+   &lt;/deployment>
             </programlisting>
             <para>
                The first thing to notice is the BackupConfiguration bean. This is configured to pick up the
@@ -198,6 +196,8 @@
          &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
 
          &lt;clustered>true&lt;/clustered>
+
+         &lt;backup>true&lt;/backup>
 
          &lt;shared-store>true&lt;/shared-store>
 
@@ -321,6 +321,10 @@
                to avoid naming clashes with the live server
             </para>
             <para>
+               The first important part of the configuration is to make sure that this server starts as a backup server not
+               a live server, via the <literal>backup</literal> attribute.
+            </para>
+            <para>
                After that we have the same cluster configuration as live, that is <literal>clustered</literal> is true and
                <literal>shared-store</literal> is true. However you can see we have added a new configuration element
                <literal>allow-failback</literal>. When this is set to true then this backup server will automatically stop
@@ -377,6 +381,11 @@
       </section>
       <section>
          <title>Dedicated Live and Backup in Symmetrical cluster</title>
+         <para>
+            In reality the configuration for this is exactly the same as in the previous section, the only difference is
+            that a backup will reside on an eap instance of its own. of course this means that the eap instance is passive
+            and not used until the backup comes live and is only really useful for pure JMS applications.
+         </para>
       </section>
    </section>
 </chapter>
