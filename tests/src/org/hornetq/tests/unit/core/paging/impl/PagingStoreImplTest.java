@@ -1590,6 +1590,42 @@ public class PagingStoreImplTest extends UnitTestCase
 
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounter(long, long, long)
+       */
+      public long storePageCounter(long txID, long queueID, long value) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
+       */
+      public void deleteIncrementRecord(long txID, long recordID) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
+       */
+      public void deletePageCounter(long txID, long recordID) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, long, int)
+       */
+      public long storePageCounterInc(long txID, long queueID, int add) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
    }
 
    class FakeStoreFactory implements PagingStoreFactory

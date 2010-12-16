@@ -52,8 +52,8 @@ import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagePosition;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -75,9 +75,9 @@ import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
@@ -138,6 +138,10 @@ public class JournalStorageManager implements StorageManager
    public static final byte HEURISTIC_COMPLETION = 38;
 
    public static final byte ACKNOWLEDGE_CURSOR = 39;
+   
+   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
+   
+   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
    private UUID persistentID;
 
@@ -1166,7 +1170,48 @@ public class JournalStorageManager implements StorageManager
    {
       bindingsJournal.appendDeleteRecord(queueBindingID, true);
    }
+   
+   
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
+    */
+   public long storePageCounterInc(long txID, long queueID, int value) throws Exception
+   {
+      long recordID = idGenerator.generateID();
+      messageJournal.appendAddRecordTransactional(txID, recordID, JournalStorageManager.PAGE_CURSOR_COUNTER_INC, new PageCountRecord(queueID, value));
+      return recordID;
+   }
+
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCounter(long, long, long)
+    */
+   public long storePageCounter(long txID, long queueID, long value) throws Exception
+   {
+      long recordID = idGenerator.generateID();
+      messageJournal.appendAddRecordTransactional(txID, recordID, JournalStorageManager.PAGE_CURSOR_COUNTER_VALUE, new PageCountRecord(queueID, value));
+      return recordID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deleteIncrementRecord(long, long)
+    */
+   public void deleteIncrementRecord(long txID, long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
+    */
+   public void deletePageCounter(long txID, long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+   }
+   
+   
+   
    public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
                                                     final List<GroupingInfo> groupingInfos) throws Exception
    {
@@ -2253,6 +2298,52 @@ public class JournalStorageManager implements StorageManager
 
    }
    
+   private static final class PageCountRecord implements EncodingSupport
+   {
+      
+      PageCountRecord()
+      {
+         
+      }
+      
+      PageCountRecord(long queueID, long value)
+      {
+         this.queueID = queueID;
+         this.value = value;
+      }
+      
+      long queueID;
+      
+      long value;
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG * 2;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeLong(queueID);
+         buffer.writeLong(value);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void decode(HornetQBuffer buffer)
+      {
+         queueID = buffer.readLong();
+         value = buffer.readLong();
+      }
+      
+      
+   }
 
    private static final class AddMessageRecord
    {

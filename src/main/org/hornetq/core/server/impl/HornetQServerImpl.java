@@ -22,8 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-	import java.util.Map.Entry;
-import java.util.Set;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -83,7 +82,15 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.security.impl.SecurityStoreImpl;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.ActivateCallback;
+import org.hornetq.core.server.Bindable;
+import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.MemoryManager;
+import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
@@ -955,6 +962,20 @@ public class HornetQServerImpl implements HornetQServer
                             final boolean temporary) throws Exception
    {
       return createQueue(address, queueName, filterString, durable, temporary, false);
+   }
+   
+   public Queue locateQueue(SimpleString queueName) throws Exception
+   {
+      Binding binding = postOffice.getBinding(queueName);
+      
+      Bindable queue = binding.getBindable();
+      
+      if (!(queue instanceof Queue))
+      {
+         throw new IllegalStateException("locateQueue should only be used to locate queues");
+      }
+      
+      return (Queue) binding.getBindable();
    }
 
    public Queue deployQueue(final SimpleString address,

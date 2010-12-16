@@ -135,6 +135,8 @@ public interface HornetQServer extends HornetQComponent
                      SimpleString filterString,
                      boolean durable,
                      boolean temporary) throws Exception;
+   
+   Queue locateQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 

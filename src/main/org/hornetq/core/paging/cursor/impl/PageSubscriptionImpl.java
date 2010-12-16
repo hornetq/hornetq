@@ -39,6 +39,7 @@ import org.hornetq.core.paging.cursor.PageCache;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
+import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.MessageReference;
@@ -98,6 +99,8 @@ public class PageSubscriptionImpl implements PageSubscription
    private List<PagePosition> recoveredACK;
 
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
+   
+   private final PageSubscriptionCounter counter;
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
@@ -121,6 +124,7 @@ public class PageSubscriptionImpl implements PageSubscription
       this.executor = executor;
       this.filter = filter;
       this.persistent = persistent;
+      this.counter = new PageSubscriptionCounterImpl(store, persistent, cursorId, executor);
    }
 
    // Public --------------------------------------------------------
@@ -167,6 +171,11 @@ public class PageSubscriptionImpl implements PageSubscription
       ack(position);
    }
 
+   public PageSubscriptionCounter getCounter()
+   {
+      return counter;
+   }
+   
    public void scheduleCleanupCheck()
    {
       if (autoCleanup)

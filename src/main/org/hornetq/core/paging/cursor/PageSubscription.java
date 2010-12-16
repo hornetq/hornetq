@@ -33,7 +33,10 @@ public interface PageSubscription
    // To be called before the server is down
    void stop();
 
+   // TODO: this method is only used on testcases and can go away
    void bookmark(PagePosition position) throws Exception;
+   
+   PageSubscriptionCounter getCounter();
 
    long getId();
 

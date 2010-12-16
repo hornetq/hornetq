@@ -39,7 +39,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.utils.UUID;
 
 /**
  * 
@@ -190,4 +189,21 @@ public interface StorageManager extends HornetQComponent
    void deleteSecurityRoles(SimpleString addressMatch) throws Exception;
 
    List<PersistedRoles> recoverPersistedRoles() throws Exception;
+   
+   /** 
+    * @return The ID with the stored counter
+    */
+   long storePageCounter(long txID, long queueID, long value) throws Exception;
+   
+   void deleteIncrementRecord(long txID, long recordID) throws Exception;
+   
+   void deletePageCounter(long txID, long recordID) throws Exception;
+
+   /**
+    * @return the ID with the increment record
+    * @throws Exception 
+    */
+   long storePageCounterInc(long txID, long queueID, int add) throws Exception;
+   
+   
 }
