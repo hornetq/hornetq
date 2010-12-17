@@ -308,6 +308,8 @@ public class PagingCounterTest extends ServiceTestBase
       
       tx.commit(false);
       
+      storage.waitOnOperations();
+      
       assertEquals(2000, counter.getValue());
       
       
