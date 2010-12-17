@@ -13,7 +13,6 @@
 
 package org.hornetq.api.jms.management;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
