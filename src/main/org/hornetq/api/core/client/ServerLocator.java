@@ -28,6 +28,15 @@ import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
  */
 public interface ServerLocator
 {
+   
+   /**
+    * This method will disable any checks when a GarbageCollection happens leaving connections open.
+    * The JMS Layer will make specific usage of this method, since the ConnectionFactory.finalize should release this.
+    * 
+    * Warn: You may leave resources unnatended if you call this method and don't take care of cleaning the resources yourself.
+    */
+   void disableFinalizeCheck();
+   
    /**
     * Create a ClientSessionFactory using whatever load balancing policy is in force
     * @return The ClientSessionFactory

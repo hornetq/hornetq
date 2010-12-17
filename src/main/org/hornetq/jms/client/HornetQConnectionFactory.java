@@ -75,6 +75,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    public HornetQConnectionFactory(final ServerLocator serverLocator)
    {
       this.serverLocator = serverLocator;
+      
+      serverLocator.disableFinalizeCheck();
    }
 
    public HornetQConnectionFactory(final boolean ha, final DiscoveryGroupConfiguration groupConfiguration)
@@ -87,6 +89,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          serverLocator = HornetQClient.createServerLocatorWithoutHA(groupConfiguration);
       }
+      
+      serverLocator.disableFinalizeCheck();
    }
 
    public HornetQConnectionFactory(final boolean ha, final TransportConfiguration... initialConnectors)
@@ -99,6 +103,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          serverLocator = HornetQClient.createServerLocatorWithoutHA(initialConnectors);
       }
+      
+      serverLocator.disableFinalizeCheck();
    }
 
    // ConnectionFactory implementation -------------------------------------------------------------
@@ -709,6 +715,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       }
       catch (Exception e)
       {
+         e.printStackTrace();
          //not much we can do here
       }
       super.finalize();
