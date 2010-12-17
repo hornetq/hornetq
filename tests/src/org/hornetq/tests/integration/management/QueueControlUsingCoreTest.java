@@ -71,7 +71,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public long countMessages(final String filter) throws Exception
          {
-            return (Long)proxy.invokeOperation("countMessages", filter);
+            return ((Number)proxy.invokeOperation("countMessages", filter)).longValue();
          }
 
          public boolean expireMessage(final long messageID) throws Exception
@@ -116,7 +116,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public long getMessageCount()
          {
-            return (Long)proxy.retrieveAttributeValue("messageCount");
+            return ((Number)proxy.retrieveAttributeValue("messageCount")).longValue();
          }
 
          public long getMessagesAdded()

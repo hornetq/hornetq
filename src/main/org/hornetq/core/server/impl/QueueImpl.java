@@ -659,7 +659,14 @@ public class QueueImpl implements Queue
 
       synchronized (this)
       {
-         return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getCounter().getValue();
+         if (pageSubscription != null)
+         {
+            return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getCounter().getValue();
+         }
+         else
+         {
+            return messageReferences.size() + getScheduledCount() + getDeliveringCount();
+         }
       }
    }
 
