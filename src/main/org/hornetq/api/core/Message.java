@@ -67,6 +67,8 @@ public interface Message
    public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
    
    public static final SimpleString HDR_LARGE_COMPRESSED = new SimpleString("_HQ_LARGE_COMPRESSED");
+   
+   public static final SimpleString HDR_LARGE_BODY_SIZE = new SimpleString("_HQ_LARGE_SIZE");
 
    public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
 

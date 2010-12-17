@@ -16,6 +16,7 @@ package org.hornetq.tests.unit.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
 import org.hornetq.tests.util.UnitTestCase;
@@ -39,7 +40,8 @@ public class CompressionUtilTest extends UnitTestCase
 
       ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
       
-      DeflaterReader reader = new DeflaterReader(inputStream);
+      AtomicLong counter = new AtomicLong(0);
+      DeflaterReader reader = new DeflaterReader(inputStream, counter);
 
       ArrayList<Integer> zipHolder = new ArrayList<Integer>();
       int b = reader.read();
@@ -49,6 +51,8 @@ public class CompressionUtilTest extends UnitTestCase
          zipHolder.add(b);
          b = reader.read();
       }
+      
+      assertEquals(input.length, counter.get());
       
       byte[] allCompressed = new byte[zipHolder.size()];
       for (int i = 0; i < allCompressed.length; i++)
@@ -71,8 +75,9 @@ public class CompressionUtilTest extends UnitTestCase
       byte[] input = inputString.getBytes("UTF-8");
 
       ByteArrayInputStream inputStream = new ByteArrayInputStream(input);
-      
-      DeflaterReader reader = new DeflaterReader(inputStream);
+      AtomicLong counter = new AtomicLong(0);
+    
+      DeflaterReader reader = new DeflaterReader(inputStream, counter);
 
       byte[] buffer = new byte[7];
       ArrayList<Integer> zipHolder = new ArrayList<Integer>();
@@ -86,6 +91,8 @@ public class CompressionUtilTest extends UnitTestCase
          }
          n = reader.read(buffer);
       }
+      
+      assertEquals(input.length, counter.get());
       
       byte[] allCompressed = new byte[zipHolder.size()];
       for (int i = 0; i < allCompressed.length; i++)

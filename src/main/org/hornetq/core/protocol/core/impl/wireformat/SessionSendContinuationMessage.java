@@ -33,7 +33,12 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    // Attributes ----------------------------------------------------
 
    private boolean requiresResponse;
-
+   
+   /**
+    * to be sent on the last package
+    */
+   private long messageBodySize = -1;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -54,6 +59,17 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
       this.requiresResponse = requiresResponse;
    }
 
+   /**
+    * @param body
+    * @param continues
+    * @param requiresResponse
+    */
+   public SessionSendContinuationMessage(final byte[] body, final boolean continues, final boolean requiresResponse, final long messageBodySize)
+   {
+      this(body, continues, requiresResponse);
+      this.messageBodySize = messageBodySize;
+   }
+
    // Public --------------------------------------------------------
 
    /**
@@ -63,11 +79,20 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    {
       return requiresResponse;
    }
+   
+   public long getMessageBodySize()
+   {
+      return messageBodySize;
+   }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       super.encodeRest(buffer);
+      if (!continues)
+      {
+         buffer.writeLong(messageBodySize);
+      }
       buffer.writeBoolean(requiresResponse);
    }
 
@@ -75,6 +100,10 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    public void decodeRest(final HornetQBuffer buffer)
    {
       super.decodeRest(buffer);
+      if (!continues)
+      {
+         messageBodySize = buffer.readLong();
+      }
       requiresResponse = buffer.readBoolean();
    }
 

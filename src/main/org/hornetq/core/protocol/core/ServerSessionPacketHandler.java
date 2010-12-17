@@ -458,7 +458,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                {
                   SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
                   requiresResponse = message.isRequiresResponse();
-                  session.sendContinuations(message.getPacketSize(), message.getBody(), message.isContinues());
+                  session.sendContinuations(message.getPacketSize(), message.getMessageBodySize(), message.getBody(), message.isContinues());
                   if (requiresResponse)
                   {
                      response = new NullResponseMessage();

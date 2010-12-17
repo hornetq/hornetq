@@ -407,8 +407,6 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public void doBeforeReceive() throws Exception
    {
       bodyLength = message.getBodySize();
-
-      super.doBeforeReceive();
    }
 
    // HornetQRAMessage overrides ----------------------------------------

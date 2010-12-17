@@ -99,7 +99,7 @@ public interface ServerSession
 
    void receiveConsumerCredits(long consumerID, int credits) throws Exception;
 
-   void sendContinuations(int packetSize, byte[] body, boolean continues) throws Exception;
+   void sendContinuations(int packetSize, long totalBodySize, byte[] body, boolean continues) throws Exception;
 
    void send(ServerMessage message, boolean direct) throws Exception;
 

@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -361,13 +362,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       InputStream input = msgI.getBodyInputStream();
 
-      
       if (msgI.isServerMessage())
       {
          largeMessageSendServer(sendBlocking, msgI, credits);
       }
-      else
-      if (input != null)
+      else if (input != null)
       {
          largeMessageSendStreamed(sendBlocking, msgI, input, credits);
       }
@@ -376,7 +375,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          largeMessageSendBuffered(sendBlocking, msgI, credits);
       }
    }
-   
+
    /**
     * Used to send serverMessages through the bridges.
     * No need to validate compression here since the message is only compressed at the client
@@ -385,8 +384,8 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @throws HornetQException
     */
    private void largeMessageSendServer(final boolean sendBlocking,
-                                         final MessageInternal msgI,
-                                         final ClientProducerCredits credits) throws HornetQException
+                                       final MessageInternal msgI,
+                                       final ClientProducerCredits credits) throws HornetQException
    {
       BodyEncoder context = msgI.getBodyEncoder();
 
@@ -440,8 +439,6 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
    }
 
-   
-
    /**
     * @param sendBlocking
     * @param msgI
@@ -469,10 +466,16 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       InputStream input = inputStreamParameter;
 
+      // We won't know the real size of the message since we are compressing while reading the streaming.
+      // This counter will be passed to the deflater to be updated for every byte read
+      AtomicLong messageSize = new AtomicLong();
+
       if (session.isCompressLargeMessages())
       {
-         input = new DeflaterReader(inputStreamParameter);
+         input = new DeflaterReader(inputStreamParameter, messageSize);
       }
+
+      int totalSize = 0;
 
       while (!lastPacket)
       {
@@ -508,18 +511,30 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          while (pos < minLargeMessageSize);
 
+         totalSize += pos;
+
+         final SessionSendContinuationMessage chunk;
+
          if (lastPacket)
          {
+
+            if (!session.isCompressLargeMessages())
+            {
+               messageSize.set(totalSize);
+            }
+
             byte[] buff2 = new byte[pos];
 
             System.arraycopy(buff, 0, buff2, 0, pos);
 
             buff = buff2;
-         }
 
-         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(buff,
-                                                                                         !lastPacket,
-                                                                                         lastPacket && sendBlocking);
+            chunk = new SessionSendContinuationMessage(buff, false, sendBlocking, messageSize.get());
+         }
+         else
+         {
+            chunk = new SessionSendContinuationMessage(buff, true, false);
+         }
 
          if (sendBlocking && lastPacket)
          {
@@ -551,6 +566,5 @@ public class ClientProducerImpl implements ClientProducerInternal
                                     e);
       }
    }
-
    // Inner Classes --------------------------------------------------------------------------------
 }

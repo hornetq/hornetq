@@ -29,6 +29,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -1022,7 +1023,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
    }
 
-   public void sendContinuations(final int packetSize, final byte[] body, final boolean continues) throws Exception
+   public void sendContinuations(final int packetSize, final long messageBodySize, final byte[] body, final boolean continues) throws Exception
    {
       if (currentLargeMessage == null)
       {
@@ -1037,6 +1038,8 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       if (!continues)
       {
          currentLargeMessage.releaseResources();
+         
+         currentLargeMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, messageBodySize);
 
          doSend(currentLargeMessage, false);
 

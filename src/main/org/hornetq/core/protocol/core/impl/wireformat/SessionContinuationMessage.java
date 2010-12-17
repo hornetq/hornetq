@@ -39,6 +39,7 @@ public abstract class SessionContinuationMessage extends PacketImpl
    protected byte[] body;
 
    protected boolean continues;
+   
 
    // Static --------------------------------------------------------
 

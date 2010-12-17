@@ -940,7 +940,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          
-         locator.setMinLargeMessageSize(111);
+         locator.setMinLargeMessageSize(200);
          
          locator.setCacheLargeMessagesClient(true);
 

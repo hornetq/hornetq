@@ -18,6 +18,7 @@ import java.io.OutputStream;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.core.buffers.impl.ResetLimitWrappedHornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
@@ -38,7 +39,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
 
    // Used only when receiving large messages
    private LargeMessageController largeMessageController;
-   
+
    private long largeMessageSize;
 
    // Static --------------------------------------------------------
@@ -93,7 +94,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    {
       largeMessageController = controller;
    }
-   
+
    public HornetQBuffer getBodyBuffer()
    {
       checkBuffer();
@@ -101,14 +102,10 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       return bodyBuffer;
    }
 
-   
    public int getBodySize()
    {
-      checkBuffer();
-      return buffer.writerIndex() - buffer.readerIndex();
+      return getLongProperty(Message.HDR_LARGE_BODY_SIZE).intValue();
    }
-
-
 
    public LargeMessageController getLargeMessageController()
    {
@@ -160,7 +157,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          return largeMessageController.waitCompletion(timeMilliseconds);
       }
    }
-   
+
    public void discardBody()
    {
       if (bodyBuffer != null)
@@ -173,27 +170,26 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       }
    }
 
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private void checkBuffer()
    {
       if (bodyBuffer == null)
       {
-         
+
          long bodySize = this.largeMessageSize + BODY_OFFSET;
          if (bodySize > Integer.MAX_VALUE)
          {
             bodySize = Integer.MAX_VALUE;
          }
          createBody((int)bodySize);
-         
+
          bodyBuffer = new ResetLimitWrappedHornetQBuffer(BODY_OFFSET, buffer, this);
-         
+
          try
          {
             largeMessageController.saveBuffer(new HornetQOutputStream(bodyBuffer));
@@ -204,14 +200,13 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          }
       }
    }
-   
 
    // Inner classes -------------------------------------------------
-   
+
    protected class HornetQOutputStream extends OutputStream
    {
       HornetQBuffer bufferOut;
-      
+
       HornetQOutputStream(HornetQBuffer out)
       {
          this.bufferOut = out;
@@ -225,7 +220,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       {
          bufferOut.writeByte((byte)(b & 0xff));
       }
-      
+
    }
 
 }

@@ -15,6 +15,7 @@ package org.hornetq.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
 /**
@@ -27,24 +28,28 @@ import java.util.zip.Deflater;
  */
 public class DeflaterReader extends InputStream
 {
-   private Deflater deflater = new Deflater();
+   private final Deflater deflater = new Deflater();
    private boolean isFinished = false;
    private boolean compressDone = false;
 
    private InputStream input;
    
-   public DeflaterReader(InputStream inData)
+   private final AtomicLong bytesRead;
+   
+   public DeflaterReader(final InputStream inData, final AtomicLong bytesRead)
    {
       input = inData;
+      this.bytesRead = bytesRead;
    }
 
+   @Override
    public int read() throws IOException
    {
       byte[] buffer = new byte[1];
       int n = read(buffer, 0, 1);
       if (n == 1)
       {
-         return (int)buffer[0] & 0xFF;
+         return buffer[0] & 0xFF;
       }
       if (n == -1 || n == 0)
       {
@@ -62,7 +67,7 @@ public class DeflaterReader extends InputStream
     * @throws IOException 
     */
    @Override
-   public int read(byte[] buffer, int offset, int len) throws IOException
+   public int read(final byte[] buffer, int offset, int len) throws IOException
    {
       if (compressDone)
       {
@@ -98,6 +103,7 @@ public class DeflaterReader extends InputStream
                }
                else
                {
+                  bytesRead.addAndGet(m);
                   deflater.setInput(readBuffer, 0, m);
                }
             }
