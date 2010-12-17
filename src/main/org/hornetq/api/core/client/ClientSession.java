@@ -74,7 +74,7 @@ public interface ClientSession extends XAResource
       /**
        * Returns the number of messages in the queue.
        */
-      int getMessageCount();
+      long getMessageCount();
 
       /**
        * Returns the queue's filter string (or <code>null</code> if the queue has no filter).

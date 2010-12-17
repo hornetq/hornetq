@@ -282,7 +282,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      // First step: Move every cursor to the next bookmarked page (that was just created)
                      for (PageSubscription cursor : cursorList)
                      {
-                        cursor.ack(new PagePositionImpl(currentPage.getPageId(), -1));
+                        cursor.confirmPosition(new PagePositionImpl(currentPage.getPageId(), -1));
                      }
 
                      storageManager.waitOnOperations();

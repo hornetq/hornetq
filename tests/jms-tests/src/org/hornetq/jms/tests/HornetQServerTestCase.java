@@ -384,7 +384,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    public boolean checkEmpty(final Queue queue) throws Exception
    {
-      Integer messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue(queue.getQueueName());
+      Long messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue(queue.getQueueName());
       if (messageCount > 0)
       {
          removeAllMessages(queue.getQueueName(), true);
@@ -409,7 +409,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    protected boolean assertRemainingMessages(final int expected) throws Exception
    {
-      Integer messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue("Queue1");
+      Long messageCount = HornetQServerTestCase.servers.get(0).getMessageCountForQueue("Queue1");
 
       ProxyAssertSupport.assertEquals(expected, messageCount.intValue());
       return expected == messageCount.intValue();
@@ -501,7 +501,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       return HornetQServerTestCase.servers.get(0).listAllSubscribersForTopic(s);
    }
 
-   protected Integer getMessageCountForQueue(final String s) throws Exception
+   protected Long getMessageCountForQueue(final String s) throws Exception
    {
       return HornetQServerTestCase.servers.get(0).getMessageCountForQueue(s);
    }

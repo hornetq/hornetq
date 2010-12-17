@@ -134,7 +134,7 @@ public class PageCursorStressTest extends ServiceTestBase
       while ((msg = iterator.next()) != null)
       {
          assertEquals(key++, msg.getMessage().getIntProperty("key").intValue());
-         cursor.ack(msg.getPosition());
+         cursor.confirmPosition(msg.getPosition());
       }
       assertEquals(NUM_MESSAGES, key);
 
@@ -225,7 +225,7 @@ public class PageCursorStressTest extends ServiceTestBase
          assertEquals(key, msg.getMessage().getIntProperty("key").intValue());
          assertTrue(msg.getMessage().getBooleanProperty("even").booleanValue());
          key += 2;
-         cursorEven.ack(msg.getPosition());
+         cursorEven.confirmPosition(msg.getPosition());
       }
       assertEquals(NUM_MESSAGES, key);
 
@@ -235,7 +235,7 @@ public class PageCursorStressTest extends ServiceTestBase
          assertEquals(key, msg.getMessage().getIntProperty("key").intValue());
          assertFalse(msg.getMessage().getBooleanProperty("even").booleanValue());
          key += 2;
-         cursorOdd.ack(msg.getPosition());
+         cursorOdd.confirmPosition(msg.getPosition());
       }
       assertEquals(NUM_MESSAGES + 1, key);
 

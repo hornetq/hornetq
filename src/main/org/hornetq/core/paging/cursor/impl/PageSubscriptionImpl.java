@@ -168,7 +168,7 @@ public class PageSubscriptionImpl implements PageSubscription
          cursorInfo.confirmed.addAndGet(position.getMessageNr());
       }
 
-      ack(position);
+      confirmPosition(position);
    }
 
    public PageSubscriptionCounter getCounter()
@@ -395,7 +395,7 @@ public class PageSubscriptionImpl implements PageSubscription
       return new PagePositionImpl(pageStore.getFirstPage(), -1);
    }
 
-   public void ackTx(final Transaction tx, final PagePosition position) throws Exception
+   public void confirmPosition(final Transaction tx, final PagePosition position) throws Exception
    {
       // if the cursor is persistent
       if (persistent)
@@ -408,7 +408,9 @@ public class PageSubscriptionImpl implements PageSubscription
 
    public void ackTx(final Transaction tx, final PagedReference reference) throws Exception
    {
-      ackTx(tx, reference.getPosition());
+      confirmPosition(tx, reference.getPosition());
+      
+      counter.increment(tx, -1);
 
       PageTransactionInfo txInfo = getPageTransaction(reference);
       if (txInfo != null)
@@ -422,15 +424,13 @@ public class PageSubscriptionImpl implements PageSubscription
     */
    public void ack(final PagedReference reference) throws Exception
    {
-      ack(reference.getPosition());
-      PageTransactionInfo txInfo = getPageTransaction(reference);
-      if (txInfo != null)
-      {
-         txInfo.storeUpdate(this.store, pageStore.getPagingManager());
-      }
+      // Need to do the ACK and counter atomically (inside a TX) or the counter could get out of sync
+      Transaction tx = new TransactionImpl(this.store);
+      ackTx(tx, reference);
+      tx.commit();
    }
 
-   public void ack(final PagePosition position) throws Exception
+   public void confirmPosition(final PagePosition position) throws Exception
    {
       // if we are dealing with a persistent cursor
       if (persistent)

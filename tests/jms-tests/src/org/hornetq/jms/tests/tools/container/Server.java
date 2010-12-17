@@ -176,7 +176,7 @@ public interface Server extends Remote
 
    void removeAllMessages(String destination, boolean isQueue) throws Exception;
 
-   Integer getMessageCountForQueue(String queueName) throws Exception;
+   Long getMessageCountForQueue(String queueName) throws Exception;
 
    List<String> listAllSubscribersForTopic(String s) throws Exception;
 

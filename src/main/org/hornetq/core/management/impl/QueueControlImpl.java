@@ -167,7 +167,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       checkStarted();
 
@@ -434,7 +434,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
-   public int countMessages(final String filterStr) throws Exception
+   public long countMessages(final String filterStr) throws Exception
    {
       checkStarted();
       

@@ -69,9 +69,9 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
          }
 
-         public int countMessages(final String filter) throws Exception
+         public long countMessages(final String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("countMessages", filter);
+            return (Long)proxy.invokeOperation("countMessages", filter);
          }
 
          public boolean expireMessage(final long messageID) throws Exception
@@ -114,9 +114,9 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (String)proxy.retrieveAttributeValue("filter");
          }
 
-         public int getMessageCount()
+         public long getMessageCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("messageCount");
+            return (Long)proxy.retrieveAttributeValue("messageCount");
          }
 
          public long getMessagesAdded()

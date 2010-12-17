@@ -396,7 +396,7 @@ public class LocalTestServer implements Server, Runnable
 
    }
 
-   public Integer getMessageCountForQueue(final String queueName) throws Exception
+   public Long getMessageCountForQueue(final String queueName) throws Exception
    {
       JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
                                                                  .getResource(ResourceNames.JMS_QUEUE + queueName);
@@ -406,7 +406,7 @@ public class LocalTestServer implements Server, Runnable
       }
       else
       {
-         return -1;
+         return -1l;
       }
    }
 

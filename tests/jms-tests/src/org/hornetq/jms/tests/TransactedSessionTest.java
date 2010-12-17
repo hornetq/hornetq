@@ -73,7 +73,7 @@ public class TransactedSessionTest extends JMSTestCase
 
          conn.close();
 
-         Integer i = getMessageCountForQueue("Queue1");
+         Long i = getMessageCountForQueue("Queue1");
 
          ProxyAssertSupport.assertEquals(1, i.intValue());
       }

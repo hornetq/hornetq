@@ -72,7 +72,7 @@ public interface Queue extends Bindable
 
    void deliverAsync();
 
-   int getMessageCount();
+   long getMessageCount();
 
    int getDeliveringCount();
 

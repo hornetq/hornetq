@@ -334,7 +334,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#getMessageCount()
     */
-   public int getMessageCount()
+   public long getMessageCount()
    {
       // TODO Auto-generated method stub
       return 0;

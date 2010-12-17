@@ -61,12 +61,12 @@ public interface PageSubscription
    void ack(PagedReference ref) throws Exception;
 
    // for internal (cursor) classes
-   void ack(PagePosition ref) throws Exception;
+   void confirmPosition(PagePosition ref) throws Exception;
 
    void ackTx(Transaction tx, PagedReference position) throws Exception;
 
    // for internal (cursor) classes
-   void ackTx(Transaction tx, PagePosition position) throws Exception;
+   void confirmPosition(Transaction tx, PagePosition position) throws Exception;
 
    /**
     * 

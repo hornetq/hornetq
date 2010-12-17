@@ -66,7 +66,7 @@ public class MessageCounter
 
    private long countTotalLast;
 
-   private int depthLast;
+   private long depthLast;
 
    private long timeLastUpdate;
 
@@ -188,7 +188,7 @@ public class MessageCounter
     * Gets the current message count of pending messages
     * within the destination waiting for dispatch
     */
-   public int getMessageCount()
+   public long getMessageCount()
    {
       return destQueue.getMessageCount();
    }
@@ -197,10 +197,10 @@ public class MessageCounter
     * Gets the message count delta of pending messages
     * since last method call.
     */
-   public int getMessageCountDelta()
+   public long getMessageCountDelta()
    {
-      int current = destQueue.getMessageCount();
-      int delta = current - depthLast;
+      long current = destQueue.getMessageCount();
+      int delta = (int)(current - depthLast);
 
       depthLast = current;
 

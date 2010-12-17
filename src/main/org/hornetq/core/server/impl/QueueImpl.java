@@ -653,13 +653,13 @@ public class QueueImpl implements Queue
       return null;
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       blockOnExecutorFuture();
 
       synchronized (this)
       {
-         return messageReferences.size() + getScheduledCount() + getDeliveringCount();
+         return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getCounter().getValue();
       }
    }
 

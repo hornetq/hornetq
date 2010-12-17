@@ -896,7 +896,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          
          Transaction tx = ctx.getTransaction();
 
-         pagedMessage = new PagedMessageImpl(message, getQueueIDs(listCtx), getTransactionID(tx, listCtx));
+         pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), getTransactionID(tx, listCtx));
 
          int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 
@@ -917,20 +917,22 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   private long[] getQueueIDs(RouteContextList ctx)
+   private long[] routeQueues(Transaction tx, RouteContextList ctx) throws Exception
    {
       List<org.hornetq.core.server.Queue> durableQueues = ctx.getDurableQueues();
       List<org.hornetq.core.server.Queue> nonDurableQueues = ctx.getNonDurableQueues();
       long ids[] = new long [durableQueues.size() + nonDurableQueues.size()];
       int i = 0;
-      
+
       for (org.hornetq.core.server.Queue q : durableQueues)
       {
+         q.getPageSubscription().getCounter().increment(tx, 1);
          ids[i++] = q.getID();
       }
       
       for (org.hornetq.core.server.Queue q : nonDurableQueues)
       {
+         q.getPageSubscription().getCounter().increment(tx, 1);
          ids[i++] = q.getID();
       }
       return ids;

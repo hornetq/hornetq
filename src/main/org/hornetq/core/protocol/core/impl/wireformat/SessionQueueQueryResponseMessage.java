@@ -35,7 +35,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
 
    private int consumerCount;
 
-   private int messageCount;
+   private long messageCount;
 
    private SimpleString filterString;
 
@@ -60,7 +60,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
                                             final boolean temporary,
                                             final SimpleString filterString,
                                             final int consumerCount,
-                                            final int messageCount,
+                                            final long messageCount,
                                             final boolean exists)
    {
       super(PacketImpl.SESS_QUEUEQUERY_RESP);
@@ -103,7 +103,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       return consumerCount;
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       return messageCount;
    }
@@ -135,7 +135,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       buffer.writeBoolean(durable);
       buffer.writeBoolean(temporary);
       buffer.writeInt(consumerCount);
-      buffer.writeInt(messageCount);
+      buffer.writeLong(messageCount);
       buffer.writeNullableSimpleString(filterString);
       buffer.writeNullableSimpleString(address);
       buffer.writeNullableSimpleString(name);
@@ -148,7 +148,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       durable = buffer.readBoolean();
       temporary = buffer.readBoolean();
       consumerCount = buffer.readInt();
-      messageCount = buffer.readInt();
+      messageCount = buffer.readLong();
       filterString = buffer.readNullableSimpleString();
       address = buffer.readNullableSimpleString();
       name = buffer.readNullableSimpleString();

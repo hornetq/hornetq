@@ -32,7 +32,7 @@ public class QueueQueryResult
 
    private int consumerCount;
 
-   private int messageCount;
+   private long messageCount;
 
    private SimpleString filterString;
 
@@ -46,7 +46,7 @@ public class QueueQueryResult
                                            final boolean temporary,
                                            final SimpleString filterString,
                                            final int consumerCount,
-                                           final int messageCount)
+                                           final long messageCount)
    {
       this(name, address, durable, temporary, filterString, consumerCount, messageCount, true);
    }
@@ -62,7 +62,7 @@ public class QueueQueryResult
                                             final boolean temporary,
                                             final SimpleString filterString,
                                             final int consumerCount,
-                                            final int messageCount,
+                                            final long messageCount,
                                             final boolean exists)
    {
       this.durable = durable;
@@ -97,7 +97,7 @@ public class QueueQueryResult
       return consumerCount;
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       return messageCount;
    }

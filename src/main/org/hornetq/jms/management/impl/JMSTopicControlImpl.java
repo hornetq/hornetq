@@ -113,7 +113,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       return managedTopic.getAddress();
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       return getMessageCount(DurabilityType.ALL);
    }

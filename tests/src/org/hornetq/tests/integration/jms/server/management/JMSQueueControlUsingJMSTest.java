@@ -98,9 +98,9 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
          }
 
-         public int countMessages(final String filter) throws Exception
+         public long countMessages(final String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("countMessages", filter);
+            return (Long)proxy.invokeOperation("countMessages", filter);
          }
 
          public boolean expireMessage(final String messageID) throws Exception
@@ -133,9 +133,9 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (String)proxy.retrieveAttributeValue("expiryAddress");
          }
 
-         public int getMessageCount()
+         public long getMessageCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("messageCount");
+            return (Long)proxy.retrieveAttributeValue("messageCount");
          }
 
          public long getMessagesAdded()

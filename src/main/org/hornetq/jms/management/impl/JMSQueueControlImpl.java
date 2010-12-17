@@ -115,7 +115,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return managedQueue.isTemporary();
    }
 
-   public int getMessageCount()
+   public long getMessageCount()
    {
       return coreQueueControl.getMessageCount();
    }
@@ -225,7 +225,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return JMSQueueControlImpl.toJSON(listMessages(filter));
    }
 
-   public int countMessages(final String filterStr) throws Exception
+   public long countMessages(final String filterStr) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       return coreQueueControl.countMessages(filter);

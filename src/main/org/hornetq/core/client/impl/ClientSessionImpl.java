@@ -1768,7 +1768,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       private final boolean durable;
 
-      private final int messageCount;
+      private final long messageCount;
 
       private final SimpleString filterString;
 
@@ -1778,7 +1778,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       public QueueQueryImpl(final boolean durable,
                             final int consumerCount,
-                            final int messageCount,
+                            final long messageCount,
                             final SimpleString filterString,
                             final SimpleString address,
                             final boolean exists)
@@ -1807,7 +1807,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          return filterString;
       }
 
-      public int getMessageCount()
+      public long getMessageCount()
       {
          return messageCount;
       }
