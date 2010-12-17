@@ -50,6 +50,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.ExecutorFactory;
@@ -876,6 +877,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          lock.readLock().unlock();
       }
 
+      Transaction tx = ctx.getTransaction();
+      
+      boolean startedTx = false;
+
       lock.writeLock().lock();
 
       try
@@ -883,6 +888,12 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (!paging)
          {
             return false;
+         }
+         
+         if (tx == null)
+         {
+            tx = new TransactionImpl(storageManager);
+            startedTx = true;
          }
 
          PagedMessage pagedMessage;
@@ -893,8 +904,6 @@ public class PagingStoreImpl implements TestSupportPageStore
             // This will force everything to be persisted
             message.bodyChanged();
          }
-         
-         Transaction tx = ctx.getTransaction();
 
          pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), getTransactionID(tx, listCtx));
 
@@ -913,6 +922,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       finally
       {
          lock.writeLock().unlock();
+         if (startedTx)
+         {
+            tx.commit();
+         }
       }
 
    }
