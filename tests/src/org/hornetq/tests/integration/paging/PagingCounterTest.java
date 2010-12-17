@@ -23,6 +23,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.cursor.impl.PageSubscriptionCounterImpl;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -294,6 +295,8 @@ public class PagingCounterTest extends ServiceTestBase
       
       server.start();
       
+      storage = server.getStorageManager();
+      
       queue = server.locateQueue(new SimpleString("A1"));
       
       assertNotNull(queue);
@@ -343,6 +346,9 @@ public class PagingCounterTest extends ServiceTestBase
 
    private HornetQServer newHornetQServer()
    {
+      
+      OperationContextImpl.clearContext();
+
       HornetQServer server = super.createServer(true, false);
 
       AddressSettings defaultSetting = new AddressSettings();
