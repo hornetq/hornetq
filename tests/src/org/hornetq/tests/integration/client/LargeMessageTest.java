@@ -2629,14 +2629,18 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
          LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
-
+         
          fileMessage.setMessageID(1005);
 
          for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
          {
             fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
          }
+         
+         // The server would be doing this
+         fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, LARGE_MESSAGE_SIZE);
 
+ 
          fileMessage.releaseResources();
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
