@@ -963,7 +963,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (pgTX == null)
          {
             pgTX = new PageTransactionInfoImpl(tx.getID());
-            System.out.println("Creating pageTransaction " + pgTX.getTransactionID());
             pagingManager.addTransaction(pgTX);
             tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pgTX);
             tx.addOperation(new FinishPageMessageOperation(pgTX));
