@@ -1190,9 +1190,11 @@
    <target name="jar-rest-init" depends="jar-jms">
       <ant antfile="build-maven.xml" target="upload-local-target">
 	<property name="artifact.id" value="hornetq-core"/>
+	<property name="file-name" value="hornetq-core"/>
       </ant>
       <ant antfile="build-maven.xml" target="upload-local-target">
 	<property name="artifact.id" value="hornetq-jms"/>
+	<property name="file-name" value="hornetq-jms"/>
       </ant>
    </target>
       
