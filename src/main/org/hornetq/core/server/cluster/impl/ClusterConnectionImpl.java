@@ -442,6 +442,11 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          return;
       }
+      /*we dont create bridges to backups*/
+      if(connectorPair.a == null)
+      {
+         return;
+      }
 
       try
       {
