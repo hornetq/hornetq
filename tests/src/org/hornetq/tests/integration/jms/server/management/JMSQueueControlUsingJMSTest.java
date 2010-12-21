@@ -100,7 +100,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
 
          public long countMessages(final String filter) throws Exception
          {
-            return (Long)proxy.invokeOperation("countMessages", filter);
+            return ((Number)proxy.invokeOperation("countMessages", filter)).intValue();
          }
 
          public boolean expireMessage(final String messageID) throws Exception

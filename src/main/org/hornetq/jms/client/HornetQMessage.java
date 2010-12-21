@@ -879,6 +879,11 @@ public class HornetQMessage implements javax.jms.Message
    {
       message.getBodyBuffer().resetReaderIndex();
    }
+   
+   public void checkBuffer()
+   {
+      message.getBodyBuffer();
+   }
 
    public void doBeforeReceive() throws Exception
    {

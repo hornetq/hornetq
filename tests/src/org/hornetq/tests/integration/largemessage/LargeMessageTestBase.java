@@ -617,6 +617,13 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
       return createLargeClientMessage(session, numberOfBytes, true);
    }
 
+   protected ClientMessage createLargeClientMessage (final ClientSession session, final byte[] buffer, final boolean durable) throws Exception
+   {
+      ClientMessage msgs = session.createMessage(durable);
+      msgs.getBodyBuffer().writeBytes(buffer);
+      return msgs;
+   }
+
    protected ClientMessage createLargeClientMessage(final ClientSession session,
                                                     final long numberOfBytes,
                                                     final boolean persistent) throws Exception

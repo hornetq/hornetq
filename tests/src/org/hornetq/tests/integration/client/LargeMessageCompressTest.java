@@ -27,6 +27,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A LargeMessageCompressTest
@@ -251,6 +252,111 @@ public class LargeMessageCompressTest extends LargeMessageTest
          {
             byte b = (byte)input.read();
             assertEquals("position = "  + i, getSamplebyte(i), b);
+         }
+         
+         testFile.delete();
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+
+
+   public void testLargeMessageCompressionRestartAndCheckSize() throws Exception
+   {
+      final int messageSize = 1024 * 1024;
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true, isNetty());
+
+         server.start();
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         
+         byte [] msgs = new byte[1024 * 1024];
+         for (int i = 0 ; i < msgs.length; i++)
+         {
+            msgs[i] = RandomUtil.randomByte();
+         }
+
+         Message clientFile = createLargeClientMessage(session, msgs, true);
+
+         producer.send(clientFile);
+
+         session.commit();
+         
+         session.close();
+         
+         sf.close();
+         
+         locator.close();
+         
+         server.stop();
+         
+         server = createServer(true, isNetty());
+         
+         server.start();
+         
+         locator = createFactory(isNetty());
+         
+         sf = locator.createSessionFactory();
+         
+         session = sf.createSession();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         ClientMessage msg1 = consumer.receive(1000);
+         Assert.assertNotNull(msg1);
+         
+         assertEquals(messageSize, msg1.getBodySize());
+         
+         String testDir = this.getTestDir();
+         File testFile = new File(testDir, "async_large_message");
+         FileOutputStream output = new FileOutputStream(testFile);
+
+         msg1.saveToOutputStream(output);
+         
+         msg1.acknowledge();
+
+         session.commit();
+
+         consumer.close();
+
+         session.close();
+
+         //verify
+         FileInputStream input = new FileInputStream(testFile);
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            byte b = (byte)input.read();
+            assertEquals("position = "  + i, msgs[i], b);
          }
          
          testFile.delete();

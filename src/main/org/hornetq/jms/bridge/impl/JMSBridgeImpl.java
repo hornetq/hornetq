@@ -1730,6 +1730,13 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                try
                {
                   msg = sourceConsumer.receive(1000);
+                  
+                  if (msg instanceof HornetQMessage)
+                  {
+                     // We need to check the buffer mainly in the case of LargeMessages
+                     // As we need to reconstruct the buffer before resending the message
+                     ((HornetQMessage)msg).checkBuffer();
+                  }
                }
                catch (JMSException jmse)
                {
