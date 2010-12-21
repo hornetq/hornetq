@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
@@ -2114,6 +2115,245 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
+   public void testBackupServerNotRemoved() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true);
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
+
+      ClientSession session = sendAndConsume(sf, true);
+
+      session.addFailureListener(new MyListener());
+
+      backupServer.stop();
+
+      liveServer.crash();
+      
+      backupServer.start();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+
+      setBody(0, message);
+
+      producer.send(message);
+
+      session.close();
+
+      sf.close();
+      
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
+   public void testLiveAndBackupLiveComesBack() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true);
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
+
+      ClientSession session = sendAndConsume(sf, true);
+
+      session.addFailureListener(new MyListener());
+
+      backupServer.stop();
+
+      liveServer.crash();
+
+      liveServer.start();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+
+      setBody(0, message);
+
+      producer.send(message);
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
+   public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true);
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
+
+      ClientSession session = sendAndConsume(sf, true);
+
+      session.addFailureListener(new MyListener());
+
+      backupServer.stop();
+
+      liveServer.crash();
+
+      liveServer.start();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+
+      setBody(0, message);
+
+      producer.send(message);
+
+      session.close();
+
+      sf.close();
+
+      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+
+      session = sf.createSession();
+
+      ClientConsumer cc = session.createConsumer(FailoverTestBase.ADDRESS);
+
+      session.start();
+      
+      ClientMessage cm = cc.receive(5000);
+
+      assertNotNull(cm);
+
+      Assert.assertEquals("message0", cm.getBodyBuffer().readString());
+
+      session.close();
+      
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
+   }
+
+   public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
+   {
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setFailoverOnInitialConnection(true);
+      locator.setReconnectAttempts(-1);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements SessionFailureListener
+      {
+         public void connectionFailed(final HornetQException me, boolean failedOver)
+         {
+            latch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+            System.out.println("MyListener.beforeReconnect");
+         }
+      }
+
+      ClientSession session = sendAndConsume(sf, true);
+
+      session.addFailureListener(new MyListener());
+
+      backupServer.stop();
+
+      liveServer.crash();
+
+      backupServer.start();
+
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+
+      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      ClientMessage message = session.createMessage(true);
+
+      setBody(0, message);
+
+      producer.send(message);
+
+      session.close();
+
+      sf.close();
+
+      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+
+      session = sf.createSession();
+
+      ClientConsumer cc = session.createConsumer(FailoverTestBase.ADDRESS);
+
+      session.start();
+
+      ClientMessage cm = cc.receive(5000);
+
+      assertNotNull(cm);
+
+      Assert.assertEquals("message0", cm.getBodyBuffer().readString());
+
+      session.close();
+
+      sf.close();
+
+      Assert.assertEquals(0, sf.numSessions());
+
+      Assert.assertEquals(0, sf.numConnections());
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

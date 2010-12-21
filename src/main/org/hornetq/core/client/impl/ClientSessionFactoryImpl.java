@@ -92,8 +92,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private ConnectorFactory connectorFactory;
 
-   private Map<String, Object> transportParams;
-
    private final long callTimeout;
 
    private final long clientFailureCheckPeriod;
@@ -176,9 +174,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
 
-      transportParams = connectorConfig.getParams();
-
-      checkTransportKeys(connectorFactory, transportParams);
+      checkTransportKeys(connectorFactory, connectorConfig.getParams());
 
       this.callTimeout = callTimeout;
 
@@ -209,31 +205,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public void connect(int initialConnectAttempts, boolean failoverOnInitialConnection) throws HornetQException
    {
       // Get the connection
-
       getConnectionWithRetry(initialConnectAttempts);
-
-      if (connection == null && failoverOnInitialConnection)
-      {
-         if (backupConfig != null)
-         {
-            // Try and connect to the backup
-
-            log.warn("Server is not available to make initial connection to. Will try backup server instead.");
-
-            this.connectorConfig = backupConfig;
-
-            connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
-
-            transportParams = this.connectorConfig.getParams();
-
-            getConnectionWithRetry(initialConnectAttempts);
-         }
-      }
 
       if (connection == null)
       {
+         StringBuffer msg = new StringBuffer("Unable to connect to server using configuration ").append(connectorConfig);
+         if(backupConfig != null)
+         {
+            msg.append(" and backup configuration ").append(backupConfig);
+         }
          throw new HornetQException(HornetQException.NOT_CONNECTED,
-                                    "Unable to connect to server using configuration " + connectorConfig);
+               msg.toString());
       }
 
    }
@@ -249,6 +231,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          backupConfig = backUp;
       }
+   }
+
+   public Object getBackupConnector()
+   {
+      return backupConfig;
    }
 
    public ClientSession createSession(final String username,
@@ -524,24 +511,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         boolean serverShutdown = me.getCode() == HornetQException.DISCONNECTED;
 
-         // We will try to failover if there is a backup connector factory, but we don't do this if the server
-         // has been shutdown cleanly unless failoverOnServerShutdown is true
-         boolean attemptFailover = (backupConfig != null) && !serverShutdown;
-
-         boolean attemptReconnect;
-
-         if (attemptFailover)
-         {
-            attemptReconnect = false;
-         }
-         else
-         {
-            attemptReconnect = reconnectAttempts != 0;
-         }
-
-         if (attemptFailover || attemptReconnect)
+         if (reconnectAttempts != 0)
          {
             lockChannel1();
 
@@ -599,24 +570,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             connector = null;
 
-            if (attemptFailover)
-            {
-               // Now try failing over to backup
-
-               this.connectorConfig = backupConfig;
-
-               backupConfig = null;
-
-               connectorFactory = instantiateConnectorFactory(connectorConfig.getFactoryClassName());
-
-               transportParams = connectorConfig.getParams();
-
-               reconnectSessions(oldConnection, reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
-            }
-            else
-            {
-               reconnectSessions(oldConnection, reconnectAttempts);
-            }
+            reconnectSessions(oldConnection, reconnectAttempts);
 
             oldConnection.destroy();
          }
@@ -1011,7 +965,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          {
             DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-            connector = connectorFactory.createConnector(transportParams,
+            connector = connectorFactory.createConnector(connectorConfig.getParams(),
                                                          handler,
                                                          this,
                                                          closeExecutor,
@@ -1035,6 +989,45 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   }
 
                   connector = null;
+               }
+            }
+            //if connection fails we can try the backup incase it has come live
+            if(connector == null && backupConfig != null)
+            {
+               ConnectorFactory backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
+               connector = backupConnectorFactory.createConnector(backupConfig.getParams(),
+                                                         handler,
+                                                         this,
+                                                         closeExecutor,
+                                                         threadPool,
+                                                         scheduledThreadPool);
+               if (connector != null)
+               {
+                  connector.start();
+
+                  tc = connector.createConnection();
+
+                  if (tc == null)
+                  {
+                     try
+                     {
+                        connector.close();
+                     }
+                     catch (Throwable t)
+                     {
+                     }
+
+                     connector = null;
+                  }
+                  else
+                  {
+                     /*looks like the backup is now live, lets use that*/
+                     connectorConfig = backupConfig;
+
+                     backupConfig = null;
+
+                     connectorFactory = backupConnectorFactory;
+                  }
                }
             }
          }
@@ -1224,8 +1217,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      serverLocator.notifyNodeDown(msg.getNodeID().toString());
                   }
 
-                  conn.fail(new HornetQException(msg.isFailoverOnServerShutdown() ? HornetQException.NOT_CONNECTED
-                                                                                 : HornetQException.DISCONNECTED,
+                  conn.fail(new HornetQException(HornetQException.DISCONNECTED,
                                                  "The connection was disconnected because of server shutdown"));
 
                }

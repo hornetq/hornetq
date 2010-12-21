@@ -254,11 +254,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public void stop() throws Exception
    {
-      stop(false);
-   }
-
-   public void stop(boolean failoverOnServerShutdown) throws Exception
-   {
       if (!started)
       {
          return;
@@ -283,7 +278,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          RemotingConnection conn = entry.connection;
 
-         conn.disconnect(failoverOnServerShutdown);
+         conn.disconnect();
       }
 
       for (Acceptor acceptor : acceptors)

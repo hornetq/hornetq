@@ -324,7 +324,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       callClosingListeners();
    }
    
-   public void disconnect(boolean failoverOnServerShutdown)
+   public void disconnect()
    {
       Channel channel0 = getChannel(0, -1);
 
@@ -343,7 +343,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          channel.flushConfirmations();
       }
 
-      Packet disconnect = new DisconnectMessage(nodeID, failoverOnServerShutdown);
+      Packet disconnect = new DisconnectMessage(nodeID);
       channel0.sendAndFlush(disconnect);
    }
 

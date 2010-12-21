@@ -50,8 +50,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A FailoverTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public abstract class FailoverTestBase extends ServiceTestBase
 {
@@ -68,7 +66,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected Configuration backupConfig;
 
    protected Configuration liveConfig;
-   
+
    protected NodeManager nodeManager;
 
    // Static --------------------------------------------------------
@@ -139,42 +137,19 @@ public abstract class FailoverTestBase extends ServiceTestBase
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(liveConnector.getName());
       ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
-               staticConnectors, false);
+            staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupServer = createBackupServer();
-      
-      // FIXME
-      /*
-      server1Service.registerActivateCallback(new ActivateCallback()
-      {
-         
-         public void preActivate()
-         {
-            // To avoid two servers messing up with the same journal at any single point
 
-         }
-         
-         public void activated()
-         {
-            try
-            {
-               liveServer.getStorageManager().stop();
-            }
-            catch (Exception ignored)
-            {
-            }
-         }
-      });
-*/
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-       List<String> pairs = null;
+      List<String> pairs = null;
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-               pairs, false);
+            pairs, false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createLiveServer();
@@ -193,7 +168,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSharedStore(false);
       config1.setBackup(true);
       backupServer = createBackupServer();
-      
+
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
@@ -249,25 +224,26 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-           throws Exception
-     {
-        ClientSessionFactoryInternal sf;
-        CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
+         throws Exception
+   {
+      ClientSessionFactoryInternal sf;
+      CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
-        locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
-        sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
-        boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
-        assertTrue(ok);
-        return sf;
-     }
+      boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
+      assertTrue(ok);
+      return sf;
+   }
 
-   protected void waitForBackup(long seconds)
+   protected void waitForBackup(ClientSessionFactoryInternal sf, long seconds)
+         throws Exception
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
-      while(!backupServer.isInitialised())
+      while (sf.getBackupConnector() == null)
       {
          try
          {
@@ -277,19 +253,67 @@ public abstract class FailoverTestBase extends ServiceTestBase
          {
             //ignore
          }
-         if(backupServer.isInitialised())
+         if (sf.getBackupConnector() != null)
          {
             break;
          }
-         else if(System.currentTimeMillis() > (time + toWait))
+         else if (System.currentTimeMillis() > (time + toWait))
          {
             fail("backup server never started");
          }
       }
-      System.out.println("FailoverTestBase.waitForNewLive");
    }
-   
-   
+
+   protected void waitForBackup(long seconds)
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while (!backupServer.isInitialised())
+      {
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+         if (backupServer.isInitialised())
+         {
+            break;
+         }
+         else if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup server never started");
+         }
+      }
+   }
+
+   protected void waitForBackup(long seconds, TestableServer server)
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while (!server.isInitialised())
+      {
+         try
+         {
+            Thread.sleep(100);
+         }
+         catch (InterruptedException e)
+         {
+            //ignore
+         }
+         if (server.isInitialised())
+         {
+            break;
+         }
+         else if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("server never started");
+         }
+      }
+   }
+
 
    protected TransportConfiguration getInVMConnectorTransportConfiguration(final boolean live)
    {
@@ -334,10 +358,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
          Map<String, Object> server1Params = new HashMap<String, Object>();
 
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-                           org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+               org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
          return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
-                                           server1Params);
+               server1Params);
       }
    }
 
@@ -352,10 +376,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
          Map<String, Object> server1Params = new HashMap<String, Object>();
 
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-                           org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+               org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
          return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-                                           server1Params);
+               server1Params);
       }
    }
 
@@ -373,7 +397,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       liveServer.crash(sessions);
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -384,7 +408,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       {
       }
    }
-   
+
    class LatchClusterTopologyListener implements ClusterTopologyListener
    {
       final CountDownLatch latch;
@@ -400,12 +424,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
       {
-         if(connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
+         if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
          {
             liveNode.add(connectorPair.a.getName());
             latch.countDown();
          }
-         if(connectorPair.b != null && !backupNode.contains(connectorPair.b.getName()))
+         if (connectorPair.b != null && !backupNode.contains(connectorPair.b.getName()))
          {
             backupNode.add(connectorPair.b.getName());
             latch.countDown();

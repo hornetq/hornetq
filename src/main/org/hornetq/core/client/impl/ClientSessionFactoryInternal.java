@@ -44,4 +44,6 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    TransportConfiguration getConnectorConfiguration();
 
    void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp);
+
+   Object getBackupConnector();
 }

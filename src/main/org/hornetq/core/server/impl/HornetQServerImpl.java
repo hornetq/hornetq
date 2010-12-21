@@ -626,7 +626,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          System.out.println("HornetQServerImpl.stop");
       }
-      remotingService.stop(failoverOnServerShutdown);
+      remotingService.stop();
 
       synchronized (this)
       {

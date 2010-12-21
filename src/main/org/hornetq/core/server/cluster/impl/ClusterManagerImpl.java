@@ -217,6 +217,7 @@ public class ClusterManagerImpl implements ClusterManager
       if(backupServerLocator != null)
       {
          backupServerLocator.close();
+         backupServerLocator = null;
       }
 
       for (ServerLocatorInternal clusterLocator : clusterLocators)

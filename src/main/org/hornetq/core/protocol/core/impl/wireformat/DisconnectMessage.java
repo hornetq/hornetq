@@ -31,20 +31,16 @@ public class DisconnectMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString nodeID;
-
-   private boolean failoverOnServerShutdown;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DisconnectMessage(final SimpleString nodeID, boolean failoverOnServerShutdown)
+   public DisconnectMessage(final SimpleString nodeID)
    {
       super(PacketImpl.DISCONNECT);
 
       this.nodeID = nodeID;
-
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public DisconnectMessage()
@@ -59,24 +55,16 @@ public class DisconnectMessage extends PacketImpl
       return nodeID;
    }
 
-   public boolean isFailoverOnServerShutdown()
-   {
-      return failoverOnServerShutdown;
-   }
-
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeNullableSimpleString(nodeID);
-
-      buffer.writeBoolean(failoverOnServerShutdown);
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
       nodeID = buffer.readNullableSimpleString();
-      failoverOnServerShutdown = buffer.readBoolean();
    }
 
    @Override

@@ -70,6 +70,18 @@ public class LargeMessageFailoverTest extends FailoverTest
       super();
    }
 
+   @Override
+   public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
+   {
+      Thread.sleep(1000);
+   }
+
+   @Override
+   public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
+   {
+      Thread.sleep(1000);
+   }
+
    /**
     * @param i
     * @param message
