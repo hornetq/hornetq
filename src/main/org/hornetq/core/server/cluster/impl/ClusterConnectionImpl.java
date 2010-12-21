@@ -29,6 +29,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -82,6 +83,8 @@ public class ClusterConnectionImpl implements ClusterConnection
    private final boolean routeWhenNoConsumers;
 
    private final Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
+
+   private final List<TransportConfiguration> conectorssss = new ArrayList<TransportConfiguration>();
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -413,8 +416,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    public synchronized void nodeUP(final String nodeID,
                                    final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                   final boolean last,
-                                   final int distance)
+                                   final boolean last)
    {
       // discard notifications about ourselves unless its from our backup
 
@@ -422,16 +424,16 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          if(connectorPair.b != null)
          {
-            server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, distance);
+            server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last);
          }
          return;
       }
 
       // we propagate the node notifications to all cluster topology listeners
-      server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, distance);
+      server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last);
 
       // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
-      if (allowDirectConnectionsOnly && distance > 1 && !allowableConnections.contains(connectorPair.a))
+      if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.a))
       {
          return;
       }
@@ -446,6 +448,18 @@ public class ClusterConnectionImpl implements ClusterConnection
       if(connectorPair.a == null)
       {
          return;
+      }
+
+      Collection<TopologyMember> topologyMembers = serverLocator.getTopology().getMembers();
+      for (TopologyMember topologyMember : topologyMembers)
+      {
+         if(topologyMember.getConnector().a != null && !conectorssss.contains(topologyMember.getConnector().a))
+         {
+            if(!topologyMember.getConnector().a.equals(connector) && !topologyMember.getConnector().a.equals(connectorPair.a))
+            {
+               System.out.println("ClusterConnectionImpl.nodeUP");
+            }
+         }
       }
 
       try
@@ -474,6 +488,7 @@ public class ClusterConnectionImpl implements ClusterConnection
             }
 
             createNewRecord(nodeID, connectorPair.a, queueName, queue, true);
+            conectorssss.add(connectorPair.a);
          }
          else
          {

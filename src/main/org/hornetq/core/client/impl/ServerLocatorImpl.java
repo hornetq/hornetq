@@ -1139,15 +1139,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public synchronized void notifyNodeUp(final String nodeID,
                                          final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                         final boolean last,
-                                         final int distance)
+                                         final boolean last)
    {
       if (!ha)
       {
          return;
       }
 
-      topology.addMember(nodeID, new TopologyMember(connectorPair, distance));
+      topology.addMember(nodeID, new TopologyMember(connectorPair));
 
       TopologyMember actMember = topology.getMember(nodeID);
 
@@ -1172,7 +1171,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       for (ClusterTopologyListener listener : topologyListeners)
       {
-         listener.nodeUP(nodeID, connectorPair, last, distance);
+         listener.nodeUP(nodeID, connectorPair, last);
       }
 
       // Notify if waiting on getting topology
@@ -1242,6 +1241,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
       topologyListeners.add(listener);
+      if(topology.members() > 0)
+      {
+         System.out.println("ServerLocatorImpl.addClusterTopologyListener");
+      }
    }
 
    public void removeClusterTopologyListener(final ClusterTopologyListener listener)

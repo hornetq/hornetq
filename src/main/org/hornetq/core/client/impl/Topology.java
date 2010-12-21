@@ -47,7 +47,10 @@ public class Topology implements Serializable
       TopologyMember currentMember = topology.get(nodeId);
       if (debug)
       {
-         //System.out.println("member.getConnector() = " + member.getConnector());
+         if(member.getConnector().toString().contains("server-id=4"))
+         {
+            System.out.println("member.getConnector() = " + member.getConnector());
+         }
       }
       if(currentMember == null)
       {
@@ -90,7 +93,7 @@ public class Topology implements Serializable
       int count = 0;
       for (Map.Entry<String, TopologyMember> entry : topology.entrySet())
       {
-         listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == topology.size(), entry.getValue().getDistance());
+         listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == topology.size());
       }
    }
 

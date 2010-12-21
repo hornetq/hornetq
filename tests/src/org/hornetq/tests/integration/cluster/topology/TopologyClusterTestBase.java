@@ -203,8 +203,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          public void nodeUP(String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last,
-                            int distance)
+                            boolean last)
          {
             if(!nodes.contains(nodeID))
             {
@@ -264,8 +263,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          public void nodeUP(String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last,
-                            int distance)
+                            boolean last)
          {
             if (!nodes.contains(nodeID))
             {
@@ -337,8 +335,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          public void nodeUP(String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last,
-                            int distance)
+                            boolean last)
          {
             if (!nodes.contains(nodeID))
             {
@@ -420,8 +417,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          public void nodeUP(String nodeID, 
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last,
-                            int distance)
+                            boolean last)
          {
             if (!nodes.contains(nodeID))
             {

@@ -27,27 +27,19 @@ public class TopologyMember implements Serializable
 
    private final Pair<TransportConfiguration, TransportConfiguration> connector;
 
-   private final int distance;
-
-   public TopologyMember(Pair<TransportConfiguration, TransportConfiguration> connector, int distance)
+   public TopologyMember(Pair<TransportConfiguration, TransportConfiguration> connector)
    {
       this.connector = connector;
-      this.distance = distance;
    }
 
    public Pair<TransportConfiguration, TransportConfiguration> getConnector()
    {
       return connector;
    }
-
-   public int getDistance()
-   {
-      return distance;
-   }
    
    @Override
    public String toString()
    {
-      return "TopologyMember[distance=" + distance + ", connector=" + connector + "]";
+      return "TopologyMember[connector=" + connector + "]";
    }
 }

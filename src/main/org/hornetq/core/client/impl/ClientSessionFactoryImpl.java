@@ -1243,8 +1243,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                serverLocator.notifyNodeUp(topMessage.getNodeID(),
                                           topMessage.getPair(),
-                                          topMessage.isLast(),
-                                          topMessage.getDistance());
+                                          topMessage.isLast());
             }
          }
       }

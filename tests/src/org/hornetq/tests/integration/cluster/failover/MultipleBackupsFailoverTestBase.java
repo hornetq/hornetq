@@ -215,8 +215,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 
       public void nodeUP(String nodeID,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         boolean last,
-                         int distance)
+                         boolean last)
       {
          if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
          {
