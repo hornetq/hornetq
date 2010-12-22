@@ -36,6 +36,8 @@ public interface PageSubscription
    void bookmark(PagePosition position) throws Exception;
    
    PageSubscriptionCounter getCounter();
+   
+   long getMessageCount();
 
    long getId();
 

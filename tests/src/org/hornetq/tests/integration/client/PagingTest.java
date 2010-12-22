@@ -236,6 +236,8 @@ public class PagingTest extends ServiceTestBase
          assertNull(consumer.receiveImmediate());
 
          sessionCheck.close();
+         
+         assertEquals(numberOfMessages, queue.getMessageCount());
 
          sf.close();
          locator.close();
@@ -277,6 +279,7 @@ public class PagingTest extends ServiceTestBase
          
          locator.close();
          
+         queue.getMessageCount();
          //assertEquals(numberOfMessages, queue.getMessageCount());
       }
       finally

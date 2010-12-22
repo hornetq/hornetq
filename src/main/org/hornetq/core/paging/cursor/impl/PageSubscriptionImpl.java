@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -101,6 +102,8 @@ public class PageSubscriptionImpl implements PageSubscription
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
    
    private final PageSubscriptionCounter counter;
+   
+   private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
@@ -169,6 +172,13 @@ public class PageSubscriptionImpl implements PageSubscription
       }
 
       confirmPosition(position);
+   }
+
+   
+   
+   public long getMessageCount()
+   {
+      return counter.getValue() - deliveredCount.get();
    }
 
    public PageSubscriptionCounter getCounter()
@@ -959,6 +969,7 @@ public class PageSubscriptionImpl implements PageSubscription
             for (PagePosition confirmed : positions)
             {
                cursor.processACK(confirmed);
+               cursor.deliveredCount.decrementAndGet();
             }
 
          }
@@ -1195,6 +1206,7 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          if (!isredelivery)
          {
+            deliveredCount.incrementAndGet();
             PageSubscriptionImpl.this.getPageInfo(position).remove(position);
          }
       }

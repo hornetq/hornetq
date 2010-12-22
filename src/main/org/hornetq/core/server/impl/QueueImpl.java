@@ -661,7 +661,7 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getCounter().getValue();
+            return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getMessageCount();
          }
          else
          {
@@ -1639,6 +1639,11 @@ public class QueueImpl implements Queue
       }
 
       queue.deliveringCount.decrementAndGet();
+      
+      if (queue.deliveringCount.get() < 0)
+      {
+         new Exception("DeliveringCount became negative").printStackTrace();
+      }
 
       try
       {
