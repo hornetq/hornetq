@@ -80,7 +80,6 @@ public class PageSyncTimer
    
    private void tick()
    {
-      System.out.println("Tick on PageSynctimer");
       OperationContext [] pendingSyncsArray;
       synchronized (this)
       {
@@ -92,9 +91,7 @@ public class PageSyncTimer
       
       try
       {
-         System.out.println("will perform a sync");
          store.ioSync();
-         System.out.println("done with the sync");
       }
       catch (Exception e)
       {
