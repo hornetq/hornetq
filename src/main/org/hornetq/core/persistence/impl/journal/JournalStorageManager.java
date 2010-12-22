@@ -1059,7 +1059,6 @@ public class JournalStorageManager implements StorageManager
 
                encoding.decode(buff);
 
-
                PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
 
                if (sub != null)
@@ -1126,9 +1125,16 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(postOffice, pagingManager, resourceManager, queues, queueInfos, preparedTransactions, duplicateIDMap, pageSubscriptions);
-      
-      for (PageSubscription sub: pageSubscriptions.values())
+      loadPreparedTransactions(postOffice,
+                               pagingManager,
+                               resourceManager,
+                               queues,
+                               queueInfos,
+                               preparedTransactions,
+                               duplicateIDMap,
+                               pageSubscriptions);
+
+      for (PageSubscription sub : pageSubscriptions.values())
       {
          sub.getCounter().processReload();
       }
@@ -1205,7 +1211,7 @@ public class JournalStorageManager implements StorageManager
             pageSubscriptions.put(queueID, subs);
          }
       }
-      
+
       return subs;
    }
 
@@ -1258,6 +1264,20 @@ public class JournalStorageManager implements StorageManager
                                                   recordID,
                                                   JournalStorageManager.PAGE_CURSOR_COUNTER_INC,
                                                   new PageCountRecordInc(queueID, value));
+      return recordID;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCounterAdd(long, long, int)
+    */
+   public long storePageCounterInc(long queueID, int value) throws Exception
+   {
+      long recordID = idGenerator.generateID();
+      messageJournal.appendAddRecord(recordID,
+                                     JournalStorageManager.PAGE_CURSOR_COUNTER_INC,
+                                     new PageCountRecordInc(queueID, value),
+                                     true,
+                                     getContext());
       return recordID;
    }
 
@@ -1685,8 +1705,21 @@ public class JournalStorageManager implements StorageManager
                }
                case ACKNOWLEDGE_CURSOR:
                {
-                  // TODO: implement and test this case
-                  // and make sure the rollback will work well also
+                  CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+                  encoding.decode(buff);
+
+                  encoding.position.setRecordID(record.id);
+
+                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+
+                  if (sub != null)
+                  {
+                     sub.reloadPreparedACK(tx, encoding.position);
+                  }
+                  else
+                  {
+                     log.warn("Can't find queue " + encoding.queueID + " while reloading ACKNOWLEDGE_CURSOR");
+                  }
                   break;
                }
                case PAGE_CURSOR_COUNTER_VALUE:
@@ -1702,12 +1735,14 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.decode(buff);
 
-
-                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+                  PageSubscription sub = locateSubscription(encoding.queueID,
+                                                            pageSubscriptions,
+                                                            queueInfos,
+                                                            pagingManager);
 
                   if (sub != null)
                   {
-                     sub.getCounter().replayIncrement(tx, record.id, encoding.value);
+                     sub.getCounter().applyIncrement(tx, record.id, encoding.value);
                   }
                   else
                   {
@@ -1870,6 +1905,20 @@ public class JournalStorageManager implements StorageManager
       public boolean waitCompletion(final long timeout)
       {
          return true;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#pageLineUp()
+       */
+      public void pageSyncLineUp()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.OperationContext#pageDone()
+       */
+      public void pageSyncDone()
+      {
       }
 
    }

@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -61,6 +62,10 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    protected final boolean syncNonTransactional;
 
    private PagingManager pagingManager;
+   
+   private final ScheduledExecutorService scheduledExecutor;
+   
+   private final long syncTimeout;
 
    private StorageManager storageManager;
 
@@ -71,6 +76,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    // Constructors --------------------------------------------------
 
    public PagingStoreFactoryNIO(final String directory,
+                                final long syncTimeout,
+                                final ScheduledExecutorService scheduledExecutor,
                                 final ExecutorFactory executorFactory,
                                 final boolean syncNonTransactional)
    {
@@ -79,6 +86,10 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.executorFactory = executorFactory;
 
       this.syncNonTransactional = syncNonTransactional;
+      
+      this.scheduledExecutor = scheduledExecutor;
+      
+      this.syncTimeout = syncTimeout;
    }
 
    // Public --------------------------------------------------------
@@ -91,6 +102,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
 
       return new PagingStoreImpl(address,
+                                 scheduledExecutor,
+                                 syncTimeout,
                                  pagingManager,
                                  storageManager,
                                  postOffice,
@@ -195,6 +208,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
             AddressSettings settings = addressSettingsRepository.getMatch(address.toString());
 
             PagingStore store = new PagingStoreImpl(address,
+                                                    scheduledExecutor,
+                                                    syncTimeout,
                                                     pagingManager,
                                                     storageManager,
                                                     postOffice,

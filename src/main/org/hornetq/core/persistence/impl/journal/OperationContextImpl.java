@@ -49,14 +49,26 @@ public class OperationContextImpl implements OperationContext
    {
       OperationContextImpl.threadLocalContext.set(null);
    }
-
+   
+   public static OperationContext getContext()
+   {
+      return getContext(null);
+   }
+   
    public static OperationContext getContext(final ExecutorFactory executorFactory)
    {
       OperationContext token = OperationContextImpl.threadLocalContext.get();
       if (token == null)
       {
-         token = new OperationContextImpl(executorFactory.getExecutor());
-         OperationContextImpl.threadLocalContext.set(token);
+         if (executorFactory == null)
+         {
+            return null;
+         }
+         else
+         {
+            token = new OperationContextImpl(executorFactory.getExecutor());
+            OperationContextImpl.threadLocalContext.set(token);
+         }
       }
       return token;
    }
@@ -68,17 +80,23 @@ public class OperationContextImpl implements OperationContext
 
    private List<TaskHolder> tasks;
 
-   private volatile int storeLineUp = 0;
-
-   private volatile int replicationLineUp = 0;
-
    private int minimalStore = Integer.MAX_VALUE;
 
    private int minimalReplicated = Integer.MAX_VALUE;
+   
+   private int minimalPage = Integer.MAX_VALUE;
+
+   private volatile int storeLineUp = 0;
+
+   private volatile int replicationLineUp = 0;
+   
+   private volatile int pageLineUp = 0;
 
    private int stored = 0;
 
    private int replicated = 0;
+   
+   private int paged = 0;
 
    private int errorCode = -1;
 
@@ -92,6 +110,17 @@ public class OperationContextImpl implements OperationContext
    {
       super();
       this.executor = executor;
+   }
+   
+   public void pageSyncLineUp()
+   {
+      pageLineUp++;
+   }
+   
+   public synchronized void pageSyncDone()
+   {
+      paged++;
+      checkTasks();
    }
 
    public void storeLineUp()
@@ -127,10 +156,11 @@ public class OperationContextImpl implements OperationContext
             tasks = new LinkedList<TaskHolder>();
             minimalReplicated = replicationLineUp;
             minimalStore = storeLineUp;
+            minimalPage = pageLineUp;
          }
 
          // On this case, we can just execute the context directly
-         if (replicationLineUp == replicated && storeLineUp == stored)
+         if (replicationLineUp == replicated && storeLineUp == stored && pageLineUp == paged)
          {
             // We want to avoid the executor if everything is complete...
             // However, we can't execute the context if there are executions pending
@@ -168,13 +198,13 @@ public class OperationContextImpl implements OperationContext
 
    private void checkTasks()
    {
-      if (stored >= minimalStore && replicated >= minimalReplicated)
+      if (stored >= minimalStore && replicated >= minimalReplicated && paged >= minimalPage)
       {
          Iterator<TaskHolder> iter = tasks.iterator();
          while (iter.hasNext())
          {
             TaskHolder holder = iter.next();
-            if (stored >= holder.storeLined && replicated >= holder.replicationLined)
+            if (stored >= holder.storeLined && replicated >= holder.replicationLined && paged >= holder.pageLined)
             {
                // If set, we use an executor to avoid the server being single threaded
                execute(holder.task);
@@ -250,6 +280,8 @@ public class OperationContextImpl implements OperationContext
       int storeLined;
 
       int replicationLined;
+      
+      int pageLined;
 
       IOAsyncTask task;
 
@@ -257,6 +289,7 @@ public class OperationContextImpl implements OperationContext
       {
          storeLined = storeLineUp;
          replicationLined = replicationLineUp;
+         pageLined = pageLineUp;
          this.task = task;
       }
    }
@@ -287,5 +320,26 @@ public class OperationContextImpl implements OperationContext
          return waitCallback.waitCompletion(timeout);
       }
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "OperationContextImpl [storeLineUp=" + storeLineUp +
+             ", stored=" +
+             stored +
+             ", replicationLineUp=" +
+             replicationLineUp +
+             ", replicated=" +
+             replicated +
+             ", pageLineUp=" +
+             pageLineUp +
+             ", paged=" +
+             paged +
+             "]";
+   }
+   
 
 }

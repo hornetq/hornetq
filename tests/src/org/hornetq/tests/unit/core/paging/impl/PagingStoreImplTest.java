@@ -138,6 +138,8 @@ public class PagingStoreImplTest extends UnitTestCase
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       PagingStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                  null,
+                                                  100,
                                                   createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
@@ -174,6 +176,8 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                           null,
+                                                           100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
@@ -210,6 +214,8 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.sync();
 
       storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                      null,
+                                      100,
                                       createMockManager(),
                                       createStorageManagerMock(),
                                       createPostOfficeMock(),
@@ -237,6 +243,8 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                           null,
+                                                           100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
@@ -312,6 +320,8 @@ public class PagingStoreImplTest extends UnitTestCase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                           null,
+                                                           100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
@@ -358,7 +368,7 @@ public class PagingStoreImplTest extends UnitTestCase
       for (int pageNr = 0; pageNr < 2; pageNr++)
       {
          Page page = storeImpl.depage();
-         
+
          System.out.println("numberOfPages = " + storeImpl.getNumberOfPages());
 
          page.open();
@@ -459,6 +469,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                                 null,
+                                                                 100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
                                                                  createPostOfficeMock(),
@@ -622,6 +634,8 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       TestSupportPageStore storeImpl2 = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                            null,
+                                                            100,
                                                             createMockManager(),
                                                             createStorageManagerMock(),
                                                             createPostOfficeMock(),
@@ -644,7 +658,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
       ServerMessage lastMsg = createMessage(lastMessageId, storeImpl, destination, createRandomBuffer(lastMessageId, 5));
-      
+
       storeImpl2.forceAnotherPage();
 
       storeImpl2.page(lastMsg, new RoutingContextImpl(null));
@@ -707,6 +721,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                                 null,
+                                                                 100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
                                                                  createPostOfficeMock(),
@@ -747,6 +763,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+                                                                 null,
+                                                                 100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
                                                                  createPostOfficeMock(),
@@ -755,7 +773,7 @@ public class PagingStoreImplTest extends UnitTestCase
                                                                  new SimpleString("test"),
                                                                  settings,
                                                                  getExecutorFactory(),
-                                                                 true);
+                                                                 false);
 
       storeImpl.start();
 
@@ -1181,7 +1199,6 @@ public class PagingStoreImplTest extends UnitTestCase
          return 0;
       }
 
-
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
        */
@@ -1605,7 +1622,7 @@ public class PagingStoreImplTest extends UnitTestCase
       public void deleteIncrementRecord(long txID, long recordID) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -1614,13 +1631,22 @@ public class PagingStoreImplTest extends UnitTestCase
       public void deletePageCounter(long txID, long recordID) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, long, int)
        */
       public long storePageCounterInc(long txID, long queueID, int add) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, int)
+       */
+      public long storePageCounterInc(long queueID, int add) throws Exception
       {
          // TODO Auto-generated method stub
          return 0;

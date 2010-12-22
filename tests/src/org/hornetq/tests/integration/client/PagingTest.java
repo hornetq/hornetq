@@ -13,16 +13,17 @@
 
 package org.hornetq.tests.integration.client;
 
-import java.lang.management.ManagementFactory;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -30,30 +31,28 @@ import junit.framework.AssertionFailedError;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.PagingStoreFactory;
-import org.hornetq.core.paging.impl.PagingManagerImpl;
-import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
-import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
-import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.ExecutorFactory;
 
 /**
  * A PagingTest
@@ -111,6 +110,188 @@ public class PagingTest extends ServiceTestBase
 
       super.tearDown();
    }
+   
+   public void testPreparePersistent() throws Exception
+   {
+      boolean persistentMessages = true;
+      
+      System.out.println("PageDir:" + getPageDir());
+      clearData();
+
+      Configuration config = createDefaultConfig();
+      
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+      
+      final int messageSize = 1024;
+
+      final int numberOfMessages = 10000;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[messageSize];
+
+         ByteBuffer bb = ByteBuffer.wrap(body);
+
+         for (int j = 1; j <= messageSize; j++)
+         {
+            bb.put(getSamplebyte(j));
+         }
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(persistentMessages);
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty(new SimpleString("id"), i);
+
+            producer.send(message);
+            if (i % 1000 == 0)
+            {
+               session.commit();
+            }
+         }
+         session.commit();
+         session.close();
+         session = null;
+         
+         sf.close();
+         locator.close();
+
+         server.stop();
+
+         server = createServer(true,
+                               config,
+                               PagingTest.PAGE_SIZE,
+                               PagingTest.PAGE_MAX,
+                               new HashMap<String, AddressSettings>());
+         server.start();
+
+         locator = createInVMNonHALocator();
+         sf = locator.createSessionFactory();
+         
+         Queue queue = server.locateQueue(ADDRESS);
+         
+         assertEquals(numberOfMessages, queue.getMessageCount());
+
+         
+         LinkedList<Xid> xids = new LinkedList<Xid>();
+         
+         int msgReceived = 0;
+         for (int i = 0 ; i < numberOfMessages / 999; i++)
+         {
+            ClientSession sessionConsumer = sf.createSession(true, false, false);
+            Xid xid = newXID();
+            xids.add(xid);
+            sessionConsumer.start(xid, XAResource.TMNOFLAGS);
+            sessionConsumer.start();
+            ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
+            for (int msgCount = 0 ; msgCount < 1000; i++)
+            {
+               if (msgReceived == numberOfMessages)
+               {
+                  break;
+               }
+               System.out.println("MsgReceived = " + (msgReceived++));
+               ClientMessage msg = consumer.receive(5000);
+               assertNotNull(msg);
+               msg.acknowledge();
+            }
+            sessionConsumer.end(xid, XAResource.TMSUCCESS);
+            sessionConsumer.prepare(xid);
+            sessionConsumer.close();
+         }
+         
+         
+         ClientSession sessionCheck = sf.createSession(true, true);
+         
+         ClientConsumer consumer = sessionCheck.createConsumer(PagingTest.ADDRESS);
+         
+         assertNull(consumer.receiveImmediate());
+
+         sessionCheck.close();
+
+         sf.close();
+         locator.close();
+
+         server.stop();
+
+         server = createServer(true,
+                               config,
+                               PagingTest.PAGE_SIZE,
+                               PagingTest.PAGE_MAX,
+                               new HashMap<String, AddressSettings>());
+         server.start();
+
+         queue = server.locateQueue(ADDRESS);
+
+         locator = createInVMNonHALocator();
+         sf = locator.createSessionFactory();
+
+         session = sf.createSession(true, false, false);
+
+         consumer = session.createConsumer(PagingTest.ADDRESS);
+
+         session.start();
+         
+         assertNull(consumer.receiveImmediate());
+         
+         for (Xid xid : xids)
+         {
+            session.rollback(xid);
+         }
+         
+         xids.clear();
+         
+         assertNotNull(consumer.receiveImmediate());
+
+         session.close();
+         
+         sf.close();
+         
+         locator.close();
+         
+         //assertEquals(numberOfMessages, queue.getMessageCount());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
 
    public void testSendReceivePagingPersistent() throws Exception
    {
@@ -137,6 +318,8 @@ public class PagingTest extends ServiceTestBase
       clearData();
 
       Configuration config = createDefaultConfig();
+      
+      config.setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true,
                                           config,
@@ -284,7 +467,7 @@ public class PagingTest extends ServiceTestBase
 
                         Assert.assertNotNull(message2);
 
-                        session.commit();
+                        if (i % 1000 == 0) session.commit();
 
                         try
                         {
@@ -299,6 +482,8 @@ public class PagingTest extends ServiceTestBase
                            throw e;
                         }
                      }
+                     
+                     session.commit();
 
                      consumer.close();
 
@@ -362,6 +547,8 @@ public class PagingTest extends ServiceTestBase
       clearData();
 
       Configuration config = createDefaultConfig();
+      
+      config.setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true,
                                           config,
@@ -452,7 +639,7 @@ public class PagingTest extends ServiceTestBase
 
             Assert.assertNotNull(message2);
 
-            session.commit();
+            if (i % 1000 == 0) session.commit();
 
             try
             {
@@ -1060,203 +1247,6 @@ public class PagingTest extends ServiceTestBase
       }
    }
 
-   // This test will force a depage thread as soon as the first message hits the page
-   public void testDepageDuringTransaction5() throws Exception
-   {
-      clearData();
-
-      final Configuration config = createDefaultConfig();
-      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
-
-      final Executor executor = Executors.newSingleThreadExecutor();
-
-      final AtomicInteger countDepage = new AtomicInteger(0);
-      class HackPagingStore extends PagingStoreImpl
-      {
-         HackPagingStore(final SimpleString address,
-                         final PagingManager pagingManager,
-                         final StorageManager storageManager,
-                         final PostOffice postOffice,
-                         final SequentialFileFactory fileFactory,
-                         final PagingStoreFactory storeFactory,
-                         final SimpleString storeName,
-                         final AddressSettings addressSettings,
-                         final ExecutorFactory executorFactory,
-                         final boolean syncNonTransactional)
-         {
-            super(address,
-                  pagingManager,
-                  storageManager,
-                  postOffice,
-                  fileFactory,
-                  storeFactory,
-                  storeName,
-                  addressSettings,
-                  executorFactory,
-                  syncNonTransactional);
-         }
-
-         public boolean startDepaging()
-         {
-            // do nothing, we are hacking depage right in between paging
-            return false;
-         }
-
-      };
-
-      class HackStoreFactory extends PagingStoreFactoryNIO
-      {
-         HackStoreFactory(final String directory,
-                          final ExecutorFactory executorFactory,
-                          final boolean syncNonTransactional)
-         {
-            super(directory, executorFactory, syncNonTransactional);
-         }
-
-         public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings)
-         {
-
-            return new HackPagingStore(address,
-                                       getPagingManager(),
-                                       getStorageManager(),
-                                       getPostOffice(),
-                                       null,
-                                       this,
-                                       address,
-                                       settings,
-                                       getExecutorFactory(),
-                                       syncNonTransactional);
-         }
-
-      };
-
-      HornetQServer server = new HornetQServerImpl(config, ManagementFactory.getPlatformMBeanServer(), securityManager)
-
-      {
-         protected PagingManager createPagingManager()
-         {
-            return new PagingManagerImpl(new HackStoreFactory(config.getPagingDirectory(),
-                                                              getExecutorFactory(),
-                                                              config.isJournalSyncNonTransactional()),
-                                         getStorageManager(),
-                                         getAddressSettingsRepository());
-         }
-      };
-
-      AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(PAGE_SIZE);
-      defaultSetting.setMaxSizeBytes(PAGE_MAX);
-      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
-
-      server.start();
-
-      final AtomicInteger errors = new AtomicInteger(0);
-
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
-      locator.setBlockOnAcknowledge(false);
-
-      final ClientSessionFactory sf = locator.createSessionFactory();
-      final int messageSize = 1024; // 1k
-      final int numberOfMessages = 2000;
-
-      try
-      {
-
-         final byte[] body = new byte[messageSize];
-
-         Thread producerThread = new Thread()
-         {
-            public void run()
-            {
-               ClientSession sessionProducer = null;
-               try
-               {
-                  sessionProducer = sf.createSession(false, false);
-                  ClientProducer producer = sessionProducer.createProducer(ADDRESS);
-
-                  for (int i = 0; i < numberOfMessages; i++)
-                  {
-                     ClientMessage msg = sessionProducer.createMessage(true);
-                     msg.getBodyBuffer().writeBytes(body);
-                     msg.putIntProperty("count", i);
-                     producer.send(msg);
-
-                     if (i % 500 == 0 && i != 0)
-                     {
-                        sessionProducer.commit();
-                        // Thread.sleep(500);
-                     }
-                  }
-
-                  sessionProducer.commit();
-
-                  System.out.println("Producer gone");
-
-               }
-               catch (Throwable e)
-               {
-                  e.printStackTrace(); // >> junit report
-                  errors.incrementAndGet();
-               }
-               finally
-               {
-                  try
-                  {
-                     if (sessionProducer != null)
-                     {
-                        sessionProducer.close();
-                     }
-                  }
-                  catch (Throwable e)
-                  {
-                     e.printStackTrace();
-                     errors.incrementAndGet();
-                  }
-               }
-            }
-         };
-
-         ClientSession session = sf.createSession(true, true, 0);
-         session.start();
-         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
-
-         producerThread.start();
-
-         ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
-
-         for (int i = 0; i < numberOfMessages; i++)
-         {
-            ClientMessage msg = consumer.receive(500000);
-            assertNotNull(msg);
-            assertEquals(i, msg.getIntProperty("count").intValue());
-            msg.acknowledge();
-            if (i > 0 && i % 10 == 0)
-            {
-               // session.commit();
-            }
-         }
-         // session.commit();
-
-         session.close();
-
-         producerThread.join();
-
-         assertEquals(0, errors.get());
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
-
    public void testOrderingNonTX() throws Exception
    {
       clearData();
@@ -1399,6 +1389,8 @@ public class PagingTest extends ServiceTestBase
       clearData();
 
       Configuration config = createDefaultConfig();
+      
+      config.setJournalSyncNonTransactional(false);
 
       HornetQServer server = createServer(true,
                                           config,
@@ -1980,7 +1972,7 @@ public class PagingTest extends ServiceTestBase
       }
 
    }
-
+   
    public void testDropMessagesExpiring() throws Exception
    {
       clearData();
@@ -2190,6 +2182,206 @@ public class PagingTest extends ServiceTestBase
       }
 
    }
+   
+   public void testSyncPage() throws Exception
+   {
+      Configuration config = createDefaultConfig();
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         server.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true, false);
+         
+         final CountDownLatch pageUp = new CountDownLatch(0);
+         final CountDownLatch pageDone = new CountDownLatch(1);
+         
+         OperationContext ctx = new OperationContext()
+         {
+            
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+            
+            public void done()
+            {
+            }
+            
+            public void storeLineUp()
+            {
+            }
+            
+            public boolean waitCompletion(long timeout) throws Exception
+            {
+               return false;
+            }
+            
+            public void waitCompletion() throws Exception
+            {
+               
+            }
+            
+            public void replicationLineUp()
+            {
+               
+            }
+            
+            public void replicationDone()
+            {
+               
+            }
+            
+            public void pageSyncLineUp()
+            {
+               pageUp.countDown();
+            }
+            
+            public void pageSyncDone()
+            {
+               pageDone.countDown();
+            }
+            
+            public void executeOnCompletion(IOAsyncTask runnable)
+            {
+               
+            }
+         };
+
+         
+         OperationContextImpl.setContext(ctx);
+         
+         PagingManager paging = server.getPagingManager();
+         
+         PagingStore store = paging.getPageStore(ADDRESS);
+         
+         store.sync();
+         
+         assertTrue(pageUp.await(10, TimeUnit.SECONDS));
+         
+         assertTrue(pageDone.await(10, TimeUnit.SECONDS));
+         
+         server.stop();
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+
+   public void testSyncPageTX() throws Exception
+   {
+      Configuration config = createDefaultConfig();
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      try
+      {
+         server.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true, false);
+         
+         final CountDownLatch pageUp = new CountDownLatch(0);
+         final CountDownLatch pageDone = new CountDownLatch(1);
+         
+         OperationContext ctx = new OperationContext()
+         {
+            
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+            
+            public void done()
+            {
+            }
+            
+            public void storeLineUp()
+            {
+            }
+            
+            public boolean waitCompletion(long timeout) throws Exception
+            {
+               return false;
+            }
+            
+            public void waitCompletion() throws Exception
+            {
+               
+            }
+            
+            public void replicationLineUp()
+            {
+               
+            }
+            
+            public void replicationDone()
+            {
+               
+            }
+            
+            public void pageSyncLineUp()
+            {
+               pageUp.countDown();
+            }
+            
+            public void pageSyncDone()
+            {
+               pageDone.countDown();
+            }
+            
+            public void executeOnCompletion(IOAsyncTask runnable)
+            {
+               
+            }
+         };
+
+         
+         OperationContextImpl.setContext(ctx);
+         
+         PagingManager paging = server.getPagingManager();
+         
+         PagingStore store = paging.getPageStore(ADDRESS);
+         
+         store.sync();
+         
+         assertTrue(pageUp.await(10, TimeUnit.SECONDS));
+         
+         assertTrue(pageDone.await(10, TimeUnit.SECONDS));
+         
+         server.stop();
+
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
 
    public void testPagingOneDestinationOnly() throws Exception
    {

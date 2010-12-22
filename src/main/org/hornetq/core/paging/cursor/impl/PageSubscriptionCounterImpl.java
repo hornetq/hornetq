@@ -100,20 +100,31 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     */
    public void increment(Transaction tx, int add) throws Exception
    {
-
-      if (persistent)
+      if (tx == null)
       {
-         tx.setContainsPersistent();
-         long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
-         replayIncrement(tx, id, add);
+         if (persistent)
+         {
+            long id = storage.storePageCounterInc(this.subscriptionID, add);
+            incrementProcessed(id, add);
+         }
+         else
+         {
+            incrementProcessed(-1, add);
+         }
       }
       else
       {
-         replayIncrement(tx, -1, add);
+         if (persistent)
+         {
+            tx.setContainsPersistent();
+            long id = storage.storePageCounterInc(tx.getID(), this.subscriptionID, add);
+            applyIncrement(tx, id, add);
+         }
+         else
+         {
+            applyIncrement(tx, -1, add);
+         }
       }
-
-
-      
    }
 
    /**
@@ -122,7 +133,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
     * @param recordID
     * @param add
     */
-   public void replayIncrement(Transaction tx, long recordID, int add)
+   public void applyIncrement(Transaction tx, long recordID, int add)
    {
       CounterOperations oper = (CounterOperations)tx.getProperty(TransactionPropertyIndexes.PAGE_COUNT_INC);
 
@@ -194,13 +205,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    public void addInc(long id, int variance)
    {
       value.addAndGet(variance);
-      
+
       if (id >= 0)
       {
          incrementRecords.add(id);
       }
    }
-   
+
    /** used on testing only */
    public void setPersistent(final boolean persistent)
    {
@@ -215,6 +226,10 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       long valueReplace;
       synchronized (this)
       {
+         if (incrementRecords.size() <= FLUSH_COUNTER)
+         {
+            return;
+         }
          valueReplace = value.get();
          deleteList = new ArrayList<Long>(incrementRecords.size());
          deleteList.addAll(incrementRecords);
@@ -242,7 +257,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          storage.commit(txCleanup);
 
          storage.waitOnOperations();
-      }
+     }
       catch (Exception e)
       {
          newRecordID = recordID;

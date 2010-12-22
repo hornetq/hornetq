@@ -205,5 +205,11 @@ public interface StorageManager extends HornetQComponent
     */
    long storePageCounterInc(long txID, long queueID, int add) throws Exception;
    
+   /**
+    * @return the ID with the increment record
+    * @throws Exception 
+    */
+   long storePageCounterInc(long queueID, int add) throws Exception;
+   
    
 }

@@ -57,7 +57,11 @@ public interface PagingStore extends HornetQComponent
 
    boolean isPaging();
 
+   // It will schedule sync to the file storage
    void sync() throws Exception;
+   
+   // It will perform a real sync on the current IO file
+   void ioSync() throws Exception;
 
    boolean page(ServerMessage message, RoutingContext ctx) throws Exception;
 
@@ -88,12 +92,6 @@ public interface PagingStore extends HornetQComponent
    Page getCurrentPage();
 
 
-   /**
-    * @return false if a thread was already started, or if not in page mode
-    * @throws Exception 
-    */
-   boolean startDepaging();
-   
    /** @return true if paging was started, or false if paging was already started before this call */
    boolean startPaging() throws Exception;
 

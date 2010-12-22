@@ -764,6 +764,12 @@ public class HornetQServerImpl implements HornetQServer
    // HornetQServer implementation
    // -----------------------------------------------------------
 
+   
+   public ScheduledExecutorService getScheduledPool()
+   {
+      return scheduledPool;
+   }
+   
    public Configuration getConfiguration()
    {
       return configuration;
@@ -1110,7 +1116,10 @@ public class HornetQServerImpl implements HornetQServer
 
    protected PagingManager createPagingManager()
    {
+      
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
+                                                             (long)configuration.getJournalBufferSize_NIO(),
+                                                             scheduledPool,
                                                              executorFactory,
                                                              configuration.isJournalSyncNonTransactional()),
                                    storageManager,

@@ -33,7 +33,7 @@ public interface PageSubscriptionCounter
    
    void loadInc(final long recordInd, final int add);
    
-   void replayIncrement(Transaction tx, long recordID, int add);
+   void applyIncrement(Transaction tx, long recordID, int add);
    
    /** This will process the reload */
    void processReload();

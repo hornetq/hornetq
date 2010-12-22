@@ -149,6 +149,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       if (lateDeliveries != null)
       {
+         // This is to make sure deliveries that were touched before the commit arrived will be delivered
          for (Pair<PageSubscription, PagePosition> pos : lateDeliveries)
          {
             pos.a.redeliver(pos.b);
@@ -164,7 +165,9 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       storageManager.storePageTransaction(tx.getID(), this);
    }
 
-   /* (non-Javadoc)
+   /* 
+    * This is to be used after paging. We will update the PageTransactions until they get all the messages delivered. On that case we will delete the page TX
+    * (non-Javadoc)
     * @see org.hornetq.core.paging.PageTransactionInfo#storeUpdate(org.hornetq.core.persistence.StorageManager, org.hornetq.core.transaction.Transaction, int)
     */
    public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx) throws Exception

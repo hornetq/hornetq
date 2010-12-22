@@ -34,6 +34,10 @@ public interface OperationContext extends IOCompletion
    void replicationLineUp();
 
    void replicationDone();
+   
+   void pageSyncLineUp();
+   
+   void pageSyncDone();
 
    void waitCompletion() throws Exception;
 

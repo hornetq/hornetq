@@ -45,6 +45,67 @@ public class OperationContextUnitTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   public void testCompleteTaskAfterPaging() throws Exception
+   {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+      try
+      {
+         OperationContextImpl impl = new OperationContextImpl(executor);
+         final CountDownLatch latch1 = new CountDownLatch(1);
+         final CountDownLatch latch2 = new CountDownLatch(1);
+         
+         impl.executeOnCompletion(new IOAsyncTask()
+         {
+            
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+            
+            public void done()
+            {
+               latch1.countDown();
+            }
+         });
+         
+         assertTrue(latch1.await(10, TimeUnit.SECONDS));
+         
+         for (int i = 0 ; i < 10; i++) impl.storeLineUp();
+         for (int i = 0 ; i < 3; i++) impl.pageSyncLineUp();
+
+         impl.executeOnCompletion(new IOAsyncTask()
+         {
+            
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+            
+            public void done()
+            {
+               latch2.countDown();
+            }
+         });
+         
+         
+         assertFalse(latch2.await(1, TimeUnit.MILLISECONDS));
+         
+         for (int i = 0 ; i < 9; i++) impl.done();
+         for (int i = 0 ; i < 2; i++) impl.pageSyncDone();
+         
+         
+         assertFalse(latch2.await(1, TimeUnit.MILLISECONDS));
+         
+         impl.done();
+         impl.pageSyncDone();
+         
+         assertTrue(latch2.await(10, TimeUnit.SECONDS));
+         
+      }
+      finally
+      {
+         executor.shutdown();
+      }
+   }
+
    public void testCaptureExceptionOnExecutor() throws Exception
    {
       ExecutorService executor = Executors.newSingleThreadExecutor();

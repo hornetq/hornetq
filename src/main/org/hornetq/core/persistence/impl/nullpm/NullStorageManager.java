@@ -507,4 +507,13 @@ public class NullStorageManager implements StorageManager
       return 0;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, int)
+    */
+   public long storePageCounterInc(long queueID, int add) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
 }

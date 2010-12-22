@@ -15,10 +15,14 @@ package org.hornetq.core.paging.impl;
 
 import java.text.DecimalFormat;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,7 +43,9 @@ import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
@@ -50,6 +56,7 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -89,6 +96,9 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final PagingStoreFactory storeFactory;
 
+   // Used to schedule sync threads
+   private final PageSyncTimer syncTimer;
+
    private final long maxSize;
 
    private final long pageSize;
@@ -113,7 +123,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    private volatile int currentPageId;
 
    private volatile Page currentPage;
-   
+
    private volatile boolean paging = false;
 
    /** duplicate cache used at this address */
@@ -142,6 +152,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Constructors --------------------------------------------------
 
    public PagingStoreImpl(final SimpleString address,
+                          final ScheduledExecutorService scheduledExecutor,
+                          final long syncTimeout,
                           final PagingManager pagingManager,
                           final StorageManager storageManager,
                           final PostOffice postOffice,
@@ -190,6 +202,15 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.storeFactory = storeFactory;
 
       this.syncNonTransactional = syncNonTransactional;
+
+      if (scheduledExecutor != null)
+      {
+         this.syncTimer = new PageSyncTimer(this, scheduledExecutor, syncTimeout);
+      }
+      else
+      {
+         this.syncTimer = null;
+      }
 
       this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory);
 
@@ -303,7 +324,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
-   
+
    public boolean page(final ServerMessage message, final RoutingContext ctx) throws Exception
    {
       return page(message, ctx, ctx.getContextListing(storeName));
@@ -311,12 +332,23 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean page(final ServerMessage message, final RoutingContext ctx, RouteContextList listCtx) throws Exception
    {
-      // The sync on transactions is done on commit only
-      // TODO: sync on paging
-      return page(message, ctx, listCtx, false);
+      return page(message, ctx, listCtx, syncNonTransactional && ctx.getTransaction() == null);
    }
 
    public void sync() throws Exception
+   {
+      if (syncTimer != null)
+      {
+         syncTimer.addSync(storageManager.getContext());
+      }
+      else
+      {
+         ioSync();
+      }
+
+   }
+
+   public void ioSync() throws Exception
    {
       lock.readLock().lock();
 
@@ -331,53 +363,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          lock.readLock().unlock();
       }
-   }
-
-   public boolean startDepaging()
-   {
-
-      // Disabled for now
-
-      return false;
-
-      /*
-      if (!running)
-      {
-         return false;
-      }
-
-      currentPageLock.readLock().lock();
-      try
-      {
-         if (currentPage == null)
-         {
-            return false;
-         }
-         else
-         {
-            // startDepaging and clearDepage needs to be atomic.
-            // We can't use writeLock to this operation as writeLock would still be used by another thread, and still
-            // being a valid usage
-            synchronized (this)
-            {
-               if (!depaging.get())
-               {
-                  depaging.set(true);
-                  Runnable depageAction = new DepageRunnable(executor);
-                  executor.execute(depageAction);
-                  return true;
-               }
-               else
-               {
-                  return false;
-               }
-            }
-         }
-      }
-      finally
-      {
-         currentPageLock.readLock().unlock();
-      } */
    }
 
    public void processReload() throws Exception
@@ -415,11 +400,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
       }
    }
-   
+
    public void flushExecutors()
    {
       cursorProvider.flushExecutors();
-      
+
       Future future = new Future();
 
       executor.execute(future);
@@ -498,7 +483,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                   cursorProvider.addPageCache(pageCache);
                }
-               
+
                // We will not mark it for paging if there's only a single empty file
                if (currentPage != null && !(numberOfPages == 1 && currentPage.getSize() == 0))
                {
@@ -513,7 +498,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          lock.writeLock().unlock();
       }
    }
-   
+
    public void stopPaging()
    {
       lock.writeLock().lock();
@@ -551,7 +536,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             return false;
          }
-         
+
          if (currentPage == null)
          {
             try
@@ -568,7 +553,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
 
          paging = true;
-         
+
          return true;
       }
       finally
@@ -805,19 +790,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                }
             }
          }
-         else
-         {
-            if (maxSize > 0 && currentPage != null && addressSize <= maxSize - pageSize && !depaging.get())
-            {
-               if (startDepaging())
-               {
-                  if (PagingStoreImpl.isTrace)
-                  {
-                     PagingStoreImpl.trace("Starting depaging Thread, size = " + addressSize);
-                  }
-               }
-            }
-         }
 
          return;
       }
@@ -878,8 +850,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       Transaction tx = ctx.getTransaction();
-      
-      boolean startedTx = false;
 
       lock.writeLock().lock();
 
@@ -888,12 +858,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          if (!paging)
          {
             return false;
-         }
-         
-         if (tx == null)
-         {
-            tx = new TransactionImpl(storageManager);
-            startedTx = true;
          }
 
          PagedMessage pagedMessage;
@@ -905,7 +869,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             message.bodyChanged();
          }
 
-         pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), getTransactionID(tx, listCtx));
+         pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), installPageTransaction(tx, listCtx));
 
          int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 
@@ -917,15 +881,31 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          currentPage.write(pagedMessage);
 
+         if (tx != null)
+         {
+            SyncPageStoreTX syncPage = (SyncPageStoreTX)tx.getProperty(TransactionPropertyIndexes.PAGE_SYNC);
+            if (syncPage == null)
+            {
+               syncPage = new SyncPageStoreTX();
+               tx.putProperty(TransactionPropertyIndexes.PAGE_SYNC, syncPage);
+               tx.addOperation(syncPage);
+            }
+            syncPage.addStore(this);
+         }
+         else
+         {
+            if (sync)
+            {
+               System.out.println("Doing a sync on page");
+               sync();
+            }
+         }
+
          return true;
       }
       finally
       {
          lock.writeLock().unlock();
-         if (startedTx)
-         {
-            tx.commit();
-         }
       }
 
    }
@@ -934,7 +914,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       List<org.hornetq.core.server.Queue> durableQueues = ctx.getDurableQueues();
       List<org.hornetq.core.server.Queue> nonDurableQueues = ctx.getNonDurableQueues();
-      long ids[] = new long [durableQueues.size() + nonDurableQueues.size()];
+      long ids[] = new long[durableQueues.size() + nonDurableQueues.size()];
       int i = 0;
 
       for (org.hornetq.core.server.Queue q : durableQueues)
@@ -942,7 +922,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          q.getPageSubscription().getCounter().increment(tx, 1);
          ids[i++] = q.getID();
       }
-      
+
       for (org.hornetq.core.server.Queue q : nonDurableQueues)
       {
          q.getPageSubscription().getCounter().increment(tx, 1);
@@ -950,8 +930,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       return ids;
    }
-   
-   private long getTransactionID(final Transaction tx, final RouteContextList listCtx) throws Exception
+
+   private long installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
    {
       if (tx == null)
       {
@@ -959,7 +939,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       else
       {
-         PageTransactionInfo pgTX = (PageTransactionInfo) tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+         PageTransactionInfo pgTX = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
          if (pgTX == null)
          {
             pgTX = new PageTransactionInfoImpl(tx.getID());
@@ -967,25 +947,81 @@ public class PagingStoreImpl implements TestSupportPageStore
             tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pgTX);
             tx.addOperation(new FinishPageMessageOperation(pgTX));
          }
-         
+
          pgTX.increment(listCtx.getNumberOfQueues());
-         
+
          return tx.getID();
       }
    }
 
-   
+   private static class SyncPageStoreTX extends TransactionOperationAbstract
+   {
+      Set<PagingStore> storesToSync = new HashSet<PagingStore>();
+
+      public void addStore(PagingStore store)
+      {
+         storesToSync.add(store);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforePrepare(Transaction tx) throws Exception
+      {
+         sync();
+      }
+
+      void sync() throws Exception
+      {
+         OperationContext originalTX = OperationContextImpl.getContext();
+
+         try
+         {
+            // We only want to sync paging here, no need to wait for any other events
+            OperationContextImpl.clearContext();
+
+            for (PagingStore store : storesToSync)
+            {
+               store.sync();
+            }
+
+            // We can't perform a commit/sync on the journal before we can assure page files are synced or we may get
+            // out of sync
+            OperationContext ctx = OperationContextImpl.getContext();
+
+            if (ctx != null)
+            {
+               // if null it means there were no operations done before, hence no need to wait any completions
+               ctx.waitCompletion();
+            }
+         }
+         finally
+         {
+            OperationContextImpl.setContext(originalTX);
+         }
+
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforeCommit(Transaction tx) throws Exception
+      {
+         sync();
+      }
+   }
+
    private class FinishPageMessageOperation implements TransactionOperation
    {
       private final PageTransactionInfo pageTransaction;
-      
+
       private boolean stored = false;
 
       public FinishPageMessageOperation(final PageTransactionInfo pageTransaction)
       {
          this.pageTransaction = pageTransaction;
       }
-      
+
       public void afterCommit(final Transaction tx)
       {
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
@@ -1019,7 +1055,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          storePageTX(tx);
       }
-      
+
       private void storePageTX(final Transaction tx) throws Exception
       {
          if (!stored)
@@ -1043,24 +1079,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
    }
-
-   /**
-    * This method will remove files from the page system and and route them, doing it transactionally
-    *     
-    * If persistent messages are also used, it will update eventual PageTransactions
-    */
-
-    /**
-    * @param pageId
-    * @return
-    */
-   private byte[] generateDuplicateID(final int pageId)
-   {
-      byte duplicateIdForPage[] = new SimpleString("page-" + pageId).getData();
-      return duplicateIdForPage;
-   }
-
-   
 
    private void openNewPage() throws Exception
    {
@@ -1126,40 +1144,4 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    // Inner classes -------------------------------------------------
-
-   /*   private class DepageRunnable implements Runnable
-      {
-         private final Executor followingExecutor;
-
-         public DepageRunnable(final Executor followingExecutor)
-         {
-            this.followingExecutor = followingExecutor;
-         }
-
-         public void run()
-         {
-            try
-            {
-               if (running)
-               {
-                  if (!isAddressFull(getPageSizeBytes()))
-                  {
-                     readPage();
-                  }
-
-                  // Note: clearDepage is an atomic operation, it needs to be done even if readPage was not executed
-                  // however clearDepage shouldn't be executed if the page-store is being stopped, as stop will be holding
-                  // the lock and this would dead lock
-                  if (running && !clearDepage())
-                  {
-                     followingExecutor.execute(this);
-                  }
-               }
-            }
-            catch (Throwable e)
-            {
-               PagingStoreImpl.log.error(e, e);
-            }
-         }
-      } */
 }
