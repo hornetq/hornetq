@@ -896,7 +896,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             if (sync)
             {
-               System.out.println("Doing a sync on page");
                sync();
             }
          }
