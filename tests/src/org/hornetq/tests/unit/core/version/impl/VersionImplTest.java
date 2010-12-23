@@ -51,13 +51,15 @@ public class VersionImplTest extends UnitTestCase
       int incrementingVersion = 10;
       String versionSuffix = "suffix";
       String nettyVersion = "netty";
+      int[] compatibleVersionList = {7,8,9,10};
       VersionImpl version = new VersionImpl(versionName,
                                             majorVersion,
                                             minorVersion,
                                             microVersion,
                                             incrementingVersion,
                                             versionSuffix,
-                                            nettyVersion);
+                                            nettyVersion,
+                                            compatibleVersionList);
 
       Assert.assertEquals(versionName, version.getVersionName());
       Assert.assertEquals(majorVersion, version.getMajorVersion());
@@ -70,9 +72,9 @@ public class VersionImplTest extends UnitTestCase
    public void testEquals() throws Exception
    {
       String nettyVersion = "netty";
-      VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion);
-      VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion);
-      VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", nettyVersion);
+      VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion, new int[]{7,8,9,10});
+      VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion, new int[]{7,8,9,10});
+      VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", nettyVersion, new int[]{7,8,9,10,11});
 
       Assert.assertFalse(version.equals(new Object()));
 
@@ -84,7 +86,7 @@ public class VersionImplTest extends UnitTestCase
    public void testSerialize() throws Exception
    {
       String nettyVersion = "netty";
-      VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh", nettyVersion);
+      VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh", nettyVersion, new int[]{9,10,11,12});
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(version);

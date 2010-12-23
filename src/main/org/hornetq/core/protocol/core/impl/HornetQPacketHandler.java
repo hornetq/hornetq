@@ -127,8 +127,18 @@ public class HornetQPacketHandler implements ChannelHandler
       try
       {
          Version version = server.getVersion();
+         int[] compatibleList = version.getCompatibleVersionList();
+         boolean isCompatibleClient = false;
+         for(int i=0; i<compatibleList.length; i++)
+         {
+            if(compatibleList[i] == request.getVersion())
+            {
+               isCompatibleClient = true;
+               break;
+            }
+         }
 
-         if (version.getIncrementingVersion() != request.getVersion())
+         if (!isCompatibleClient)
          {
             log.warn("Client with version " + request.getVersion() +
                      " and address " +

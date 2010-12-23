@@ -35,6 +35,8 @@ public interface Version
    String getVersionSuffix();
 
    int getIncrementingVersion();
+   
+   int[] getCompatibleVersionList();
 
    String getNettyVersion();
 }
