@@ -98,6 +98,10 @@ public class JMSQueueControlTest extends ManagementTestBase
       MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
 
       Assert.assertEquals(1, queueControl.getConsumerCount());
+      
+      JSONArray jsonArray = new JSONArray(queueControl.listConsumersAsJSON());
+      
+      assertEquals(1, jsonArray.length());
 
       JMSUtil.sendMessages(queue, 2);
 

@@ -21,6 +21,7 @@ import javax.management.StandardMBean;
 import org.hornetq.api.core.FilterConstants;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.MessageCounterInfo;
+import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.logging.Logger;
@@ -49,7 +50,7 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    // Attributes ----------------------------------------------------
 
    private final HornetQDestination managedQueue;
-   
+
    private final JMSServerManager jmsServerManager;
 
    private final QueueControl coreQueueControl;
@@ -172,12 +173,11 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
    {
       jmsServerManager.addQueueToJndi(managedQueue.getName(), jndi);
    }
-   
+
    public String[] getJNDIBindings()
    {
       return jmsServerManager.getJNDIOnQueue(managedQueue.getName());
    }
-
 
    public boolean removeMessage(final String messageID) throws Exception
    {
@@ -300,6 +300,12 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       HornetQDestination otherQueue = HornetQDestination.createQueue(otherQueueName);
       return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
+   }
+
+   @Operation(desc = "List all the existent consumers on the Queue")
+   public String listConsumersAsJSON() throws Exception
+   {
+      return coreQueueControl.listConsumersAsJSON();
    }
 
    public String listMessageCounter()
