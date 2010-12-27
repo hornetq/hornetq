@@ -214,6 +214,15 @@ public interface JMSServerControl
    String listConsumersAsJSON(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
    /**
+    * Lists all the consumers
+    * The returned String is a JSON string containing an array of JMSConsumerInfo objects.
+    * 
+    * @see JMSConsumerInfo#from(String)
+    */
+   @Operation(desc = "List all JMS consumers associated to a JMS Connection")
+   String listAllConsumersAsJSON() throws Exception;
+
+   /**
     * Lists all addresses to which the designated server session has sent messages.
     */
    @Operation(desc = "Lists all addresses to which the designated session has sent messages", impact = MBeanOperationInfo.INFO)

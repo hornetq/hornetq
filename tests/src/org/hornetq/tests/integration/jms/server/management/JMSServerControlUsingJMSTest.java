@@ -261,6 +261,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             proxy.invokeOperation("createConnectionFactory", name, ha, useDiscovery, cfType, connectors, jndiBindings);
          }
 
+         public String listAllConsumersAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listAllConsumersAsJSON");
+         }
+
 
       };
    }

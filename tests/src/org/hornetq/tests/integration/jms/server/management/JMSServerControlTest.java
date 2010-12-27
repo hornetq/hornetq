@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -65,6 +66,7 @@ import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.json.JSONArray;
 
 /**
  * A JMSServerControlTest
@@ -369,6 +371,56 @@ public class JMSServerControlTest extends ManagementTestBase
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       // create a consumer will create a Core queue bound to the topic address
       session.createConsumer(topic);
+
+      String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
+      AddressControl addressControl = (AddressControl)server.getManagementService()
+                                                            .getResource(ResourceNames.CORE_ADDRESS + topicAddress);
+      assertNotNull(addressControl);
+
+      assertTrue(addressControl.getQueueNames().length > 0);
+
+      connection.close();
+      control.destroyTopic(topicName);
+
+      assertNull(server.getManagementService().getResource(ResourceNames.CORE_ADDRESS + topicAddress));
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      Assert.assertNull(fakeJMSStorageManager.destinationMap.get(topicName));
+   }
+
+
+   public void testListAllConsumers() throws Exception
+   {
+      String topicJNDIBinding = RandomUtil.randomString();
+      String topicName = RandomUtil.randomString();
+
+      UnitTestCase.checkNoBinding(context, topicJNDIBinding);
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+
+      JMSServerControl control = createManagementControl();
+      control.createTopic(topicName, topicJNDIBinding);
+
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
+      Topic topic = (Topic)context.lookup(topicJNDIBinding);
+      assertNotNull(topic);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(false,
+                                                                 new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      // create a consumer will create a Core queue bound to the topic address
+      MessageConsumer cons = session.createConsumer(topic);
+      
+      System.out.println("jsonString:" + control.listAllConsumersAsJSON());
+      JSONArray jsonArray = new JSONArray(control.listAllConsumersAsJSON());
+      
+      assertEquals(1, jsonArray.length());
+      
+      cons.close();
+      
+      jsonArray = new JSONArray(control.listAllConsumersAsJSON());
+      
+      assertEquals(0, jsonArray.length());
 
       String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
       AddressControl addressControl = (AddressControl)server.getManagementService()
