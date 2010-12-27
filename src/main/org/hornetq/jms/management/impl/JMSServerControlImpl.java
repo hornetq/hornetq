@@ -551,13 +551,17 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
          for (RemotingConnection connection : connections)
          {
-            JSONObject obj = new JSONObject();
-            obj.put("connectionID", connection.getID().toString());
-            obj.put("clientAddress", connection.getRemoteAddress());
-            obj.put("creationTime", connection.getCreationTime());
-            obj.put("clientID", jmsSessions.get(connection.getID()).getMetaData("jms-client-id"));
-            obj.put("principal", jmsSessions.get(connection.getID()).getUsername());
-            array.put(obj);
+            ServerSession session = jmsSessions.get(connection.getID());
+            if (session != null)
+            {
+               JSONObject obj = new JSONObject();
+               obj.put("connectionID", connection.getID().toString());
+               obj.put("clientAddress", connection.getRemoteAddress());
+               obj.put("creationTime", connection.getCreationTime());
+               obj.put("clientID", session.getMetaData("jms-client-id"));
+               obj.put("principal", session.getUsername());
+               array.put(obj);
+            }
          }
          return array.toString();
       }
