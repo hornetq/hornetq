@@ -57,7 +57,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    private final AddressControl addressControl;
 
    private final ManagementService managementService;
-   
+
    private final JMSServerManager jmsServerManager;
 
    // Static --------------------------------------------------------
@@ -83,7 +83,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    }
 
    // TopicControlMBean implementation ------------------------------
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.api.jms.management.JMSQueueControl#addJNDI(java.lang.String)
     */
@@ -91,12 +91,11 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
    {
       jmsServerManager.addTopicToJndi(managedTopic.getName(), jndi);
    }
-   
+
    public String[] getJNDIBindings()
    {
-       return jmsServerManager.getJNDIOnTopic(managedTopic.getName());
+      return jmsServerManager.getJNDIOnTopic(managedTopic.getName());
    }
-
 
    public String getName()
    {
@@ -128,7 +127,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       }
       return count;
    }
-   
+
    public long getMessagesAdded()
    {
       List<QueueControl> queues = getQueues(DurabilityType.ALL);
@@ -139,7 +138,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       }
       return count;
    }
-   
+
    public int getDurableMessageCount()
    {
       return getMessageCount(DurabilityType.DURABLE);
@@ -291,7 +290,7 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
          if (queue.isDurable())
          {
             Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
-                                                                                                   .toString());
+                                                                                                         .toString());
             clientID = pair.a;
             subName = pair.b;
          }
@@ -312,36 +311,46 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
 
    private String listSubscribersInfosAsJSON(final DurabilityType durability) throws Exception
    {
-      List<QueueControl> queues = getQueues(durability);
-      JSONArray array = new JSONArray();
-
-      for (QueueControl queue : queues)
+      try
       {
-         String clientID = null;
-         String subName = null;
+         List<QueueControl> queues = getQueues(durability);
+         JSONArray array = new JSONArray();
 
-         if (queue.isDurable())
+         for (QueueControl queue : queues)
          {
-            Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
-                                                                                                   .toString());
-            clientID = pair.a;
-            subName = pair.b;
+            String clientID = null;
+            String subName = null;
+
+            if (queue.isDurable())
+            {
+               Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
+                                                                                                            .toString());
+               clientID = pair.a;
+               subName = pair.b;
+            }
+
+            String filter = queue.getFilter() != null ? queue.getFilter() : null;
+
+            JSONObject info = new JSONObject();
+
+            info.put("queueName", queue.getName());
+            info.put("clientID", clientID);
+            info.put("selector", filter);
+            info.put("name", subName);
+            info.put("durable", queue.isDurable());
+            info.put("messageCount", queue.getMessageCount());
+            info.put("deliveringCount", queue.getDeliveringCount());
+            info.put("consumers", new JSONArray(queue.listConsumersAsJSON()) );
+            array.put(info);
          }
 
-         String filter = queue.getFilter() != null ? queue.getFilter() : null;
-
-         JSONObject info = new JSONObject();
-         info.put("queueName", queue.getName());
-         info.put("clientID", clientID);
-         info.put("selector", filter);
-         info.put("name", subName);
-         info.put("durable", queue.isDurable());
-         info.put("messageCount", queue.getMessageCount());
-         info.put("deliveringCount", queue.getDeliveringCount());
-         array.put(info);
+         return array.toString();
       }
-
-      return array.toString();
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         return e.toString();
+      }
    }
 
    private int getMessageCount(final DurabilityType durability)

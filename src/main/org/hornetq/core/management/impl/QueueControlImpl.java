@@ -14,6 +14,7 @@
 package org.hornetq.core.management.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,10 @@ import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.json.JSONArray;
@@ -328,7 +331,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public void setExpiryAddress(final String expiryAddress) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -352,7 +355,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public Map<String, Object>[] listScheduledMessages() throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -375,7 +378,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public String listScheduledMessagesAsJSON() throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -390,12 +393,12 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
          Filter filter = FilterImpl.createFilter(filterStr);
-         List<Map<String, Object>> messages = new ArrayList<Map<String,Object>>();
+         List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
          queue.blockOnExecutorFuture();
          Iterator<MessageReference> iterator = queue.iterator();
          while (iterator.hasNext())
@@ -422,7 +425,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public String listMessagesAsJSON(final String filter) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -437,7 +440,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public long countMessages(final String filterStr) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -455,7 +458,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                MessageReference ref = (MessageReference)iterator.next();
                if (filter.match(ref.getMessage()))
                {
-                  count ++;
+                  count++;
                }
             }
             return count;
@@ -470,7 +473,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public boolean removeMessage(final long messageID) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -521,7 +524,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public int expireMessages(final String filterStr) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -541,7 +544,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -645,7 +648,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -665,7 +668,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public String listMessageCounter()
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -684,7 +687,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public void resetMessageCounter()
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -699,7 +702,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    public String listMessageCounterAsHTML()
    {
       checkStarted();
-      
+
       clearIO();
       try
       {
@@ -786,13 +789,52 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       }
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.management.QueueControl#listConsumersAsJSON()
+    */
+   public String listConsumersAsJSON() throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         Collection<Consumer> consumers = queue.getConsumers();
+
+         JSONArray jsonArray = new JSONArray();
+
+         for (Consumer consumer : consumers)
+         {
+
+            if (consumer instanceof ServerConsumer)
+            {
+               ServerConsumer serverConsumer = (ServerConsumer)consumer;
+
+               JSONObject obj = new JSONObject();
+               obj.put("consumerID", serverConsumer.getID());
+               obj.put("connectionID", serverConsumer.getConnectionID().toString());
+               obj.put("browseOnly", serverConsumer.isBrowseOnly());
+               obj.put("creationTime", serverConsumer.getCreationTime());
+               
+               jsonArray.put(obj);
+            }
+
+         }
+
+         return jsonArray.toString();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    @Override
    MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(QueueControl.class);
    }
 
-   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -806,6 +848,6 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          throw new IllegalStateException("HornetQ Server is not started. Queue can not be managed yet");
       }
    }
-   
+
    // Inner classes -------------------------------------------------
 }

@@ -281,6 +281,9 @@ public interface QueueControl
     */
    @Operation(desc = "Resumes delivery of queued messages and gets the queue out of paused state.", impact = MBeanOperationInfo.ACTION)
    void resume() throws Exception;
+   
+   @Operation(desc = "List all the existent consumers on the Queue")
+   String listConsumersAsJSON() throws Exception;
 
    /**
     * Returns whether the queue is paused.

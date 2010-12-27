@@ -36,6 +36,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
+import org.hornetq.utils.json.JSONObject;
 
 /**
  * A QueueControlTest
@@ -53,6 +54,7 @@ public class QueueControlTest extends ManagementTestBase
    protected HornetQServer server;
 
    protected ClientSession session;
+
    private ServerLocator locator;
 
    // Static --------------------------------------------------------
@@ -192,6 +194,37 @@ public class QueueControlTest extends ManagementTestBase
 
       consumer.close();
       Assert.assertEquals(0, queueControl.getConsumerCount());
+
+      session.deleteQueue(queue);
+   }
+
+   public void testGetConsumerJSON() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString queue = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      Assert.assertEquals(0, queueControl.getConsumerCount());
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      Assert.assertEquals(1, queueControl.getConsumerCount());
+
+      
+      System.out.println("Consumers: " + queueControl.listConsumersAsJSON());
+      
+      JSONArray obj = new JSONArray(queueControl.listConsumersAsJSON());
+
+      assertEquals(1, obj.length());
+
+      consumer.close();
+      Assert.assertEquals(0, queueControl.getConsumerCount());
+
+      obj = new JSONArray(queueControl.listConsumersAsJSON());
+
+      assertEquals(0, obj.length());
 
       session.deleteQueue(queue);
    }
@@ -374,7 +407,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientMessage message = session.createMessage(false);
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
-      
+
       String jsonString = queueControl.listMessagesAsJSON(null);
       Assert.assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);

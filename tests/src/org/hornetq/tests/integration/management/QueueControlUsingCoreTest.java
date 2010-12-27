@@ -261,6 +261,11 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Boolean)proxy.invokeOperation("isPaused");
          }
 
+         public String listConsumersAsJSON() throws Exception
+         {
+            return (String)proxy.invokeOperation("listConsumersAsJSON");
+         }
+
       };
    }
 

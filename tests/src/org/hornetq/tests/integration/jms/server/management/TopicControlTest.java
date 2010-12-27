@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
-import static junit.framework.Assert.assertEquals;
-
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -25,10 +23,7 @@ import javax.jms.TopicSubscriber;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.SubscriptionInfo;
 import org.hornetq.api.jms.management.TopicControl;
@@ -145,16 +140,22 @@ public class TopicControlTest extends ManagementTestBase
    {
       // 1 non-durable subscriber, 2 durable subscribers
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createConsumer(connection_1, topic);
+      MessageConsumer cons = JMSUtil.createConsumer(connection_1, topic);
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
+      TopicSubscriber subs1 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      TopicSubscriber subs2 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
       Assert.assertEquals(3, topicControl.listAllSubscriptions().length);
       Assert.assertEquals(1, topicControl.listNonDurableSubscriptions().length);
       Assert.assertEquals(2, topicControl.listDurableSubscriptions().length);
+      
+      String json = topicControl.listAllSubscriptionsAsJSON();
+      System.out.println("Json: " + json);
+      JSONArray jsonArray = new JSONArray(json);
+      
+      assertEquals(3, jsonArray.length());
 
       connection_1.close();
       connection_2.close();

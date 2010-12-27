@@ -201,6 +201,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       return creationTime;
    }
+   
+   public String getConnectionID()
+   {
+      return this.session.getConnectionID().toString();
+   }
 
    public HandleStatus handle(final MessageReference ref) throws Exception
    {
