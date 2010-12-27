@@ -53,6 +53,8 @@ public interface ServerConsumer extends Consumer
    boolean isBrowseOnly();
 
    long getCreationTime();
+
+   String getSessionID();
 }
 
 

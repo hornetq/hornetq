@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.core.client.impl.ClientMessageImpl;
@@ -69,6 +71,8 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
+import org.hornetq.utils.json.JSONArray;
+import org.hornetq.utils.json.JSONObject;
 
 /*
  * Session implementation 
@@ -144,7 +148,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    private Map<String, String> metaData;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
-   private Map<SimpleString, UUID> targetAddressInfos = new HashMap<SimpleString, UUID>();
+   private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString,  Pair<UUID, AtomicLong>>();
    
    private long creationTime = System.currentTimeMillis();
 
@@ -1072,6 +1076,79 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          consumer.setTransferring(transferring);
       }
    }
+   
+
+   public void addMetaData(String key, String data)
+   {
+      if (metaData == null)
+      {
+         metaData = new HashMap<String, String>();
+      }
+      metaData.put(key, data);
+   }
+
+   public String getMetaData(String key)
+   {
+      String data = null;
+      if (metaData != null)
+      {
+         data = metaData.get(key);
+      }
+      return data;
+   }
+   
+   public String[] getTargetAddresses()
+   {
+      Map<SimpleString, Pair<UUID, AtomicLong>> copy = cloneTargetAddresses();
+      Iterator<SimpleString> iter = copy.keySet().iterator();
+      int num = copy.keySet().size();
+      String[] addresses = new String[num];
+      int i = 0;
+      while (iter.hasNext())
+      {
+         addresses[i] = iter.next().toString();
+         i++;
+      }
+      return addresses;
+   }
+
+   public String getLastSentMessageID(String address)
+   {
+      Pair<UUID, AtomicLong> value = targetAddressInfos.get(SimpleString.toSimpleString(address));
+      if (value != null)
+      {
+         return value.a.toString();
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   public long getCreationTime()
+   {
+      return this.creationTime;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.ServerSession#getProducersInfoJSON()
+    */
+   public void describeProducersInfo(JSONArray array) throws Exception
+   {
+      Map<SimpleString, Pair<UUID, AtomicLong>> targetCopy = cloneTargetAddresses();
+      
+      for (Map.Entry<SimpleString, Pair<UUID, AtomicLong>> entry : targetCopy.entrySet())
+      {
+         JSONObject producerInfo = new JSONObject();
+         producerInfo.put("connectionID", this.getConnectionID().toString());
+         producerInfo.put("sessionID", this.getName());
+         producerInfo.put("destination", entry.getKey().toString());
+         producerInfo.put("lastUUIDSent", entry.getValue().a);
+         producerInfo.put("msgSent", entry.getValue().b.longValue());
+         array.put(producerInfo);
+      }
+   }
+
 
    // FailureListener implementation
    // --------------------------------------------------------------------
@@ -1098,6 +1175,11 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
    // Private
    // ----------------------------------------------------------------------------
+
+   private Map<SimpleString, Pair<UUID, AtomicLong>> cloneTargetAddresses()
+   {
+      return new HashMap<SimpleString, Pair<UUID, AtomicLong>>(targetAddressInfos);
+   }
 
    private void setStarted(final boolean s)
    {
@@ -1196,57 +1278,18 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
       postOffice.route(msg, routingContext, direct);
       
-      targetAddressInfos.put(msg.getAddress(), msg.getUserID());
+      Pair<UUID, AtomicLong> value = targetAddressInfos.get(msg.getAddress());
+      
+      if (value == null)
+      {
+         targetAddressInfos.put(msg.getAddress(), new Pair<UUID,AtomicLong>(msg.getUserID(), new AtomicLong(1)));
+      }
+      else
+      {
+         value.a = msg.getUserID();
+         value.b.incrementAndGet();
+      }
 
       routingContext.clear();
-   }
-
-   public void addMetaData(String key, String data)
-   {
-      if (metaData == null)
-      {
-         metaData = new HashMap<String, String>();
-      }
-      metaData.put(key, data);
-   }
-
-   public String getMetaData(String key)
-   {
-      String data = null;
-      if (metaData != null)
-      {
-         data = metaData.get(key);
-      }
-      return data;
-   }
-   
-   public String[] getTargetAddresses()
-   {
-      Map<SimpleString, UUID> copy = new HashMap<SimpleString, UUID>(targetAddressInfos);
-      Iterator<SimpleString> iter = copy.keySet().iterator();
-      int num = copy.keySet().size();
-      String[] addresses = new String[num];
-      int i = 0;
-      while (iter.hasNext())
-      {
-         addresses[i] = iter.next().toString();
-         i++;
-      }
-      return addresses;
-   }
-
-   public String getLastSentMessageID(String address)
-   {
-      UUID id = targetAddressInfos.get(SimpleString.toSimpleString(address));
-      if (id != null)
-      {
-         return id.toString();
-      }
-      return null;
-   }
-
-   public long getCreationTime()
-   {
-      return this.creationTime;
    }
 }

@@ -15,11 +15,15 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
+import org.hornetq.utils.json.JSONArray;
 
 /**
  *
@@ -120,6 +124,14 @@ public interface ServerSession
    String getMetaData(String key);
 
    String[] getTargetAddresses();
+   
+   /**
+    * Add all the producers detail to the JSONArray object.
+    * This is a method to be used by the management layer.
+    * @param objs
+    * @throws Exception
+    */
+   void describeProducersInfo(JSONArray objs) throws Exception;
 
    String getLastSentMessageID(String address);
 

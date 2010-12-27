@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.management;
 
-import java.util.List;
-
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
@@ -618,38 +616,10 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   password);
          }
 
-         public void createBridge(String name,
-                                  String queueName,
-                                  String forwardingAddress,
-                                  String filterString,
-                                  String transformerClassName,
-                                  long retryInterval,
-                                  double retryIntervalMultiplier,
-                                  int reconnectAttempts,
-                                  boolean useDuplicateDetection,
-                                  int confirmationWindowSize,
-                                  long clientFailureCheckPeriod,
-                                  String discoveryGroupName,
-                                  boolean ha,
-                                  String user,
-                                  String password) throws Exception
+
+         public String listProducersInfoAsJSON() throws Exception
          {
-            proxy.invokeOperation("createBridge",
-                                  name,
-                                  queueName,
-                                  forwardingAddress,
-                                  filterString,
-                                  transformerClassName,
-                                  retryInterval,
-                                  retryIntervalMultiplier,
-                                  reconnectAttempts,
-                                  useDuplicateDetection,
-                                  confirmationWindowSize,
-                                  clientFailureCheckPeriod,
-                                  discoveryGroupName,
-                                  ha,
-                                  user,
-                                  password);
+            return (String)proxy.invokeOperation("listProducersInfoAsJSON");
          }
       };
    }

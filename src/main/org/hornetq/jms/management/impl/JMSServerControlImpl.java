@@ -851,6 +851,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       JSONObject obj = new JSONObject();
       obj.put("consumerID", consumer.getID());
       obj.put("connectionID", consumer.getConnectionID());
+      obj.put("sessionID", consumer.getSessionID());
       obj.put("queueName", consumer.getQueue().getName().toString());
       obj.put("browseOnly", consumer.isBrowseOnly());
       obj.put("creationTime", consumer.getCreationTime());

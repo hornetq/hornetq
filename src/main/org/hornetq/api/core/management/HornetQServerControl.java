@@ -13,8 +13,6 @@
 
 package org.hornetq.api.core.management;
 
-import java.util.List;
-
 import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.HornetQException;
@@ -481,6 +479,8 @@ public interface HornetQServerControl
     */
    @Operation(desc = "List all the connection IDs", impact = MBeanOperationInfo.INFO)
    String[] listConnectionIDs() throws Exception;
+   
+   String listProducersInfoAsJSON() throws Exception;
 
    /**
     * Lists all the sessions IDs for the specified connection ID.

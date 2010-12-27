@@ -13,9 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.transaction.xa.XAResource;
@@ -37,7 +35,6 @@ import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.DivertControl;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
-import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.RoleInfo;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -712,10 +709,16 @@ public class HornetQServerControlTest extends ManagementTestBase
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
 
+      HornetQServerControl serverControl = createManagementControl();
+      
+      JSONArray jsonArray = new JSONArray(serverControl.listProducersInfoAsJSON());
+      
+      assertEquals(1, jsonArray.length());
+      assertEquals(4, ((JSONObject)jsonArray.get(0)).getInt("msgSent"));
+
       clientSession.close();
       locator.close();
 
-      HornetQServerControl serverControl = createManagementControl();
       String txDetails = serverControl.listPreparedTransactionDetailsAsJSON();
 
       Assert.assertTrue(txDetails.matches(".*m1.*"));

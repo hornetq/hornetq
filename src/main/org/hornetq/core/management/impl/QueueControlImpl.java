@@ -813,6 +813,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                JSONObject obj = new JSONObject();
                obj.put("consumerID", serverConsumer.getID());
                obj.put("connectionID", serverConsumer.getConnectionID().toString());
+               obj.put("sessionID", serverConsumer.getSessionID());
                obj.put("browseOnly", serverConsumer.isBrowseOnly());
                obj.put("creationTime", serverConsumer.getCreationTime());
                
