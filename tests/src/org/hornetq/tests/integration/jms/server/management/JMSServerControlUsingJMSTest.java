@@ -60,6 +60,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    // Constructors --------------------------------------------------
 
    // JMSServerControlTest overrides --------------------------------
+   @Override
+   protected int getNumberOfConsumers()
+   {
+      return 1;
+   }
+
 
    @Override
    protected void setUp() throws Exception

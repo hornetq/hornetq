@@ -112,6 +112,12 @@ public class JMSServerControlTest extends ManagementTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   /** Number of consumers used by the test itself */
+   protected int getNumberOfConsumers()
+   {
+      return 0;
+   }
 
    public void testGetVersion() throws Exception
    {
@@ -411,16 +417,15 @@ public class JMSServerControlTest extends ManagementTestBase
       // create a consumer will create a Core queue bound to the topic address
       MessageConsumer cons = session.createConsumer(topic);
       
-      System.out.println("jsonString:" + control.listAllConsumersAsJSON());
       JSONArray jsonArray = new JSONArray(control.listAllConsumersAsJSON());
       
-      assertEquals(1, jsonArray.length());
+      assertEquals(1 + getNumberOfConsumers(), jsonArray.length());
       
       cons.close();
       
       jsonArray = new JSONArray(control.listAllConsumersAsJSON());
       
-      assertEquals(0, jsonArray.length());
+      assertEquals(getNumberOfConsumers(), jsonArray.length());
 
       String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
       AddressControl addressControl = (AddressControl)server.getManagementService()
