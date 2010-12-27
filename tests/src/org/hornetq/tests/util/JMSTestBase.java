@@ -21,7 +21,6 @@ import javax.jms.Queue;
 import javax.jms.Topic;
 import javax.naming.NamingException;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;

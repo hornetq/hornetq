@@ -11,24 +11,41 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.jms.client;
+package org.hornetq.jms.client;
 
-import javax.jms.Connection;
-import javax.jms.Session;
-import javax.jms.XAConnection;
+import javax.jms.XAQueueSession;
 import javax.jms.XASession;
+import javax.jms.XATopicSession;
 
-import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.api.core.client.ClientSession;
 
 /**
- * A ConnectionTest
+ * A HornetQXASession
  *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author clebertsuconic
  *
  *
  */
-public class ConnectionTest extends JMSTestBase
+public class HornetQXASession extends HornetQSession implements XAQueueSession, XATopicSession, XASession
 {
+
+   /**
+    * @param connection
+    * @param transacted
+    * @param xa
+    * @param ackMode
+    * @param session
+    * @param sessionType
+    */
+   protected HornetQXASession(HornetQConnection connection,
+                              boolean transacted,
+                              boolean xa,
+                              int ackMode,
+                              ClientSession session,
+                              int sessionType)
+   {
+      super(connection, transacted, xa, ackMode, session, sessionType);
+   }
 
    // Constants -----------------------------------------------------
 
@@ -39,31 +56,6 @@ public class ConnectionTest extends JMSTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-
-   public void testGetSetConnectionFactory() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      
-      conn.getClientID();
-      
-      conn.setClientID("somethingElse");
-
-      conn.close();
-   }
-   
-   public void testXAInstanceof() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      
-      assertFalse(conn instanceof XAConnection);
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      assertFalse(sess instanceof XASession);
-      
-      conn.close();
-   }
-
 
    // Package protected ---------------------------------------------
 

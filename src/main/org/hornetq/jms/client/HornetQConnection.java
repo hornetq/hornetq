@@ -154,7 +154,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    {
       checkClosed();
 
-      return createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
+      return (Session)createSessionInternal(transacted, acknowledgeMode, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    public String getClientID() throws JMSException
@@ -350,7 +350,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
+      return (QueueSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Queue queue,
@@ -368,7 +368,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
+      return (TopicSession)createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Topic topic,
@@ -386,7 +386,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public XASession createXASession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_GENERIC_SESSION);
+      return (XASession)createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_GENERIC_SESSION);
    }
 
    // XAQueueConnection implementation -------------------------------------------------------------
@@ -394,7 +394,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public XAQueueSession createXAQueueSession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_QUEUE_SESSION);
+      return (XAQueueSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_QUEUE_SESSION);
 
    }
 
@@ -403,7 +403,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
    public XATopicSession createXATopicSession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_TOPIC_SESSION);
+      return (XATopicSession)createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_TOPIC_SESSION);
 
    }
 
@@ -468,7 +468,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       }
    }
 
-   protected HornetQSession createSessionInternal(final boolean transacted,
+   private Object createSessionInternal(final boolean transacted,
                                                   int acknowledgeMode,
                                                   final boolean isXA,
                                                   final int type) throws JMSException
@@ -536,8 +536,20 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
          // Setting multiple times on different sessions doesn't matter since RemotingConnection maintains
          // a set (no duplicates)
          session.addFailureListener(listener);
+         
+         
+         
 
-         HornetQSession jbs = new HornetQSession(this, transacted, isXA, acknowledgeMode, session, type);
+         HornetQSession jbs;
+         
+         if (isXA)
+         {
+            jbs = new HornetQXASession(this, transacted, isXA, acknowledgeMode, session, type);
+         }
+         else
+         {
+            jbs = new HornetQSession(this, transacted, isXA, acknowledgeMode, session, type);
+         }
 
          sessions.add(jbs);
 

@@ -74,7 +74,7 @@ import org.hornetq.core.logging.Logger;
  *
  * $Id$
  */
-public class HornetQSession implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
+public class HornetQSession implements Session, QueueSession, TopicSession
 {
    // Constants -----------------------------------------------------
 
