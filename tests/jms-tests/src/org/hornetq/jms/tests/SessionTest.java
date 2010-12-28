@@ -89,22 +89,6 @@ public class SessionTest extends HornetQServerTestCase
       conn.close();
    }
 
-   public void testGetSession1() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection();
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      try
-      {
-         ((XASession)sess).getSession();
-         ProxyAssertSupport.fail("Should throw IllegalStateException");
-      }
-      catch (javax.jms.IllegalStateException e)
-      {
-      }
-      conn.close();
-   }
-
    public void testGetSession2() throws Exception
    {
       XAConnection conn = getXAConnectionFactory().createXAConnection();
@@ -285,15 +269,6 @@ public class SessionTest extends HornetQServerTestCase
       ProxyAssertSupport.assertFalse(tr1.exceptionThrown);
       ProxyAssertSupport.assertNotNull(tr1.m);
 
-      conn.close();
-   }
-
-   public void testGetXAResource() throws Exception
-   {
-      Connection conn = getConnectionFactory().createConnection();
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      ((XASession)sess).getXAResource();
       conn.close();
    }
 
