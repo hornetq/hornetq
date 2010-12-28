@@ -12,16 +12,25 @@
  */
 package org.hornetq.tests.integration.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientProducerCreditManagerImpl;
 import org.hornetq.core.client.impl.ClientProducerCredits;
 import org.hornetq.core.client.impl.ClientProducerInternal;
@@ -325,7 +334,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       for (int i = 0; i < numConsumers; i++)
       {
-         handlers[i].latch.await();
+         assertTrue(handlers[i].latch.await(5, TimeUnit.MINUTES));
 
          Assert.assertNull(handlers[i].exception);
       }
