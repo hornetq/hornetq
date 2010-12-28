@@ -59,6 +59,8 @@ public class HornetQAdmin implements Admin
    private Process serverProcess;
 
    private ClientSessionFactory sf;
+   
+   ServerLocator serverLocator;
 
    public HornetQAdmin()
    {
@@ -78,7 +80,7 @@ public class HornetQAdmin implements Admin
 
    public void start() throws Exception
    {
-      ServerLocator serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
       sf = serverLocator.createSessionFactory();
       clientSession = sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
@@ -99,6 +101,14 @@ public class HornetQAdmin implements Admin
       {
          sf.close();
       }
+      
+      if (serverLocator != null)
+      {
+         serverLocator.close();
+      }
+      
+      sf = null;
+      serverLocator = null;
    }
 
    public void createConnectionFactory(final String name)
