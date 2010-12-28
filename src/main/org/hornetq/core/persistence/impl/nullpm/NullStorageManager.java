@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -61,6 +59,52 @@ public class NullStorageManager implements StorageManager
    private final AtomicLong idSequence = new AtomicLong(0);
 
    private volatile boolean started;
+   
+   private static final OperationContext dummyContext = new OperationContext()
+   {
+      
+      public void onError(int errorCode, String errorMessage)
+      {
+      }
+      
+      public void done()
+      {
+      }
+      
+      public void storeLineUp()
+      {
+      }
+      
+      public boolean waitCompletion(long timeout) throws Exception
+      {
+         return true;
+      }
+      
+      public void waitCompletion() throws Exception
+      {
+      }
+      
+      public void replicationLineUp()
+      {
+      }
+      
+      public void replicationDone()
+      {
+      }
+      
+      public void pageSyncLineUp()
+      {
+      }
+      
+      public void pageSyncDone()
+      {
+      }
+      
+      public void executeOnCompletion(IOAsyncTask runnable)
+      {
+         runnable.done();
+      }
+   };
 
    public void sync()
    {
@@ -352,7 +396,7 @@ public class NullStorageManager implements StorageManager
     */
    public OperationContext getContext()
    {
-      return null;
+      return dummyContext;
    }
 
    /* (non-Javadoc)
@@ -360,7 +404,7 @@ public class NullStorageManager implements StorageManager
     */
    public OperationContext newContext(final Executor executor)
    {
-      return null;
+      return dummyContext;
    }
 
    /* (non-Javadoc)
@@ -440,8 +484,6 @@ public class NullStorageManager implements StorageManager
     */
    public void storeCursorAcknowledge(long queueID, PagePosition position)
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -449,8 +491,6 @@ public class NullStorageManager implements StorageManager
     */
    public void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position)
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -458,8 +498,6 @@ public class NullStorageManager implements StorageManager
     */
    public void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -467,8 +505,6 @@ public class NullStorageManager implements StorageManager
     */
    public void updatePageTransaction(PageTransactionInfo pageTransaction, int depage) throws Exception
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -476,7 +512,6 @@ public class NullStorageManager implements StorageManager
     */
    public long storePageCounter(long txID, long queueID, long value) throws Exception
    {
-      // TODO Auto-generated method stub
       return 0;
    }
 
@@ -485,8 +520,6 @@ public class NullStorageManager implements StorageManager
     */
    public void deleteIncrementRecord(long txID, long recordID) throws Exception
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -494,8 +527,6 @@ public class NullStorageManager implements StorageManager
     */
    public void deletePageCounter(long txID, long recordID) throws Exception
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -503,7 +534,6 @@ public class NullStorageManager implements StorageManager
     */
    public long storePageCounterInc(long txID, long queueID, int add) throws Exception
    {
-      // TODO Auto-generated method stub
       return 0;
    }
 
@@ -512,7 +542,6 @@ public class NullStorageManager implements StorageManager
     */
    public long storePageCounterInc(long queueID, int add) throws Exception
    {
-      // TODO Auto-generated method stub
       return 0;
    }
 
