@@ -156,7 +156,7 @@ public class JMSServerControlRestartTest extends ManagementTestBase
    }
 
    private JMSServerManager createJMSServer() throws Exception {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setPersistenceEnabled(true);
