@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.client;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
