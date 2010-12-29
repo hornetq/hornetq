@@ -26,17 +26,14 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
@@ -64,7 +61,6 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUIDGenerator;
@@ -557,24 +553,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       setPagingStore(message);
 
-      Object duplicateID = message.getObjectProperty(Message.HDR_DUPLICATE_DETECTION_ID);
+      byte[] duplicateIDBytes = message.getDuplicateIDBytes();
 
       DuplicateIDCache cache = null;
-
-      byte[] duplicateIDBytes = null;
-
-      if (duplicateID != null)
+      
+      if (duplicateIDBytes != null)
       {
          cache = getDuplicateIDCache(message.getAddress());
-
-         if (duplicateID instanceof SimpleString)
-         {
-            duplicateIDBytes = ((SimpleString)duplicateID).getData();
-         }
-         else
-         {
-            duplicateIDBytes = (byte[])duplicateID;
-         }
 
          if (cache.contains(duplicateIDBytes))
          {

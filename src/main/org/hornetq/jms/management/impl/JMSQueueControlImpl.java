@@ -28,6 +28,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;

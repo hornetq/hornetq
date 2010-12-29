@@ -992,6 +992,24 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#getDuplicateIDBytes()
+       */
+      public byte[] getDuplicateIDBytes()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#getDuplicateProperty()
+       */
+      public Object getDuplicateProperty()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
    }
 
    class FakeFilter implements Filter

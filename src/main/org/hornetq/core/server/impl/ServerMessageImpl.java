@@ -14,7 +14,6 @@
 package org.hornetq.core.server.impl;
 
 import java.io.InputStream;
-import java.util.Arrays;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -89,7 +88,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       super(other);
    }
-   
+
    public boolean isServerMessage()
    {
       return true;
@@ -109,10 +108,10 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public synchronized int incrementRefCount() throws Exception
    {
-      refCount ++;
-      
+      refCount++;
+
       if (pagingStore != null)
-      {         
+      {
          if (refCount == 1)
          {
             pagingStore.addSize(getMemoryEstimate() + MessageReferenceImpl.getMemoryEstimate());
@@ -213,8 +212,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       if (other.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
       {
-         putStringProperty(Message.HDR_ORIGINAL_ADDRESS,
-                           other.getSimpleStringProperty(Message.HDR_ORIGINAL_ADDRESS));
+         putStringProperty(Message.HDR_ORIGINAL_ADDRESS, other.getSimpleStringProperty(Message.HDR_ORIGINAL_ADDRESS));
 
          putLongProperty(Message.HDR_ORIG_MESSAGE_ID, other.getLongProperty(Message.HDR_ORIG_MESSAGE_ID));
       }
@@ -269,12 +267,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    @Override
    public String toString()
    {
-      return "ServerMessage[messageID=" + messageID +
-             ", durable=" +
-             durable +
-             ", address=" +
-             getAddress() +
-             "]";
+      return "ServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress() + "]";
    }
 
    // FIXME - this is stuff that is only used in large messages
@@ -293,5 +286,34 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
       buffer.setLong(buffer.getInt(MessageImpl.BUFFER_HEADER_SPACE) + DataConstants.SIZE_INT, messageID);
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.ServerMessage#getDuplicateIDBytes()
+    */
+   public byte[] getDuplicateIDBytes()
+   {
+      Object duplicateID = getDuplicateProperty();
+
+      if (duplicateID == null)
+      {
+         return null;
+      }
+      else
+      {
+         if (duplicateID instanceof SimpleString)
+         {
+            return ((SimpleString)duplicateID).getData();
+         }
+         else
+         {
+            return (byte[])duplicateID;
+         }
+      }
+   }
    
+   public Object getDuplicateProperty()
+   {
+      return getObjectProperty(Message.HDR_DUPLICATE_DETECTION_ID);
+   }
+
 }

@@ -36,6 +36,7 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
@@ -981,7 +982,15 @@ public class QueueImpl implements Queue
          {
             iter.remove();
             deliveringCount.incrementAndGet();
-            move(toAddress, ref);
+            try
+            {
+               move(toAddress, ref);
+            }
+            catch (Exception e)
+            {
+               deliveringCount.decrementAndGet();
+               throw e;
+            }
             return true;
          }
       }
@@ -993,32 +1002,69 @@ public class QueueImpl implements Queue
       Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
-      Iterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (filter == null || filter.match(ref.getMessage()))
+         Iterator<MessageReference> iter = iterator();
+         
+         DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
+   
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            move(toAddress, tx, ref, false);
-            iter.remove();
-            count++;
+            MessageReference ref = iter.next();
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               boolean ignored = false;
+               
+               deliveringCount.incrementAndGet();
+               count++;
+
+               byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
+               if (duplicateBytes != null)
+               {
+                  if (targetDuplicateCache.contains(duplicateBytes))
+                  {
+                     log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored and message removed from " + this.address);
+                     acknowledge(tx, ref);
+                     ignored = true;
+                  }
+               }
+               if (!ignored)
+               {
+                  move(toAddress, tx, ref, false);
+               }
+               iter.remove();
+            }
          }
+   
+         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
+         for (MessageReference ref : cancelled)
+         {
+            byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
+            if (duplicateBytes != null)
+            {
+               if (targetDuplicateCache.contains(duplicateBytes))
+               {
+                  log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored");
+                  continue;
+               }
+            }
+   
+            deliveringCount.incrementAndGet();
+            count++;
+            move(toAddress, tx, ref, false);
+            acknowledge(tx, ref);
+         }
+   
+         tx.commit();
+   
+         return count;
       }
-
-      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
-      for (MessageReference ref : cancelled)
+      catch (Exception e)
       {
-         deliveringCount.incrementAndGet();
-         move(toAddress, tx, ref, false);
-         acknowledge(tx, ref);
-         count++;
+         deliveringCount.addAndGet(-count);
+         throw e;
       }
-
-      tx.commit();
-
-      return count;
    }
 
    public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception

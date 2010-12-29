@@ -29,6 +29,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
@@ -47,6 +53,7 @@ import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
 
 /**
@@ -69,6 +76,8 @@ public class JMSQueueControlTest extends ManagementTestBase
    private JMSServerManagerImpl serverManager;
 
    protected HornetQQueue queue;
+
+   protected String queueName;
 
    protected Context context;
 
@@ -98,9 +107,9 @@ public class JMSQueueControlTest extends ManagementTestBase
       MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
 
       Assert.assertEquals(1, queueControl.getConsumerCount());
-      
+
       JSONArray jsonArray = new JSONArray(queueControl.listConsumersAsJSON());
-      
+
       assertEquals(1, jsonArray.length());
 
       JMSUtil.sendMessages(queue, 2);
@@ -753,6 +762,236 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   public void testMoveMessagesWithDuplicateIDSet() throws Exception
+   {
+      String otherQueueName = RandomUtil.randomString();
+
+      serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer(queue.getAddress());
+      ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+
+         msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
+
+         prod1.send(msg);
+         if (i < 5)
+         {
+            prod2.send(msg);
+         }
+      }
+
+      session.commit();
+
+      JMSQueueControl queueControl = createManagementControl();
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+                                                                                        mbeanServer);
+
+      Assert.assertEquals(10, queueControl.getMessageCount());
+
+      int moved = queueControl.moveMessages(null, otherQueueName);
+
+      assertEquals(10, moved);
+
+      assertEquals(0, queueControl.getDeliveringCount());
+
+      session.start();
+
+      ClientConsumer cons1 = session.createConsumer(queue.getAddress());
+
+      assertNull(cons1.receiveImmediate());
+
+      cons1.close();
+
+      ClientConsumer cons2 = session.createConsumer(otherQueue.getAddress());
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = cons2.receive(10000);
+
+         assertNotNull(msg);
+
+         msg.acknowledge();
+      }
+
+      cons2.close();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+
+      Assert.assertEquals(0, queueControl.getMessageCount());
+
+      Assert.assertEquals(0, otherQueueControl.getMessageCount());
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+
+
+   public void testMoveIndividualMessagesWithDuplicateIDSetUsingI() throws Exception
+   {
+      String otherQueueName = RandomUtil.randomString();
+
+      serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer(queue.getAddress());
+      ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
+      
+      String [] ids = new String[10];
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+
+         msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
+
+         msg.setUserID(UUIDGenerator.getInstance().generateUUID());
+         
+         prod1.send(msg);
+         
+         ids[i] = "ID:" + msg.getUserID().toString();
+         if (i < 5)
+         {
+            msg.setUserID(UUIDGenerator.getInstance().generateUUID());
+            prod2.send(msg);
+         }
+      }
+
+      session.commit();
+
+      JMSQueueControl queueControl = createManagementControl();
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+                                                                                        mbeanServer);
+
+      Assert.assertEquals(10, queueControl.getMessageCount());
+
+      for (int i = 0 ; i < 10; i++)
+      {
+         queueControl.moveMessage(ids[i], otherQueueName);
+      }
+
+      assertEquals(0, queueControl.getDeliveringCount());
+
+      session.start();
+
+      ClientConsumer cons1 = session.createConsumer(queue.getAddress());
+
+      assertNull(cons1.receiveImmediate());
+
+      cons1.close();
+
+      ClientConsumer cons2 = session.createConsumer(otherQueue.getAddress());
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = cons2.receive(10000);
+
+         assertNotNull(msg);
+
+         msg.acknowledge();
+      }
+
+      cons2.close();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+
+      Assert.assertEquals(0, queueControl.getMessageCount());
+
+      Assert.assertEquals(0, otherQueueControl.getMessageCount());
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+
+   public void testMoveMessagesWithDuplicateIDSetSingleMessage() throws Exception
+   {
+      String otherQueueName = RandomUtil.randomString();
+
+      serverManager.createQueue(false, otherQueueName, null, true, otherQueueName);
+      HornetQDestination otherQueue = (HornetQDestination)HornetQJMSClient.createQueue(otherQueueName);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer(queue.getAddress());
+      ClientProducer prod2 = session.createProducer(otherQueue.getAddress());
+
+      ClientMessage msg = session.createMessage(true);
+
+      msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-1"));
+
+      prod1.send(msg);
+      prod2.send(msg);
+
+      JMSQueueControl queueControl = createManagementControl();
+      JMSQueueControl otherQueueControl = ManagementControlHelper.createJMSQueueControl((HornetQQueue)otherQueue,
+                                                                                        mbeanServer);
+
+      Assert.assertEquals(1, queueControl.getMessageCount());
+      Assert.assertEquals(1, otherQueueControl.getMessageCount());
+
+      int moved = queueControl.moveMessages(null, otherQueueName);
+
+      assertEquals(1, moved);
+
+      assertEquals(0, queueControl.getDeliveringCount());
+
+      session.start();
+
+      ClientConsumer cons1 = session.createConsumer(queue.getAddress());
+
+      assertNull(cons1.receiveImmediate());
+
+      cons1.close();
+
+      ClientConsumer cons2 = session.createConsumer(otherQueue.getAddress());
+
+      msg = cons2.receive(10000);
+
+      assertNotNull(msg);
+
+      msg.acknowledge();
+
+      cons2.close();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+
+      Assert.assertEquals(0, queueControl.getMessageCount());
+
+      Assert.assertEquals(0, otherQueueControl.getMessageCount());
+
+      serverManager.destroyQueue(otherQueueName);
+   }
+
    public void testMoveMessageWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = RandomUtil.randomString();
@@ -839,7 +1078,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.start();
       serverManager.activated();
 
-      String queueName = RandomUtil.randomString();
+      queueName = RandomUtil.randomString();
       serverManager.createQueue(false, queueName, null, true, queueName);
       queue = (HornetQQueue)HornetQJMSClient.createQueue(queueName);
    }
@@ -873,7 +1112,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    private Connection createConnection() throws JMSException
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       cf.setBlockOnDurableSend(true);
 
