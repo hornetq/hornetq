@@ -102,8 +102,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private volatile int creditsToSend;
 
-   private volatile boolean slowConsumerInitialCreditSent = false;
-
    private volatile Exception lastException;
 
    private volatile int ackBytes;
@@ -667,8 +665,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   ClientConsumerImpl.log.trace("Sending " + creditsToSend + " -1, for slow consumer");
                }
 
-               slowConsumerInitialCreditSent = false;
-
                // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
                // always buffering one after received the first message
                final int credits = creditsToSend - 1;
@@ -717,22 +713,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * */
    private void startSlowConsumer()
    {
-      if (!slowConsumerInitialCreditSent)
+      if (ClientConsumerImpl.trace)
       {
-         if (ClientConsumerImpl.trace)
-         {
-            ClientConsumerImpl.log.trace("Sending 1 credit to start delivering of one message to slow consumer");
-         }
-         slowConsumerInitialCreditSent = true;
-         sendCredits(1);
+         ClientConsumerImpl.log.trace("Sending 1 credit to start delivering of one message to slow consumer");
       }
+      sendCredits(1);
    }
 
    private void resetIfSlowConsumer()
    {
       if (clientWindowSize == 0)
       {
-         slowConsumerInitialCreditSent = false;
          sendCredits(0);
       }
    }

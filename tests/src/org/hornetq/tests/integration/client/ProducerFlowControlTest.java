@@ -73,10 +73,11 @@ public class ProducerFlowControlTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
-      super.tearDown(); 
+
+      super.tearDown();
    }
-// TODO need to test crashing a producer with unused credits returns them to the pool
+
+   // TODO need to test crashing a producer with unused credits returns them to the pool
 
    public void testFlowControlSingleConsumer() throws Exception
    {
@@ -107,7 +108,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
    }
-   
+
    public void testFlowControlSingleConsumerSlowConsumer() throws Exception
    {
       testFlowControl(100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
@@ -218,7 +219,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
       repos.addMatch(address.toString(), addressSettings);
 
       server.start();
-
 
       locator.setProducerWindowSize(producerWindowSize);
       locator.setConsumerWindowSize(consumerWindowSize);
@@ -346,7 +346,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
 
       session.close();
-      
+
       sf.close();
 
       server.stop();
@@ -366,7 +366,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
       repos.addMatch(address.toString(), addressSettings);
 
       server.start();
-
 
       locator.setProducerWindowSize(1024);
       locator.setConsumerWindowSize(1024);

@@ -271,7 +271,10 @@ public class LargeMessageControllerImpl implements LargeMessageController
          outStream = output;
       }
 
-      consumerInternal.flowControl(totalFlowControl, !continues);
+      if (totalFlowControl > 0)
+      {
+         consumerInternal.flowControl(totalFlowControl, !continues);
+      }
    }
 
    public synchronized void saveBuffer(final OutputStream output) throws HornetQException
