@@ -201,7 +201,7 @@ public class BroadcastGroupControlImpl extends AbstractControl implements Broadc
    }
 
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(BroadcastGroupControl.class);
    }

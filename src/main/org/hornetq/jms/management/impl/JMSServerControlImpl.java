@@ -21,14 +21,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
-import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
+import javax.management.MBeanOperationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.StandardMBean;
 
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -38,6 +37,7 @@ import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.management.impl.AbstractControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
@@ -55,7 +55,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSServerControlImpl extends StandardMBean implements JMSServerControl, NotificationEmitter
+public class JMSServerControlImpl extends AbstractControl implements JMSServerControl, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -145,7 +145,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
 
    public JMSServerControlImpl(final JMSServerManager server) throws Exception
    {
-      super(JMSServerControl.class);
+      super(JMSServerControl.class, server.getHornetQServer().getStorageManager());
       this.server = server;
       broadcaster = new NotificationBroadcasterSupport();
    }
@@ -688,21 +688,18 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
    }
 
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(),
-                           info.getDescription(),
-                           info.getAttributes(),
-                           info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class),
-                           info.getNotifications());
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   /* (non-Javadoc)
+    * @see org.hornetq.core.management.impl.AbstractControl#fillMBeanOperationInfo()
+    */
+   @Override
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
+   {
+      return MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class);
+   }
+
 
    // Private -------------------------------------------------------
 
@@ -719,34 +716,6 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
          throw new IllegalStateException("HornetQ JMS Server is not started. it can not be managed yet");
       }
    }
-
-   protected void clearIO()
-   {
-      // the storage manager could be null on the backup on certain components
-      if (server.getHornetQServer().getStorageManager() != null)
-      {
-         server.getHornetQServer().getStorageManager().clearContext();
-      }
-   }
-
-   protected void blockOnIO()
-   {
-      // the storage manager could be null on the backup on certain components
-      if (server.getHornetQServer().getStorageManager() != null)
-      {
-         try
-         {
-            server.getHornetQServer().getStorageManager().waitOnOperations();
-            server.getHornetQServer().getStorageManager().clearContext();
-         }
-         catch (Exception e)
-         {
-            throw new RuntimeException(e.getMessage(), e);
-         }
-      }
-
-   }
-
    // Inner classes -------------------------------------------------
 
    public static enum NotificationType

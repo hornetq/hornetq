@@ -831,7 +831,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    }
 
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(QueueControl.class);
    }

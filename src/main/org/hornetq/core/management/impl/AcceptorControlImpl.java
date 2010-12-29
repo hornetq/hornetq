@@ -135,7 +135,7 @@ public class AcceptorControlImpl extends AbstractControl implements AcceptorCont
    }
    
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(AcceptorControl.class);
    }

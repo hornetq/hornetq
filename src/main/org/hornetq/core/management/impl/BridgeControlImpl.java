@@ -249,7 +249,7 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
    }
    
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(BridgeControl.class);
    }

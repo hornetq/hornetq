@@ -79,7 +79,7 @@ public abstract class AbstractControl extends StandardMBean
 
    }
 
-   abstract MBeanOperationInfo[] fillMBeanOperationInfo();
+   protected abstract MBeanOperationInfo[] fillMBeanOperationInfo();
 
    @Override
    public MBeanInfo getMBeanInfo()

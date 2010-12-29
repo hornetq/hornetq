@@ -263,7 +263,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
    }
 
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(ClusterConnectionControl.class);
    }

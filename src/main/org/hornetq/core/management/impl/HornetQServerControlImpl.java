@@ -1886,7 +1886,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    }
 
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(HornetQServerControl.class);
    }

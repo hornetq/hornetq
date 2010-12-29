@@ -209,7 +209,7 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
    }
 
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(AddressControl.class);
    }

@@ -145,7 +145,7 @@ public class DivertControlImpl extends AbstractControl implements DivertControl
    }
    
    @Override
-   MBeanOperationInfo[] fillMBeanOperationInfo()
+   protected MBeanOperationInfo[] fillMBeanOperationInfo()
    {
       return MBeanInfoHelper.getMBeanOperationsInfo(DivertControl.class);
    }
