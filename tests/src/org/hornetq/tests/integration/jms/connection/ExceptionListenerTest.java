@@ -61,7 +61,7 @@ public class ExceptionListenerTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()

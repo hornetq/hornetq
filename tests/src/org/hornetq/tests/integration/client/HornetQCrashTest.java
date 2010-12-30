@@ -1,31 +1,35 @@
 package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
  * From https://jira.jboss.org/jira/browse/HORNETQ-144
  * 
  */
-public class HornetQCrashTest extends TestCase
+public class HornetQCrashTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(HornetQCrashTest.class);
 
@@ -36,7 +40,7 @@ public class HornetQCrashTest extends TestCase
 
    public void testHang() throws Exception
    {
-      Configuration configuration = new ConfigurationImpl();
+      Configuration configuration = createDefaultConfig();
       configuration.setPersistenceEnabled(false);
       configuration.setSecurityEnabled(false);
       configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

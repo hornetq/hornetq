@@ -18,6 +18,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -64,7 +65,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
    {
       super.setUp();
 
-      ConfigurationImpl configuration = new ConfigurationImpl();
+      Configuration configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);

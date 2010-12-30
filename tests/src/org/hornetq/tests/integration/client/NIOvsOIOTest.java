@@ -156,7 +156,7 @@ public class NIOvsOIOTest extends UnitTestCase
    {
       String acceptorFactoryClassName = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
       
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
       

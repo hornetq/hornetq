@@ -216,7 +216,7 @@ public class RequestorTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = HornetQServers.newHornetQServer(conf, false);

@@ -323,7 +323,7 @@ public class JMSReconnectTest extends UnitTestCase
    {
       super.setUp();
      
-      Configuration liveConf = new ConfigurationImpl();
+      Configuration liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.setJournalType(getDefaultJournalType());
       liveConf.getAcceptorConfigurations()

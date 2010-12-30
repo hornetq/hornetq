@@ -48,7 +48,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
    @Override
    protected void startServers() throws Exception
    {
-      backupConf = new ConfigurationImpl();
+      backupConf = createBasicConfig();
       backupConf.setJournalType(getDefaultJournalType());
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
@@ -71,7 +71,7 @@ public class ReplicatedJMSFailoverTest extends JMSFailoverTest
       
 
 
-      liveConf = new ConfigurationImpl();
+      liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.setJournalType(getDefaultJournalType());
       

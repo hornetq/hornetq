@@ -140,7 +140,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
-      ConfigurationImpl config = new ConfigurationImpl();
+      ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);

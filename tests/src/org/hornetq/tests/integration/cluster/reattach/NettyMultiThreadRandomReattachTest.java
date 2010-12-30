@@ -36,7 +36,7 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
    @Override
    protected void start() throws Exception
    {
-      Configuration liveConf = new ConfigurationImpl();
+      Configuration liveConf = createDefaultConfig();
       liveConf.setJMXManagementEnabled(false);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();

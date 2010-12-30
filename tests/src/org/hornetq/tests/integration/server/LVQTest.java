@@ -589,7 +589,7 @@ public class LVQTest extends UnitTestCase
    {
       super.setUp();
 
-      ConfigurationImpl configuration = new ConfigurationImpl();
+      ConfigurationImpl configuration = createBasicConfig();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);

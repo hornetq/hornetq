@@ -165,7 +165,7 @@ public class ManagementWithStompTest extends ManagementTestBase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       Map<String, Object> params = new HashMap<String, Object>();

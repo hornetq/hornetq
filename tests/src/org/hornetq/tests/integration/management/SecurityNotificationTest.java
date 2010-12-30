@@ -138,7 +138,7 @@ public class SecurityNotificationTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(true);
       // the notifications are independent of JMX
       conf.setJMXManagementEnabled(false);

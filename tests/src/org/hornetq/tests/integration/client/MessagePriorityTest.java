@@ -273,7 +273,7 @@ public class MessagePriorityTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createDefaultConfig();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
       server = HornetQServers.newHornetQServer(config, false);

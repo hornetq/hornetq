@@ -87,7 +87,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void startHornetQServer(final String acceptorFactory) throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));

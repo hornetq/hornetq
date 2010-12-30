@@ -36,7 +36,7 @@ public class LogDelegateTest extends ServiceTestBase
 {
    public void testConfigureJULViaConfiguration() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
 
       String className = JULLogDelegateFactory.class.getCanonicalName();
 
@@ -55,7 +55,7 @@ public class LogDelegateTest extends ServiceTestBase
 
    public void testConfigureLog4jViaConfiguration() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
 
       String className = Log4jLogDelegateFactory.class.getCanonicalName();
 
@@ -105,7 +105,7 @@ public class LogDelegateTest extends ServiceTestBase
 
    public void testDefaultWithConfiguration() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
 
       HornetQServer server = super.createServer(false, config);
 
@@ -120,7 +120,7 @@ public class LogDelegateTest extends ServiceTestBase
 
    public void testUserDefinedLogger() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
 
       String className = MyLogDelegateFactory.class.getCanonicalName();
 

@@ -704,7 +704,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    private void startServer() throws Exception
    {
-      Configuration liveConf = new ConfigurationImpl();
+      Configuration liveConf = createBasicConfig();
       liveConf.setSecurityEnabled(false);
       liveTC = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
       liveConf.getAcceptorConfigurations()

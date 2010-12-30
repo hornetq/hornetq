@@ -226,14 +226,14 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                     RandomUtil.randomPositiveInt(),
                                                                     discoveryGroupName);
       
-      Configuration conf_1 = new ConfigurationImpl();
+      Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
       conf_1.setClustered(true);
       conf_1.getAcceptorConfigurations().add(acceptorConfig);
       conf_1.getQueueConfigurations().add(queueConfig);
 
-      Configuration conf_0 = new ConfigurationImpl();
+      Configuration conf_0 = createBasicConfig();
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
       conf_0.setClustered(true);

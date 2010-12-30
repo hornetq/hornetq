@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.cluster.bridge;
 import java.util.ArrayList;
 import java.util.Map;
 
+import javax.management.MBeanServer;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -26,10 +28,7 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-
-import javax.management.MBeanServer;
 
 /**
  * A BridgeTestBase
@@ -94,7 +93,7 @@ public abstract class BridgeTestBase extends UnitTestCase
                                                final boolean netty,
                                                final NodeManager nodeManager)
    {
-      Configuration serviceConf = new ConfigurationImpl();
+      Configuration serviceConf = createBasicConfig();
       serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);
       serviceConf.setSharedStore(true);
@@ -142,7 +141,7 @@ public abstract class BridgeTestBase extends UnitTestCase
                                                final int liveId,
                                                final NodeManager nodeManager)
    {
-      Configuration serviceConf = new ConfigurationImpl();
+      Configuration serviceConf = createBasicConfig();
       serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);
       serviceConf.setBackup(true);

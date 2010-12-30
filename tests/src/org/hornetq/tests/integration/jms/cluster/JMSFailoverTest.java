@@ -58,7 +58,7 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.integration.jms.server.management.JMSUtil;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * 
@@ -73,33 +73,36 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  *
  */
-public class JMSFailoverTest extends UnitTestCase
+public class JMSFailoverTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(JMSFailoverTest.class);
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    protected InVMContext ctx1 = new InVMContext();
-   
+
    protected InVMContext ctx2 = new InVMContext();
-   
+
    protected Configuration backupConf;
-   
+
    protected Configuration liveConf;
-   
+
    protected JMSServerManager liveJMSService;
 
    protected HornetQServer liveService;
-   
+
    protected JMSServerManager backupJMSService;
 
    protected HornetQServer backupService;
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
+
    private TransportConfiguration backuptc;
+
    private TransportConfiguration livetc;
+
    private TransportConfiguration liveAcceptortc;
 
    private TransportConfiguration backupAcceptortc;
@@ -131,18 +134,16 @@ public class JMSFailoverTest extends UnitTestCase
 
          JMSUtil.crash(liveService, coreSession);
 
-
          assertNotNull(ctx2.lookup("/queue/queue1"));
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
       }
    }
-
 
    public void testCreateTopic() throws Exception
    {
@@ -169,7 +170,7 @@ public class JMSFailoverTest extends UnitTestCase
       }
       finally
       {
-         if(conn != null)
+         if (conn != null)
          {
             conn.close();
          }
@@ -232,7 +233,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       Thread.sleep(2000);
 
-      JMSUtil.crash(liveService, ((HornetQSession) sess).getCoreSession());
+      JMSUtil.crash(liveService, ((HornetQSession)sess).getCoreSession());
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -255,13 +256,15 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testManualFailover() throws Exception
    {
-      HornetQConnectionFactory jbcfLive = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      HornetQConnectionFactory jbcfLive = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                            new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
-      HornetQConnectionFactory jbcfBackup =  HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                    backupParams));
+      HornetQConnectionFactory jbcfBackup = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                              new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                                                         backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);
       jbcfBackup.setInitialConnectAttempts(-1);
@@ -345,25 +348,31 @@ public class JMSFailoverTest extends UnitTestCase
    protected void startServers() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager();
-      backuptc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                 backupParams);
+      backuptc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", backupParams);
       livetc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
 
       liveAcceptortc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory");
 
-
       backupAcceptortc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                 backupParams);
-      
-      backupConf = new ConfigurationImpl();
+                                                    backupParams);
+
+      backupConf = createBasicConfig(0);
 
       backupConf.getAcceptorConfigurations().add(backupAcceptortc);
       backupConf.getConnectorConfigurations().put(livetc.getName(), livetc);
       backupConf.getConnectorConfigurations().put(backuptc.getName(), backuptc);
       ArrayList<String> staticConnectors = new ArrayList<String>();
       staticConnectors.add(livetc.getName());
-      ClusterConnectionConfiguration cccBackup = new ClusterConnectionConfiguration("cluster1", "jms", backuptc.getName(), -1, false, false, 1, 1,
-               staticConnectors, false);
+      ClusterConnectionConfiguration cccBackup = new ClusterConnectionConfiguration("cluster1",
+                                                                                    "jms",
+                                                                                    backuptc.getName(),
+                                                                                    -1,
+                                                                                    false,
+                                                                                    false,
+                                                                                    1,
+                                                                                    1,
+                                                                                    staticConnectors,
+                                                                                    false);
 
       backupConf.getClusterConfigurations().add(cccBackup);
       backupConf.setSecurityEnabled(false);
@@ -383,20 +392,29 @@ public class JMSFailoverTest extends UnitTestCase
       backupService = new InVMNodeManagerServer(backupConf, nodeManager);
 
       backupJMSService = new JMSServerManagerImpl(backupService);
-      
+
       backupJMSService.setContext(ctx2);
-      
+
       backupJMSService.start();
-      
 
+      liveConf = createBasicConfig(0);
 
-      liveConf = new ConfigurationImpl();
+      liveConf.setJournalDirectory(getJournalDir());
+      liveConf.setBindingsDirectory(getBindingsDir());
+
       liveConf.setSecurityEnabled(false);
-      liveConf.getAcceptorConfigurations()
-              .add(liveAcceptortc);
-       List<String> pairs = null;
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", livetc.getName(), -1, false, false, 1, 1,
-               pairs, false);
+      liveConf.getAcceptorConfigurations().add(liveAcceptortc);
+      List<String> pairs = null;
+      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1",
+                                                                               "jms",
+                                                                               livetc.getName(),
+                                                                               -1,
+                                                                               false,
+                                                                               false,
+                                                                               1,
+                                                                               1,
+                                                                               pairs,
+                                                                               false);
       liveConf.getClusterConfigurations().add(ccc0);
       liveConf.setSharedStore(true);
       liveConf.setJournalType(getDefaultJournalType());
@@ -409,14 +427,14 @@ public class JMSFailoverTest extends UnitTestCase
       liveConf.setPersistenceEnabled(true);
       liveConf.setClustered(true);
       liveService = new InVMNodeManagerServer(liveConf, nodeManager);
-      
+
       liveJMSService = new JMSServerManagerImpl(liveService);
-      
+
       liveJMSService.setContext(ctx1);
 
       liveJMSService.start();
 
-      JMSUtil.waitForServer(backupService); 
+      JMSUtil.waitForServer(backupService);
    }
 
    @Override
@@ -429,13 +447,13 @@ public class JMSFailoverTest extends UnitTestCase
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
       liveService = null;
-      
+
       liveJMSService = null;
-      
+
       backupJMSService = null;
-      
+
       ctx1 = null;
-      
+
       ctx2 = null;
 
       backupService = null;
@@ -459,11 +477,11 @@ public class JMSFailoverTest extends UnitTestCase
       }
    }
 
-
    // Inner classes -------------------------------------------------
    class InVMNodeManagerServer extends HornetQServerImpl
    {
       final NodeManager nodeManager;
+
       public InVMNodeManagerServer(NodeManager nodeManager)
       {
          super();
@@ -482,13 +500,18 @@ public class JMSFailoverTest extends UnitTestCase
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, HornetQSecurityManager securityManager, NodeManager nodeManager)
+      public InVMNodeManagerServer(Configuration configuration,
+                                   HornetQSecurityManager securityManager,
+                                   NodeManager nodeManager)
       {
          super(configuration, securityManager);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, HornetQSecurityManager securityManager, NodeManager nodeManager)
+      public InVMNodeManagerServer(Configuration configuration,
+                                   MBeanServer mbeanServer,
+                                   HornetQSecurityManager securityManager,
+                                   NodeManager nodeManager)
       {
          super(configuration, mbeanServer, securityManager);
          this.nodeManager = nodeManager;

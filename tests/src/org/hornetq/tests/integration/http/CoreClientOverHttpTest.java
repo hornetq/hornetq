@@ -39,7 +39,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
    {
       final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
 
@@ -51,7 +51,8 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
+                                                                                                    params));
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -65,10 +66,10 @@ public class CoreClientOverHttpTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.getBodyBuffer().writeString("CoreClientOverHttpTest");
          producer.send(message);
       }
@@ -90,7 +91,6 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       locator.close();
 
-
       server.stop();
    }
 
@@ -98,7 +98,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
    {
       final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
 
@@ -110,7 +110,8 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
+                                                                                                    params));
       locator.setConnectionTTL(500);
       ClientSessionFactory sf = locator.createSessionFactory();
 
@@ -129,12 +130,12 @@ public class CoreClientOverHttpTest extends UnitTestCase
       server.stop();
    }
 
-   //https://issues.jboss.org/browse/JBPAPP-5542
+   // https://issues.jboss.org/browse/JBPAPP-5542
    public void testCoreHttpClient8kPlus() throws Exception
    {
       final SimpleString QUEUE = new SimpleString("CoreClientOverHttpTestQueue");
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
 
       conf.setSecurityEnabled(false);
 
@@ -146,7 +147,8 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName(),
+                                                                                                    params));
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -158,15 +160,15 @@ public class CoreClientOverHttpTest extends UnitTestCase
       final int numMessages = 100;
 
       String[] content = new String[numMessages];
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
-         content[i] = this.getFixedSizeString(i*1024*8);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+         content[i] = this.getFixedSizeString(((i % 5) + 1) * 1024 * 8);
          message.getBodyBuffer().writeString(content[i]);
          producer.send(message);
       }

@@ -71,7 +71,7 @@ public class XaTimeoutTest extends UnitTestCase
       super.setUp();
 
       addressSettings.clear();
-      configuration = new ConfigurationImpl();
+      configuration = createBasicConfig();
       configuration.setSecurityEnabled(false);
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);

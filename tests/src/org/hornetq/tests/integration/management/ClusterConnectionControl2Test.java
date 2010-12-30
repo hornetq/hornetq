@@ -155,7 +155,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
                                                                                          0,
                                                                                          0);
 
-      Configuration conf_1 = new ConfigurationImpl();
+      Configuration conf_1 = createBasicConfig();
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
       conf_1.setClustered(true);
@@ -165,7 +165,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_1.getDiscoveryGroupConfigurations().put(discoveryName, discoveryGroupConfig);
       conf_1.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
 
-      Configuration conf_0 = new ConfigurationImpl();
+      Configuration conf_0 = createBasicConfig();
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
       conf_0.setClustered(true);

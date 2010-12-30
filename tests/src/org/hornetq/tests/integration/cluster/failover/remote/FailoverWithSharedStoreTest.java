@@ -27,7 +27,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
@@ -61,7 +60,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
       @Override
       public Configuration getConfiguration()
       {
-         Configuration config = new ConfigurationImpl();
+         Configuration config = createBasicConfig();
          config.setSecurityEnabled(false);
          config.setJournalType(JournalType.NIO);
          config.setSharedStore(true);
@@ -89,7 +88,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
       @Override
       public Configuration getConfiguration()
       {
-         Configuration config = new ConfigurationImpl();
+         Configuration config = createBasicConfig();
          config.setSecurityEnabled(false);
          config.setJournalType(JournalType.NIO);
          config.setSharedStore(true);

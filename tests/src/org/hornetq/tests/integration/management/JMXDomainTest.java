@@ -53,7 +53,7 @@ public class JMXDomainTest extends ManagementTestBase
 
       String jmxDomain_1 = ConfigurationImpl.DEFAULT_JMX_DOMAIN + ".1";
 
-      Configuration config_1 = new ConfigurationImpl();
+      Configuration config_1 = createBasicConfig();
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       config_1.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName(), params));

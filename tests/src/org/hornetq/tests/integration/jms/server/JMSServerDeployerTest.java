@@ -335,7 +335,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
    {
       super.setUp();
 
-      config = new ConfigurationImpl();
+      config = createBasicConfig();
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
       

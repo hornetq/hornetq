@@ -1469,7 +1469,7 @@ public class RandomReattachTest extends UnitTestCase
 
    private void start() throws Exception
    {
-      Configuration liveConf = new ConfigurationImpl();
+      Configuration liveConf = createDefaultConfig();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));

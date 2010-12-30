@@ -100,7 +100,7 @@ public class DivertControlTest extends ManagementTestBase
                                              RandomUtil.randomBoolean(),
                                              null,
                                              null);
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);

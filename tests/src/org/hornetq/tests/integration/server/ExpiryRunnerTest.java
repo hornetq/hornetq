@@ -248,7 +248,7 @@ public class ExpiryRunnerTest extends UnitTestCase
    {
       super.setUp();
 
-      ConfigurationImpl configuration = new ConfigurationImpl();
+      ConfigurationImpl configuration = createBasicConfig();
       configuration.setSecurityEnabled(false);
       configuration.setMessageExpiryScanPeriod(1000);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);

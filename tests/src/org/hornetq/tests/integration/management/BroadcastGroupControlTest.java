@@ -79,7 +79,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       connectorInfos.add(connectorConfiguration.getName());
       BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);
@@ -118,7 +118,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       connectorInfos.add(connectorConfiguration.getName());
       BroadcastGroupConfiguration broadcastGroupConfig = BroadcastGroupControlTest.randomBroadcastGroupConfiguration(connectorInfos);
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.setClustered(true);

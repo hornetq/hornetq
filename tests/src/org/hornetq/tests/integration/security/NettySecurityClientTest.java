@@ -72,7 +72,7 @@ public class NettySecurityClientTest extends UnitTestCase
    {
       super.setUp();
 
-      ConfigurationImpl config = new ConfigurationImpl();
+      ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
       messagingService = HornetQServers.newHornetQServer(config, false);

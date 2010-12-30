@@ -32,6 +32,7 @@ import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -42,7 +43,7 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  *
  */
-public class FailureDeadlockTest extends UnitTestCase
+public class FailureDeadlockTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(FailureDeadlockTest.class);
 
@@ -59,7 +60,7 @@ public class FailureDeadlockTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));

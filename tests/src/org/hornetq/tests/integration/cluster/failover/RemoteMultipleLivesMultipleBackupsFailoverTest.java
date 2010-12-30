@@ -149,7 +149,7 @@ public class RemoteMultipleLivesMultipleBackupsFailoverTest extends MultipleLive
 
    protected static Configuration createBackupConfiguration(int liveNode, int nodeid, boolean createClusterConnections,  int[] otherBackupNodes, int... otherClusterNodes)
    {
-      Configuration config1 = new ConfigurationImpl();
+      Configuration config1 = createBasicConfig();
       config1.getAcceptorConfigurations().add(createTransportConfiguration(true, true, generateParams(nodeid, true)));
       config1.setSecurityEnabled(false);
       config1.setSharedStore(true);
@@ -189,7 +189,7 @@ public class RemoteMultipleLivesMultipleBackupsFailoverTest extends MultipleLive
 
    protected static Configuration createLiveConfiguration(int liveNode, int... otherLiveNodes)
    {
-      Configuration config0 = new ConfigurationImpl();
+      Configuration config0 = createBasicConfig();
       TransportConfiguration liveConnector = createTransportConfiguration(true, false, generateParams(liveNode, true));
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       config0.getAcceptorConfigurations().add(createTransportConfiguration(true, true, generateParams(liveNode, true)));

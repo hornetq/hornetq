@@ -59,7 +59,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       String queue = RandomUtil.randomString();
       String address = RandomUtil.randomString();
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
@@ -78,7 +78,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithOperationWhichFails() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
@@ -97,7 +97,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithUnknowResource() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
@@ -116,7 +116,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testHandleManagementMessageWithUnknownAttribute() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
@@ -136,7 +136,7 @@ public class ManagementServiceImplTest extends UnitTestCase
    
    public void testHandleManagementMessageWithKnownAttribute() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
 
       HornetQServer server = HornetQServers.newHornetQServer(conf, false);
@@ -156,7 +156,7 @@ public class ManagementServiceImplTest extends UnitTestCase
 
    public void testGetResources() throws Exception
    {
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setJMXManagementEnabled(false);
       ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf);
       managementService.setStorageManager(new NullStorageManager());

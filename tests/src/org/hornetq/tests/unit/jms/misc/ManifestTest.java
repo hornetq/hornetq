@@ -67,7 +67,7 @@ public class ManifestTest extends UnitTestCase
 
       try
       {
-         HornetQServer server = HornetQServers.newHornetQServer(new ConfigurationImpl());
+         HornetQServer server = HornetQServers.newHornetQServer(createBasicConfig());
 
          ConnectionMetaData meta = new HornetQConnectionMetaData(server.getVersion());
 

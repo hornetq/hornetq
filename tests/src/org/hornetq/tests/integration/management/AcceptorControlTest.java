@@ -69,7 +69,7 @@ public class AcceptorControlTest extends ManagementTestBase
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
 
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
@@ -87,7 +87,7 @@ public class AcceptorControlTest extends ManagementTestBase
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
@@ -147,7 +147,7 @@ public class AcceptorControlTest extends ManagementTestBase
       TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
                                                                          new HashMap<String, Object>(),
                                                                          RandomUtil.randomString());
-      Configuration conf = new ConfigurationImpl();
+      Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);

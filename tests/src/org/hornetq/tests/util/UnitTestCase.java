@@ -31,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +54,8 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
@@ -103,6 +106,109 @@ public class UnitTestCase extends TestCase
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
    // Static --------------------------------------------------------
+
+   protected  Configuration createDefaultConfig()
+   {
+      return createDefaultConfig(false);
+   }
+
+   protected Configuration createDefaultConfig(final boolean netty)
+   {
+      if (netty)
+      {
+         return createDefaultConfig(new HashMap<String, Object>(),
+                                    INVM_ACCEPTOR_FACTORY,
+                                    NETTY_ACCEPTOR_FACTORY);
+      }
+      else
+      {
+         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY);
+      }
+   }
+
+   protected static Configuration createClusteredDefaultConfig(final int index,
+                                                        final Map<String, Object> params,
+                                                        final String... acceptors)
+   {
+      Configuration config = createDefaultConfig(index, params, acceptors);
+
+      config.setClustered(true);
+
+      return config;
+   }
+
+   protected static Configuration createDefaultConfig(final int index,
+                                               final Map<String, Object> params,
+                                               final String... acceptors)
+   {
+      Configuration configuration = createBasicConfig(index);
+
+      configuration.getAcceptorConfigurations().clear();
+
+      for (String acceptor : acceptors)
+      {
+         TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
+         configuration.getAcceptorConfigurations().add(transportConfig);
+      }
+
+      return configuration;
+   }
+   
+   protected static ConfigurationImpl createBasicConfig()
+   {
+      return createBasicConfig(0);
+   }
+
+
+   /**
+    * @param serverID
+    * @return
+    */
+   protected static ConfigurationImpl createBasicConfig(final int serverID)
+   {
+      ConfigurationImpl configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir(serverID, false));
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalDirectory(getJournalDir(serverID, false));
+      configuration.setJournalFileSize(100 * 1024);
+      configuration.setJournalType(getDefaultJournalType());
+      configuration.setPagingDirectory(getPageDir(serverID, false));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(serverID, false));
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
+      return configuration;
+   }
+
+   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   {
+      Configuration configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+      configuration.setJMXManagementEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir());
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalDirectory(getJournalDir());
+      configuration.setJournalFileSize(100 * 1024);
+      configuration.setPagingDirectory(getPageDir());
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir());
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
+
+      configuration.setFileDeploymentEnabled(false);
+
+      configuration.setJournalType(getDefaultJournalType());
+
+      configuration.getAcceptorConfigurations().clear();
+
+      for (String acceptor : acceptors)
+      {
+         TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
+         configuration.getAcceptorConfigurations().add(transportConfig);
+      }
+
+      return configuration;
+   }
+
 
    protected static String getUDPDiscoveryAddress()
    {
@@ -532,7 +638,7 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(final int index, final boolean backup)
+   protected static String getBindingsDir(final int index, final boolean backup)
    {
       return getBindingsDir(testDir) + index + "-" + (backup ? "B" : "L");
    }
@@ -553,7 +659,7 @@ public class UnitTestCase extends TestCase
       return testDir + "/page";
    }
 
-   protected String getPageDir(final int index, final boolean backup)
+   protected static String getPageDir(final int index, final boolean backup)
    {
       return getPageDir(testDir) + index + "-" + (backup ? "B" : "L");
    }

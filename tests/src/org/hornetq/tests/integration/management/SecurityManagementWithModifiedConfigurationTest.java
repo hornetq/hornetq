@@ -68,7 +68,7 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
    @Override
    protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
-      ConfigurationImpl conf = new ConfigurationImpl();
+      ConfigurationImpl conf = createBasicConfig();
       conf.setSecurityEnabled(true);
       conf.setClusterPassword(configuredClusterPassword);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

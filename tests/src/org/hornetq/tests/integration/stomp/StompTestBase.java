@@ -108,7 +108,7 @@ public abstract class StompTestBase extends UnitTestCase
    */
    protected JMSServerManager createServer() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
       config.setPersistenceEnabled(false);
 

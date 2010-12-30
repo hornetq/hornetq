@@ -30,7 +30,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -100,6 +99,8 @@ public class SessionFactoryTest extends ServiceTestBase
       ServerLocator csi = (ServerLocator)ois.readObject();
 
       Assert.assertNotNull(csi);
+      
+      locator.close();
    }
 
    public void testCloseUnusedClientSessionFactoryWithoutGlobalPools() throws Exception
@@ -562,7 +563,7 @@ public class SessionFactoryTest extends ServiceTestBase
 
    private void startServer() throws Exception
    {
-      Configuration liveConf = new ConfigurationImpl();
+      Configuration liveConf = createDefaultConfig();
       liveConf.setSecurityEnabled(false);
       liveTC = new TransportConfiguration(InVMConnectorFactory.class.getName());
       liveConf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

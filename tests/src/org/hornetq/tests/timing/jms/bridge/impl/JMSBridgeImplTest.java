@@ -527,7 +527,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
       config.setFileDeploymentEnabled(false);
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));

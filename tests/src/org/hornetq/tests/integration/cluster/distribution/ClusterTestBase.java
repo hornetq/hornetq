@@ -1295,7 +1295,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("Already a server at node " + node);
          }
 
-         Configuration configuration = new ConfigurationImpl();
+         Configuration configuration = createBasicConfig();
 
          configuration.setSecurityEnabled(false);
          configuration.setJournalMinFiles(2);
@@ -1363,7 +1363,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("Already a server at node " + node);
       }
 
-      Configuration configuration = new ConfigurationImpl();
+      Configuration configuration = createBasicConfig();
 
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
@@ -1438,7 +1438,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
            throw new IllegalArgumentException("Already a server at node " + node);
         }
 
-        Configuration configuration = new ConfigurationImpl();
+        Configuration configuration = createBasicConfig();
 
         configuration.setSecurityEnabled(false);
         configuration.setBindingsDirectory(getBindingsDir(node, false));
@@ -1517,7 +1517,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
            throw new IllegalArgumentException("Already a server at node " + node);
         }
 
-        Configuration configuration = new ConfigurationImpl();
+        Configuration configuration = createBasicConfig();
 
         configuration.setSecurityEnabled(false);
         configuration.setSharedStore(sharedStorage);

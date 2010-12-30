@@ -133,7 +133,7 @@ public class ConcurrentStompTest extends UnitTestCase
 
    private HornetQServer createServer() throws Exception
    {
-      Configuration config = new ConfigurationImpl();
+      Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
       config.setPersistenceEnabled(false);
 
