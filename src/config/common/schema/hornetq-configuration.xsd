@@ -4,6 +4,8 @@
 	<xsd:element name="configuration">
 		<xsd:complexType>
 			<xsd:all>
+				<xsd:element maxOccurs="1" minOccurs="0" name="name" type="xsd:string">
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="clustered"/>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="file-deployment-enabled"/>	
 				<xsd:element maxOccurs="1" minOccurs="0" ref="persistence-enabled"/>	

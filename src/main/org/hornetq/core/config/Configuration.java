@@ -38,6 +38,13 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 public interface Configuration extends Serializable
 {
    // General attributes -------------------------------------------------------------------
+   
+   
+   /** To be used on dependency management on the application server */
+   String getName();
+   
+   /** To be used on dependency management on the application server */
+   void setName(String name);
 
    /**
     * Returns whether this server is clustered.

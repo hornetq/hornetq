@@ -37,6 +37,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
    public void testDefaults()
    {
       // Check they match the values from the test file
+      Assert.assertEquals("SomeNameForUseOnTheApplicationServer", conf.getName());
       Assert.assertEquals(false, conf.isPersistenceEnabled());
       Assert.assertEquals(true, conf.isFileDeploymentEnabled());
       Assert.assertEquals(true, conf.isClustered());

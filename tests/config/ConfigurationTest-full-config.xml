@@ -2,6 +2,7 @@
    xmlns="urn:hornetq" 
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="urn:hornetq ../../src/config/common/schema/hornetq-configuration.xsd">
+      <name>SomeNameForUseOnTheApplicationServer</name>
       <clustered>true</clustered>
       <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>             
       <thread-pool-max-size>54321</thread-pool-max-size>

@@ -183,6 +183,8 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
+   
+   protected String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
 
@@ -1359,6 +1361,22 @@ public class ConfigurationImpl implements Configuration
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
    {
       this.connectorServiceConfigurations = configs;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#getName()
+    */
+   public String getName()
+   {
+      return name;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#setName(java.lang.String)
+    */
+   public void setName(String name)
+   {
+      this.name = name;
    }
 
 }

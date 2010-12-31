@@ -117,7 +117,7 @@ public class FileConfigurationParser
    private static final String SEND_TO_DLA_ON_NO_ROUTE = "send-to-dla-on-no-route";
 
    // Attributes ----------------------------------------------------
-   
+
    private boolean validateAIO = false;
 
    // Static --------------------------------------------------------
@@ -125,7 +125,7 @@ public class FileConfigurationParser
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    /**
     * @return the validateAIO
     */
@@ -161,11 +161,15 @@ public class FileConfigurationParser
    {
       XMLUtil.validate(e, FileConfigurationParser.CONFIGURATION_SCHEMA_URL);
 
+      config.setName(XMLConfigurationUtil.getString(e, "name", config.getName(), Validators.NO_CHECK));
+
       config.setClustered(XMLConfigurationUtil.getBoolean(e, "clustered", config.isClustered()));
 
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
-      
-      config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e, "failover-on-shutdown", config.isFailoverOnServerShutdown()));
+
+      config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e,
+                                                                         "failover-on-shutdown",
+                                                                         config.isFailoverOnServerShutdown()));
 
       config.setBackup(XMLConfigurationUtil.getBoolean(e, "backup", config.isBackup()));
 
@@ -440,7 +444,7 @@ public class FileConfigurationParser
          // correct settings in xml
          // If we fall back later on these settings can be ignored
          boolean supportsAIO = AIOSequentialFileFactory.isSupported();
-         
+
          if (supportsAIO)
          {
             config.setJournalType(JournalType.ASYNCIO);
@@ -451,7 +455,7 @@ public class FileConfigurationParser
             {
                log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal");
             }
-            
+
             config.setJournalType(JournalType.NIO);
          }
       }
@@ -468,7 +472,7 @@ public class FileConfigurationParser
                                                                 "journal-file-size",
                                                                 config.getJournalFileSize(),
                                                                 Validators.GT_ZERO));
-      
+
       int journalBufferTimeout = XMLConfigurationUtil.getInteger(e,
                                                                  "journal-buffer-timeout",
                                                                  config.getJournalType() == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
@@ -499,7 +503,7 @@ public class FileConfigurationParser
          config.setJournalBufferSize_NIO(journalBufferSize);
          config.setJournalMaxIO_NIO(journalMaxIO);
       }
-      
+
       config.setJournalMinFiles(XMLConfigurationUtil.getInteger(e,
                                                                 "journal-min-files",
                                                                 config.getJournalMinFiles(),
@@ -565,7 +569,7 @@ public class FileConfigurationParser
       parseQueues(e, config);
 
       parseSecurity(e, config);
-      
+
       NodeList connectorServiceConfigs = e.getElementsByTagName("connector-service");
 
       ArrayList<ConnectorServiceConfiguration> configs = new ArrayList<ConnectorServiceConfiguration>();
@@ -869,7 +873,7 @@ public class FileConfigurationParser
       for (int i = 0; i < paramsNodes.getLength(); i++)
       {
          Node paramNode = paramsNodes.item(i);
-         
+
          NamedNodeMap attributes = paramNode.getAttributes();
 
          Node nkey = attributes.getNamedItem("key");
@@ -911,7 +915,10 @@ public class FileConfigurationParser
 
          if (child.getNodeName().equals("connector-ref"))
          {
-            String connectorName = XMLConfigurationUtil.getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
+            String connectorName = XMLConfigurationUtil.getString(e,
+                                                                  "connector-ref",
+                                                                  null,
+                                                                  Validators.NOT_NULL_OR_EMPTY);
 
             connectorNames.add(connectorName);
          }
@@ -937,7 +944,7 @@ public class FileConfigurationParser
       String groupAddress = XMLConfigurationUtil.getString(e, "group-address", null, Validators.NOT_NULL_OR_EMPTY);
 
       int groupPort = XMLConfigurationUtil.getInteger(e, "group-port", -1, Validators.MINUS_ONE_OR_GT_ZERO);
-      
+
       long discoveryInitialWaitTimeout = XMLConfigurationUtil.getLong(e,
                                                                       "initial-wait-timeout",
                                                                       HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
@@ -973,7 +980,7 @@ public class FileConfigurationParser
       String name = e.getAttribute("name");
 
       String address = XMLConfigurationUtil.getString(e, "address", null, Validators.NOT_NULL_OR_EMPTY);
-      
+
       String connectorName = XMLConfigurationUtil.getString(e, "connector-ref", null, Validators.NOT_NULL_OR_EMPTY);
 
       boolean duplicateDetection = XMLConfigurationUtil.getBoolean(e,
@@ -1004,7 +1011,7 @@ public class FileConfigurationParser
       List<String> staticConnectorNames = new ArrayList<String>();
 
       boolean allowDirectConnectionsOnly = false;
-      
+
       NodeList children = e.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
@@ -1018,7 +1025,7 @@ public class FileConfigurationParser
          else if (child.getNodeName().equals("static-connectors"))
          {
             Node attr = child.getAttributes().getNamedItem("allow-direct-connections-only");
-            if(attr != null)
+            if (attr != null)
             {
                allowDirectConnectionsOnly = "true".equalsIgnoreCase(attr.getNodeValue()) || allowDirectConnectionsOnly;
             }
@@ -1120,11 +1127,11 @@ public class FileConfigurationParser
                                                        "password",
                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
                                                        Validators.NO_CHECK);
-      
+
       boolean ha = XMLConfigurationUtil.getBoolean(brNode, "ha", false);
 
       String filterString = null;
-  
+
       List<String> staticConnectorNames = new ArrayList<String>();
 
       String discoveryGroupName = null;
@@ -1193,11 +1200,11 @@ public class FileConfigurationParser
 
    private void getStaticConnectors(List<String> staticConnectorNames, Node child)
    {
-      NodeList children2 = ((Element) child).getElementsByTagName("connector-ref");
+      NodeList children2 = ((Element)child).getElementsByTagName("connector-ref");
 
       for (int k = 0; k < children2.getLength(); k++)
       {
-         Element child2 = (Element) children2.item(k);
+         Element child2 = (Element)children2.item(k);
 
          String connectorName = child2.getChildNodes().item(0).getNodeValue();
 
@@ -1249,7 +1256,7 @@ public class FileConfigurationParser
 
       mainConfig.getDivertConfigurations().add(config);
    }
-   
+
    private ConnectorServiceConfiguration parseConnectorService(final Element e)
    {
       Node nameNode = e.getAttributes().getNamedItem("name");
