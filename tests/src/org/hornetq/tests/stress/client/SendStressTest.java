@@ -53,7 +53,8 @@ public class SendStressTest extends ServiceTestBase
    public void doTestStressSend(final boolean netty) throws Exception
    {
       HornetQServer server = createServer(false, netty);
-      ServerLocator locator = createFactory(netty);
+      server.start();
+      ServerLocator locator = createNonHALocator(netty);
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = null;
