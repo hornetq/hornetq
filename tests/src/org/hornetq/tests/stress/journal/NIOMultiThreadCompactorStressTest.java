@@ -72,6 +72,9 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       super.setUp();
 
       locator = createInVMNonHALocator();
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
+
    }
 
    @Override
@@ -153,8 +156,6 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    private void addEmptyTransaction(final Xid xid) throws Exception, XAException
    {
       ClientSessionFactory sf = locator.createSessionFactory();
-      sf.getServerLocator().setBlockOnNonDurableSend(false);
-      sf.getServerLocator().setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
@@ -166,8 +167,6 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
    private void checkEmptyXID(final Xid xid) throws Exception, XAException
    {
       ClientSessionFactory sf = locator.createSessionFactory();
-      sf.getServerLocator().setBlockOnNonDurableSend(false);
-      sf.getServerLocator().setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
@@ -377,10 +376,10 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       server.start();
 
       ServerLocator locator = createNettyNonHALocator();
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnAcknowledge(false);
 
       sf = locator.createSessionFactory();
-      sf.getServerLocator().setBlockOnDurableSend(false);
-      sf.getServerLocator().setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
 
@@ -393,10 +392,6 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       }
 
       sess.close();
-
-      locator.close();
-
-      sf = locator.createSessionFactory();
    }
 
    // Static --------------------------------------------------------
