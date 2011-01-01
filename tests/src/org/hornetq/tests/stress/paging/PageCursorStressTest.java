@@ -1281,8 +1281,14 @@ public class PageCursorStressTest extends ServiceTestBase
    private PageSubscription createNonPersistentCursor(Filter filter) throws Exception
    {
       long id = server.getStorageManager().generateUniqueID();
-      queueList.add(new FakeQueue(new SimpleString(filter.toString()), id));
-      return lookupCursorProvider().createSubscription(id, filter, false);
+      FakeQueue queue = new FakeQueue(new SimpleString(filter.toString()), id);
+      queueList.add(queue);
+      
+      PageSubscription subs = lookupCursorProvider().createSubscription(id, filter, false);
+      
+      queue.setPageSubscription(subs);
+      
+      return subs;
    }
 
    /**

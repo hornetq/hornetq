@@ -37,6 +37,9 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class FakeQueue implements Queue
 {
+   
+   PageSubscription subs;
+   
    public boolean isDirectDeliver()
    {
       // TODO Auto-generated method stub
@@ -610,8 +613,12 @@ public class FakeQueue implements Queue
     */
    public PageSubscription getPageSubscription()
    {
-      // TODO Auto-generated method stub
-      return null;
+      return subs;
+   }
+   
+   public void setPageSubscription(PageSubscription sub)
+   {
+      this.subs = sub;
    }
 
 }
