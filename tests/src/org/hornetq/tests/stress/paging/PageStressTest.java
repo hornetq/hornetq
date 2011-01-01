@@ -19,7 +19,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -64,9 +69,6 @@ public class PageStressTest extends ServiceTestBase
       messagingService.start();
 
       ClientSessionFactory factory = locator.createSessionFactory();
-      factory.getServerLocator().setBlockOnAcknowledge(true);
-      factory.getServerLocator().setBlockOnDurableSend(false);
-      factory.getServerLocator().setBlockOnNonDurableSend(false);
       ClientSession session = null;
 
       try
@@ -303,6 +305,11 @@ public class PageStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
+      
+      locator.setBlockOnAcknowledge(true);
+      locator.setBlockOnDurableSend(false);
+      locator.setBlockOnNonDurableSend(false);
+
    }
 
    @Override
