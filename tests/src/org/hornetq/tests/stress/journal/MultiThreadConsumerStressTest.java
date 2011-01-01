@@ -51,8 +51,6 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    private ClientSessionFactory sf;
 
-   private ServerLocator locator;
-
    @Override
    protected void setUp() throws Exception
    {
@@ -151,8 +149,6 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
-
       try
       {
          if (server != null && server.isStarted())
@@ -188,13 +184,13 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       ServerLocator locator = createNettyNonHALocator();
 
+      locator.setBlockOnDurableSend(false);
+
+      locator.setBlockOnNonDurableSend(false);
+
+      locator.setBlockOnAcknowledge(false);
+
       sf = locator.createSessionFactory();
-
-      sf.getServerLocator().setBlockOnDurableSend(false);
-
-      sf.getServerLocator().setBlockOnNonDurableSend(false);
-
-      sf.getServerLocator().setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
 
