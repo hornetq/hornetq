@@ -137,6 +137,8 @@ public class CompactingStressTest extends ServiceTestBase
       session.close();
 
       server.stop();
+      
+      setupServer(journalType);
 
       server.start();
 
