@@ -257,6 +257,11 @@ public class LargeJournalStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
+      
+      locator.setBlockOnAcknowledge(false);
+      locator.setBlockOnNonDurableSend(false);
+      locator.setBlockOnDurableSend(false);
+
    }
 
    /**
@@ -279,9 +284,6 @@ public class LargeJournalStressTest extends ServiceTestBase
       server.start();
 
       sf = locator.createSessionFactory();
-      sf.getServerLocator().setBlockOnAcknowledge(false);
-      sf.getServerLocator().setBlockOnNonDurableSend(false);
-      sf.getServerLocator().setBlockOnDurableSend(false);
 
       ClientSession sess = sf.createSession();
 
