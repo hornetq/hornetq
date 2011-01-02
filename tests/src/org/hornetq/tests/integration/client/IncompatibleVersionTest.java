@@ -14,16 +14,24 @@
 package org.hornetq.tests.integration.client;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
+import org.hornetq.tests.util.SpawnedVMSupport;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
@@ -32,6 +40,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessa
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.version.impl.VersionImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.VersionLoader;
 
@@ -44,7 +54,7 @@ import org.hornetq.utils.VersionLoader;
  */
 public class IncompatibleVersionTest extends ServiceTestBase
 {
-
+   private static final Logger log = Logger.getLogger(IncompatibleVersionTest.class);
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -93,6 +103,20 @@ public class IncompatibleVersionTest extends ServiceTestBase
       doTestClientVersionCompatibility(false);
    }
 
+   public void testCompatibleClientVersionWithRealConnection() throws Exception
+   {
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",1));
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",5));
+      assertTrue(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",10));
+   }
+
+   public void testIncompatibleClientVersionWithRealConnection() throws Exception
+   {
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",0));
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",4));
+      assertFalse(doTestClientVersionCompatibilityWithRealConnection("1-3,5,7-10",100));
+   }
+   
    private void doTestClientVersionCompatibility(boolean compatible) throws Exception
    {
       Channel channel1 = connection.getChannel(1, -1);
@@ -147,6 +171,82 @@ public class IncompatibleVersionTest extends ServiceTestBase
       }
    }
 
+   private boolean doTestClientVersionCompatibilityWithRealConnection(String verList, int ver) throws Exception
+   {
+      String propFileName = "compatibility-test-hornetq-version.properties";
+      String serverStartedString = "IncompatibleVersionTest---server---started";
+      
+      Properties prop = new Properties();
+      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("hornetq-version.properties");
+      prop.load(in);
+      prop.setProperty("hornetq.version.compatibleVersionList", verList);
+      prop.setProperty("hornetq.version.incrementingVersion", Integer.toString(ver));
+      prop.store(new FileOutputStream("tests/tmpfiles/" + propFileName), null);
+      
+      SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+                               new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                               "server",
+                               serverStartedString);
+      
+      Thread.sleep(2000);
+      
+      Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+                                                new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                                                "client");
+      
+      boolean result = false;
+      if(client.waitFor() == 0)
+      {
+         result = true;
+      }
+      return result;
+   }
+   
+   private static class ServerStarter
+   {
+      public void perform(String startedString) throws Exception
+      {
+         Configuration conf = new ConfigurationImpl();
+         conf.setSecurityEnabled(false);
+         conf.getAcceptorConfigurations().add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
+         HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+         server.start();
+         
+         log.info("### server: " + startedString);
+      }
+   }
+   private static class ClientStarter
+   {
+      public void perform() throws Exception
+      {
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSession session = sf.createSession(false, true, true);
+         log.info("### client: connected. server incrementingVersion = " + session.getVersion());
+         session.close();
+         sf.close();
+         locator.close();
+      }
+   }
+   
+   public static void main(String[] args) throws Exception
+   {
+      if(args[0].equals("server"))
+      {
+         ServerStarter ss = new ServerStarter();
+         ss.perform(args[1]);
+      }
+      else if(args[0].equals("client"))
+      {
+         ClientStarter cs = new ClientStarter();
+         cs.perform();
+      }
+      else
+      {
+         throw new Exception("args[0] must be \"server\" or \"client\"");
+      }
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

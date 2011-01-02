@@ -34,8 +34,12 @@ public class VersionLoader
 
    private static final Logger log = Logger.getLogger(VersionLoader.class);
 
-   public static final String PROP_FILE_NAME = "hornetq-version.properties";
+   public static final String VERSION_PROP_FILE_KEY = "hornetq.version.property.filename";
+   
+   public static final String DEFAULT_PROP_FILE_NAME = "hornetq-version.properties";
 
+   private static String PROP_FILE_NAME;
+   
    private static Version version;
 
    static
@@ -64,6 +68,12 @@ public class VersionLoader
 
    private static Version load()
    {
+      PROP_FILE_NAME = System.getProperty(VersionLoader.VERSION_PROP_FILE_KEY); 
+      if(PROP_FILE_NAME == null)
+      {
+         PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
+      }
+      
       Properties versionProps = new Properties();
       InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
       try
