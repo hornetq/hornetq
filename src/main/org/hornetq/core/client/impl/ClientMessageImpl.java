@@ -147,6 +147,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          byte readBuffer[] = new byte[getBodySize()];
          getBodyBuffer().readBytes(readBuffer);
          out.write(readBuffer);
+         out.flush();
       }
       catch (IOException e)
       {
