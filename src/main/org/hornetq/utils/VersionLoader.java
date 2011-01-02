@@ -46,6 +46,12 @@ public class VersionLoader
    {
       try
       {
+         PROP_FILE_NAME = System.getProperty(VersionLoader.VERSION_PROP_FILE_KEY); 
+         if(PROP_FILE_NAME == null)
+         {
+            PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
+         }
+
          VersionLoader.version = VersionLoader.load();
       }
       catch (Throwable e)
@@ -68,12 +74,6 @@ public class VersionLoader
 
    private static Version load()
    {
-      PROP_FILE_NAME = System.getProperty(VersionLoader.VERSION_PROP_FILE_KEY); 
-      if(PROP_FILE_NAME == null)
-      {
-         PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
-      }
-      
       Properties versionProps = new Properties();
       InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(VersionLoader.PROP_FILE_NAME);
       try

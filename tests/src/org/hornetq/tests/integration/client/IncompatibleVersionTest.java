@@ -183,22 +183,37 @@ public class IncompatibleVersionTest extends ServiceTestBase
       prop.setProperty("hornetq.version.incrementingVersion", Integer.toString(ver));
       prop.store(new FileOutputStream("tests/tmpfiles/" + propFileName), null);
       
-      SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
-                               new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
-                               "server",
-                               serverStartedString);
-      
-      Thread.sleep(2000);
-      
-      Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
-                                                new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
-                                                "client");
-      
+      Process server = null;
       boolean result = false;
-      if(client.waitFor() == 0)
+      try
       {
-         result = true;
+         server = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+                                           new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                                           "server",
+                                           serverStartedString);
+         Thread.sleep(2000);
+      
+         Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+                                                   new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
+                                                   "client");
+      
+         if(client.waitFor() == 0)
+         {
+            result = true;
+         }
       }
+      finally
+      {
+         if(server != null)
+         {
+            try
+            {
+               server.destroy();
+            }
+            catch(Throwable t) {/* ignore */}
+         }
+      }
+      
       return result;
    }
    
