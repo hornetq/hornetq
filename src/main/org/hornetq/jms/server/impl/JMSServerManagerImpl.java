@@ -227,9 +227,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return;
       }
 
-      if (!contextSet)
+      if (registry == null)
       {
-         context = new InitialContext();
+         if (!contextSet) context = new InitialContext();
          registry = new JndiBindingRegistry(context);
       }
 
@@ -1284,35 +1284,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
    {
-      if (context != null)
+      if (registry != null)
       {
-         String parentContext;
-         String jndiNameInContext;
-         int sepIndex = jndiName.lastIndexOf('/');
-         if (sepIndex == -1)
-         {
-            parentContext = "";
-         }
-         else
-         {
-            parentContext = jndiName.substring(0, sepIndex);
-         }
-         jndiNameInContext = jndiName.substring(sepIndex + 1);
-         try
-         {
-            context.lookup(jndiName);
-
-            JMSServerManagerImpl.log.warn("Binding for " + jndiName + " already exists");
-            return false;
-         }
-         catch (Throwable e)
-         {
-            // OK
-         }
-
-         Context c = org.hornetq.utils.JNDIUtil.createContext(context, parentContext);
-
-         c.rebind(jndiNameInContext, objectToBind);
+         registry.bind(jndiName, objectToBind);
       }
       return true;
    }
