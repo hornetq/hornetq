@@ -16,7 +16,6 @@ package org.hornetq.core.paging.impl;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -56,9 +55,8 @@ import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
-import org.hornetq.core.transaction.TransactionOperationAbstract;
-import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Future;
@@ -877,6 +875,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             // Make sure nothing is currently validating or using currentPage
             openNewPage();
+            currentPageSize.addAndGet(bytesToWrite);
          }
 
          currentPage.write(pagedMessage);
