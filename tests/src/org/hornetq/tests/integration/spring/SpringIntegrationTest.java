@@ -16,15 +16,27 @@ public class SpringIntegrationTest extends UnitTestCase
    public void testSpring() throws Exception
    {
       System.out.println("Creating bean factory...");
-      ApplicationContext context = new ClassPathXmlApplicationContext(new String[] {"spring-jms-beans.xml"});
-      MessageSender sender = (MessageSender)context.getBean("MessageSender");
-      System.out.println("Sending message...");
-      sender.send("Hello world");
-      Thread.sleep(100);
-      Assert.assertEquals(ExampleListener.lastMessage, "Hello world");
-      
-      EmbeddedJMS jms = (EmbeddedJMS) context.getBean("EmbeddedJms");
-      jms.stop();
-      
+      ApplicationContext context = new ClassPathXmlApplicationContext(new String[] { "spring-jms-beans.xml" });
+      try
+      {
+         MessageSender sender = (MessageSender)context.getBean("MessageSender");
+         System.out.println("Sending message...");
+         sender.send("Hello world");
+         Thread.sleep(100);
+         Assert.assertEquals(ExampleListener.lastMessage, "Hello world");
+      }
+      finally
+      {
+         try
+         {
+            EmbeddedJMS jms = (EmbeddedJMS)context.getBean("EmbeddedJms");
+            jms.stop();
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
+         }
+      }
+
    }
 }
