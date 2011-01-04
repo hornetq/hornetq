@@ -79,24 +79,18 @@ public class ConsumersResource implements TimeoutTask.Callback
       this.consumerTimeoutSeconds = consumerTimeoutSeconds;
    }
 
-   private Object timeoutLock = new Object();
-
-   @Override
    public void testTimeout(String target)
    {
-      synchronized (timeoutLock)
+      QueueConsumer consumer = queueConsumers.get(target);
+      if (consumer == null) return;
+      synchronized (consumer)
       {
-         QueueConsumer consumer = queueConsumers.get(target);
-         if (consumer == null) return;
-         synchronized (consumer)
+         if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
          {
-            if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
-            {
-               log.warn("shutdown REST consumer because of timeout for: " + consumer.getId());
-               consumer.shutdown();
-               queueConsumers.remove(consumer.getId());
-               serviceManager.getTimeoutTask().remove(consumer.getId());
-            }
+            log.warn("shutdown REST consumer because of timeout for: " + consumer.getId());
+            consumer.shutdown();
+            queueConsumers.remove(consumer.getId());
+            serviceManager.getTimeoutTask().remove(consumer.getId());
          }
       }
    }
@@ -122,7 +116,7 @@ public class ConsumersResource implements TimeoutTask.Callback
          {
             attributes = attributes | SELECTOR_SET;
          }
-         
+
          if (autoAck)
          {
             consumer = createConsumer(selector);
@@ -141,11 +135,11 @@ public class ConsumersResource implements TimeoutTask.Callback
 
          if (autoAck)
          {
-            QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/" + attributesSegment +"/" + consumer.getId(), "-1");
+            QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/" + attributesSegment + "/" + consumer.getId(), "-1");
          }
          else
          {
-            AcknowledgedQueueConsumer.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/" + attributesSegment +"/" + consumer.getId(), "-1");
+            AcknowledgedQueueConsumer.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/" + attributesSegment + "/" + consumer.getId(), "-1");
 
          }
          return builder.build();
@@ -160,16 +154,18 @@ public class ConsumersResource implements TimeoutTask.Callback
       }
    }
 
+   protected void addConsumer(QueueConsumer consumer)
+   {
+      queueConsumers.put(consumer.getId(), consumer);
+      serviceManager.getTimeoutTask().add(this, consumer.getId());
+   }
+
    public QueueConsumer createConsumer(String selector)
            throws HornetQException
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new QueueConsumer(sessionFactory, destination, genId, serviceManager, selector);
-      synchronized (timeoutLock)
-      {
-         queueConsumers.put(genId, consumer);
-         serviceManager.getTimeoutTask().add(this, consumer.getId());
-      }
+      addConsumer(consumer);
       return consumer;
    }
 
@@ -178,11 +174,7 @@ public class ConsumersResource implements TimeoutTask.Callback
    {
       String genId = sessionCounter.getAndIncrement() + "-queue-" + destination + "-" + startup;
       QueueConsumer consumer = new AcknowledgedQueueConsumer(sessionFactory, destination, genId, serviceManager, selector);
-      synchronized (timeoutLock)
-      {
-         queueConsumers.put(genId, consumer);
-         serviceManager.getTimeoutTask().add(this, consumer.getId());
-      }
+      addConsumer(consumer);
       return consumer;
    }
 
@@ -206,9 +198,9 @@ public class ConsumersResource implements TimeoutTask.Callback
       // we synchronize just in case a failed request is still processing
       synchronized (consumer)
       {
-         if ( (attributes & ACKNOWLEDGED) > 0)
+         if ((attributes & ACKNOWLEDGED) > 0)
          {
-            AcknowledgedQueueConsumer ackedConsumer = (AcknowledgedQueueConsumer)consumer;
+            AcknowledgedQueueConsumer ackedConsumer = (AcknowledgedQueueConsumer) consumer;
             Acknowledgement ack = ackedConsumer.getAck();
             if (ack == null || ack.wasSet())
             {
@@ -237,7 +229,7 @@ public class ConsumersResource implements TimeoutTask.Callback
       QueueConsumer consumer = queueConsumers.get(consumerId);
       if (consumer == null)
       {
-         if ( (attributes & SELECTOR_SET) > 0)
+         if ((attributes & SELECTOR_SET) > 0)
          {
 
             Response.ResponseBuilder builder = Response.status(Response.Status.GONE)
@@ -247,40 +239,37 @@ public class ConsumersResource implements TimeoutTask.Callback
             uriBuilder.path(uriInfo.getMatchedURIs().get(1));
             serviceManager.getLinkStrategy().setLinkHeader(builder, "pull-consumers", "pull-consumers", uriBuilder.build().toString(), null);
             throw new WebApplicationException(builder.build());
-            
+
          }
-         if ( (attributes & ACKNOWLEDGED) > 0)
+         if ((attributes & ACKNOWLEDGED) > 0)
          {
             QueueConsumer tmp = new AcknowledgedQueueConsumer(sessionFactory, destination, consumerId, serviceManager, null);
-            consumer = addConsumerToMap(consumerId, tmp);
+            consumer = addReconnectedConsumerToMap(consumerId, tmp);
 
          }
          else
          {
             QueueConsumer tmp = new QueueConsumer(sessionFactory, destination, consumerId, serviceManager, null);
-            consumer = addConsumerToMap(consumerId, tmp);
+            consumer = addReconnectedConsumerToMap(consumerId, tmp);
          }
       }
       return consumer;
    }
 
-   private QueueConsumer addConsumerToMap(String consumerId, QueueConsumer tmp)
+   private QueueConsumer addReconnectedConsumerToMap(String consumerId, QueueConsumer tmp)
    {
-      synchronized (timeoutLock)
+      QueueConsumer consumer;
+      consumer = queueConsumers.putIfAbsent(consumerId, tmp);
+      if (consumer != null)
       {
-         QueueConsumer consumer;
-         consumer = queueConsumers.putIfAbsent(consumerId, tmp);
-         if (consumer != null)
-         {
-            tmp.shutdown();
-         }
-         else
-         {
-            consumer = tmp;
-            serviceManager.getTimeoutTask().add(this, consumer.getId());
-         }
-         return consumer;
+         tmp.shutdown();
       }
+      else
+      {
+         consumer = tmp;
+         serviceManager.getTimeoutTask().add(this, consumer.getId());
+      }
+      return consumer;
    }
 
 

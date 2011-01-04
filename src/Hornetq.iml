@@ -7,17 +7,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="jars" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="lib10" level="project" />
-    <orderEntry type="library" name="lib13" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/metadata/lib/jboss-metadata.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="lib3" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -27,8 +20,18 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="lib3" level="project" />
-    <orderEntry type="library" name="lib5" level="project" />
+    <orderEntry type="library" name="lib4" level="project" />
+    <orderEntry type="library" name="lib7" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../thirdparty/org/jboss/metadata/lib/jboss-metadata.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lib2" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -38,6 +41,8 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="lib5" level="project" />
+    <orderEntry type="library" name="lib13" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -47,8 +52,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="jars" level="project" />
-    <orderEntry type="library" name="lib6" level="project" />
     <orderEntry type="module-library">
       <library>
         <CLASSES>
@@ -58,9 +61,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="lib9" level="project" />
-    <orderEntry type="library" name="lib4" level="project" />
-    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>
 
