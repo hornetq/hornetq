@@ -24,15 +24,15 @@
    
    <log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>
 
-   <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
+   <bindings-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/bindings</bindings-directory>
 
-   <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
+   <journal-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/journal</journal-directory>
    
    <journal-min-files>10</journal-min-files>
 
-   <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
+   <large-messages-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/largemessages</large-messages-directory>
 
-   <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>
+   <paging-directory>${jboss.server.data.dir}/${hornetq.data.dir:hornetq}/paging</paging-directory>
 
    <connectors>
       <connector name="netty">
