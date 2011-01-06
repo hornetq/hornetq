@@ -37,12 +37,19 @@ public class TopicResource extends DestinationResource
    public Response get(@Context UriInfo uriInfo)
    {
 
+      StringBuilder msg = new StringBuilder();
+      msg.append("<topic>")
+              .append("<name>").append(destination).append("</name>")
+              .append("<atom:link rel=\"create\" href=\"").append(createSenderLink(uriInfo)).append("\"/>")
+              .append("<atom:link rel=\"create-with-id\" href=\"").append(createSenderWithIdLink(uriInfo)).append("\"/>")
+              .append("<atom:link rel=\"pull-consumers\" href=\"").append(createSubscriptionsLink(uriInfo)).append("\"/>")
+              .append("<atom:link rel=\"push-consumers\" href=\"").append(createPushSubscriptionsLink(uriInfo)).append("\"/>")
 
-      String msg = "<topic>"
-              + "<name>" + destination + "</name>"
-              + "</topic>";
-      Response.ResponseBuilder builder = Response.ok(msg);
+         .append("</topic>");
+
+      Response.ResponseBuilder builder = Response.ok(msg.toString());
       setSenderLink(builder, uriInfo);
+      setSenderWithIdLink(builder, uriInfo);
       setSubscriptionsLink(builder, uriInfo);
       setPushSubscriptionsLink(builder, uriInfo);
       return builder.build();
@@ -62,35 +69,59 @@ public class TopicResource extends DestinationResource
 
    protected void setSenderLink(Response.ResponseBuilder response, UriInfo info)
    {
-      UriBuilder builder = info.getRequestUriBuilder();
-      builder.path("create");
-      String uri = builder.build().toString();
+      String uri = createSenderLink(info);
       serviceManager.getLinkStrategy().setLinkHeader(response, "create", "create", uri, null);
    }
 
+   protected String createSenderLink(UriInfo info)
+   {
+      UriBuilder builder = info.getRequestUriBuilder();
+      builder.path("create");
+      String uri = builder.build().toString();
+      return uri;
+   }
+
    protected void setSenderWithIdLink(Response.ResponseBuilder response, UriInfo info)
+   {
+      String uri = createSenderWithIdLink(info);
+      serviceManager.getLinkStrategy().setLinkHeader(response, "create-with-id", "create-with-id", uri, null);
+   }
+
+   protected String createSenderWithIdLink(UriInfo info)
    {
       UriBuilder builder = info.getRequestUriBuilder();
       builder.path("create");
       String uri = builder.build().toString();
       uri += "/{id}";
-      serviceManager.getLinkStrategy().setLinkHeader(response, "create-with-id", "create-with-id", uri, null);
+      return uri;
    }
 
    protected void setSubscriptionsLink(Response.ResponseBuilder response, UriInfo info)
    {
+      String uri = createSubscriptionsLink(info);
+      serviceManager.getLinkStrategy().setLinkHeader(response, "pull-subscriptions", "pull-subscriptions", uri, null);
+   }
+
+   protected String createSubscriptionsLink(UriInfo info)
+   {
       UriBuilder builder = info.getRequestUriBuilder();
       builder.path("pull-subscriptions");
       String uri = builder.build().toString();
-      serviceManager.getLinkStrategy().setLinkHeader(response, "pull-subscriptions", "pull-subscriptions", uri, null);
+      return uri;
    }
 
    protected void setPushSubscriptionsLink(Response.ResponseBuilder response, UriInfo info)
    {
+      String uri = createPushSubscriptionsLink(info);
+      serviceManager.getLinkStrategy().setLinkHeader(response, "push-subscriptions", "push-subscriptions", uri, null);
+   }
+
+   protected String createPushSubscriptionsLink(UriInfo info)
+   {
       UriBuilder builder = info.getRequestUriBuilder();
       builder.path("push-subscriptions");
       String uri = builder.build().toString();
-      serviceManager.getLinkStrategy().setLinkHeader(response, "push-subscriptions", "push-subscriptions", uri, null);
+      return uri;
    }
 
 
