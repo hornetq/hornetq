@@ -20,6 +20,7 @@ import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -52,6 +53,8 @@ public class FileLockNodeManager extends NodeManager
 
    private static final byte NOT_STARTED = 'N';
 
+   private static final byte FIRST_TIME_START = '0';
+
    private FileChannel channel;
 
    private FileLock liveLock;
@@ -74,14 +77,33 @@ public class FileLockNodeManager extends NodeManager
       }
       File file = new File(directory, SERVER_LOCK_NAME);
 
+      boolean fileCreated = false;
+
       if (!file.exists())
       {
-         file.createNewFile();
+         fileCreated = file.createNewFile();
+         if(!fileCreated)
+         {
+            throw new IllegalStateException("Unable to create server lock file");
+         }
       }
 
       RandomAccessFile raFile = new RandomAccessFile(file, ACCESS_MODE);
 
       channel = raFile.getChannel();
+
+      if (fileCreated)
+      {
+         ByteBuffer id = ByteBuffer.allocateDirect(3);
+         byte[] bytes = new byte[3];
+         bytes[0] = FIRST_TIME_START;
+         bytes[1] = FIRST_TIME_START;
+         bytes[2] = FIRST_TIME_START;
+         id.put(bytes, 0, 3);
+         id.position(0);
+         channel.write(id, 0);
+         channel.force(true);
+      }
 
       createNodeId();
 
@@ -127,25 +149,25 @@ public class FileLockNodeManager extends NodeManager
       do
       {
          byte state = getState();
-         while (state == NOT_STARTED || state == 0)
+         while (state == NOT_STARTED || state == FIRST_TIME_START)
          {
-            log.info("awaiting live node startup state='" + state + "'");
+            log.debug("awaiting live node startup state='" + state + "'");
             Thread.sleep(2000);
             state = getState();
          }
 
-         liveLock = channel.lock(LIVE_LOCK_POS, 1, false);
+         liveLock = lock(LIVE_LOCK_POS, 1);
          state = getState();
          if (state == PAUSED)
          {
             liveLock.release();
-            log.info("awaiting live node restarting");
+            log.debug("awaiting live node restarting");
             Thread.sleep(2000);
          }
          else if (state == FAILINGBACK)
          {
             liveLock.release();
-            log.info("awaiting live node failing back");
+            log.debug("awaiting live node failing back");
             Thread.sleep(2000);
          }
          else if (state == LIVE)
@@ -161,7 +183,7 @@ public class FileLockNodeManager extends NodeManager
 
       log.info("Waiting to become backup node");
 
-      backupLock = channel.lock(BACKUP_LOCK_POS, LOCK_LENGTH, false);
+      backupLock = lock(BACKUP_LOCK_POS, LOCK_LENGTH);
       log.info("** got backup lock");
 
       readNodeId();
@@ -173,7 +195,7 @@ public class FileLockNodeManager extends NodeManager
 
       log.info("Waiting to obtain live lock");
 
-      liveLock = channel.lock(LIVE_LOCK_POS, LOCK_LENGTH, false);
+      liveLock = lock(LIVE_LOCK_POS, LOCK_LENGTH);
 
       log.info("Live Server Obtained live lock");
 
@@ -284,6 +306,36 @@ public class FileLockNodeManager extends NodeManager
          id.get(bytes);
          uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
          nodeID = new SimpleString(uuid.toString());
+      }
+   }
+
+   private FileLock lock(int liveLockPos, int i) throws IOException
+   {
+      try
+      {
+         return channel.lock(liveLockPos, i, false);
+      }
+      catch (IOException e)
+      {
+         //todo this is here because sometimes channel.lock throws a resource deadlock exception but trylock works, need to investigate further and review
+         FileLock lock;
+         do
+         {
+            lock = channel.tryLock(liveLockPos, i, false);
+            if (lock == null)
+            {
+               try
+               {
+                  Thread.sleep(500);
+               }
+               catch (InterruptedException e1)
+               {
+                  //
+               }
+            }
+         }
+         while(lock == null);
+         return lock;
       }
    }
 }
