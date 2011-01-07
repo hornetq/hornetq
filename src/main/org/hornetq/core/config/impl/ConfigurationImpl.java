@@ -1379,4 +1379,18 @@ public class ConfigurationImpl implements Configuration
       this.name = name;
    }
 
+   @Override
+   public String toString()
+   {
+      StringBuffer sb = new StringBuffer("HornetQ Configuration (");
+      sb.append("clustered=").append(clustered).append(",");
+      sb.append("backup=").append(backup).append(",");
+      sb.append("sharedStore=").append(sharedStore).append(",");
+      sb.append("journalDirectory=").append(journalDirectory).append(",");
+      sb.append("bindingsDirectory=").append(bindingsDirectory).append(",");
+      sb.append("largeMessagesDirectory=").append(largeMessagesDirectory).append(",");
+      sb.append("pagingDirectory=").append(pagingDirectory);
+      sb.append(")");
+      return sb.toString();
+   }
 }

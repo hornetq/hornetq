@@ -15,6 +15,7 @@ package org.hornetq.core.server.impl;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.nio.channels.ClosedChannelException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -427,6 +428,10 @@ public class HornetQServerImpl implements HornetQServer
          {
             //this is ok, we are being stopped
          }
+         catch (ClosedChannelException e)
+         {
+            //this is ok too, we are being stopped
+         }
          catch (Exception e)
          {
             if(!(e.getCause() instanceof InterruptedException))
@@ -522,7 +527,7 @@ public class HornetQServerImpl implements HornetQServer
          return;
       }
 
-      HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
+      HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting with configuration " + configuration);
 
       if (configuration.isRunSyncSpeedTest())
       {
@@ -530,7 +535,7 @@ public class HornetQServerImpl implements HornetQServer
 
          test.run();
       }
-
+      
       if (!configuration.isBackup())
       {
          if (configuration.isSharedStore())
