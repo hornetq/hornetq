@@ -54,329 +54,391 @@
          </para>
          <section>
             <title>Configuration</title>
-            <para>
-               First lets start with the configuration of the live server, we will use the EAP 'all' configuration as
-               our starting point. Since this version only supports shared store for failover we need to configure this in the
-               <literal>hornetq-configuration.xml</literal>
-               file like so:
-            </para>
-            <programlisting>
-               &lt;shared-store>true&lt;/shared-store>
-            </programlisting>
-            <para>
-               Obviously this means that the location of the journal files etc will have to be configured to be some
-               where
-               where
-               this lives backup can access. You may change the lives configuration in
-               <literal>hornetq-configuration.xml</literal>
-               to
-               something like:
-            </para>
-            <programlisting>
-   &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
-   &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
-   &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
-   &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
-            </programlisting>
-            <para>
-               How these paths are configured will of course depend on your network settings or file system.
-            </para>
-            <para>
-               Now we need to configure how remote JMS clients will behave if the server is shutdown in a normal
-               fashion.
-               By
-               default
-               Clients will not failover if the live server is shutdown. Depending on there connection factory settings
-               they will either fail or try to reconnect to the live server.
-            </para>
-            <para>If you want clients to failover on a normal server shutdown the you must configure the
-               <literal>failover-on-shutdown</literal>
-               flag to true in the
-               <literal>hornetq-configuration.xml</literal>
-               file like so:
-            </para>
-            <programlisting>
-   &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
-            </programlisting>
-            <para>Don't worry if you have this set to false (which is the default) but still want failover to occur,
-               simply
-               kill
-               the
-               server process directly or call
-               <literal>forceFailover</literal>
-               via jmx or the admin console on the core server object.
-            </para>
-            <para>
-               No lets look at how to create and configure a backup server on the same node, lets assume that this
-               backups
-               live
-               server is configured identically to the live server on this node for simplicities sake.
-            </para>
-            <para>
-               Firstly we need to define a new HornetQ Server that EAP will deploy. We do this by creating a new
-               <literal>hornetq-jboss-beans.xml</literal>
-               configuration. We will place this under a new directory
-               <literal>hornetq-backup1</literal>
-               which will need creating
-               in the
-               <literal>deploy</literal>
-               directory but in reality it doesn't matter where this is put. This will look like:
-            </para>
-            <programlisting>
-   &lt;?xml version="1.0" encoding="UTF-8"?>
-
-   &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
-
-      &lt;!-- The core configuration -->
-      &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
-         &lt;property name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
-      &lt;/bean>
-
-
-      &lt;!-- The core server -->
-      &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
-         &lt;constructor>
-            &lt;parameter>
-               &lt;inject bean="BackupConfiguration"/>
-            &lt;/parameter>
-            &lt;parameter>
-               &lt;inject bean="MBeanServer"/>
-            &lt;/parameter>
-            &lt;parameter>
-               &lt;inject bean="HornetQSecurityManager"/>
-            &lt;/parameter>
-         &lt;/constructor>
-         &lt;start ignored="true"/>
-         &lt;stop ignored="true"/>
-      &lt;/bean>
-
-      &lt;!-- The JMS server -->
-      &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
-         &lt;constructor>
-            &lt;parameter>
-               &lt;inject bean="BackupHornetQServer"/>
-            &lt;/parameter>
-         &lt;/constructor>
-      &lt;/bean>
-
-   &lt;/deployment>
-            </programlisting>
-            <para>
-               The first thing to notice is the BackupConfiguration bean. This is configured to pick up the
-               configuration
-               for
-               the
-               server which we will place in the same directory.
-            </para>
-            <para>
-               After that we just configure a new HornetQ Server and JMS server.
-            </para>
-            <note>
+            <section>
+               <title>Live Server Configuration</title>
                <para>
-                  Notice that the names of the beans have been changed from that of the live servers configuration. This
-                  is
-                  so
-                  there is no clash. Obviously if you add more backup servers you will need to rename those as well,
-                  backup1,
-                  backup2 etc.
+                  First lets start with the configuration of the live server, we will use the EAP 'all' configuration as
+                  our starting point. Since this version only supports shared store for failover we need to configure
+                  this in the
+                  <literal>hornetq-configuration.xml</literal>
+                  file like so:
                </para>
-            </note>
-            <para>
-               Now lets add the server configuration in
-               <literal>hornetq-configuration.xml</literal>
-               and add it to the same directory
-               <literal>deploy/hornetq-backup1</literal>
-               and configure it like so:
-            </para>
-            <programlisting>
-      &lt;configuration xmlns="urn:hornetq"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
-
-         &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
-
-         &lt;clustered>true&lt;/clustered>
-
-         &lt;backup>true&lt;/backup>
-
-         &lt;shared-store>true&lt;/shared-store>
-
-         &lt;allow-failback>true&lt;/allow-failback>
-
-         &lt;log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory&lt;/log-delegate-factory-class-name>
-
-         &lt;bindings-directory>${jboss.server.data.dir}/hornetq-backup/bindings&lt;/bindings-directory>
-
-         &lt;journal-directory>${jboss.server.data.dir}/hornetq-backup/journal&lt;/journal-directory>
-
-         &lt;journal-min-files>10&lt;/journal-min-files>
-
-         &lt;large-messages-directory>${jboss.server.data.dir}/hornetq-backup/largemessages&lt;/large-messages-directory>
-
-         &lt;paging-directory>${jboss.server.data.dir}/hornetq/paging&lt;/paging-directory>
-
-         &lt;connectors>
-            &lt;connector name="netty-connector">
-               &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
-               &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-               &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
-            &lt;/connector>
-
-            &lt;!--The connetor to the live node that corresponds to this backup-->
-            &lt;connector name="my-live-connector">
-               &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
-               &lt;param key="host" value="my-live-host"/>
-               &lt;param key="port" value="${hornetq.remoting.netty.port:5445}"/>
-            &lt;/connector>
-
-            &lt;!--invm connector added by th elive server on this node, used by the bridges-->
-            &lt;connector name="in-vm">
-               &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/factory-class>
-               &lt;param key="server-id" value="${hornetq.server-id:0}"/>
-            &lt;/connector>
-
-         &lt;/connectors>
-
-         &lt;acceptors>
-            &lt;acceptor name="netty">
-               &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-               &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-               &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
-            &lt;/acceptor>
-         &lt;/acceptors>
-
-         &lt;broadcast-groups>
-            &lt;broadcast-group name="bg-group1">
-               &lt;group-address>231.7.7.7&lt;/group-address>
-               &lt;group-port>9876&lt;/group-port>
-               &lt;broadcast-period>1000&lt;/broadcast-period>
-               &lt;connector-ref>netty-connector&lt;/connector-ref>
-            &lt;/broadcast-group>
-         &lt;/broadcast-groups>
-
-         &lt;discovery-groups>
-            &lt;discovery-group name="dg-group1">
-            &lt;group-address>231.7.7.7&lt;/group-address>
-            &lt;group-port>9876&lt;/group-port>
-            &lt;refresh-timeout>60000&lt;/refresh-timeout>
-            &lt;/discovery-group>
-         &lt;/discovery-groups>
-
-         &lt;cluster-connections>
-            &lt;cluster-connection name="my-cluster">
-            &lt;address>jms&lt;/address>
-            &lt;connector-ref>netty-connector&lt;/connector-ref>
-            &lt;discovery-group-ref discovery-group-name="dg-group1"/>
-            &lt;/cluster-connection>
-         &lt;/cluster-connections>
-
-         &lt;!-- We need to create a core queue for the JMS queue explicitly because the bridge will be deployed
-         before the JMS queue is deployed, so the first time, it otherwise won't find the queue -->
-         &lt;queues>
-            &lt;queue name="jms.queue.testQueue">
-               &lt;address>jms.queue.testQueue&lt;/address>
-            &lt;/queue>
-         &lt;/queues>
-         &lt;!-- We set-up a bridge that forwards from a the queue on this node to the same address on the live
-         node.
-         -->
-         &lt;bridges>
-            &lt;bridge name="testQueueBridge">
-               &lt;queue-name>jms.queue.testQueue&lt;/queue-name>
-               &lt;forwarding-address>jms.queue.testQueue&lt;/forwarding-address>
-               &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
-               &lt;static-connectors>
-                  &lt;connector-ref>in-vm&lt;/connector-ref>
-               &lt;/static-connectors>
-            &lt;/bridge>
-         &lt;/bridges>
-
-         &lt;security-settings>
-            &lt;security-setting match="#">
-               &lt;permission type="createNonDurableQueue" roles="guest"/>
-               &lt;permission type="deleteNonDurableQueue" roles="guest"/>
-               &lt;permission type="consume" roles="guest"/>
-               &lt;permission type="send" roles="guest"/>
-            &lt;/security-setting>
-         &lt;/security-settings>
-
-         &lt;address-settings>
-            &lt;!--default for catch all-->
-            &lt;address-setting match="#">
-               &lt;dead-letter-address>jms.queue.DLQ&lt;/dead-letter-address>
-               &lt;expiry-address>jms.queue.ExpiryQueue&lt;/expiry-address>
-               &lt;redelivery-delay>0&lt;/redelivery-delay>
-               &lt;max-size-bytes>10485760&lt;/max-size-bytes>
-               &lt;message-counter-history-day-limit>10&lt;/message-counter-history-day-limit>
-               &lt;address-full-policy>BLOCK&lt;/address-full-policy>
-            &lt;/address-setting>
-         &lt;/address-settings>
-
-      &lt;/configuration>
-
-            </programlisting>
-            <para>
-               The first thing you can see is we have added a <literal>jmx-domain</literal> attribute, this is used when
-               adding objects, such as the HornetQ server and JMS server to jmx, we change this from the default <literal>org.hornetq</literal>
-               to avoid naming clashes with the live server
-            </para>
-            <para>
-               The first important part of the configuration is to make sure that this server starts as a backup server not
-               a live server, via the <literal>backup</literal> attribute.
-            </para>
-            <para>
-               After that we have the same cluster configuration as live, that is <literal>clustered</literal> is true and
-               <literal>shared-store</literal> is true. However you can see we have added a new configuration element
-               <literal>allow-failback</literal>. When this is set to true then this backup server will automatically stop
-               and fall back into backup node if failover occurs and the live server has become available. If false then
-               the user will have to stop the server manually.
-            </para>
-            <para>
-               Next we can see the configuration for the journal location, as in the live configuration this must point to
-               the same directory as this backup's live server.
-            </para>
-            <para>
-               Now we see the connectors configuration, we have 3 defined which are needed for the following
-            </para>
-            <itemizedlist>
-               <listitem>
-                  <para>
-                     <literal>netty-connector.</literal> This is the connector used to connect to this backup server once live.
-                  </para>
-               </listitem>
-               <listitem>
-                  <para>
-                     <literal>my-live-connector.</literal> This is the connector to the live server that this backup is paied to.
-                     It is used by the cluster connection to announce its presence as a backup and to form the cluster when
-                     this backup becomes live. In reality it doesn't matter what connector the cluster connection uses, it
-                     could actually use the invm connector and broadcast its presence via the server on this node if we wanted.
-                  </para>
-               </listitem>
-               <listitem>
-                  <para>
-                     <literal>in-vm.</literal> This is the invm connector that is created by the live server on the same
-                     node. We will use this to create a bridge to the live server to forward messages to.
-                  </para>
-               </listitem>
-            </itemizedlist>
-            <para>After that you will see the acceptors defined, This is the acceptor where clients will reconnect.</para>
-            <para>
-               The Broadcast groups, Discovery group and cluster configurations are as per normal, details of these
-               can be found in the HornetQ user manual.
-            </para>
-            <para>
-               The next part is of interest, here we define a list of queues and bridges. These must match any queues
-               and addresses used by MDB's in the live servers configuration. At this point these must be statically
-               defined but this may change in future versions. Basically fow every queue or topic definition you need a
-               queue configuration using the correct prefix <literal>jms.queue(topic)</literal> if using jm and a bridge
-               definition that handles the forwarding of any message.
-            </para>
-            <note>
+               <programlisting>
+                  &lt;shared-store>true&lt;/shared-store>
+               </programlisting>
                <para>
-                  There is no such thing as a topic in core HornetQ, this is basically just an address so we need to create
-                  a queue that matches the jms address, that is, <literal>jms.topic.testTopic</literal>.
+                  Obviously this means that the location of the journal files etc will have to be configured to be some
+                  where
+                  where
+                  this lives backup can access. You may change the lives configuration in
+                  <literal>hornetq-configuration.xml</literal>
+                  to
+                  something like:
                </para>
-            </note>
+               <programlisting>
+                  &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
+                  &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
+                  &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
+                  &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
+               </programlisting>
+               <para>
+                  How these paths are configured will of course depend on your network settings or file system.
+               </para>
+               <para>
+                  Now we need to configure how remote JMS clients will behave if the server is shutdown in a normal
+                  fashion.
+                  By
+                  default
+                  Clients will not failover if the live server is shutdown. Depending on there connection factory
+                  settings
+                  they will either fail or try to reconnect to the live server.
+               </para>
+               <para>If you want clients to failover on a normal server shutdown the you must configure the
+                  <literal>failover-on-shutdown</literal>
+                  flag to true in the
+                  <literal>hornetq-configuration.xml</literal>
+                  file like so:
+               </para>
+               <programlisting>
+                  &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
+               </programlisting>
+               <para>Don't worry if you have this set to false (which is the default) but still want failover to occur,
+                  simply
+                  kill
+                  the
+                  server process directly or call
+                  <literal>forceFailover</literal>
+                  via jmx or the admin console on the core server object.
+               </para>
+               <para>We also need to configure the connection factories used by the client to be HA. This is done by
+                  adding
+                  certain attributes to the connection factories in<literal>hornetq-jms.xml</literal>. Lets look at an
+                  example:
+               </para>
+               <programlisting>
+                  &lt;connection-factory name="NettyConnectionFactory">
+                  &lt;xa>true&lt;/xa>
+                  &lt;connectors>
+                  &lt;connector-ref connector-name="netty"/>
+                  &lt;/connectors>
+                  &lt;entries>
+                  &lt;entry name="/ConnectionFactory"/>
+                  &lt;entry name="/XAConnectionFactory"/>
+                  &lt;/entries>
+
+                  &lt;ha>true&lt;/ha>
+                  &lt;!-- Pause 1 second between connect attempts -->
+                  &lt;retry-interval>1000&lt;/retry-interval>
+
+                  &lt;!-- Multiply subsequent reconnect pauses by this multiplier. This can be used to
+                  implement an exponential back-off. For our purposes we just set to 1.0 so each reconnect
+                  pause is the same length -->
+                  &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
+
+                  &lt;!-- Try reconnecting an unlimited number of times (-1 means "unlimited") -->
+                  &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
+                  &lt;/connection-factory>
+
+               </programlisting>
+               <para>We have added the following attributes to the connection factory used by the client:</para>
+               <itemizedlist>
+                  <listitem>
+                     <para>
+                        <literal>ha</literal>
+                        - This tells the client it support HA and must always be true for failover
+                        to occur
+                     </para>
+                  </listitem>
+                  <listitem>
+                     <para>
+                        <literal>retry-interval</literal>
+                        - this is how long the client will wait after each unsuccessful
+                        reconnect to the server
+                     </para>
+                  </listitem>
+                  <listitem>
+                     <para>
+                        <literal>retry-interval-multiplier</literal>
+                        - is used to configure an exponential back off for
+                        reconnect attempts
+                     </para>
+                  </listitem>
+                  <listitem>
+                     <para>
+                        <literal>reconnect-attempts</literal>
+                        - how many reconnect attempts should a client make before failing,
+                        -1 means unlimited.
+                     </para>
+                  </listitem>
+               </itemizedlist>
+            </section>
+            <section>
+               <title>Backup Server Configuration</title>
+               <para>
+                  Now lets look at how to create and configure a backup server on the same eap instance. This is running
+                  on the same eap instance as the live server from the previous chapter but is configured as the backup
+                  for a live server running on a different eap instance.
+               </para>
+               <para>
+                  The first thing to mention is that the backup only needs a <literal>hornetq-jboss-beans.xml</literal>
+                  and a <literal>hornetq-configuration.xml</literal> configuration file. This is because any JMS components
+                  are created from the Journal when the backup server becomes live.
+               </para>
+               <para>
+                  Firstly we need to define a new HornetQ Server that EAP will deploy. We do this by creating a new
+                  <literal>hornetq-jboss-beans.xml</literal>
+                  configuration. We will place this under a new directory
+                  <literal>hornetq-backup1</literal>
+                  which will need creating
+                  in the
+                  <literal>deploy</literal>
+                  directory but in reality it doesn't matter where this is put. This will look like:
+               </para>
+               <programlisting>
+                  &lt;?xml version="1.0" encoding="UTF-8"?>
+
+                  &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+                  &lt;!-- The core configuration -->
+                  &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
+                  &lt;property
+                  name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
+                  &lt;/bean>
+
+
+                  &lt;!-- The core server -->
+                  &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+                  &lt;constructor>
+                  &lt;parameter>
+                  &lt;inject bean="BackupConfiguration"/>
+                  &lt;/parameter>
+                  &lt;parameter>
+                  &lt;inject bean="MBeanServer"/>
+                  &lt;/parameter>
+                  &lt;parameter>
+                  &lt;inject bean="HornetQSecurityManager"/>
+                  &lt;/parameter>
+                  &lt;/constructor>
+                  &lt;start ignored="true"/>
+                  &lt;stop ignored="true"/>
+                  &lt;/bean>
+
+                  &lt;!-- The JMS server -->
+                  &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+                  &lt;constructor>
+                  &lt;parameter>
+                  &lt;inject bean="BackupHornetQServer"/>
+                  &lt;/parameter>
+                  &lt;/constructor>
+                  &lt;/bean>
+
+                  &lt;/deployment>
+               </programlisting>
+               <para>
+                  The first thing to notice is the BackupConfiguration bean. This is configured to pick up the
+                  configuration
+                  for
+                  the
+                  server which we will place in the same directory.
+               </para>
+               <para>
+                  After that we just configure a new HornetQ Server and JMS server.
+               </para>
+               <note>
+                  <para>
+                     Notice that the names of the beans have been changed from that of the live servers configuration.
+                     This
+                     is
+                     so
+                     there is no clash. Obviously if you add more backup servers you will need to rename those as well,
+                     backup1,
+                     backup2 etc.
+                  </para>
+               </note>
+               <para>
+                  Now lets add the server configuration in
+                  <literal>hornetq-configuration.xml</literal>
+                  and add it to the same directory
+                  <literal>deploy/hornetq-backup1</literal>
+                  and configure it like so:
+               </para>
+               <programlisting>
+                  &lt;configuration xmlns="urn:hornetq"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+
+                  &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
+
+                  &lt;clustered>true&lt;/clustered>
+
+                  &lt;backup>true&lt;/backup>
+
+                  &lt;shared-store>true&lt;/shared-store>
+
+                  &lt;allow-failback>true&lt;/allow-failback>
+
+                  &lt;log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory&lt;/log-delegate-factory-class-name>
+
+                  &lt;bindings-directory>/media/shared/data/hornetq-backup/bindings&lt;/bindings-directory>
+
+                  &lt;journal-directory>/media/shared/data/hornetq-backup/journal&lt;/journal-directory>
+
+                  &lt;journal-min-files>10&lt;/journal-min-files>
+
+                  &lt;large-messages-directory>/media/shared/data/hornetq-backup/largemessages&lt;/large-messages-directory>
+
+                  &lt;paging-directory>/media/shared/data/hornetq-backup/paging&lt;/paging-directory>
+
+                  &lt;connectors>
+                  &lt;connector name="netty-connector">
+                  &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+                  &lt;param key="host" value="${jboss.bind.address:localhost}"/>
+                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;/connector>
+
+                  &lt;connector name="in-vm">
+                  &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/factory-class>
+                  &lt;param key="server-id" value="${hornetq.server-id:0}"/>
+                  &lt;/connector>
+
+                  &lt;/connectors>
+
+                  &lt;acceptors>
+                  &lt;acceptor name="netty">
+                  &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+                  &lt;param key="host" value="${jboss.bind.address:localhost}"/>
+                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;/acceptor>
+                  &lt;/acceptors>
+
+                  &lt;broadcast-groups>
+                  &lt;broadcast-group name="bg-group1">
+                  &lt;group-address>231.7.7.7&lt;/group-address>
+                  &lt;group-port>9876&lt;/group-port>
+                  &lt;broadcast-period>1000&lt;/broadcast-period>
+                  &lt;connector-ref>netty-connector&lt;/connector-ref>
+                  &lt;/broadcast-group>
+                  &lt;/broadcast-groups>
+
+                  &lt;discovery-groups>
+                  &lt;discovery-group name="dg-group1">
+                  &lt;group-address>231.7.7.7&lt;/group-address>
+                  &lt;group-port>9876&lt;/group-port>
+                  &lt;refresh-timeout>60000&lt;/refresh-timeout>
+                  &lt;/discovery-group>
+                  &lt;/discovery-groups>
+
+                  &lt;cluster-connections>
+                  &lt;cluster-connection name="my-cluster">
+                  &lt;address>jms&lt;/address>
+                  &lt;connector-ref>netty-connector&lt;/connector-ref>
+                  &lt;discovery-group-ref discovery-group-name="dg-group1"/>
+                  &lt;/cluster-connection>
+                  &lt;/cluster-connections>
+
+                  &lt;security-settings>
+                  &lt;security-setting match="#">
+                  &lt;permission type="createNonDurableQueue" roles="guest"/>
+                  &lt;permission type="deleteNonDurableQueue" roles="guest"/>
+                  &lt;permission type="consume" roles="guest"/>
+                  &lt;permission type="send" roles="guest"/>
+                  &lt;/security-setting>
+                  &lt;/security-settings>
+
+                  &lt;address-settings>
+                  &lt;!--default for catch all-->
+                  &lt;address-setting match="#">
+                  &lt;dead-letter-address>jms.queue.DLQ&lt;/dead-letter-address>
+                  &lt;expiry-address>jms.queue.ExpiryQueue&lt;/expiry-address>
+                  &lt;redelivery-delay>0&lt;/redelivery-delay>
+                  &lt;max-size-bytes>10485760&lt;/max-size-bytes>
+                  &lt;message-counter-history-day-limit>10&lt;/message-counter-history-day-limit>
+                  &lt;address-full-policy>BLOCK&lt;/address-full-policy>
+                  &lt;/address-setting>
+                  &lt;/address-settings>
+
+                  &lt;/configuration>
+
+               </programlisting>
+               <para>
+                  The first thing you can see is we have added a
+                  <literal>jmx-domain</literal>
+                  attribute, this is used when
+                  adding objects, such as the HornetQ server and JMS server to jmx, we change this from the default
+                  <literal>org.hornetq</literal>
+                  to avoid naming clashes with the live server
+               </para>
+               <para>
+                  The first important part of the configuration is to make sure that this server starts as a backup
+                  server not
+                  a live server, via the
+                  <literal>backup</literal>
+                  attribute.
+               </para>
+               <para>
+                  After that we have the same cluster configuration as live, that is
+                  <literal>clustered</literal>
+                  is true and
+                  <literal>shared-store</literal>
+                  is true. However you can see we have added a new configuration element
+                  <literal>allow-failback</literal>. When this is set to true then this backup server will automatically
+                  stop
+                  and fall back into backup node if failover occurs and the live server has become available. If false
+                  then
+                  the user will have to stop the server manually.
+               </para>
+               <para>
+                  Next we can see the configuration for the journal location, as in the live configuration this must
+                  point to
+                  the same directory as this backup's live server.
+               </para>
+               <para>
+                  Now we see the connectors configuration, we have 3 defined which are needed for the following
+               </para>
+               <itemizedlist>
+                  <listitem>
+                     <para>
+                        <literal>netty-connector.</literal>
+                        This is the connector used to connect to this backup server once live.
+                     </para>
+                  </listitem>
+               </itemizedlist>
+               <para>After that you will see the acceptors defined, This is the acceptor where clients will reconnect.
+               </para>
+               <para>
+                  The Broadcast groups, Discovery group and cluster configurations are as per normal, details of these
+                  can be found in the HornetQ user manual.
+               </para>
+               <para>
+                  When the backup becomes it will be not be servicing any JEE components on this eap instance. Instead any
+                  existing messages will be redistributed around the cluster and new messages forwarded to and from the backup
+                  to service any remote clients it has (if it has any).
+               </para>
+            </section>
+            <section>
+               <title>Configuring multiple backups</title>
+               <para>
+                  In this instance we have assumed that there are only 2 nodes where each node has a backup for the other
+                  node. However you may want to configure a server too have multiple backup nodes. For example you may want
+                  3 nodes where each node has 2 backups, one for each of the other 2 live servers. For this you would simply
+                  copy the backup configuration and make sure you do the following:
+               </para>
+               <itemizedlist>
+                  <listitem>
+                     <para>
+                        Make sure that you give all the beans in the <literal>hornetq-jboss-beans.xml</literal> configuration
+                        file a unique name, i.e.
+                     </para>
+                  </listitem>
+               </itemizedlist>
+            </section>
+            <section>
+               <title>Running the shipped example</title>
+               <para>
+                  EAP ships with an example configuration for this topology. Look under <literal>extras/hornetq/resources/examples/symmetric-cluster-with-backups-colocated</literal>
+                  and follow the read me
+               </para>
+            </section>
          </section>
       </section>
       <section>
