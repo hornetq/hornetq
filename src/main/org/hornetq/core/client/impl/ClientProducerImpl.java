@@ -468,10 +468,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       // We won't know the real size of the message since we are compressing while reading the streaming.
       // This counter will be passed to the deflater to be updated for every byte read
+      AtomicLong messageSize = new AtomicLong();
 
       if (session.isCompressLargeMessages())
       {
-         input = new DeflaterReader(inputStreamParameter);
+         input = new DeflaterReader(inputStreamParameter, messageSize);
       }
 
       long totalSize = 0;
@@ -517,13 +518,18 @@ public class ClientProducerImpl implements ClientProducerInternal
          if (lastPacket)
          {
 
+            if (!session.isCompressLargeMessages())
+            {
+               messageSize.set(totalSize);
+            }
+
             byte[] buff2 = new byte[pos];
 
             System.arraycopy(buff, 0, buff2, 0, pos);
 
             buff = buff2;
 
-            chunk = new SessionSendContinuationMessage(buff, false, sendBlocking, totalSize);
+            chunk = new SessionSendContinuationMessage(buff, false, sendBlocking, messageSize.get());
          }
          else
          {

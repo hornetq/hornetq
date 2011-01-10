@@ -41,11 +41,6 @@ public class DeflaterReader extends InputStream
       input = inData;
       this.bytesRead = bytesRead;
    }
-   
-   public DeflaterReader(final InputStream inData)
-   {
-      this(inData, null);
-   }
 
    @Override
    public int read() throws IOException
