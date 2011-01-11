@@ -39,18 +39,39 @@
             EAP instances this would mean that each EAP instance would have a live server and 1 backup server as in
             diagram1.
          </para>
-         <para>todo add image</para>
+         <para>
+            <graphic fileref="images/simple-colocated.jpg" align="center" format="jpg" scale="30"/>
+         </para>
+         <para>
+            Here the continuous lines show before failover and the dotted lines show the state of the cluster after
+            failover has occurred. To start with the 2 live servers are connected forming a cluster with each live server
+            connected to its local applications (via JCA). Also remote clients are connected to the live servers. After
+            failover the backup connects to the still available live server (which happens to be in the same vm) and takes
+            over as the live server in the cluster. Any remote clients also failover.
+         </para>
+         <para>
+            One thing to mention is that in that depending on what consumers/producers and MDB's etc are available messages
+            will be distributed between the nodes to make sure that all clients are satisfied from a JMS perspective. That is
+            if a producer is sending messages to a queue on a backup server that has no consumers, the messages will be
+            distributed to a live node elsewhere.
+         </para>
+         <para>
+            The following diagram is slightly more complex but shows the same configuration with 3 servers. Note that the
+            cluster connections ave been removed to make the configuration clearer but in reality all live servers will
+            form a cluster.
+         </para>
+         <para>
+            <graphic fileref="images/simple-colocated2.jpg" align="center" format="jpg" scale="30"/>
+         </para>
          <para>
             With more thn 2 servers it is up to the user as to how many backups per live server are configured, you can
             have
             as many backups as required but usually 1 would suffice. In 3 node topology you may have each EAP instance
             configured
-            with 2 backups, 1 for each of the other live servers, or you may just want to have 1 backup for each live.
+            with 2 backups in a 4 node 3 backups and so on. The following diagram demonstrates this.
          </para>
          <para>
-            The reason for having the backup server colocated is so they work with MDB's, when a back up server comes ive
-            it forwards any messages to the live server who deals with them in the normal fashion. If your application was
-            pure JMS you could, if chosen, use a dedicated backup server.
+            <graphic fileref="images/simple-colocated3.jpg" align="center" format="jpg" scale="30"/>
          </para>
          <section>
             <title>Configuration</title>
@@ -444,10 +465,100 @@
       <section>
          <title>Dedicated Live and Backup in Symmetrical cluster</title>
          <para>
-            In reality the configuration for this is exactly the same as in the previous section, the only difference is
-            that a backup will reside on an eap instance of its own. of course this means that the eap instance is passive
-            and not used until the backup comes live and is only really useful for pure JMS applications.
+            In reality the configuration for this is exactly the same as the backup server in the previous section, the only
+            difference is that a backup will reside on an eap instance of its own rather than colocated with another live server.
+            Of course this means that the eap instance is passive and not used until the backup comes live and is only
+            really useful for pure JMS applications.
          </para>
+         <para>The following diagram shows a possible configuration for this:</para>
+         <para>
+            <graphic fileref="images/simple-dedicated.jpg" align="center" format="jpg" scale="30"/>
+        </para>
+         <para>
+            Here you can see how this works with remote JMS clients. Once failover occurs the HornetQ backup Server takes
+            running within another eap instance takes over as live.
+         </para>
+         <para>
+            This is fine with applications that are pure JMS and have no JMS components such as MDB's. If you are using
+            JMS components then there are 2 ways that this can be done. The first is shown in the following diagram:
+         </para>
+         <para>
+            <graphic fileref="images/simple-dedicated-jca.jpg" align="center" format="jpg" scale="30"/>
+         </para>
+         <para>
+            Because there is no live hornetq server running by default in the eap instance running the backup server it
+            makes no sense to host any applications in it. However you can host applications on the server running the live
+            hornetq server. If failure occurs to an live hornetq server then remote jms clients will failover as previously
+            explained however what happens to any messages meant for or sent from JEE components. Well when the backup comes
+            live, messages will be distributed to and from the backup server over HornetQ cluster connections and handled
+            appropriately.
+         </para>
+         <para>
+            The second way to do this is to have both live and backup server remote form the eap instance as shown in the
+            following diagram.
+         </para>
+         <para>
+            <graphic fileref="images/simple-dedicated-jca-remote.jpg" align="center" format="jpg" scale="30"/>
+         </para>
+         <para>
+            Here you can see that all the Application (via JCA) will be serviced by a HornetQ server in its own eap instance.
+         </para>
+         <section>
+            <title>Configuration of dedicated Live and backup</title>
+            <para>
+               The live server configuration is exactly the same as in the previous example. The only difference of course
+               is that there is no backup in the eap instance.
+            </para>
+            <para>
+               For the backup server the <literal>hornetq-configuration.xml</literal> is unchanged, however since there is
+               no live server we need to make sure that the <literal>hornetq-jboss-beans.xml</literal> instantiates all
+               the beans needed. For this simply use the same configuration as in the live server changing only the
+               location of the <literal>hornetq-configuration.xml</literal> parameter for the <literal>Configuration</literal>
+               bean.
+            </para>
+            <para>
+               As before there will be no <literal>hornetq-jms.xml</literal> or <literal>jms-ds.xml</literal> configuration.
+            </para>
+            <para>
+               If you want both hornetq servers to be in there own dedicated server where they are remote to applications,
+               as in the last diagram. Then simply edit the <literal>jms-ds.xml</literal> and change the following lines to
+            </para>
+            <programlisting>
+      &lt;config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property>
+      &lt;config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446&lt;/config-property>
+            </programlisting>
+            <para>
+               This will change the outbound JCA connector, to configure the inbound connector for MDB's edit the
+               <literal>ra.xml</literal> config file and change the following parameters.
+            </para>
+            <programlisting>
+      &lt;config-property>
+         &lt;description>The transport type&lt;/description>
+         &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+         &lt;config-property-type>java.lang.String&lt;/config-property-type>
+         &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
+      &lt;/config-property>
+      &lt;config-property>
+         &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+         &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+         &lt;config-property-type>java.lang.String&lt;/config-property-type>
+         &lt;config-property-value>host=127.0.0.1;port=5446&lt;/config-property-value>
+      &lt;/config-property>
+            </programlisting>
+            <para>
+               In both cases the host and port should match your live server. If you are using Discovery then set the
+               appropriate parameters for <literal>DiscoveryAddress</literal> and <literal>DiscoveryPort</literal> to match
+               your configured broadcast groups.
+            </para>
+         </section>
+         <section>
+            <title>Running the shipped example</title>
+            <para>
+               EAP ships with an example configuration for this topology. Look under
+               <literal>extras/hornetq/resources/examples/cluster-with-dedicated-backup</literal>
+               and follow the read me
+            </para>
+         </section>
       </section>
    </section>
 </chapter>
