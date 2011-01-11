@@ -22,6 +22,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A RemoteProcessHornetQServer
@@ -168,5 +169,13 @@ public class RemoteProcessHornetQServer implements TestableServer
    public void setStarted(boolean init)
    {
       started = true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.tests.integration.cluster.util.TestableServer#getServer()
+    */
+   public HornetQServer getServer()
+   {
+      return null;
    }
 }

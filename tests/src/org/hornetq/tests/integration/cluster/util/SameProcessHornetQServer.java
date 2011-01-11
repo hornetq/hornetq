@@ -109,6 +109,14 @@ public class SameProcessHornetQServer implements TestableServer
       Assert.assertTrue(ok);
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.tests.integration.cluster.util.TestableServer#getServer()
+    */
+   public HornetQServer getServer()
+   {
+      return server;
+   }
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------

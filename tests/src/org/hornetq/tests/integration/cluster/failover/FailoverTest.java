@@ -44,6 +44,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
@@ -56,6 +57,7 @@ import org.hornetq.tests.util.RandomUtil;
 public class FailoverTest extends FailoverTestBase
 {
    private static final Logger log = Logger.getLogger(FailoverTest.class);
+
    private ServerLocator locator;
 
    // Constants -----------------------------------------------------
@@ -101,7 +103,33 @@ public class FailoverTest extends FailoverTestBase
       super.tearDown();
    }
 
-   //https://jira.jboss.org/browse/HORNETQ-522
+   protected ClientSession createSession(ClientSessionFactory sf,
+                                         boolean autoCommitSends,
+                                         boolean autoCommitAcks,
+                                         int ackBatchSize) throws Exception
+   {
+      return sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize);
+   }
+
+   protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
+   {
+      return sf.createSession(autoCommitSends, autoCommitAcks);
+   }
+
+   protected ClientSession createSession(ClientSessionFactory sf) throws Exception
+   {
+      return sf.createSession();
+   }
+
+   protected ClientSession createSession(ClientSessionFactory sf,
+                                         boolean xa,
+                                         boolean autoCommitSends,
+                                         boolean autoCommitAcks) throws Exception
+   {
+      return sf.createSession(xa, autoCommitSends, autoCommitAcks);
+   }
+
+   // https://jira.jboss.org/browse/HORNETQ-522
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -111,10 +139,9 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
-      ClientSession session = sf.createSession(true, true);
+      ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
-
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -133,10 +160,11 @@ public class FailoverTest extends FailoverTestBase
 
       int winSize = 0;
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS, null, winSize, 100, false);
-      
+
       final List<ClientMessage> received = new ArrayList<ClientMessage>();
-      
-      consumer.setMessageHandler(new MessageHandler() {
+
+      consumer.setMessageHandler(new MessageHandler()
+      {
 
          public void onMessage(ClientMessage message)
          {
@@ -151,13 +179,13 @@ public class FailoverTest extends FailoverTestBase
                e.printStackTrace();
             }
          }
-         
+
       });
 
       session.start();
-      
+
       crash(session);
-      
+
       int retry = 0;
       while (received.size() >= numMessages)
       {
@@ -172,7 +200,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
 
       sf.close();
-      
+
       Assert.assertTrue(retry <= 5);
 
       Assert.assertEquals(0, sf.numSessions());
@@ -190,7 +218,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, true);
+      ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -250,7 +278,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(false, false);
+      ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -309,7 +337,7 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         
+
          assertNotNull(message);
 
          message.acknowledge();
@@ -326,8 +354,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
- 
-
    // https://jira.jboss.org/jira/browse/HORNETQ-285
    public void testFailoverOnInitialConnection() throws Exception
    {
@@ -336,13 +362,12 @@ public class FailoverTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
 
-
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       // Crash live server
       crash();
 
-      ClientSession session = sf.createSession();
+      ClientSession session = createSession(sf);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -395,7 +420,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(false, false);
+      ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -458,7 +483,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(false, false);
+      ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -529,7 +554,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(false, false);
+      ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -601,7 +626,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(false, false);
+      ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -636,7 +661,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      session = sf.createSession(false, false);
+      session = createSession(sf, false, false);
 
       consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -681,7 +706,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session1 = sf.createSession(false, false);
+      ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -702,7 +727,7 @@ public class FailoverTest extends FailoverTestBase
 
       session1.commit();
 
-      ClientSession session2 = sf.createSession(false, false);
+      ClientSession session2 = createSession(sf, false, false);
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -755,7 +780,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session1 = sf.createSession(false, false);
+      ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -776,7 +801,7 @@ public class FailoverTest extends FailoverTestBase
 
       session1.commit();
 
-      ClientSession session2 = sf.createSession(false, false);
+      ClientSession session2 = createSession(sf, false, false);
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -841,7 +866,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, false, false);
+      ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
@@ -902,7 +927,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, false, false);
+      ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
@@ -966,7 +991,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, false, false);
+      ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
@@ -1031,7 +1056,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, false, false);
+      ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
@@ -1111,7 +1136,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session1 = sf.createSession(false, false);
+      ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1132,7 +1157,7 @@ public class FailoverTest extends FailoverTestBase
 
       session1.commit();
 
-      ClientSession session2 = sf.createSession(true, false, false);
+      ClientSession session2 = createSession(sf, true, false, false);
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1187,7 +1212,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session1 = sf.createSession(false, false);
+      ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1208,7 +1233,7 @@ public class FailoverTest extends FailoverTestBase
 
       session1.commit();
 
-      ClientSession session2 = sf.createSession(true, false, false);
+      ClientSession session2 = createSession(sf, true, false, false);
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1265,7 +1290,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      ClientSession session1 = sf.createSession(false, false);
+      ClientSession session1 = createSession(sf, false, false);
 
       session1.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1286,7 +1311,7 @@ public class FailoverTest extends FailoverTestBase
 
       session1.commit();
 
-      ClientSession session2 = sf.createSession(true, false, false);
+      ClientSession session2 = createSession(sf, true, false, false);
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1352,7 +1377,7 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(5000);
 
-      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       session = sendAndConsume(sf, true);
 
@@ -1381,7 +1406,7 @@ public class FailoverTest extends FailoverTestBase
 
       for (int i = 0; i < numSessions; i++)
       {
-         ClientSession session = sf.createSession(true, true);
+         ClientSession session = createSession(sf, true, true);
 
          List<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
 
@@ -1399,7 +1424,7 @@ public class FailoverTest extends FailoverTestBase
          sessionConsumerMap.put(session, consumers);
       }
 
-      ClientSession sendSession = sf.createSession(true, true);
+      ClientSession sendSession = createSession(sf, true, true);
 
       ClientProducer producer = sendSession.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1420,7 +1445,6 @@ public class FailoverTest extends FailoverTestBase
       ClientSession[] sessions = new ClientSession[sessionSet.size()];
       sessionSet.toArray(sessions);
       crash(sessions);
-
 
       for (ClientSession session : sessionConsumerMap.keySet())
       {
@@ -1470,7 +1494,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      ClientSession session = sf.createSession(true, true);
+      ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1541,7 +1565,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, true);
+      ClientSession session = createSession(sf, true, true);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1614,7 +1638,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, true, 0);
+      ClientSession session = createSession(sf, true, true, 0);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1717,7 +1741,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      ClientSession session = sf.createSession(true, true, 0);
+      ClientSession session = createSession(sf, true, true, 0);
 
       if (temporary)
       {
@@ -1727,7 +1751,6 @@ public class FailoverTest extends FailoverTestBase
       {
          session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, durable);
       }
-
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1778,15 +1801,13 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       // Add an interceptor to delay the send method so we can get time to cause failover before it returns
 
-      //liveServer.getRemotingService().addInterceptor(new DelayInterceptor());
+      // liveServer.getRemotingService().addInterceptor(new DelayInterceptor());
 
-
-
-      final ClientSession session = sf.createSession(true, true, 0);
+      final ClientSession session = createSession(sf, true, true, 0);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1846,7 +1867,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnAcknowledge(true);
       final ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      final ClientSession session = sf.createSession(false, false);
+      final ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -1932,7 +1953,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      ClientSession session2 = sf.createSession(false, false);
+      ClientSession session2 = createSession(sf, false, false);
 
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1996,7 +2017,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
-      final ClientSession session = sf.createSession(false, false);
+      final ClientSession session = createSession(sf, false, false);
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
@@ -2066,7 +2087,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      ClientSession session2 = sf.createSession(false, false);
+      ClientSession session2 = createSession(sf, false, false);
 
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
 
@@ -2144,7 +2165,10 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop();
 
       liveServer.crash();
-      
+
+      // To reload security or other settings that are read during startup
+      beforeRestart(backupServer);
+
       backupServer.start();
 
       assertTrue(latch.await(5, TimeUnit.SECONDS));
@@ -2160,7 +2184,7 @@ public class FailoverTest extends FailoverTestBase
       session.close();
 
       sf.close();
-      
+
       Assert.assertEquals(0, sf.numSessions());
 
       Assert.assertEquals(0, sf.numConnections());
@@ -2195,6 +2219,11 @@ public class FailoverTest extends FailoverTestBase
       backupServer.stop();
 
       liveServer.crash();
+
+      beforeRestart(liveServer);
+
+      // To reload security or other settings that are read during startup
+      beforeRestart(liveServer);
 
       liveServer.start();
 
@@ -2247,6 +2276,9 @@ public class FailoverTest extends FailoverTestBase
 
       liveServer.crash();
 
+      // To reload security or other settings that are read during startup
+      beforeRestart(liveServer);
+
       liveServer.start();
 
       assertTrue(latch.await(5, TimeUnit.SECONDS));
@@ -2263,14 +2295,14 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
-      session = sf.createSession();
+      session = createSession(sf);
 
       ClientConsumer cc = session.createConsumer(FailoverTestBase.ADDRESS);
 
       session.start();
-      
+
       ClientMessage cm = cc.receive(5000);
 
       assertNotNull(cm);
@@ -2278,7 +2310,7 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals("message0", cm.getBodyBuffer().readString());
 
       session.close();
-      
+
       sf.close();
 
       Assert.assertEquals(0, sf.numSessions());
@@ -2316,6 +2348,9 @@ public class FailoverTest extends FailoverTestBase
 
       liveServer.crash();
 
+      // To reload security or other settings that are read during startup
+      beforeRestart(backupServer);
+
       backupServer.start();
 
       assertTrue(latch.await(5, TimeUnit.SECONDS));
@@ -2332,9 +2367,9 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
-      session = sf.createSession();
+      session = createSession(sf);
 
       ClientConsumer cc = session.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -2354,6 +2389,7 @@ public class FailoverTest extends FailoverTestBase
 
       Assert.assertEquals(0, sf.numConnections());
    }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -2389,11 +2425,15 @@ public class FailoverTest extends FailoverTestBase
       message.getBodyBuffer().writeString("message" + i);
    }
 
+   protected void beforeRestart(TestableServer liveServer)
+   {
+   }
+
    // Private -------------------------------------------------------
 
    private ClientSession sendAndConsume(final ClientSessionFactory sf, final boolean createQueue) throws Exception
    {
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = createSession(sf, false, true, true);
 
       if (createQueue)
       {
@@ -2439,6 +2479,5 @@ public class FailoverTest extends FailoverTestBase
    }
 
    // Inner classes -------------------------------------------------
-
 
 }

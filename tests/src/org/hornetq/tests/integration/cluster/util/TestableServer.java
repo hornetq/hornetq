@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.util;
 
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A TestServer
@@ -25,10 +26,13 @@ import org.hornetq.api.core.client.ClientSession;
  */
 public interface TestableServer
 {
+
+   HornetQServer getServer();
+
    public void start() throws Exception;
-   
+
    public void stop() throws Exception;
-   
+
    public void crash(ClientSession... sessions) throws Exception;
 
    public boolean isInitialised();
