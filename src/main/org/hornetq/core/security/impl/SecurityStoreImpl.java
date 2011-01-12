@@ -185,10 +185,10 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
             }
 
             throw new HornetQException(HornetQException.SECURITY_EXCEPTION,
-                                       "Unable to validate user: " + session.getUsername() +
-                                                " for check type " +
+                                       "User: " + session.getUsername() +
+                                                " doesn't have permission='" +
                                                 checkType +
-                                                " for address " +
+                                                "' on address " +
                                                 saddress);
          }
          // if we get here we're granted, add to the cache

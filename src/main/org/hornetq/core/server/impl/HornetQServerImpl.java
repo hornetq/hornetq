@@ -1378,10 +1378,8 @@ public class HornetQServerImpl implements HornetQServer
             securityDeployer.start();
          }
       }
-      else
-      {
-         deploySecurityFromConfiguration();
-      }
+
+      deploySecurityFromConfiguration();
 
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
 
