@@ -34,8 +34,8 @@
          <title>Colocated Live and Backup in Symmetrical cluster</title>
          <para>
             The colocated symmetrical topology will be the most widely used topology, this is where an EAP instance has
-            a live node running plus 1 or more backup nodes. Each backup node will belong to a live node on another EAP
-            instance. In a simple cluster o  2
+            a live node running plus 1 or more backup node. Each backup node will belong to a live node on another EAP
+            instance. In a simple cluster of 2
             EAP instances this would mean that each EAP instance would have a live server and 1 backup server as in
             diagram1.
          </para>
@@ -64,7 +64,7 @@
             <graphic fileref="images/simple-colocated2.jpg" align="center" format="jpg" scale="30"/>
          </para>
          <para>
-            With more thn 2 servers it is up to the user as to how many backups per live server are configured, you can
+            With more than 2 servers it is up to the user as to how many backups per live server are configured, you can
             have
             as many backups as required but usually 1 would suffice. In 3 node topology you may have each EAP instance
             configured
