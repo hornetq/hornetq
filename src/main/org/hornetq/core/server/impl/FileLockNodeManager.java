@@ -172,6 +172,7 @@ public class FileLockNodeManager extends NodeManager
          }
          else if (state == LIVE)
          {
+            log.debug("acquired live node lock state = " + (char)state);
             break;
          }
       }
@@ -210,8 +211,6 @@ public class FileLockNodeManager extends NodeManager
 
    public void crashLiveServer() throws Exception
    {
-      //overkill as already set to live
-      setLive();
       liveLock.release();
    }
 
