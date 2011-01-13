@@ -143,6 +143,8 @@ public class StompTest extends StompTestBase
       TextMessage message = (TextMessage)consumer.receive(1000);
       Assert.assertNotNull(message);
       Assert.assertEquals("Hello World", message.getText());
+      // Assert default priority 4 is used when priority header is not set
+      Assert.assertEquals("getJMSPriority", 4, message.getJMSPriority());
 
       // Make sure that the timestamp is valid - should
       // be very close to the current time.

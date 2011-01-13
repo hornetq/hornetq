@@ -35,6 +35,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 class StompUtils
 {
    // Constants -----------------------------------------------------
+   private static final String DEFAULT_MESSAGE_PRIORITY= "4";
    
    private static final Logger log = Logger.getLogger(StompUtils.class);
 
@@ -51,6 +52,8 @@ class StompUtils
       if (priority != null)
       {
          msg.setPriority(Byte.parseByte(priority));
+      } else {
+         msg.setPriority(Byte.parseByte(DEFAULT_MESSAGE_PRIORITY));
       }
       String persistent = (String)headers.remove(Stomp.Headers.Send.PERSISTENT);
       if (persistent != null)
