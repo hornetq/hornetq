@@ -151,7 +151,7 @@
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>the size (in bytes) of each journal file</entry>
-                            <entry>128 * 1024</entry>
+                            <entry>10 * 1024 * 1024 (10 MiB)</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-max-io"
