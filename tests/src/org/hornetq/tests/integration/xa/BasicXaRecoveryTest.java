@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -24,6 +26,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -31,6 +34,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -60,6 +64,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    private final SimpleString atestq = new SimpleString("atestq");
 
    private ServerLocator locator;
+   
+   private MBeanServer mbeanServer;
 
    @Override
    protected void setUp() throws Exception
@@ -72,8 +78,11 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
+      configuration.setJMXManagementEnabled(true);
+      
+      mbeanServer = MBeanServerFactory.createMBeanServer();
 
-      server = createServer(true, configuration, -1, -1, addressSettings);
+      server = createServer(true, configuration, -1, -1, addressSettings, mbeanServer);
 
       // start the server
       server.start();
@@ -85,6 +94,10 @@ public class BasicXaRecoveryTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      MBeanServerFactory.releaseMBeanServer(mbeanServer);
+
+      mbeanServer = null;
+
       if (clientSession != null)
       {
          try
@@ -933,6 +946,18 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.start();
       m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
+      
+      //check deliveringCount Zero
+      checkQueueDeliveryCount(atestq, 0);
+   }
+
+   private void checkQueueDeliveryCount(SimpleString thequeue, int expectedCount) throws Exception
+   {
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(thequeue, thequeue, mbeanServer);
+
+      int actualCount = queueControl.getDeliveringCount();
+      
+      assertEquals(expectedCount, actualCount);
    }
 
    public void testBasicReceiveWithRollback(final boolean stopServer) throws Exception
@@ -1208,7 +1233,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession = null;
       server.stop();
       server = null;
-      server = createServer(true, configuration, -1, -1, addressSettings);
+      server = createServer(true, configuration, -1, -1, addressSettings, mbeanServer);
 
       server.start();
       createClients();

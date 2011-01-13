@@ -740,6 +740,9 @@ public class QueueImpl implements Queue
       }
 
       getRefsOperation(tx).addAck(ref);
+      
+      //https://issues.jboss.org/browse/HORNETQ-609
+      deliveringCount.incrementAndGet();
    }
 
    private final RefsOperation getRefsOperation(final Transaction tx)

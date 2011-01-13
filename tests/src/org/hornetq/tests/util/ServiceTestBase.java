@@ -169,6 +169,38 @@ public abstract class ServiceTestBase extends UnitTestCase
                                         final Configuration configuration,
                                         final int pageSize,
                                         final int maxAddressSize,
+                                        final Map<String, AddressSettings> settings,
+                                        final MBeanServer mbeanServer)
+   {
+      HornetQServer server;
+
+      if (realFiles)
+      {
+         server = HornetQServers.newHornetQServer(configuration, mbeanServer, true);
+      }
+      else
+      {
+         server = HornetQServers.newHornetQServer(configuration, mbeanServer, false);
+      }
+
+      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+      {
+         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+      }
+
+      AddressSettings defaultSetting = new AddressSettings();
+      defaultSetting.setPageSizeBytes(pageSize);
+      defaultSetting.setMaxSizeBytes(maxAddressSize);
+
+      server.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
+      return server;
+   }
+
+   protected HornetQServer createServer(final boolean realFiles,
+                                        final Configuration configuration,
+                                        final int pageSize,
+                                        final int maxAddressSize,
                                         final Map<String, AddressSettings> settings)
    {
       HornetQServer server;
