@@ -130,6 +130,17 @@ public interface HornetQServerControl
    int getJournalBufferTimeout();
 
    /**
+    * do any clients failover on a server shutdown
+    */
+   void setFailoverOnServerShutdown(boolean failoverOnServerShutdown) throws Exception;
+
+
+   /**
+    * returns if clients failover on a server shutdown
+    */
+   boolean isFailoverOnServerShutdown();
+
+   /**
     * Returns the minimal number of journal files before compacting.
     */
    int getJournalCompactMinFiles();

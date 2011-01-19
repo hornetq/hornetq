@@ -268,6 +268,37 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       }
    }
 
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         configuration.setFailoverOnServerShutdown(failoverOnServerShutdown);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+
+   public boolean isFailoverOnServerShutdown()
+   {
+      checkStarted();
+
+      clearIO();
+      try
+      {
+         return configuration.isFailoverOnServerShutdown();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
    public int getJournalMaxIO()
    {
       checkStarted();

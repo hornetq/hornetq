@@ -44,8 +44,10 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -141,6 +143,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertEquals(conf.getJournalCompactMinFiles(), serverControl.getJournalCompactMinFiles());
       Assert.assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
       Assert.assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
+      Assert.assertEquals(conf.isFailoverOnServerShutdown(), serverControl.isFailoverOnServerShutdown());
    }
 
    public void testGetConnectors() throws Exception
@@ -765,7 +768,65 @@ public class HornetQServerControlTest extends ManagementTestBase
       Assert.assertTrue(html.matches(".*m3.*"));
       Assert.assertTrue(html.matches(".*m4.*"));
    }
-   
+
+   public void testCommitPreparedTransactions() throws Exception
+   {
+      SimpleString recQueue = new SimpleString("BasicXaTestqRec");
+      SimpleString sendQueue = new SimpleString("BasicXaTestqSend");
+
+      byte[] globalTransactionId = UUIDGenerator.getInstance().generateStringUUID().getBytes();
+      Xid xid = new XidImpl("xa1".getBytes(), 1, globalTransactionId);
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, globalTransactionId);
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSession clientSession = csf.createSession(true, false, false);
+      clientSession.createQueue(recQueue, recQueue, null, true);
+      clientSession.createQueue(sendQueue, sendQueue, null, true);
+      ClientMessage m1 = createTextMessage(clientSession, "");
+      m1.putStringProperty("m1", "m1");
+      ClientProducer clientProducer = clientSession.createProducer(recQueue);
+      clientProducer.send(m1);
+      locator.close();
+
+
+      ServerLocator receiveLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory receiveCsf = receiveLocator.createSessionFactory();
+      ClientSession receiveClientSession = receiveCsf.createSession(true, false, false);
+      ClientConsumer consumer = receiveClientSession.createConsumer(recQueue);
+
+
+      ServerLocator sendLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sendCsf = sendLocator.createSessionFactory();
+      ClientSession sendClientSession = sendCsf.createSession(true, false, false);
+      ClientProducer producer = sendClientSession.createProducer(sendQueue);
+
+      receiveClientSession.start(xid, XAResource.TMNOFLAGS);
+      receiveClientSession.start();
+      sendClientSession.start(xid2, XAResource.TMNOFLAGS);
+
+      ClientMessage m = consumer.receive(5000);
+      assertNotNull(m);
+
+      producer.send(m);
+
+
+      receiveClientSession.end(xid, XAResource.TMSUCCESS);
+      sendClientSession.end(xid2, XAResource.TMSUCCESS);
+
+      receiveClientSession.prepare(xid);
+      sendClientSession.prepare(xid2);
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      sendLocator.close();
+      receiveLocator.close();
+
+      boolean success = serverControl.commitPreparedTransaction(XidImpl.toBase64String(xid));
+
+      success = serverControl.commitPreparedTransaction(XidImpl.toBase64String(xid));
+
+      System.out.println("HornetQServerControlTest.testCommitPreparedTransactions");
+   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

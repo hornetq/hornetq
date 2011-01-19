@@ -325,6 +325,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (Boolean)proxy.retrieveAttributeValue("journalSyncTransactional");
          }
 
+         public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)  throws Exception
+         {
+            proxy.invokeOperation("setFailoverOnServerShutdown", failoverOnServerShutdown);
+         }
+
+         public boolean isFailoverOnServerShutdown()
+         {
+            return  (Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown");
+         }
+
          public boolean isMessageCounterEnabled()
          {
             return (Boolean)proxy.retrieveAttributeValue("messageCounterEnabled");
