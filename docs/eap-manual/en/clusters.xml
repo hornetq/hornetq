@@ -290,6 +290,8 @@
 
                   &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
 
+                  &lt;file-deployment-enabled>true&lt;/file-deployment-enabled>
+
                   &lt;clustered>true&lt;/clustered>
 
                   &lt;backup>true&lt;/backup>
@@ -383,6 +385,11 @@
                </programlisting>
                <para>
                   The first thing you can see is we have added a
+                  <literal>file-deployment-enabled</literal> and set it to true. This is because we want to bypass the
+                  AS deployers and use the hornetq ones instead.
+               </para>
+               <para>
+                  The second thing you can see is we have added a
                   <literal>jmx-domain</literal>
                   attribute, this is used when
                   adding objects, such as the HornetQ server and JMS server to jmx, we change this from the default
