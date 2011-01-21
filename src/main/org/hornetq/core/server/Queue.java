@@ -115,7 +115,11 @@ public interface Queue extends Bindable
 
    boolean moveReference(long messageID, SimpleString toAddress) throws Exception;
 
+   boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
+
    int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
+
+   int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
 
    void addRedistributor(long delay);
 

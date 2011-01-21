@@ -621,4 +621,22 @@ public class FakeQueue implements Queue
       this.subs = sub;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#moveReference(long, org.hornetq.api.core.SimpleString, boolean)
+    */
+   public boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
+    */
+   public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
 }

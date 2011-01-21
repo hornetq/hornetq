@@ -543,6 +543,11 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
+      return moveMessage(messageID, otherQueueName, false);
+   }
+
+   public boolean moveMessage(final long messageID, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   {
       checkStarted();
 
       clearIO();
@@ -566,6 +571,12 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
+      return moveMessages(filterStr, otherQueueName, false);
+   }
+
+
+   public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   {
       checkStarted();
 
       clearIO();
@@ -580,7 +591,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
             throw new IllegalArgumentException("No queue found for " + otherQueueName);
          }
 
-         int retValue = queue.moveReferences(filter, binding.getAddress());
+         int retValue = queue.moveReferences(filter, binding.getAddress(), rejectDuplicates);
 
          return retValue;
       }

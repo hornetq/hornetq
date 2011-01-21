@@ -974,7 +974,12 @@ public class QueueImpl implements Queue
       return count;
    }
 
-   public synchronized boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
+   public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
+   {
+      return moveReference(messageID, toAddress, false);
+   }
+   
+   public synchronized boolean moveReference(final long messageID, final SimpleString toAddress, final boolean rejectDuplicate) throws Exception
    {
       Iterator<MessageReference> iter = iterator();
 
@@ -1000,7 +1005,12 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public synchronized int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
+   public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
+   {
+      return moveReferences(filter, toAddress, false);
+   }
+
+   public synchronized int moveReferences(final Filter filter, final SimpleString toAddress, final boolean rejectDuplicates) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -1022,19 +1032,23 @@ public class QueueImpl implements Queue
                deliveringCount.incrementAndGet();
                count++;
 
-               byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
-               if (duplicateBytes != null)
+               if (rejectDuplicates)
                {
-                  if (targetDuplicateCache.contains(duplicateBytes))
+                  byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
+                  if (duplicateBytes != null)
                   {
-                     log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored and message removed from " + this.address);
-                     acknowledge(tx, ref);
-                     ignored = true;
+                     if (targetDuplicateCache.contains(duplicateBytes))
+                     {
+                        log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored and message removed from " + this.address);
+                        acknowledge(tx, ref);
+                        ignored = true;
+                     }
                   }
                }
+               
                if (!ignored)
                {
-                  move(toAddress, tx, ref, false);
+                  move(toAddress, tx, ref, false, rejectDuplicates);
                }
                iter.remove();
             }
@@ -1055,7 +1069,7 @@ public class QueueImpl implements Queue
    
             deliveringCount.incrementAndGet();
             count++;
-            move(toAddress, tx, ref, false);
+            move(toAddress, tx, ref, false, rejectDuplicates);
             acknowledge(tx, ref);
          }
    
@@ -1418,13 +1432,14 @@ public class QueueImpl implements Queue
    private void move(final SimpleString toAddress,
                      final Transaction tx,
                      final MessageReference ref,
-                     final boolean expiry) throws Exception
+                     final boolean expiry,
+                     final boolean rejectDuplicate) throws Exception
    {
       ServerMessage copyMessage = makeCopy(ref, expiry);
 
       copyMessage.setAddress(toAddress);
 
-      postOffice.route(copyMessage, tx, false);
+      postOffice.route(copyMessage, tx, false, rejectDuplicate);
 
       acknowledge(tx, ref);
    }
@@ -1463,7 +1478,7 @@ public class QueueImpl implements Queue
          }
          else
          {
-            move(expiryAddress, tx, ref, true);
+            move(expiryAddress, tx, ref, true, true);
          }
       }
       else

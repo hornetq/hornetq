@@ -541,7 +541,17 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       route(message, new RoutingContextImpl(tx), direct);
    }
 
+   public void route(final ServerMessage message, final Transaction tx, final boolean direct, final boolean rejectDuplicates) throws Exception
+   {
+      route(message, new RoutingContextImpl(tx), direct, rejectDuplicates);
+   }
+
    public void route(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
+   {
+      route(message, context, direct, true);
+   }
+
+   public void route(final ServerMessage message, final RoutingContext context, final boolean direct, final boolean rejectDuplicates) throws Exception
    {
       // Sanity check
       if (message.getRefCount() > 0)
@@ -557,11 +567,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       DuplicateIDCache cache = null;
       
+      boolean isDuplicate = false;
+      
       if (duplicateIDBytes != null)
       {
          cache = getDuplicateIDCache(message.getAddress());
+         
+         isDuplicate = cache.contains(duplicateIDBytes);
 
-         if (cache.contains(duplicateIDBytes))
+         if (rejectDuplicates && isDuplicate)
          {
             if (context.getTransaction() == null)
             {
@@ -580,7 +594,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       boolean startedTx = false;
 
-      if (cache != null)
+      if (cache != null && !isDuplicate)
       {
          if (context.getTransaction() == null)
          {

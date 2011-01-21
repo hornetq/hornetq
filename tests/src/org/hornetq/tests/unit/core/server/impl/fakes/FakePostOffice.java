@@ -198,4 +198,22 @@ public class FakePostOffice implements PostOffice
       
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext, boolean, boolean)
+    */
+   public void route(ServerMessage message, RoutingContext context, boolean direct, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.transaction.Transaction, boolean, boolean)
+    */
+   public void route(ServerMessage message, Transaction tx, boolean direct, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }
