@@ -1344,10 +1344,8 @@ public class HornetQServerImpl implements HornetQServer
 
          addressSettingsDeployer.start();
       }
-      else
-      {
-         deployAddressSettingsFromConfiguration();
-      }
+      
+      deployAddressSettingsFromConfiguration();
 
       storageManager.start();
 

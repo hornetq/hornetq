@@ -314,7 +314,7 @@
                   &lt;connector name="netty-connector">
                   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
                   &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
                   &lt;/connector>
 
                   &lt;connector name="in-vm">
@@ -328,7 +328,7 @@
                   &lt;acceptor name="netty">
                   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
                   &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
                   &lt;/acceptor>
                   &lt;/acceptors>
 
@@ -382,7 +382,7 @@
 
                </programlisting>
                <para>
-                  The first thing you can see is we have added a
+                  The second thing you can see is we have added a
                   <literal>jmx-domain</literal>
                   attribute, this is used when
                   adding objects, such as the HornetQ server and JMS server to jmx, we change this from the default

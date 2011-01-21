@@ -1,0 +1,3 @@
+
+- branch source - branch target - revision interval - date        - Author
+- trunk         - Branch_2_2    - 10125:10129       - 20-jan-2011 - Clebert
