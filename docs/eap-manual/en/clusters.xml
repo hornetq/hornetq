@@ -290,8 +290,6 @@
 
                   &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
 
-                  &lt;file-deployment-enabled>true&lt;/file-deployment-enabled>
-
                   &lt;clustered>true&lt;/clustered>
 
                   &lt;backup>true&lt;/backup>
@@ -316,7 +314,7 @@
                   &lt;connector name="netty-connector">
                   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
                   &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
                   &lt;/connector>
 
                   &lt;connector name="in-vm">
@@ -330,7 +328,7 @@
                   &lt;acceptor name="netty">
                   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
                   &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.netty.port:5446}"/>
+                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
                   &lt;/acceptor>
                   &lt;/acceptors>
 
@@ -383,11 +381,6 @@
                   &lt;/configuration>
 
                </programlisting>
-               <para>
-                  The first thing you can see is we have added a
-                  <literal>file-deployment-enabled</literal> and set it to true. This is because we want to bypass the
-                  AS deployers and use the hornetq ones instead.
-               </para>
                <para>
                   The second thing you can see is we have added a
                   <literal>jmx-domain</literal>
