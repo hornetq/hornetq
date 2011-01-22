@@ -1388,7 +1388,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (connectorClassName != null)
       {
          Map<String, Object> connectionParams =
-               overrideConnectionParameters(overrideProperties.getParsedConnectionParameters(),raProperties.getParsedConnectionParameters());
+               overrideConnectionParameters(raProperties.getParsedConnectionParameters(),overrideProperties.getParsedConnectionParameters());
          
          TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
          
