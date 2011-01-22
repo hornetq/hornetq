@@ -332,6 +332,10 @@ public class FileLockNodeManager extends NodeManager
                   //
                }
             }
+            if (Thread.currentThread().isInterrupted())
+            {
+               throw new IOException(new InterruptedException());
+            }
          }
          while(lock == null);
          return lock;
