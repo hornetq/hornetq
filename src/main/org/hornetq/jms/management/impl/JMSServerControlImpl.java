@@ -340,7 +340,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       try
       {
-         boolean destroyed = server.destroyConnectionFactory(name);
+         boolean destroyed = server.removeConnectionFactoryFromJNDI(name);
          if (destroyed)
          {
             sendNotification(NotificationType.CONNECTION_FACTORY_DESTROYED, name);

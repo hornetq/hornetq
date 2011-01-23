@@ -21,8 +21,6 @@ import java.util.Map;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
