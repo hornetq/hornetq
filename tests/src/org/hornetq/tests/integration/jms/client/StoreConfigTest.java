@@ -25,6 +25,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.naming.NamingException;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.tests.util.JMSTestBase;
@@ -71,6 +72,17 @@ public class StoreConfigTest extends JMSTestBase
 
       
       jmsServer.createConnectionFactory(false, nonPersisted, "/nonPersisted" );
+      
+      
+      try
+      {
+         jmsServer.addConnectionFactoryToJNDI("np", "/someCF");
+         fail("Failure expected and the API let duplicates");
+      }
+      catch (HornetQException expected)
+      {
+      }
+
 
       openCon("/someCF");
       openCon("/someCF2");
@@ -89,6 +101,14 @@ public class StoreConfigTest extends JMSTestBase
       jmsServer.start();
       
       jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
+      try
+      {
+         jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
+         fail("Failure expected and the API let duplicates");
+      }
+      catch (HornetQException expected)
+      {
+      }
       openCon("/someCF");
       openCon("/someCF2");
       openCon("/newJNDI");

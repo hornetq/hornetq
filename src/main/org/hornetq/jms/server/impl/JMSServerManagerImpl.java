@@ -526,6 +526,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          throw new IllegalArgumentException("Factory does not exist");
       }
+      if (registry.lookup(jndiBinding) != null)
+      {
+         throw new HornetQException(HornetQException.ADDRESS_EXISTS, "JNDI " + name + " is already being used by another connection factory");
+      }
       boolean added = bindToJndi(jndiBinding, factory);
       if (added)
       {
