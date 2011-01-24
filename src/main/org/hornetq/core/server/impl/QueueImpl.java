@@ -712,6 +712,8 @@ public class QueueImpl implements Queue
       if (ref.isPaged())
       {
          pageSubscription.ackTx(tx, (PagedReference)ref);
+         
+         getRefsOperation(tx).addAck(ref);
       }
       else
       {
@@ -1422,6 +1424,12 @@ public class QueueImpl implements Queue
 
          return true;
       }
+   }
+   
+   /** Used on testing only **/
+   public int getNumberOfReferences()
+   {
+      return messageReferences.size();
    }
 
    private void move(final SimpleString toAddress, final MessageReference ref) throws Exception

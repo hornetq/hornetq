@@ -563,11 +563,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          if (autoCommitAcks || tx == null)
          {
-            ref.acknowledge();
+            ref.getQueue().acknowledge(ref);
          }
          else
          {
-            ref.acknowledge(tx);
+            ref.getQueue().acknowledge(tx, ref);
          }
       }
       while (ref.getMessage().getMessageID() != messageID);
