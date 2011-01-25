@@ -473,7 +473,7 @@ public class PagingOrderTest extends ServiceTestBase
                   ClientSession sess = sf.createSession(true, true, 0);
                   sess.start();
                   ClientConsumer cons = sess.createConsumer(ADDRESS);
-                  for (int i = 0; i < 10; i++)
+                  for (int i = 0; i < 100; i++)
                   {
                      ClientMessage msg = cons.receive(5000);
                      assertNotNull(msg);
@@ -510,14 +510,22 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          session.commit();
+         
+         q1.getMessageCount();
 
          t1.start();
          t1.join();
 
          assertEquals(0, errors.get());
+         long timeout = System.currentTimeMillis() + 10000;
+         while (numberOfMessages -100 != q1.getMessageCount() && System.currentTimeMillis() < timeout)
+         {
+            Thread.sleep(500);
+            
+         }
 
          assertEquals(numberOfMessages, q2.getMessageCount());
-         assertEquals(numberOfMessages - 10, q1.getMessageCount());
+         assertEquals(numberOfMessages - 100, q1.getMessageCount());
 
       }
       catch (Throwable e)

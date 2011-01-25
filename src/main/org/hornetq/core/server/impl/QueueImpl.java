@@ -100,6 +100,9 @@ public class QueueImpl implements Queue
    private final ConcurrentLinkedQueue<MessageReference> concurrentQueue = new ConcurrentLinkedQueue<MessageReference>();
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(QueueImpl.NUM_PRIORITIES);
+   
+   // The quantity of pagedReferences on messageREferences priority list
+   private final AtomicInteger pagedReferences = new AtomicInteger(0);
 
    private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
 
@@ -316,16 +319,17 @@ public class QueueImpl implements Queue
          return;
       }
 
-      messageReferences.addHead(ref, ref.getMessage().getPriority());
+      internalAddHead(ref);
 
       directDeliver = false;
    }
+
 
    public synchronized void reload(final MessageReference ref)
    {
       if (!scheduledDeliveryHandler.checkAndSchedule(ref))
       {
-         messageReferences.addTail(ref, ref.getMessage().getPriority());
+         internalAddTail(ref);
       }
 
       directDeliver = false;
@@ -621,6 +625,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == id)
          {
             iterator.remove();
+            refRemoved(ref);
 
             removed = ref;
 
@@ -662,7 +667,8 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            return messageReferences.size() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
+            // messageReferences will have depaged messages which we need to discount from the counter as they are counted on the pageSubscription as well
+            return messageReferences.size() - pagedReferences.get() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
          }
          else
          {
@@ -778,7 +784,7 @@ public class QueueImpl implements Queue
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference))
          {
-            messageReferences.addHead(reference, reference.getMessage().getPriority());
+            internalAddHead(reference);
          }
 
          resetAllIterators();
@@ -839,6 +845,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             acknowledge(tx, ref);
             iter.remove();
+            refRemoved(ref);
             count++;
          }
       }
@@ -872,6 +879,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             acknowledge(tx, ref);
             iter.remove();
+            refRemoved(ref);
             deleted = true;
             break;
          }
@@ -894,6 +902,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             expire(ref);
             iter.remove();
+            refRemoved(ref);
             return true;
          }
       }
@@ -915,6 +924,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             expire(tx, ref);
             iter.remove();
+            refRemoved(ref);
             count++;
          }
       }
@@ -936,6 +946,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             expire(ref);
             iter.remove();
+            refRemoved(ref);
          }
       }
    }
@@ -952,6 +963,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             sendToDeadLetterAddress(ref);
             iter.remove();
+            refRemoved(ref);
             return true;
          }
       }
@@ -971,6 +983,7 @@ public class QueueImpl implements Queue
             deliveringCount.incrementAndGet();
             sendToDeadLetterAddress(ref);
             iter.remove();
+            refRemoved(ref);
             count++;
          }
       }
@@ -992,6 +1005,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             iter.remove();
+            refRemoved(ref);
             deliveringCount.incrementAndGet();
             try
             {
@@ -1097,6 +1111,7 @@ public class QueueImpl implements Queue
          if (ref.getMessage().getMessageID() == messageID)
          {
             iter.remove();
+            refRemoved(ref);
             ref.getMessage().setPriority(newPriority);
             addTail(ref, false);
             return true;
@@ -1118,6 +1133,7 @@ public class QueueImpl implements Queue
          {
             count++;
             iter.remove();
+            refRemoved(ref);
             ref.getMessage().setPriority(newPriority);
             addTail(ref, false);
          }
@@ -1186,13 +1202,38 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
+   /**
+    * @param ref
+    */
+   private void internalAddTail(final MessageReference ref)
+   {
+      if (ref.isPaged())
+      {
+         pagedReferences.incrementAndGet();
+      }
+      messageReferences.addTail(ref, ref.getMessage().getPriority());
+   }
+
+   /**
+    * @param ref
+    */
+   private void internalAddHead(final MessageReference ref)
+   {
+      if (ref.isPaged())
+      {
+         pagedReferences.incrementAndGet();
+      }
+      messageReferences.addHead(ref, ref.getMessage().getPriority());
+   }
+
+
    private synchronized void doPoll()
    {
       MessageReference ref = concurrentQueue.poll();
 
       if (ref != null)
       {
-         messageReferences.addTail(ref, ref.getMessage().getPriority());
+         internalAddTail(ref);
 
          messagesAdded++;
 
@@ -1264,6 +1305,8 @@ public class QueueImpl implements Queue
             if (checkExpired(ref))
             {
                holder.iter.remove();
+               
+               refRemoved(ref);
 
                continue;
             }
@@ -1289,6 +1332,8 @@ public class QueueImpl implements Queue
             if (status == HandleStatus.HANDLED)
             {
                holder.iter.remove();
+               
+               refRemoved(ref);
 
                if (groupID != null && groupConsumer == null)
                {
@@ -1331,6 +1376,18 @@ public class QueueImpl implements Queue
       if (pageIterator != null && messageReferences.size() == 0 && pageIterator.hasNext())
       {
          scheduleDepage();
+      }
+   }
+
+
+   /**
+    * @param ref
+    */
+   private void refRemoved(MessageReference ref)
+   {
+      if (ref.isPaged())
+      {
+         pagedReferences.decrementAndGet();
       }
    }
    
