@@ -662,11 +662,11 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            return messageReferences.size() + getScheduledCount()  + pageSubscription.getMessageCount();
+            return messageReferences.size() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
          }
          else
          {
-            return messageReferences.size() + getScheduledCount();
+            return messageReferences.size() + getScheduledCount() + deliveringCount.get();
          }
       }
    }
@@ -691,6 +691,7 @@ public class QueueImpl implements Queue
       if (ref.isPaged())
       {
          pageSubscription.ack((PagedReference)ref);
+         postAcknowledge(ref);
       }
       else
       {
@@ -1678,7 +1679,7 @@ public class QueueImpl implements Queue
 
       boolean durableRef = message.isDurable() && queue.durable;
 
-      if (durableRef)
+      if (durableRef && ! ref.isPaged())
       {
          int count = message.decrementDurableRefCount();
 
