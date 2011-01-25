@@ -378,8 +378,22 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
+         //if we failover during send then there is a chance that the
+         //that this will throw a disconnect, we need to remove the message
+         //from the acks so it will get resent, duplicate detection will cope
+         //with any messages resent
+         try
+         {
+            producer.send(dest, message);
+         }
+         catch (HornetQException e)
+         {
+            log.warn("Unable to send message, will try again once bridge reconnects");
 
-         producer.send(dest, message);
+            refs.remove(ref);
+
+            return HandleStatus.BUSY;
+         }
 
          return HandleStatus.HANDLED;
       }
