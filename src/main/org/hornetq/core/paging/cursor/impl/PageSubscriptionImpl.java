@@ -102,8 +102,6 @@ public class PageSubscriptionImpl implements PageSubscription
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
    
    private final PageSubscriptionCounter counter;
-   
-   private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
@@ -178,7 +176,7 @@ public class PageSubscriptionImpl implements PageSubscription
    
    public long getMessageCount()
    {
-      return counter.getValue() - deliveredCount.get();
+      return counter.getValue();
    }
 
    public PageSubscriptionCounter getCounter()
@@ -969,7 +967,6 @@ public class PageSubscriptionImpl implements PageSubscription
             for (PagePosition confirmed : positions)
             {
                cursor.processACK(confirmed);
-               cursor.deliveredCount.decrementAndGet();
             }
 
          }
@@ -1206,7 +1203,6 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          if (!isredelivery)
          {
-            deliveredCount.incrementAndGet();
             PageSubscriptionImpl.this.getPageInfo(position).remove(position);
          }
       }

@@ -662,11 +662,11 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            return messageReferences.size() + getScheduledCount() + getDeliveringCount() + pageSubscription.getMessageCount();
+            return messageReferences.size() + getScheduledCount()  + pageSubscription.getMessageCount();
          }
          else
          {
-            return messageReferences.size() + getScheduledCount() + getDeliveringCount();
+            return messageReferences.size() + getScheduledCount();
          }
       }
    }
