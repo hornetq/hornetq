@@ -272,7 +272,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                if (complete)
                {
 
-                  System.out.println("Disabling depage!");
+                  log.debug("Address " + pagingStore.getAddress() + " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();
