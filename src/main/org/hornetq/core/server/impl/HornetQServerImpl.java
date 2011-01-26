@@ -455,6 +455,8 @@ public class HornetQServerImpl implements HornetQServer
 
             while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
             {
+               nodeManager.interrupt();
+
                backupActivationThread.interrupt();
 
                Thread.sleep(1000);

@@ -63,6 +63,8 @@ public class FileLockNodeManager extends NodeManager
 
    private final String directory;
 
+   boolean interrupted = false;
+
 
    public FileLockNodeManager(final String directory)
    {
@@ -137,6 +139,13 @@ public class FileLockNodeManager extends NodeManager
          return false;
       }
    }
+
+   @Override
+   public void interrupt()
+   {
+      interrupted = true;
+   }
+
    @Override
    public void releaseBackup() throws Exception
    {
@@ -332,8 +341,9 @@ public class FileLockNodeManager extends NodeManager
                   //
                }
             }
-            if (Thread.currentThread().isInterrupted())
+            if (interrupted)
             {
+               interrupted = false;
                throw new IOException(new InterruptedException());
             }
          }
