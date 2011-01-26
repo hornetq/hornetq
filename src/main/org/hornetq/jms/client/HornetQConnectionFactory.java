@@ -604,6 +604,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
       {
          JMSException jmse = new JMSException("Failed to create session factory");
          
+         jmse.initCause(e);
          jmse.setLinkedException(e);
          
          throw jmse;

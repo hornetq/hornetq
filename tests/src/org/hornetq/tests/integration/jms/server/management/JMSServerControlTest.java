@@ -14,7 +14,6 @@
 package org.hornetq.tests.integration.jms.server.management;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,31 +34,31 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.QueueBinding;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
 import org.hornetq.jms.persistence.config.PersistedJNDI;
 import org.hornetq.jms.persistence.config.PersistedType;
-import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
@@ -112,7 +111,7 @@ public class JMSServerControlTest extends ManagementTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    /** Number of consumers used by the test itself */
    protected int getNumberOfConsumers()
    {
@@ -395,7 +394,6 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertNull(fakeJMSStorageManager.destinationMap.get(topicName));
    }
 
-
    public void testListAllConsumers() throws Exception
    {
       String topicJNDIBinding = RandomUtil.randomString();
@@ -416,15 +414,15 @@ public class JMSServerControlTest extends ManagementTestBase
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       // create a consumer will create a Core queue bound to the topic address
       MessageConsumer cons = session.createConsumer(topic);
-      
+
       JSONArray jsonArray = new JSONArray(control.listAllConsumersAsJSON());
-      
+
       assertEquals(1 + getNumberOfConsumers(), jsonArray.length());
-      
+
       cons.close();
-      
+
       jsonArray = new JSONArray(control.listAllConsumersAsJSON());
-      
+
       assertEquals(getNumberOfConsumers(), jsonArray.length());
 
       String topicAddress = HornetQDestination.createTopicAddressFromName(topicName).toString();
@@ -465,8 +463,10 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testCreateConnectionFactory_3b() throws Exception
    {
-      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      
+      server.getConfiguration()
+            .getConnectorConfigurations()
+            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
          public void createConnectionFactory(final JMSServerControl control,
@@ -475,14 +475,117 @@ public class JMSServerControlTest extends ManagementTestBase
          {
             String jndiBindings = JMSServerControlTest.toCSV(bindings);
 
-            control.createConnectionFactory(cfName,
-                                            false,
-                                            false,
-                                            0,
-                                            "tst",
-                                            jndiBindings);
+            control.createConnectionFactory(cfName, false, false, 0, "tst", jndiBindings);
          }
       });
+   }
+
+   public void testCreateConnectionFactory_CopmleteList() throws Exception
+   {
+      JMSServerControl control = createManagementControl();
+      control.createConnectionFactory("test", //name
+                                      true, // ha
+                                      false, // useDiscovery
+                                      1, // cfType
+                                      "invm", // connectorNames
+                                      "tst", // jndiBindins
+                                      "tst", // clientID
+                                      1, // clientFailureCheckPeriod
+                                      1,  // connectionTTL
+                                      1, // callTimeout
+                                      1, // minLargeMessageSize
+                                      true, // compressLargeMessages
+                                      1, // consumerWindowSize
+                                      1, // consumerMaxRate
+                                      1, // confirmationWindowSize
+                                      1, // ProducerWindowSize
+                                      1, // producerMaxRate
+                                      true, // blockOnACK
+                                      true, // blockOnDurableSend
+                                      true, // blockOnNonDurableSend
+                                      true, // autoGroup
+                                      true, // preACK
+                                      HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, // loadBalancingClassName
+                                      1, // transactionBatchSize
+                                      1, // dupsOKBatchSize
+                                      true, // useGlobalPools
+                                      1, // scheduleThreadPoolSize
+                                      1, // threadPoolMaxSize
+                                      1, // retryInterval
+                                      1, // retryIntervalMultiplier
+                                      1, // maxRetryInterval
+                                      1, // reconnectAttempts
+                                      true, // failoverOnInitialConnection
+                                      "tst"); // groupID
+      
+      
+      HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+      
+      assertEquals(true, cf.isHA());
+      assertEquals("tst", cf.getClientID());
+      assertEquals(1, cf.getClientFailureCheckPeriod());
+      assertEquals(1, cf.getConnectionTTL());
+      assertEquals(1, cf.getCallTimeout());
+      assertEquals(1, cf.getMinLargeMessageSize());
+      assertEquals(true, cf.isCompressLargeMessage());
+      assertEquals(1, cf.getConsumerWindowSize());
+      assertEquals(1, cf.getConfirmationWindowSize());
+      assertEquals(1, cf.getProducerWindowSize());
+      assertEquals(1, cf.getProducerMaxRate());
+      assertEquals(true, cf.isBlockOnAcknowledge());
+      assertEquals(true, cf.isBlockOnDurableSend());
+      assertEquals(true, cf.isBlockOnNonDurableSend());
+      assertEquals(true, cf.isAutoGroup());
+      assertEquals(true, cf.isPreAcknowledge());
+      assertEquals(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, cf.getConnectionLoadBalancingPolicyClassName());
+      assertEquals(1, cf.getTransactionBatchSize());
+      assertEquals(1, cf.getDupsOKBatchSize());
+      assertEquals(true, cf.isUseGlobalPools());
+      assertEquals(1, cf.getScheduledThreadPoolMaxSize());
+      assertEquals(1, cf.getThreadPoolMaxSize());
+      assertEquals(1, cf.getRetryInterval());
+      assertEquals(1.0, cf.getRetryIntervalMultiplier());
+      assertEquals(1, cf.getMaxRetryInterval());
+      assertEquals(1, cf.getReconnectAttempts());
+      assertEquals(true, cf.isFailoverOnInitialConnection());
+      assertEquals("tst", cf.getGroupID());
+      
+      stopServer();
+      
+      startServer();
+     
+      cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+      
+      assertEquals(true, cf.isHA());
+      assertEquals("tst", cf.getClientID());
+      assertEquals(1, cf.getClientFailureCheckPeriod());
+      assertEquals(1, cf.getConnectionTTL());
+      assertEquals(1, cf.getCallTimeout());
+      assertEquals(1, cf.getMinLargeMessageSize());
+      assertEquals(true, cf.isCompressLargeMessage());
+      assertEquals(1, cf.getConsumerWindowSize());
+      assertEquals(1, cf.getConfirmationWindowSize());
+      assertEquals(1, cf.getProducerWindowSize());
+      assertEquals(1, cf.getProducerMaxRate());
+      assertEquals(true, cf.isBlockOnAcknowledge());
+      assertEquals(true, cf.isBlockOnDurableSend());
+      assertEquals(true, cf.isBlockOnNonDurableSend());
+      assertEquals(true, cf.isAutoGroup());
+      assertEquals(true, cf.isPreAcknowledge());
+      assertEquals(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, cf.getConnectionLoadBalancingPolicyClassName());
+      assertEquals(1, cf.getTransactionBatchSize());
+      assertEquals(1, cf.getDupsOKBatchSize());
+      assertEquals(true, cf.isUseGlobalPools());
+      assertEquals(1, cf.getScheduledThreadPoolMaxSize());
+      assertEquals(1, cf.getThreadPoolMaxSize());
+      assertEquals(1, cf.getRetryInterval());
+      assertEquals(1.0, cf.getRetryIntervalMultiplier());
+      assertEquals(1, cf.getMaxRetryInterval());
+      assertEquals(1, cf.getReconnectAttempts());
+      assertEquals(true, cf.isFailoverOnInitialConnection());
+      assertEquals("tst", cf.getGroupID());
+      
+    
    }
 
    public void testListPreparedTransactionDetails() throws Exception
@@ -492,8 +595,10 @@ public class JMSServerControlTest extends ManagementTestBase
       JMSServerControl control = createManagementControl();
       String cfJNDIBinding = "/cf";
       String cfName = "cf";
-      
-      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      server.getConfiguration()
+            .getConnectorConfigurations()
+            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
 
@@ -535,10 +640,12 @@ public class JMSServerControlTest extends ManagementTestBase
       TransportConfiguration tc = new TransportConfiguration(InVMConnectorFactory.class.getName());
       String cfJNDIBinding = "/cf";
       String cfName = "cf";
-      
-      server.getConfiguration().getConnectorConfigurations().put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
-      control.createConnectionFactory(cfName, false, false,  0, "tst", cfJNDIBinding);
+      server.getConfiguration()
+            .getConnectorConfigurations()
+            .put("tst", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      control.createConnectionFactory(cfName, false, false, 0, "tst", cfJNDIBinding);
 
       control.createQueue("q", "/q");
 
@@ -580,22 +687,49 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       super.setUp();
 
+      startServer();
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void startServer() throws Exception
+   {
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      conf.setPersistenceEnabled(true);
 
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
+
+      serverManager = new JMSServerManagerImpl(server);
       context = new InVMContext();
-      fakeJMSStorageManager = new FakeJMSStorageManager();
-      serverManager = new JMSServerManagerImpl(server, null, fakeJMSStorageManager);
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
+      
+      this.fakeJMSStorageManager = new FakeJMSStorageManager(serverManager.getJMSStorageManager());
+      
+      serverManager.replaceStorageManager(fakeJMSStorageManager);
    }
 
    @Override
    protected void tearDown() throws Exception
+   {
+      stopServer();
+
+      super.tearDown();
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void stopServer() throws Exception
    {
       serverManager.stop();
 
@@ -604,8 +738,6 @@ public class JMSServerControlTest extends ManagementTestBase
       serverManager = null;
 
       server = null;
-
-      super.tearDown();
    }
 
    protected JMSServerControl createManagementControl() throws Exception
@@ -615,9 +747,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    // Private -------------------------------------------------------
 
-   private void
-
-   doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
+   private void doCreateConnectionFactory(final ConnectionFactoryCreator creator) throws Exception
    {
       Object[] cfJNDIBindings = new Object[] { RandomUtil.randomString(),
                                               RandomUtil.randomString(),
@@ -650,30 +780,6 @@ public class JMSServerControlTest extends ManagementTestBase
       Assert.assertTrue(fakeJMSStorageManager.persistedJNDIMap.get(cfName).contains(cfJNDIBindings[2]));
    }
 
-   private JMSServerManager startHornetQServer(final int discoveryPort) throws Exception
-   {
-      Configuration conf = createBasicConfig();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getDiscoveryGroupConfigurations()
-          .put("discovery",
-               new DiscoveryGroupConfiguration("discovery",
-                                               null,
-                                               "231.7.7.7",
-                                               discoveryPort,
-                                               ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
-                                               ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      HornetQServer server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
-
-      context = new InVMContext();
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
-      serverManager.setContext(context);
-      serverManager.start();
-      serverManager.activated();
-
-      return serverManager;
-   }
-
    // Inner classes -------------------------------------------------
 
    interface ConnectionFactoryCreator
@@ -688,35 +794,46 @@ public class JMSServerControlTest extends ManagementTestBase
       Map<String, PersistedConnectionFactory> connectionFactoryMap = new HashMap<String, PersistedConnectionFactory>();
 
       ConcurrentHashMap<String, List<String>> persistedJNDIMap = new ConcurrentHashMap<String, List<String>>();
+      
+      JMSStorageManager delegate;
+      
+      public FakeJMSStorageManager(JMSStorageManager delegate)
+      {
+         this.delegate = delegate;
+      }
 
       public void storeDestination(PersistedDestination destination) throws Exception
       {
          destinationMap.put(destination.getName(), destination);
+         delegate.storeDestination(destination);
       }
 
       public void deleteDestination(PersistedType type, String name) throws Exception
       {
          destinationMap.remove(name);
+         delegate.deleteDestination(type, name);
       }
 
       public List<PersistedDestination> recoverDestinations()
       {
-         return Collections.EMPTY_LIST;
+         return delegate.recoverDestinations();
       }
 
       public void deleteConnectionFactory(String connectionFactory) throws Exception
       {
          connectionFactoryMap.remove(connectionFactory);
+         delegate.deleteConnectionFactory(connectionFactory);
       }
 
       public void storeConnectionFactory(PersistedConnectionFactory connectionFactory) throws Exception
       {
          connectionFactoryMap.put(connectionFactory.getName(), connectionFactory);
+         delegate.storeConnectionFactory(connectionFactory);
       }
 
       public List<PersistedConnectionFactory> recoverConnectionFactories()
       {
-         return Collections.EMPTY_LIST;
+         return delegate.recoverConnectionFactories();
       }
 
       public void addJNDI(PersistedType type, String name, String... address) throws Exception
@@ -726,36 +843,39 @@ public class JMSServerControlTest extends ManagementTestBase
          {
             persistedJNDIMap.get(name).add(ad);
          }
+         delegate.addJNDI(type, name, address);
       }
 
       public List<PersistedJNDI> recoverPersistedJNDI() throws Exception
       {
-         return Collections.EMPTY_LIST;
+         return delegate.recoverPersistedJNDI();
       }
 
       public void deleteJNDI(PersistedType type, String name, String address) throws Exception
       {
          persistedJNDIMap.get(name).remove(address);
+         delegate.deleteJNDI(type, name, address);
       }
 
       public void deleteJNDI(PersistedType type, String name) throws Exception
       {
          persistedJNDIMap.get(name).clear();
+         delegate.deleteJNDI(type, name);
       }
 
       public void start() throws Exception
       {
-         // To change body of implemented methods use File | Settings | File Templates.
+         delegate.start();
       }
 
       public void stop() throws Exception
       {
-         // To change body of implemented methods use File | Settings | File Templates.
+         delegate.stop();
       }
 
       public boolean isStarted()
       {
-         return false; // To change body of implemented methods use File | Settings | File Templates.
+         return delegate.isStarted();
       }
 
       /* (non-Javadoc)
@@ -763,6 +883,7 @@ public class JMSServerControlTest extends ManagementTestBase
        */
       public void installReplication(ReplicationEndpoint replicationEndpoint) throws Exception
       {
+         delegate.installReplication(replicationEndpoint);
       }
 
       /* (non-Javadoc)
@@ -770,6 +891,7 @@ public class JMSServerControlTest extends ManagementTestBase
        */
       public void load() throws Exception
       {
+         delegate.load();
       }
    }
 

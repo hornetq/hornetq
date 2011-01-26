@@ -912,6 +912,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          storage.addJNDI(PersistedType.ConnectionFactory, cfConfig.getName(), usedJNDI);
       }
    }
+   
+   public JMSStorageManager getJMSStorageManager()
+   {
+      return storage;
+   }
+   
+   // used on tests only
+   public void replaceStorageManager(JMSStorageManager newStorage)
+   {
+      this.storage = newStorage;
+   }
 
    private String[] getJNDIList(final Map<String, List<String>> map, final String name)
    {
@@ -1085,6 +1096,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setReconnectAttempts(cfConfig.getReconnectAttempts());
          cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
          cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
+         cf.setGroupID(cfConfig.getGroupID());
       }
       
       connectionFactories.put(cfConfig.getName(), cf);

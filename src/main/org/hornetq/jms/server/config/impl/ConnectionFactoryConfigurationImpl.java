@@ -516,6 +516,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             connectorNames.add(str.toString());
          }
       }
+      
+      ha = buffer.readBoolean();
 
       clientID = BufferHelper.readNullableSimpleStringAsString(buffer);
 
@@ -602,6 +604,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             BufferHelper.writeAsSimpleString(buffer, tc);
          }
       }
+      
+      buffer.writeBoolean(ha);
 
       BufferHelper.writeAsNullableSimpleString(buffer, clientID);
 
@@ -686,6 +690,9 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       }
       
       size += BufferHelper.sizeOfNullableSimpleString(clientID) +
+      
+              DataConstants.SIZE_BOOLEAN + 
+              // ha
 
               DataConstants.SIZE_LONG +
               // clientFailureCheckPeriod

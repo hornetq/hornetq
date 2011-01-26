@@ -29,6 +29,7 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.Parameter;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -44,6 +45,8 @@ import org.hornetq.core.server.ServerSession;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
@@ -197,6 +200,186 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
                                            connectorList,
                                            JMSServerControlImpl.convert(bindings));
          }
+
+         sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.jms.management.JMSServerControl#createConnectionFactory(java.lang.String, boolean, boolean, int, java.lang.String, java.lang.String, java.lang.String, long, long, long, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String)
+    */
+   public void createConnectionFactory(String name,
+                                       boolean ha,
+                                       boolean useDiscovery,
+                                       int cfType,
+                                       String connectors,
+                                       String jndiBindings,
+                                       String clientID,
+                                       long clientFailureCheckPeriod,
+                                       long connectionTTL,
+                                       long callTimeout,
+                                       int minLargeMessageSize,
+                                       boolean compressLargeMessages,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int confirmationWindowSize,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnDurableSend,
+                                       boolean blockOnNonDurableSend,
+                                       boolean autoGroup,
+                                       boolean preAcknowledge,
+                                       String loadBalancingPolicyClassName,
+                                       int transactionBatchSize,
+                                       int dupsOKBatchSize,
+                                       boolean useGlobalPools,
+                                       int scheduledThreadPoolMaxSize,
+                                       int threadPoolMaxSize,
+                                       long retryInterval,
+                                       double retryIntervalMultiplier,
+                                       long maxRetryInterval,
+                                       int reconnectAttempts,
+                                       boolean failoverOnInitialConnection,
+                                       String groupId) throws Exception
+   {
+      createConnectionFactory(name,
+                              ha,
+                              useDiscovery,
+                              cfType,
+                              toArray(connectors),
+                              toArray(jndiBindings),
+                              clientID,
+                              clientFailureCheckPeriod,
+                              connectionTTL,
+                              callTimeout,
+                              minLargeMessageSize,
+                              compressLargeMessages,
+                              consumerWindowSize,
+                              consumerMaxRate,
+                              confirmationWindowSize,
+                              producerWindowSize,
+                              producerMaxRate,
+                              blockOnAcknowledge,
+                              blockOnDurableSend,
+                              blockOnNonDurableSend,
+                              autoGroup,
+                              preAcknowledge,
+                              loadBalancingPolicyClassName,
+                              transactionBatchSize,
+                              dupsOKBatchSize,
+                              useGlobalPools,
+                              scheduledThreadPoolMaxSize,
+                              threadPoolMaxSize,
+                              retryInterval,
+                              retryIntervalMultiplier,
+                              maxRetryInterval,
+                              reconnectAttempts,
+                              failoverOnInitialConnection,
+                              groupId);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.jms.management.JMSServerControl#createConnectionFactory(java.lang.String, boolean, boolean, int, java.lang.String[], java.lang.String[], java.lang.String, long, long, long, int, boolean, int, int, int, int, int, boolean, boolean, boolean, boolean, boolean, java.lang.String, int, int, boolean, int, int, long, double, long, int, boolean, java.lang.String)
+    */
+   public void createConnectionFactory(String name,
+                                       boolean ha,
+                                       boolean useDiscovery,
+                                       int cfType,
+                                       String[] connectorNames,
+                                       String[] bindings,
+                                       String clientID,
+                                       long clientFailureCheckPeriod,
+                                       long connectionTTL,
+                                       long callTimeout,
+                                       int minLargeMessageSize,
+                                       boolean compressLargeMessages,
+                                       int consumerWindowSize,
+                                       int consumerMaxRate,
+                                       int confirmationWindowSize,
+                                       int producerWindowSize,
+                                       int producerMaxRate,
+                                       boolean blockOnAcknowledge,
+                                       boolean blockOnDurableSend,
+                                       boolean blockOnNonDurableSend,
+                                       boolean autoGroup,
+                                       boolean preAcknowledge,
+                                       String loadBalancingPolicyClassName,
+                                       int transactionBatchSize,
+                                       int dupsOKBatchSize,
+                                       boolean useGlobalPools,
+                                       int scheduledThreadPoolMaxSize,
+                                       int threadPoolMaxSize,
+                                       long retryInterval,
+                                       double retryIntervalMultiplier,
+                                       long maxRetryInterval,
+                                       int reconnectAttempts,
+                                       boolean failoverOnInitialConnection,
+                                       String groupId) throws Exception
+   {
+      checkStarted();
+
+      clearIO();
+
+      try
+      {
+         ConnectionFactoryConfiguration configuration = new ConnectionFactoryConfigurationImpl(name, ha, bindings);
+
+         if (useDiscovery)
+         {
+            configuration.setDiscoveryGroupName(connectorNames[0]);
+         }
+         else
+         {
+            ArrayList<String> connectorNamesList = new ArrayList<String>();
+            for (String nameC : connectorNames)
+            {
+               connectorNamesList.add(nameC);
+            }
+            configuration.setConnectorNames(connectorNamesList);
+         }
+
+         configuration.setFactoryType(JMSFactoryType.valueOf(cfType));
+         configuration.setClientID(clientID);
+         configuration.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+         configuration.setConnectionTTL(connectionTTL);
+         configuration.setCallTimeout(callTimeout);
+         configuration.setMinLargeMessageSize(minLargeMessageSize);
+         configuration.setCompressLargeMessages(compressLargeMessages);
+         configuration.setConsumerWindowSize(consumerWindowSize);
+         configuration.setConsumerMaxRate(consumerMaxRate);
+         configuration.setConfirmationWindowSize(confirmationWindowSize);
+         configuration.setProducerWindowSize(producerWindowSize);
+         configuration.setProducerMaxRate(producerMaxRate);
+         configuration.setBlockOnAcknowledge(blockOnAcknowledge);
+         configuration.setBlockOnDurableSend(blockOnDurableSend);
+         configuration.setBlockOnNonDurableSend(blockOnNonDurableSend);
+         configuration.setAutoGroup(autoGroup);
+         configuration.setPreAcknowledge(preAcknowledge);
+
+         if (loadBalancingPolicyClassName == null || loadBalancingPolicyClassName.trim().equals(""))
+         {
+            loadBalancingPolicyClassName = HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+         }
+
+         configuration.setLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
+         configuration.setTransactionBatchSize(transactionBatchSize);
+         configuration.setDupsOKBatchSize(dupsOKBatchSize);
+         configuration.setUseGlobalPools(useGlobalPools);
+         configuration.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+         configuration.setThreadPoolMaxSize(threadPoolMaxSize);
+         configuration.setRetryInterval(retryInterval);
+         configuration.setRetryIntervalMultiplier(retryIntervalMultiplier);
+         configuration.setMaxRetryInterval(maxRetryInterval);
+         configuration.setReconnectAttempts(reconnectAttempts);
+         configuration.setFailoverOnInitialConnection(failoverOnInitialConnection);
+         configuration.setGroupID(groupId);
+         
+         server.createConnectionFactory(true, configuration, bindings);
 
          sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
       }
@@ -700,7 +883,6 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       return MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class);
    }
 
-
    // Private -------------------------------------------------------
 
    private void sendNotification(final NotificationType type, final String message)
@@ -716,6 +898,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
          throw new IllegalStateException("HornetQ JMS Server is not started. it can not be managed yet");
       }
    }
+
    // Inner classes -------------------------------------------------
 
    public static enum NotificationType
@@ -860,5 +1043,4 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 
       return obj;
    }
-
 }
