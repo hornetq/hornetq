@@ -176,6 +176,9 @@ ClientMessage msg = session.createMessage();
 msg.setInputStream(dataInputStream);
 ...
             </programlisting>
+            
+            <para>Notice also that for messages with more than 2GiB the getBodySize() will return invalid values since 
+            this is an integer (which is also exposed to the JMS API). On those cases you can use the message property _HQ_LARGE_SIZE.</para>
         </section>
         <section id="large-messages.streaming.over.jms">
             <title>Streaming over JMS</title>
