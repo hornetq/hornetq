@@ -97,10 +97,10 @@
                   something like:
                </para>
                <programlisting>
-                  &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
-                  &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
-                  &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
-                  &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
+   &lt;large-messages-directory>/media/shared/data/large-messages&lt;/large-messages-directory>
+   &lt;bindings-directory>/media/shared/data/bindings&lt;/bindings-directory>
+   &lt;journal-directory>/media/shared/data/journal&lt;/journal-directory>
+   &lt;paging-directory>/media/shared/data/paging&lt;/paging-directory>
                </programlisting>
                <para>
                   How these paths are configured will of course depend on your network settings or file system.
@@ -121,7 +121,7 @@
                   file like so:
                </para>
                <programlisting>
-                  &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
+   &lt;failover-on-shutdown>false&lt;/failover-on-shutdown>
                </programlisting>
                <para>Don't worry if you have this set to false (which is the default) but still want failover to occur,
                   simply
@@ -137,28 +137,28 @@
                   example:
                </para>
                <programlisting>
-                  &lt;connection-factory name="NettyConnectionFactory">
-                  &lt;xa>true&lt;/xa>
-                  &lt;connectors>
-                  &lt;connector-ref connector-name="netty"/>
-                  &lt;/connectors>
-                  &lt;entries>
-                  &lt;entry name="/ConnectionFactory"/>
-                  &lt;entry name="/XAConnectionFactory"/>
-                  &lt;/entries>
+   &lt;connection-factory name="NettyConnectionFactory">
+      &lt;xa>true&lt;/xa>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty"/>
+      &lt;/connectors>
+      &lt;entries>
+         &lt;entry name="/ConnectionFactory"/>
+         &lt;entry name="/XAConnectionFactory"/>
+      &lt;/entries>
 
-                  &lt;ha>true&lt;/ha>
-                  &lt;!-- Pause 1 second between connect attempts -->
-                  &lt;retry-interval>1000&lt;/retry-interval>
+      &lt;ha>true&lt;/ha>
+      &lt;!-- Pause 1 second between connect attempts -->
+      &lt;retry-interval>1000&lt;/retry-interval>
 
-                  &lt;!-- Multiply subsequent reconnect pauses by this multiplier. This can be used to
-                  implement an exponential back-off. For our purposes we just set to 1.0 so each reconnect
-                  pause is the same length -->
-                  &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
+      &lt;!-- Multiply subsequent reconnect pauses by this multiplier. This can be used to
+      implement an exponential back-off. For our purposes we just set to 1.0 so each reconnect
+      pause is the same length -->
+      &lt;retry-interval-multiplier>1.0&lt;/retry-interval-multiplier>
 
-                  &lt;!-- Try reconnecting an unlimited number of times (-1 means "unlimited") -->
-                  &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
-                  &lt;/connection-factory>
+      &lt;!-- Try reconnecting an unlimited number of times (-1 means "unlimited") -->
+      &lt;reconnect-attempts>-1&lt;/reconnect-attempts>
+   &lt;/connection-factory>
 
                </programlisting>
                <para>We have added the following attributes to the connection factory used by the client:</para>
@@ -216,44 +216,44 @@
                   directory but in reality it doesn't matter where this is put. This will look like:
                </para>
                <programlisting>
-                  &lt;?xml version="1.0" encoding="UTF-8"?>
+   &lt;?xml version="1.0" encoding="UTF-8"?>
 
-                  &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
+   &lt;deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-                  &lt;!-- The core configuration -->
-                  &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
-                  &lt;property
-                  name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
-                  &lt;/bean>
+      &lt;!-- The core configuration -->
+      &lt;bean name="BackupConfiguration" class="org.hornetq.core.config.impl.FileConfiguration">
+         &lt;property
+            name="configurationUrl">${jboss.server.home.url}/deploy/hornetq-backup1/hornetq-configuration.xml&lt;/property>
+      &lt;/bean>
 
 
-                  &lt;!-- The core server -->
-                  &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
-                  &lt;constructor>
-                  &lt;parameter>
-                  &lt;inject bean="BackupConfiguration"/>
-                  &lt;/parameter>
-                  &lt;parameter>
-                  &lt;inject bean="MBeanServer"/>
-                  &lt;/parameter>
-                  &lt;parameter>
-                  &lt;inject bean="HornetQSecurityManager"/>
-                  &lt;/parameter>
-                  &lt;/constructor>
-                  &lt;start ignored="true"/>
-                  &lt;stop ignored="true"/>
-                  &lt;/bean>
+      &lt;!-- The core server -->
+      &lt;bean name="BackupHornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+         &lt;constructor>
+            &lt;parameter>
+               &lt;inject bean="BackupConfiguration"/>
+            &lt;/parameter>
+            &lt;parameter>
+               &lt;inject bean="MBeanServer"/>
+            &lt;/parameter>
+            &lt;parameter>
+               &lt;inject bean="HornetQSecurityManager"/>
+            &lt;/parameter>
+         &lt;/constructor>
+         &lt;start ignored="true"/>
+         &lt;stop ignored="true"/>
+      &lt;/bean>
 
-                  &lt;!-- The JMS server -->
-                  &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
-                  &lt;constructor>
-                  &lt;parameter>
-                  &lt;inject bean="BackupHornetQServer"/>
-                  &lt;/parameter>
-                  &lt;/constructor>
-                  &lt;/bean>
+      &lt;!-- The JMS server -->
+      &lt;bean name="BackupJMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+         &lt;constructor>
+            &lt;parameter>
+               &lt;inject bean="BackupHornetQServer"/>
+            &lt;/parameter>
+         &lt;/constructor>
+      &lt;/bean>
 
-                  &lt;/deployment>
+   &lt;/deployment>
                </programlisting>
                <para>
                   The first thing to notice is the BackupConfiguration bean. This is configured to pick up the
@@ -284,101 +284,104 @@
                   and configure it like so:
                </para>
                <programlisting>
-                  &lt;configuration xmlns="urn:hornetq"
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+   &lt;configuration xmlns="urn:hornetq"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-                  &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
+      &lt;jmx-domain>org.hornetq.backup1&lt;/jmx-domain>
 
-                  &lt;clustered>true&lt;/clustered>
+      &lt;clustered>true&lt;/clustered>
 
-                  &lt;backup>true&lt;/backup>
+      &lt;backup>true&lt;/backup>
 
-                  &lt;shared-store>true&lt;/shared-store>
+      &lt;shared-store>true&lt;/shared-store>
 
-                  &lt;allow-failback>true&lt;/allow-failback>
+      &lt;allow-failback>true&lt;/allow-failback>
 
-                  &lt;log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory&lt;/log-delegate-factory-class-name>
+      &lt;log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory&lt;/log-delegate-factory-class-name>
 
-                  &lt;bindings-directory>/media/shared/data/hornetq-backup/bindings&lt;/bindings-directory>
+      &lt;bindings-directory>/media/shared/data/hornetq-backup/bindings&lt;/bindings-directory>
 
-                  &lt;journal-directory>/media/shared/data/hornetq-backup/journal&lt;/journal-directory>
+      &lt;journal-directory>/media/shared/data/hornetq-backup/journal&lt;/journal-directory>
 
-                  &lt;journal-min-files>10&lt;/journal-min-files>
+      &lt;journal-min-files>10&lt;/journal-min-files>
 
-                  &lt;large-messages-directory>/media/shared/data/hornetq-backup/largemessages&lt;/large-messages-directory>
+      &lt;large-messages-directory>/media/shared/data/hornetq-backup/largemessages&lt;/large-messages-directory>
 
-                  &lt;paging-directory>/media/shared/data/hornetq-backup/paging&lt;/paging-directory>
+      &lt;paging-directory>/media/shared/data/hornetq-backup/paging&lt;/paging-directory>
 
-                  &lt;connectors>
-                  &lt;connector name="netty-connector">
-                  &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
-                  &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
-                  &lt;/connector>
+      &lt;connectors>
+         &lt;connector name="netty-connector">
+            &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+            &lt;param key="host" value="${jboss.bind.address:localhost}"/>
+            &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
+         &lt;/connector>
 
-                  &lt;connector name="in-vm">
-                  &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/factory-class>
-                  &lt;param key="server-id" value="${hornetq.server-id:0}"/>
-                  &lt;/connector>
+         &lt;connector name="in-vm">
+            &lt;factory-class>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/factory-class>
+            &lt;param key="server-id" value="${hornetq.server-id:0}"/>
+         &lt;/connector>
 
-                  &lt;/connectors>
+      &lt;/connectors>
 
-                  &lt;acceptors>
-                  &lt;acceptor name="netty">
-                  &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-                  &lt;param key="host" value="${jboss.bind.address:localhost}"/>
-                  &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
-                  &lt;/acceptor>
-                  &lt;/acceptors>
+      &lt;acceptors>
+         &lt;acceptor name="netty">
+            &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+            &lt;param key="host" value="${jboss.bind.address:localhost}"/>
+            &lt;param key="port" value="${hornetq.remoting.backup.netty.port:5446}"/>
+         &lt;/acceptor>
+      &lt;/acceptors>
 
-                  &lt;broadcast-groups>
-                  &lt;broadcast-group name="bg-group1">
-                  &lt;group-address>231.7.7.7&lt;/group-address>
-                  &lt;group-port>9876&lt;/group-port>
-                  &lt;broadcast-period>1000&lt;/broadcast-period>
-                  &lt;connector-ref>netty-connector&lt;/connector-ref>
-                  &lt;/broadcast-group>
-                  &lt;/broadcast-groups>
+      &lt;broadcast-groups>
+         &lt;broadcast-group name="bg-group1">
+            &lt;group-address>231.7.7.7&lt;/group-address>
+            &lt;group-port>9876&lt;/group-port>
+            &lt;broadcast-period>1000&lt;/broadcast-period>
+            &lt;connector-ref>netty-connector&lt;/connector-ref>
+         &lt;/broadcast-group>
+      &lt;/broadcast-groups>
 
-                  &lt;discovery-groups>
-                  &lt;discovery-group name="dg-group1">
-                  &lt;group-address>231.7.7.7&lt;/group-address>
-                  &lt;group-port>9876&lt;/group-port>
-                  &lt;refresh-timeout>60000&lt;/refresh-timeout>
-                  &lt;/discovery-group>
-                  &lt;/discovery-groups>
+      &lt;discovery-groups>
+         &lt;discovery-group name="dg-group1">
+            &lt;group-address>231.7.7.7&lt;/group-address>
+            &lt;group-port>9876&lt;/group-port>
+            &lt;refresh-timeout>60000&lt;/refresh-timeout>
+            &lt;/discovery-group>
+      &lt;/discovery-groups>
 
-                  &lt;cluster-connections>
-                  &lt;cluster-connection name="my-cluster">
-                  &lt;address>jms&lt;/address>
-                  &lt;connector-ref>netty-connector&lt;/connector-ref>
-                  &lt;discovery-group-ref discovery-group-name="dg-group1"/>
-                  &lt;/cluster-connection>
-                  &lt;/cluster-connections>
+      &lt;cluster-connections>
+         &lt;cluster-connection name="my-cluster">
+            &lt;address>jms&lt;/address>
+            &lt;connector-ref>netty-connector&lt;/connector-ref>
+            &lt;discovery-group-ref discovery-group-name="dg-group1"/>
+            &lt;!--max hops defines how messages are redistributed, the default is 1 meaning only distribute to directly
+            connected nodes, to disable set to 0-->
+            &lt;!--&lt;max-hops>0&lt;/max-hops>-->
+         &lt;/cluster-connection>
+      &lt;/cluster-connections>
 
-                  &lt;security-settings>
-                  &lt;security-setting match="#">
-                  &lt;permission type="createNonDurableQueue" roles="guest"/>
-                  &lt;permission type="deleteNonDurableQueue" roles="guest"/>
-                  &lt;permission type="consume" roles="guest"/>
-                  &lt;permission type="send" roles="guest"/>
-                  &lt;/security-setting>
-                  &lt;/security-settings>
+      &lt;security-settings>
+         &lt;security-setting match="#">
+            &lt;permission type="createNonDurableQueue" roles="guest"/>
+            &lt;permission type="deleteNonDurableQueue" roles="guest"/>
+            &lt;permission type="consume" roles="guest"/>
+            &lt;permission type="send" roles="guest"/>
+         &lt;/security-setting>
+      &lt;/security-settings>
 
-                  &lt;address-settings>
-                  &lt;!--default for catch all-->
-                  &lt;address-setting match="#">
-                  &lt;dead-letter-address>jms.queue.DLQ&lt;/dead-letter-address>
-                  &lt;expiry-address>jms.queue.ExpiryQueue&lt;/expiry-address>
-                  &lt;redelivery-delay>0&lt;/redelivery-delay>
-                  &lt;max-size-bytes>10485760&lt;/max-size-bytes>
-                  &lt;message-counter-history-day-limit>10&lt;/message-counter-history-day-limit>
-                  &lt;address-full-policy>BLOCK&lt;/address-full-policy>
-                  &lt;/address-setting>
-                  &lt;/address-settings>
+      &lt;address-settings>
+         &lt;!--default for catch all-->
+         &lt;address-setting match="#">
+            &lt;dead-letter-address>jms.queue.DLQ&lt;/dead-letter-address>
+            &lt;expiry-address>jms.queue.ExpiryQueue&lt;/expiry-address>
+            &lt;redelivery-delay>0&lt;/redelivery-delay>
+            &lt;max-size-bytes>10485760&lt;/max-size-bytes>
+            &lt;message-counter-history-day-limit>10&lt;/message-counter-history-day-limit>
+            &lt;address-full-policy>BLOCK&lt;/address-full-policy>
+         &lt;/address-setting>
+      &lt;/address-settings>
 
-                  &lt;/configuration>
+   &lt;/configuration>
 
                </programlisting>
                <para>
@@ -430,6 +433,10 @@
                   The Broadcast groups, Discovery group and cluster configurations are as per normal, details of these
                   can be found in the HornetQ user manual.
                </para>
+               <note>
+                  <para>notice the commented out <literal>max-hops</literal> in the cluster connection, set this to 0 if
+                  you want to disable server side load balancing.</para>
+               </note>
                <para>
                   When the backup becomes it will be not be servicing any JEE components on this eap instance. Instead any
                   existing messages will be redistributed around the cluster and new messages forwarded to and from the backup
@@ -524,26 +531,26 @@
                as in the last diagram. Then simply edit the <literal>jms-ds.xml</literal> and change the following lines to
             </para>
             <programlisting>
-      &lt;config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property>
-      &lt;config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446&lt;/config-property>
+   &lt;config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property>
+   &lt;config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446&lt;/config-property>
             </programlisting>
             <para>
                This will change the outbound JCA connector, to configure the inbound connector for MDB's edit the
                <literal>ra.xml</literal> config file and change the following parameters.
             </para>
             <programlisting>
-      &lt;config-property>
-         &lt;description>The transport type&lt;/description>
-         &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
-         &lt;config-property-type>java.lang.String&lt;/config-property-type>
-         &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
-      &lt;/config-property>
-      &lt;config-property>
-         &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
-         &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
-         &lt;config-property-type>java.lang.String&lt;/config-property-type>
-         &lt;config-property-value>host=127.0.0.1;port=5446&lt;/config-property-value>
-      &lt;/config-property>
+   &lt;config-property>
+      &lt;description>The transport type&lt;/description>
+      &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value>
+   &lt;/config-property>
+   &lt;config-property>
+      &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
+      &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
+      &lt;config-property-type>java.lang.String&lt;/config-property-type>
+      &lt;config-property-value>host=127.0.0.1;port=5446&lt;/config-property-value>
+   &lt;/config-property>
             </programlisting>
             <para>
                In both cases the host and port should match your live server. If you are using Discovery then set the
