@@ -17,17 +17,29 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.DeliveryMode;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -36,7 +48,11 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.QueueImpl;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
+import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -307,7 +323,7 @@ public class PagingOrderTest extends ServiceTestBase
                      assertEquals(i, msg.getIntProperty("id").intValue());
                      msg.acknowledge();
                   }
-                  
+
                   assertNull(cons.receiveImmediate());
                   sess.close();
                   sl.close();
@@ -348,22 +364,20 @@ public class PagingOrderTest extends ServiceTestBase
 
          assertEquals(numberOfMessages, q2.getMessageCount());
          assertEquals(0, q1.getMessageCount());
-         
-         
+
          session.close();
          sf.close();
          locator.close();
-         
+
          server.stop();
-         
-         
+
          server.start();
-         
+
          Bindings bindings = server.getPostOffice().getBindingsForAddress(ADDRESS);
-         
+
          q1 = null;
          q2 = null;
-         
+
          for (Binding bind : bindings.getBindings())
          {
             if (bind instanceof LocalQueueBinding)
@@ -373,25 +387,20 @@ public class PagingOrderTest extends ServiceTestBase
                {
                   q1 = qb.getQueue();
                }
-               
+
                if (qb.getQueue().getName().equals(new SimpleString("inactive")))
                {
                   q2 = qb.getQueue();
                }
             }
          }
-         
+
          assertNotNull(q1);
-         
+
          assertNotNull(q2);
-         
 
          assertEquals(numberOfMessages, q2.getMessageCount());
          assertEquals(0, q1.getMessageCount());
-         
-         
-         
-         
 
       }
       catch (Throwable e)
@@ -510,7 +519,7 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          session.commit();
-         
+
          q1.getMessageCount();
 
          t1.start();
@@ -518,10 +527,10 @@ public class PagingOrderTest extends ServiceTestBase
 
          assertEquals(0, errors.get());
          long timeout = System.currentTimeMillis() + 10000;
-         while (numberOfMessages -100 != q1.getMessageCount() && System.currentTimeMillis() < timeout)
+         while (numberOfMessages - 100 != q1.getMessageCount() && System.currentTimeMillis() < timeout)
          {
             Thread.sleep(500);
-            
+
          }
 
          assertEquals(numberOfMessages, q2.getMessageCount());
@@ -833,8 +842,154 @@ public class PagingOrderTest extends ServiceTestBase
          {
          }
       }
+   }
+
+   public void testPagingOverCreatedDestinationTopics() throws Exception
+   {
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true, config, PAGE_SIZE, -1, new HashMap<String, AddressSettings>());
+
+      JMSServerManagerImpl jmsServer = new JMSServerManagerImpl(server);
+      InVMContext context = new InVMContext();
+      jmsServer.setContext(context);
+      jmsServer.start();
+
+      jmsServer.createTopic(true, "tt", "/topic/TT");
+
+      server.getHornetQServerControl().addAddressSettings("jms.topic.TT",
+                                                          "DLQ",
+                                                          "DLQ",
+                                                          false,
+                                                          5,
+                                                          1024 * 1024,
+                                                          1024 * 10,
+                                                          5,
+                                                          0,
+                                                          false,
+                                                          "PAGE");
+
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                      new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("tst");
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Topic topic = (Topic)context.lookup("/topic/TT");
+      sess.createDurableSubscriber(topic, "t1");
+      
+      MessageProducer prod = sess.createProducer(topic);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      TextMessage txt = sess.createTextMessage("TST");
+      prod.send(txt);
+      
+      PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.topic.TT"));
+
+      assertEquals(1024 * 1024, store.getMaxSize());
+      assertEquals(10 * 1024, store.getPageSizeBytes());
+
+      jmsServer.stop();
+
+      server = createServer(true, config, PAGE_SIZE, -1, new HashMap<String, AddressSettings>());
+
+      jmsServer = new JMSServerManagerImpl(server);
+      context = new InVMContext();
+      jmsServer.setContext(context);
+      jmsServer.start();
+
+      AddressSettings settings = server.getAddressSettingsRepository().getMatch("jms.topic.TT");
+
+      assertEquals(1024 * 1024, settings.getMaxSizeBytes());
+      assertEquals(10 * 1024, settings.getPageSizeBytes());
+      assertEquals(AddressFullMessagePolicy.PAGE, settings.getAddressFullMessagePolicy());
+
+      store = server.getPagingManager().getPageStore(new SimpleString("TT"));
+
+      server.stop();
 
    }
+
+   public void testPagingOverCreatedDestinationQueues() throws Exception
+   {
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true, config, -1, -1, AddressFullMessagePolicy.BLOCK, new HashMap<String, AddressSettings>());
+
+      JMSServerManagerImpl jmsServer = new JMSServerManagerImpl(server);
+      InVMContext context = new InVMContext();
+      jmsServer.setContext(context);
+      jmsServer.start();
+
+      server.getHornetQServerControl().addAddressSettings("jms.queue.Q1",
+                                                          "DLQ",
+                                                          "DLQ",
+                                                          false,
+                                                          5,
+                                                          100 * 1024,
+                                                          10 * 1024,
+                                                          5,
+                                                          0,
+                                                          false,
+                                                          "PAGE");
+
+      jmsServer.createQueue(true, "Q1", null, true, "/queue/Q1");
+
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                      new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+
+      Connection conn = cf.createConnection();
+      conn.setClientID("tst");
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      javax.jms.Queue queue = (javax.jms.Queue)context.lookup("/queue/Q1");
+      
+      MessageProducer prod = sess.createProducer(queue);
+      prod.setDeliveryMode(DeliveryMode.PERSISTENT);
+      BytesMessage bmt = sess.createBytesMessage();
+      
+      bmt.writeBytes(new byte[1024]);
+      
+      for (int i = 0 ; i < 500; i++)
+      {
+         prod.send(bmt);
+      }
+      
+      PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.queue.Q1"));
+
+      assertEquals(100 * 1024, store.getMaxSize());
+      assertEquals(10 * 1024, store.getPageSizeBytes());
+      assertEquals(AddressFullMessagePolicy.PAGE, store.getAddressFullMessagePolicy());
+
+      jmsServer.stop();
+
+      server = createServer(true, config, -1, -1, AddressFullMessagePolicy.BLOCK, new HashMap<String, AddressSettings>());
+
+      jmsServer = new JMSServerManagerImpl(server);
+      context = new InVMContext();
+      jmsServer.setContext(context);
+      jmsServer.start();
+
+      AddressSettings settings = server.getAddressSettingsRepository().getMatch("jms.queue.Q1");
+
+      assertEquals(100 * 1024, settings.getMaxSizeBytes());
+      assertEquals(10 * 1024, settings.getPageSizeBytes());
+      assertEquals(AddressFullMessagePolicy.PAGE, settings.getAddressFullMessagePolicy());
+
+      store = server.getPagingManager().getPageStore(new SimpleString("jms.queue.Q1"));
+      assertEquals(100 * 1024, store.getMaxSize());
+      assertEquals(10 * 1024, store.getPageSizeBytes());
+      assertEquals(AddressFullMessagePolicy.PAGE, store.getAddressFullMessagePolicy());
+
+
+      server.stop();
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

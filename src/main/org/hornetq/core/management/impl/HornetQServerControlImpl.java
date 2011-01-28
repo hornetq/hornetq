@@ -114,6 +114,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                    final NotificationBroadcasterSupport broadcaster) throws Exception
    {
       super(HornetQServerControl.class, storageManager);
+      new Exception(".....").printStackTrace();
       this.postOffice = postOffice;
       this.configuration = configuration;
       this.resourceManager = resourceManager;

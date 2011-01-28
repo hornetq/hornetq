@@ -20,6 +20,7 @@ import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * 
@@ -54,6 +55,8 @@ public interface PagingStore extends HornetQComponent
    long getAddressSize();
    
    long getMaxSize();
+   
+   void applySetting(AddressSettings addressSettings);
 
    boolean isPaging();
 

@@ -42,6 +42,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -203,6 +204,16 @@ public abstract class ServiceTestBase extends UnitTestCase
                                         final int maxAddressSize,
                                         final Map<String, AddressSettings> settings)
    {
+      return createServer(realFiles, configuration, pageSize, maxAddressSize, settings);
+   }
+   
+   protected HornetQServer createServer(final boolean realFiles,
+                                        final Configuration configuration,
+                                        final int pageSize,
+                                        final int maxAddressSize,
+                                        final AddressFullMessagePolicy fullPolicy,
+                                        final Map<String, AddressSettings> settings)
+   {
       HornetQServer server;
 
       if (realFiles)
@@ -222,6 +233,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(pageSize);
       defaultSetting.setMaxSizeBytes(maxAddressSize);
+      defaultSetting.setAddressFullMessagePolicy(fullPolicy);
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 

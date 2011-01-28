@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -45,7 +44,6 @@ import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
@@ -97,11 +95,11 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Used to schedule sync threads
    private final PageSyncTimer syncTimer;
 
-   private final long maxSize;
+   private long maxSize;
 
-   private final long pageSize;
+   private long pageSize;
 
-   private final AddressFullMessagePolicy addressFullMessagePolicy;
+   private AddressFullMessagePolicy addressFullMessagePolicy;
 
    private boolean printedDropMessagesWarning;
 
@@ -112,8 +110,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
 
-   private final AtomicBoolean depaging = new AtomicBoolean(false);
-
    private volatile int numberOfPages;
 
    private volatile int firstPageId;
@@ -123,9 +119,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private volatile Page currentPage;
 
    private volatile boolean paging = false;
-
-   /** duplicate cache used at this address */
-   private final DuplicateIDCache duplicateCache;
 
    private final PageCursorProvider cursorProvider;
 
@@ -162,6 +155,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final ExecutorFactory executorFactory,
                           final boolean syncNonTransactional)
    {
+      new Exception("new pageStore for " + address).printStackTrace();
       if (pagingManager == null)
       {
          throw new IllegalStateException("Paging Manager can't be null");
@@ -175,11 +169,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.storeName = storeName;
 
-      maxSize = addressSettings.getMaxSizeBytes();
-
-      pageSize = addressSettings.getPageSizeBytes();
-
-      addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+      applySetting(addressSettings);
 
       if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
       {
@@ -212,16 +202,18 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory);
 
-      // Post office could be null on the backup node
-      if (postOffice == null)
-      {
-         this.duplicateCache = null;
-      }
-      else
-      {
-         this.duplicateCache = postOffice.getDuplicateIDCache(storeName);
-      }
+   }
 
+   /**
+    * @param addressSettings
+    */
+   public void applySetting(final AddressSettings addressSettings)
+   {
+      maxSize = addressSettings.getMaxSizeBytes();
+
+      pageSize = addressSettings.getPageSizeBytes();
+
+      addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
    }
 
    // Public --------------------------------------------------------

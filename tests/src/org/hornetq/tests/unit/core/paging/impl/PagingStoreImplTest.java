@@ -1110,6 +1110,13 @@ public class PagingStoreImplTest extends UnitTestCase
 
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
+       */
+      public void onChange()
+      {
+      }
+
    }
 
    class FakeStorageManager implements StorageManager
