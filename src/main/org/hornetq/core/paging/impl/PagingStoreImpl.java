@@ -155,7 +155,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final ExecutorFactory executorFactory,
                           final boolean syncNonTransactional)
    {
-      new Exception("new pageStore for " + address).printStackTrace();
       if (pagingManager == null)
       {
          throw new IllegalStateException("Paging Manager can't be null");

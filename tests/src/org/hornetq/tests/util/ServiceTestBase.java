@@ -204,7 +204,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                         final int maxAddressSize,
                                         final Map<String, AddressSettings> settings)
    {
-      return createServer(realFiles, configuration, pageSize, maxAddressSize, settings);
+      return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
    }
    
    protected HornetQServer createServer(final boolean realFiles,
