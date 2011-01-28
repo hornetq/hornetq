@@ -279,7 +279,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       for (String connectionFactory : new HashSet<String>(connectionFactories.keySet()))
       {
-         destroyConnectionFactory(connectionFactory);
+         shutdownConnectionFactory(connectionFactory);
       }
 
       connectionFactories.clear();
@@ -1108,12 +1108,29 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized boolean destroyConnectionFactory(final String name) throws Exception
    {
+      if (!shutdownConnectionFactory(name))
+      {
+         return false;
+      }
+
+      storage.deleteConnectionFactory(name);
+
+      return true;
+   }
+
+   /**
+    * @param name
+    * @throws Exception
+    */
+   protected boolean shutdownConnectionFactory(final String name) throws Exception
+   {
       checkInitialised();
       List<String> jndiBindings = connectionFactoryJNDI.get(name);
       if (jndiBindings == null || jndiBindings.size() == 0)
       {
          return false;
       }
+      
       if (registry != null)
       {
          for (String jndiBinding : jndiBindings)
@@ -1126,7 +1143,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       connectionFactories.remove(name);
 
       jmsManagementService.unregisterConnectionFactory(name);
-
+      
       return true;
    }
 

@@ -29,6 +29,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.XASession;
+import javax.naming.NamingException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -42,6 +43,7 @@ import org.hornetq.api.core.management.ObjectNameBuilder;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -480,7 +482,7 @@ public class JMSServerControlTest extends ManagementTestBase
       });
    }
 
-   public void testCreateConnectionFactory_CopmleteList() throws Exception
+   public void testCreateConnectionFactory_CompleteList() throws Exception
    {
       JMSServerControl control = createManagementControl();
       control.createConnectionFactory("test", //name
@@ -553,6 +555,8 @@ public class JMSServerControlTest extends ManagementTestBase
       stopServer();
       
       startServer();
+      
+      control = createManagementControl();
      
       cf = (HornetQQueueConnectionFactory)context.lookup("tst");
       
@@ -584,6 +588,27 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
+      
+      control.destroyConnectionFactory("test");
+      
+      ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+      assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
+      
+      stopServer();
+      
+      startServer();
+      
+      assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
+      
+     
+      try
+      {
+         cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+         fail("Failure expected");
+      }
+      catch (NamingException e)
+      {
+      }
       
     
    }
