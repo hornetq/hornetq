@@ -821,7 +821,7 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            return messagesAdded + pageSubscription.getCounter().getValue();
+            return messagesAdded + pageSubscription.getCounter().getValue() - pagedReferences.get();
          }
          else
          {

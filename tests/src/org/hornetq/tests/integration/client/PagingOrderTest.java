@@ -156,7 +156,7 @@ public class PagingOrderTest extends ServiceTestBase
 
          ClientSession session = sf.createSession(false, false, false);
 
-         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+         Queue queue = server.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -215,6 +215,12 @@ public class PagingOrderTest extends ServiceTestBase
          {
             sessionServer.close(true);
          }
+         
+         
+         OperationContextImpl.getContext().waitCompletion();
+         
+         assertEquals(numberOfMessages - 100, queue.getMessageCount());
+         assertEquals(numberOfMessages, queue.getMessagesAdded());
 
          OperationContextImpl.getContext().waitCompletion();
 
