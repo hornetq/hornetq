@@ -819,7 +819,14 @@ public class QueueImpl implements Queue
 
       synchronized (this)
       {
-         return messagesAdded;
+         if (pageSubscription != null)
+         {
+            return messagesAdded + pageSubscription.getCounter().getValue();
+         }
+         else
+         {
+            return messagesAdded;
+         }
       }
    }
 

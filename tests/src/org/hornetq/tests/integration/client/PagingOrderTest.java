@@ -363,7 +363,9 @@ public class PagingOrderTest extends ServiceTestBase
          assertEquals(0, errors.get());
 
          assertEquals(numberOfMessages, q2.getMessageCount());
+         assertEquals(numberOfMessages, q2.getMessagesAdded());
          assertEquals(0, q1.getMessageCount());
+         assertEquals(numberOfMessages, q1.getMessagesAdded());
 
          session.close();
          sf.close();
@@ -400,7 +402,10 @@ public class PagingOrderTest extends ServiceTestBase
          assertNotNull(q2);
 
          assertEquals(numberOfMessages, q2.getMessageCount());
+         assertEquals(numberOfMessages, q2.getMessagesAdded());
          assertEquals(0, q1.getMessageCount());
+         // 0, since nothing was sent to the queue after the server was restarted
+         assertEquals(0, q1.getMessagesAdded());
 
       }
       catch (Throwable e)
@@ -520,8 +525,6 @@ public class PagingOrderTest extends ServiceTestBase
 
          session.commit();
 
-         q1.getMessageCount();
-
          t1.start();
          t1.join();
 
@@ -534,7 +537,9 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          assertEquals(numberOfMessages, q2.getMessageCount());
+         assertEquals(numberOfMessages, q2.getMessagesAdded());
          assertEquals(numberOfMessages - 100, q1.getMessageCount());
+         assertEquals(numberOfMessages, q2.getMessagesAdded());
 
       }
       catch (Throwable e)
