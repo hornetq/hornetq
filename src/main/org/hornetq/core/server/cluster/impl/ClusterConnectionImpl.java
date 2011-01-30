@@ -359,6 +359,7 @@ public class ClusterConnectionImpl implements ClusterConnection
          serverLocator.setClusterTransportConfiguration(connector);
          serverLocator.setBackup(server.getConfiguration().isBackup());
          serverLocator.setInitialConnectAttempts(-1);
+         serverLocator.setConfirmationWindowSize(0);
 
          if(retryInterval > 0)
          {

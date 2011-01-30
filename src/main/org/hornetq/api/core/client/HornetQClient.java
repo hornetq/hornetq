@@ -13,13 +13,9 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-
-import java.util.List;
 
 /**
  * Utility class for creating HornetQ {@link ClientSessionFactory} objects.
