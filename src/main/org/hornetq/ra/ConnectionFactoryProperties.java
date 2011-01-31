@@ -51,11 +51,11 @@ public class ConnectionFactoryProperties
 
    private String discoveryAddress;
 
-   private Integer discoveryPort;
+   private Integer discoveryPort = 9876;
 
-   private Long discoveryRefreshTimeout;
+   private Long discoveryRefreshTimeout = new Long(10000);
 
-   private Long discoveryInitialWaitTimeout;
+   private Long discoveryInitialWaitTimeout = new Long(10000);
 
    private String clientID;
 

@@ -12,21 +12,13 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.util.ServiceTestBase;
 
 import javax.resource.ResourceException;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.XATerminator;
 import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.WorkManager;
-import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -169,6 +161,59 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getUserName(), testuser);
    }
 
+   //https://issues.jboss.org/browse/JBPAPP-5790
+   public void testResourceAdapterSetup() throws Exception
+   {
+      HornetQResourceAdapter adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      HornetQConnectionFactory factory = adapter.getDefaultHornetQConnectionFactory();
+      long initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      int port = factory.getDiscoveryGroupConfiguration().getGroupPort();
+      
+      //defaults
+      assertEquals(10000l, refresh);
+      assertEquals(10000l, initWait);
+      assertEquals(9876, port);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryRefreshTimeout(1234l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+
+      //override refresh timeout
+      assertEquals(1234l, refresh);
+      assertEquals(10000l, initWait);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      
+      //override initial wait
+      assertEquals(10000l, refresh);
+      assertEquals(9999l, initWait);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      
+      //override initial wait
+      assertEquals(10000l, refresh);
+      assertEquals(9999l, initWait);
+
+   }
+   
    @Override
    public boolean isSecure()
    {
