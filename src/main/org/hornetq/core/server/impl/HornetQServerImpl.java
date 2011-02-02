@@ -131,6 +131,13 @@ public class HornetQServerImpl implements HornetQServer
    // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
+   
+   // JMS Topics (which are outside of the scope of the core API) will require a dumb subscription with a dummy-filter at this current version
+   // as a way to keep its existence valid and TCK tests
+   // That subscription needs an invalid filter, however paging needs to ignore any subscription with this filter.
+   // For that reason, this filter needs to be rejected on paging or any other component on the system, and just be ignored for any purpose
+   // It's declared here as this filter is considered a global ignore
+   public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -1629,7 +1636,17 @@ public class HornetQServerImpl implements HornetQServer
       
       long queueID = storageManager.generateUniqueID();
 
-      PageSubscription pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+      PageSubscription pageSubscription;
+      
+      
+      if (filterString != null && filterString.toString().equals(GENERIC_IGNORED_FILTER))
+      {
+         pageSubscription = null;
+      }
+      else
+      {
+         pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+      }
 
       final Queue queue = queueFactory.createQueue(queueID,
                                                    address,

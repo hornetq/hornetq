@@ -40,6 +40,7 @@ import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.TransactionDetail;
@@ -89,7 +90,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 {
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
-   private static final String REJECT_FILTER = "__HQX=-1";
+   private static final String REJECT_FILTER = HornetQServerImpl.GENERIC_IGNORED_FILTER;
 
    private BindingRegistry registry;
 
