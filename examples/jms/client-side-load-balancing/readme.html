@@ -8,7 +8,7 @@
   <body onload="prettyPrint()">
      <h1>JMS Client-Side Load-Balancing Example</h1>
 
-     <p>This example demonstrates how sessions created from a single JMS Connection can be created
+     <p>This example demonstrates how connnections created from a single JMS Connection factory can be created
      to different nodes of the cluster. In other words it demonstrates how HornetQ does <b>client side load balancing</b> of
      connections across the cluster.</p>
      <p>The particular load-balancing policy can be chosen to be random, round-robin or user-defined. Please see the user
@@ -44,20 +44,24 @@
            <code>ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
-        <li>We create a single connection</li>
+        <li> We create 3 JMS connections from the same connection factory. Since we are using round-robin
+         load-balancing this should result in each sessions being connected to a different node of the cluster</li>
         <pre class="prettyprint">
            <code>
-        connection = connectionFactory.createConnection();
+        Connection conn = connectionFactory.createConnection();
+        connectionA = connectionFactory.createConnection();
+        connectionB = connectionFactory.createConnection();
+        connectionC = connectionFactory.createConnection();
+        conn.close();
            </code>
         </pre>
 
-        <li>We create 3 JMS Sessions from the same connection. Since we are using round-robin 
-           load-balancing this should result in each sessions being connected to a different node of the cluster</li>
+        <li>We create JMS Sessions</li>
         <pre class="prettyprint">
            <code>
-        Session sessionA = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Session sessionB = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Session sessionC = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionB = connectionB.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionC = connectionC.createSession(false, Session.AUTO_ACKNOWLEDGE);
            </code>
         </pre>
 
@@ -95,7 +99,9 @@
         <li>We start the connection to consume messages</li>
         <pre class="prettyprint">
            <code>
-       connection.start();
+       connectionA.start();
+       connectionB.start();
+       connectionC.start();
            </code>
         </pre>
 
@@ -117,15 +123,23 @@
            <code>
 	finally
 	{
-	   if (connection0 != null)
-	   {
-	      connection0.close();
-	   }
-	      
-	   if (connection1 != null)
-	   {
-	      connection1.close();
-	   }
+	     if (connectionA != null)
+         {
+            connectionA.close();
+         }
+         if (connectionB != null)
+         {
+            connectionB.close();
+         }
+         if (connectionC != null)
+         {
+            connectionC.close();
+         }
+
+         if (initialContext != null)
+         {
+            initialContext.close();
+         }
 	}
            </code>
         </pre>

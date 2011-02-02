@@ -5,7 +5,6 @@
    <clustered>true</clustered>
 
    <!-- Connectors -->
-
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
@@ -22,7 +21,6 @@
    </acceptors>
    
    <!-- Clustering configuration -->
-
    <broadcast-groups>
       <broadcast-group name="my-broadcast-group">
          <group-address>231.7.7.7</group-address>
@@ -39,7 +37,16 @@
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
    </discovery-groups>
-   
+
+   <cluster-connections>
+      <cluster-connection name="my-cluster">
+	  <address>jms</address>
+          <connector-ref>netty-connector</connector-ref>
+          <max-hops>0</max-hops>
+	  <discovery-group-ref discovery-group-name="my-discovery-group"/>
+      </cluster-connection>
+   </cluster-connections>
+      
    <!-- Other config -->
 
    <security-settings>
