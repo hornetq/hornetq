@@ -250,6 +250,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       if (committed && useRedelivery)
       {
+         cursor.addPendingDelivery(cursorPos);
          cursor.redeliver(cursorPos);
          return true;
       }
@@ -271,6 +272,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          {
             lateDeliveries = new LinkedList<Pair<PageSubscription, PagePosition>>();
          }
+         cursor.addPendingDelivery(cursorPos);
          lateDeliveries.add(new Pair<PageSubscription, PagePosition>(cursor, cursorPos));
          return true;
       }

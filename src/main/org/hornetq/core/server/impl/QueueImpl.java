@@ -668,7 +668,7 @@ public class QueueImpl implements Queue
          if (pageSubscription != null)
          {
             // messageReferences will have depaged messages which we need to discount from the counter as they are counted on the pageSubscription as well
-            return messageReferences.size() - pagedReferences.get() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
+            return messageReferences.size() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
          }
          else
          {

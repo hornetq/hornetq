@@ -96,6 +96,8 @@ public interface PageSubscription
 
    void processReload() throws Exception;
 
+   void addPendingDelivery(final PagePosition position);
+   
    /**      
     * To be used on redeliveries
     * @param position

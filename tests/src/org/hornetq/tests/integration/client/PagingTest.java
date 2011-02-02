@@ -80,7 +80,7 @@ public class PagingTest extends ServiceTestBase
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingTest.class);
 
-   private static final int RECEIVE_TIMEOUT = 30000;
+   private static final int RECEIVE_TIMEOUT = 5000;
 
    private static final int PAGE_MAX = 100 * 1024;
 
@@ -237,6 +237,8 @@ public class PagingTest extends ServiceTestBase
 
          sessionCheck.close();
          
+         System.out.println(queue.getMessagesAdded());
+         
          assertEquals(numberOfMessages, queue.getMessageCount());
 
          sf.close();
@@ -359,7 +361,7 @@ public class PagingTest extends ServiceTestBase
 
       final int messageSize = 1024;
 
-      final int numberOfMessages = 30000;
+      final int numberOfMessages = 3000;
 
       final byte[] body = new byte[messageSize];
 
@@ -563,7 +565,7 @@ public class PagingTest extends ServiceTestBase
 
       final int numberOfIntegers = 256;
 
-      final int numberOfMessages = 10000;
+      final int numberOfMessages = 1000;
 
       try
       {
@@ -1032,6 +1034,7 @@ public class PagingTest extends ServiceTestBase
             ClientMessage message = sessionNonTX.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
+            message.putStringProperty(new SimpleString("tst"),  new SimpleString("i=" + i));
 
             producerTransacted.send(message);
 
@@ -1041,6 +1044,7 @@ public class PagingTest extends ServiceTestBase
                for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
+                  msgSend.putStringProperty(new SimpleString("tst"),  new SimpleString("i=" + i + ", j=" + j));
                   msgSend.getBodyBuffer().writeBytes(new byte[10 * 1024]);
                   producerNonTransacted.send(msgSend);
                }
@@ -1403,7 +1407,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int numberOfMessages = 10000;
+      final int numberOfMessages = 1000;
 
       final int numberOfBytes = 1024;
 

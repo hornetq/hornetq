@@ -121,7 +121,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
       if (pos.getMessageNr() >= cache.getNumberOfMessages())
       {
          // sanity check, this should never happen unless there's a bug
-         throw new IllegalStateException("Invalid messageNumber passed = " + pos);
+         throw new IllegalStateException("Invalid messageNumber passed = " + pos + " on " + cache);
       }
 
       return cache.getMessage(pos.getMessageNr());
@@ -255,7 +255,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cursorList.addAll(activeCursors.values());
 
             long minPage = checkMinPage(cursorList);
-
+            
             if (minPage == pagingStore.getCurrentWritingPage() && pagingStore.getCurrentPage().getNumberOfMessages() > 0)
             {
                boolean complete = true;

@@ -73,8 +73,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
    private static void trace(final String message)
    {
-      // PageCursorImpl.log.info(message);
-      System.out.println(message);
+      PageSubscriptionImpl.log.info(message);
    }
 
    private volatile boolean autoCleanup = true;
@@ -102,6 +101,8 @@ public class PageSubscriptionImpl implements PageSubscription
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
    
    private final PageSubscriptionCounter counter;
+   
+   private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
@@ -176,7 +177,7 @@ public class PageSubscriptionImpl implements PageSubscription
    
    public long getMessageCount()
    {
-      return counter.getValue();
+      return counter.getValue() - deliveredCount.get();
    }
 
    public PageSubscriptionCounter getCounter()
@@ -272,7 +273,7 @@ public class PageSubscriptionImpl implements PageSubscription
                   synchronized (PageSubscriptionImpl.this)
                   {
                      for (PageCursorInfo completePage : completedPages)
-                     {
+                     {  
                         if (isTrace)
                         {
                            PageSubscriptionImpl.trace("Removing page " + completePage.getPageId());
@@ -474,6 +475,11 @@ public class PageSubscriptionImpl implements PageSubscription
          return consumedPages.firstKey();
       }
    }
+   
+   public void addPendingDelivery(final PagePosition position)
+   {
+      getPageInfo(position).incrementPendingTX();
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.PageCursor#returnElement(org.hornetq.core.paging.cursor.PagePosition)
@@ -483,6 +489,15 @@ public class PageSubscriptionImpl implements PageSubscription
       synchronized (redeliveries)
       {
          redeliveries.add(position);
+         PageCursorInfo pageInfo = consumedPages.get(position.getPageNr());
+         if (pageInfo != null)
+         {
+            pageInfo.decrementPendingTX();
+         }
+         else
+         {
+            // this shouldn't really happen.
+         }
       }
    }
 
@@ -823,6 +838,9 @@ public class PageSubscriptionImpl implements PageSubscription
 
       // The page was live at the time of the creation
       private final boolean wasLive;
+      
+      // There's a pending TX to add elements on this page
+      private AtomicInteger pendingTX = new AtomicInteger(0);
 
       // There's a pending delete on the async IO pipe
       // We're holding this object to avoid delete the pages before the IO is complete,
@@ -856,7 +874,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       public boolean isDone()
       {
-         return getNumberOfMessages() == confirmed.get();
+         return getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0;
       }
 
       public boolean isPendingDelete()
@@ -875,6 +893,16 @@ public class PageSubscriptionImpl implements PageSubscription
       public long getPageId()
       {
          return pageId;
+      }
+      
+      public void incrementPendingTX()
+      {
+         pendingTX.incrementAndGet();
+      }
+      
+      public void decrementPendingTX()
+      {
+         pendingTX.decrementAndGet();
       }
 
       public boolean isRemoved(final PagePosition pos)
@@ -967,6 +995,7 @@ public class PageSubscriptionImpl implements PageSubscription
             for (PagePosition confirmed : positions)
             {
                cursor.processACK(confirmed);
+               cursor.deliveredCount.decrementAndGet();
             }
 
          }
@@ -1201,10 +1230,8 @@ public class PageSubscriptionImpl implements PageSubscription
        */
       public void remove()
       {
-         if (!isredelivery)
-         {
-            PageSubscriptionImpl.this.getPageInfo(position).remove(position);
-         }
+         deliveredCount.incrementAndGet();
+         PageSubscriptionImpl.this.getPageInfo(position).remove(position);
       }
 
       /* (non-Javadoc)

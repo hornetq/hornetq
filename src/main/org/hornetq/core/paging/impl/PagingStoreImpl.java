@@ -849,8 +849,6 @@ public class PagingStoreImpl implements TestSupportPageStore
             return false;
          }
 
-         PagedMessage pagedMessage;
-
          if (!message.isDurable())
          {
             // The address should never be transient when paging (even for non-persistent messages when paging)
@@ -858,7 +856,8 @@ public class PagingStoreImpl implements TestSupportPageStore
             message.bodyChanged();
          }
 
-         pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), installPageTransaction(tx, listCtx));
+
+         PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
 
          int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 
@@ -868,7 +867,9 @@ public class PagingStoreImpl implements TestSupportPageStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
-
+         
+         installPageTransaction(tx, listCtx, currentPage.getPageId());
+ 
          currentPage.write(pagedMessage);
 
          if (tx != null)
@@ -920,11 +921,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       return ids;
    }
 
-   private long installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
+   private PageTransactionInfo installPageTransaction(final Transaction tx, final RouteContextList listCtx, int pageID) throws Exception
    {
       if (tx == null)
       {
-         return -1;
+         return null;
       }
       else
       {
@@ -939,7 +940,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          pgTX.increment(listCtx.getNumberOfQueues());
 
-         return tx.getID();
+         return pgTX;
       }
    }
 
