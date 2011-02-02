@@ -1020,7 +1020,10 @@ public class HornetQServerImpl implements HornetQServer
 
       Queue queue = (Queue)binding.getBindable();
       
-      queue.getPageSubscription().close();
+      if (queue.getPageSubscription() != null)
+      {
+         queue.getPageSubscription().close();
+      }
 
       if (queue.getConsumerCount() != 0)
       {
