@@ -202,6 +202,7 @@
          <redelivery-delay>1</redelivery-delay>
          <max-size-bytes>81781728121878</max-size-bytes>
          <page-size-bytes>81738173872337</page-size-bytes>
+         <page-max-cache-size>10</page-max-cache-size>
          <message-counter-history-day-limit>4</message-counter-history-day-limit>
       </address-setting>
       <address-setting match="a2">
@@ -210,6 +211,7 @@
          <redelivery-delay>5</redelivery-delay>
          <max-size-bytes>932489234928324</max-size-bytes>
          <page-size-bytes>7126716262626</page-size-bytes>
+         <page-max-cache-size>20</page-max-cache-size>
          <message-counter-history-day-limit>8</message-counter-history-day-limit>
       </address-setting>
    </address-settings>

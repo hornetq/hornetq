@@ -1489,6 +1489,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
          settings.put("expiryAddress", addressSettings.getExpiryAddress());
       }
       settings.put("maxDeliveryAttempts", addressSettings.getMaxDeliveryAttempts());
+      settings.put("pageCacheMaxSize", addressSettings.getPageCacheMaxSize());
       settings.put("maxSizeBytes", addressSettings.getMaxSizeBytes());
       settings.put("pageSizeBytes", addressSettings.getPageSizeBytes());
       settings.put("redeliveryDelay", addressSettings.getRedeliveryDelay());
@@ -1504,13 +1505,15 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       return jsonObject.toString();
    }
 
-   public void addAddressSettings(final String address,
+   
+    public void addAddressSettings(final String address,
                                   final String DLA,
                                   final String expiryAddress,
                                   final boolean lastValueQueue,
                                   final int deliveryAttempts,
                                   final long maxSizeBytes,
                                   final int pageSizeBytes,
+                                  final int pageMaxCacheSize,
                                   final long redeliveryDelay,
                                   final long redistributionDelay,
                                   final boolean sendToDLAOnNoRoute,
@@ -1523,6 +1526,7 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
       addressSettings.setExpiryAddress(expiryAddress == null ? null : new SimpleString(expiryAddress));
       addressSettings.setLastValueQueue(lastValueQueue);
       addressSettings.setMaxDeliveryAttempts(deliveryAttempts);
+      addressSettings.setPageCacheMaxSize(pageMaxCacheSize);
       addressSettings.setMaxSizeBytes(maxSizeBytes);
       addressSettings.setPageSizeBytes(pageSizeBytes);
       addressSettings.setRedeliveryDelay(redeliveryDelay);

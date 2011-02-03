@@ -199,7 +199,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          this.syncTimer = null;
       }
 
-      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory);
+      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory, addressSettings.getPageCacheMaxSize());
 
    }
 
@@ -213,6 +213,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       pageSize = addressSettings.getPageSizeBytes();
 
       addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+      
+      if (cursorProvider != null)
+      {
+         cursorProvider.setCacheMaxSize(addressSettings.getPageCacheMaxSize());
+      }
    }
 
    // Public --------------------------------------------------------

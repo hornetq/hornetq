@@ -480,6 +480,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       int deliveryAttempts = 1;
       long maxSizeBytes = 2;
       int pageSizeBytes = 3;
+      int pageMaxCacheSize = 7;
       long redeliveryDelay = 4;
       long redistributionDelay = 5;
       boolean sendToDLAOnNoRoute = true;
@@ -492,6 +493,7 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        deliveryAttempts,
                                        maxSizeBytes,
                                        pageSizeBytes,
+                                       pageMaxCacheSize,
                                        redeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
@@ -508,6 +510,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(lastValueQueue, info.isLastValueQueue());
       assertEquals(deliveryAttempts, info.getMaxDeliveryAttempts());
       assertEquals(maxSizeBytes, info.getMaxSizeBytes());
+      assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(pageSizeBytes, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());

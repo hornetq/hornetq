@@ -34,6 +34,8 @@ public class AddressSettingsInfo
    private long maxSizeBytes;
 
    private int pageSizeBytes;
+   
+   private int pageCacheMaxSize;
 
    private int maxDeliveryAttempts;
 
@@ -57,6 +59,7 @@ public class AddressSettingsInfo
       return new AddressSettingsInfo(object.getString("addressFullMessagePolicy"),
                                      object.getLong("maxSizeBytes"),
                                      object.getInt("pageSizeBytes"),
+                                     object.getInt("pageCacheMaxSize"),
                                      object.getInt("maxDeliveryAttempts"),
                                      object.getLong("redeliveryDelay"),
                                      object.getString("DLA"),
@@ -71,6 +74,7 @@ public class AddressSettingsInfo
    public AddressSettingsInfo(String addressFullMessagePolicy,
                               long maxSizeBytes,
                               int pageSizeBytes,
+                              int pageCacheMaxSize,
                               int maxDeliveryAttempts,
                               long redeliveryDelay,
                               String deadLetterAddress,
@@ -82,6 +86,7 @@ public class AddressSettingsInfo
       this.addressFullMessagePolicy = addressFullMessagePolicy;
       this.maxSizeBytes = maxSizeBytes;
       this.pageSizeBytes = pageSizeBytes;
+      this.pageCacheMaxSize = pageCacheMaxSize;
       this.maxDeliveryAttempts = maxDeliveryAttempts;
       this.redeliveryDelay = redeliveryDelay;
       this.deadLetterAddress = deadLetterAddress;
@@ -92,6 +97,16 @@ public class AddressSettingsInfo
    }
 
    // Public --------------------------------------------------------
+
+   public int getPageCacheMaxSize()
+   {
+      return pageCacheMaxSize;
+   }
+
+   public void setPageCacheMaxSize(int pageCacheMaxSize)
+   {
+      this.pageCacheMaxSize = pageCacheMaxSize;
+   }
 
    public String getAddressFullMessagePolicy()
    {

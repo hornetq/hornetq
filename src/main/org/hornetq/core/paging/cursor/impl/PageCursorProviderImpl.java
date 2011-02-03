@@ -62,9 +62,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    private final Executor executor;
 
-   private Map<Long, PageCache> softCache = new SoftValueHashMap<Long, PageCache>();
+   private final SoftValueHashMap<Long, PageCache> softCache;
 
-   private ConcurrentMap<Long, PageSubscription> activeCursors = new ConcurrentHashMap<Long, PageSubscription>();
+   private final ConcurrentMap<Long, PageSubscription> activeCursors = new ConcurrentHashMap<Long, PageSubscription>();
 
    // Static --------------------------------------------------------
 
@@ -72,12 +72,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public PageCursorProviderImpl(final PagingStore pagingStore,
                                  final StorageManager storageManager,
-                                 final ExecutorFactory executorFactory)
+                                 final ExecutorFactory executorFactory,
+                                 final int maxCacheSize)
    {
       this.pagingStore = pagingStore;
       this.storageManager = storageManager;
       this.executorFactory = executorFactory;
       this.executor = executorFactory.getExecutor();
+      this.softCache = new SoftValueHashMap<Long, PageCache>(maxCacheSize);
    }
 
    // Public --------------------------------------------------------
@@ -96,12 +98,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
 
       activeCursor = new PageSubscriptionImpl(this,
-                                        pagingStore,
-                                        storageManager,
-                                        executorFactory.getExecutor(),
-                                        filter,
-                                        cursorID,
-                                        persistent);
+                                              pagingStore,
+                                              storageManager,
+                                              executorFactory.getExecutor(),
+                                              filter,
+                                              cursorID,
+                                              persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
@@ -126,8 +128,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       return cache.getMessage(pos.getMessageNr());
    }
-   
-   public PagedReference newReference(final PagePosition pos, final PagedMessage msg, final PageSubscription subscription)
+
+   public PagedReference newReference(final PagePosition pos,
+                                      final PagedMessage msg,
+                                      final PageSubscription subscription)
    {
       return new PagedReferenceImpl(pos, msg, subscription);
    }
@@ -137,13 +141,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    public PageCache getPageCache(PagePosition pos)
    {
-      PageCache cache = pos.getPageCache();
-      if (cache == null)
-      {
-         cache = getPageCache(pos.getPageNr());
-         pos.setPageCache(cache);
-      }
-      return cache;
+      return getPageCache(pos.getPageNr());
    }
 
    public void addPageCache(PageCache cache)
@@ -152,6 +150,16 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          softCache.put(cache.getPageId(), cache);
       }
+   }
+
+   public int getCacheMaxSize()
+   {
+      return softCache.getMaxEelements();
+   }
+
+   public void setCacheMaxSize(final int size)
+   {
+      softCache.setMaxElements(size);
    }
 
    public int getCacheSize()
@@ -245,7 +253,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
-            
+
             if (pagingStore.getNumberOfPages() == 0)
             {
                return;
@@ -255,7 +263,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cursorList.addAll(activeCursors.values());
 
             long minPage = checkMinPage(cursorList);
-            
+
             if (minPage == pagingStore.getCurrentWritingPage() && pagingStore.getCurrentPage().getNumberOfMessages() > 0)
             {
                boolean complete = true;
@@ -272,7 +280,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
                if (complete)
                {
 
-                  log.info("Address " + pagingStore.getAddress() + " is leaving page mode as all messages are consumed and acknowledged from the page store");
+                  log.info("Address " + pagingStore.getAddress() +
+                           " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();

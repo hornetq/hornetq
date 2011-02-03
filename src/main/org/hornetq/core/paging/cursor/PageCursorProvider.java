@@ -66,6 +66,10 @@ public interface PageCursorProvider
    
    // Perform the cleanup at the caller's thread (for startup and recovery)
    void cleanup();
+   
+   int getCacheMaxSize();
+   
+   void setCacheMaxSize(int size);
 
    /**
     * @param pageCursorImpl

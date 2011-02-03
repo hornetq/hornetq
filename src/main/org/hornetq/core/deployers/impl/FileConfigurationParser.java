@@ -108,6 +108,8 @@ public class FileConfigurationParser
 
    private static final String PAGE_SIZE_BYTES_NODE_NAME = "page-size-bytes";
 
+   private static final String PAGE_MAX_CACHE_SIZE_NODE_NAME = "page-max-cache-size";
+
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
    private static final String LVQ_NODE_NAME = "last-value-queue";
@@ -777,6 +779,10 @@ public class FileConfigurationParser
          else if (FileConfigurationParser.PAGE_SIZE_BYTES_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setPageSizeBytes(Long.valueOf(child.getTextContent()));
+         }
+         else if (FileConfigurationParser.PAGE_MAX_CACHE_SIZE_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         {
+            addressSettings.setPageCacheMaxSize(Integer.valueOf(child.getTextContent()));
          }
          else if (FileConfigurationParser.MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

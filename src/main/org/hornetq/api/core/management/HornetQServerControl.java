@@ -535,6 +535,7 @@ public interface HornetQServerControl
                            @Parameter(desc="the delivery attempts", name="deliveryAttempts") int deliveryAttempts,
                            @Parameter(desc="the max size in bytes", name="maxSizeBytes") long maxSizeBytes,
                            @Parameter(desc="the page size in bytes", name="pageSizeBytes") int pageSizeBytes,
+                           @Parameter(desc="the max number of pages in the soft memory cache", name="pageMaxCacheSize") int pageMaxCacheSize,
                            @Parameter(desc="the redelivery delay", name="redeliveryDelay") long redeliveryDelay,
                            @Parameter(desc="the redistribution delay", name="redistributionDelay") long redistributionDelay,
                            @Parameter(desc="do we send to the DLA when there is no where to route the message", name="sendToDLAOnNoRoute") boolean sendToDLAOnNoRoute,
