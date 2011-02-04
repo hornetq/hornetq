@@ -260,6 +260,17 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
    }
 
+
+   public Boolean getHA()
+   {
+      return raProperties.isHA();
+   }
+
+   public void setHA(final Boolean ha)
+   {
+      this.raProperties.setHA(ha);
+   }
+
    /**
     * Get the discovery group name
     *
@@ -318,16 +329,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setDiscoveryPort(dgp);
-   }
-   
-   public Boolean isHA()
-   {
-      return raProperties.isHA();
-   }
-   
-   public void setHA(final Boolean ha)
-   {
-      this.raProperties.setHA(ha);
    }
 
    /**
@@ -960,46 +961,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setReconnectAttempts(reconnectAttempts);
    }
 
-   /**
-    * Get failover on server shutdown
-    *
-    * @return The value
-    */
-   public Boolean isFailoverOnServerShutdown()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("isFailoverOnServerShutdown()");
-      }
-
-      return raProperties.isFailoverOnServerShutdown();
-   }
-
-   /**
-    * Get failover on server shutdown
-    *
-    * @return The value
-    */
-   public Boolean getFailoverOnServerShutdown()
-   {
-      return isFailoverOnServerShutdown();
-   }
-
-   /**
-    * Set failover on server shutdown
-    *
-    * @param failoverOnServerShutdown The value
-    */
-   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
-      }
-
-      raProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
-   }
-
    public String getConnectionLoadBalancingPolicyClassName()
    {
       return raProperties.getConnectionLoadBalancingPolicyClassName();
@@ -1383,7 +1344,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
                                                                                 : getDiscoveryAddress();
       
-      Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : isHA();
+      Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
       
       if (connectorClassName != null)
       {

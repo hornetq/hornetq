@@ -47,6 +47,12 @@ Copyright 2009 Red Hat, Inc.
       </config-property>
       <!--
       <config-property>
+        <description>Does we support HA</description>
+        <config-property-name>HA</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value>false</config-property-value>
+      </config-property>
+      <config-property>
         <description>The method to use for locating the transactionmanager</description>
         <config-property-name>TransactionManagerLocatorMethod</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
@@ -71,26 +77,14 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-         <description>The Backup transport type</description>
-         <config-property-name>BackUpTransportType</config-property-name>
-         <config-property-type>java.lang.String</config-property-type>
-         <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-         <description>The Backup transport configuration. These values must be in the form of key=val;key=val;</description>
-         <config-property-name>TransportConfiguration</config-property-name>
-         <config-property-type>java.lang.String</config-property-type>
-         <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
         <description>The discovery group address</description>
-        <config-property-name>DiscoveryGroupAddress</config-property-name>
+        <config-property-name>DiscoveryAddress</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
         <description>The discovery group port</description>
-        <config-property-name>DiscoveryGroupPort</config-property-name>
+        <config-property-name>DiscoveryPort</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
@@ -217,12 +211,6 @@ Copyright 2009 Red Hat, Inc.
         <description>The retry interval multiplier</description>
         <config-property-name>RetryIntervalMultiplier</config-property-name>
         <config-property-type>java.lang.Double</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-        <description>Should clean server shutdown trigger failover?</description>
-        <config-property-name>FailoverOnServerShutdown</config-property-name>
-        <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>

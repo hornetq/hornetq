@@ -650,16 +650,6 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setReconnectAttempts(reconnectAttempts);
    }
 
-   public Boolean isFailoverOnServerShutdown()
-   {
-      return mcfProperties.isFailoverOnServerShutdown();
-   }
-
-   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
-   {
-      mcfProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
-   }
-
    public Boolean isUseGlobalPools()
    {
       return mcfProperties.isUseGlobalPools();

@@ -95,8 +95,6 @@ public class ConnectionFactoryProperties
 
    private Integer reconnectAttempts = -1;
 
-   private Boolean failoverOnServerShutdown;
-
    private Boolean useGlobalPools;
 
    private Integer scheduledThreadPoolMaxSize;
@@ -622,26 +620,6 @@ public class ConnectionFactoryProperties
       }
       hasBeenUpdated = true;
       this.reconnectAttempts = reconnectAttempts;
-   }
-
-   public Boolean isFailoverOnServerShutdown()
-   {
-      if (ConnectionFactoryProperties.trace)
-      {
-         ConnectionFactoryProperties.log.trace("isFailoverOnServerShutdown()");
-      }
-      hasBeenUpdated = true;
-      return failoverOnServerShutdown;
-   }
-
-   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
-   {
-      if (ConnectionFactoryProperties.trace)
-      {
-         ConnectionFactoryProperties.log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
-      }
-      hasBeenUpdated = true;
-      this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
 
    public Boolean isUseGlobalPools()
