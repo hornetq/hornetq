@@ -112,17 +112,6 @@ public class PagingTest extends ServiceTestBase
       super.tearDown();
    }
 
-   public void testRepeat() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         System.out.println(" ####################### test " + i);
-         testPreparePersistent();
-         tearDown();
-         setUp();
-      }
-   }
-
    public void testPreparePersistent() throws Exception
    {
       clearData();
