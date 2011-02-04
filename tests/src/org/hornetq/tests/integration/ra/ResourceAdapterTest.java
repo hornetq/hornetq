@@ -109,7 +109,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setDiscoveryPort(i);
       qResourceAdapter.setDiscoveryRefreshTimeout(l);
       qResourceAdapter.setDupsOKBatchSize(i);
-      qResourceAdapter.setFailoverOnServerShutdown(b);
       qResourceAdapter.setMinLargeMessageSize(i);
       qResourceAdapter.setPassword(testpass);
       qResourceAdapter.setPreAcknowledge(b);
@@ -145,7 +144,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getDiscoveryPort(), i);
       assertEquals(qResourceAdapter.getDiscoveryRefreshTimeout(), l);
       assertEquals(qResourceAdapter.getDupsOKBatchSize(), i);
-      assertEquals(qResourceAdapter.getFailoverOnServerShutdown(), b);
       assertEquals(qResourceAdapter.getMinLargeMessageSize(), i);
       assertEquals(qResourceAdapter.getPassword(), testpass);
       assertEquals(qResourceAdapter.getPreAcknowledge(), b);
