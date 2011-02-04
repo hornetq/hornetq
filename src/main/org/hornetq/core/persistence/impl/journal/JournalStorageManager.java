@@ -56,6 +56,7 @@ import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
+import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.GroupingInfo;
@@ -1715,6 +1716,7 @@ public class JournalStorageManager implements StorageManager
                   if (sub != null)
                   {
                      sub.reloadPreparedACK(tx, encoding.position);
+                     referencesToAck.add(new PagedReferenceImpl(encoding.position, null, sub));
                   }
                   else
                   {

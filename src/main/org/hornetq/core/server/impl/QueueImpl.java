@@ -32,6 +32,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
@@ -103,6 +104,9 @@ public class QueueImpl implements Queue
    
    // The quantity of pagedReferences on messageREferences priority list
    private final AtomicInteger pagedReferences = new AtomicInteger(0);
+   
+   // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
+   private final AtomicInteger queueMemorySize = new AtomicInteger(0);
 
    private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
 
@@ -327,6 +331,7 @@ public class QueueImpl implements Queue
 
    public synchronized void reload(final MessageReference ref)
    {
+      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
       if (!scheduledDeliveryHandler.checkAndSchedule(ref))
       {
          internalAddTail(ref);
@@ -375,6 +380,8 @@ public class QueueImpl implements Queue
       {
          return;
       }
+      
+      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
 
       concurrentQueue.add(ref);
 
@@ -1214,22 +1221,18 @@ public class QueueImpl implements Queue
     */
    private void internalAddTail(final MessageReference ref)
    {
-      if (ref.isPaged())
-      {
-         pagedReferences.incrementAndGet();
-      }
+      refAdded(ref);
       messageReferences.addTail(ref, ref.getMessage().getPriority());
    }
+
 
    /**
     * @param ref
     */
    private void internalAddHead(final MessageReference ref)
    {
-      if (ref.isPaged())
-      {
-         pagedReferences.incrementAndGet();
-      }
+      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
+      refAdded(ref);
       messageReferences.addHead(ref, ref.getMessage().getPriority());
    }
 
@@ -1392,11 +1395,24 @@ public class QueueImpl implements Queue
     */
    private void refRemoved(MessageReference ref)
    {
+      queueMemorySize.addAndGet(-ref.getMessage().getMemoryEstimate());
       if (ref.isPaged())
       {
          pagedReferences.decrementAndGet();
       }
    }
+   
+   /**
+    * @param ref
+    */
+   protected void refAdded(final MessageReference ref)
+   {
+      if (ref.isPaged())
+      {
+         pagedReferences.incrementAndGet();
+      }
+   }
+
    
    private void scheduleDepage()
    {
@@ -1405,32 +1421,22 @@ public class QueueImpl implements Queue
    
    private void depage()
    {
-      if (paused || consumerList.isEmpty())
+      if (paused || pageIterator == null || consumerList.isEmpty())
       {
          return;
       }
       
-      int msgsToDeliver = MAX_DELIVERIES_IN_LOOP - (messageReferences.size() + getScheduledCount() + concurrentQueue.size());
+      long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
       
-      if (msgsToDeliver > 0)
+      //System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+      while (queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
-         //System.out.println("Depaging " + msgsToDeliver + " messages");
-         //System.out.println("Depage "  + msgsToDeliver + " now.. there are msgRef = " + messageReferences.size() + " scheduled = " + getScheduledCount() + " concurrentQueue.size() = " + concurrentQueue.size());
-   
-         int nmessages = 0;
-         while (nmessages < msgsToDeliver && pageIterator.hasNext())
-         {
-            nmessages ++;
-            addTail(pageIterator.next(), false);
-            pageIterator.remove();
-         }
-         
-         //System.out.println("Depaged " + nmessages);
+         PagedReference reference = pageIterator.next();
+         addTail(reference, false);
+         pageIterator.remove();
       }
-//      else
-//      {
-//         System.out.println("Depaging not being done now.. there are msgRef = " + messageReferences.size() + " scheduled = " + getScheduledCount() + " concurrentQueue.size() = " + concurrentQueue.size());
-//      }
+      //System.out.println("QueueMemorySize after depage = " + queueMemorySize.get() + " depaged " + nmessages);
+      
       
       deliverAsync();
    }
@@ -1737,13 +1743,26 @@ public class QueueImpl implements Queue
 
    private void postAcknowledge(final MessageReference ref)
    {
-      final ServerMessage message = ref.getMessage();
-
       QueueImpl queue = (QueueImpl)ref.getQueue();
+
+      queue.deliveringCount.decrementAndGet();
+      
+      if (queue.deliveringCount.get() < 0)
+      {
+         new Exception("DeliveringCount became negative").printStackTrace();
+      }
+
+      if (ref.isPaged())
+      {
+         // nothing to be done
+         return;
+      }
+
+      final ServerMessage message = ref.getMessage();
 
       boolean durableRef = message.isDurable() && queue.durable;
 
-      if (durableRef && ! ref.isPaged())
+      if (durableRef)
       {
          int count = message.decrementDurableRefCount();
 
@@ -1773,13 +1792,6 @@ public class QueueImpl implements Queue
                                   e);
             }
          }
-      }
-
-      queue.deliveringCount.decrementAndGet();
-      
-      if (queue.deliveringCount.get() < 0)
-      {
-         new Exception("DeliveringCount became negative").printStackTrace();
       }
 
       try
@@ -1827,10 +1839,19 @@ public class QueueImpl implements Queue
    private final class RefsOperation implements TransactionOperation
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
+      List<ServerMessage> pagedMessagesToPostACK = null;
 
       synchronized void addAck(final MessageReference ref)
       {
          refsToAck.add(ref);
+         if (ref.isPaged())
+         {
+            if (pagedMessagesToPostACK == null)
+            {
+               pagedMessagesToPostACK = new ArrayList<ServerMessage>();
+            }
+            pagedMessagesToPostACK.add(ref.getMessage());
+         }
       }
 
       public void beforeCommit(final Transaction tx) throws Exception
@@ -1889,6 +1910,21 @@ public class QueueImpl implements Queue
             synchronized (ref.getQueue())
             {
                postAcknowledge(ref);
+            }
+         }
+         
+         if (pagedMessagesToPostACK != null)
+         {
+            for (ServerMessage msg : pagedMessagesToPostACK)
+            {
+               try
+               {
+                  msg.decrementRefCount();
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+               }
             }
          }
       }

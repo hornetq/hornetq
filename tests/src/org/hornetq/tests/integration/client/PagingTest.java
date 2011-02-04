@@ -112,11 +112,19 @@ public class PagingTest extends ServiceTestBase
       super.tearDown();
    }
 
+   public void testRepeat() throws Exception
+   {
+      for (int i = 0; i < 100; i++)
+      {
+         System.out.println(" ####################### test " + i);
+         testPreparePersistent();
+         tearDown();
+         setUp();
+      }
+   }
+
    public void testPreparePersistent() throws Exception
    {
-      boolean persistentMessages = true;
-
-      System.out.println("PageDir:" + getPageDir());
       clearData();
 
       Configuration config = createDefaultConfig();
@@ -133,7 +141,11 @@ public class PagingTest extends ServiceTestBase
 
       final int messageSize = 1024;
 
-      final int numberOfMessages = 10000;
+      final int numberOfMessages = 5000;
+
+      final int numberOfTX = 10;
+
+      final int messagesPerTX = numberOfMessages / numberOfTX;
 
       try
       {
@@ -164,7 +176,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            message = session.createMessage(persistentMessages);
+            message = session.createMessage(true);
 
             HornetQBuffer bodyLocal = message.getBodyBuffer();
 
@@ -204,7 +216,7 @@ public class PagingTest extends ServiceTestBase
          LinkedList<Xid> xids = new LinkedList<Xid>();
 
          int msgReceived = 0;
-         for (int i = 0; i < numberOfMessages / 999; i++)
+         for (int i = 0; i < numberOfTX; i++)
          {
             ClientSession sessionConsumer = sf.createSession(true, false, false);
             Xid xid = newXID();
@@ -212,14 +224,14 @@ public class PagingTest extends ServiceTestBase
             sessionConsumer.start(xid, XAResource.TMNOFLAGS);
             sessionConsumer.start();
             ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
-            for (int msgCount = 0; msgCount < 1000; i++)
+            for (int msgCount = 0; msgCount < messagesPerTX; msgCount++)
             {
                if (msgReceived == numberOfMessages)
                {
                   break;
                }
-               System.out.println("MsgReceived = " + (msgReceived++));
-               ClientMessage msg = consumer.receive(5000);
+               msgReceived++;
+               ClientMessage msg = consumer.receive(10000);
                assertNotNull(msg);
                msg.acknowledge();
             }
@@ -235,8 +247,6 @@ public class PagingTest extends ServiceTestBase
          assertNull(consumer.receiveImmediate());
 
          sessionCheck.close();
-
-         System.out.println(queue.getMessagesAdded());
 
          assertEquals(numberOfMessages, queue.getMessageCount());
 
@@ -262,25 +272,75 @@ public class PagingTest extends ServiceTestBase
          consumer = session.createConsumer(PagingTest.ADDRESS);
 
          session.start();
+         
+         
+         assertEquals(numberOfMessages, queue.getMessageCount());
 
-         assertNull(consumer.receiveImmediate());
-
-         for (Xid xid : xids)
+         ClientMessage msg = consumer.receive(5000);
+         if (msg != null)
          {
+            System.out.println("Msg " + msg.getIntProperty("id"));
+
+            while (true)
+            {
+               ClientMessage msg2 = consumer.receive(1000);
+               if (msg2 == null)
+               {
+                  break;
+               }
+               System.out.println("Msg received again : " + msg2.getIntProperty("id"));
+
+            }
+         }
+         assertNull(msg);
+
+         for (int i = xids.size() -1 ; i >= 0; i--)
+         {
+            Xid xid = xids.get(i);
             session.rollback(xid);
          }
+         System.out.println("msgCount = " + queue.getMessageCount());
 
          xids.clear();
 
-         assertNotNull(consumer.receiveImmediate());
+         session.close();
 
+         session = sf.createSession(false, false, false);
+
+         session.start();
+         
+         consumer = session.createConsumer(PagingTest.ADDRESS);
+         
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            msg = consumer.receive(1000);
+            assertNotNull(msg);
+            msg.acknowledge();
+            
+            assertEquals(i, msg.getIntProperty("id").intValue());
+            
+            if (i % 500 == 0)
+            {
+               session.commit();
+            }
+         }
+         
+         session.commit();
+         
          session.close();
 
          sf.close();
 
          locator.close();
 
-         queue.getMessageCount();
+         assertEquals(0, queue.getMessageCount());
+         
+         long timeout = System.currentTimeMillis() + 5000;
+         while (timeout > System.currentTimeMillis() && queue.getPageSubscription().getPagingStore().isPaging())
+         {
+            Thread.sleep(100);
+         }
+         assertFalse (queue.getPageSubscription().getPagingStore().isPaging());
          // assertEquals(numberOfMessages, queue.getMessageCount());
       }
       finally
@@ -331,7 +391,10 @@ public class PagingTest extends ServiceTestBase
          ClientSession session = sf.createSession(false, false, false);
 
          session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
-         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS.concat("-invalid"), new SimpleString(HornetQServerImpl.GENERIC_IGNORED_FILTER), true);
+         session.createQueue(PagingTest.ADDRESS,
+                             PagingTest.ADDRESS.concat("-invalid"),
+                             new SimpleString(HornetQServerImpl.GENERIC_IGNORED_FILTER),
+                             true);
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -374,16 +437,16 @@ public class PagingTest extends ServiceTestBase
                session.commit();
             }
          }
-         
-         session.commit();
-         
+
          session.commit();
 
          session.commit();
-         
+
+         session.commit();
+
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
          store.getCursorProvier().cleanup();
-         
+
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
          {
@@ -402,7 +465,7 @@ public class PagingTest extends ServiceTestBase
          try
          {
             server.stop();
-           // System.exit(-1);
+            // System.exit(-1);
          }
          catch (Throwable ignored)
          {
@@ -1792,6 +1855,10 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             System.out.println("Received " + i);
+            if (i == 55)
+            {
+               System.out.println("i = 55");
+            }
             ClientMessage msg = consumer.receive(5000);
             Assert.assertNotNull(msg);
             msg.acknowledge();

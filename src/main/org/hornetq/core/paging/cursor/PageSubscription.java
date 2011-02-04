@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor;
 
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.LinkedListIterator;
@@ -30,6 +31,8 @@ public interface PageSubscription
 
    // Cursor query operations --------------------------------------
 
+   PagingStore getPagingStore();
+   
    // To be called before the server is down
    void stop();
 

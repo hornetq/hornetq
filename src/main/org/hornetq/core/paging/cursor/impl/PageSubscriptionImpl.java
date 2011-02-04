@@ -69,11 +69,11 @@ public class PageSubscriptionImpl implements PageSubscription
 
    // Attributes ----------------------------------------------------
 
-   private final boolean isTrace = false; // PageCursorImpl.log.isTraceEnabled();
+   private final boolean isTrace = PageSubscriptionImpl.log.isTraceEnabled();
 
    private static void trace(final String message)
    {
-      PageSubscriptionImpl.log.info(message);
+	      PageSubscriptionImpl.log.trace(message);
    }
 
    private volatile boolean autoCleanup = true;
@@ -130,6 +130,11 @@ public class PageSubscriptionImpl implements PageSubscription
    }
 
    // Public --------------------------------------------------------
+
+   public PagingStore getPagingStore()
+   {
+      return pageStore;
+   }
 
    public Queue getQueue()
    {
@@ -534,6 +539,7 @@ public class PageSubscriptionImpl implements PageSubscription
     */
    public void reloadPreparedACK(final Transaction tx, final PagePosition position)
    {
+      deliveredCount.incrementAndGet();
       installTXCallback(tx, position);
    }
 
@@ -777,6 +783,8 @@ public class PageSubscriptionImpl implements PageSubscription
          // It needs to persist, otherwise the cursor will return to the fist page position
          tx.setContainsPersistent();
       }
+      
+      getPageInfo(position).remove(position);
 
       PageCursorTX cursorTX = (PageCursorTX)tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
 
@@ -903,6 +911,7 @@ public class PageSubscriptionImpl implements PageSubscription
       public void decrementPendingTX()
       {
          pendingTX.decrementAndGet();
+         checkDone();
       }
 
       public boolean isRemoved(final PagePosition pos)
@@ -928,14 +937,23 @@ public class PageSubscriptionImpl implements PageSubscription
                                        ", page = " +
                                        pageId);
          }
-
+         
          // Negative could mean a bookmark on the first element for the page (example -1)
          if (posACK.getMessageNr() >= 0)
          {
-            if (getNumberOfMessages() == confirmed.incrementAndGet())
-            {
-               onPageDone(this);
-            }
+            confirmed.incrementAndGet();
+            checkDone();
+         }
+      }
+
+      /**
+       * 
+       */
+      protected void checkDone()
+      {
+         if (isDone())
+         {
+            onPageDone(this);
          }
       }
 
