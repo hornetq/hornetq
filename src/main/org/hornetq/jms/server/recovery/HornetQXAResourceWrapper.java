@@ -281,6 +281,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
       TransportConfiguration config = new TransportConfiguration(connectorFactoryClassName, connectorConfig);
       serverLocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration[]{config});
+      serverLocator.disableFinalizeCheck();
       csf = serverLocator.createSessionFactory();
       ClientSession cs = null;
 
