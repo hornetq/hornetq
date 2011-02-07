@@ -1664,15 +1664,26 @@ public class JournalStorageManager implements StorageManager
                }
                case PAGE_TRANSACTION:
                {
+                  
                   PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
 
                   pageTransactionInfo.decode(buff);
 
-                  tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
-
-                  pagingManager.addTransaction(pageTransactionInfo);
-
-                  tx.addOperation(new FinishPageMessageOperation());
+                  if (record.isUpdate)
+                  {
+                     PageTransactionInfo pgTX = pagingManager.getTransaction(pageTransactionInfo.getTransactionID());
+                     pgTX.reloadUpdate(this, pagingManager, tx, pageTransactionInfo.getNumberOfMessages());
+                  }
+                  else
+                  {
+                     pageTransactionInfo.setCommitted(false);
+   
+                     tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
+   
+                     pagingManager.addTransaction(pageTransactionInfo);
+   
+                     tx.addOperation(new FinishPageMessageOperation());
+                  }
 
                   break;
                }

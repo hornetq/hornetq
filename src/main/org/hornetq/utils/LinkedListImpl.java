@@ -154,20 +154,20 @@ public class LinkedListImpl<E> implements LinkedList<E>
       return (Iterator[])Array.newInstance(Iterator.class, size);
    }
 
-   private void removeAfter(Node<E> after)
+   private void removeAfter(Node<E> node)
    {
-      Node<E> toRemove = after.next;
+      Node<E> toRemove = node.next;
 
-      after.next = toRemove.next;
+      node.next = toRemove.next;
 
       if (toRemove.next != null)
       {
-         toRemove.next.prev = after;
+         toRemove.next.prev = node;
       }
 
       if (toRemove == tail)
       {
-         tail = after;
+         tail = node;
       }
 
       size--;

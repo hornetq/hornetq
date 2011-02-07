@@ -87,9 +87,12 @@ public interface PageSubscription
 
    /**
     * To be called when the cursor decided to ignore a position.
+    * 
     * @param position
     */
    void positionIgnored(PagePosition position);
+   
+   void lateDeliveryRollback(PagePosition position);
 
    /**
     * To be used to avoid a redelivery of a prepared ACK after load

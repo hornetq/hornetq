@@ -309,8 +309,6 @@ public class TransactionImpl implements Transaction
 
          doRollback();
 
-         state = State.ROLLEDBACK;
-
          // We use the Callback even for non persistence
          // If we are using non-persistence with replication, the replication manager will have
          // to execute this runnable in the correct order
@@ -327,6 +325,7 @@ public class TransactionImpl implements Transaction
             public void done()
             {
                afterRollback();
+               state = State.ROLLEDBACK;
             }
          });
       }
