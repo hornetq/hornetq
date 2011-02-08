@@ -45,6 +45,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.Future;
+import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -100,7 +101,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
     */
    private final boolean browseOnly;
 
-   private Runnable browserDeliverer;
+   private BrowserDeliverer browserDeliverer;
 
    private final boolean strictUpdateDeliveryCount;
 
@@ -313,7 +314,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          largeMessageDeliverer.finish();
       }
 
-      if (!browseOnly)
+      if (browseOnly)
+      {
+         browserDeliverer.close();
+      }
+      else
       {
          messageQueue.removeConsumer(this);
       }
@@ -901,12 +906,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       private MessageReference current = null;
 
-      public BrowserDeliverer(final Iterator<MessageReference> iterator)
+      public BrowserDeliverer(final LinkedListIterator<MessageReference> iterator)
       {
          this.iterator = iterator;
       }
 
-      private final Iterator<MessageReference> iterator;
+      private final LinkedListIterator<MessageReference> iterator;
+      
+      public synchronized void close()
+      {
+         iterator.close();
+      }
 
       public synchronized void run()
       {

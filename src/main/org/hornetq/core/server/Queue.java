@@ -14,7 +14,6 @@
 package org.hornetq.core.server;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -22,6 +21,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.LinkedListIterator;
 
 /**
  * 
@@ -131,7 +131,7 @@ public interface Queue extends Bindable
 
    boolean checkDLQ(MessageReference ref) throws Exception;
 
-   Iterator<MessageReference> iterator();
+   LinkedListIterator<MessageReference> iterator();
 
    void setExpiryAddress(SimpleString expiryAddress);
 

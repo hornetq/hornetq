@@ -93,18 +93,18 @@ public class QueueImpl implements Queue
    private final boolean temporary;
 
    private final PostOffice postOffice;
-   
+
    private final PageSubscription pageSubscription;
-   
+
    private final LinkedListIterator<PagedReference> pageIterator;
 
    private final ConcurrentLinkedQueue<MessageReference> concurrentQueue = new ConcurrentLinkedQueue<MessageReference>();
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(QueueImpl.NUM_PRIORITIES);
-   
+
    // The quantity of pagedReferences on messageREferences priority list
    private final AtomicInteger pagedReferences = new AtomicInteger(0);
-   
+
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
 
@@ -157,7 +157,7 @@ public class QueueImpl implements Queue
    private volatile boolean checkDirect;
 
    private volatile boolean directDeliver = true;
-   
+
    public QueueImpl(final long id,
                     final SimpleString address,
                     final SimpleString name,
@@ -171,19 +171,18 @@ public class QueueImpl implements Queue
                     final Executor executor)
    {
       this(id,
-          address,
-          name,
-          filter,
-          null,
-          durable,
-          temporary,
-          scheduledExecutor,
-          postOffice,
-          storageManager,
-          addressSettingsRepository,
-          executor);
+           address,
+           name,
+           filter,
+           null,
+           durable,
+           temporary,
+           scheduledExecutor,
+           postOffice,
+           storageManager,
+           addressSettingsRepository,
+           executor);
    }
-
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -205,7 +204,7 @@ public class QueueImpl implements Queue
       this.name = name;
 
       this.filter = filter;
-      
+
       this.pageSubscription = pageSubscription;
 
       this.durable = durable;
@@ -230,7 +229,7 @@ public class QueueImpl implements Queue
       {
          expiryAddress = null;
       }
-      
+
       if (pageSubscription != null)
       {
          pageSubscription.setQueue(this);
@@ -294,7 +293,7 @@ public class QueueImpl implements Queue
    {
       return name;
    }
-   
+
    public SimpleString getAddress()
    {
       return address;
@@ -309,7 +308,7 @@ public class QueueImpl implements Queue
    {
       return pageSubscription;
    }
-   
+
    public Filter getFilter()
    {
       return filter;
@@ -327,7 +326,6 @@ public class QueueImpl implements Queue
 
       directDeliver = false;
    }
-
 
    public synchronized void reload(final MessageReference ref)
    {
@@ -364,7 +362,11 @@ public class QueueImpl implements Queue
       // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
       if (checkDirect)
       {
-         if (direct && !directDeliver && concurrentQueue.isEmpty() && messageReferences.isEmpty() && !pageIterator.hasNext() && !pageSubscription.isPaging())
+         if (direct && !directDeliver &&
+             concurrentQueue.isEmpty() &&
+             messageReferences.isEmpty() &&
+             !pageIterator.hasNext() &&
+             !pageSubscription.isPaging())
          {
             // We must block on the executor to ensure any async deliveries have completed or we might get out of order
             // deliveries
@@ -380,7 +382,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
 
       concurrentQueue.add(ref);
@@ -614,56 +616,72 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public Iterator<MessageReference> iterator()
+   public LinkedListIterator<MessageReference> iterator()
    {
       return new SynchronizedIterator(messageReferences.iterator());
    }
 
    public synchronized MessageReference removeReferenceWithID(final long id) throws Exception
    {
-      Iterator<MessageReference> iterator = iterator();
+      LinkedListIterator<MessageReference> iterator = iterator();
 
-      MessageReference removed = null;
-
-      while (iterator.hasNext())
+      try
       {
-         MessageReference ref = iterator.next();
 
-         if (ref.getMessage().getMessageID() == id)
+         MessageReference removed = null;
+
+         while (iterator.hasNext())
          {
-            iterator.remove();
-            refRemoved(ref);
+            MessageReference ref = iterator.next();
 
-            removed = ref;
+            if (ref.getMessage().getMessageID() == id)
+            {
+               iterator.remove();
+               refRemoved(ref);
 
-            break;
+               removed = ref;
+
+               break;
+            }
          }
-      }
 
-      if (removed == null)
+         if (removed == null)
+         {
+            // Look in scheduled deliveries
+            removed = scheduledDeliveryHandler.removeReferenceWithID(id);
+         }
+
+         return removed;
+      }
+      finally
       {
-         // Look in scheduled deliveries
-         removed = scheduledDeliveryHandler.removeReferenceWithID(id);
+         iterator.close();
       }
-
-      return removed;
    }
 
    public synchronized MessageReference getReference(final long id)
    {
-      Iterator<MessageReference> iterator = iterator();
+      LinkedListIterator<MessageReference> iterator = iterator();
 
-      while (iterator.hasNext())
+      try
       {
-         MessageReference ref = iterator.next();
 
-         if (ref.getMessage().getMessageID() == id)
+         while (iterator.hasNext())
          {
-            return ref;
-         }
-      }
+            MessageReference ref = iterator.next();
 
-      return null;
+            if (ref.getMessage().getMessageID() == id)
+            {
+               return ref;
+            }
+         }
+
+         return null;
+      }
+      finally
+      {
+         iterator.close();
+      }
    }
 
    public long getMessageCount()
@@ -674,8 +692,11 @@ public class QueueImpl implements Queue
       {
          if (pageSubscription != null)
          {
-            // messageReferences will have depaged messages which we need to discount from the counter as they are counted on the pageSubscription as well
-            return messageReferences.size() + getScheduledCount()  + deliveringCount.get() +  pageSubscription.getMessageCount();
+            // messageReferences will have depaged messages which we need to discount from the counter as they are
+            // counted on the pageSubscription as well
+            return messageReferences.size() + getScheduledCount() +
+                   deliveringCount.get() +
+                   pageSubscription.getMessageCount();
          }
          else
          {
@@ -709,9 +730,9 @@ public class QueueImpl implements Queue
       else
       {
          ServerMessage message = ref.getMessage();
-   
+
          boolean durableRef = message.isDurable() && durable;
-   
+
          if (durableRef)
          {
             storageManager.storeAcknowledge(id, message.getMessageID());
@@ -726,22 +747,22 @@ public class QueueImpl implements Queue
       if (ref.isPaged())
       {
          pageSubscription.ackTx(tx, (PagedReference)ref);
-         
+
          getRefsOperation(tx).addAck(ref);
       }
       else
       {
          ServerMessage message = ref.getMessage();
-   
+
          boolean durableRef = message.isDurable() && durable;
-   
+
          if (durableRef)
          {
             storageManager.storeAcknowledgeTransactional(tx.getID(), id, message.getMessageID());
-   
+
             tx.setContainsPersistent();
          }
-   
+
          getRefsOperation(tx).addAck(ref);
       }
    }
@@ -756,8 +777,8 @@ public class QueueImpl implements Queue
       }
 
       getRefsOperation(tx).addAck(ref);
-      
-      //https://issues.jboss.org/browse/HORNETQ-609
+
+      // https://issues.jboss.org/browse/HORNETQ-609
       deliveringCount.incrementAndGet();
    }
 
@@ -848,33 +869,40 @@ public class QueueImpl implements Queue
 
       Transaction tx = new TransactionImpl(storageManager);
 
-      Iterator<MessageReference> iter = iterator();
-
-      while (iter.hasNext())
+      LinkedListIterator<MessageReference> iter = iterator();
+      try
       {
-         MessageReference ref = iter.next();
 
-         if (filter == null || filter.match(ref.getMessage()))
+         while (iter.hasNext())
+         {
+            MessageReference ref = iter.next();
+
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               deliveringCount.incrementAndGet();
+               acknowledge(tx, ref);
+               iter.remove();
+               refRemoved(ref);
+               count++;
+            }
+         }
+
+         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
+         for (MessageReference messageReference : cancelled)
          {
             deliveringCount.incrementAndGet();
-            acknowledge(tx, ref);
-            iter.remove();
-            refRemoved(ref);
+            acknowledge(tx, messageReference);
             count++;
          }
-      }
 
-      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
-      for (MessageReference messageReference : cancelled)
+         tx.commit();
+
+         return count;
+      }
+      finally
       {
-         deliveringCount.incrementAndGet();
-         acknowledge(tx, messageReference);
-         count++;
+         iter.close();
       }
-
-      tx.commit();
-
-      return count;
    }
 
    public synchronized boolean deleteReference(final long messageID) throws Exception
@@ -883,44 +911,58 @@ public class QueueImpl implements Queue
 
       Transaction tx = new TransactionImpl(storageManager);
 
-      Iterator<MessageReference> iter = iterator();
-
-      while (iter.hasNext())
+      LinkedListIterator<MessageReference> iter = iterator();
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().getMessageID() == messageID)
+
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            acknowledge(tx, ref);
-            iter.remove();
-            refRemoved(ref);
-            deleted = true;
-            break;
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == messageID)
+            {
+               deliveringCount.incrementAndGet();
+               acknowledge(tx, ref);
+               iter.remove();
+               refRemoved(ref);
+               deleted = true;
+               break;
+            }
          }
+
+         tx.commit();
+
+         return deleted;
       }
-
-      tx.commit();
-
-      return deleted;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized boolean expireReference(final long messageID) throws Exception
    {
-      Iterator<MessageReference> iter = iterator();
-
-      while (iter.hasNext())
+      LinkedListIterator<MessageReference> iter = iterator();
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().getMessageID() == messageID)
+
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            expire(ref);
-            iter.remove();
-            refRemoved(ref);
-            return true;
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == messageID)
+            {
+               deliveringCount.incrementAndGet();
+               expire(ref);
+               iter.remove();
+               refRemoved(ref);
+               return true;
+            }
          }
+         return false;
       }
-      return false;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized int expireReferences(final Filter filter) throws Exception
@@ -928,112 +970,150 @@ public class QueueImpl implements Queue
       Transaction tx = new TransactionImpl(storageManager);
 
       int count = 0;
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (filter == null || filter.match(ref.getMessage()))
+
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            expire(tx, ref);
-            iter.remove();
-            refRemoved(ref);
-            count++;
+            MessageReference ref = iter.next();
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               deliveringCount.incrementAndGet();
+               expire(tx, ref);
+               iter.remove();
+               refRemoved(ref);
+               count++;
+            }
          }
+
+         tx.commit();
+
+         return count;
       }
-
-      tx.commit();
-
-      return count;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized void expireReferences() throws Exception
    {
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().isExpired())
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            expire(ref);
-            iter.remove();
-            refRemoved(ref);
+            MessageReference ref = iter.next();
+            if (ref.getMessage().isExpired())
+            {
+               deliveringCount.incrementAndGet();
+               expire(ref);
+               iter.remove();
+               refRemoved(ref);
+            }
          }
+      }
+      finally
+      {
+         iter.close();
       }
    }
 
    public synchronized boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception
    {
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().getMessageID() == messageID)
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            sendToDeadLetterAddress(ref);
-            iter.remove();
-            refRemoved(ref);
-            return true;
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == messageID)
+            {
+               deliveringCount.incrementAndGet();
+               sendToDeadLetterAddress(ref);
+               iter.remove();
+               refRemoved(ref);
+               return true;
+            }
          }
+         return false;
       }
-      return false;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized int sendMessagesToDeadLetterAddress(Filter filter) throws Exception
    {
       int count = 0;
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (filter == null || filter.match(ref.getMessage()))
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            sendToDeadLetterAddress(ref);
-            iter.remove();
-            refRemoved(ref);
-            count++;
+            MessageReference ref = iter.next();
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               deliveringCount.incrementAndGet();
+               sendToDeadLetterAddress(ref);
+               iter.remove();
+               refRemoved(ref);
+               count++;
+            }
          }
+         return count;
       }
-      return count;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public boolean moveReference(final long messageID, final SimpleString toAddress) throws Exception
    {
       return moveReference(messageID, toAddress, false);
    }
-   
-   public synchronized boolean moveReference(final long messageID, final SimpleString toAddress, final boolean rejectDuplicate) throws Exception
-   {
-      Iterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+   public synchronized boolean moveReference(final long messageID,
+                                             final SimpleString toAddress,
+                                             final boolean rejectDuplicate) throws Exception
+   {
+      LinkedListIterator<MessageReference> iter = iterator();
+
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().getMessageID() == messageID)
+         while (iter.hasNext())
          {
-            iter.remove();
-            refRemoved(ref);
-            deliveringCount.incrementAndGet();
-            try
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == messageID)
             {
-               move(toAddress, ref);
+               iter.remove();
+               refRemoved(ref);
+               deliveringCount.incrementAndGet();
+               try
+               {
+                  move(toAddress, ref);
+               }
+               catch (Exception e)
+               {
+                  deliveringCount.decrementAndGet();
+                  throw e;
+               }
+               return true;
             }
-            catch (Exception e)
-            {
-               deliveringCount.decrementAndGet();
-               throw e;
-            }
-            return true;
          }
+         return false;
       }
-      return false;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public int moveReferences(final Filter filter, final SimpleString toAddress) throws Exception
@@ -1041,7 +1121,9 @@ public class QueueImpl implements Queue
       return moveReferences(filter, toAddress, false);
    }
 
-   public synchronized int moveReferences(final Filter filter, final SimpleString toAddress, final boolean rejectDuplicates) throws Exception
+   public synchronized int moveReferences(final Filter filter,
+                                          final SimpleString toAddress,
+                                          final boolean rejectDuplicates) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -1049,64 +1131,83 @@ public class QueueImpl implements Queue
 
       try
       {
-         Iterator<MessageReference> iter = iterator();
-         
-         DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
-   
-         while (iter.hasNext())
-         {
-            MessageReference ref = iter.next();
-            if (filter == null || filter.match(ref.getMessage()))
-            {
-               boolean ignored = false;
-               
-               deliveringCount.incrementAndGet();
-               count++;
+         LinkedListIterator<MessageReference> iter = iterator();
 
-               if (rejectDuplicates)
+         try
+         {
+
+            DuplicateIDCache targetDuplicateCache = postOffice.getDuplicateIDCache(toAddress);
+
+            while (iter.hasNext())
+            {
+               MessageReference ref = iter.next();
+               if (filter == null || filter.match(ref.getMessage()))
                {
-                  byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
-                  if (duplicateBytes != null)
+                  boolean ignored = false;
+
+                  deliveringCount.incrementAndGet();
+                  count++;
+
+                  if (rejectDuplicates)
                   {
-                     if (targetDuplicateCache.contains(duplicateBytes))
+                     byte[] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
+                     if (duplicateBytes != null)
                      {
-                        log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored and message removed from " + this.address);
-                        acknowledge(tx, ref);
-                        ignored = true;
+                        if (targetDuplicateCache.contains(duplicateBytes))
+                        {
+                           log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() +
+                                    " was already set at " +
+                                    toAddress +
+                                    ". Move from " +
+                                    this.address +
+                                    " being ignored and message removed from " +
+                                    this.address);
+                           acknowledge(tx, ref);
+                           ignored = true;
+                        }
                      }
                   }
+
+                  if (!ignored)
+                  {
+                     move(toAddress, tx, ref, false, rejectDuplicates);
+                  }
+                  iter.remove();
                }
-               
-               if (!ignored)
-               {
-                  move(toAddress, tx, ref, false, rejectDuplicates);
-               }
-               iter.remove();
             }
-         }
-   
-         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
-         for (MessageReference ref : cancelled)
-         {
-            byte [] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
-            if (duplicateBytes != null)
+
+            List<MessageReference> cancelled = scheduledDeliveryHandler.cancel(filter);
+            for (MessageReference ref : cancelled)
             {
-               if (targetDuplicateCache.contains(duplicateBytes))
+               byte[] duplicateBytes = ref.getMessage().getDuplicateIDBytes();
+               if (duplicateBytes != null)
                {
-                  log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() + " was already set at " + toAddress + ". Move from " + this.address + " being ignored");
-                  continue;
+                  if (targetDuplicateCache.contains(duplicateBytes))
+                  {
+                     log.info("Message with duplicate ID " + ref.getMessage().getDuplicateProperty() +
+                              " was already set at " +
+                              toAddress +
+                              ". Move from " +
+                              this.address +
+                              " being ignored");
+                     continue;
+                  }
                }
+
+               deliveringCount.incrementAndGet();
+               count++;
+               move(toAddress, tx, ref, false, rejectDuplicates);
+               acknowledge(tx, ref);
             }
-   
-            deliveringCount.incrementAndGet();
-            count++;
-            move(toAddress, tx, ref, false, rejectDuplicates);
-            acknowledge(tx, ref);
+
+            tx.commit();
+
+            return count;
          }
-   
-         tx.commit();
-   
-         return count;
+         finally
+         {
+            iter.close();
+         }
       }
       catch (Exception e)
       {
@@ -1117,42 +1218,57 @@ public class QueueImpl implements Queue
 
    public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (ref.getMessage().getMessageID() == messageID)
-         {
-            iter.remove();
-            refRemoved(ref);
-            ref.getMessage().setPriority(newPriority);
-            addTail(ref, false);
-            return true;
-         }
-      }
 
-      return false;
+         while (iter.hasNext())
+         {
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == messageID)
+            {
+               iter.remove();
+               refRemoved(ref);
+               ref.getMessage().setPriority(newPriority);
+               addTail(ref, false);
+               return true;
+            }
+         }
+
+         return false;
+      }
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized int changeReferencesPriority(final Filter filter, final byte newPriority) throws Exception
    {
-      Iterator<MessageReference> iter = iterator();
+      LinkedListIterator<MessageReference> iter = iterator();
 
-      int count = 0;
-      while (iter.hasNext())
+      try
       {
-         MessageReference ref = iter.next();
-         if (filter == null || filter.match(ref.getMessage()))
+         int count = 0;
+         while (iter.hasNext())
          {
-            count++;
-            iter.remove();
-            refRemoved(ref);
-            ref.getMessage().setPriority(newPriority);
-            addTail(ref, false);
+            MessageReference ref = iter.next();
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               count++;
+               iter.remove();
+               refRemoved(ref);
+               ref.getMessage().setPriority(newPriority);
+               addTail(ref, false);
+            }
          }
+         return count;
       }
-      return count;
+      finally
+      {
+         iter.close();
+      }
    }
 
    public synchronized void resetAllIterators()
@@ -1179,7 +1295,7 @@ public class QueueImpl implements Queue
    {
       return paused;
    }
-   
+
    public boolean isDirectDeliver()
    {
       return directDeliver;
@@ -1225,7 +1341,6 @@ public class QueueImpl implements Queue
       messageReferences.addTail(ref, ref.getMessage().getPriority());
    }
 
-
    /**
     * @param ref
     */
@@ -1235,7 +1350,6 @@ public class QueueImpl implements Queue
       refAdded(ref);
       messageReferences.addHead(ref, ref.getMessage().getPriority());
    }
-
 
    private synchronized void doPoll()
    {
@@ -1315,7 +1429,7 @@ public class QueueImpl implements Queue
             if (checkExpired(ref))
             {
                holder.iter.remove();
-               
+
                refRemoved(ref);
 
                continue;
@@ -1342,7 +1456,7 @@ public class QueueImpl implements Queue
             if (status == HandleStatus.HANDLED)
             {
                holder.iter.remove();
-               
+
                refRemoved(ref);
 
                if (groupID != null && groupConsumer == null)
@@ -1382,13 +1496,12 @@ public class QueueImpl implements Queue
             pos = 0;
          }
       }
-      
+
       if (pageIterator != null && messageReferences.size() == 0 && pageIterator.hasNext())
       {
          scheduleDepage();
       }
    }
-
 
    /**
     * @param ref
@@ -1401,7 +1514,7 @@ public class QueueImpl implements Queue
          pagedReferences.decrementAndGet();
       }
    }
-   
+
    /**
     * @param ref
     */
@@ -1413,31 +1526,29 @@ public class QueueImpl implements Queue
       }
    }
 
-   
    private void scheduleDepage()
    {
       executor.execute(depageRunner);
    }
-   
+
    private void depage()
    {
       if (paused || pageIterator == null || consumerList.isEmpty())
       {
          return;
       }
-      
+
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
-      
-      //System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+
+      // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
       while (queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
          PagedReference reference = pageIterator.next();
          addTail(reference, false);
          pageIterator.remove();
       }
-      //System.out.println("QueueMemorySize after depage = " + queueMemorySize.get() + " depaged " + nmessages);
-      
-      
+      // System.out.println("QueueMemorySize after depage = " + queueMemorySize.get() + " depaged " + nmessages);
+
       deliverAsync();
    }
 
@@ -1496,7 +1607,7 @@ public class QueueImpl implements Queue
          return true;
       }
    }
-   
+
    /** Used on testing only **/
    public int getNumberOfReferences()
    {
@@ -1746,7 +1857,7 @@ public class QueueImpl implements Queue
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
       queue.deliveringCount.decrementAndGet();
-      
+
       if (queue.deliveringCount.get() < 0)
       {
          new Exception("DeliveringCount became negative").printStackTrace();
@@ -1839,6 +1950,7 @@ public class QueueImpl implements Queue
    private final class RefsOperation implements TransactionOperation
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
+
       List<ServerMessage> pagedMessagesToPostACK = null;
 
       synchronized void addAck(final MessageReference ref)
@@ -1912,7 +2024,7 @@ public class QueueImpl implements Queue
                postAcknowledge(ref);
             }
          }
-         
+
          if (pagedMessagesToPostACK != null)
          {
             for (ServerMessage msg : pagedMessagesToPostACK)
@@ -1936,8 +2048,9 @@ public class QueueImpl implements Queue
       public void beforeRollback(final Transaction tx) throws Exception
       {
       }
-      
-      public List<MessageReference> getRelatedMessageReferences() {
+
+      public List<MessageReference> getRelatedMessageReferences()
+      {
          return refsToAck;
       }
    }

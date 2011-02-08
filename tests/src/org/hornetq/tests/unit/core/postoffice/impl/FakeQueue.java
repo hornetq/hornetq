@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -27,6 +26,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.LinkedListIterator;
 
 /**
  * A FakeQueue
@@ -431,7 +431,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#iterator()
     */
-   public Iterator<MessageReference> iterator()
+   public LinkedListIterator<MessageReference> iterator()
    {
       // TODO Auto-generated method stub
       return null;
