@@ -122,7 +122,7 @@ public class PagingOrderTest extends ServiceTestBase
 
       super.tearDown();
    }
-
+   
    public void testOrder1() throws Throwable
    {
       boolean persistentMessages = true;
@@ -216,17 +216,19 @@ public class PagingOrderTest extends ServiceTestBase
             sessionServer.close(true);
          }
          
-         
          OperationContextImpl.getContext().waitCompletion();
          
          assertEquals(numberOfMessages - 100, queue.getMessageCount());
          assertEquals(numberOfMessages, queue.getMessagesAdded());
+         
+         session.close();
+         
+         session = null;
 
-         OperationContextImpl.getContext().waitCompletion();
-
-         ((ClientSessionFactoryImpl)sf).stopPingingAfterOne();
-
+         sf.close();
          sf = locator.createSessionFactory();
+
+         locator = createInVMNonHALocator();
 
          session = sf.createSession(true, true, 0);
 
@@ -241,6 +243,10 @@ public class PagingOrderTest extends ServiceTestBase
             assertEquals(i, message.getIntProperty("id").intValue());
             message.acknowledge();
          }
+         
+         session.close();
+         
+         sf.close();
 
       }
       catch (Throwable e)
