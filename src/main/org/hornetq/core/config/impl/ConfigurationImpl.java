@@ -55,7 +55,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_ALLOW_AUTO_FAILBACK = true;
 
-   public static final boolean DEFAULT_SHARED_STORE = false;
+   public static final boolean DEFAULT_SHARED_STORE = true;
 
    public static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
