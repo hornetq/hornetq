@@ -526,6 +526,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
                                   deliveryAttempts,
                                   maxSizeBytes,
                                   pageSizeBytes,
+                                  pageMaxCacheSize,
                                   redeliveryDelay,
                                   redistributionDelay,
                                   sendToDLAOnNoRoute,
