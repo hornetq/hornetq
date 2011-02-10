@@ -215,7 +215,10 @@ public class FileLockNodeManager extends NodeManager
    public void pauseLiveServer() throws Exception
    {
       setPaused();
-      liveLock.release();
+      if (liveLock != null)
+      {
+         liveLock.release();
+      }
    }
 
    public void crashLiveServer() throws Exception
