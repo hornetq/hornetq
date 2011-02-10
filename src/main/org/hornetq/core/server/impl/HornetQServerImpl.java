@@ -547,7 +547,7 @@ public class HornetQServerImpl implements HornetQServer
       
       if (!configuration.isBackup())
       {
-         if (configuration.isSharedStore())
+         if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
          {
             activation = new SharedStoreLiveActivation();
 
