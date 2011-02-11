@@ -292,7 +292,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       public void afterPrepare(final Transaction tx)
       {
-         process();
       }
 
       public void afterRollback(final Transaction tx)
@@ -302,14 +301,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;
-      }
-      
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getDistinctQueues()
-       */
-      public Collection<Queue> getDistinctQueues()
-      {
-         return Collections.emptySet();
       }
 
    }
