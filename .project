@@ -20,11 +20,4 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>net.sourceforge.metrics.nature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>order-test</name>
-			<type>2</type>
-			<location>/Users/clebertsuconic/Dropbox/HornetQ-Stuff/order-test</location>
-		</link>
-	</linkedResources>
 </projectDescription>
