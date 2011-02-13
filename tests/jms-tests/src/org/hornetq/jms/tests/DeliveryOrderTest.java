@@ -98,6 +98,68 @@ public class DeliveryOrderTest extends JMSTestCase
       }
    }
 
+   public void testCancelationOrder() throws Exception
+   {
+      Connection conn = null;
+      try
+      {
+         conn = JMSTestCase.cf.createConnection();
+
+         Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+
+         MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
+
+         MessageConsumer cons = sess2.createConsumer(HornetQServerTestCase.queue1);
+
+         final int NUM_MESSAGES = 5;
+
+         conn.start();
+
+         for (int i = 0; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = sess.createTextMessage("message" + i);
+
+            prod.send(tm);
+         }
+         sess.commit();
+         
+         for (int i = 0 ; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            assertNotNull(tm);
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         cons.close();
+         
+         sess2.close();
+         
+         
+         sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
+         
+         cons = sess2.createConsumer(queue1);
+         
+         for (int i = 0 ; i < NUM_MESSAGES; i++)
+         {
+            TextMessage tm = (TextMessage)cons.receive(5000);
+            assertNotNull(tm);
+            assertEquals("message" + i, tm.getText());
+         }
+         
+         sess2.commit();
+
+      }
+      finally
+      {
+         if (conn != null)
+         {
+            conn.close();
+         }
+      }
+   }
+
    class MyListener implements MessageListener
    {
       private int c;

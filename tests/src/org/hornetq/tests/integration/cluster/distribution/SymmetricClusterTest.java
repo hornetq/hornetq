@@ -983,6 +983,19 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
    }
+   
+   
+   /*public void testLoop() throws Exception
+   {
+      for (int i = 0 ; i < 1000; i++)
+      {
+         System.out.println("#test "+ i);
+         Thread.sleep(1000);
+         testRouteWhenNoConsumersTrueLoadBalancedQueues();
+         tearDown();
+         setUp();
+      }
+   }*/
 
    public void testRouteWhenNoConsumersTrueLoadBalancedQueues() throws Exception
    {
