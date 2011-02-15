@@ -16,6 +16,7 @@ import org.hornetq.common.example.HornetQExample;
 
 import javax.jms.*;
 import javax.naming.InitialContext;
+import java.lang.Exception;
 
 /**
  * A simple example that demonstrates server side load-balancing of messages between the queue instances on different 
@@ -56,22 +57,19 @@ public class ClusterStaticOnewayExample extends HornetQExample
          // Step 3. Look-up a JMS Connection Factory object from JNDI on server 0
          ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");
 
-         //grab an initial connection and wait, in reality you wouldn't do it this way but since we want to ensure an
+         //step 4. grab an initial connection and wait, in reality you wouldn't do it this way but since we want to ensure an
          // equal load balance we do this and then create 4 connections round robined
          initialConnection = cf0.createConnection();
 
          Thread.sleep(2000);
-         // Step 6. We create a JMS Connection connection0 which is a connection to server 0
+         // Step 5. We create a JMS Connection connection0 which is a connection to server 0
          connection0 = cf0.createConnection();
 
-         // Step 7. We create a JMS Connection connection1 which is a connection to server 1
+         // Step 6. We create a JMS Connection connection1 which is a connection to server 1
          connection1 = cf0.createConnection();
 
-         // Step 6. We create a JMS Connection connection0 which is a connection to server 0
+         // Step 7. We create a JMS Connection connection0 which is a connection to server 2
          connection2 = cf0.createConnection();
-
-         // Step 7. We create a JMS Connection connection1 which is a connection to server 1
-         connection3 = cf0.createConnection();
 
          // Step 8. We create a JMS Session on server 0
          Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -79,39 +77,31 @@ public class ClusterStaticOnewayExample extends HornetQExample
          // Step 9. We create a JMS Session on server 1
          Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-
-         // Step 8. We create a JMS Session on server 0
+         // Step 10. We create a JMS Session on server 2
          Session session2 = connection2.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         // Step 9. We create a JMS Session on server 1
-         Session session3 = connection3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-         // Step 10. We start the connections to ensure delivery occurs on them
+         // Step 11. We start the connections to ensure delivery occurs on them
          connection0.start();
 
          connection1.start();
 
          connection2.start();
 
-         connection3.start();
-
-         // Step 11. We create JMS MessageConsumer objects on server 0 and server 1
+         // Step 12. We create JMS MessageConsumer objects on server 0,server 1 and server 2
          MessageConsumer consumer0 = session0.createConsumer(queue);
 
          MessageConsumer consumer1 = session1.createConsumer(queue);
 
          MessageConsumer consumer2 = session2.createConsumer(queue);
 
-         MessageConsumer consumer3 = session3.createConsumer(queue);
-
          Thread.sleep(2000);
 
-         // Step 12. We create a JMS MessageProducer object on server 3
-         MessageProducer producer = session3.createProducer(queue);
+         // Step 13. We create a JMS MessageProducer object on server 2
+         MessageProducer producer = session2.createProducer(queue);
 
-         // Step 13. We send some messages to server 0
+         // Step 14. We send some messages to server 2
 
-         final int numMessages = 20;
+         final int numMessages = 18;
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -122,20 +112,23 @@ public class ClusterStaticOnewayExample extends HornetQExample
             System.out.println("Sent message: " + message.getText());
          }
          Thread.sleep(2000);
-         // Step 14. We now consume those messages on *both* server 0 and server 1.
+         // Step 15. We now consume those messages on *both* server 0,server 1 and 3.
          // We note the messages have been distributed between servers in a round robin fashion
          // JMS Queues implement point-to-point message where each message is only ever consumed by a
          // maximum of one consumer
          int con0Node = getServer(connection0);
          int con1Node = getServer(connection1);
          int con2Node = getServer(connection2);
-         int con3Node = getServer(connection3);
 
-         if(con0Node + con1Node + con2Node + con3Node != 6)
+         if(con0Node + con1Node + con2Node != 3)
          {
+            System.out.println("connections not load balanced");
+            System.out.println("con0Node = " + con0Node);
+            System.out.println("con1Node = " + con1Node);
+            System.out.println("con2Node = " + con2Node);
             return false;
          }
-         for (int i = 0; i < numMessages; i += 4)
+         for (int i = 0; i < numMessages; i += 3)
          {
             TextMessage message0 = (TextMessage)consumer0.receive(5000);
 
@@ -148,10 +141,6 @@ public class ClusterStaticOnewayExample extends HornetQExample
             TextMessage message2 = (TextMessage)consumer2.receive(5000);
 
             System.out.println("Got message: " + message2.getText() + " from node " + con2Node);
-
-            TextMessage message3 = (TextMessage)consumer3.receive(5000);
-
-            System.out.println("Got message: " + message3.getText() + " from node " + con3Node);
          }
 
          return true;
