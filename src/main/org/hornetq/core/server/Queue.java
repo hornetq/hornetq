@@ -68,7 +68,7 @@ public interface Queue extends Bindable
 
    void cancel(Transaction tx, MessageReference ref) throws Exception;
 
-   void cancel(MessageReference reference) throws Exception;
+   void cancel(MessageReference reference, long timeBase) throws Exception;
 
    void deliverAsync();
 
@@ -129,7 +129,7 @@ public interface Queue extends Bindable
 
    Collection<Consumer> getConsumers();
 
-   boolean checkRedelivery(MessageReference ref) throws Exception;
+   boolean checkRedelivery(MessageReference ref, long timeBase) throws Exception;
 
    LinkedListIterator<MessageReference> iterator();
 

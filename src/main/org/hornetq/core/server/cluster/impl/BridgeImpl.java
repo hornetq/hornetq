@@ -189,12 +189,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       Queue queue = null;
+      
+      long timeBase = System.currentTimeMillis();
 
       for (MessageReference ref2 : list)
       {
          queue = ref2.getQueue();
 
-         queue.cancel(ref2);
+         queue.cancel(ref2, timeBase);
       }
 
    }

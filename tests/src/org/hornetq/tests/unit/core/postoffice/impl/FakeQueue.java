@@ -166,7 +166,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.server.MessageReference)
     */
-   public void cancel(final MessageReference reference) throws Exception
+   public void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -211,7 +211,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
     */
-   public boolean checkRedelivery(final MessageReference ref) throws Exception
+   public boolean checkRedelivery(final MessageReference ref, final long timeBase) throws Exception
    {
       // TODO Auto-generated method stub
       return false;

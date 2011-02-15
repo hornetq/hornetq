@@ -317,7 +317,7 @@ public class QueueImpl implements Queue
    /* Called when a message is cancelled back into the queue */
    public synchronized void addHead(final MessageReference ref)
    {
-      if (scheduledDeliveryHandler.checkAndSchedule(ref))
+      if (scheduledDeliveryHandler.checkAndSchedule(ref, false))
       {
          return;
       }
@@ -330,7 +330,7 @@ public class QueueImpl implements Queue
    public synchronized void reload(final MessageReference ref)
    {
       queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
-      if (!scheduledDeliveryHandler.checkAndSchedule(ref))
+      if (!scheduledDeliveryHandler.checkAndSchedule(ref, true))
       {
          internalAddTail(ref);
       }
@@ -347,7 +347,7 @@ public class QueueImpl implements Queue
 
    public void addTail(final MessageReference ref, final boolean direct)
    {
-      if (scheduledDeliveryHandler.checkAndSchedule(ref))
+      if (scheduledDeliveryHandler.checkAndSchedule(ref, true))
       {
          synchronized (this)
          {
@@ -806,11 +806,11 @@ public class QueueImpl implements Queue
       getRefsOperation(tx).addAck(reference);
    }
 
-   public synchronized void cancel(final MessageReference reference) throws Exception
+   public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
-      if (checkRedelivery(reference))
+      if (checkRedelivery(reference, timeBase))
       {
-         if (!scheduledDeliveryHandler.checkAndSchedule(reference))
+         if (!scheduledDeliveryHandler.checkAndSchedule(reference, false))
          {
             internalAddHead(reference);
          }
@@ -1275,10 +1275,6 @@ public class QueueImpl implements Queue
    {
       for (ConsumerHolder holder : this.consumerList)
       {
-         if (holder.iter != null)
-         {
-            holder.iter.close();
-         }
          holder.iter = null;
       }
    }
@@ -1575,7 +1571,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   public boolean checkRedelivery(final MessageReference reference) throws Exception
+   public boolean checkRedelivery(final MessageReference reference, final long timeBase) throws Exception
    {
       ServerMessage message = reference.getMessage();
 
@@ -1604,7 +1600,7 @@ public class QueueImpl implements Queue
 
          if (redeliveryDelay > 0)
          {
-            reference.setScheduledDeliveryTime(System.currentTimeMillis() + redeliveryDelay);
+            reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
             
             if (message.isDurable() && durable)
             {
@@ -1987,12 +1983,14 @@ public class QueueImpl implements Queue
       public void afterRollback(final Transaction tx)
       {
          Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
+         
+         long timeBase = System.currentTimeMillis();
 
          for (MessageReference ref : refsToAck)
          {
             try
             {
-               if (ref.getQueue().checkRedelivery(ref))
+               if (ref.getQueue().checkRedelivery(ref, timeBase))
                {
                   LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 

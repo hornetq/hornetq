@@ -466,6 +466,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
+      
+      addressSettingsRepository.clear();
+      
       Binding binding = addressManager.removeBinding(uniqueName);
 
       if (binding == null)

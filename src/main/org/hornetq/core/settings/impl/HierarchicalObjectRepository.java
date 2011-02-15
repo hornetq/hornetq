@@ -76,6 +76,11 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       matches.put(match, match1);
       onChange();
    }
+   
+   public int getCacheSize()
+   {
+      return cache.size();
+   }
 
    /**
     * return the value held against the nearest match
@@ -153,6 +158,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    public void removeMatch(final String match)
    {
       matches.remove(match);
+      new Exception("Clearing cache").printStackTrace();
       cache.clear();
       onChange();
    }

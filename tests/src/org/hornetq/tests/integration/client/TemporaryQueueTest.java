@@ -92,6 +92,29 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
    
+
+   public void testMemoryLeakOnAddressSettingForTemporaryQueue() throws Exception
+   {
+      for (int i = 0 ; i < 1000; i++)
+      {
+         SimpleString queue = RandomUtil.randomSimpleString();
+         SimpleString address = RandomUtil.randomSimpleString();
+         session.createTemporaryQueue(address, queue);
+         
+         session.close();
+         session = sf.createSession();
+      }
+      
+      
+      session.close();
+      
+      sf.close();
+      
+      System.out.println("size = " + server.getAddressSettingsRepository().getCacheSize());
+      
+      assertTrue(server.getAddressSettingsRepository().getCacheSize() < 10);
+   }
+   
    public void testPaginStoreIsRemovedWhenQueueIsDeleted() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();

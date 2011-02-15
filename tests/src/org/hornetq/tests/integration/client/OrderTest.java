@@ -258,7 +258,7 @@ public class OrderTest extends ServiceTestBase
 
       server.getAddressSettingsRepository().clear();
       AddressSettings setting = new AddressSettings();
-      setting.setRedeliveryDelay(1000);
+      setting.setRedeliveryDelay(500);
       server.getAddressSettingsRepository().addMatch("#", setting);
 
       server.start();

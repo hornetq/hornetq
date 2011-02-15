@@ -1011,6 +1011,8 @@ public class HornetQServerImpl implements HornetQServer
 
    public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
    {
+      addressSettingsRepository.clear();
+
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
