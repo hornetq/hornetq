@@ -1275,6 +1275,8 @@ public class QueueImpl implements Queue
    {
       for (ConsumerHolder holder : this.consumerList)
       {
+         // GC finalize will take care of closing it
+         // We can't close it now as the iterator could be already being used
          holder.iter = null;
       }
    }
