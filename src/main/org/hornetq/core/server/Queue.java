@@ -129,7 +129,7 @@ public interface Queue extends Bindable
 
    Collection<Consumer> getConsumers();
 
-   boolean checkDLQ(MessageReference ref) throws Exception;
+   boolean checkRedelivery(MessageReference ref) throws Exception;
 
    LinkedListIterator<MessageReference> iterator();
 

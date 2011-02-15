@@ -211,7 +211,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
     */
-   public boolean checkDLQ(final MessageReference ref) throws Exception
+   public boolean checkRedelivery(final MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
       return false;

@@ -808,7 +808,7 @@ public class QueueImpl implements Queue
 
    public synchronized void cancel(final MessageReference reference) throws Exception
    {
-      if (checkDLQ(reference))
+      if (checkRedelivery(reference))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference))
          {
@@ -1275,6 +1275,10 @@ public class QueueImpl implements Queue
    {
       for (ConsumerHolder holder : this.consumerList)
       {
+         if (holder.iter != null)
+         {
+            holder.iter.close();
+         }
          holder.iter = null;
       }
    }
@@ -1571,11 +1575,12 @@ public class QueueImpl implements Queue
       }
    }
 
-   public boolean checkDLQ(final MessageReference reference) throws Exception
+   public boolean checkRedelivery(final MessageReference reference) throws Exception
    {
       ServerMessage message = reference.getMessage();
 
       // TODO: DeliveryCount on paging
+      
       if (message.isDurable() && durable && !reference.isPaged())
       {
          storageManager.updateDeliveryCount(reference);
@@ -1585,6 +1590,7 @@ public class QueueImpl implements Queue
 
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
 
+      // First check DLA
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
          sendToDeadLetterAddress(reference);
@@ -1593,13 +1599,17 @@ public class QueueImpl implements Queue
       }
       else
       {
+         // Second check Redelivery Delay
          long redeliveryDelay = addressSettings.getRedeliveryDelay();
 
          if (redeliveryDelay > 0)
          {
             reference.setScheduledDeliveryTime(System.currentTimeMillis() + redeliveryDelay);
-
-            storageManager.updateScheduledDeliveryTime(reference);
+            
+            if (message.isDurable() && durable)
+            {
+               storageManager.updateScheduledDeliveryTime(reference);
+            }
          }
 
          deliveringCount.decrementAndGet();
@@ -1982,7 +1992,7 @@ public class QueueImpl implements Queue
          {
             try
             {
-               if (ref.getQueue().checkDLQ(ref))
+               if (ref.getQueue().checkRedelivery(ref))
                {
                   LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
 
