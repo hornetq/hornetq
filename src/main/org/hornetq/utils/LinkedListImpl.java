@@ -41,7 +41,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
    private int size;
 
    // We store in an array rather than a Map for the best performance
-   private Iterator[] iters;
+   private volatile Iterator[] iters;
 
    private int numIters;
 
@@ -186,7 +186,11 @@ public class LinkedListImpl<E> implements LinkedList<E>
    {
       for (int i = 0; i < numIters; i++)
       {        
-         iters[i].nudged(node);
+         Iterator iter = iters[i];
+         if (iter != null)
+         {
+            iter.nudged(node);
+         }
       }
    }
 
