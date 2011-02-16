@@ -195,7 +195,11 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             
             for (MessageReference reference : references)
             {
-               reference.getQueue().addTail(reference);
+               Queue queue = reference.getQueue();
+               synchronized (queue)
+               {
+                  queue.addTail(reference);
+               }
             }
             
             // Just to speed up GC
