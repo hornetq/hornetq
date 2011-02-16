@@ -119,15 +119,15 @@ public class QueueImplTest extends UnitTestCase
       // Scheduled refs are added back to *FRONT* of queue - otherwise if there were many messages in the queue
       // They may get stranded behind a big backlog
 
+      refs.add(ref1);
+      refs.add(ref8);
+      refs.add(ref5);
+      refs.add(ref6);
+      refs.add(ref7);
 
       refs.add(ref2);
       refs.add(ref3);
       refs.add(ref4);
-      refs.add(ref7);
-      refs.add(ref6);
-      refs.add(ref5); 
-      refs.add(ref8);
-      refs.add(ref1);
 
       Thread.sleep(7500);
 

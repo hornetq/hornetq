@@ -69,11 +69,13 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
          {
             if (tail)
             {
-               scheduledReferences.add(ref);
+               // We do the opposite what the parameter says as the Runnable will always add it to the head
+               scheduledReferences.addFirst(ref);
             }
             else
             {
-               scheduledReferences.addFirst(ref);
+               // We do the opposite what the parameter says as the Runnable will always add it to the head
+               scheduledReferences.add(ref);
             }
          }
 
@@ -198,7 +200,8 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
                Queue queue = reference.getQueue();
                synchronized (queue)
                {
-                  queue.addTail(reference);
+                  queue.resetAllIterators();
+                  queue.addHead(reference);
                }
             }
             
