@@ -29,8 +29,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
@@ -300,20 +298,23 @@ public class ClusterManagerImpl implements ClusterManager
       return clusterConnections.get(name.toString());
    }
 
-   public synchronized void addClusterTopologyListener(final ClusterTopologyListener listener,
+   public void addClusterTopologyListener(final ClusterTopologyListener listener,
                                                      final boolean clusterConnection)
    {
-      if (clusterConnection)
+      synchronized (this)
       {
-         this.clusterConnectionListeners.add(listener);
-      }
-      else
-      {
-         this.clientListeners.add(listener);
+         if (clusterConnection)
+         {
+            this.clusterConnectionListeners.add(listener);
+         }
+         else
+         {
+            this.clientListeners.add(listener);
+         }
       }
 
       // We now need to send the current topology to the client
-      topology.fireListeners(listener);
+      topology.sendTopology(listener);
    }
 
    public synchronized void removeClusterTopologyListener(final ClusterTopologyListener listener,
