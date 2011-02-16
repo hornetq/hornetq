@@ -406,7 +406,7 @@ public class BasicXaTest extends ServiceTestBase
       clientSession2.close();
 
    }
-
+   
    public void testReceiveRollback() throws Exception
    {
       int numSessions = 100;
@@ -1020,7 +1020,6 @@ public class BasicXaTest extends ServiceTestBase
          try
          {
             message.acknowledge();
-            BasicXaTest.log.info("processed message " + (received++));
          }
          catch (HornetQException e)
          {

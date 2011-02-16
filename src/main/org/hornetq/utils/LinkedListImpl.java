@@ -182,7 +182,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       toRemove.next = toRemove.prev = null;
    }
 
-   private void nudgeIterators(Node<E> node)
+   private synchronized void nudgeIterators(Node<E> node)
    {
       for (int i = 0; i < numIters; i++)
       {        
@@ -194,7 +194,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       }
    }
 
-   private void addIter(Iterator iter)
+   private synchronized void addIter(Iterator iter)
    {
       if (numIters == iters.length)
       {
@@ -206,7 +206,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       numIters++;
    }
 
-   private void resize(int newSize)
+   private synchronized void resize(int newSize)
    {
       Iterator[] newIters = createIteratorArray(newSize);
 
@@ -215,7 +215,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       iters = newIters;
    }
 
-   private void removeIter(Iterator iter)
+   private synchronized void removeIter(Iterator iter)
    {
       for (int i = 0; i < numIters; i++)
       {
