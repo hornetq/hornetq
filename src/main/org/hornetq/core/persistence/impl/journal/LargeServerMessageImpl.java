@@ -173,7 +173,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             // This file is linked to another message, deleting the reference where it belongs on this case
             linkMessage.decrementDelayDeletionCount();
          }
-         else if (delayDeletionCount.get() <= 0)
+         else
          {
             if (LargeServerMessageImpl.isTrace)
             {
@@ -192,27 +192,18 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       }
    }
 
-   public int incrementRefCount() throws Exception
-   {
-      int value = super.incrementRefCount();
-
-//      new Exception("increment, value=" + value +
-//                    " on msgCount = " +
-//                    this.getIntProperty("counter-message") +
-//                    " messageID=" +
-//                    this.getMessageID()).printStackTrace();
-
-      return value;
-   }
-
-   static int deleted = 0;
-
    @Override
    public synchronized int decrementRefCount() throws Exception
    {
       int currentRefCount = super.decrementRefCount();
 
-      checkDelete();
+      // We use <= as this could be used by load.
+      // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated
+      // files
+      if (delayDeletionCount.get() <= 0)
+      {
+         checkDelete();
+      }
 
       return currentRefCount;
    }
@@ -324,7 +315,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             file = storageManager.createFileForLargeMessage(getMessageID(), durable);
 
             file.open();
-
+            
             bodySize = file.size();
          }
       }
