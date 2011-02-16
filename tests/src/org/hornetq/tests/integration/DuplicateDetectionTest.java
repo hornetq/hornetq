@@ -881,6 +881,92 @@ public class DuplicateDetectionTest extends ServiceTestBase
       locator.close();
    }
 
+   public void testXADuplicateDetectionPrepareAndRollbackStopServer() throws Exception
+   {
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+      producer.send(message);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.close();
+
+      messagingService.stop();
+
+      messagingService.start();
+
+      sf = locator.createSessionFactory();
+
+      session = sf.createSession(true, false, false);
+
+      session.start(xid, XAResource.TMJOIN);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.rollback(xid);
+
+      session.close();
+
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      producer.send(message);
+
+      session.end(xid2, XAResource.TMSUCCESS);
+
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+
+      session.close();
+
+      session = sf.createSession(false, false, false);
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage msgRec = consumer.receive(5000);
+      assertNotNull(msgRec);
+      msgRec.acknowledge();
+
+      session.commit();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+   }
+
    public void testXADuplicateDetection4() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
@@ -1914,108 +2000,6 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.stop();
    }
 
-   public void testPersistXA2() throws Exception
-   {
-      messagingService.stop();
-
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
-
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
-
-      messagingService2.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-
-      ClientSessionFactory sf = locator.createSessionFactory();
-
-      ClientSession session = sf.createSession(true, false, false);
-
-      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid, XAResource.TMNOFLAGS);
-
-      session.start();
-
-      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
-
-      session.createQueue(queueName, queueName, null, false);
-
-      ClientProducer producer = session.createProducer(queueName);
-
-      ClientConsumer consumer = session.createConsumer(queueName);
-
-      ClientMessage message = createMessage(session, 1);
-      SimpleString dupID = new SimpleString("abcdefg");
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-      producer.send(message);
-
-      message = createMessage(session, 2);
-      SimpleString dupID2 = new SimpleString("hijklmnopqr");
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
-      producer.send(message);
-
-      session.end(xid, XAResource.TMSUCCESS);
-      session.prepare(xid);
-
-      session.close();
-
-      sf.close();
-
-      messagingService2.stop();
-
-      messagingService2 = HornetQServers.newHornetQServer(conf);
-
-      messagingService2.start();
-
-      sf = locator.createSessionFactory();
-
-      session = sf.createSession(true, false, false);
-
-      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid2, XAResource.TMNOFLAGS);
-
-      session.start();
-
-      session.createQueue(queueName, queueName, null, false);
-
-      producer = session.createProducer(queueName);
-
-      consumer = session.createConsumer(queueName);
-
-      message = createMessage(session, 1);
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-      producer.send(message);
-
-      message = createMessage(session, 2);
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
-      producer.send(message);
-
-      session.end(xid2, XAResource.TMSUCCESS);
-      session.prepare(xid2);
-      session.commit(xid2, false);
-
-      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid3, XAResource.TMNOFLAGS);
-
-      ClientMessage message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
-
-      message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
-
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      messagingService2.stop();
-   }
-
    @Override
    protected void setUp() throws Exception
    {
@@ -2027,7 +2011,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      messagingService = HornetQServers.newHornetQServer(conf, false);
+      messagingService = HornetQServers.newHornetQServer(conf, true);
 
       messagingService.start();
    }

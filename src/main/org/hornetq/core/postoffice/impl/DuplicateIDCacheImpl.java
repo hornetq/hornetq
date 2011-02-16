@@ -190,6 +190,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
+   public void load(final Transaction tx, final byte[] duplID)
+   {
+      tx.addOperation(new AddDuplicateIDOperation(duplID, tx.getID()));
+   }
+
    private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID)
    {
       ByteArrayHolder holder = new ByteArrayHolder(duplID);

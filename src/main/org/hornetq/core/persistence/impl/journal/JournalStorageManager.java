@@ -66,6 +66,7 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
@@ -1702,16 +1703,9 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.decode(buff);
 
-                  List<Pair<byte[], Long>> ids = duplicateIDMap.get(encoding.address);
+                  DuplicateIDCache cache = postOffice.getDuplicateIDCache(encoding.address);
 
-                  if (ids == null)
-                  {
-                     ids = new ArrayList<Pair<byte[], Long>>();
-
-                     duplicateIDMap.put(encoding.address, ids);
-                  }
-
-                  ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
+                  cache.load(tx, encoding.duplID);
 
                   break;
                }
