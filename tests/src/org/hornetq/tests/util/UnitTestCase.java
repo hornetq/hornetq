@@ -911,7 +911,7 @@ public class UnitTestCase extends TestCase
                                              " has running locators on test " +
                                              this.getName() +
                                              " on this following dump"));
-               //fail("test left serverlocator running, this could effect other tests");
+               fail("test left serverlocator running, this could effect other tests");
                // System.exit(0);
             }
          }
@@ -949,7 +949,7 @@ public class UnitTestCase extends TestCase
 
       }
       
-      assertFalse("Thread Failed", failedThread);
+      //assertFalse("Thread Failed", failedThread);
 
       super.tearDown();
    }
