@@ -15,7 +15,10 @@ package org.hornetq.tests.unit.core.remoting.impl.netty;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -85,12 +88,14 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
       };
+      ExecutorService pool1 = Executors.newCachedThreadPool();
+      ScheduledExecutorService pool2 = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
       NettyAcceptor acceptor = new NettyAcceptor(params,
                                                  handler,
                                                  null,
                                                  listener,
-                                                 Executors.newCachedThreadPool(),
-                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
+                                                 pool1,
+                                                 pool2);
 
       acceptor.start();
       Assert.assertTrue(acceptor.isStarted());
@@ -103,6 +108,12 @@ public class NettyAcceptorTest extends UnitTestCase
       acceptor.stop();
       Assert.assertFalse(acceptor.isStarted());
       UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
+      
+      pool1.shutdown();
+      pool2.shutdown();
+      
+      pool1.awaitTermination(1, TimeUnit.SECONDS);
+      pool2.awaitTermination(1, TimeUnit.SECONDS);
    }
 
 }

@@ -162,6 +162,48 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    // To be called when there are ServerLocator being finalized.
    // To be used on test assertions
    public static Runnable finalizeCallback = null;
+   
+   public static synchronized void clearThreadPools()
+   {
+      
+      if (globalThreadPool != null)
+      {
+         globalThreadPool.shutdown();
+         try
+         {
+            if (!globalThreadPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               throw new IllegalStateException("Couldn't finish the globalThreadPool");
+            }
+         }
+         catch (InterruptedException e)
+         {
+         }
+         finally
+         {
+            globalThreadPool = null;
+         }
+      }
+      
+      if (globalScheduledThreadPool != null)
+      {
+         globalScheduledThreadPool.shutdown();
+         try
+         {
+            if (!globalScheduledThreadPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               throw new IllegalStateException("Couldn't finish the globalScheduledThreadPool");
+            }
+         }
+         catch (InterruptedException e)
+         {
+         }
+         finally
+         {
+            globalScheduledThreadPool = null;
+         }
+      }
+   }
 
    private static synchronized ExecutorService getGlobalThreadPool()
    {
