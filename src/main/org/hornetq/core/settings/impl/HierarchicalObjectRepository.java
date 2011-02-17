@@ -158,7 +158,6 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    public void removeMatch(final String match)
    {
       matches.remove(match);
-      new Exception("Clearing cache").printStackTrace();
       clearCache();
       onChange();
    }
