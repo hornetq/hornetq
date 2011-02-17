@@ -297,7 +297,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       threadPool.shutdown();
 
-      boolean ok = threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS);
+      boolean ok = threadPool.awaitTermination(10, TimeUnit.SECONDS);
 
       if (!ok)
       {
