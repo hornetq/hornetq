@@ -147,6 +147,8 @@ public class SessionFactoryTest extends ServiceTestBase
       testSettersThrowException(cf);
       
       cf.close();
+      
+      locator.close();
    }
 
    public void testStaticConnectorListConstructor() throws Exception
