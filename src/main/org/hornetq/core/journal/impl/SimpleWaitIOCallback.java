@@ -35,6 +35,11 @@ public class SimpleWaitIOCallback extends SyncIOCompletion
    private volatile String errorMessage;
 
    private volatile int errorCode = 0;
+   
+   public String toString()
+   {
+      return "simpleWaitIOCallback";
+   }
 
    public void done()
    {

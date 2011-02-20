@@ -159,7 +159,7 @@ public interface Queue extends Bindable
    
    void resetAllIterators();
 
-   void blockOnExecutorFuture();
+   boolean blockOnExecutorFuture();
    
    void close() throws Exception;
    

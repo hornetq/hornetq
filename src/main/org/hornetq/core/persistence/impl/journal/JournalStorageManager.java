@@ -15,6 +15,8 @@ package org.hornetq.core.persistence.impl.journal;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.transaction.xa.Xid;
 
@@ -52,10 +56,8 @@ import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
-import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
@@ -85,6 +87,7 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUID;
 import org.hornetq.utils.XidCodecSupport;
 
@@ -165,6 +168,8 @@ public class JournalStorageManager implements StorageManager
    private final ExecutorFactory executorFactory;
 
    private final Executor executor;
+   
+   private ExecutorService singleThreadExecutor;
 
    private final boolean syncTransactional;
 
@@ -333,17 +338,14 @@ public class JournalStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#blockOnReplication()
     */
-   public void waitOnOperations(final long timeout) throws Exception
+   public boolean waitOnOperations(final long timeout) throws Exception
    {
       if (!started)
       {
          JournalStorageManager.log.warn("Server is stopped");
          throw new IllegalStateException("Server is stopped");
       }
-      if (!getContext().waitCompletion(timeout))
-      {
-         throw new HornetQException(HornetQException.IO_ERROR, "Timeout on waiting I/O completion");
-      }
+      return getContext().waitCompletion(timeout);
    }
 
    /*
@@ -392,6 +394,16 @@ public class JournalStorageManager implements StorageManager
    public void setContext(final OperationContext context)
    {
       OperationContextImpl.setContext(context);
+   }
+   
+   public Executor getSingleThreadExecutor()
+   {
+      return singleThreadExecutor;
+   }
+   
+   public OperationContext newSingleThreadContext()
+   {
+      return newContext(singleThreadExecutor);
    }
 
    /* (non-Javadoc)
@@ -1390,6 +1402,8 @@ public class JournalStorageManager implements StorageManager
       checkAndCreateDir(largeMessagesDirectory, createJournalDir);
 
       cleanupIncompleteFiles();
+      
+      singleThreadExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-IO-SingleThread", true, getThisClassLoader()));
 
       bindingsJournal.start();
 
@@ -1398,6 +1412,7 @@ public class JournalStorageManager implements StorageManager
       started = true;
    }
 
+   
    public synchronized void stop() throws Exception
    {
       if (!started)
@@ -1414,6 +1429,8 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.stop();
 
       messageJournal.stop();
+      
+      singleThreadExecutor.shutdown();
 
       journalLoaded = false;
 
@@ -1833,6 +1850,19 @@ public class JournalStorageManager implements StorageManager
          return DummyOperationContext.getInstance();
       }
    }
+
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return JournalStorageManager.class.getClassLoader();
+         }
+      });
+   }
+
 
    // Inner Classes
    // ----------------------------------------------------------------------------

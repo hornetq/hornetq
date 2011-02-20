@@ -1461,8 +1461,9 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
        */
-      public void waitOnOperations(final long timeout) throws Exception
+      public boolean waitOnOperations(final long timeout) throws Exception
       {
+         return true;
       }
 
       /* (non-Javadoc)
@@ -1657,6 +1658,14 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#newSingleThreadContext()
+       */
+      public OperationContext newSingleThreadContext()
+      {
+         return getContext();
       }
 
    }

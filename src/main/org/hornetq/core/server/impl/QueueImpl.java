@@ -370,10 +370,11 @@ public class QueueImpl implements Queue
          {
             // We must block on the executor to ensure any async deliveries have completed or we might get out of order
             // deliveries
-            blockOnExecutorFuture();
-
-            // Go into direct delivery mode
-            directDeliver = true;
+            if (blockOnExecutorFuture())
+            {
+               // Go into direct delivery mode
+               directDeliver = true;
+            }
          }
          checkDirect = false;
       }
@@ -420,7 +421,7 @@ public class QueueImpl implements Queue
       blockOnExecutorFuture();
    }
 
-   public void blockOnExecutorFuture()
+   public boolean blockOnExecutorFuture()
    {
       Future future = new Future();
 
@@ -430,8 +431,10 @@ public class QueueImpl implements Queue
 
       if (!ok)
       {
-         throw new IllegalStateException("Timed out waiting for future to complete");
+         log.warn("Couldn't finish waiting executors. Try increasing the thread pool size");
       }
+      
+      return ok;
    }
 
    public synchronized void addConsumer(final Consumer consumer) throws Exception

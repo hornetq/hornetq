@@ -233,7 +233,15 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          public void run()
          {
-            cleanup();
+            storageManager.setContext(storageManager.newSingleThreadContext());
+            try
+            {
+               cleanup();
+            }
+            finally
+            {
+               storageManager.clearContext();
+            }
          }
       });
    }
@@ -285,23 +293,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
                   Page currentPage = pagingStore.getCurrentPage();
 
-                  try
-                  {
-                     // First step: Move every cursor to the next bookmarked page (that was just created)
-                     for (PageSubscription cursor : cursorList)
-                     {
-                        cursor.confirmPosition(new PagePositionImpl(currentPage.getPageId(), -1));
-                     }
-
-                     storageManager.waitOnOperations();
-                  }
-                  finally
-                  {
-                     for (PageSubscription cursor : cursorList)
-                     {
-                        cursor.enableAutoCleanup();
-                     }
-                  }
+                  storePositions(cursorList, currentPage);
 
                   pagingStore.stopPaging();
 
@@ -358,6 +350,35 @@ public class PageCursorProviderImpl implements PageCursorProvider
          return;
       }
 
+   }
+
+   /**
+    * @param cursorList
+    * @param currentPage
+    * @throws Exception
+    */
+   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   {
+      try
+      {
+         // First step: Move every cursor to the next bookmarked page (that was just created)
+         for (PageSubscription cursor : cursorList)
+         {
+            cursor.confirmPosition(new PagePositionImpl(currentPage.getPageId(), -1));
+         }
+
+         while (!storageManager.waitOnOperations(5000))
+         {
+            log.warn("Couldn't complete operations on IO context " + storageManager.getContext());
+         }
+      }
+      finally
+      {
+         for (PageSubscription cursor : cursorList)
+         {
+            cursor.enableAutoCleanup();
+         }
+      }
    }
 
    public void printDebug()

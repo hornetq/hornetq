@@ -64,10 +64,9 @@ public class FakeQueue implements Queue
       
    }
 
-   public void blockOnExecutorFuture()
+   public boolean blockOnExecutorFuture()
    {
-      // TODO Auto-generated method stub
-      
+      return true;
    }
 
    public void addHead(MessageReference ref)
