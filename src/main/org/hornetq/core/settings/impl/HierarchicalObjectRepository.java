@@ -93,7 +93,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       T cacheResult = cache.get(match);
       if (cacheResult != null)
       {
-         return cache.get(match);
+         return cacheResult;
       }
       T actualMatch;
       HashMap<String, Match<T>> possibleMatches = getPossibleMatches(match);
