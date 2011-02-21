@@ -18,6 +18,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -39,7 +40,7 @@ public interface JMSManagementService
 
    void unregisterTopic(String name) throws Exception;
 
-   void registerConnectionFactory(String name, HornetQConnectionFactory connectionFactory) throws Exception;
+   void registerConnectionFactory(String name, ConnectionFactoryConfiguration config, HornetQConnectionFactory connectionFactory) throws Exception;
 
    void unregisterConnectionFactory(String name) throws Exception;
 

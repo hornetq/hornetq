@@ -63,6 +63,10 @@ public interface ConnectionFactoryControl
    * Sets the Client ID for this connection factory.
    */
    void setClientID(String clientID);
+   
+   boolean isCompressLargeMessages();
+   
+   void setCompressLargeMessages(boolean compress);
 
    /**
     * @see ClientSessionFactory#getClientFailureCheckPeriod()
@@ -325,11 +329,6 @@ public interface ConnectionFactoryControl
     * @see ClientSessionFactory#getInitialMessagePacketSize()
     */
    int getInitialMessagePacketSize();
-
-    /**
-    * @see ClientSessionFactory#setInitialMessagePacketSize(int)
-    */
-   void setInitialMessagePacketSize(int size);
 
     /**
     * @see ClientSessionFactory#isUseGlobalPools()

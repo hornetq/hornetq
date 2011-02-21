@@ -24,6 +24,7 @@ import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -37,7 +38,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    // Attributes ----------------------------------------------------
 
-   private final HornetQConnectionFactory cf;
+   private final ConnectionFactoryConfiguration cfConfig;
+   
+   private HornetQConnectionFactory cf;
 
    private final String name;
    
@@ -47,11 +50,13 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    // Constructors --------------------------------------------------
 
-   public JMSConnectionFactoryControlImpl(final HornetQConnectionFactory cf,
+   public JMSConnectionFactoryControlImpl(final ConnectionFactoryConfiguration cfConfig,
+                                          final HornetQConnectionFactory cf,
                                           final JMSServerManager jmsManager,
                                           final String name) throws NotCompliantMBeanException
    {
       super(ConnectionFactoryControl.class);
+      this.cfConfig = cfConfig;
       this.cf = cf;
       this.name = name;
       this.jmsManager = jmsManager;
@@ -65,170 +70,200 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
    {
       return jmsManager.getJNDIOnConnectionFactory(name);
    }
+   
+   public boolean isCompressLargeMessages()
+   {
+      return cf.isCompressLargeMessage();
+   }
+   
+   public void setCompressLargeMessages(final boolean compress)
+   {
+      cfConfig.setCompressLargeMessages(compress);
+      recreateCF();
+   }
 
    public boolean isHA()
    {
-      return cf.isHA();
+      return cfConfig.isHA();
    }
 
    public int getFactoryType()
    {
-      return cf.getFactoryType();
+      return cfConfig.getFactoryType().intValue();
    }
 
    public String getClientID()
    {
-      return cf.getClientID();
+      return cfConfig.getClientID();
    }
 
    public long getClientFailureCheckPeriod()
    {
-      return cf.getClientFailureCheckPeriod();
-   }
-
-   public String getConnectionLoadBalancingPolicyClassName()
-   {
-      return cf.getConnectionLoadBalancingPolicyClassName();
+      return cfConfig.getClientFailureCheckPeriod();
    }
 
    public void setClientID(String clientID)
    {
-      cf.setClientID(clientID);
+      cfConfig.setClientID(clientID);
+      recreateCF();
    }
 
    public void setDupsOKBatchSize(int dupsOKBatchSize)
    {
-      cf.setDupsOKBatchSize(dupsOKBatchSize);
+      cfConfig.setDupsOKBatchSize(dupsOKBatchSize);
+      recreateCF();
    }
 
    public void setTransactionBatchSize(int transactionBatchSize)
    {
-      cf.setTransactionBatchSize(transactionBatchSize);
+      cfConfig.setTransactionBatchSize(transactionBatchSize);
+      recreateCF();
    }
 
    public void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
    {
-      cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+      cfConfig.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+      recreateCF();
    }
 
    public void setConnectionTTL(long connectionTTL)
    {
-      cf.setConnectionTTL(connectionTTL);
+      cfConfig.setConnectionTTL(connectionTTL);
+      recreateCF();
    }
 
    public void setCallTimeout(long callTimeout)
    {
-      cf.setCallTimeout(callTimeout);
+      cfConfig.setCallTimeout(callTimeout);
+      recreateCF();
    }
 
    public void setConsumerWindowSize(int consumerWindowSize)
    {
-      cf.setConsumerWindowSize(consumerWindowSize);
+      cfConfig.setConsumerWindowSize(consumerWindowSize);
+      recreateCF();
    }
 
    public void setConsumerMaxRate(int consumerMaxRate)
    {
-      cf.setConsumerMaxRate(consumerMaxRate);
+      cfConfig.setConsumerMaxRate(consumerMaxRate);
+      recreateCF();
    }
 
    public void setConfirmationWindowSize(int confirmationWindowSize)
    {
-      cf.setConfirmationWindowSize(confirmationWindowSize);
+      cfConfig.setConfirmationWindowSize(confirmationWindowSize);
+      recreateCF();
    }
 
    public void setProducerMaxRate(int producerMaxRate)
    {
-      cf.setProducerMaxRate(producerMaxRate);
+      cfConfig.setProducerMaxRate(producerMaxRate);
+      recreateCF();
    }
 
    public int getProducerWindowSize()
    {
-      return cf.getProducerWindowSize();
+      return cfConfig.getProducerWindowSize();
    }
 
    public void setProducerWindowSize(int producerWindowSize)
    {
-      cf.setProducerWindowSize(producerWindowSize);
+      cfConfig.setProducerWindowSize(producerWindowSize);
+      recreateCF();
    }
 
    public void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient)
    {
-      cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+      cfConfig.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+      recreateCF();
    }
 
    public boolean isCacheLargeMessagesClient()
    {
-      return cf.isCacheLargeMessagesClient();
+      return cfConfig.isCacheLargeMessagesClient();
    }
 
    public void setMinLargeMessageSize(int minLargeMessageSize)
    {
-      cf.setMinLargeMessageSize(minLargeMessageSize);
+      cfConfig.setMinLargeMessageSize(minLargeMessageSize);
+      recreateCF();
    }
 
    public void setBlockOnNonDurableSend(boolean blockOnNonDurableSend)
    {
-      cf.setBlockOnNonDurableSend(blockOnNonDurableSend);
+      cfConfig.setBlockOnNonDurableSend(blockOnNonDurableSend);
+      recreateCF();
    }
 
    public void setBlockOnAcknowledge(boolean blockOnAcknowledge)
    {
-      cf.setBlockOnAcknowledge(blockOnAcknowledge);
+      cfConfig.setBlockOnAcknowledge(blockOnAcknowledge);
+      recreateCF();
    }
 
    public void setBlockOnDurableSend(boolean blockOnDurableSend)
    {
-      cf.setBlockOnDurableSend(blockOnDurableSend);
+      cfConfig.setBlockOnDurableSend(blockOnDurableSend);
+      recreateCF();
    }
 
    public void setAutoGroup(boolean autoGroup)
    {
-      cf.setAutoGroup(autoGroup);
+      cfConfig.setAutoGroup(autoGroup);
+      recreateCF();
    }
 
    public void setPreAcknowledge(boolean preAcknowledge)
    {
-      cf.setPreAcknowledge(preAcknowledge);
+      cfConfig.setPreAcknowledge(preAcknowledge);
+      recreateCF();
    }
 
    public void setMaxRetryInterval(long retryInterval)
    {
-      cf.setMaxRetryInterval(retryInterval);
+      cfConfig.setMaxRetryInterval(retryInterval);
+      recreateCF();
    }
 
    public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
    {
-      cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      cfConfig.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      recreateCF();
    }
 
    public void setReconnectAttempts(int reconnectAttempts)
    {
-      cf.setReconnectAttempts(reconnectAttempts);
+      cfConfig.setReconnectAttempts(reconnectAttempts);
+      recreateCF();
    }
    
    public void setFailoverOnInitialConnection(boolean failover)
    {
-      cf.setFailoverOnInitialConnection(failover);
+      cfConfig.setFailoverOnInitialConnection(failover);
+      recreateCF();
    }
 
    public boolean isUseGlobalPools()
    {
-      return cf.isUseGlobalPools();
+      return cfConfig.isUseGlobalPools();
    }
 
    public void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize)
    {
-      cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+      cfConfig.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+      recreateCF();
    }
 
    public int getThreadPoolMaxSize()
    {
-      return cf.getThreadPoolMaxSize();
+      return cfConfig.getThreadPoolMaxSize();
    }
 
    public void setThreadPoolMaxSize(int threadPoolMaxSize)
    {
-      cf.setThreadPoolMaxSize(threadPoolMaxSize);
+      cfConfig.setThreadPoolMaxSize(threadPoolMaxSize);
+      recreateCF();
    }
 
    public int getInitialMessagePacketSize()
@@ -238,42 +273,46 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    public void setGroupID(String groupID)
    {
-      cf.setGroupID(groupID);
+      cfConfig.setGroupID(groupID);
+      recreateCF();
    }
 
    public String getGroupID()
    {
-      return cf.getGroupID();
-   }
-
-   public void setInitialMessagePacketSize(int size)
-   {
-      cf.setInitialMessagePacketSize(size);
+      return cfConfig.getGroupID();
    }
 
    public void setUseGlobalPools(boolean useGlobalPools)
    {
-      cf.setUseGlobalPools(useGlobalPools);
+      cfConfig.setUseGlobalPools(useGlobalPools);
+      recreateCF();
    }
 
    public int getScheduledThreadPoolMaxSize()
    {
-      return cf.getScheduledThreadPoolMaxSize();
+      return cfConfig.getScheduledThreadPoolMaxSize();
    }
 
    public void setRetryInterval(long retryInterval)
    {
-      cf.setRetryInterval(retryInterval);
+      cfConfig.setRetryInterval(retryInterval);
+      recreateCF();
    }
 
    public long getMaxRetryInterval()
    {
-      return cf.getMaxRetryInterval();
+      return cfConfig.getMaxRetryInterval();
    }
 
-   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   public String getConnectionLoadBalancingPolicyClassName()
    {
-      cf.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+      return cfConfig.getLoadBalancingPolicyClassName();
+   }
+   
+   public void setConnectionLoadBalancingPolicyClassName(String name)
+   {
+      cfConfig.setLoadBalancingPolicyClassName(name);
+      recreateCF();
    }
 
    public TransportConfiguration[] getStaticConnectors()
@@ -293,52 +332,52 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    public long getCallTimeout()
    {
-      return cf.getCallTimeout();
+      return cfConfig.getCallTimeout();
    }
 
    public int getConsumerMaxRate()
    {
-      return cf.getConsumerMaxRate();
+      return cfConfig.getConsumerMaxRate();
    }
 
    public int getConsumerWindowSize()
    {
-      return cf.getConsumerWindowSize();
+      return cfConfig.getConsumerWindowSize();
    }
 
    public int getProducerMaxRate()
    {
-      return cf.getProducerMaxRate();
+      return cfConfig.getProducerMaxRate();
    }
 
    public int getConfirmationWindowSize()
    {
-      return cf.getConfirmationWindowSize();
+      return cfConfig.getConfirmationWindowSize();
    }
 
    public int getDupsOKBatchSize()
    {
-      return cf.getDupsOKBatchSize();
+      return cfConfig.getDupsOKBatchSize();
    }
 
    public boolean isBlockOnAcknowledge()
    {
-      return cf.isBlockOnAcknowledge();
+      return cfConfig.isBlockOnAcknowledge();
    }
 
    public boolean isBlockOnNonDurableSend()
    {
-      return cf.isBlockOnNonDurableSend();
+      return cfConfig.isBlockOnNonDurableSend();
    }
 
    public boolean isBlockOnDurableSend()
    {
-      return cf.isBlockOnDurableSend();
+      return cfConfig.isBlockOnDurableSend();
    }
 
    public boolean isPreAcknowledge()
    {
-      return cf.isPreAcknowledge();
+      return cfConfig.isPreAcknowledge();
    }
 
    public String getName()
@@ -348,42 +387,42 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    public long getConnectionTTL()
    {
-      return cf.getConnectionTTL();
+      return cfConfig.getConnectionTTL();
    }
 
    public int getReconnectAttempts()
    {
-      return cf.getReconnectAttempts();
+      return cfConfig.getReconnectAttempts();
    }
    
    public boolean isFailoverOnInitialConnection()
    {
-      return cf.isFailoverOnInitialConnection();
+      return cfConfig.isFailoverOnInitialConnection();
    }
 
    public int getMinLargeMessageSize()
    {
-      return cf.getMinLargeMessageSize();
+      return cfConfig.getMinLargeMessageSize();
    }
 
    public long getRetryInterval()
    {
-      return cf.getRetryInterval();
+      return cfConfig.getRetryInterval();
    }
 
    public double getRetryIntervalMultiplier()
    {
-      return cf.getRetryIntervalMultiplier();
+      return cfConfig.getRetryIntervalMultiplier();
    }
 
    public int getTransactionBatchSize()
    {
-      return cf.getTransactionBatchSize();
+      return cfConfig.getTransactionBatchSize();
    }
 
    public boolean isAutoGroup()
    {
-      return cf.isAutoGroup();
+      return cfConfig.isAutoGroup();
    }
 
    @Override
@@ -402,6 +441,18 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
 
    // Protected -----------------------------------------------------
 
+   private void recreateCF()
+   {
+      try
+      {
+         this.cf = jmsManager.recreateCF(this.name, this.cfConfig);
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException (e.getMessage(), e);
+      }
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

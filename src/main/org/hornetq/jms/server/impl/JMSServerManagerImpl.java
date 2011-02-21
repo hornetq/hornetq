@@ -13,8 +13,16 @@
 
 package org.hornetq.jms.server.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -214,13 +222,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             deploy();
          }
-         
-         for (Runnable run: cachedCommands)
+
+         for (Runnable run : cachedCommands)
          {
             log.info("Running cached command for " + run);
             run.run();
          }
-         
+
          cachedCommands.clear();
 
       }
@@ -401,7 +409,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             return "createQueue for " + queueName;
          }
-         
+
          public void runException() throws Exception
          {
             if (internalCreateQueue(queueName, selectorString, durable))
@@ -429,7 +437,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
                if (storeConfig && durable)
                {
-                  storage.storeDestination(new PersistedDestination(PersistedType.Queue, queueName, selectorString, durable));
+                  storage.storeDestination(new PersistedDestination(PersistedType.Queue,
+                                                                    queueName,
+                                                                    selectorString,
+                                                                    durable));
                   storage.addJNDI(PersistedType.Queue, queueName, usedJNDI);
                }
             }
@@ -452,7 +463,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          {
             return "createTopic for " + topicName;
          }
-         
+
          public void runException() throws Exception
          {
             if (internalCreateTopic(topicName))
@@ -914,23 +925,49 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
+   public synchronized HornetQConnectionFactory recreateCF(String name, ConnectionFactoryConfiguration cf) throws Exception
+   {
+      List<String> jndi = connectionFactoryJNDI.get(name);
+
+      if (jndi == null)
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Connection Factory " + name + " doesn't exist");
+      }
+
+      String[] usedJNDI = jndi.toArray(new String[jndi.size()]);
+      
+      HornetQConnectionFactory realCF = internalCreateCFPOJO(cf);
+
+      if (cf.isPersisted())
+      {
+         storage.storeConnectionFactory(new PersistedConnectionFactory(cf));
+         storage.addJNDI(PersistedType.ConnectionFactory, cf.getName(), usedJNDI);
+      }
+
+      for (String jndiElement : usedJNDI)
+      {
+         this.bindToJndi(jndiElement, realCF);
+      }
+
+      return realCF;
+   }
+
    public synchronized void createConnectionFactory(final boolean storeConfig,
                                                     final ConnectionFactoryConfiguration cfConfig,
                                                     final String... jndi) throws Exception
    {
       runAfterActive(new RunnableException()
       {
-         
+
          public String toString()
          {
             return "createConnectionFactory for " + cfConfig.getName();
          }
-         
 
          public void runException() throws Exception
          {
 
-            HornetQConnectionFactory cf = internalCreateCF(cfConfig);
+            HornetQConnectionFactory cf = internalCreateCF(storeConfig, cfConfig);
 
             ArrayList<String> bindings = new ArrayList<String>();
 
@@ -1053,7 +1090,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     * @throws HornetQException
     * @throws Exception
     */
-   private HornetQConnectionFactory internalCreateCF(final ConnectionFactoryConfiguration cfConfig) throws HornetQException,
+   private HornetQConnectionFactory internalCreateCF(final boolean persisted,
+                                                     final ConnectionFactoryConfiguration cfConfig) throws HornetQException,
                                                                                                    Exception
    {
       checkInitialised();
@@ -1062,95 +1100,107 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       if (cf == null)
       {
-         if (cfConfig.getDiscoveryGroupName() != null)
-         {
-            DiscoveryGroupConfiguration groupConfig = server.getConfiguration()
-                                                            .getDiscoveryGroupConfigurations()
-                                                            .get(cfConfig.getDiscoveryGroupName());
-
-            if (groupConfig == null)
-            {
-               throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                          "Discovery Group '" + cfConfig.getDiscoveryGroupName() +
-                                                   "' doesn't exist on maing config");
-            }
-
-            if (cfConfig.isHA())
-            {
-               cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfig, cfConfig.getFactoryType());
-            }
-            else
-            {
-               cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfig, cfConfig.getFactoryType());
-            }
-         }
-         else
-         {
-            if (cfConfig.getConnectorNames() == null || cfConfig.getConnectorNames().size() == 0)
-            {
-               throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                          "Null Connector name passed to create ConnectionFactory");
-            }
-
-            TransportConfiguration[] configs = new TransportConfiguration[cfConfig.getConnectorNames().size()];
-
-            int count = 0;
-            for (String name : cfConfig.getConnectorNames())
-            {
-               TransportConfiguration connector = server.getConfiguration().getConnectorConfigurations().get(name);
-               if (connector == null)
-               {
-                  throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connector '" + name +
-                                                                             "' not found on the main configuration file");
-               }
-               configs[count++] = connector;
-            }
-
-            if (cfConfig.isHA())
-            {
-               cf = HornetQJMSClient.createConnectionFactoryWithHA(cfConfig.getFactoryType(), configs);
-            }
-            else
-            {
-               cf = HornetQJMSClient.createConnectionFactoryWithoutHA(cfConfig.getFactoryType(), configs);
-            }
-         }
-
-         cf.setClientID(cfConfig.getClientID());
-         cf.setClientFailureCheckPeriod(cfConfig.getClientFailureCheckPeriod());
-         cf.setConnectionTTL(cfConfig.getConnectionTTL());
-         cf.setCallTimeout(cfConfig.getCallTimeout());
-         cf.setCacheLargeMessagesClient(cfConfig.isCacheLargeMessagesClient());
-         cf.setMinLargeMessageSize(cfConfig.getMinLargeMessageSize());
-         cf.setConsumerWindowSize(cfConfig.getConsumerWindowSize());
-         cf.setConsumerMaxRate(cfConfig.getConsumerMaxRate());
-         cf.setConfirmationWindowSize(cfConfig.getConfirmationWindowSize());
-         cf.setProducerWindowSize(cfConfig.getProducerWindowSize());
-         cf.setProducerMaxRate(cfConfig.getProducerMaxRate());
-         cf.setBlockOnAcknowledge(cfConfig.isBlockOnAcknowledge());
-         cf.setBlockOnDurableSend(cfConfig.isBlockOnDurableSend());
-         cf.setBlockOnNonDurableSend(cfConfig.isBlockOnNonDurableSend());
-         cf.setAutoGroup(cfConfig.isAutoGroup());
-         cf.setPreAcknowledge(cfConfig.isPreAcknowledge());
-         cf.setConnectionLoadBalancingPolicyClassName(cfConfig.getLoadBalancingPolicyClassName());
-         cf.setTransactionBatchSize(cfConfig.getTransactionBatchSize());
-         cf.setDupsOKBatchSize(cfConfig.getDupsOKBatchSize());
-         cf.setUseGlobalPools(cfConfig.isUseGlobalPools());
-         cf.setScheduledThreadPoolMaxSize(cfConfig.getScheduledThreadPoolMaxSize());
-         cf.setThreadPoolMaxSize(cfConfig.getThreadPoolMaxSize());
-         cf.setRetryInterval(cfConfig.getRetryInterval());
-         cf.setRetryIntervalMultiplier(cfConfig.getRetryIntervalMultiplier());
-         cf.setMaxRetryInterval(cfConfig.getMaxRetryInterval());
-         cf.setReconnectAttempts(cfConfig.getReconnectAttempts());
-         cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
-         cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
-         cf.setGroupID(cfConfig.getGroupID());
+         cf = internalCreateCFPOJO(cfConfig);
       }
 
       connectionFactories.put(cfConfig.getName(), cf);
 
-      jmsManagementService.registerConnectionFactory(cfConfig.getName(), cf);
+      jmsManagementService.registerConnectionFactory(cfConfig.getName(), cfConfig, cf);
 
+      return cf;
+   }
+
+   /**
+    * @param cfConfig
+    * @return
+    * @throws HornetQException
+    */
+   protected HornetQConnectionFactory internalCreateCFPOJO(final ConnectionFactoryConfiguration cfConfig) throws HornetQException
+   {
+      HornetQConnectionFactory cf;
+      if (cfConfig.getDiscoveryGroupName() != null)
+      {
+         DiscoveryGroupConfiguration groupConfig = server.getConfiguration()
+                                                         .getDiscoveryGroupConfigurations()
+                                                         .get(cfConfig.getDiscoveryGroupName());
+
+         if (groupConfig == null)
+         {
+            throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                       "Discovery Group '" + cfConfig.getDiscoveryGroupName() +
+                                                "' doesn't exist on maing config");
+         }
+
+         if (cfConfig.isHA())
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfig, cfConfig.getFactoryType());
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfig, cfConfig.getFactoryType());
+         }
+      }
+      else
+      {
+         if (cfConfig.getConnectorNames() == null || cfConfig.getConnectorNames().size() == 0)
+         {
+            throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                       "Null Connector name passed to create ConnectionFactory");
+         }
+
+         TransportConfiguration[] configs = new TransportConfiguration[cfConfig.getConnectorNames().size()];
+
+         int count = 0;
+         for (String name : cfConfig.getConnectorNames())
+         {
+            TransportConfiguration connector = server.getConfiguration().getConnectorConfigurations().get(name);
+            if (connector == null)
+            {
+               throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connector '" + name +
+                                                                          "' not found on the main configuration file");
+            }
+            configs[count++] = connector;
+         }
+
+         if (cfConfig.isHA())
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(cfConfig.getFactoryType(), configs);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(cfConfig.getFactoryType(), configs);
+         }
+      }
+
+      cf.setClientID(cfConfig.getClientID());
+      cf.setClientFailureCheckPeriod(cfConfig.getClientFailureCheckPeriod());
+      cf.setConnectionTTL(cfConfig.getConnectionTTL());
+      cf.setCallTimeout(cfConfig.getCallTimeout());
+      cf.setCacheLargeMessagesClient(cfConfig.isCacheLargeMessagesClient());
+      cf.setMinLargeMessageSize(cfConfig.getMinLargeMessageSize());
+      cf.setConsumerWindowSize(cfConfig.getConsumerWindowSize());
+      cf.setConsumerMaxRate(cfConfig.getConsumerMaxRate());
+      cf.setConfirmationWindowSize(cfConfig.getConfirmationWindowSize());
+      cf.setProducerWindowSize(cfConfig.getProducerWindowSize());
+      cf.setProducerMaxRate(cfConfig.getProducerMaxRate());
+      cf.setBlockOnAcknowledge(cfConfig.isBlockOnAcknowledge());
+      cf.setBlockOnDurableSend(cfConfig.isBlockOnDurableSend());
+      cf.setBlockOnNonDurableSend(cfConfig.isBlockOnNonDurableSend());
+      cf.setAutoGroup(cfConfig.isAutoGroup());
+      cf.setPreAcknowledge(cfConfig.isPreAcknowledge());
+      cf.setConnectionLoadBalancingPolicyClassName(cfConfig.getLoadBalancingPolicyClassName());
+      cf.setTransactionBatchSize(cfConfig.getTransactionBatchSize());
+      cf.setDupsOKBatchSize(cfConfig.getDupsOKBatchSize());
+      cf.setUseGlobalPools(cfConfig.isUseGlobalPools());
+      cf.setScheduledThreadPoolMaxSize(cfConfig.getScheduledThreadPoolMaxSize());
+      cf.setThreadPoolMaxSize(cfConfig.getThreadPoolMaxSize());
+      cf.setRetryInterval(cfConfig.getRetryInterval());
+      cf.setRetryIntervalMultiplier(cfConfig.getRetryIntervalMultiplier());
+      cf.setMaxRetryInterval(cfConfig.getMaxRetryInterval());
+      cf.setReconnectAttempts(cfConfig.getReconnectAttempts());
+      cf.setFailoverOnInitialConnection(cfConfig.isFailoverOnInitialConnection());
+      cf.setCompressLargeMessage(cfConfig.isCompressLargeMessages());
+      cf.setGroupID(cfConfig.getGroupID());
       return cf;
    }
 
@@ -1360,6 +1410,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       if (registry != null)
       {
+         registry.unbind(jndiName);
          registry.bind(jndiName, objectToBind);
       }
       return true;
@@ -1437,7 +1488,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       for (PersistedConnectionFactory cf : cfs)
       {
-         internalCreateCF(cf.getConfig());
+         internalCreateCF(true, cf.getConfig());
       }
 
       List<PersistedDestination> destinations = storage.recoverDestinations();
@@ -1576,7 +1627,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return false;
       }
    }
-   
+
    private boolean runAfterActive(RunnableException runnable) throws Exception
    {
       if (active)
@@ -1591,8 +1642,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          return false;
       }
    }
-
-
 
    private abstract class RunnableException implements Runnable
    {

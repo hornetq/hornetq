@@ -24,6 +24,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.spi.core.naming.BindingRegistry;
 
@@ -158,6 +159,10 @@ public interface JMSServerManager extends HornetQComponent
     *            if a problem occurred destroying the topic
     */
    boolean destroyTopic(String name) throws Exception;
+   
+   /** Call this method to have a CF rebound to JNDI and stored on the Journal 
+    * @throws Exception */
+   HornetQConnectionFactory recreateCF(String name,  ConnectionFactoryConfiguration cf) throws Exception;
 
    void createConnectionFactory(String name, boolean ha, JMSFactoryType cfType, String discoveryGroupName, String ... jndiBindings) throws Exception;
 
