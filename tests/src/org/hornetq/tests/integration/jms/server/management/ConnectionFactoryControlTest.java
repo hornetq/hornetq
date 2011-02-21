@@ -17,7 +17,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
