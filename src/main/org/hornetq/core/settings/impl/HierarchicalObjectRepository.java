@@ -90,7 +90,8 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public T getMatch(final String match)
    {
-      if (cache.get(match) != null)
+      T cacheResult = cache.get(match);
+      if (cacheResult != null)
       {
          return cache.get(match);
       }
