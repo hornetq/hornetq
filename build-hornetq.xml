@@ -123,9 +123,9 @@
    <property name="logs.dir" value="logs"/>
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
-   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
+   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/target/docbook/publish"/>
    <property name="rest-manual.build.dir" value="hornetq-rest/docbook/target/docbook/publish/en-US"/>
-   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
+   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/target/docbook/publish"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
@@ -1238,9 +1238,6 @@
 	  <include name="*.jar"/>
 	</fileset>
 	<fileset dir="${com.sun.xml.stream.lib}">
-	  <include name="*.jar"/>
-	</fileset>
-	<fileset dir="${org.slf4j.lib}">
 	  <include name="*.jar"/>
 	</fileset>
 	<fileset dir="${org.scannotation.lib}">

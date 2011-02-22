@@ -201,12 +201,14 @@
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>
             <exclude name="core/perf/build.xml"/>
+            <exclude name="core/twitter-connector/build.xml"/>
             <exclude name="jms/applet/build.xml"/>
             <exclude name="jms/clustered-standalone/build.xml"/>
             <exclude name="jms/jms-bridge/build.xml"/>
             <exclude name="jms/large-message/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
             <exclude name="jms/stomp-websockets/build.xml"/>
+            <exclude name="jms/spring-integration/build.xml"/>
          </fileset>
       </subant>
    	

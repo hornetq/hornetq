@@ -141,6 +141,7 @@ public class ClusterStaticOnewayExample extends HornetQExample
             TextMessage message2 = (TextMessage)consumer2.receive(5000);
 
             System.out.println("Got message: " + message2.getText() + " from node " + con2Node);
+            System.out.println("i = " + i);
          }
 
          return true;
