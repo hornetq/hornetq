@@ -609,10 +609,6 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop(boolean failoverOnServerShutdown) throws Exception
    {
-      System.out.println("*** stop called on server");
-
-      System.out.flush();
-
       synchronized (this)
       {
          if (!started)
@@ -635,11 +631,6 @@ public class HornetQServerImpl implements HornetQServer
 
       }
 
-      // we stop the remoting service outside a lock
-      if(remotingService == null)
-      {
-         System.out.println("HornetQServerImpl.stop");
-      }
       remotingService.stop();
 
       synchronized (this)

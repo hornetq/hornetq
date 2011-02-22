@@ -1285,7 +1285,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       topologyListeners.add(listener);
       if(topology.members() > 0)
       {
-         System.out.println("ServerLocatorImpl.addClusterTopologyListener");
+         log.debug("ServerLocatorImpl.addClusterTopologyListener");
       }
    }
 

@@ -38,6 +38,7 @@ import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.AbstractControl;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.ServerConsumer;
@@ -62,6 +63,8 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
 {
 
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JMSServerControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -124,7 +127,7 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       }
       else
       {
-         System.out.println("JMSServerControlImpl.determineJMSDestination()" + coreAddress);
+         log.debug("JMSServerControlImpl.determineJMSDestination()" + coreAddress);
          // not related to JMS
          return null;
       }

@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -27,10 +28,16 @@ import org.hornetq.api.core.client.ClusterTopologyListener;
  */
 public class Topology implements Serializable
 {
+   
    /**
     * 
     */
    private static final long serialVersionUID = -9037171688692471371L;
+
+   
+
+   private static final Logger log = Logger.getLogger(Topology.class);
+
    /*
     * topology describes the other cluster nodes that this server knows about:
     *
@@ -49,7 +56,7 @@ public class Topology implements Serializable
       {
          if(member.getConnector().toString().contains("server-id=4"))
          {
-            System.out.println("member.getConnector() = " + member.getConnector());
+            log.debug("member.getConnector() = " + member.getConnector());
          }
       }
       if(currentMember == null)

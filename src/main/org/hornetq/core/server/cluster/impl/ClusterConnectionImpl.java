@@ -458,7 +458,7 @@ public class ClusterConnectionImpl implements ClusterConnection
          {
             if(!topologyMember.getConnector().a.equals(connector) && !topologyMember.getConnector().a.equals(connectorPair.a))
             {
-               System.out.println("ClusterConnectionImpl.nodeUP");
+               log.debug("ClusterConnectionImpl.nodeUP");
             }
          }
       }

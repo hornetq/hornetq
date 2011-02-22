@@ -353,7 +353,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
       AggregatedSoftReference ref = null;
       while ((ref = (AggregatedSoftReference)this.refQueue.poll()) != null)
       {
-         System.out.println("Removing " + ref.key);
          mapDelegate.remove(ref.key);
       }
    }

@@ -145,10 +145,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
                storageManager.deleteDuplicateID(id.b);
                id.b = null;
             }
-            else
-            {
-               System.out.println("Can't delete duplicateID");
-            }
          }
       }
       

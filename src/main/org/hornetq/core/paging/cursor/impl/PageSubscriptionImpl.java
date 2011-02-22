@@ -390,14 +390,20 @@ public class PageSubscriptionImpl implements PageSubscription
 
                for (PagePosition pos : entry.getValue().acks)
                {
-                  System.out.println("Analizing " + pos);
+                  if (isTrace)
+                  {
+                     trace("Analizing " + pos);
+                  }
                   if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
                   {
                      retValue = pos;
                   }
                }
 
-               System.out.println("Returning initial position " + retValue);
+               if (isTrace) 
+               {
+                  trace("Returning initial position " + retValue);
+               }
 
                return retValue;
             }
