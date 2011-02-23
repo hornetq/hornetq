@@ -13,6 +13,7 @@
 
 package org.hornetq.core.paging.impl;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashSet;
@@ -559,6 +560,13 @@ public class PagingStoreImpl implements TestSupportPageStore
    public Page getCurrentPage()
    {
       return currentPage;
+   }
+   
+   public boolean checkPage(final int pageNumber)
+   {
+      String fileName = createFileName(pageNumber);
+      SequentialFile file = fileFactory.createSequentialFile(fileName, 1);
+      return file.exists();
    }
 
    public Page createPage(final int pageNumber) throws Exception

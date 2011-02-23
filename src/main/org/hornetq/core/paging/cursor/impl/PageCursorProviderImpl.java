@@ -438,6 +438,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
+               if (!pagingStore.checkPage((int)pageId))
+               {
+                  return null;
+               }
+
                cache = createPageCache(pageId);
                needToRead = true;
                // anyone reading from this cache will have to wait reading to finish first
@@ -464,9 +469,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   pdgMessage.initMessage(storageManager);
                }
-
                cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
-
             }
             finally
             {

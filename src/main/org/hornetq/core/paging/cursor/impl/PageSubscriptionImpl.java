@@ -319,12 +319,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       PageCache cache = cursorProvider.getPageCache(pos);
 
-      if (cache == null)
-      {
-         return null;
-      }
-
-      if (!cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages())
+      if (cache == null || (!cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages()))
       {
          retPos = pos.nextPage();
 

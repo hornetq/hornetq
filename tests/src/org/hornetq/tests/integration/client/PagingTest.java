@@ -29,6 +29,7 @@ import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -454,7 +455,6 @@ public class PagingTest extends ServiceTestBase
          try
          {
             server.stop();
-            // System.exit(-1);
          }
          catch (Throwable ignored)
          {
@@ -2787,6 +2787,153 @@ public class PagingTest extends ServiceTestBase
          }
       }
    }
+   
+   
+   public void testPageAndDepageRapidly() throws Exception
+   {
+      boolean persistentMessages = true;
+
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+      config.setJournalFileSize(10 * 1024 * 1024);
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          512 * 1024,
+                                          1024 * 1024,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int messageSize = 51527;
+
+      final int numberOfMessages = 200;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         final ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(true, true);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+         
+         final AtomicInteger errors = new AtomicInteger(0);
+         
+         Thread consumeThread = new Thread()
+         {
+            public void run()
+            {
+               ClientSession sessionConsumer = null;
+               try
+               {
+                  sessionConsumer = sf.createSession(false, false);
+                  sessionConsumer.start();
+                  
+                  ClientConsumer cons = sessionConsumer.createConsumer(ADDRESS);
+                  
+                  for (int i = 0; i < numberOfMessages; i++)
+                  {
+                     ClientMessage msg = cons.receive(PagingTest.RECEIVE_TIMEOUT);
+                     System.out.println("Message " + i + " consumed");
+                     assertNotNull(msg);
+                     msg.acknowledge();
+                     
+                     if (i % 20 == 0)
+                     {
+                        System.out.println("Commit consumer");
+                        sessionConsumer.commit();
+                     }
+                  }
+                  sessionConsumer.commit();
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+               finally
+               {
+                  try
+                  {
+                     sessionConsumer.close();
+                  }
+                  catch (HornetQException e)
+                  {
+                     e.printStackTrace();
+                     errors.incrementAndGet();
+                  }
+               }
+               
+            }
+         };
+         
+         consumeThread.start();
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[messageSize];
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(persistentMessages);
+            
+            System.out.println("Message " + i + " sent");
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty(new SimpleString("id"), i);
+
+            producer.send(message);
+            
+            Thread.sleep(50);
+         }
+
+         
+         consumeThread.join();
+         
+         long timeout = System.currentTimeMillis() + 5000;
+         
+         while (System.currentTimeMillis() < timeout && (server.getPagingManager().getPageStore(ADDRESS).isPaging() || server.getPagingManager().getPageStore(ADDRESS).getNumberOfPages() != 1))
+         {
+            Thread.sleep(1);
+         }
+
+         // It's async, so need to wait a bit for it happening
+         assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
+         
+         assertEquals(1, server.getPagingManager().getPageStore(ADDRESS).getNumberOfPages());
+
+         sf.close();
+
+         locator.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+
 
    // Package protected ---------------------------------------------
 
