@@ -68,6 +68,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       endpoint.prepare();
       endpoint.commit();
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testXARollback() throws Exception
@@ -104,6 +105,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    class XADummyEndpoint extends DummyMessageEndpoint
