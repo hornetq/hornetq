@@ -228,6 +228,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       activations.clear();
 
+      defaultHornetQConnectionFactory.close();
+
       HornetQResourceAdapter.log.info("HornetQ resource adapter stopped");
    }
 
