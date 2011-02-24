@@ -14,6 +14,7 @@ package org.hornetq.tests.integration.ra;
 
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 
 import javax.resource.ResourceException;
@@ -256,6 +257,65 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.stop();
       assertFalse(spec.isHasBeenUpdated());
       assertTrue(endpoint.released);
+   }
+
+   public void testResourceAdapterSetupNoOverrideDiscovery() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setDiscoveryAddress("231.6.6.6");
+      qResourceAdapter.setDiscoveryPort(1234);
+      qResourceAdapter.setDiscoveryRefreshTimeout(1l);
+      qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setSetupAttempts(0);
+      //just to force using override params
+      spec.setBlockOnAcknowledge(true);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      HornetQActivation activation = qResourceAdapter.getActivations().get(spec);
+      HornetQConnectionFactory fac = activation.getConnectionFactory();
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      qResourceAdapter.stop();
+   }
+
+   public void testResourceAdapterSetupOverrideDiscovery() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setDiscoveryAddress("231.7.7.7");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setSetupAttempts(0);
+      spec.setDiscoveryAddress("231.6.6.6");
+      spec.setDiscoveryPort(1234);
+      spec.setDiscoveryRefreshTimeout(1l);
+      spec.setDiscoveryInitialWaitTimeout(1l);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      HornetQActivation activation = qResourceAdapter.getActivations().get(spec);
+      HornetQConnectionFactory fac = activation.getConnectionFactory();
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      qResourceAdapter.stop();
    }
    
    @Override

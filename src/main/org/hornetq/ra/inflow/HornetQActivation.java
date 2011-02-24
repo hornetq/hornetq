@@ -560,7 +560,12 @@ public class HornetQActivation
          inFailure.set(false);
       }
    }
-   
+
+   public HornetQConnectionFactory getConnectionFactory()
+   {
+      return this.factory;
+   }
+
    /**
     * Handles the setup
     */

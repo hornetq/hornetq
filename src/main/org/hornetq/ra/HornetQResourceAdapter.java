@@ -1321,6 +1321,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
    }
 
+   public Map<ActivationSpec, HornetQActivation> getActivations()
+   {
+      return activations;
+   }
    public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
@@ -1377,13 +1381,27 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
 
+         if(discoveryPort == null)
+         {
+            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+         }
+
          DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
 
-         long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
                                                                     : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
 
-         long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
                                                                         : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
 
          groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
 
