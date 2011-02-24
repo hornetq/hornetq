@@ -392,6 +392,8 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          activation.start();
          activation.stop();
+         
+         ra.stop();
 
          locator.close();
 
