@@ -162,7 +162,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getDiscoveryAddress()");
       }
-      hasBeenUpdated = true;
       return discoveryAddress;
    }
 
@@ -182,7 +181,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getDiscoveryPort()");
       }
-      hasBeenUpdated = true;
       return discoveryPort;
    }
 
@@ -202,7 +200,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getDiscoveryRefreshTimeout()");
       }
-      hasBeenUpdated = true;
       return discoveryRefreshTimeout;
    }
 
@@ -222,7 +219,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getDiscoveryInitialWaitTimeout()");
       }
-      hasBeenUpdated = true;
       return discoveryInitialWaitTimeout;
    }
 
@@ -242,7 +238,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getClientID()");
       }
-      hasBeenUpdated = true;
       return clientID;
    }
 
@@ -268,7 +263,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getDupsOKBatchSize()");
       }
-      hasBeenUpdated = true;
       return dupsOKBatchSize;
    }
 
@@ -288,7 +282,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getTransactionBatchSize()");
       }
-      hasBeenUpdated = true;
       return transactionBatchSize;
    }
 
@@ -308,7 +301,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getClientFailureCheckPeriod()");
       }
-      hasBeenUpdated = true;
       return clientFailureCheckPeriod;
    }
 
@@ -328,7 +320,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getConnectionTTL()");
       }
-      hasBeenUpdated = true;
       return connectionTTL;
    }
 
@@ -348,7 +339,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getCallTimeout()");
       }
-      hasBeenUpdated = true;
       return callTimeout;
    }
 
@@ -368,7 +358,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getConsumerWindowSize()");
       }
-      hasBeenUpdated = true;
       return consumerWindowSize;
    }
 
@@ -388,7 +377,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getConsumerMaxRate()");
       }
-      hasBeenUpdated = true;
       return consumerMaxRate;
    }
 
@@ -408,7 +396,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getConfirmationWindowSize()");
       }
-      hasBeenUpdated = true;
       return confirmationWindowSize;
    }
 
@@ -428,7 +415,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getProducerMaxRate()");
       }
-      hasBeenUpdated = true;
       return producerMaxRate;
    }
 
@@ -448,7 +434,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getMinLargeMessageSize()");
       }
-      hasBeenUpdated = true;
       return minLargeMessageSize;
    }
 
@@ -468,7 +453,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isBlockOnAcknowledge()");
       }
-      hasBeenUpdated = true;
       return blockOnAcknowledge;
    }
 
@@ -488,7 +472,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isBlockOnNonDurableSend()");
       }
-      hasBeenUpdated = true;
       return blockOnNonDurableSend;
    }
 
@@ -508,7 +491,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isBlockOnDurableSend()");
       }
-      hasBeenUpdated = true;
       return blockOnDurableSend;
    }
 
@@ -528,7 +510,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isAutoGroup()");
       }
-      hasBeenUpdated = true;
       return autoGroup;
    }
 
@@ -548,7 +529,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isPreAcknowledge()");
       }
-      hasBeenUpdated = true;
       return preAcknowledge;
    }
 
@@ -568,7 +548,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getRetryInterval()");
       }
-      hasBeenUpdated = true;
       return retryInterval;
    }
 
@@ -588,7 +567,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getRetryIntervalMultiplier()");
       }
-      hasBeenUpdated = true;
       return retryIntervalMultiplier;
    }
 
@@ -608,7 +586,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getReconnectAttempts()");
       }
-      hasBeenUpdated = true;
       return reconnectAttempts;
    }
 
@@ -628,7 +605,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("isUseGlobalPools()");
       }
-      hasBeenUpdated = true;
       return useGlobalPools;
    }
 
@@ -648,7 +624,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getScheduledThreadPoolMaxSize()");
       }
-      hasBeenUpdated = true;
       return scheduledThreadPoolMaxSize;
    }
 
@@ -668,7 +643,6 @@ public class ConnectionFactoryProperties
       {
          ConnectionFactoryProperties.log.trace("getThreadPoolMaxSize()");
       }
-      hasBeenUpdated = true;
       return threadPoolMaxSize;
    }
 

@@ -235,6 +235,28 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.stop();
       assertTrue(endpoint.released);
    }
+
+   public void testResourceAdapterSetupOverrideNoCFParams() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+      assertTrue(endpoint.released);
+   }
    
    @Override
    public boolean isSecure()
