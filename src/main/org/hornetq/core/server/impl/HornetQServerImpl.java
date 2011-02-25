@@ -38,6 +38,7 @@ import javax.management.MBeanServer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -87,6 +88,7 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
@@ -289,7 +291,14 @@ public class HornetQServerImpl implements HornetQServer
     */
    protected NodeManager createNodeManager(final String directory)
    {
-      return new FileLockNodeManager(directory);
+      if (configuration.getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
+      {
+         return new AIOFileLockNodeManager(directory);
+      }
+      else
+      {
+         return new FileLockNodeManager(directory);
+      }
    }
 
    private class NoSharedStoreLiveActivation implements Activation

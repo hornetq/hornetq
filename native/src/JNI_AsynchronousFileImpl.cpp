@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <string>
 #include <time.h>
-
+#include <sys/file.h>
 
 #include "org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h"
 
@@ -37,6 +37,45 @@ inline AIOController * getController(JNIEnv *env, jobject & controllerAddress)
 {
      return (AIOController *) env->GetDirectBufferAddress(controllerAddress);
 } 
+
+/* Inaccessible static: log */
+/* Inaccessible static: totalMaxIO */
+/* Inaccessible static: loaded */
+/* Inaccessible static: EXPECTED_NATIVE_VERSION */
+/*
+ * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    openFile
+ * Signature: (Ljava/lang/String;)I
+ */
+JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_openFile
+  (JNIEnv * env , jclass , jstring jstrFileName)
+{
+	std::string fileName = convertJavaString(env, jstrFileName);
+
+    return open(fileName.data(), O_RDWR | O_CREAT, 0666);
+}
+
+/*
+ * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    closeFile
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_closeFile
+  (JNIEnv * , jclass , jint handle)
+{
+   close(handle);
+}
+
+/*
+ * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
+ * Method:    flock
+ * Signature: (I)Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_flock
+  (JNIEnv * , jclass , jint handle)
+{
+    return flock(handle, LOCK_EX | LOCK_NB) == 0;
+}
 
 
 
