@@ -1354,6 +1354,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
                                                                                 : getDiscoveryAddress();
       
       Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
+
+      if(ha == null)
+      {
+         ha = HornetQClient.DEFAULT_IS_HA;
+      }
       
       if (connectorClassName != null)
       {
@@ -1469,7 +1474,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          log.debug("TM located = " + tm);
       }
    }
-   
+
+
    private void setParams(final HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
    {
@@ -1551,6 +1557,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val2 != null)
       {
          cf.setReconnectAttempts(val2);
+      }
+      else
+      {
+         //the global default is 0 but we should always try to reconnect JCA
+         cf.setReconnectAttempts(-1);
       }
       val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize()
                                                               : raProperties.getThreadPoolMaxSize();

@@ -31,8 +31,6 @@ public class ConnectionFactoryProperties
     */
    private static boolean trace = ConnectionFactoryProperties.log.isTraceEnabled();
 
-   private final static Boolean IS_HA = false;
-
    private boolean hasBeenUpdated = false;
 
    /**
@@ -45,7 +43,7 @@ public class ConnectionFactoryProperties
     */
    private Map<String, Object> connectionParameters;
    
-   private Boolean ha = IS_HA;
+   private Boolean ha;
 
    private String connectionLoadBalancingPolicyClassName;
 
@@ -93,7 +91,7 @@ public class ConnectionFactoryProperties
 
    private Double retryIntervalMultiplier;
 
-   private Integer reconnectAttempts = -1;
+   private Integer reconnectAttempts;
 
    private Boolean useGlobalPools;
 

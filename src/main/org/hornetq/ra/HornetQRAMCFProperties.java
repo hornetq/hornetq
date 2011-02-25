@@ -58,8 +58,6 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
 
    public String strConnectionParameters;
 
-   public String strBackupConnectionParameters;
-
    /**
     * The connection type
     */

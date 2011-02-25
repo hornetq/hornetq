@@ -680,6 +680,16 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setThreadPoolMaxSize(threadPoolMaxSize);
    }
 
+   public Boolean isHA()
+   {
+      return mcfProperties.isHA();
+   }
+
+   public void setHA(Boolean ha)
+   {
+      mcfProperties.setHA(ha);
+   }
+
    /**
     * Get the useTryLock.
     *

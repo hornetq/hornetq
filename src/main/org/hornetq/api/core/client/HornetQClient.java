@@ -84,6 +84,8 @@ public class HornetQClient
    
    public static final boolean DEFAULT_FAILOVER_ON_INITIAL_CONNECTION = false;
 
+   public static final boolean DEFAULT_IS_HA = false;
+
    public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
 
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
