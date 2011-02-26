@@ -914,6 +914,19 @@ public class UnitTestCase extends TestCase
                fail("test left serverlocator running, this could effect other tests");
                // System.exit(0);
             }
+            else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
+            {
+               alreadyFailedThread.add(thread);
+               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+                                             thread.getName() +
+                                             " id = " +
+                                             thread.getId() +
+                                             " is still broadcasting " +
+                                             this.getName() +
+                                             " on this following dump"));
+               fail("test left broadcastgroupimpl running, this could effect other tests");
+               // System.exit(0);
+            }
          }
       }
 
