@@ -99,6 +99,8 @@ public class SessionFactoryTest extends ServiceTestBase
       ServerLocator csi = (ServerLocator)ois.readObject();
 
       Assert.assertNotNull(csi);
+
+      csi.close();
       
       locator.close();
    }
