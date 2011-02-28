@@ -33,7 +33,7 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class FileLockNodeManager extends NodeManager
 {
-   private static final Logger log = Logger.getLogger(FileLockNodeManager.class);
+   private final Logger log = Logger.getLogger(this.getClass());
 
    protected static final String SERVER_LOCK_NAME = "server.lock";
 
@@ -168,7 +168,7 @@ public class FileLockNodeManager extends NodeManager
          byte state = getState();
          while (state == FileLockNodeManager.NOT_STARTED || state == FileLockNodeManager.FIRST_TIME_START)
          {
-            FileLockNodeManager.log.debug("awaiting live node startup state='" + state + "'");
+            log.debug("awaiting live node startup state='" + state + "'");
             Thread.sleep(2000);
             state = getState();
          }
@@ -178,18 +178,18 @@ public class FileLockNodeManager extends NodeManager
          if (state == FileLockNodeManager.PAUSED)
          {
             liveLock.release();
-            FileLockNodeManager.log.debug("awaiting live node restarting");
+            log.debug("awaiting live node restarting");
             Thread.sleep(2000);
          }
          else if (state == FileLockNodeManager.FAILINGBACK)
          {
             liveLock.release();
-            FileLockNodeManager.log.debug("awaiting live node failing back");
+            log.debug("awaiting live node failing back");
             Thread.sleep(2000);
          }
          else if (state == FileLockNodeManager.LIVE)
          {
-            FileLockNodeManager.log.debug("acquired live node lock state = " + (char)state);
+            log.debug("acquired live node lock state = " + (char)state);
             break;
          }
       }
@@ -200,10 +200,10 @@ public class FileLockNodeManager extends NodeManager
    public void startBackup() throws Exception
    {
 
-      FileLockNodeManager.log.info("Waiting to become backup node");
+      log.info("Waiting to become backup node");
 
       backupLock = lock(FileLockNodeManager.BACKUP_LOCK_POS);
-      FileLockNodeManager.log.info("** got backup lock");
+      log.info("** got backup lock");
 
       readNodeId();
    }
@@ -213,11 +213,11 @@ public class FileLockNodeManager extends NodeManager
    {
       setFailingBack();
 
-      FileLockNodeManager.log.info("Waiting to obtain live lock");
+      log.info("Waiting to obtain live lock");
 
       liveLock = lock(FileLockNodeManager.LIVE_LOCK_POS);
 
-      FileLockNodeManager.log.info("Live Server Obtained live lock");
+      log.info("Live Server Obtained live lock");
 
       setLive();
    }
