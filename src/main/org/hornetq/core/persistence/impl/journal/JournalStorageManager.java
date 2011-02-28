@@ -14,15 +14,19 @@
 package org.hornetq.core.persistence.impl.journal;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +41,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOAsyncTask;
@@ -48,7 +53,10 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.core.journal.impl.ExportJournal;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.JournalReaderCallback;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
@@ -67,6 +75,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator.IDCounterEncoding;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
@@ -85,6 +94,7 @@ import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.utils.Base64;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -107,7 +117,7 @@ public class JournalStorageManager implements StorageManager
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
    // grouping journal record type
-   public static final byte GROUP_RECORD = 41;
+   public static final byte GROUP_RECORD = 20;
 
    // Bindings journal record type
 
@@ -168,7 +178,7 @@ public class JournalStorageManager implements StorageManager
    private final ExecutorFactory executorFactory;
 
    private final Executor executor;
-   
+
    private ExecutorService singleThreadExecutor;
 
    private final boolean syncTransactional;
@@ -395,12 +405,12 @@ public class JournalStorageManager implements StorageManager
    {
       OperationContextImpl.setContext(context);
    }
-   
+
    public Executor getSingleThreadExecutor()
    {
       return singleThreadExecutor;
    }
-   
+
    public OperationContext newSingleThreadContext()
    {
       return newContext(singleThreadExecutor);
@@ -1324,6 +1334,36 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
    }
 
+   public static void describeBindingJournal(final String bindingsDir) throws Exception
+   {
+
+      SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
+
+      JournalImpl bindings = new JournalImpl(1024 * 1024, 2, -1, 0, bindingsFF, "hornetq-bindings", "bindings", 1);
+
+      describeJournal(bindingsFF, bindings);
+   }
+
+   public static void describeMessagesJournal(final String messagesDir) throws Exception
+   {
+
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir);
+
+      // Will use only default values. The load function should adapt to anything different
+      ConfigurationImpl defaultValues = new ConfigurationImpl();
+
+      JournalImpl messagesJournal = new JournalImpl(defaultValues.getJournalFileSize(),
+                                                    defaultValues.getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
+
+      describeJournal(messagesFF, messagesJournal);
+   }
+
    public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
                                                     final List<GroupingInfo> groupingInfos) throws Exception
    {
@@ -1343,11 +1383,7 @@ public class JournalStorageManager implements StorageManager
 
          if (rec == JournalStorageManager.QUEUE_BINDING_RECORD)
          {
-            PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
-
-            bindingEncoding.decode(buffer);
-
-            bindingEncoding.setId(id);
+            PersistentQueueBindingEncoding bindingEncoding = newBindingEncoding(id, buffer);
 
             queueBindingInfos.add(bindingEncoding);
          }
@@ -1357,23 +1393,17 @@ public class JournalStorageManager implements StorageManager
          }
          else if (rec == JournalStorageManager.GROUP_RECORD)
          {
-            GroupingEncoding encoding = new GroupingEncoding();
-            encoding.decode(buffer);
-            encoding.setId(id);
+            GroupingEncoding encoding = newGroupEncoding(id, buffer);
             groupingInfos.add(encoding);
          }
          else if (rec == JournalStorageManager.ADDRESS_SETTING_RECORD)
          {
-            PersistedAddressSetting setting = new PersistedAddressSetting();
-            setting.decode(buffer);
-            setting.setStoreId(id);
+            PersistedAddressSetting setting = newAddressEncoding(id, buffer);
             mapPersistedAddressSettings.put(setting.getAddressMatch(), setting);
          }
          else if (rec == JournalStorageManager.SECURITY_RECORD)
          {
-            PersistedRoles roles = new PersistedRoles();
-            roles.decode(buffer);
-            roles.setStoreId(id);
+            PersistedRoles roles = newSecurityRecord(id, buffer);
             mapPersistedRoles.put(roles.getAddressMatch(), roles);
          }
          else
@@ -1402,8 +1432,10 @@ public class JournalStorageManager implements StorageManager
       checkAndCreateDir(largeMessagesDirectory, createJournalDir);
 
       cleanupIncompleteFiles();
-      
-      singleThreadExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-IO-SingleThread", true, getThisClassLoader()));
+
+      singleThreadExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-IO-SingleThread",
+                                                                                        true,
+                                                                                        getThisClassLoader()));
 
       bindingsJournal.start();
 
@@ -1412,7 +1444,6 @@ public class JournalStorageManager implements StorageManager
       started = true;
    }
 
-   
    public synchronized void stop() throws Exception
    {
       if (!started)
@@ -1429,7 +1460,7 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.stop();
 
       messageJournal.stop();
-      
+
       singleThreadExecutor.shutdown();
 
       journalLoaded = false;
@@ -1682,7 +1713,7 @@ public class JournalStorageManager implements StorageManager
                }
                case PAGE_TRANSACTION:
                {
-                  
+
                   PageTransactionInfo pageTransactionInfo = new PageTransactionInfoImpl();
 
                   pageTransactionInfo.decode(buff);
@@ -1695,11 +1726,11 @@ public class JournalStorageManager implements StorageManager
                   else
                   {
                      pageTransactionInfo.setCommitted(false);
-   
+
                      tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pageTransactionInfo);
-   
+
                      pagingManager.addTransaction(pageTransactionInfo);
-   
+
                      tx.addOperation(new FinishPageMessageOperation());
                   }
 
@@ -1733,7 +1764,10 @@ public class JournalStorageManager implements StorageManager
 
                   encoding.position.setRecordID(record.id);
 
-                  PageSubscription sub = locateSubscription(encoding.queueID, pageSubscriptions, queueInfos, pagingManager);
+                  PageSubscription sub = locateSubscription(encoding.queueID,
+                                                            pageSubscriptions,
+                                                            queueInfos,
+                                                            pagingManager);
 
                   if (sub != null)
                   {
@@ -1851,7 +1885,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-
    private static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
@@ -1862,7 +1895,6 @@ public class JournalStorageManager implements StorageManager
          }
       });
    }
-
 
    // Inner Classes
    // ----------------------------------------------------------------------------
@@ -1996,6 +2028,15 @@ public class JournalStorageManager implements StorageManager
 
       boolean isCommit;
 
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "HeuristicCompletionEncoding [xid=" + xid + ", isCommit=" + isCommit + "]";
+      }
+
       HeuristicCompletionEncoding(final Xid xid, final boolean isCommit)
       {
          this.xid = xid;
@@ -2080,10 +2121,13 @@ public class JournalStorageManager implements StorageManager
          return clusterName;
       }
 
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
       @Override
       public String toString()
       {
-         return id + ":" + groupId + ":" + clusterName;
+         return "GroupingEncoding [id=" + id + ", groupId=" + groupId + ", clusterName=" + clusterName + "]";
       }
    }
 
@@ -2099,6 +2143,22 @@ public class JournalStorageManager implements StorageManager
 
       public PersistentQueueBindingEncoding()
       {
+      }
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "PersistentQueueBindingEncoding [id=" + id +
+                ", name=" +
+                name +
+                ", address=" +
+                address +
+                ", filterString=" +
+                filterString +
+                "]";
       }
 
       public PersistentQueueBindingEncoding(final SimpleString name,
@@ -2154,40 +2214,6 @@ public class JournalStorageManager implements StorageManager
          return SimpleString.sizeofString(name) + SimpleString.sizeofString(address) +
                 SimpleString.sizeofNullableString(filterString);
       }
-   }
-
-   private static class PersistentIDEncoding implements EncodingSupport
-   {
-      UUID uuid;
-
-      PersistentIDEncoding(final UUID uuid)
-      {
-         this.uuid = uuid;
-      }
-
-      PersistentIDEncoding()
-      {
-      }
-
-      public void decode(final HornetQBuffer buffer)
-      {
-         byte[] bytes = new byte[16];
-
-         buffer.readBytes(bytes);
-
-         uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
-      }
-
-      public void encode(final HornetQBuffer buffer)
-      {
-         buffer.writeBytes(uuid.asBytes());
-      }
-
-      public int getEncodeSize()
-      {
-         return 16;
-      }
-
    }
 
    private static class LargeMessageEncoding implements EncodingSupport
@@ -2259,6 +2285,16 @@ public class JournalStorageManager implements StorageManager
       {
          return 8 + 4;
       }
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "DeliveryCountUpdateEncoding [queueID=" + queueID + ", count=" + count + "]";
+      }
+
    }
 
    private static class QueueEncoding implements EncodingSupport
@@ -2290,6 +2326,16 @@ public class JournalStorageManager implements StorageManager
       {
          return 8;
       }
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "QueueEncoding [queueID=" + queueID + "]";
+      }
+
    }
 
    private static class DeleteEncoding extends QueueEncoding
@@ -2324,6 +2370,15 @@ public class JournalStorageManager implements StorageManager
       public long pageTX;
 
       public int recods;
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "PageUpdateTXEncoding [pageTX=" + pageTX + ", recods=" + recods + "]";
+      }
 
       public PageUpdateTXEncoding()
       {
@@ -2367,6 +2422,15 @@ public class JournalStorageManager implements StorageManager
    private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
       long scheduledDeliveryTime;
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "ScheduledDeliveryEncoding [scheduledDeliveryTime=" + scheduledDeliveryTime + "]";
+      }
 
       private ScheduledDeliveryEncoding(final long scheduledDeliveryTime, final long queueID)
       {
@@ -2440,6 +2504,16 @@ public class JournalStorageManager implements StorageManager
       {
          return SimpleString.sizeofString(address) + DataConstants.SIZE_INT + duplID.length;
       }
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "DuplicateIDEncoding [address=" + address + ", duplID=" + Arrays.toString(duplID) + "]";
+      }
+
    }
 
    private class FinishPageMessageOperation implements TransactionOperation
@@ -2495,6 +2569,15 @@ public class JournalStorageManager implements StorageManager
    private static final class PageCountRecord implements EncodingSupport
    {
 
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "PageCountRecord [queueID=" + queueID + ", value=" + value + "]";
+      }
+
       PageCountRecord()
       {
 
@@ -2540,6 +2623,15 @@ public class JournalStorageManager implements StorageManager
 
    private static final class PageCountRecordInc implements EncodingSupport
    {
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "PageCountRecordInc [queueID=" + queueID + ", value=" + value + "]";
+      }
 
       PageCountRecordInc()
       {
@@ -2609,6 +2701,15 @@ public class JournalStorageManager implements StorageManager
       public CursorAckRecordEncoding()
       {
          this.position = new PagePositionImpl();
+      }
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "CursorAckRecordEncoding [queueID=" + queueID + ", position=" + position + "]";
       }
 
       long queueID;
@@ -2681,4 +2782,384 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
+
+   private static String describeRecord(RecordInfo info)
+   {
+      return "userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + newObjectEncoding(info);
+   }
+
+   // Encoding functions for binding Journal
+
+   private static Object newObjectEncoding(RecordInfo info)
+   {
+      HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
+      long id = info.id;
+      int rec = info.getUserRecordType();
+
+      switch (rec)
+      {
+         case ADD_LARGE_MESSAGE:
+
+            LargeServerMessage largeMessage = new LargeServerMessageImpl(null);
+
+            LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+
+            messageEncoding.decode(buffer);
+
+            return new MessageDescribe(largeMessage);
+
+         case ADD_MESSAGE:
+            ServerMessage message = new ServerMessageImpl(rec, 50);
+
+            message.decode(buffer);
+
+            return new MessageDescribe(message);
+
+         case ADD_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new Object()
+            {
+               public String toString()
+               {
+                  return "AddRef;" + encoding;
+               }
+            };
+         }
+
+         case ACKNOWLEDGE_REF:
+         {
+            final RefEncoding encoding = new RefEncoding();
+            encoding.decode(buffer);
+            return new Object()
+            {
+               public String toString()
+               {
+                  return "ACK;" + encoding;
+               }
+            };
+         }
+
+         case UPDATE_DELIVERY_COUNT:
+         {
+            DeliveryCountUpdateEncoding updateDeliveryCount = new DeliveryCountUpdateEncoding();
+            updateDeliveryCount.decode(buffer);
+            return updateDeliveryCount;
+         }
+
+         case PAGE_TRANSACTION:
+         {
+            if (info.isUpdate)
+            {
+               PageUpdateTXEncoding pageUpdate = new PageUpdateTXEncoding();
+
+               pageUpdate.decode(buffer);
+
+               return pageUpdate;
+            }
+            else
+            {
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+
+               pageTransactionInfo.decode(buffer);
+
+               pageTransactionInfo.setRecordID(info.id);
+
+               return pageTransactionInfo;
+            }
+         }
+
+         case SET_SCHEDULED_DELIVERY_TIME:
+         {
+            ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case DUPLICATE_ID:
+         {
+            DuplicateIDEncoding encoding = new DuplicateIDEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case HEURISTIC_COMPLETION:
+         {
+            HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case ACKNOWLEDGE_CURSOR:
+         {
+            CursorAckRecordEncoding encoding = new CursorAckRecordEncoding();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+         case PAGE_CURSOR_COUNTER_VALUE:
+         {
+            PageCountRecord encoding = new PageCountRecord();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case PAGE_CURSOR_COUNTER_INC:
+         {
+            PageCountRecordInc encoding = new PageCountRecordInc();
+
+            encoding.decode(buffer);
+
+            return encoding;
+         }
+
+         case JournalStorageManager.QUEUE_BINDING_RECORD:
+            return newBindingEncoding(id, buffer);
+
+         case JournalStorageManager.ID_COUNTER_RECORD:
+            IDCounterEncoding idReturn = new IDCounterEncoding();
+
+            idReturn.decode(buffer);
+
+            return idReturn;
+
+         case JournalStorageManager.GROUP_RECORD:
+            return newGroupEncoding(id, buffer);
+
+         case JournalStorageManager.ADDRESS_SETTING_RECORD:
+            return newAddressEncoding(id, buffer);
+
+         case JournalStorageManager.SECURITY_RECORD:
+            return newSecurityRecord(id, buffer);
+
+         default:
+            return null;
+      }
+   }
+
+   private static class MessageDescribe
+   {
+      public MessageDescribe(Message msg)
+      {
+         this.msg = msg;
+      }
+
+      Message msg;
+
+      public String toString()
+      {
+         StringBuffer buffer = new StringBuffer();
+         buffer.append(msg.isLargeMessage() ? "LargeMessage(" : "Message(");
+         buffer.append("messageID=" + msg.getMessageID());
+         buffer.append(";properties=[");
+
+         Set<SimpleString> properties = msg.getPropertyNames();
+
+         for (SimpleString prop : properties)
+         {
+            buffer.append(prop + "=" + msg.getObjectProperty(prop) + ",");
+         }
+         
+         buffer.append("#properties = " + properties.size());
+
+         buffer.append("]");
+         
+         buffer.append(" - " + msg.toString());
+
+         return buffer.toString();
+      }
+
+   }
+
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
+   {
+      PersistedRoles roles = new PersistedRoles();
+      roles.decode(buffer);
+      roles.setStoreId(id);
+      return roles;
+   }
+
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
+   {
+      PersistedAddressSetting setting = new PersistedAddressSetting();
+      setting.decode(buffer);
+      setting.setStoreId(id);
+      return setting;
+   }
+
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
+   {
+      GroupingEncoding encoding = new GroupingEncoding();
+      encoding.decode(buffer);
+      encoding.setId(id);
+      return encoding;
+   }
+
+   /**
+    * @param id
+    * @param buffer
+    * @return
+    */
+   protected static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
+   {
+      PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
+
+      bindingEncoding.decode(buffer);
+
+      bindingEncoding.setId(id);
+      return bindingEncoding;
+   }
+
+   private static String encode(final byte[] data)
+   {
+      return Base64.encodeBytes(data, 0, data.length, Base64.DONT_BREAK_LINES | Base64.URL_SAFE);
+   }
+
+   /**
+    * @param fileFactory
+    * @param journal
+    * @throws Exception
+    */
+   protected static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
+   {
+      List<JournalFile> files = journal.orderFiles();
+
+      final PrintStream out = System.out;
+
+      for (JournalFile file : files)
+      {
+         out.println("#" + file);
+
+         JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
+         {
+
+            public void onReadUpdateRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
+            {
+               out.println("operation@UpdateTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            }
+
+            public void onReadUpdateRecord(final RecordInfo recordInfo) throws Exception
+            {
+               out.println("operation@Update," + describeRecord(recordInfo));
+            }
+
+            public void onReadRollbackRecord(final long transactionID) throws Exception
+            {
+               out.println("operation@Rollback,txID@" + transactionID);
+            }
+
+            public void onReadPrepareRecord(final long transactionID, final byte[] extraData, final int numberOfRecords) throws Exception
+            {
+               out.println("operation@Prepare,txID@" + transactionID +
+                           ",numberOfRecords@" +
+                           numberOfRecords +
+                           ",extraData@" +
+                           encode(extraData));
+            }
+
+            public void onReadDeleteRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
+            {
+               out.println("operation@DeleteRecordTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            }
+
+            public void onReadDeleteRecord(final long recordID) throws Exception
+            {
+               out.println("operation@DeleteRecord,id@" + recordID);
+            }
+
+            public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
+            {
+               out.println("operation@Commit,txID@" + transactionID + ",numberOfRecords@" + numberOfRecords);
+            }
+
+            public void onReadAddRecordTX(final long transactionID, final RecordInfo recordInfo) throws Exception
+            {
+               out.println("operation@AddRecordTX,txID@" + transactionID + "," + describeRecord(recordInfo));
+            }
+
+            public void onReadAddRecord(final RecordInfo recordInfo) throws Exception
+            {
+               out.println("operation@AddRecord," + describeRecord(recordInfo));
+            }
+
+            public void markAsDataFile(final JournalFile file)
+            {
+            }
+         });
+      }
+
+      out.println();
+
+      out.println("### Surviving Records Summary ###");
+
+      List<RecordInfo> records = new LinkedList<RecordInfo>();
+      List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
+
+      journal.start();
+
+      journal.load(records, preparedTransactions, new TransactionFailureCallback()
+      {
+
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+            out.println("Transaction " + transactionID + " failed with these records:");
+            for (RecordInfo info : records)
+            {
+               out.println("- " + describeRecord(info));
+            }
+
+            for (RecordInfo info : recordsToDelete)
+            {
+               out.println("- " + describeRecord(info) + " <marked to delete>");
+            }
+
+         }
+      });
+
+      for (RecordInfo info : records)
+      {
+         System.out.println(describeRecord(info));
+      }
+
+      out.println("### Prepared TX ###");
+
+      for (PreparedTransactionInfo tx : preparedTransactions)
+      {
+         System.out.println(tx.id);
+         for (RecordInfo info : tx.records)
+         {
+            out.println("- " + describeRecord(info));
+         }
+
+         for (RecordInfo info : tx.recordsToDelete)
+         {
+            out.println("- " + describeRecord(info) + " <marked to delete>");
+         }
+      }
+
+      journal.stop();
+   }
+
 }

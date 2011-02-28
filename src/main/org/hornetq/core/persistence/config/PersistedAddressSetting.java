@@ -44,6 +44,20 @@ public class PersistedAddressSetting implements EncodingSupport
       super();
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PersistedAddressSetting [storeId=" + storeId +
+             ", addressMatch=" +
+             addressMatch +
+             ", setting=" +
+             setting +
+             "]";
+   }
+
    /**
     * @param addressMatch
     * @param setting
