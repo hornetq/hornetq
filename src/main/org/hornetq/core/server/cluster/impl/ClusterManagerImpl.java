@@ -18,6 +18,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -102,6 +103,7 @@ public class ClusterManagerImpl implements ClusterManager
    private volatile ServerLocatorInternal backupServerLocator;
 
    private final List<ServerLocatorInternal> clusterLocators = new ArrayList<ServerLocatorInternal>();
+   private Executor executor;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final HornetQServer server,
@@ -119,6 +121,8 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       this.executorFactory = executorFactory;
+
+      executor = executorFactory.getExecutor();
 
       this.server = server;
 
@@ -250,11 +254,13 @@ public class ClusterManagerImpl implements ClusterManager
       }
    }
 
-   public void notifyNodeUp(String nodeID,
-                                   Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                   boolean last)
+   public void notifyNodeUp(final String nodeID,
+                            final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                            final boolean last,
+                            final boolean nodeAnnounce)
    {
-      boolean updated = topology.addMember(nodeID, new TopologyMember(connectorPair));
+      TopologyMember member = new TopologyMember(connectorPair);
+      boolean updated = topology.addMember(nodeID, member);
 
       if(!updated)
       {
@@ -263,13 +269,22 @@ public class ClusterManagerImpl implements ClusterManager
       
       for (ClusterTopologyListener listener : clientListeners)
       {
-         listener.nodeUP(nodeID, connectorPair, last);
+         listener.nodeUP(nodeID, member.getConnector(), last);
       }
 
 
       for (ClusterTopologyListener listener : clusterConnectionListeners)
       {
-         listener.nodeUP(nodeID, connectorPair, last);
+         listener.nodeUP(nodeID, member.getConnector(), last);
+      }
+
+      //if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster connections.
+      if (nodeAnnounce)
+      {
+         for (ClusterConnection clusterConnection : clusterConnections.values())
+         {
+            clusterConnection.nodeAnnounced(nodeID, connectorPair);
+         }
       }
    }
    
@@ -836,7 +851,7 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
       log.info("announcing backup");
-      this.executorFactory.getExecutor().execute(new Runnable()
+      executor.execute(new Runnable()
       {
          public void run()
          {

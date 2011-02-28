@@ -35,7 +35,6 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -83,8 +82,6 @@ public class ClusterConnectionImpl implements ClusterConnection
    private final boolean routeWhenNoConsumers;
 
    private final Map<String, MessageFlowRecord> records = new HashMap<String, MessageFlowRecord>();
-
-   private final List<TransportConfiguration> conectorssss = new ArrayList<TransportConfiguration>();
 
    private final ScheduledExecutorService scheduledExecutor;
 
@@ -425,13 +422,13 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          if(connectorPair.b != null)
          {
-            server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last);
+            server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, false);
          }
          return;
       }
 
       // we propagate the node notifications to all cluster topology listeners
-      server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last);
+      server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, false);
 
       // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
       if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.a))
@@ -451,58 +448,119 @@ public class ClusterConnectionImpl implements ClusterConnection
          return;
       }
 
-      Collection<TopologyMember> topologyMembers = serverLocator.getTopology().getMembers();
-      for (TopologyMember topologyMember : topologyMembers)
+      synchronized (records)
       {
-         if(topologyMember.getConnector().a != null && !conectorssss.contains(topologyMember.getConnector().a))
+         try
          {
-            if(!topologyMember.getConnector().a.equals(connector) && !topologyMember.getConnector().a.equals(connectorPair.a))
+            MessageFlowRecord record = records.get(nodeID);
+
+            if (record == null)
             {
-               log.debug("ClusterConnectionImpl.nodeUP");
-            }
-         }
-      }
+               // New node - create a new flow record
 
-      try
-      {
-         MessageFlowRecord record = records.get(nodeID);
+               final SimpleString queueName = new SimpleString("sf." + name + "." + nodeID);
 
-         if (record == null)
-         {
-            // New node - create a new flow record
+               Binding queueBinding = postOffice.getBinding(queueName);
 
-            final SimpleString queueName = new SimpleString("sf." + name + "." + nodeID);
+               Queue queue;
 
-            Binding queueBinding = postOffice.getBinding(queueName);
+               if (queueBinding != null)
+               {
+                  queue = (Queue)queueBinding.getBindable();
+               }
+               else
+               {
+                  // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
+                  // actually routed to at that address though
+                  queue = server.createQueue(queueName, queueName, null, true, false);
+               }
 
-            Queue queue;
-
-            if (queueBinding != null)
-            {
-               queue = (Queue)queueBinding.getBindable();
+               createNewRecord(nodeID, connectorPair.a, queueName, queue, true);
             }
             else
             {
-               // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
-               // actually routed to at that address though
-               queue = server.createQueue(queueName, queueName, null, true, false);
+               // FIXME apple and orange comparison. I don't understand it...
+               //if (!connectorPair.a.equals(record.getBridge().getForwardingConnection().getTransportConnection()))
+               // {
+               //   // New live node - close it and recreate it - TODO - CAN THIS EVER HAPPEN?
+               //}
             }
-
-            createNewRecord(nodeID, connectorPair.a, queueName, queue, true);
-            conectorssss.add(connectorPair.a);
          }
-         else
+         catch (Exception e)
          {
-            // FIXME apple and orange comparison. I don't understand it...
-            //if (!connectorPair.a.equals(record.getBridge().getForwardingConnection().getTransportConnection()))
-            // {
-            //   // New live node - close it and recreate it - TODO - CAN THIS EVER HAPPEN?
-            //}
+            log.error("Failed to update topology", e);
          }
       }
-      catch (Exception e)
+   }
+
+   public void nodeAnnounced(final String nodeID,
+                                   final Pair<TransportConfiguration, TransportConfiguration> connectorPair)
+   {
+      if (nodeID.equals(nodeUUID.toString()))
       {
-         log.error("Failed to update topology", e);
+         return;
+      }
+
+      // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
+      if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.a))
+      {
+         return;
+      }
+
+      // FIXME required to prevent cluster connections w/o discovery group
+      // and empty static connectors to create bridges... ulgy!
+      if (serverLocator == null)
+      {
+         return;
+      }
+      /*we dont create bridges to backups*/
+      if(connectorPair.a == null)
+      {
+         return;
+      }
+
+      synchronized (records)
+      {
+         try
+         {
+            MessageFlowRecord record = records.get(nodeID);
+
+            if (record == null)
+            {
+               // New node - create a new flow record
+
+               final SimpleString queueName = new SimpleString("sf." + name + "." + nodeID);
+
+               Binding queueBinding = postOffice.getBinding(queueName);
+
+               Queue queue;
+
+               if (queueBinding != null)
+               {
+                  queue = (Queue)queueBinding.getBindable();
+               }
+               else
+               {
+                  // Add binding in storage so the queue will get reloaded on startup and we can find it - it's never
+                  // actually routed to at that address though
+                  queue = server.createQueue(queueName, queueName, null, true, false);
+               }
+
+               createNewRecord(nodeID, connectorPair.a, queueName, queue, true);
+            }
+            else
+            {
+               // FIXME apple and orange comparison. I don't understand it...
+               //if (!connectorPair.a.equals(record.getBridge().getForwardingConnection().getTransportConnection()))
+               // {
+               //   // New live node - close it and recreate it - TODO - CAN THIS EVER HAPPEN?
+               //}
+            }
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to update topology", e);
+         }
       }
    }
    
