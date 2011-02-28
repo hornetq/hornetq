@@ -54,10 +54,9 @@ public class Topology implements Serializable
       TopologyMember currentMember = topology.get(nodeId);
       if (debug)
       {
-         if(member.getConnector().toString().contains("server-id=4"))
-         {
-            log.debug("member.getConnector() = " + member.getConnector());
-         }
+         System.out.println("adding = " + nodeId + ":" + member.getConnector());
+         System.out.println("before----------------------------------");
+         System.out.println(describe());
       }
       if(currentMember == null)
       {
@@ -85,6 +84,12 @@ public class Topology implements Serializable
          {
             member.getConnector().b = currentMember.getConnector().b;
          }
+      }
+      if(debug)
+      {
+
+         System.out.println("after----------------------------------updated=" + replaced);
+         System.out.println(describe());
       }
       return replaced;
    }
