@@ -2785,7 +2785,7 @@ public class JournalStorageManager implements StorageManager
 
    private static String describeRecord(RecordInfo info)
    {
-      return "userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + newObjectEncoding(info);
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + newObjectEncoding(info);
    }
 
    // Encoding functions for binding Journal
@@ -2964,7 +2964,16 @@ public class JournalStorageManager implements StorageManager
 
          for (SimpleString prop : properties)
          {
-            buffer.append(prop + "=" + msg.getObjectProperty(prop) + ",");
+            Object value = msg.getObjectProperty(prop);
+            if (value instanceof byte[])
+            {
+               buffer.append(prop + "=" + Arrays.toString((byte[])value) + ",");
+               
+            }
+            else
+            {
+               buffer.append(prop + "=" + value + ",");
+            }
          }
          
          buffer.append("#properties = " + properties.size());
