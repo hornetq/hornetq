@@ -3118,21 +3118,23 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
 
       journal.start();
+      
+      final StringBuffer bufferFailingTransactions = new StringBuffer();
 
       journal.load(records, preparedTransactions, new TransactionFailureCallback()
       {
 
          public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
          {
-            out.println("Transaction " + transactionID + " failed with these records:");
+            bufferFailingTransactions.append("Transaction " + transactionID + " failed with these records:\n");
             for (RecordInfo info : records)
             {
-               out.println("- " + describeRecord(info));
+               bufferFailingTransactions.append("- " + describeRecord(info) + "\n");
             }
 
             for (RecordInfo info : recordsToDelete)
             {
-               out.println("- " + describeRecord(info) + " <marked to delete>");
+               bufferFailingTransactions.append("- " + describeRecord(info) + " <marked to delete>\n");
             }
 
          }
@@ -3140,9 +3142,10 @@ public class JournalStorageManager implements StorageManager
 
       for (RecordInfo info : records)
       {
-         System.out.println(describeRecord(info));
+         out.println(describeRecord(info));
       }
 
+      out.println();
       out.println("### Prepared TX ###");
 
       for (PreparedTransactionInfo tx : preparedTransactions)
@@ -3158,6 +3161,18 @@ public class JournalStorageManager implements StorageManager
             out.println("- " + describeRecord(info) + " <marked to delete>");
          }
       }
+      
+      String missingTX = bufferFailingTransactions.toString();
+      
+      if (missingTX.length() > 0)
+      {
+         out.println();
+         out.println("### Failed Transactions (Missing commit/prepare/rollback record) ###");
+      }
+      
+      
+      out.println(bufferFailingTransactions.toString());
+      
 
       journal.stop();
    }
