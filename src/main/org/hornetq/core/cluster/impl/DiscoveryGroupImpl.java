@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -35,6 +36,7 @@ import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
+import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -81,12 +83,15 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private NotificationService notificationService;
 
+   private final ExecutorService globalThreadPool;
+
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
                              final InetAddress localBindAddress,
                              final InetAddress groupAddress,
                              final int groupPort,
-                             final long timeout) throws Exception
+                             final long timeout,
+                             ExecutorService globalThreadPool) throws Exception
    {
       this.nodeID = nodeID;
 
@@ -99,6 +104,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
+
+      this.globalThreadPool = globalThreadPool;
    }
 
    public void setNotificationService(final NotificationService notificationService)
@@ -170,15 +177,22 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          waitLock.notify();
       }
 
-      try
+      globalThreadPool.execute(new Runnable()
       {
-         thread.interrupt();
-         thread.join();
-      }
-      catch (InterruptedException e)
-      {
-      }
+         public void run()
+         {
+            try
+            {
+               thread.interrupt();
+               thread.join();
+            }
+            catch (InterruptedException e)
+            {
+            }
+         }
+      });
 
+      waitForRunnablesToComplete();
 
       socket.close();
 
@@ -430,5 +444,20 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       }
       
       return changed;
+   }
+
+   private void waitForRunnablesToComplete()
+   {
+      // Wait for any create objects runnable to complete
+      Future future = new Future();
+
+      globalThreadPool.execute(future);
+
+      boolean ok = future.await(10000);
+
+      if (!ok)
+      {
+         log.warn("Timed out waiting to stop discovery thread");
+      }
    }
 }

@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
@@ -90,7 +91,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -176,7 +178,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  localAddress,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -223,7 +226,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -281,7 +285,8 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnector(live1);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -372,7 +377,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  port2,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -415,7 +421,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress2,
                                                  port2,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg.start();
 
@@ -491,7 +498,8 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress1,
                                                   groupPort1,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
       dg1.start();
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl(RandomUtil.randomString(),
@@ -499,7 +507,8 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress2,
                                                   groupPort2,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
       dg2.start();
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl(RandomUtil.randomString(),
@@ -507,7 +516,8 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress3,
                                                   groupPort3,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
       dg3.start();
 
       bg1.broadcastConnectors();
@@ -571,7 +581,8 @@ public class DiscoveryTest extends UnitTestCase
 //                                                 null,
 //                                                 groupAddress,
 //                                                 groupPort,
-//                                                 timeout);
+//                                                 timeout,
+//                                                 Executors.newFixedThreadPool(1));
 //
 //      dg.start();
 //
@@ -610,7 +621,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       MyListener listener1 = new MyListener();
       MyListener listener2 = new MyListener();
@@ -699,7 +711,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       MyListener listener1 = new MyListener();
       dg.registerListener(listener1);
@@ -865,21 +878,24 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout);
+                                                  timeout,
+                                                 Executors.newFixedThreadPool(1));
 
       dg1.start();
       dg2.start();
@@ -924,7 +940,8 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout);
+                                                 timeout,
+                                                 Executors.newFixedThreadPool(1));
       dg.setNotificationService(notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());
