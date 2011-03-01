@@ -1048,12 +1048,38 @@ public class DiscoveryTest extends UnitTestCase
             return o2.getConnector().toString().compareTo(o1.getConnector().toString());
          }
       });
-      
+      if(sortedExpected.size() != sortedActual.size())
+      {
+         dump(sortedExpected, sortedActual);
+      }
       assertEquals(sortedExpected.size(), sortedActual.size());
       for (int i = 0; i < sortedExpected.size(); i++)
       {
+         if(!sortedExpected.get(i).equals(sortedActual.get(i).getConnector()))
+         {
+            dump(sortedExpected, sortedActual);
+         }
          assertEquals(sortedExpected.get(i), sortedActual.get(i).getConnector());
       }
+   }
+
+   private static void dump(List<TransportConfiguration> sortedExpected, List<DiscoveryEntry> sortedActual)
+   {
+      System.out.println("wrong broadcasts received");
+      System.out.println("expected");
+      System.out.println("----------------------------");
+      for (TransportConfiguration transportConfiguration : sortedExpected)
+      {
+         System.out.println("transportConfiguration = " + transportConfiguration);
+      }
+      System.out.println("----------------------------");
+      System.out.println("actual");
+      System.out.println("----------------------------");
+      for (DiscoveryEntry discoveryEntry : sortedActual)
+      {
+         System.out.println("transportConfiguration = " + discoveryEntry.getConnector());
+      }
+      System.out.println("----------------------------");
    }
 
 }
