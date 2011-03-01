@@ -177,22 +177,18 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          waitLock.notify();
       }
 
-      globalThreadPool.execute(new Runnable()
+      try
       {
-         public void run()
+         thread.interrupt();
+         thread.join(10000);
+         if(thread.isAlive())
          {
-            try
-            {
-               thread.interrupt();
-               thread.join();
-            }
-            catch (InterruptedException e)
-            {
-            }
+            log.warn("Timed out waiting to stop discovery thread");
          }
-      });
-
-      waitForRunnablesToComplete();
+      }
+      catch (InterruptedException e)
+      {
+      }
 
       socket.close();
 
@@ -446,18 +442,4 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       return changed;
    }
 
-   private void waitForRunnablesToComplete()
-   {
-      // Wait for any create objects runnable to complete
-      Future future = new Future();
-
-      globalThreadPool.execute(future);
-
-      boolean ok = future.await(10000);
-
-      if (!ok)
-      {
-         log.warn("Timed out waiting to stop discovery thread");
-      }
-   }
 }
