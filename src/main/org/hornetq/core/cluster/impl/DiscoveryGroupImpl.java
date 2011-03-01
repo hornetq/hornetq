@@ -172,6 +172,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       try
       {
+         thread.interrupt();
          thread.join();
       }
       catch (InterruptedException e)

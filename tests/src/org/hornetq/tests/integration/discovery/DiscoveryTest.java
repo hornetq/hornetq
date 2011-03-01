@@ -252,6 +252,10 @@ public class DiscoveryTest extends UnitTestCase
 
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
+      
+      dg.stop();
+      
+      bg.stop();
    }
 
    public void testIgnoreTrafficFromOwnNode() throws Exception
