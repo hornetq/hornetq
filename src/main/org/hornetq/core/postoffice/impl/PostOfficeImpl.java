@@ -580,14 +580,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (rejectDuplicates && isDuplicate)
          {
-            if (context.getTransaction() == null)
+            StringBuffer warnMessage = new StringBuffer();
+            warnMessage.append("Duplicate message detected - message will not be routed. Message information:\n");
+            for (SimpleString key : message.getPropertyNames())
             {
-               PostOfficeImpl.log.warn("Duplicate message detected - message will not be routed");
+               warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
             }
-            else
-            {
-               PostOfficeImpl.log.warn("Duplicate message detected - transaction will be rejected");
+            PostOfficeImpl.log.warn(warnMessage.toString());
 
+            if (context.getTransaction() != null) 
+            {
                context.getTransaction().markAsRollbackOnly(null);
             }
 
