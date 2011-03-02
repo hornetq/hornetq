@@ -2790,7 +2790,7 @@ public class JournalStorageManager implements StorageManager
 
    private static String describeRecord(RecordInfo info, Object o)
    {
-      return "userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
+      return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
    }
 
    // Encoding functions for binding Journal
