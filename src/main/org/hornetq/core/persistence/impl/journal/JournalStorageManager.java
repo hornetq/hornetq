@@ -2788,6 +2788,11 @@ public class JournalStorageManager implements StorageManager
       return "recordID=" + info.id + ";userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + newObjectEncoding(info);
    }
 
+   private static String describeRecord(RecordInfo info, Object o)
+   {
+      return "userRecordType=" + info.userRecordType + ";isUpdate=" + info.isUpdate + ";" + o;
+   }
+
    // Encoding functions for binding Journal
 
    private static Object newObjectEncoding(RecordInfo info)
@@ -2819,13 +2824,7 @@ public class JournalStorageManager implements StorageManager
          {
             final RefEncoding encoding = new RefEncoding();
             encoding.decode(buffer);
-            return new Object()
-            {
-               public String toString()
-               {
-                  return "AddRef;" + encoding;
-               }
-            };
+            return new ReferenceDescribe(encoding);
          }
 
          case ACKNOWLEDGE_REF:
@@ -2943,7 +2942,20 @@ public class JournalStorageManager implements StorageManager
             return null;
       }
    }
+   private static class ReferenceDescribe
+   {
+      RefEncoding refEncoding;
 
+      public ReferenceDescribe(RefEncoding refEncoding)
+      {
+         this.refEncoding = refEncoding;
+      }
+      public String toString()
+      {
+         return "AddRef;" + refEncoding;
+      }
+
+   }
    private static class MessageDescribe
    {
       public MessageDescribe(Message msg)
@@ -3130,6 +3142,10 @@ public class JournalStorageManager implements StorageManager
       
       final StringBuffer bufferFailingTransactions = new StringBuffer();
 
+      int messageCount = 0;
+      Map<Long, Integer> messageRefCounts = new HashMap<Long, Integer>();
+      int preparedMessageCount = 0;
+      Map<Long, Integer> preparedMessageRefCount = new HashMap<Long, Integer>();
       journal.load(records, preparedTransactions, new TransactionFailureCallback()
       {
 
@@ -3151,7 +3167,26 @@ public class JournalStorageManager implements StorageManager
 
       for (RecordInfo info : records)
       {
-         out.println(describeRecord(info));
+         Object o = newObjectEncoding(info);
+         if(info.getUserRecordType() == 31)
+         {
+            messageCount++;
+         }
+         else if(info.getUserRecordType() == 32)
+         {
+            ReferenceDescribe ref = (ReferenceDescribe) o;
+            Integer count = messageRefCounts.get(ref.refEncoding.queueID);
+            if(count == null)
+            {
+               count = 1;
+               messageRefCounts.put(ref.refEncoding.queueID, count);
+            }
+            else
+            {
+               messageRefCounts.put(ref.refEncoding.queueID, count+1);
+            }
+         }
+         out.println(describeRecord(info, o));
       }
 
       out.println();
@@ -3162,7 +3197,26 @@ public class JournalStorageManager implements StorageManager
          System.out.println(tx.id);
          for (RecordInfo info : tx.records)
          {
-            out.println("- " + describeRecord(info));
+            Object o = newObjectEncoding(info);
+            out.println("- " + describeRecord(info, o));
+            if(info.getUserRecordType() == 31)
+            {
+               preparedMessageCount++;
+            }
+            else if(info.getUserRecordType() == 32)
+            {
+               ReferenceDescribe ref = (ReferenceDescribe) o;
+               Integer count = preparedMessageRefCount.get(ref.refEncoding.queueID);
+               if(count == null)
+               {
+                  count = 1;
+                  preparedMessageRefCount.put(ref.refEncoding.queueID, count);
+               }
+               else
+               {
+                  preparedMessageRefCount.put(ref.refEncoding.queueID, count+1);
+               }
+            }
          }
 
          for (RecordInfo info : tx.recordsToDelete)
@@ -3182,6 +3236,21 @@ public class JournalStorageManager implements StorageManager
       
       out.println(bufferFailingTransactions.toString());
       
+
+      out.println("### Message Counts ###");
+      out.println("message count=" + messageCount);
+      out.println("message reference count");
+      for (Map.Entry<Long, Integer> longIntegerEntry : messageRefCounts.entrySet())
+      {
+         System.out.println("queue id " + longIntegerEntry.getKey() + ",count=" + longIntegerEntry.getValue());
+      }
+
+      out.println("prepared message count=" + preparedMessageCount);
+
+      for (Map.Entry<Long, Integer> longIntegerEntry : preparedMessageRefCount.entrySet())
+      {
+         System.out.println("queue id " + longIntegerEntry.getKey() + ",count=" + longIntegerEntry.getValue());
+      }
 
       journal.stop();
    }
