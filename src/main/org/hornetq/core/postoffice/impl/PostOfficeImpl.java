@@ -583,6 +583,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
       }
 
+      
+      if (message.hasInternalProperties())
+      {
+         // We need to perform some cleanup on internal properties,
+         // but we don't do it every time, otherwise it wouldn't be optimal
+         cleanupInternalPropertiesBeforeRouting(message);
+      }
+
+
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
       if (bindings != null)
@@ -791,6 +800,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    }
 
    // Private -----------------------------------------------------------------
+
+   /**
+    * @param message
+    */
+   protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
+   {
+      for (SimpleString name : message.getPropertyNames())
+      {
+         // We use properties to establish routing context on clustering.
+         // However if the client resends the message after receiving, it needs to be removed
+         if (name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS))
+         {
+            message.removeProperty(name);
+         }
+      }
+   }
+
 
    private void setPagingStore(final ServerMessage message) throws Exception
    {

@@ -1010,6 +1010,15 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#hasInternalProperties()
+       */
+      public boolean hasInternalProperties()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
    }
 
    class FakeFilter implements Filter

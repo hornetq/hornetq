@@ -759,12 +759,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                Assert.assertNotNull("consumer " + consumerID + " did not receive message " + j, message);
             }
 
-//            Set<SimpleString> names = message.getPropertyNames();
-//            for (SimpleString name : names)
-//            {
-//               assertFalse("Property " + name + " still defined what could be dangerous on resending the message", name.toString().startsWith("_HQ_ROUTE_TO"));
-//            }
-//
+
 
             if (ack)
             {

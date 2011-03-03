@@ -319,26 +319,16 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    /* Hook for processing message before forwarding */
    protected ServerMessage beforeForward(ServerMessage message)
    {
-      if (useDuplicateDetection && !message.containsProperty(Message.HDR_DUPLICATE_DETECTION_ID))
-      {
-         // If we are using duplicate detection and there's not already a duplicate detection header, then
-         // we add a header composed of the persistent node id and the message id, which makes it globally unique
-         // between restarts.
-         // If you use a cluster connection then a guid based duplicate id will be used since it is added *before*
-         // the
-         // message goes into the store and forward queue.
-         // But with this technique it also works when the messages don't already have such a header in them in the
-         // queue.
-         byte[] bytes = new byte[24];
+      // We keep our own DuplicateID for the Bridge, so bouncing back and forths will work fine
+      byte[] bytes = new byte[24];
 
-         ByteBuffer bb = ByteBuffer.wrap(bytes);
+      ByteBuffer bb = ByteBuffer.wrap(bytes);
 
-         bb.put(nodeUUID.asBytes());
+      bb.put(nodeUUID.asBytes());
 
-         bb.putLong(message.getMessageID());
+      bb.putLong(message.getMessageID());
 
-         message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
-      }
+      message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
 
       if (transformer != null)
       {
