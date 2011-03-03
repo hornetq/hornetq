@@ -1706,7 +1706,7 @@ public class JournalStorageManager implements StorageManager
 
                   if (removed == null)
                   {
-                     throw new IllegalStateException("Failed to remove reference for " + messageID);
+                     log.warn("Failed to remove reference for " + messageID);
                   }
 
                   break;
