@@ -32,6 +32,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
@@ -336,7 +337,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          bb.putLong(message.getMessageID());
 
-         message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, bytes);
+         message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
       }
 
       if (transformer != null)

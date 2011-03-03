@@ -219,6 +219,9 @@ public class HornetQServerImpl implements HornetQServer
    private volatile GroupingHandler groupingHandler;
    
    private NodeManager nodeManager;
+   
+   // Used to identify the server on tests... useful on debugging testcases
+   private String identity;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -778,6 +781,16 @@ public class HornetQServerImpl implements HornetQServer
    // HornetQServer implementation
    // -----------------------------------------------------------
 
+   
+   public void setIdentity(String identity)
+   {
+      this.identity = identity;
+   }
+   
+   public String getIdentity()
+   {
+      return identity;
+   }
    
    public ScheduledExecutorService getScheduledPool()
    {
@@ -1730,8 +1743,6 @@ public class HornetQServerImpl implements HornetQServer
                                      transformer,
                                      postOffice,
                                      storageManager);
-      // pagingManager,
-      // storageManager);
 
       Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
 
@@ -1863,6 +1874,11 @@ public class HornetQServerImpl implements HornetQServer
             " does not exist and will not be created");
          }
       }
+   }
+   
+   public String toString()
+   {
+      return "HornetQServerImpl::" + (identity == null ? "" : (identity + ", ")) + (nodeManager != null ? ("serverUUID=" + nodeManager.getUUID()) : "");
    }
 
    // Inner classes

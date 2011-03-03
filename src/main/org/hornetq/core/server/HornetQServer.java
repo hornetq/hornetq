@@ -55,6 +55,11 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public interface HornetQServer extends HornetQComponent
 {
+   
+   void setIdentity(String identity);
+   
+   String getIdentity();
+   
    Configuration getConfiguration();
 
    RemotingService getRemotingService();

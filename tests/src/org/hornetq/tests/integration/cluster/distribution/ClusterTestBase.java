@@ -748,7 +748,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             
             ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
-
+            
+            
             if (message == null)
             {
                ClusterTestBase.log.info("*** dumping consumers:");
@@ -757,6 +758,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
                Assert.assertNotNull("consumer " + consumerID + " did not receive message " + j, message);
             }
+
+            Set<SimpleString> names = message.getPropertyNames();
+            for (SimpleString name : names)
+            {
+               assertFalse("Property starting with _HQ_ROUTE_TO what could be dangerous on resending it", name.toString().startsWith("_HQ_ROUTE_TO"));
+            }
+
 
             if (ack)
             {
@@ -1769,9 +1777,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       for (int node : nodes)
       {
-         ClusterTestBase.log.info("starting server " + node);
-
+         servers[node].setIdentity("server " + node);
+         ClusterTestBase.log.info("starting server " + servers[node]);
          servers[node].start();
+         ClusterTestBase.log.info("started server " + servers[node]);
 
          ClusterTestBase.log.info("started server " + node);
 

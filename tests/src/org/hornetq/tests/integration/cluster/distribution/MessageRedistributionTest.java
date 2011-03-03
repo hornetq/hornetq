@@ -104,6 +104,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       MessageRedistributionTest.log.info("Test done");
    }
 
+
    public void testRedistributionWhenConsumerIsClosedNotConsumersOnAllNodes() throws Exception
    {
       setupCluster(false);
@@ -438,6 +439,73 @@ public class MessageRedistributionTest extends ClusterTestBase
          addConsumer(1, 1, QUEUE, null);
          verifyNotReceive(1);
          removeConsumer(1);
+
+         stop();
+         start();
+      }
+
+   }
+
+   public void testBackAndForth2() throws Exception
+   {
+      for (int i = 0; i < 10; i++)
+      {
+         setupCluster(false);
+
+         startServers(0, 1);
+
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+
+         final String ADDRESS = "queues.testaddress";
+         final String QUEUE = "queue0";
+
+         createQueue(0, ADDRESS, QUEUE, null, false);
+         createQueue(1, ADDRESS, QUEUE, null, false);
+
+         addConsumer(0, 0, QUEUE, null);
+
+         waitForBindings(0, ADDRESS, 1, 1, true);
+         waitForBindings(1, ADDRESS, 1, 0, true);
+
+         waitForBindings(0, ADDRESS, 1, 0, false);
+         waitForBindings(1, ADDRESS, 1, 1, false);
+
+         send(1, ADDRESS, 20, false, null);
+
+         waitForMessages(0, ADDRESS, 20);
+
+         removeConsumer(0);
+
+         waitForBindings(0, ADDRESS, 1, 0, true);
+         waitForBindings(1, ADDRESS, 1, 0, true);
+
+         waitForBindings(0, ADDRESS, 1, 0, false);
+         waitForBindings(1, ADDRESS, 1, 0, false);
+
+         addConsumer(1, 1, QUEUE, null);
+
+         waitForMessages(1, ADDRESS, 20);
+         waitForMessages(0, ADDRESS, 0);
+
+         waitForBindings(0, ADDRESS, 1, 1, false);
+         waitForBindings(1, ADDRESS, 1, 0, false);
+
+         removeConsumer(1);
+
+         addConsumer(0, 0, QUEUE, null);
+         
+         waitForMessages(1, ADDRESS, 0);
+         waitForMessages(0, ADDRESS, 20);
+         
+         removeConsumer(0);
+         addConsumer(1, 1, QUEUE, null);
+         
+         waitForMessages(1, ADDRESS, 20);
+         waitForMessages(0, ADDRESS, 0);
+         
+         
+         verifyReceiveAll(20, 1);
 
          stop();
          start();
