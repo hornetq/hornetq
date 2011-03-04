@@ -14,6 +14,7 @@ package org.hornetq.ra;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,6 +82,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties before parsing
     */
    private String unparsedProperties;
+
+
+   /**
+    * The resource adapter connector classnames before parsing
+    */
+   private String unparsedConnectors;
 
    /**
     * Have the factory been configured
@@ -242,13 +249,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQResourceAdapter.log.trace("setTransportType(" + connectorClassName + ")");
       }
+      unparsedConnectors = connectorClassName;
 
-      raProperties.setConnectorClassName(connectorClassName);
+      raProperties.setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
    }
 
    public String getConnectorClassName()
    {
-      return raProperties.getConnectorClassName();
+      return unparsedConnectors;
    }
 
    public String getConnectionParameters()
@@ -1344,12 +1352,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
-   //TODO - currently RA only allows a single target server to be specified we should allow a list of servers to be passed in
    public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
       HornetQConnectionFactory cf;
-      String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
-                                                                                    : getConnectorClassName();
+      List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
+                                                                                    : raProperties.getParsedConnectorClassNames();
+
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
                                                                                 : getDiscoveryAddress();
       
@@ -1362,26 +1370,41 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       if (connectorClassName != null)
       {
-         Map<String, Object> connectionParams;
-         if(raProperties.getConnectorClassName().equals(overrideProperties.getConnectorClassName()))
-         {
+         TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
 
-            connectionParams =
-               overrideConnectionParameters(raProperties.getParsedConnectionParameters(),overrideProperties.getParsedConnectionParameters());
-         }
-         else
+         List<Map<String, Object>> connectionParams;
+         if(overrideProperties.getParsedConnectorClassNames() != null)
          {
             connectionParams = overrideProperties.getParsedConnectionParameters();
          }
-         TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
+         else
+         {
+            connectionParams = raProperties.getParsedConnectionParameters();
+         }
+
+         for (int i = 0; i < connectorClassName.size(); i++)
+         {
+            TransportConfiguration tc;
+            if(connectionParams == null || i >= connectionParams.size())
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i));
+               log.debug("No connector params provided using default");
+            }
+            else
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i), connectionParams.get(i));
+            }
+
+            transportConfigurations[i] = tc;
+         }
          
          if (ha)
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, new TransportConfiguration[] {transportConf});
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
          }
          else
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, new TransportConfiguration[] {transportConf});
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
          }
       }
       else if (discoveryAddress != null)

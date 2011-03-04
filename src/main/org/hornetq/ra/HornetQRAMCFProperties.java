@@ -56,6 +56,9 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
     */
    private static final String TOPIC_TYPE = Topic.class.getName();
 
+
+   private String strConnectorClassName;
+
    public String strConnectionParameters;
 
    /**
@@ -96,6 +99,22 @@ public class HornetQRAMCFProperties extends ConnectionFactoryProperties implemen
       return type;
    }
 
+   public String getConnectorClassName()
+   {
+      return strConnectorClassName;
+   }
+
+   public void setConnectorClassName(final String connectorClassName)
+   {
+      if (HornetQRAMCFProperties.trace)
+      {
+         HornetQRAMCFProperties.log.trace("setConnectorClassName(" + connectorClassName + ")");
+      }
+
+      strConnectorClassName = connectorClassName;
+
+      setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
+   }
    /**
     * @return the connectionParameters
     */

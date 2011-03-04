@@ -15,6 +15,7 @@ package org.hornetq.ra;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.jms.ConnectionMetaData;

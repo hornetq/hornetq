@@ -12,6 +12,7 @@
  */
 package org.hornetq.ra;
 
+import java.util.List;
 import java.util.Map;
 
 import org.hornetq.core.logging.Logger;
@@ -36,12 +37,12 @@ public class ConnectionFactoryProperties
    /**
     * The transport type, changing the default configured from the RA
     */
-   private String connectorClassName;
+   private List<String> connectorClassName;
 
    /**
     * The transport config, changing the default configured from the RA
     */
-   private Map<String, Object> connectionParameters;
+   private List<Map<String, Object>> connectionParameters;
    
    private Boolean ha;
 
@@ -102,23 +103,23 @@ public class ConnectionFactoryProperties
    /**
     * @return the transportType
     */
-   public String getConnectorClassName()
+   public List<String> getParsedConnectorClassNames()
    {
       return connectorClassName;
    }
 
-   public Map<String, Object> getParsedConnectionParameters()
+   public List<Map<String, Object>> getParsedConnectionParameters()
    {
       return connectionParameters;
    }
 
-   public void setParsedConnectionParameters(final Map<String, Object> connectionParameters)
+   public void setParsedConnectionParameters(final List<Map<String, Object>> connectionParameters)
    {
       this.connectionParameters = connectionParameters;
       hasBeenUpdated = true;
    }
 
-   public void setConnectorClassName(final String value)
+   public void setParsedConnectorClassNames(final List<String> value)
    {
       connectorClassName = value;
       hasBeenUpdated = true;
