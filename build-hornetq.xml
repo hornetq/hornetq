@@ -193,6 +193,10 @@
    <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
    <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
    <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
+	
+	
+   <property name="test-udp-address" value="230.1.2.3"/> 
+   <property name="test-udp-port" value="6750"/>
 
    <!-- ======================================================================================== -->
    <!-- Classpath definition                                                                     -->
@@ -1732,6 +1736,8 @@
          <sysproperty key="twitter.consumerSecret" value="${twitter.consumerSecret}"/>
          <sysproperty key="twitter.accessToken" value="${twitter.accessToken}"/>
          <sysproperty key="twitter.accessTokenSecret" value="${twitter.accessTokenSecret}"/>
+     	 <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+     	 <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
       	 <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
@@ -1877,6 +1883,8 @@
 
           <sysproperty key="user.home" value="${user.home}"/>
           <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+     	  <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+    	  <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
          <jvmarg value="-Xmx1024M"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
