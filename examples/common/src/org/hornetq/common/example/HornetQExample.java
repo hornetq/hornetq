@@ -227,6 +227,21 @@ public abstract class HornetQExample
       String port = (String) transportConfiguration.getParams().get("port");
       return Integer.valueOf(port) - 5445;
    }
+
+   protected Connection getServerConnection(int server, Connection... connections)
+   {
+      for (Connection connection : connections)
+      {
+         DelegatingSession session = (DelegatingSession) ((HornetQConnection) connection).getInitialSession();
+         TransportConfiguration transportConfiguration = session.getSessionFactory().getConnectorConfiguration();
+         String port = (String) transportConfiguration.getParams().get("port");
+         if(Integer.valueOf(port) == server + 5445)
+         {
+            return connection;
+         }
+      }
+      return null;
+   }
    
    private void reportResultAndExit()
    {
