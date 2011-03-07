@@ -223,6 +223,7 @@ int main(int arg, char * param[])
  
 
       fprintf (stderr, "Total time to write file = %ld milliseconds, Bytes/millisecond = %ld, Writes/Syncs per millisecond = %f \n", (endAIO - startAIO), (fileSize / (endAIO - startAIO)), ((double)writes / ((double)endAIO - (double)startAIO)));
+      fprintf (stderr, "Number of writes:  %d,total Time = %ld\n",  writes, endAIO - startAIO);
 
 
       free (events);
