@@ -42,8 +42,6 @@ public class ClusterStaticOnewayExample extends HornetQExample
 
       Connection connection2 = null;
 
-      Connection connection3 = null;
-
       InitialContext ic0 = null;
       Thread.sleep(5000);
       try
@@ -94,12 +92,27 @@ public class ClusterStaticOnewayExample extends HornetQExample
 
          MessageConsumer consumer2 = session2.createConsumer(queue);
 
-         Thread.sleep(2000);
+         Thread.sleep(4000);
 
-         // Step 13. We create a JMS MessageProducer object on server 2
-         MessageProducer producer = session2.createProducer(queue);
+         int con0Node = getServer(connection0);
+         int con1Node = getServer(connection1);
+         int con2Node = getServer(connection2);
 
-         // Step 14. We send some messages to server 2
+         System.out.println("con0Node = " + con0Node);
+         System.out.println("con1Node = " + con1Node);
+         System.out.println("con2Node = " + con2Node);
+
+         if(con0Node + con1Node + con2Node != 3)
+         {
+            System.out.println("connections not load balanced");
+            return false;
+         }
+         // Step 13. We create a JMS MessageProducer object on server 0
+         Session sendSession = getServerConnection(0, connection0, connection1, connection2).createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer producer = sendSession.createProducer(queue);
+
+         // Step 14. We send some messages to server 0
 
          final int numMessages = 18;
 
@@ -112,22 +125,11 @@ public class ClusterStaticOnewayExample extends HornetQExample
             System.out.println("Sent message: " + message.getText());
          }
          Thread.sleep(2000);
-         // Step 15. We now consume those messages on *both* server 0,server 1 and 3.
+         // Step 15. We now consume those messages on *both* server 0,server 1 and 2.
          // We note the messages have been distributed between servers in a round robin fashion
          // JMS Queues implement point-to-point message where each message is only ever consumed by a
          // maximum of one consumer
-         int con0Node = getServer(connection0);
-         int con1Node = getServer(connection1);
-         int con2Node = getServer(connection2);
 
-         if(con0Node + con1Node + con2Node != 3)
-         {
-            System.out.println("connections not load balanced");
-            System.out.println("con0Node = " + con0Node);
-            System.out.println("con1Node = " + con1Node);
-            System.out.println("con2Node = " + con2Node);
-            return false;
-         }
          for (int i = 0; i < numMessages; i += 3)
          {
             TextMessage message0 = (TextMessage)consumer0.receive(5000);
@@ -141,7 +143,6 @@ public class ClusterStaticOnewayExample extends HornetQExample
             TextMessage message2 = (TextMessage)consumer2.receive(5000);
 
             System.out.println("Got message: " + message2.getText() + " from node " + con2Node);
-            System.out.println("i = " + i);
          }
 
          return true;
@@ -168,11 +169,6 @@ public class ClusterStaticOnewayExample extends HornetQExample
          if (connection2 != null)
          {
             connection2.close();
-         }
-
-         if (connection3 != null)
-         {
-            connection3.close();
          }
 
          if (ic0 != null)
