@@ -25,9 +25,9 @@ public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
 {
    private static final Logger log = Logger.getLogger(HAClientTopologyWithDiscoveryTest.class);
 
-   protected static final String groupAddress = "230.1.2.3";
+   protected static final String groupAddress = getUDPDiscoveryAddress();
 
-   protected static final int groupPort = 6745;
+   protected static final int groupPort = getUDPDiscoveryPort();
 
    protected boolean isNetty()
    {
