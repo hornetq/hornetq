@@ -332,8 +332,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                     lbAddress,
                                                     groupAddress,
                                                     discoveryGroupConfiguration.getGroupPort(),
-                                                    discoveryGroupConfiguration.getRefreshTimeout(),
-                                                    globalThreadPool);
+                                                    discoveryGroupConfiguration.getRefreshTimeout());
 
             discoveryGroup.registerListener(this);
 

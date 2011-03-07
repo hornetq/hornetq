@@ -36,7 +36,6 @@ import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
-import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -83,15 +82,12 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private NotificationService notificationService;
 
-   private final ExecutorService globalThreadPool;
-
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
                              final InetAddress localBindAddress,
                              final InetAddress groupAddress,
                              final int groupPort,
-                             final long timeout,
-                             ExecutorService globalThreadPool) throws Exception
+                             final long timeout) throws Exception
    {
       this.nodeID = nodeID;
 
@@ -104,8 +100,6 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
-
-      this.globalThreadPool = globalThreadPool;
    }
 
    public void setNotificationService(final NotificationService notificationService)

@@ -92,8 +92,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       dg.start();
 
@@ -179,8 +178,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  localAddress,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       dg.start();
 
@@ -227,8 +225,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       dg.start();
 
@@ -286,8 +283,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnector(live1);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout,
-                                                 Executors.newFixedThreadPool(1));
+      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout);
 
       dg.start();
 
@@ -378,8 +374,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  port2,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       dg.start();
 
@@ -422,8 +417,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress2,
                                                  port2,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       dg.start();
 
@@ -503,8 +497,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress1,
                                                   groupPort1,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
       dg1.start();
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl("group-2::" + RandomUtil.randomString(),
@@ -512,8 +505,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress2,
                                                   groupPort2,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
       dg2.start();
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl("group-3::" + RandomUtil.randomString(),
@@ -521,8 +513,7 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress3,
                                                   groupPort3,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
       dg3.start();
 
       bg1.broadcastConnectors();
@@ -629,8 +620,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       MyListener listener1 = new MyListener();
       MyListener listener2 = new MyListener();
@@ -719,8 +709,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
 
       MyListener listener1 = new MyListener();
       dg.registerListener(listener1);
@@ -886,24 +875,21 @@ public class DiscoveryTest extends UnitTestCase
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
 
       DiscoveryGroup dg2 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
 
       DiscoveryGroup dg3 = new DiscoveryGroupImpl(RandomUtil.randomString(),
                                                   RandomUtil.randomString(),
                                                   null,
                                                   groupAddress,
                                                   groupPort,
-                                                  timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                  timeout);
 
       dg1.start();
       dg2.start();
@@ -948,8 +934,7 @@ public class DiscoveryTest extends UnitTestCase
                                                  null,
                                                  groupAddress,
                                                  groupPort,
-                                                 timeout,
-                                                 Executors.newFixedThreadPool(1));
+                                                 timeout);
       dg.setNotificationService(notifService);
 
       Assert.assertEquals(0, notifListener.getNotifications().size());
