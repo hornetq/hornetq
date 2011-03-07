@@ -63,7 +63,7 @@ Copyright 2009 Red Hat, Inc.
          </description>
          <config-property-name>ConnectionParameters</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>host=127.0.0.1;port=5445,host=127.0.0.1;port=5446</config-property-value>
+         <config-property-value>host=127.0.0.1;port=5446,host=127.0.0.1;port=5447</config-property-value>
       </config-property>
       <config-property>
          <description>Do we support HA</description>
