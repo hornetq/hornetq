@@ -72,20 +72,13 @@
       </para>
       <para>Red Hat kindly employs developers to work full time on HornetQ, they are: <itemizedlist>
             <listitem>
-               <para>
-                  <ulink url="http://jbossfox.blogspot.com">Tim Fox</ulink> (project lead)</para>
-            </listitem>
-            <listitem>
-               <para>Howard Gao</para>
-            </listitem>
-            <listitem>
-               <para><ulink url="http://jmesnil.net/weblog/">Jeff Mesnil</ulink></para>
-            </listitem>
-            <listitem>
-               <para>Clebert Suconic</para>
+               <para>Clebert Suconic (project lead)</para>
             </listitem>
             <listitem>
                <para>Andy Taylor</para>
+            </listitem>
+            <listitem>
+               <para>Howard Gao</para>
             </listitem>
          </itemizedlist></para>
       <para> And many thanks to all our contributors, both old and new who helped create HornetQ,

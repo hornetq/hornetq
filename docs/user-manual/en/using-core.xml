@@ -120,13 +120,23 @@
                 a maximum of one address.</para>
         </section>
         <section>
+            <title>ServerLocator</title>
+            <para>Clients use <literal>ServerLocator</literal> instances to create <literal
+                    >ClientSessionFactory</literal> instances. <literal>ServerLocator</literal>
+                instances are used to locate servers and create connections to them. </para>
+           <para>In JMS terms think of a <literal>ServerLocator</literal> in the same way you would a
+           JMS Connection Factory</para>
+            <para><literal>ServerLocator</literal> instances are created using the
+                <literal>HornetQClient</literal> factory class.</para>
+        </section>
+        <section>
             <title>ClientSessionFactory</title>
             <para>Clients use <literal>ClientSessionFactory</literal> instances to create <literal
                     >ClientSession</literal> instances. <literal>ClientSessionFactory</literal>
-                instances know how to connect to the server to create sessions, and are configurable
-                with many settings.</para>
+                instances are basically the connection to a server</para>
+           <para> In JMS terms think of them as JMS Connections</para>
             <para><literal>ClientSessionFactory</literal> instances are created using the <literal
-                    >HornetQClient</literal> factory class.</para>
+                    >ServerLocator</literal> class.</para>
         </section>
         <section>
             <title>ClientSession</title>
@@ -178,9 +188,10 @@
         <para>Here's a very simple program using the core messaging API to send and receive a
             message:</para>
         <programlisting>
-ClientSessionFactory factory =  HornetQClient.createClientSessionFactory(
-                                        new TransportConfiguration(
+ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
                                            InVMConnectorFactory.class.getName()));
+
+ClientSessionFactory factory =  locator.createClientSessionFactory();
 
 ClientSession session = factory.createSession();
 

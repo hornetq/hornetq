@@ -116,7 +116,9 @@
         <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools,
             simply use the appropriate setter methods immediately after creation, for
             example:</para>
-        <programlisting>ClientSessionFactory myFactory = HornetQClient.createClientSessionFactory(...);
+        <programlisting>
+ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(...)
+ClientSessionFactory myFactory = locator.createClientSessionFactory();
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);   </programlisting>
@@ -127,7 +129,8 @@ myFactory.setThreadPoolMaxSize(-1);   </programlisting>
         <para>If you're using JNDI to instantiate <literal>HornetQConnectionFactory</literal>
             instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal>
             file where you describe your connection factory, for example:</para>
-        <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;
+        <programlisting>
+&lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connectors>
        &lt;connector-ref connector-name="netty"/&gt;
     &lt;/connectors>

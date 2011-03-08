@@ -271,7 +271,7 @@ System.out.println("Got order: " + receivedMessage.getText());
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
-ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
+ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,transportConfiguration);
         </programlisting>
         <para>We also create the JMS Queue object via the HornetQJMSClient Utility class:</para>
         <programlisting>Queue orderQueue = HornetQJMSClient.createQueue("OrderQueue");</programlisting>

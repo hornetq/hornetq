@@ -34,12 +34,15 @@
         <para>Here's an example of a well behaved core client application closing its session and
             session factory in a finally block:</para>
         <programlisting>
+ServerLocator locator = null;
 ClientSessionFactory sf = null;
 ClientSession session = null;
 
 try
 {
-   sf = HornetQClient.createClientSessionFactory(...);
+   locator = HornetQClient.createServerLocatorWithoutHA(..);
+
+   sf = locator.createClientSessionFactory();;
 
    session = sf.createSession(...);
    
@@ -56,6 +59,11 @@ finally
    {
       sf.close();
    }
+
+   if(locator != null)
+   {
+      locator.close();
+   }
 }
         </programlisting>
         <para>And here's an example of a well behaved JMS client application:</para>
@@ -64,7 +72,7 @@ Connection jmsConnection = null;
 
 try
 {
-   ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
+   ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(...);
 
    jmsConnection = jmsConnectionFactory.createConnection();
 

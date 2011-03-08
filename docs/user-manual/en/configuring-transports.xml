@@ -143,7 +143,9 @@ TransportConfiguration transportConfiguration =
     "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
     connectionParams);
 
-ClientSessionFactory sessionFactory = HornetQClient.createClientSessionFactory(transportConfiguration);
+ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
+
+ClientSessionFactory sessionFactory = locator.createClientSessionFactory();
 
 ClientSession session = sessionFactory.createSession(...);
 
@@ -162,7 +164,7 @@ TransportConfiguration transportConfiguration =
     "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", 
     connectionParams);
 
-ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactory(transportConfiguration);
+ConnectionFactory connectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, transportConfiguration);
 
 Connection jmsConnection = connectionFactory.createConnection();
 
