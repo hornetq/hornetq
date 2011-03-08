@@ -114,6 +114,8 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
       Map<String, Object> acceptorParams_1 = new HashMap<String, Object>();
       acceptorParams_1.put(TransportConstants.PORT_PROP_NAME, port_1);
+      TransportConfiguration acceptorConfig_0 = new TransportConfiguration(NettyAcceptorFactory.class.getName());
+
       TransportConfiguration acceptorConfig_1 = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
                                                                            acceptorParams_1);
 
@@ -129,7 +131,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
       clusterConnectionConfig_0 = new ClusterConnectionConfiguration(clusterName,
                                                                      queueConfig.getAddress(),
-                                                                     clusterName,
+                                                                     "netty",
                                                                      1000,
                                                                      false,
                                                                      false,
@@ -156,17 +158,18 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_1.setSecurityEnabled(false);
       conf_1.setJMXManagementEnabled(true);
       conf_1.setClustered(true);
+      conf_1.getClusterConfigurations().add(clusterConnectionConfig_0);
       conf_1.getAcceptorConfigurations().add(acceptorConfig_1);
       conf_1.getConnectorConfigurations().put("netty", connectorConfig_1);
       conf_1.getQueueConfigurations().add(queueConfig);
       conf_1.getDiscoveryGroupConfigurations().put(discoveryName, discoveryGroupConfig);
       conf_1.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
 
-      Configuration conf_0 = createBasicConfig();
+      Configuration conf_0 = createBasicConfig(1);
       conf_0.setSecurityEnabled(false);
       conf_0.setJMXManagementEnabled(true);
       conf_0.setClustered(true);
-      conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+      conf_0.getAcceptorConfigurations().add(acceptorConfig_0);
       conf_0.getConnectorConfigurations().put("netty", connectorConfig_0);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig_0);
       conf_0.getDiscoveryGroupConfigurations().put(discoveryName, discoveryGroupConfig);
