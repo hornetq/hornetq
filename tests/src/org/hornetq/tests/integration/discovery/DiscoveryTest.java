@@ -23,7 +23,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
@@ -434,18 +433,17 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testMultipleGroups() throws Exception
    {
-      
-      System.out.println("address1=" + address1 + " address2 = " + address2 + " address3 = " + address3);
-      final InetAddress groupAddress1 = InetAddress.getByName(DiscoveryTest.address1);
       final int groupPort1 = getUDPDiscoveryPort();
 
-      final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
       final int groupPort2 = getUDPDiscoveryPort(1);
-
-      final InetAddress groupAddress3 = InetAddress.getByName(DiscoveryTest.address3);
+      
       final int groupPort3 = getUDPDiscoveryPort(2);
 
-      System.out.println("port1 =" + groupPort1 + " port2 = " + groupPort1 + " port3 = " + groupPort3);
+      final InetAddress groupAddress1 = InetAddress.getByName(DiscoveryTest.address1);
+
+      final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
+
+      final InetAddress groupAddress3 = InetAddress.getByName(DiscoveryTest.address3);
 
       final int timeout = 5000;
 
@@ -517,13 +515,10 @@ public class DiscoveryTest extends UnitTestCase
       dg3.start();
 
       bg1.broadcastConnectors();
-      Thread.sleep(1000);
 
       bg2.broadcastConnectors();
-      Thread.sleep(1000);
 
       bg3.broadcastConnectors();
-      Thread.sleep(1000);
 
       boolean ok = dg1.waitForBroadcast(timeout);
       Assert.assertTrue(ok);

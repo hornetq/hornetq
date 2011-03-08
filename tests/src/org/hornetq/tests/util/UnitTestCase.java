@@ -229,7 +229,7 @@ public class UnitTestCase extends TestCase
 
    public static int getUDPDiscoveryPort(final int variant)
    {
-      return getUDPDiscoveryPort() + 1;
+      return getUDPDiscoveryPort() + variant;
    }
 
    protected static JournalType getDefaultJournalType()
