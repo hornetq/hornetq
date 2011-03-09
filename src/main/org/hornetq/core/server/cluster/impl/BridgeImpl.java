@@ -608,7 +608,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             return false;
          }
       }
-      while (retry && started && !stopping);
+      while (retry && !stopping);
 
       return false;
    }
