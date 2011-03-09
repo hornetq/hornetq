@@ -328,16 +328,19 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    /* Hook for processing message before forwarding */
    protected ServerMessage beforeForward(ServerMessage message)
    {
-      // We keep our own DuplicateID for the Bridge, so bouncing back and forths will work fine
-      byte[] bytes = new byte[24];
-
-      ByteBuffer bb = ByteBuffer.wrap(bytes);
-
-      bb.put(nodeUUID.asBytes());
-
-      bb.putLong(message.getMessageID());
-
-      message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
+      if (useDuplicateDetection)
+      {
+         // We keep our own DuplicateID for the Bridge, so bouncing back and forths will work fine
+         byte[] bytes = new byte[24];
+   
+         ByteBuffer bb = ByteBuffer.wrap(bytes);
+   
+         bb.put(nodeUUID.asBytes());
+   
+         bb.putLong(message.getMessageID());
+   
+         message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
+      }
 
       if (transformer != null)
       {
