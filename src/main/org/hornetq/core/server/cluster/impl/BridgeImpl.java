@@ -26,6 +26,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -65,6 +66,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private static final Logger log = Logger.getLogger(BridgeImpl.class);
 
    // Attributes ----------------------------------------------------
+   
+   private static final SimpleString JMS_QUEUE_ADDRESS_PREFIX = new SimpleString("jms.queue.");
+   
+   private static final SimpleString JMS_TOPIC_ADDRESS_PREFIX = new SimpleString("jms.topic.");
 
    protected final ServerLocatorInternal serverLocator;
 
@@ -95,6 +100,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
+   
+   private volatile boolean stopping;
 
    private final String user;
 
@@ -214,6 +221,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             csf.close();
          }
       }
+      
+      stopping = true;
 
       executor.execute(new StopRunnable());
 
@@ -489,6 +498,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       boolean retry = false;
+      int retryCount = 0;
 
       do
       {
@@ -499,6 +509,41 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             csf = createSessionFactory();
             // Session is pre-acknowledge
             session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
+
+            if (forwardingAddress != null)
+            {
+               BindingQuery query = session.bindingQuery(forwardingAddress);
+   
+               if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
+               {
+                  if (!query.isExists())
+                  {
+                     retryCount ++;
+                     if (serverLocator.getReconnectAttempts() > 0)
+                     {
+                        if (retryCount > serverLocator.getReconnectAttempts())
+                        {
+                           log.warn("Retried " + forwardingAddress + " up to the configured reconnectAttempts(" + serverLocator.getReconnectAttempts() + "). Giving up now. The bridge " + this.getName() + " will not be activated");
+                           return false;
+                        }
+                     }
+   
+                     log.warn("Address " + forwardingAddress + " doesn't have any bindings yet, retry #(" + retryCount + ")");
+                     Thread.sleep(serverLocator.getRetryInterval());
+                     retry = true;
+                     csf.close();
+                     session.close();
+                     continue;
+                  }
+               }
+               else
+               {
+                  if (!query.isExists())
+                  {
+                     log.info("Bridge " + this.getName() + " connected to fowardingAddress=" + this.getForwardingAddress() + ". " + getForwardingAddress() + " doesn't have any bindings what means messages will be ignored until a binding is created.");
+                  }
+               }
+            }
 
             if (session == null)
             {
@@ -560,7 +605,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             return false;
          }
       }
-      while (retry);
+      while (retry && started && !stopping);
 
       return false;
    }

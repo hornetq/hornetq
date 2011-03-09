@@ -108,7 +108,7 @@ public class BridgeTest extends ServiceTestBase
          final String forwardAddress = "forwardAddress";
          final String queueName1 = "queue1";
 
-        // Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+         // Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
          TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
 
          TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
@@ -116,7 +116,6 @@ public class BridgeTest extends ServiceTestBase
          HashMap<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
          connectors.put(server1tc.getName(), server1tc);
          server0.getConfiguration().setConnectorConfigurations(connectors);
-
 
          final int messageSize = 1024;
 
@@ -222,7 +221,7 @@ public class BridgeTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -441,7 +440,7 @@ public class BridgeTest extends ServiceTestBase
 
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -465,7 +464,6 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
-
    // Created to verify JBPAPP-6057
    public void testStartLater() throws Exception
    {
@@ -484,7 +482,7 @@ public class BridgeTest extends ServiceTestBase
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
-         final String forwardAddress = "forwardAddress";
+         final String forwardAddress = "jms.queue.forwardAddress";
          final String queueName1 = "forwardAddress";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
@@ -521,11 +519,6 @@ public class BridgeTest extends ServiceTestBase
          queueConfigs0.add(queueConfig0);
          server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-         CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName1, null, true);
-         List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
-         queueConfigs1.add(queueConfig1);
-         server1.getConfiguration().setQueueConfigurations(queueConfigs1);
-
          server0.start();
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
@@ -540,51 +533,61 @@ public class BridgeTest extends ServiceTestBase
          final SimpleString propKey = new SimpleString("testkey");
 
          final SimpleString selectorKey = new SimpleString("animal");
-         
-         for (int starts = 0 ; starts < 5; starts++)
-         {
-   
-            for (int i = 0; i < numMessages; i++)
-            {
-               ClientMessage message = session0.createMessage(false);
-               
-               message.getBodyBuffer().writeBytes(new byte[1024]);
-   
-               message.putIntProperty(propKey, i);
-   
-               message.putStringProperty(selectorKey, new SimpleString("monkey" + i));
-   
-               producer0.send(message);
-            }
-            
-            server1.start();
 
-            ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
-   
-            ClientSession session1 = sf1.createSession(false, true, true);
-   
-            ClientConsumer consumer1 = session1.createConsumer(queueName1);
-            
-            session1.start();
-            
-            
-            for (int i = 0 ; i < numMessages; i++)
-            {
-               ClientMessage message = consumer1.receive(5000);
-               assertNotNull(message);
-               message.acknowledge();
-            }
-            
-            session1.commit();
-            
-            Assert.assertNull(consumer1.receiveImmediate());
-            
-            session1.close();
-            
-            sf1.close();
-            
-            server1.stop();
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createMessage(false);
+
+            message.getBodyBuffer().writeBytes(new byte[1024]);
+
+            message.putIntProperty(propKey, i);
+
+            message.putStringProperty(selectorKey, new SimpleString("monkey" + i));
+
+            producer0.send(message);
          }
+
+         server1.start();
+
+         Thread.sleep(1000);
+
+         ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
+
+         ClientSession session1 = sf1.createSession(false, true, true);
+
+         try
+         {
+            session1.createQueue(forwardAddress, queueName1);
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
+         }
+
+         ClientConsumer consumer1 = session1.createConsumer(queueName1);
+
+         session1.start();
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(5000);
+            assertNotNull(message);
+            message.acknowledge();
+         }
+
+         session1.commit();
+
+         Assert.assertNull(consumer1.receiveImmediate());
+
+         consumer1.close();
+
+         session1.deleteQueue(queueName1);
+
+         session1.close();
+
+         sf1.close();
+
+         server1.stop();
 
          session0.close();
 
@@ -593,7 +596,7 @@ public class BridgeTest extends ServiceTestBase
 
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -649,7 +652,7 @@ public class BridgeTest extends ServiceTestBase
       server0.getConfiguration().setConnectorConfigurations(connectors);
 
       ArrayList<String> staticConnectors = new ArrayList<String>();
-         staticConnectors.add(server1tc.getName());
+      staticConnectors.add(server1tc.getName());
 
       BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
                                                                         queueName0,
@@ -662,8 +665,8 @@ public class BridgeTest extends ServiceTestBase
                                                                         false,
                                                                         1024,
                                                                         HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                           staticConnectors,
-                                                                           false,
+                                                                        staticConnectors,
+                                                                        false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
 
@@ -879,7 +882,7 @@ public class BridgeTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
@@ -901,7 +904,7 @@ public class BridgeTest extends ServiceTestBase
       }
 
    }
-   
+
    public void testNullForwardingAddress() throws Exception
    {
       HornetQServer server0 = null;
@@ -928,16 +931,18 @@ public class BridgeTest extends ServiceTestBase
 
          server0.getConfiguration().setConnectorConfigurations(connectors);
 
-
          final int messageSize = 1024;
 
          final int numMessages = 10;
 
          ArrayList<String> staticConnectors = new ArrayList<String>();
          staticConnectors.add(server1tc.getName());
-         BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
-                                                                           queueName0,
-                                                                           null, // pass a null forwarding address to use messages' original address
+         BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1", queueName0, null, // pass a null
+                                                                                                        // forwarding
+                                                                                                        // address to
+                                                                                                        // use messages'
+                                                                                                        // original
+                                                                                                        // address
                                                                            null,
                                                                            null,
                                                                            1000,
@@ -962,7 +967,7 @@ public class BridgeTest extends ServiceTestBase
          queueConfigs0.add(queueConfig0);
          server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
-         // on server #1, we bind queueName1 to same address testAddress 
+         // on server #1, we bind queueName1 to same address testAddress
          CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(testAddress, queueName1, null, true);
          List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
          queueConfigs1.add(queueConfig1);
@@ -1025,7 +1030,7 @@ public class BridgeTest extends ServiceTestBase
       }
       finally
       {
-         if(locator != null)
+         if (locator != null)
          {
             locator.close();
          }
