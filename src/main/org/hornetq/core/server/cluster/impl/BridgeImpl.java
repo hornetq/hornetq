@@ -515,7 +515,19 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             if (forwardingAddress != null)
             {
-               BindingQuery query = session.bindingQuery(forwardingAddress);
+               BindingQuery query = null;
+               
+               try
+               {
+                  query = session.bindingQuery(forwardingAddress);
+               }
+               catch (Throwable e)
+               {
+                  log.warn("Error on querying binding. Retrying", e);
+                  retry = true;
+                  Thread.sleep(100);
+                  continue;
+               }
    
                if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
                {
