@@ -836,6 +836,11 @@ public class HornetQServerImpl implements HornetQServer
    {
       return securityRepository;
    }
+   
+   public NodeManager getNodeManager()
+   {
+      return nodeManager;
+   }
 
    public HierarchicalRepository<AddressSettings> getAddressSettingsRepository()
    {

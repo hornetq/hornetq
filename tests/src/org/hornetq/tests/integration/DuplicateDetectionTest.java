@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration;
 
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -1036,9 +1037,16 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.end(xid2, XAResource.TMSUCCESS);
 
-      session.prepare(xid2);
+      try
+      {
+         session.prepare(xid2);
+         fail("Should throw an exception here!");
+      }
+      catch (XAException expected)
+      {
+      }
 
-      session.commit(xid2, false);
+      session.rollback(xid2);
 
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
@@ -2014,8 +2022,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
 
       session.end(xid2, XAResource.TMSUCCESS);
-      session.prepare(xid2);
-      session.commit(xid2, false);
+      try
+      {
+         session.prepare(xid2);
+         fail("Should throw an exception here!");
+      }
+      catch (XAException expected)
+      {
+      }
+      
+      session.rollback(xid2);
+
 
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 

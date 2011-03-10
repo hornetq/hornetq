@@ -80,7 +80,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
-   private static final SimpleString BRIDGE_CACHE_STR = new SimpleString("BRIDGE.");
+   public static final SimpleString BRIDGE_CACHE_STR = new SimpleString("BRIDGE.");
 
    private final AddressManager addressManager;
 
@@ -1061,6 +1061,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
             }
             PostOfficeImpl.log.warn(warnMessage.toString());
+            
+            if (context.getTransaction() != null)
+            {
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK, warnMessage.toString()));
+            }
 
             return false;
          }
@@ -1102,7 +1107,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(null);
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK, warnMessage.toString()));
             }
 
             return false;

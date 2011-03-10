@@ -75,6 +75,8 @@ public interface HornetQServer extends HornetQComponent
    MBeanServer getMBeanServer();
 
    Version getVersion();
+   
+   NodeManager getNodeManager();
 
    /**
     * Returns the resource to manage this HornetQ server.

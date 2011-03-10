@@ -331,13 +331,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (useDuplicateDetection)
       {
          // We keep our own DuplicateID for the Bridge, so bouncing back and forths will work fine
-         byte[] bytes = new byte[24];
-   
-         ByteBuffer bb = ByteBuffer.wrap(bytes);
-   
-         bb.put(nodeUUID.asBytes());
-   
-         bb.putLong(message.getMessageID());
+         byte[] bytes = getDuplicateBytes(nodeUUID, message.getMessageID());
    
          message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
       }
@@ -348,6 +342,23 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       return message;
+   }
+
+   /**
+    * @param message
+    * @return
+    */
+   public static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
+   {
+      byte[] bytes = new byte[24];
+  
+      ByteBuffer bb = ByteBuffer.wrap(bytes);
+  
+      bb.put(nodeUUID.asBytes());
+  
+      bb.putLong(messageID);
+      
+      return bytes;
    }
 
    public HandleStatus handle(final MessageReference ref) throws Exception

@@ -33,11 +33,18 @@ import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.postoffice.DuplicateIDCache;
+import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.cluster.impl.BridgeImpl;
+import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.LinkedListIterator;
 
 /**
  * A JMSBridgeTest
@@ -572,6 +579,190 @@ public class BridgeTest extends ServiceTestBase
          {
             ClientMessage message = consumer1.receive(5000);
             assertNotNull(message);
+            message.acknowledge();
+         }
+
+         session1.commit();
+
+         Assert.assertNull(consumer1.receiveImmediate());
+
+         consumer1.close();
+
+         session1.deleteQueue(queueName1);
+
+         session1.close();
+
+         sf1.close();
+
+         server1.stop();
+
+         session0.close();
+
+         sf0.close();
+      }
+
+      finally
+      {
+         if (locator != null)
+         {
+            locator.close();
+         }
+         try
+         {
+            server0.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server1.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+      }
+
+   }
+
+   public void testWithDuplicates() throws Exception
+   {
+      HornetQServer server0 = null;
+      HornetQServer server1 = null;
+      ServerLocator locator = null;
+      try
+      {
+
+         Map<String, Object> server0Params = new HashMap<String, Object>();
+         server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
+
+         Map<String, Object> server1Params = new HashMap<String, Object>();
+         addTargetParameters(server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
+
+         final String testAddress = "testAddress";
+         final String queueName0 = "queue0";
+         final String forwardAddress = "jms.queue.forwardAddress";
+         final String queueName1 = "forwardAddress";
+
+         Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
+         connectors.put(server1tc.getName(), server1tc);
+
+         server0.getConfiguration().setConnectorConfigurations(connectors);
+
+         ArrayList<String> staticConnectors = new ArrayList<String>();
+         staticConnectors.add(server1tc.getName());
+         BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
+                                                                           queueName0,
+                                                                           forwardAddress,
+                                                                           null,
+                                                                           null,
+                                                                           100,
+                                                                           1d,
+                                                                           -1,
+                                                                           true,
+                                                                           0,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           staticConnectors,
+                                                                           false,
+                                                                           ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                           ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+
+         List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+         bridgeConfigs.add(bridgeConfiguration);
+         server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+         CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+         List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+         queueConfigs0.add(queueConfig0);
+         server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+         server0.start();
+         
+         
+         locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
+         ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
+
+         ClientSession session0 = sf0.createSession(false, true, true);
+
+         ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
+
+         final int numMessages = 1000;
+
+         final SimpleString propKey = new SimpleString("testkey");
+
+         final SimpleString selectorKey = new SimpleString("animal");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createMessage(false);
+
+            message.getBodyBuffer().writeBytes(new byte[1024]);
+
+            message.putIntProperty(propKey, i);
+
+            message.putStringProperty(selectorKey, new SimpleString("monkey" + i));
+
+            producer0.send(message);
+         }
+
+
+         server1.start();
+         
+         // Inserting the duplicateIDs so the bridge will fail in a few
+         {
+            long ids[] = new long[100];
+            
+            Queue queue = server0.locateQueue(new SimpleString(queueName0));
+            LinkedListIterator<MessageReference> iterator = queue.iterator();
+            
+            for (int i = 0 ; i < 100; i++)
+            {
+               iterator.hasNext();
+               ids[i] = iterator.next().getMessage().getMessageID();
+            }
+            
+            iterator.close();
+
+            DuplicateIDCache duplicateTargetCache = server1.getPostOffice().getDuplicateIDCache(PostOfficeImpl.BRIDGE_CACHE_STR.concat(forwardAddress));
+            
+            TransactionImpl tx = new TransactionImpl(server1.getStorageManager());
+            for (long id : ids)
+            {
+               byte [] duplicateArray = BridgeImpl.getDuplicateBytes(server0.getNodeManager().getUUID(), id);
+               duplicateTargetCache.addToCache(duplicateArray, tx);
+            }
+            tx.commit();
+         }
+
+         Thread.sleep(1000);
+
+         ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
+
+         ClientSession session1 = sf1.createSession(false, true, true);
+
+         try
+         {
+            session1.createQueue(forwardAddress, queueName1);
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
+         }
+
+         ClientConsumer consumer1 = session1.createConsumer(queueName1);
+
+         session1.start();
+
+         for (int i = 100; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(5000);
+            assertNotNull(message);
+            assertEquals(i, message.getIntProperty(propKey).intValue());
             message.acknowledge();
          }
 
