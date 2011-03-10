@@ -45,6 +45,14 @@ public class DelayedMessageTest extends ServiceTestBase
    {
       super.setUp();
       clearData();
+      initServer();
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void initServer() throws Exception
+   {
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
@@ -134,8 +142,8 @@ public class DelayedMessageTest extends ServiceTestBase
          Assert.assertNotNull(tm);
 
          long time = System.currentTimeMillis();
-         
-         log.info("delay " + (time-now));
+
+         log.info("delay " + (time - now));
 
          Assert.assertTrue(time - now >= DelayedMessageTest.DELAY);
 
@@ -209,15 +217,93 @@ public class DelayedMessageTest extends ServiceTestBase
       sessionFactory.close();
    }
 
+   public void testDelayedRedeliveryWithStart() throws Exception
+   {
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSession session = sessionFactory.createSession(false, false, false);
+
+      session.createQueue(qName, qName, null, true);
+      session.close();
+
+      ClientSession session1 = sessionFactory.createSession(false, true, true);
+      ClientProducer producer = session1.createProducer(qName);
+
+      final int NUM_MESSAGES = 1;
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = createDurableMessage(session1, "message" + i);
+         producer.send(tm);
+      }
+      session1.close();
+
+      ClientSession session2 = sessionFactory.createSession(false, false, false);
+      ClientConsumer consumer2 = session2.createConsumer(qName);
+
+      session2.start();
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = consumer2.receive(500);
+         Assert.assertNotNull(tm);
+         Assert.assertEquals("message" + i, tm.getBodyBuffer().readString());
+      }
+
+      // Now rollback
+      long now = System.currentTimeMillis();
+      
+
+      session2.rollback();
+
+      session2.close();
+
+      sessionFactory.close();
+
+      locator.close();
+
+      server.stop();
+
+      initServer();
+
+      sessionFactory = locator.createSessionFactory();
+
+      session2 = sessionFactory.createSession(false, false, false);
+      
+      consumer2 = session2.createConsumer(qName);
+      
+      Thread.sleep(3000);
+
+      session2.start();
+
+      // This should redeliver with a delayed redelivery
+
+      for (int i = 0; i < NUM_MESSAGES; i++)
+      {
+         ClientMessage tm = consumer2.receive(DelayedMessageTest.DELAY + 1000);
+         Assert.assertNotNull(tm);
+
+         long time = System.currentTimeMillis();
+
+         Assert.assertTrue(time - now >= DelayedMessageTest.DELAY);
+
+         // Hudson can introduce a large degree of indeterminism
+      }
+
+      session2.commit();
+      session2.close();
+
+      sessionFactory.close();
+   }
+
    // Private -------------------------------------------------------
 
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
       ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                          true,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)1);
+                                                    true,
+                                                    0,
+                                                    System.currentTimeMillis(),
+                                                    (byte)1);
       message.getBodyBuffer().writeString(body);
       return message;
    }
