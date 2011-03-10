@@ -528,8 +528,12 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+      
+      final SimpleString queue2 = new SimpleString("queue2");
 
       session.createQueue(queueName, queueName, null, false);
+
+      session.createQueue(queue2, queue2, null, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -537,6 +541,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
+      
+      ClientMessage message2 = createMessage(session,0);
+      ClientProducer producer2 = session.createProducer(queue2);
+      producer2.send(message2);
 
       session.commit();
 
@@ -545,6 +553,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session = sf.createSession(false, false, false);
 
       session.start();
+      
+      ClientConsumer consumer2 = session.createConsumer(queue2);
 
       producer = session.createProducer(queueName);
 
@@ -560,6 +570,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = createMessage(session, 4);
       producer.send(message);
+      
+      message = consumer2.receive(5000);
+      assertNotNull(message);
+      message.acknowledge();
+      
 
       try
       {
@@ -578,6 +593,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receiveImmediate();
       Assert.assertNull(message);
+      
+      
+      message = consumer2.receive(5000);
+      assertNotNull(message);
+      
+      message.acknowledge();
+      
+      session.commit();
 
       session.close();
 
