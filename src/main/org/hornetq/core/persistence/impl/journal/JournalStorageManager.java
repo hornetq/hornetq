@@ -3163,7 +3163,7 @@ public class JournalStorageManager implements StorageManager
             }
 
          }
-      });
+      }, false);
 
       for (RecordInfo info : records)
       {

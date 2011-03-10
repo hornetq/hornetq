@@ -18,6 +18,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -486,7 +487,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
 
-      session.commit();
+      try
+      {
+         session.commit();
+      }
+      catch (Exception e)
+      {
+         session.rollback();
+      }
 
       message = consumer.receive(250);
       Assert.assertEquals(0, message.getObjectProperty(propKey));
@@ -552,7 +560,15 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 4);
       producer.send(message);
 
-      session.commit();
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         session.rollback();
+      }
 
       ClientConsumer consumer = session.createConsumer(queueName);
 
@@ -1671,14 +1687,34 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      session.commit();
+
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         session.rollback();
+      }
+
       message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 
       message = createMessage(session, 2);
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      session.commit();
+      
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         session.rollback();
+      }
+
       message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 

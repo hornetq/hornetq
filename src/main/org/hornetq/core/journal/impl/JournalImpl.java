@@ -1457,12 +1457,19 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       return this.load(dummyLoader);
    }
 
+   public JournalLoadInformation load(final List<RecordInfo> committedRecords,
+                                                   final List<PreparedTransactionInfo> preparedTransactions,
+                                                   final TransactionFailureCallback failureCallback) throws Exception
+   {
+      return load(committedRecords, preparedTransactions, failureCallback, true);
+   }
    /**
     * @see JournalImpl#load(LoaderCallback)
     */
    public synchronized JournalLoadInformation load(final List<RecordInfo> committedRecords,
                                                    final List<PreparedTransactionInfo> preparedTransactions,
-                                                   final TransactionFailureCallback failureCallback) throws Exception
+                                                   final TransactionFailureCallback failureCallback,
+                                                   final boolean fixBadTX) throws Exception
    {
       final Set<Long> recordsToDelete = new HashSet<Long>();
       // ArrayList was taking too long to delete elements on checkDeleteSize
@@ -1799,7 +1806,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     * <p> * FileID and NumberOfElements are the transaction summary, and they will be repeated (N)umberOfFiles times </p> 
     * 
     * */
-   public synchronized JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
+   public JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
+   {
+      return load(loadManager, true);
+   }
+   
+   public synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions) throws Exception
    {
       if (state != JournalImpl.STATE_STARTED)
       {
@@ -2126,8 +2138,11 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             JournalImpl.log.warn("Uncommitted transaction with id " + transaction.transactionID +
                                  " found and discarded");
 
-            // I append a rollback record here, because otherwise compacting will be throwing messages because of unknown transactions
-            this.appendRollbackRecord(transaction.transactionID, false);
+            if (fixFailingTransactions)
+            {
+               // I append a rollback record here, because otherwise compacting will be throwing messages because of unknown transactions
+               this.appendRollbackRecord(transaction.transactionID, false);
+            }
 
             loadManager.failedTransaction(transaction.transactionID,
                                           transaction.recordInfos,
