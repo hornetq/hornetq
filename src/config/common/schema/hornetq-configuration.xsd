@@ -71,7 +71,9 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="allow-failback" type="xsd:boolean">
 				</xsd:element>
-                <xsd:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xsd:boolean">
+				<xsd:element maxOccurs="1" minOccurs="0" name="failback-delay" type="xsd:long">
+				</xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="failover-on-shutdown" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
 				</xsd:element>			

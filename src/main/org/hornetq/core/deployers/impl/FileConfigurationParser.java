@@ -169,6 +169,8 @@ public class FileConfigurationParser
 
       config.setAllowAutoFailBack(XMLConfigurationUtil.getBoolean(e, "allow-failback", config.isClustered()));
 
+      config.setFailbackDelay(XMLConfigurationUtil.getLong(e, "failback-delay", config.getFailbackDelay(), Validators.GT_ZERO));
+
       config.setFailoverOnServerShutdown(XMLConfigurationUtil.getBoolean(e,
                                                                          "failover-on-shutdown",
                                                                          config.isFailoverOnServerShutdown()));

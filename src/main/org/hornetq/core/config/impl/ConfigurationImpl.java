@@ -180,6 +180,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
+   public static final long DEFAULT_FAILBACK_DELAY = 5000; //in milliseconds
+
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
@@ -334,7 +336,9 @@ public class ConfigurationImpl implements Configuration
    private Map<String, Set<Role>> securitySettings = new HashMap<String, Set<Role>>();
 
    protected List<ConnectorServiceConfiguration> connectorServiceConfigurations = new ArrayList<ConnectorServiceConfiguration>();
-   
+
+   private long failbackDelay = ConfigurationImpl.DEFAULT_FAILBACK_DELAY;
+
    // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
@@ -1357,7 +1361,17 @@ public class ConfigurationImpl implements Configuration
    {
       return this.connectorServiceConfigurations;
    }
-   
+
+   public long getFailbackDelay()
+   {
+      return failbackDelay;
+   }
+
+   public void setFailbackDelay(long failbackDelay)
+   {
+      this.failbackDelay = failbackDelay;
+   }
+
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
    {
       this.connectorServiceConfigurations = configs;
