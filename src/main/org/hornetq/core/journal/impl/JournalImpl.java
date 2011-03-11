@@ -1610,6 +1610,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             if (dataFilesToProcess.size() == 0)
             {
+               trace("Finishing compacting, nothing to process");
                return;
             }
 
@@ -1740,7 +1741,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          if (JournalImpl.trace)
          {
-            JournalImpl.log.debug("Finished compacting on journal");
+            trace("Finished compacting on journal");
          }
 
          if (JournalImpl.TRACE_RECORDS)
