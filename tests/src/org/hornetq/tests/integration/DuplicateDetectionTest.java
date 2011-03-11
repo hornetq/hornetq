@@ -582,7 +582,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
          session.rollback();
       }
 
@@ -1725,7 +1725,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
          session.rollback();
       }
 
@@ -1742,7 +1742,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       }
       catch (HornetQException e)
       {
-         assertEquals(e.getCode(), HornetQException.TRANSACTION_ROLLED_BACK);
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
          session.rollback();
       }
 
