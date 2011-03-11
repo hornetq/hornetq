@@ -1977,7 +1977,14 @@ public class FailoverTest extends FailoverTestBase
          producer.send(message);
       }
 
-      session2.commit();
+      try
+      {
+         session2.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
+      }
 
       ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 

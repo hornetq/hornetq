@@ -1064,7 +1064,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK, warnMessage.toString()));
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
             }
 
             return false;
@@ -1107,7 +1107,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.TRANSACTION_ROLLED_BACK, warnMessage.toString()));
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
             }
 
             return false;
