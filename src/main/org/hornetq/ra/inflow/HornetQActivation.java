@@ -33,6 +33,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.jms.HornetQJMSClient;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -287,7 +288,7 @@ public class HornetQActivation
          try
          {
             session = setupSession();
-            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), session, i);
+            HornetQMessageHandler handler = new HornetQMessageHandler(this, ra.getTM(), (ClientSessionInternal) session, i);
             handler.setup();
             session.start();
             handlers.add(handler);

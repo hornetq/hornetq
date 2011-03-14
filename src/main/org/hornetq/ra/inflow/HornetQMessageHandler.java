@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
@@ -55,7 +56,7 @@ public class HornetQMessageHandler implements MessageHandler
    /**
     * The session
     */
-   private final ClientSession session;
+   private final ClientSessionInternal session;
 
    private ClientConsumer consumer;
 
@@ -76,7 +77,7 @@ public class HornetQMessageHandler implements MessageHandler
 
    public HornetQMessageHandler(final HornetQActivation activation,
                                 final TransactionManager tm,
-                                final ClientSession session,
+                                final ClientSessionInternal session,
                                 final int sessionNr)
    {
       this.activation = activation;
@@ -316,6 +317,17 @@ public class HornetQMessageHandler implements MessageHandler
             {
                HornetQMessageHandler.log.warn("Unable to roll local transaction back");
             }
+         }
+      }
+      finally
+      {
+         try
+         {
+            session.resetIfNeeded();
+         }
+         catch (HornetQException e)
+         {
+            log.warn("unable to reset session after failure");
          }
       }
 

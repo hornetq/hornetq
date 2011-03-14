@@ -628,7 +628,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
          HornetQConnection conn = connectionRef.get();
 
-         if (conn != null)
+         if (conn != null && ! failedOver)
          {
             try
             {

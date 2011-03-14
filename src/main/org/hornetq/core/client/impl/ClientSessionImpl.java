@@ -190,6 +190,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private volatile SimpleString defaultAddress;
 
+   private boolean xaRetry = false;
+
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
@@ -629,6 +631,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public boolean isXA()
    {
       return xa;
+   }
+
+   public void resetIfNeeded() throws HornetQException
+   {
+      if(rollbackOnly)
+      {
+         log.warn("resetting session after failure");
+         rollback(false);
+      }
    }
 
    public void start() throws HornetQException
@@ -1193,9 +1204,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkXA();
 
+      //we should never throw rollback if we have already prepared
       if (rollbackOnly)
       {
-         throw new XAException(XAException.XA_RBOTHER);
+         log.warn("committing transaction after failover occurred, any non persistent messages may be lost");
       }
 
       // Note - don't need to flush acks since the previous end would have
@@ -1211,28 +1223,26 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
+            //if we retry and its not there the assume that it was committed
+            if(xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
+            {
+               return;
+            }
             throw new XAException(response.getResponseCode());
          }
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.warn(e.getMessage(), e);
+         ClientSessionImpl.log.warn("failover occured during commit throwing XAException.XA_RETRY");
 
          if (e.getCode() == HornetQException.UNBLOCKED)
          {
             // Unblocked on failover
-
-            try
-            {
-               rollback(false);
-            }
-            catch (HornetQException e2)
-            {
-               throw new XAException(XAException.XAER_RMERR);
-            }
-
-            throw new XAException(XAException.XA_RBOTHER);
+            xaRetry = true;
+            throw new XAException(XAException.XA_RETRY);
          }
+
+         ClientSessionImpl.log.warn(e.getMessage(), e);
 
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1365,17 +1375,35 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
          else
          {
+            xaRetry = false;
             return response.getResponseCode();
          }
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.warn(e.getMessage(), e);
-
          if (e.getCode() == HornetQException.UNBLOCKED)
          {
             // Unblocked on failover
+            try
+            {
+               log.warn("failover occurred during prepare re-trying");
+               SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
+               if (response.isError())
+               {
+                  throw new XAException(response.getResponseCode());
+               }
+               else
+               {
+                  xaRetry = false;
+                  return response.getResponseCode();
+               }
+            }
+            catch (HornetQException e1)
+            {
+               //ignore and rollback
+            }
+            log.warn("failover occurred during prepare rolling back");
             try
             {
                rollback(false);
@@ -1385,8 +1413,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                throw new XAException(XAException.XAER_RMERR);
             }
 
+            ClientSessionImpl.log.warn(e.getMessage(), e);
+
             throw new XAException(XAException.XA_RBOTHER);
          }
+
+         ClientSessionImpl.log.warn(e.getMessage(), e);
 
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1455,11 +1487,22 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
+            //if we retry and its not there the assume that it was rolled back
+            if(xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
+            {
+               return;
+            }
             throw new XAException(response.getResponseCode());
          }
       }
       catch (HornetQException e)
       {
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            // Unblocked on failover
+            xaRetry = true;
+            throw new XAException(XAException.XA_RETRY);
+         }
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1485,10 +1528,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void start(final Xid xid, final int flags) throws XAException
    {
       checkXA();
+
+      Packet packet = null;
+
       try
       {
-         Packet packet;
-
          if (flags == XAResource.TMJOIN)
          {
             packet = new SessionXAJoinMessage(xid);
@@ -1519,6 +1563,27 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
+         //we can retry this only because we know for sure that no work would have been done
+         if (e.getCode() == HornetQException.UNBLOCKED)
+         {
+            try
+            {
+               SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
+
+               if (response.isError())
+               {
+                  ClientSessionImpl.log.error("XA operation failed " + response.getMessage() +
+                                              " code:" +
+                                              response.getResponseCode());
+                  throw new XAException(response.getResponseCode());
+               }
+            }
+            catch (HornetQException e1)
+            {
+               // This should never occur
+               throw new XAException(XAException.XAER_RMERR);
+            }
+         }
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }

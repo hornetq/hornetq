@@ -17,6 +17,8 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -70,6 +72,17 @@ public class HornetQRAXAResource implements XAResource
       }
 
       managedConnection.lock();
+
+      ClientSessionInternal sessionInternal = (ClientSessionInternal) xaResource;
+      try
+      {
+         //this resets any tx stuff, we assume here that the tm and jca layer are well behaved when it comes to this
+         sessionInternal.resetIfNeeded();
+      }
+      catch (HornetQException e)
+      {
+         log.warn("problem resetting HornetQ xa session after failure");
+      }
       try
       {
          xaResource.start(xid, flags);
