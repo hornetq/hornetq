@@ -1521,6 +1521,11 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
    {
       checkStarted();
 
+      if (pageSizeBytes >= maxSizeBytes)
+      {
+         throw new IllegalStateException("pageSize has to be lower than maxSizeBytes. Invalid argument (" + pageSizeBytes + " < " + maxSizeBytes + ")");
+      }
+
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setDeadLetterAddress(DLA == null ? null : new SimpleString(DLA));
       addressSettings.setExpiryAddress(expiryAddress == null ? null : new SimpleString(expiryAddress));

@@ -1235,17 +1235,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          ClientSessionImpl.log.warn("failover occured during commit throwing XAException.XA_RETRY");
 
-         if (e.getCode() == HornetQException.UNBLOCKED)
-         {
-            // Unblocked on failover
-            xaRetry = true;
-            throw new XAException(XAException.XA_RETRY);
-         }
-
-         ClientSessionImpl.log.warn(e.getMessage(), e);
-
-         // This should never occur
-         throw new XAException(XAException.XAER_RMERR);
+         // Unblocked on failover
+         xaRetry = true;
+         // Any error on commit -> RETRY
+         // We can't rollback a Prepared TX for definition
+         throw new XAException(XAException.XA_RETRY);
       }
    }
 

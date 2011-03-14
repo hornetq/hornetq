@@ -1016,8 +1016,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.end(xid, XAResource.TMSUCCESS);
 
-      session.prepare(xid);
-
       crash(session);
 
       try
@@ -1028,7 +1026,7 @@ public class FailoverTest extends FailoverTestBase
       }
       catch (XAException e)
       {
-         Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
+         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -1336,7 +1334,7 @@ public class FailoverTest extends FailoverTestBase
 
       session2.end(xid, XAResource.TMSUCCESS);
 
-      session2.prepare(xid);
+     // session2.prepare(xid);
 
       crash(session2);
 
@@ -1348,7 +1346,8 @@ public class FailoverTest extends FailoverTestBase
       }
       catch (XAException e)
       {
-         Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
+         // it should be rolled back
+         Assert.assertEquals(XAException.XAER_NOTA, e.errorCode);
       }
 
       session1.close();
