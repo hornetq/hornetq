@@ -826,7 +826,7 @@ public class QueueImpl implements Queue
    {
       if (expiryAddress != null)
       {
-         move(expiryAddress, ref, true);
+         move(expiryAddress, ref, true, false);
       }
       else
       {
@@ -1101,7 +1101,7 @@ public class QueueImpl implements Queue
                deliveringCount.incrementAndGet();
                try
                {
-                  move(toAddress, ref);
+                  move(toAddress, ref, false, rejectDuplicate);
                }
                catch (Exception e)
                {
@@ -1627,11 +1627,6 @@ public class QueueImpl implements Queue
       return messageReferences.size();
    }
 
-   private void move(final SimpleString toAddress, final MessageReference ref) throws Exception
-   {
-      move(toAddress, ref, false);
-   }
-
    private void move(final SimpleString toAddress,
                      final Transaction tx,
                      final MessageReference ref,
@@ -1711,7 +1706,7 @@ public class QueueImpl implements Queue
             QueueImpl.log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress +
                                " from " +
                                name);
-            move(deadLetterAddress, ref, false);
+            move(deadLetterAddress, ref, false, false);
          }
       }
       else
@@ -1723,7 +1718,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private void move(final SimpleString address, final MessageReference ref, final boolean expiry) throws Exception
+   private void move(final SimpleString address, final MessageReference ref, final boolean expiry, final boolean rejectDuplicate) throws Exception
    {
       Transaction tx = new TransactionImpl(storageManager);
 
@@ -1731,7 +1726,7 @@ public class QueueImpl implements Queue
 
       copyMessage.setAddress(address);
 
-      postOffice.route(copyMessage, tx, false);
+      postOffice.route(copyMessage, tx, false, rejectDuplicate);
 
       acknowledge(tx, ref);
 

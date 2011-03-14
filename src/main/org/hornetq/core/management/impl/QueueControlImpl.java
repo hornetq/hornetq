@@ -575,7 +575,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
             throw new IllegalArgumentException("No queue found for " + otherQueueName);
          }
 
-         return queue.moveReference(messageID, binding.getAddress());
+         return queue.moveReference(messageID, binding.getAddress(), rejectDuplicates);
       }
       finally
       {

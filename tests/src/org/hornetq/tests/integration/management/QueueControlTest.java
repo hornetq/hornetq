@@ -1345,6 +1345,92 @@ public class QueueControlTest extends ManagementTestBase
 
    }
 
+   public void testMoveMessagesBack2() throws Exception
+   {
+      server.createQueue(new SimpleString("q1"), new SimpleString("q1"), null, true, false);
+      server.createQueue(new SimpleString("q2"), new SimpleString("q2"), null, true, false);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer("q1");
+      
+      int NUMBER_OF_MSGS = 10;
+
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+
+         msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
+
+         prod1.send(msg);
+      }
+
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer("q1", true);
+      session.start();
+
+      assertNotNull(consumer.receive(5000));
+      consumer.close();
+
+      QueueControl q1Control = ManagementControlHelper.createQueueControl(new SimpleString("q1"),
+                                                                          new SimpleString("q1"),
+                                                                          mbeanServer);
+
+      QueueControl q2Control = ManagementControlHelper.createQueueControl(new SimpleString("q2"),
+                                                                          new SimpleString("q2"),
+                                                                          mbeanServer);
+
+      assertEquals(NUMBER_OF_MSGS, q1Control.moveMessages(null, "q2"));
+
+      long messageIDs[] = new long[NUMBER_OF_MSGS];
+      
+      consumer = session.createConsumer("q2", true);
+      
+      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         messageIDs[i] = msg.getMessageID();
+      }
+
+      assertNull(consumer.receiveImmediate());
+
+      consumer.close();
+      
+      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      {
+         q2Control.moveMessage(messageIDs[i], "q1");
+      }
+
+
+      session.start();
+      consumer = session.createConsumer("q1");
+
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         System.out.println("msg = " + msg);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+
+      consumer.close();
+
+      session.deleteQueue("q1");
+
+      session.deleteQueue("q2");
+
+      session.close();
+
+      locator.close();
+
+   }
+
    public void testPauseAndResume()
    {
       long counterPeriod = 1000;
