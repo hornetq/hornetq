@@ -115,7 +115,7 @@ public class FailBackManualTest extends FailoverTestBase
 
       backupServer.stop();
 
-      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+      assertTrue(latch2.await(15, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
 
