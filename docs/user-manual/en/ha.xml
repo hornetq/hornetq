@@ -256,6 +256,17 @@
                         <literal>HornetQException</literal> with error code <literal
                         >HornetQException.TRANSACTION_ROLLED_BACK</literal> if using the core
                     API.</para>
+               <warning>
+                  <title>2 phase commit</title>
+                  <para>
+                     The caveat to this rule is when XA is used either via JMS or through the core API.
+                     If 2 phase commit is used and prepare has already ben called then rolling back could
+                     cause a <literal>HeuristicMixedException</literal>. Because of this there may be a
+                     chance that any non persistent messages could be lost. To avoid this use persistent
+                     messages when using XA. With acknowledgements this is not an issue since they are
+                     flushed to the server before prepare gets called.
+                  </para>
+               </warning>
                 <para>It is up to the user to catch the exception, and perform any client side local
                     rollback code as necessary. There is no need to manually rollback the session -
                     it is already rolled back. The user can then just retry the transactional
@@ -267,6 +278,15 @@
                     will come back. In this case it is not easy for the client to determine whether
                     the transaction commit was actually processed on the live server before failure
                     occurred.</para>
+               <note>
+                  <para>
+                     If XA is being used either via JMS or through the core API then an <literal>XAException.XA_RETRY</literal>
+                     is thrown. This is to inform Transaction Managers that a retry should occur at some point. At
+                     some later point in time the Transaction Manager will retry the commit. If the original
+                     commit hadn't occurred then it will still exist and be committed, if it doesn't exist
+                     then it is assumed to have been committed although the transaction manager may log a warning.
+                  </para>
+               </note>
                 <para>To remedy this, the client can simply enable duplicate detection (<xref
                         linkend="duplicate-detection"/>) in the transaction, and retry the
                     transaction operations again after the call is unblocked. If the transaction had
