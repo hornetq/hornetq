@@ -262,6 +262,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
             fail("backup server never started");
          }
       }
+      System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
    }
 
    protected void waitForBackup(long seconds)

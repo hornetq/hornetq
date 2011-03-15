@@ -302,7 +302,37 @@
             <para>Any ExceptionListener or SessionFailureListener instance will always be called by
                 HornetQ on event of connection failure, <emphasis role="bold"
                     >irrespective</emphasis> of whether the connection was successfully failed over,
-                reconnected or reattached.</para>
+                reconnected or reattached, however you can find out if reconnect or reattach has happened
+            by either the <literal>failedOver</literal> flag passed in on the <literal>connectionFailed</literal>
+               on <literal>SessionfailureListener</literal> or by inspecting the error code on the
+               <literal>javax.jms.JMSException</literal> which will be one of the following:</para>
+           <table frame="topbot" border="2">
+              <title>JMSException error codes</title>
+              <tgroup cols="2">
+                 <colspec colname="c1" colnum="1"/>
+                 <colspec colname="c2" colnum="2"/>
+                 <thead>
+                    <row>
+                       <entry>error code</entry>
+                       <entry>Description</entry>
+                    </row>
+                 </thead>
+                 <tbody>
+                    <row>
+                       <entry>FAILOVER</entry>
+                       <entry>
+                          Failover has occurred and we have successfully reattached or reconnected.
+                       </entry>
+                    </row>
+                    <row>
+                       <entry>DISCONNECT</entry>
+                       <entry>
+                          No failover has occurred and we are disconnected.
+                       </entry>
+                    </row>
+                 </tbody>
+              </tgroup>
+           </table>
         </section>
         <section>
             <title>Application-Level Failover</title>
