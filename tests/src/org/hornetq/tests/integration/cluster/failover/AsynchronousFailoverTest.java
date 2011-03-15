@@ -412,6 +412,11 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
                catch (HornetQException e)
                {
+                  if (e.getCode() == HornetQException.DUPLICATE_ID_REJECTED)
+                  {
+                     break;
+                  }
+                  else
                   if (e.getCode() == HornetQException.TRANSACTION_ROLLED_BACK || e.getCode() == HornetQException.UNBLOCKED)
                   {
                      // OK

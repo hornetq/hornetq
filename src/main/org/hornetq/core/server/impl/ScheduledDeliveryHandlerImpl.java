@@ -13,9 +13,10 @@
 package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
 
 /**
@@ -40,30 +42,41 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private static final boolean trace = ScheduledDeliveryHandlerImpl.log.isTraceEnabled();
 
    private final ScheduledExecutorService scheduledExecutor;
-
-   private final Map<Long, ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashMap<Long, ScheduledDeliveryRunnable>();
+   
+   private final Object lockDelivery = new Object();
+   
+   private LinkedList<MessageReference> scheduledReferences = new LinkedList<MessageReference>();
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
    {
       this.scheduledExecutor = scheduledExecutor;
    }
 
-   public boolean checkAndSchedule(final MessageReference ref)
+   public boolean checkAndSchedule(final MessageReference ref, final boolean tail)
    {
       long deliveryTime = ref.getScheduledDeliveryTime();
 
-      if (deliveryTime > System.currentTimeMillis() && scheduledExecutor != null)
+      if (deliveryTime > 0 && scheduledExecutor != null)
       {
          if (ScheduledDeliveryHandlerImpl.trace)
          {
             ScheduledDeliveryHandlerImpl.log.trace("Scheduling delivery for " + ref + " to occur at " + deliveryTime);
          }
 
-         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref);
+         ScheduledDeliveryRunnable runnable = new ScheduledDeliveryRunnable(ref.getScheduledDeliveryTime());
 
-         synchronized (scheduledRunnables)
+         synchronized (scheduledReferences)
          {
-            scheduledRunnables.put(ref.getMessage().getMessageID(), runnable);
+            if (tail)
+            {
+               // We do the opposite what the parameter says as the Runnable will always add it to the head
+               scheduledReferences.addFirst(ref);
+            }
+            else
+            {
+               // We do the opposite what the parameter says as the Runnable will always add it to the head
+               scheduledReferences.add(ref);
+            }
          }
 
          scheduleDelivery(runnable, deliveryTime);
@@ -75,19 +88,19 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    public int getScheduledCount()
    {
-      return scheduledRunnables.size();
+      synchronized (scheduledReferences)
+      {
+         return scheduledReferences.size();
+      }
    }
 
    public List<MessageReference> getScheduledReferences()
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
-      synchronized (scheduledRunnables)
+      synchronized (scheduledReferences)
       {
-         for (ScheduledDeliveryRunnable scheduledRunnable : scheduledRunnables.values())
-         {
-            refs.add(scheduledRunnable.getReference());
-         }
+         refs.addAll(scheduledReferences);
       }
       return refs;
    }
@@ -96,21 +109,18 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
 
-      synchronized (scheduledRunnables)
+      synchronized (scheduledReferences)
       {
-         Map<Long, ScheduledDeliveryRunnable> copy = new LinkedHashMap<Long, ScheduledDeliveryRunnable>(scheduledRunnables);
-         for (ScheduledDeliveryRunnable runnable : copy.values())
+         Iterator<MessageReference> iter = scheduledReferences.iterator();
+         
+         while (iter.hasNext())
          {
-            if (filter == null || filter.match(runnable.getReference().getMessage()))
+            MessageReference ref = iter.next();
+            if (filter.match(ref.getMessage()))
             {
-               runnable.cancel();
-
-               refs.add(runnable.getReference());
+               iter.remove();
+               refs.add(ref);
             }
-         }
-         for (MessageReference ref : refs)
-         {
-            scheduledRunnables.remove(ref.getMessage().getMessageID());
          }
       }
       return refs;
@@ -118,18 +128,21 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
 
    public MessageReference removeReferenceWithID(final long id)
    {
-      synchronized (scheduledRunnables)
+      synchronized (scheduledReferences)
       {
-         ScheduledDeliveryRunnable runnable = scheduledRunnables.remove(id);
-         if (runnable == null)
+         Iterator<MessageReference> iter = scheduledReferences.iterator();
+         while (iter.hasNext())
          {
-            return null;
-         }
-         else
-         {
-            return runnable.getReference();
+            MessageReference ref = iter.next();
+            if (ref.getMessage().getMessageID() == id)
+            {
+               iter.remove();
+               return ref;
+            }
          }
       }
+      
+      return null;
    }
 
    private void scheduleDelivery(final ScheduledDeliveryRunnable runnable, final long deliveryTime)
@@ -137,80 +150,71 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       long now = System.currentTimeMillis();
 
       long delay = deliveryTime - now;
+      
+      if (delay < 0)
+      {
+         delay = 0;
+      }
 
-      Future<?> future = scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
-
-      runnable.setFuture(future);
+      scheduledExecutor.schedule(runnable, delay, TimeUnit.MILLISECONDS);
    }
 
    private class ScheduledDeliveryRunnable implements Runnable
    {
-      private final MessageReference ref;
+      private final long scheduledTime;
 
-      private volatile Future<?> future;
-
-      private boolean cancelled;
-
-      public ScheduledDeliveryRunnable(final MessageReference ref)
+      public ScheduledDeliveryRunnable(final long scheduledTime)
       {
-         this.ref = ref;
-      }
-
-      public synchronized void setFuture(final Future<?> future)
-      {
-         if (cancelled)
-         {
-            future.cancel(false);
-         }
-         else
-         {
-            this.future = future;
-         }
-      }
-
-      public synchronized void cancel()
-      {
-         if (future != null)
-         {
-            future.cancel(false);
-         }
-
-         cancelled = true;
-      }
-
-      public MessageReference getReference()
-      {
-         return ref;
+         this.scheduledTime = scheduledTime;
       }
 
       public void run()
       {
-         if (ScheduledDeliveryHandlerImpl.trace)
-         {
-            ScheduledDeliveryHandlerImpl.log.trace("Scheduled delivery timeout " + ref);
-         }
+         HashSet<Queue> queues = new HashSet<Queue>();
+         LinkedList<MessageReference> references = new LinkedList<MessageReference>();
 
-         synchronized (scheduledRunnables)
+         synchronized (lockDelivery)
          {
-            Object removed = scheduledRunnables.remove(ref.getMessage().getMessageID());
-
-            if (removed == null)
+            synchronized (scheduledReferences)
             {
-               ScheduledDeliveryHandlerImpl.log.warn("Failed to remove timeout " + this);
-
-               return;
+               
+               Iterator<MessageReference> iter = scheduledReferences.iterator();
+               while (iter.hasNext())
+               {
+                  MessageReference reference = iter.next();
+                  if (reference.getScheduledDeliveryTime() <= this.scheduledTime)
+                  {
+                     iter.remove();
+   
+                     reference.setScheduledDeliveryTime(0);
+                     
+                     references.add(reference);
+                     
+                     queues.add(reference.getQueue());
+                  }
+               }
             }
-         }
-
-         ref.setScheduledDeliveryTime(0);
-
-         synchronized (ref.getQueue())
-         {
-            ref.getQueue().resetAllIterators();
-
-            ref.getQueue().addHead(ref);
             
-            ref.getQueue().deliverAsync();
+            for (MessageReference reference : references)
+            {
+               Queue queue = reference.getQueue();
+               synchronized (queue)
+               {
+                  queue.resetAllIterators();
+                  queue.addHead(reference);
+               }
+            }
+            
+            // Just to speed up GC
+            references.clear();
+            
+            for (Queue queue : queues)
+            {
+               synchronized (queue)
+               {
+                  queue.deliverAsync();
+               }
+            }
          }
       }
    }

@@ -62,4 +62,8 @@ public interface HierarchicalRepository<T>
     * clear the repository
     */
    void clear();
+   
+   void clearCache();
+   
+   int getCacheSize();
 }

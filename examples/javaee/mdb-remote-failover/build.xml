@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+
+<project default="run" name="HornetQ Java EE MDB with remote failover Config Example">
+
+   <import file="../common/build.xml"/>
+   <property file="../../common/config/server.properties"/>
+
+   <property name="example.live.server.dir" value="live-server"/>
+   <property name="example.backup.server.dir" value="backup-server"/>
+   <target name="run" depends="validate-jboss,compile">
+
+      <property name="serverclasspath" refid="jms.runtime.classpath"/>
+
+      <java classname="org.hornetq.javaee.example.MDBRemoteFailoverClientExample" fork="true">
+         <jvmarg value="-Dhornetq.example.server.classpath=${serverclasspath}"/>
+         <jvmarg value="-Dhornetq.example.server.args=${server.args}"/>
+         <jvmarg value="-Dhornetq.example.logserveroutput=${hornetq.example.logserveroutput}"/>
+         <jvmarg value="-Dhornetq.example.runServer=${hornetq.example.runServer}"/>
+         <arg line="${hornetq.example.beans.file}"/>
+         <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <classpath refid="jms.runtime.classpath"/>
+      </java>
+   </target>
+
+
+   <target name="copy-resources">
+      <copy todir="${example-profile}/deploy/jms-ra.rar/META-INF" overwrite="true">
+         <fileset dir="${example.server.dir}">
+            <include  name="ra.xml"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="deployLive" depends="validate-jboss, copy-live-profile">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-live"/>
+      <copy todir="${example-profile}/deploy/hornetq" overwrite="true">
+         <fileset dir="${example.live.server.dir}"/>
+      </copy>
+      <exec dir="${jboss.home}/bin" executable="sh" osfamily="unix">
+         <arg line="run.sh -Djboss.service.binding.set=ports-01 -c ${example.name}-live"/>
+      </exec>
+      <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
+         <arg line="/c run.bat -Djboss.service.binding.set=ports-01 -c ${example.name}-live"/>
+      </exec>
+   </target>
+
+   <target name="copy-live-profile" depends="live.profile.check" unless="donot.copy.profile">
+      <property name="profile" value="${jboss.home}/server/default"/>
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-live"/>
+      <property name="deploy.dir" value="${example-profile}/deploy/"/>
+      <mkdir dir="${example-profile}"/>
+      <copy todir="${example-profile}">
+         <fileset dir="${profile}">
+            <exclude name="**/*hornetq-configuration.xml"/>
+            <exclude name="**/*hornetq-jms.xml"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="live.profile.check">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-live"/>
+      <condition property="donot.copy.profile">
+         <available  file="${example-profile}" type="dir"/>
+      </condition>
+   </target>
+
+      <target name="deployBackup" depends="validate-jboss, copy-backup-profile">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-backup"/>
+      <copy todir="${example-profile}/deploy/hornetq" overwrite="true">
+         <fileset dir="${example.backup.server.dir}"/>
+      </copy>
+      <exec dir="${jboss.home}/bin" executable="sh" osfamily="unix">
+         <arg line="run.sh -Djboss.service.binding.set=ports-02 -c ${example.name}-backup"/>
+      </exec>
+      <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
+         <arg line="/c run.bat -Djboss.service.binding.set=ports-02 -c ${example.name}-backup"/>
+      </exec>
+   </target>
+
+   <target name="copy-backup-profile" depends="backup.profile.check" unless="donot.copy.profile">
+      <property name="profile" value="${jboss.home}/server/default"/>
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-backup"/>
+      <property name="deploy.dir" value="${example-profile}/deploy/"/>
+      <mkdir dir="${example-profile}"/>
+      <copy todir="${example-profile}">
+         <fileset dir="${profile}">
+            <exclude name="**/*hornetq-configuration.xml"/>
+         </fileset>
+      </copy>
+   </target>
+
+   <target name="backup.profile.check">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-backup"/>
+      <condition property="donot.copy.profile">
+         <available  file="${example-profile}" type="dir"/>
+      </condition>
+   </target>
+
+</project>

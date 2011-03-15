@@ -863,4 +863,14 @@ public interface Configuration extends Serializable
     * @return 
     */
    List<ConnectorServiceConfiguration> getConnectorServiceConfigurations();
+
+   /*
+   * how long to wait before failback occurs on restart
+   * */
+   long getFailbackDelay();
+
+   /*
+   * set the failback delay
+   * */
+   void setFailbackDelay(long delay);
 }

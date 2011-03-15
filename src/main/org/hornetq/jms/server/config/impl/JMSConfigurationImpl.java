@@ -55,7 +55,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
 
    public JMSConfigurationImpl()
    {
-      domain = null;
+      domain = ConfigurationImpl.DEFAULT_JMX_DOMAIN;
    }
 
    public JMSConfigurationImpl(final List<ConnectionFactoryConfiguration> connectionFactoryConfigurations,
@@ -66,7 +66,7 @@ public class JMSConfigurationImpl implements JMSConfiguration
       this.connectionFactoryConfigurations.addAll(connectionFactoryConfigurations);
       this.queueConfigurations.addAll(queueConfigurations);
       this.topicConfigurations.addAll(topicConfigurations);
-      this.domain = domain;
+      this.domain = domain != null ? domain : ConfigurationImpl.DEFAULT_JMX_DOMAIN;
    }
 
    // JMSConfiguration implementation -------------------------------

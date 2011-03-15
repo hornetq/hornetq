@@ -44,6 +44,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public static final long DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
 
    public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
+   
+   public static final int DEFAULT_PAGE_MAX_CACHE = 5;
 
    public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
 
@@ -60,6 +62,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    private Long maxSizeBytes = null;
 
    private Long pageSizeBytes = null;
+   
+   private Integer pageMaxCache = null;
 
    private Boolean dropMessagesWhenFull = null;
 
@@ -108,6 +112,16 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
    public void setPageSizeBytes(final long pageSize)
    {
       pageSizeBytes = pageSize;
+   }
+   
+   public int getPageCacheMaxSize()
+   {
+      return pageMaxCache != null ? pageMaxCache : AddressSettings.DEFAULT_PAGE_MAX_CACHE;
+   }
+   
+   public void setPageCacheMaxSize(final int pageMaxCache)
+   {
+      this.pageMaxCache = pageMaxCache;
    }
 
    public long getMaxSizeBytes()
@@ -209,6 +223,10 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       {
          maxSizeBytes = merged.maxSizeBytes;
       }
+      if (pageMaxCache == null)
+      {
+         pageMaxCache = merged.pageMaxCache;
+      }
       if (pageSizeBytes == null)
       {
          pageSizeBytes = merged.getPageSizeBytes();
@@ -262,6 +280,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       maxSizeBytes = BufferHelper.readNullableLong(buffer);
 
       pageSizeBytes = BufferHelper.readNullableLong(buffer);
+      
+      pageMaxCache = BufferHelper.readNullableInteger(buffer);
 
       dropMessagesWhenFull = BufferHelper.readNullableBoolean(buffer);
 
@@ -291,6 +311,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       return BufferHelper.sizeOfNullableSimpleString(addressFullMessagePolicy != null ? addressFullMessagePolicy.toString()
                                                                                      : null) + BufferHelper.sizeOfNullableLong(maxSizeBytes) +
              BufferHelper.sizeOfNullableLong(pageSizeBytes) +
+             BufferHelper.sizeOfNullableInteger(pageMaxCache) +
              BufferHelper.sizeOfNullableBoolean(dropMessagesWhenFull) +
              BufferHelper.sizeOfNullableInteger(maxDeliveryAttempts) +
              BufferHelper.sizeOfNullableInteger(messageCounterHistoryDayLimit) +
@@ -313,6 +334,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       BufferHelper.writeNullableLong(buffer, maxSizeBytes);
 
       BufferHelper.writeNullableLong(buffer, pageSizeBytes);
+
+      BufferHelper.writeNullableInteger(buffer, pageMaxCache);
 
       BufferHelper.writeNullableBoolean(buffer, dropMessagesWhenFull);
 
@@ -351,6 +374,7 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       result = prime * result +
                ((messageCounterHistoryDayLimit == null) ? 0 : messageCounterHistoryDayLimit.hashCode());
       result = prime * result + ((pageSizeBytes == null) ? 0 : pageSizeBytes.hashCode());
+      result = prime * result + ((pageMaxCache == null) ? 0 : pageMaxCache.hashCode());
       result = prime * result + ((redeliveryDelay == null) ? 0 : redeliveryDelay.hashCode());
       result = prime * result + ((redistributionDelay == null) ? 0 : redistributionDelay.hashCode());
       result = prime * result + ((sendToDLAOnNoRoute == null) ? 0 : sendToDLAOnNoRoute.hashCode());
@@ -433,6 +457,13 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
       }
       else if (!pageSizeBytes.equals(other.pageSizeBytes))
          return false;
+      if (pageMaxCache == null)
+      {
+         if (other.pageMaxCache != null)
+            return false;
+      }
+      else if (!pageMaxCache.equals(other.pageMaxCache))
+         return false;
       if (redeliveryDelay == null)
       {
          if (other.redeliveryDelay != null)
@@ -480,6 +511,8 @@ public class AddressSettings implements Mergeable<AddressSettings>, Serializable
              messageCounterHistoryDayLimit +
              ", pageSizeBytes=" +
              pageSizeBytes +
+             ", pageMaxCache=" +
+             pageMaxCache +
              ", redeliveryDelay=" +
              redeliveryDelay +
              ", redistributionDelay=" +

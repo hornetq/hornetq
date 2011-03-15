@@ -55,7 +55,7 @@ public class JndiBindingRegistry implements BindingRegistry
       }
       catch (NamingException e)
       {
-         throw new RuntimeException(e);
+         return null;
       }
    }
 

@@ -15,6 +15,7 @@ package org.hornetq.ra;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
@@ -650,16 +651,6 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setReconnectAttempts(reconnectAttempts);
    }
 
-   public Boolean isFailoverOnServerShutdown()
-   {
-      return mcfProperties.isFailoverOnServerShutdown();
-   }
-
-   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
-   {
-      mcfProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
-   }
-
    public Boolean isUseGlobalPools()
    {
       return mcfProperties.isUseGlobalPools();
@@ -688,6 +679,16 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    public void setThreadPoolMaxSize(final Integer threadPoolMaxSize)
    {
       mcfProperties.setThreadPoolMaxSize(threadPoolMaxSize);
+   }
+
+   public Boolean isHA()
+   {
+      return mcfProperties.isHA();
+   }
+
+   public void setHA(Boolean ha)
+   {
+      mcfProperties.setHA(ha);
    }
 
    /**

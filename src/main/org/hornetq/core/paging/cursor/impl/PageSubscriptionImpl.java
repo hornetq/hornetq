@@ -69,12 +69,11 @@ public class PageSubscriptionImpl implements PageSubscription
 
    // Attributes ----------------------------------------------------
 
-   private final boolean isTrace = false; // PageCursorImpl.log.isTraceEnabled();
+   private final boolean isTrace = PageSubscriptionImpl.log.isTraceEnabled();
 
    private static void trace(final String message)
    {
-      // PageCursorImpl.log.info(message);
-      System.out.println(message);
+      PageSubscriptionImpl.log.trace(message);
    }
 
    private volatile boolean autoCleanup = true;
@@ -100,9 +99,9 @@ public class PageSubscriptionImpl implements PageSubscription
    private List<PagePosition> recoveredACK;
 
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
-   
+
    private final PageSubscriptionCounter counter;
-   
+
    private final AtomicLong deliveredCount = new AtomicLong(0);
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
@@ -131,6 +130,11 @@ public class PageSubscriptionImpl implements PageSubscription
    }
 
    // Public --------------------------------------------------------
+
+   public PagingStore getPagingStore()
+   {
+      return pageStore;
+   }
 
    public Queue getQueue()
    {
@@ -174,8 +178,6 @@ public class PageSubscriptionImpl implements PageSubscription
       confirmPosition(position);
    }
 
-   
-   
    public long getMessageCount()
    {
       return counter.getValue() - deliveredCount.get();
@@ -185,7 +187,7 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       return counter;
    }
-   
+
    public void scheduleCleanupCheck()
    {
       if (autoCleanup)
@@ -317,12 +319,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       PageCache cache = cursorProvider.getPageCache(pos);
 
-      if (cache == null)
-      {
-         return null;
-      }
-
-      if (!cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages())
+      if (cache == null || (!cache.isLive() && retPos.getMessageNr() >= cache.getNumberOfMessages()))
       {
          retPos = pos.nextPage();
 
@@ -388,14 +385,20 @@ public class PageSubscriptionImpl implements PageSubscription
 
                for (PagePosition pos : entry.getValue().acks)
                {
-                  System.out.println("Analizing " + pos);
+                  if (isTrace)
+                  {
+                     trace("Analizing " + pos);
+                  }
                   if (retValue == null || retValue.getMessageNr() > pos.getMessageNr())
                   {
                      retValue = pos;
                   }
                }
 
-               System.out.println("Returning initial position " + retValue);
+               if (isTrace) 
+               {
+                  trace("Returning initial position " + retValue);
+               }
 
                return retValue;
             }
@@ -419,7 +422,7 @@ public class PageSubscriptionImpl implements PageSubscription
    public void ackTx(final Transaction tx, final PagedReference reference) throws Exception
    {
       confirmPosition(tx, reference.getPosition());
-      
+
       counter.increment(tx, -1);
 
       PageTransactionInfo txInfo = getPageTransaction(reference);
@@ -477,6 +480,11 @@ public class PageSubscriptionImpl implements PageSubscription
       }
    }
 
+   public void addPendingDelivery(final PagePosition position)
+   {
+      getPageInfo(position).incrementPendingTX();
+   }
+
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.cursor.PageCursor#returnElement(org.hornetq.core.paging.cursor.PagePosition)
     */
@@ -485,6 +493,15 @@ public class PageSubscriptionImpl implements PageSubscription
       synchronized (redeliveries)
       {
          redeliveries.add(position);
+         PageCursorInfo pageInfo = consumedPages.get(position.getPageNr());
+         if (pageInfo != null)
+         {
+            pageInfo.decrementPendingTX();
+         }
+         else
+         {
+            // this shouldn't really happen.
+         }
       }
    }
 
@@ -521,6 +538,7 @@ public class PageSubscriptionImpl implements PageSubscription
     */
    public void reloadPreparedACK(final Transaction tx, final PagePosition position)
    {
+      deliveredCount.incrementAndGet();
       installTXCallback(tx, position);
    }
 
@@ -530,6 +548,13 @@ public class PageSubscriptionImpl implements PageSubscription
    public void positionIgnored(final PagePosition position)
    {
       processACK(position);
+   }
+
+   
+   public void lateDeliveryRollback(PagePosition position)
+   {
+      PageCursorInfo cursorInfo = processACK(position);
+      cursorInfo.decrementPendingTX();
    }
 
    /* (non-Javadoc)
@@ -734,7 +759,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
    // To be called only after the ACK has been processed and guaranteed to be on storae
    // The only exception is on non storage events such as not matching messages
-   private void processACK(final PagePosition pos)
+   private PageCursorInfo processACK(final PagePosition pos)
    {
       if (lastAckedPosition == null || pos.compareTo(lastAckedPosition) > 0)
       {
@@ -751,6 +776,8 @@ public class PageSubscriptionImpl implements PageSubscription
       PageCursorInfo info = getPageInfo(pos);
 
       info.addACK(pos);
+      
+      return info;
    }
 
    /**
@@ -764,6 +791,8 @@ public class PageSubscriptionImpl implements PageSubscription
          // It needs to persist, otherwise the cursor will return to the fist page position
          tx.setContainsPersistent();
       }
+
+      getPageInfo(position).remove(position);
 
       PageCursorTX cursorTX = (PageCursorTX)tx.getProperty(TransactionPropertyIndexes.PAGE_CURSOR_POSITIONS);
 
@@ -826,6 +855,9 @@ public class PageSubscriptionImpl implements PageSubscription
       // The page was live at the time of the creation
       private final boolean wasLive;
 
+      // There's a pending TX to add elements on this page
+      private AtomicInteger pendingTX = new AtomicInteger(0);
+
       // There's a pending delete on the async IO pipe
       // We're holding this object to avoid delete the pages before the IO is complete,
       // however we can't delete these records again
@@ -858,7 +890,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       public boolean isDone()
       {
-         return getNumberOfMessages() == confirmed.get();
+         return getNumberOfMessages() == confirmed.get() && pendingTX.get() == 0;
       }
 
       public boolean isPendingDelete()
@@ -879,6 +911,17 @@ public class PageSubscriptionImpl implements PageSubscription
          return pageId;
       }
 
+      public void incrementPendingTX()
+      {
+         pendingTX.incrementAndGet();
+      }
+
+      public void decrementPendingTX()
+      {
+         pendingTX.decrementAndGet();
+         checkDone();
+      }
+
       public boolean isRemoved(final PagePosition pos)
       {
          return removedReferences.contains(pos);
@@ -897,19 +940,29 @@ public class PageSubscriptionImpl implements PageSubscription
          if (isTrace)
          {
             PageSubscriptionImpl.trace("numberOfMessages =  " + getNumberOfMessages() +
-                                       " confirmed =  " +
-                                       (confirmed.get() + 1) +
-                                       ", page = " +
-                                       pageId);
+                    " confirmed =  " +
+                    (confirmed.get() + 1) +
+                    " pendingTX = " + pendingTX +
+                    ", page = " +
+                    pageId);
          }
 
          // Negative could mean a bookmark on the first element for the page (example -1)
          if (posACK.getMessageNr() >= 0)
          {
-            if (getNumberOfMessages() == confirmed.incrementAndGet())
-            {
-               onPageDone(this);
-            }
+            confirmed.incrementAndGet();
+            checkDone();
+         }
+      }
+
+      /**
+       * 
+       */
+      protected void checkDone()
+      {
+         if (isDone())
+         {
+            onPageDone(this);
          }
       }
 
@@ -974,7 +1027,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
          }
       }
-      
+
       /* (non-Javadoc)
        * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
        */
@@ -982,7 +1035,6 @@ public class PageSubscriptionImpl implements PageSubscription
       {
          return Collections.emptyList();
       }
-      
 
    }
 
@@ -1204,11 +1256,8 @@ public class PageSubscriptionImpl implements PageSubscription
        */
       public void remove()
       {
-         if (!isredelivery)
-         {
-            deliveredCount.incrementAndGet();
-            PageSubscriptionImpl.this.getPageInfo(position).remove(position);
-         }
+         deliveredCount.incrementAndGet();
+         PageSubscriptionImpl.this.getPageInfo(position).remove(position);
       }
 
       /* (non-Javadoc)

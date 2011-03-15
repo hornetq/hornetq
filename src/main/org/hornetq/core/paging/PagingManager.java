@@ -19,6 +19,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
 
 /**
  * 
@@ -44,7 +45,7 @@ import org.hornetq.core.server.HornetQComponent;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
-public interface PagingManager extends HornetQComponent
+public interface PagingManager extends HornetQComponent, HierarchicalRepositoryChangeListener
 {
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;

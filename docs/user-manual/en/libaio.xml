@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="libaio">
     <title>Libaio Native Libraries</title>
     <para>HornetQ distributes a native library, used as a bridge between HornetQ and linux

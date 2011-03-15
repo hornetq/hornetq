@@ -364,8 +364,9 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
     */
-   public void waitOnOperations(final long timeout) throws Exception
+   public boolean waitOnOperations(final long timeout) throws Exception
    {
+      return true;
    }
 
    /* (non-Javadoc)
@@ -406,6 +407,13 @@ public class NullStorageManager implements StorageManager
    {
       return dummyContext;
    }
+   
+   
+   public OperationContext newSingleThreadContext()
+   {
+      return dummyContext;
+   }
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)

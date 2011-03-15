@@ -13,6 +13,10 @@
 
 package org.hornetq.tests.integration.security;
 
+import java.io.PrintStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
@@ -38,7 +42,6 @@ public class SimpleClient
    {
       try
       {
-
          if (args.length != 1)
          {
             throw new Exception("require 1 argument: connector factory class name");
@@ -57,10 +60,10 @@ public class SimpleClient
          ClientConsumer consumer = session.createConsumer(queueName);
 
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.getBodyBuffer().writeString(messageText);
          producer.send(message);
 
@@ -87,15 +90,15 @@ public class SimpleClient
       }
       catch (Throwable t)
       {
-         
+
          String allStack = t.getMessage() + "|";
          StackTraceElement[] stackTrace = t.getStackTrace();
          for (StackTraceElement stackTraceElement : stackTrace)
          {
             allStack += stackTraceElement.toString() + "|";
          }
-         //System.out.println(t.getClass().getName());
-         //System.out.println(t.getMessage());
+         // System.out.println(t.getClass().getName());
+         // System.out.println(t.getMessage());
          System.out.println(allStack);
          System.exit(1);
       }

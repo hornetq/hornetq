@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="thread-pooling">
     <title>Thread management</title>
     <para>This chapter describes how HornetQ uses and pools threads and how you can manage
@@ -111,7 +116,9 @@
         <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools,
             simply use the appropriate setter methods immediately after creation, for
             example:</para>
-        <programlisting>ClientSessionFactory myFactory = HornetQClient.createClientSessionFactory(...);
+        <programlisting>
+ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(...)
+ClientSessionFactory myFactory = locator.createClientSessionFactory();
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);   </programlisting>
@@ -122,7 +129,8 @@ myFactory.setThreadPoolMaxSize(-1);   </programlisting>
         <para>If you're using JNDI to instantiate <literal>HornetQConnectionFactory</literal>
             instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal>
             file where you describe your connection factory, for example:</para>
-        <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;
+        <programlisting>
+&lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connectors>
        &lt;connector-ref connector-name="netty"/&gt;
     &lt;/connectors>

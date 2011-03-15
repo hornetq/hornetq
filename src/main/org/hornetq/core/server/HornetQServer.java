@@ -55,6 +55,11 @@ import org.hornetq.utils.ExecutorFactory;
  */
 public interface HornetQServer extends HornetQComponent
 {
+   
+   void setIdentity(String identity);
+   
+   String getIdentity();
+   
    Configuration getConfiguration();
 
    RemotingService getRemotingService();
@@ -70,6 +75,8 @@ public interface HornetQServer extends HornetQComponent
    MBeanServer getMBeanServer();
 
    Version getVersion();
+   
+   NodeManager getNodeManager();
 
    /**
     * Returns the resource to manage this HornetQ server.

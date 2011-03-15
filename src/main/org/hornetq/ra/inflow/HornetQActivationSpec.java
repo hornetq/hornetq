@@ -13,6 +13,7 @@
 package org.hornetq.ra.inflow;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.jms.Session;
@@ -46,8 +47,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /** Whether trace is enabled */
    private static boolean trace = HornetQActivationSpec.log.isTraceEnabled();
 
-   /** The transport config, changing the default configured from the RA */
-   private Map<String, Object> connectionParameters = new HashMap<String, Object>();
+   public String strConnectorClassName;
 
    public String strConnectionParameters;
 
@@ -607,6 +607,23 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       }
    }
 
+   public String getConnectorClassName()
+   {
+      return strConnectorClassName;
+   }
+
+   public void setConnectorClassName(final String connectorClassName)
+   {
+      if (HornetQActivationSpec.trace)
+      {
+         HornetQActivationSpec.log.trace("setConnectorClassName(" + connectorClassName + ")");
+      }
+
+      strConnectorClassName = connectorClassName;
+
+      setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
+   }
+
    /**
     * @return the connectionParameters
     */
@@ -615,16 +632,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       return strConnectionParameters;
    }
 
-   @Override
-   public Map<String, Object> getParsedConnectionParameters()
-   {
-      return connectionParameters;
-   }
-
    public void setConnectionParameters(final String configuration)
    {
       strConnectionParameters = configuration;
-      connectionParameters = Util.parseConfig(configuration);
+      setParsedConnectionParameters(Util.parseConfig(configuration));
    }
 
    /**

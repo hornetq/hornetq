@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="examples">
     <title>Examples</title>
     <para>The HornetQ distribution comes with over 70 run out-of-the-box examples demonstrating many
@@ -32,6 +37,10 @@
             directory and type <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
             are on Windows).</para>
         <para>Here's a listing of the examples with a brief description.</para>
+        <section id="examples.applet">
+            <title>Applet</title>
+            <para>This example shows you how to send and receive JMS messages from an Applet.</para>
+        </section>
         <section id="application-level-failover">
             <title>Application-Layer Failover</title>
             <para>HornetQ also supports Application-Layer failover, useful in the case that
@@ -80,6 +89,10 @@
                 be created to different nodes of the cluster. In other words it demonstrates how
                 HornetQ does client-side load-balancing of sessions across the cluster.</para>
         </section>
+        <section id="examples.clustered.durable">
+            <title>Clustered Durable Subscription</title>
+            <para>This example demonstrates a clustered JMS durable subscription</para>
+        </section>
         <section id="examples.clustered.grouping">
             <title>Clustered Grouping</title>
             <para>This is similar to the message grouping example except that it demonstrates it
@@ -95,18 +108,22 @@
                 consumers receive the sent messages in a round-robin fashion.</para>
         </section>
         <section>
-            <title>Static Clustered Queue</title>
-            <para>The <literal>static-clustered-queue</literal> example demonstrates a JMS queue deployed
-                on two different nodes. Conversely to the <literal>clustered-queue</literal> example which uses
-                UDP to create the cluster, this example uses a list of static connectors for each cluster node.</para>
-        </section>
-        <section>
             <title>Clustered Standalone</title>
             <para>The <literal>clustered-standalone</literal> example demonstrates how to configure
                 and starts 3 cluster nodes on the same machine to form a cluster. A subscriber for a
                 JMS topic is created on each node, and we create a producer on only one of the
                 nodes. We then send some messages via the producer, and we verify that the 3
                 subscribers receive all the sent messages.</para>
+        </section>
+        <section id="examples.clustered.static.discovery">
+            <title>Clustered Static Discovery</title>
+            <para>This example demonstrates how to configure a cluster using a list of connectors rather
+               than UDP for discovery</para>
+        </section>
+        <section id="examples.clustered.static.oneway">
+            <title>Clustered Static Cluster One Way</title>
+            <para>This example demonstrates how to set up a cluster where cluster connections are one way,
+            i.e. server A -> Server B -> Server C</para>
         </section>
         <section>
             <title>Clustered Topic</title>
@@ -167,14 +184,30 @@
                 Note that for the messages to be persisted, the messages sent to them must be marked
                 as durable messages. </para>
         </section>
-        <section id="examples.embedded.jms.simple">
-            <title>Embedded Simple</title>
-            <para>The <literal>embedded</literal> example shows how to embed JMS within your own code using regular HornetQ XML files.</para>
-        </section>
         <section id="examples.embedded.jms">
             <title>Embedded</title>
             <para>The <literal>embedded</literal> example shows how to embed JMS
                 within your own code using POJO instantiation and no config files.</para>
+        </section>
+        <section id="examples.embedded.jms.simple">
+            <title>Embedded Simple</title>
+            <para>The <literal>embedded</literal> example shows how to embed JMS within your own code using regular HornetQ XML files.</para>
+        </section>
+        <section id="examples.expiry">
+            <title>Message Expiration</title>
+            <para>The <literal>expiry</literal> example shows you how to define and deal with
+                message expiration. Messages can be retained in the messaging system for a limited
+                period of time before being removed. JMS specification states that clients should
+                not receive messages that have been expired (but it does not guarantee this will not
+                happen).</para>
+            <para>HornetQ can assign an expiry address to a given queue so that when messages
+                are expired, they are removed from the queue and sent to the expiry address.
+                These "expired" messages can later be consumed from the expiry address for
+                further inspection.</para>
+        </section>
+        <section id="examples.failover.manual.stop">
+            <title>Failover Manual Stop</title>
+            <para>This examples shows how to stop the server manually and cause failover</para>
         </section>
         <section>
             <title>HTTP Transport</title>
@@ -232,16 +265,6 @@
             <para>A typical example for last-value queue is for stock prices, where you are only
                 interested by the latest price for a particular stock.</para>
         </section>
-        <section>
-            <title>Load Balanced Clustered Queue</title>
-            <para>The <literal>clustered-queue</literal> example demonstrates a JMS queue deployed
-                on two different nodes. The two nodes are configured to form a cluster.</para>
-            <para>We then create a consumer on the queue on each node, and we create a producer on
-                only one of the nodes. We then send some messages via the producer, and we verify
-                that both consumers receive the sent messages in a round-robin fashion.</para>
-            <para>In other words, HornetQ load balances the sent messages across all consumers on
-                the cluster</para>
-        </section>
         <section id="examples.management">
             <title>Management</title>
             <para>The <literal>management</literal> example shows how to manage HornetQ using JMS
@@ -259,18 +282,6 @@
             <title>Message Counter</title>
             <para>The <literal>message-counters</literal> example shows you how to use message
                 counters to obtain message information for a JMS queue.</para>
-        </section>
-        <section id="examples.expiry">
-            <title>Message Expiration</title>
-            <para>The <literal>expiry</literal> example shows you how to define and deal with
-                message expiration. Messages can be retained in the messaging system for a limited
-                period of time before being removed. JMS specification states that clients should
-                not receive messages that have been expired (but it does not guarantee this will not
-                happen).</para>
-            <para>HornetQ can assign an expiry address to a given queue so that when messages
-                are expired, they are removed from the queue and sent to the expiry address.
-                These "expired" messages can later be consumed from the expiry address for
-                further inspection.</para>
         </section>
         <section id="examples.message-group">
             <title>Message Group</title>
@@ -308,6 +319,15 @@
             <para>Messages of equal priorities are delivered in the natural order of their arrival
                 at their destinations. Please consult the JMS 1.1 specification for full
                 details.</para>
+        </section>
+        <section id="examples.multiple.failover">
+            <title>Multiple Failover</title>
+            <para>This example demonstrates how to set up a live server with multiple backups</para>
+        </section>
+        <section id="examples.multiple.failover.failback">
+            <title>Multiple Failover Failback</title>
+            <para>This example demonstrates how to set up a live server with multiple backups but
+               forcing failover back to the original live server</para>
         </section>
         <section id="examples.no-consumer-buffering">
             <title>No Consumer Buffering</title>
@@ -476,14 +496,14 @@
                 selectively consume messages using message selectors with topic consumers.</para>
         </section>
         <section id="examples.transaction-failover">
-            <title>Transaction Failover With Data Replication</title>
+            <title>Transaction Failover</title>
             <para>The <literal>transaction-failover</literal> example demonstrates two servers coupled
                 as a live-backup pair for high availability (HA), and a client using a transacted JMS
                 session failing over from live to backup when the live server is
                 crashed.</para>
             <para>HornetQ implements failover of client connections between
-                live and backup servers. This is implemented by the replication of data between
-                live and backup nodes. When replication is configured and a live node crashes, the
+                live and backup servers. This is implemented by the sharing of a journal between the
+               servers. When a live node crashes, the
                 client connections can carry and continue to send and consume messages. When transacted
                 sessions are used, once and only once message delivery is guaranteed.</para>
         </section>
@@ -555,7 +575,7 @@
         </section>
         <section>
             <title>MDB (Message Driven Bean)</title>
-            <para>A simple example of a message driven bean.</para>
+            <para>A simple set of examples of message driven beans, including failover examples.</para>
         </section>
         <section>
             <title>Servlet Transport</title>

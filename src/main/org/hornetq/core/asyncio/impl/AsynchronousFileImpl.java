@@ -14,6 +14,7 @@
 package org.hornetq.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.FileLock;
 import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
@@ -51,7 +52,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    /** This definition needs to match Version.h on the native sources.
        Or else the native module won't be loaded because of version mismatches */
-   private static int EXPECTED_NATIVE_VERSION = 30;
+   private static int EXPECTED_NATIVE_VERSION = 31;
 
    /** Used to determine the next writing sequence */
    private final AtomicLong nextWritingSequence = new AtomicLong(0);
@@ -615,8 +616,29 @@ public class AsynchronousFileImpl implements AsynchronousFile
       // completely done, or we might get beautiful GPFs
       pollerLatch.await();
    }
+   
+   public static FileLock lock(int handle)
+   {
+      if (flock(handle))
+      {
+         return new HornetQFileLock(handle);
+      }
+      else
+      {
+         return null;
+      }
+   }
 
    // Native ----------------------------------------------------------------------------
+   
+   
+   // Functions used for locking files .....
+   public static native int openFile(String fileName);
+   
+   public static native void closeFile(int handle);
+   
+   private static native boolean flock(int handle);
+   // Functions used for locking files ^^^^^^^^
 
    private static native void resetBuffer(ByteBuffer directByteBuffer, int size);
 

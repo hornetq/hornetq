@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="ha">
     <title>High Availability and Failover</title>
     <para>We define high availability as the <emphasis>ability for the system to continue
@@ -28,7 +33,7 @@
         <para>HornetQ allows servers to be linked together as <emphasis>live -
                 backup</emphasis> groups where each live server can have 1 or more backup servers.
             A backup server is owned by only one live server. Backup servers are not operational until
-            failover occurs, however 1 chosen backup will be in passive mode announces its status and waiting to take
+            failover occurs, however 1 chosen backup, which will be in passive mode, announces its status and waits to take
             over the live servers work</para>
         <para>Before failover, only the live server is serving the HornetQ clients while the backup
             servers remain passive or awaiting to become a backup server. When a live server crashes or is brought down
@@ -79,23 +84,26 @@
                     <para>To configure the live and backup servers to share their store, configure
                         all <literal>hornetq-configuration.xml</literal>:</para>
                     <programlisting>
-                   &lt;shared-store>true&lt;shared-store>
+&lt;shared-store>true&lt;shared-store>
                 </programlisting>
                     <para>Additionally, each backup server must be flagged explicitly as a
                         backup:</para>
                     <programlisting>
-                   &lt;backup>true&lt;/backup>
+&lt;backup>true&lt;/backup>
                      </programlisting>
                     <para>In order for live - backup groups to operate properly with a shared store,
                         both servers must have configured the location of journal directory to point
                         to the <emphasis>same shared location</emphasis> (as explained in <xref
                             linkend="configuring.message.journal"/>)</para>
+                   <note>
+                      <para>todo write something about GFS</para>
+                   </note>
                     <para>Also each node, live and backups, will need to have a cluster connection defined even if not
                         part of a cluster. The Cluster Connection info defines how backup servers announce there presence
                         to it's live server or any other nodes in the cluster. refer to <xref linkend="clusters"/> for details
                         on how this is done.</para>
                 </section>
-                <section>
+                <section id="ha.allow-fail-back">
                     <title>Failing Back to live Server</title>
                     <para>After a live server has failed and a backup taken has taken over its duties, you may want to
                         restart the live server and have clients fail back. To do this simply restart the original live
@@ -107,7 +115,7 @@
                         configuration file like so:
                     </para>
                     <programlisting>
-                        &lt;failover-on-shutdown>true&lt;/failover-on-shutdown>
+&lt;failover-on-shutdown>true&lt;/failover-on-shutdown>
                     </programlisting>
                     <para>
                         By default this is set to false, if by some chance you have set this to false but still
@@ -120,7 +128,7 @@
                     <literal>hornetq-configuration.xml</literal> configuration file as follows:
                     </para>
                     <programlisting>
-                        &lt;allow-failback>true&lt;/allow-failback>
+&lt;allow-failback>true&lt;/allow-failback>
                     </programlisting>
                 </section>
             </section>
@@ -183,16 +191,6 @@
                     on the <literal>ClientSessionFactoryImpl</literal> or <literal >HornetQConnectionFactory</literal> or
                     <literal>initial-connect-attempts</literal> in xml. The default for this is <literal>0</literal>, that
                     is try only once. Once the number of attempts has been made an exception will be thrown.
-                </para>
-                <para>
-                    Similarly, when a cluster topology changed, i.e. a live server crashes and a backup becomes live,
-                    there is a window where the topology has changes but the client has yet to be notified. Again as
-                    above the client will try an initial number of connect attempts with the live server but after that
-                    it is possible to try to connect to the backup server (if the client knows of it). To do this
-                    set the property <literal>FailoverOnInitialConnection</literal>, or <literal>failover-on-initial-connection</literal>
-                    in xml, on the <literal>ClientSessionFactoryImpl</literal> or <literal>HornetQConnectionFactory</literal>.
-                    The default value for this parameter is <literal>false</literal>. The client will use the property
-                    reconnect attempts to decide how many times to try the backup server.
                 </para>
             </section>
             <para>For examples of automatic failover with transacted and non-transacted JMS

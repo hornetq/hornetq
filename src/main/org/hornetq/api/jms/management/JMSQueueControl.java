@@ -179,6 +179,15 @@ public interface JMSQueueControl extends DestinationControl
    @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = MBeanOperationInfo.ACTION)
    int changeMessagesPriority(@Parameter(name = "filter", desc = "A message filter") String filter,
                               @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
+   /**
+    * Moves the message corresponding to the specified message ID to the specified other queue.
+    *
+    * @return {@code true} if the message was moved, {@code false} else
+    */
+   @Operation(desc = "Move the message corresponding to the given messageID to another queue, ignoring duplicates (rejectDuplicates=false on this case)", impact = MBeanOperationInfo.ACTION)
+   boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID") String messageID,
+                       @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName) throws Exception;
+
 
    /**
     * Moves the message corresponding to the specified message ID to the specified other queue.
@@ -187,7 +196,20 @@ public interface JMSQueueControl extends DestinationControl
     */
    @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = MBeanOperationInfo.ACTION)
    boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID") String messageID,
-                       @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName) throws Exception;
+                       @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName,
+                       @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
+
+   /**
+    * Moves all the message corresponding to the specified filter  to the specified other queue.
+    * RejectDuplicates=false on this case
+    * <br>
+    * Using {@code null} or an empty filter will move <em>all</em> messages from this queue.
+    * 
+    * @return the number of moved messages
+    */
+   @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages). rejectDuplicates=false on this case", impact = MBeanOperationInfo.ACTION)
+   int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
+                    @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName) throws Exception;
 
    /**
     * Moves all the message corresponding to the specified filter  to the specified other queue.
@@ -198,7 +220,8 @@ public interface JMSQueueControl extends DestinationControl
     */
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = MBeanOperationInfo.ACTION)
    int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
-                    @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName) throws Exception;
+                    @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName,
+                    @Parameter(name = "rejectDuplicates", desc = "Reject messages identified as duplicate by the duplicate message") boolean rejectDuplicates) throws Exception;
 
    /**
     * Lists the message counter for this queue.

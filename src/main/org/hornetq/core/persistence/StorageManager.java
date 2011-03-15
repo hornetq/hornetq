@@ -57,6 +57,8 @@ public interface StorageManager extends HornetQComponent
 
    /** It just creates an OperationContext without associating it */
    OperationContext newContext(Executor executor);
+   
+   OperationContext newSingleThreadContext();
 
    /** Set the context back to the thread */
    void setContext(OperationContext context);
@@ -74,10 +76,14 @@ public interface StorageManager extends HornetQComponent
    void afterCompleteOperations(IOAsyncTask run);
 
    /** Block until the operations are done. 
+    *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
+    *           in case of the pools are full
     * @throws Exception */
-   void waitOnOperations(long timeout) throws Exception;
+   boolean waitOnOperations(long timeout) throws Exception;
 
    /** Block until the operations are done. 
+    *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
+    *           in case of the pools are full
     * @throws Exception */
    void waitOnOperations() throws Exception;
 

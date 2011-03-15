@@ -260,6 +260,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(1, conf.getAddressesSettings().get("a1").getRedeliveryDelay());
       assertEquals(81781728121878l, conf.getAddressesSettings().get("a1").getMaxSizeBytes());
       assertEquals(81738173872337l, conf.getAddressesSettings().get("a1").getPageSizeBytes());
+      assertEquals(10, conf.getAddressesSettings().get("a1").getPageCacheMaxSize());
       assertEquals(4, conf.getAddressesSettings().get("a1").getMessageCounterHistoryDayLimit());
 
       assertEquals("a2.1", conf.getAddressesSettings().get("a2").getDeadLetterAddress().toString());
@@ -267,6 +268,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(5, conf.getAddressesSettings().get("a2").getRedeliveryDelay());
       assertEquals(932489234928324l, conf.getAddressesSettings().get("a2").getMaxSizeBytes());
       assertEquals(7126716262626l, conf.getAddressesSettings().get("a2").getPageSizeBytes());
+      assertEquals(20, conf.getAddressesSettings().get("a2").getPageCacheMaxSize());
       assertEquals(8, conf.getAddressesSettings().get("a2").getMessageCounterHistoryDayLimit());
       
       

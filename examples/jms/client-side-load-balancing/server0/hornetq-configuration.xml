@@ -38,6 +38,15 @@
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
    </discovery-groups>
+
+   <cluster-connections>
+      <cluster-connection name="my-cluster">
+	  <address>jms</address>
+          <connector-ref>netty-connector</connector-ref>
+          <max-hops>0</max-hops>
+	  <discovery-group-ref discovery-group-name="my-discovery-group"/>
+      </cluster-connection>
+   </cluster-connections>
    
    <!-- Other config -->
 

@@ -15,7 +15,6 @@ package org.hornetq.core.paging.cursor.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
@@ -62,9 +61,9 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    private final Executor executor;
 
-   private Map<Long, PageCache> softCache = new SoftValueHashMap<Long, PageCache>();
+   private final SoftValueHashMap<Long, PageCache> softCache;
 
-   private ConcurrentMap<Long, PageSubscription> activeCursors = new ConcurrentHashMap<Long, PageSubscription>();
+   private final ConcurrentMap<Long, PageSubscription> activeCursors = new ConcurrentHashMap<Long, PageSubscription>();
 
    // Static --------------------------------------------------------
 
@@ -72,12 +71,14 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public PageCursorProviderImpl(final PagingStore pagingStore,
                                  final StorageManager storageManager,
-                                 final ExecutorFactory executorFactory)
+                                 final ExecutorFactory executorFactory,
+                                 final int maxCacheSize)
    {
       this.pagingStore = pagingStore;
       this.storageManager = storageManager;
       this.executorFactory = executorFactory;
       this.executor = executorFactory.getExecutor();
+      this.softCache = new SoftValueHashMap<Long, PageCache>(maxCacheSize);
    }
 
    // Public --------------------------------------------------------
@@ -96,12 +97,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
       }
 
       activeCursor = new PageSubscriptionImpl(this,
-                                        pagingStore,
-                                        storageManager,
-                                        executorFactory.getExecutor(),
-                                        filter,
-                                        cursorID,
-                                        persistent);
+                                              pagingStore,
+                                              storageManager,
+                                              executorFactory.getExecutor(),
+                                              filter,
+                                              cursorID,
+                                              persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
@@ -121,13 +122,15 @@ public class PageCursorProviderImpl implements PageCursorProvider
       if (pos.getMessageNr() >= cache.getNumberOfMessages())
       {
          // sanity check, this should never happen unless there's a bug
-         throw new IllegalStateException("Invalid messageNumber passed = " + pos);
+         throw new IllegalStateException("Invalid messageNumber passed = " + pos + " on " + cache);
       }
 
       return cache.getMessage(pos.getMessageNr());
    }
-   
-   public PagedReference newReference(final PagePosition pos, final PagedMessage msg, final PageSubscription subscription)
+
+   public PagedReference newReference(final PagePosition pos,
+                                      final PagedMessage msg,
+                                      final PageSubscription subscription)
    {
       return new PagedReferenceImpl(pos, msg, subscription);
    }
@@ -137,13 +140,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     */
    public PageCache getPageCache(PagePosition pos)
    {
-      PageCache cache = pos.getPageCache();
-      if (cache == null)
-      {
-         cache = getPageCache(pos.getPageNr());
-         pos.setPageCache(cache);
-      }
-      return cache;
+      return getPageCache(pos.getPageNr());
    }
 
    public void addPageCache(PageCache cache)
@@ -152,6 +149,16 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          softCache.put(cache.getPageId(), cache);
       }
+   }
+
+   public int getCacheMaxSize()
+   {
+      return softCache.getMaxEelements();
+   }
+
+   public void setCacheMaxSize(final int size)
+   {
+      softCache.setMaxElements(size);
    }
 
    public int getCacheSize()
@@ -226,7 +233,15 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          public void run()
          {
-            cleanup();
+            storageManager.setContext(storageManager.newSingleThreadContext());
+            try
+            {
+               cleanup();
+            }
+            finally
+            {
+               storageManager.clearContext();
+            }
          }
       });
    }
@@ -245,7 +260,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
-            
+
             if (pagingStore.getNumberOfPages() == 0)
             {
                return;
@@ -272,28 +287,13 @@ public class PageCursorProviderImpl implements PageCursorProvider
                if (complete)
                {
 
-                  System.out.println("Disabling depage!");
+                  log.info("Address " + pagingStore.getAddress() +
+                           " is leaving page mode as all messages are consumed and acknowledged from the page store");
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();
 
-                  try
-                  {
-                     // First step: Move every cursor to the next bookmarked page (that was just created)
-                     for (PageSubscription cursor : cursorList)
-                     {
-                        cursor.confirmPosition(new PagePositionImpl(currentPage.getPageId(), -1));
-                     }
-
-                     storageManager.waitOnOperations();
-                  }
-                  finally
-                  {
-                     for (PageSubscription cursor : cursorList)
-                     {
-                        cursor.enableAutoCleanup();
-                     }
-                  }
+                  storePositions(cursorList, currentPage);
 
                   pagingStore.stopPaging();
 
@@ -350,6 +350,35 @@ public class PageCursorProviderImpl implements PageCursorProvider
          return;
       }
 
+   }
+
+   /**
+    * @param cursorList
+    * @param currentPage
+    * @throws Exception
+    */
+   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   {
+      try
+      {
+         // First step: Move every cursor to the next bookmarked page (that was just created)
+         for (PageSubscription cursor : cursorList)
+         {
+            cursor.confirmPosition(new PagePositionImpl(currentPage.getPageId(), -1));
+         }
+
+         while (!storageManager.waitOnOperations(5000))
+         {
+            log.warn("Couldn't complete operations on IO context " + storageManager.getContext());
+         }
+      }
+      finally
+      {
+         for (PageSubscription cursor : cursorList)
+         {
+            cursor.enableAutoCleanup();
+         }
+      }
    }
 
    public void printDebug()
@@ -409,6 +438,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
+               if (!pagingStore.checkPage((int)pageId))
+               {
+                  return null;
+               }
+
                cache = createPageCache(pageId);
                needToRead = true;
                // anyone reading from this cache will have to wait reading to finish first
@@ -435,9 +469,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   pdgMessage.initMessage(storageManager);
                }
-
                cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
-
             }
             finally
             {

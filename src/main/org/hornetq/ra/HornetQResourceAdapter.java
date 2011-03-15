@@ -14,6 +14,7 @@ package org.hornetq.ra;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,6 +82,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     * The resource adapter properties before parsing
     */
    private String unparsedProperties;
+
+
+   /**
+    * The resource adapter connector classnames before parsing
+    */
+   private String unparsedConnectors;
 
    /**
     * Have the factory been configured
@@ -228,6 +235,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       activations.clear();
 
+      if (defaultHornetQConnectionFactory != null)
+      {
+         defaultHornetQConnectionFactory.close();
+      }
+
       HornetQResourceAdapter.log.info("HornetQ resource adapter stopped");
    }
 
@@ -237,13 +249,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          HornetQResourceAdapter.log.trace("setTransportType(" + connectorClassName + ")");
       }
+      unparsedConnectors = connectorClassName;
 
-      raProperties.setConnectorClassName(connectorClassName);
+      raProperties.setParsedConnectorClassNames(Util.parseConnectorConnectorConfig(connectorClassName));
    }
 
    public String getConnectorClassName()
    {
-      return raProperties.getConnectorClassName();
+      return unparsedConnectors;
    }
 
    public String getConnectionParameters()
@@ -258,6 +271,17 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          this.unparsedProperties = config;
          raProperties.setParsedConnectionParameters(Util.parseConfig(config));
       }
+   }
+
+
+   public Boolean getHA()
+   {
+      return raProperties.isHA();
+   }
+
+   public void setHA(final Boolean ha)
+   {
+      this.raProperties.setHA(ha);
    }
 
    /**
@@ -318,16 +342,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setDiscoveryPort(dgp);
-   }
-   
-   public Boolean isHA()
-   {
-      return raProperties.isHA();
-   }
-   
-   public void setHA(final Boolean ha)
-   {
-      this.raProperties.setHA(ha);
    }
 
    /**
@@ -960,46 +974,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setReconnectAttempts(reconnectAttempts);
    }
 
-   /**
-    * Get failover on server shutdown
-    *
-    * @return The value
-    */
-   public Boolean isFailoverOnServerShutdown()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("isFailoverOnServerShutdown()");
-      }
-
-      return raProperties.isFailoverOnServerShutdown();
-   }
-
-   /**
-    * Get failover on server shutdown
-    *
-    * @return The value
-    */
-   public Boolean getFailoverOnServerShutdown()
-   {
-      return isFailoverOnServerShutdown();
-   }
-
-   /**
-    * Set failover on server shutdown
-    *
-    * @param failoverOnServerShutdown The value
-    */
-   public void setFailoverOnServerShutdown(final Boolean failoverOnServerShutdown)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setFailoverOnServerShutdown(" + failoverOnServerShutdown + ")");
-      }
-
-      raProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
-   }
-
    public String getConnectionLoadBalancingPolicyClassName()
    {
       return raProperties.getConnectionLoadBalancingPolicyClassName();
@@ -1358,6 +1332,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
    }
 
+   public Map<ActivationSpec, HornetQActivation> getActivations()
+   {
+      return activations;
+   }
    public HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
@@ -1374,31 +1352,59 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
-   //TODO - currently RA only allows a single target server to be specified we should allow a list of servers to be passed in
    public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
       HornetQConnectionFactory cf;
-      String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
-                                                                                    : getConnectorClassName();
+      List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
+                                                                                    : raProperties.getParsedConnectorClassNames();
+
       String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
                                                                                 : getDiscoveryAddress();
       
-      Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : isHA();
+      Boolean ha = overrideProperties.isHA() != null ? overrideProperties.isHA() : getHA();
+
+      if(ha == null)
+      {
+         ha = HornetQClient.DEFAULT_IS_HA;
+      }
       
       if (connectorClassName != null)
       {
-         Map<String, Object> connectionParams =
-               overrideConnectionParameters(overrideProperties.getParsedConnectionParameters(),raProperties.getParsedConnectionParameters());
-         
-         TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
-         
-         if (ha)
+         TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
+
+         List<Map<String, Object>> connectionParams;
+         if(overrideProperties.getParsedConnectorClassNames() != null)
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, new TransportConfiguration[] {transportConf});
+            connectionParams = overrideProperties.getParsedConnectionParameters();
          }
          else
          {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, new TransportConfiguration[] {transportConf});
+            connectionParams = raProperties.getParsedConnectionParameters();
+         }
+
+         for (int i = 0; i < connectorClassName.size(); i++)
+         {
+            TransportConfiguration tc;
+            if(connectionParams == null || i >= connectionParams.size())
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i));
+               log.debug("No connector params provided using default");
+            }
+            else
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i), connectionParams.get(i));
+            }
+
+            transportConfigurations[i] = tc;
+         }
+         
+         if (ha)
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
          }
       }
       else if (discoveryAddress != null)
@@ -1406,13 +1412,27 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
                                                                               : getDiscoveryPort();
 
+         if(discoveryPort == null)
+         {
+            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+         }
+
          DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
 
-         long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
                                                                     : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
 
-         long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
                                                                         : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
 
          groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
 
@@ -1477,7 +1497,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          log.debug("TM located = " + tm);
       }
    }
-   
+
+
    private void setParams(final HornetQConnectionFactory cf,
                           final ConnectionFactoryProperties overrideProperties)
    {
@@ -1559,6 +1580,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (val2 != null)
       {
          cf.setReconnectAttempts(val2);
+      }
+      else
+      {
+         //the global default is 0 but we should always try to reconnect JCA
+         cf.setReconnectAttempts(-1);
       }
       val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize()
                                                               : raProperties.getThreadPoolMaxSize();

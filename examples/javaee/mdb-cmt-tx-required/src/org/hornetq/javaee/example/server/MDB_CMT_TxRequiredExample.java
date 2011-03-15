@@ -29,18 +29,18 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.ejb3.annotation.ResourceAdapter;
 
+import java.util.Calendar;
+
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
 @MessageDriven(name = "MDB_CMT_TxRequiredExample", activationConfig = { @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                                                                       @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue") })
+                                                                       @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                                                                       @ActivationConfigProperty(propertyName = "consumerMaxRate", propertyValue = "1")})
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 @TransactionAttribute(value = TransactionAttributeType.REQUIRED)
-@ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_TxRequiredExample implements MessageListener
 {
-   @Resource(mappedName = "java:/TransactionManager")
-   private TransactionManager tm;
 
    public void onMessage(final Message message)
    {
@@ -52,25 +52,12 @@ public class MDB_CMT_TxRequiredExample implements MessageListener
          // Step 10. get the text from the message.
          String text = textMessage.getText();
 
-         System.out.println("message " + text + " received");
+         Calendar c =Calendar.getInstance();
 
-         // Step 11. Lets take a look at the transaction and see whats happening.
-         Transaction tx = tm.getTransaction();
+         System.out.println("message " + text + " received at " + c.getTime());
 
-         if (tx != null)
-         {
-            System.out.println("we're in the middle of a transaction: " + tx);
-         }
-         else
-         {
-            System.out.println("something is wrong, I was expecting a transaction");
-         }
       }
       catch (JMSException e)
-      {
-         e.printStackTrace();
-      }
-      catch (SystemException e)
       {
          e.printStackTrace();
       }

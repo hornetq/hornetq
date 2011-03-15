@@ -50,7 +50,14 @@ public class ObjectNameBuilder
 
    public static ObjectNameBuilder create(final String domain)
    {
-      return new ObjectNameBuilder(domain);
+      if (domain == null)
+      {
+         return new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
+      }
+      else
+      {
+         return new ObjectNameBuilder(domain);
+      }
    }
 
    // Constructors --------------------------------------------------

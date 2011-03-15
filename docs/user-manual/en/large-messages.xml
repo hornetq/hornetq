@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="large-messages">
     <title>Large Messages</title>
     <para>HornetQ supports sending and receiving of huge messages, even when the client and server
@@ -65,10 +70,13 @@
             <title>Using Core API</title>
             <para>If the HornetQ Core API is used, the minimal large message size is specified by
                     <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
-            <programlisting>ClientSessionFactory factory = 
-            HornetQClient.createClientSessionFactory(new 
-            TransportConfiguration(NettyConnectorFactory.class.getName()), null);
-factory.setMinLargeMessageSize(25 * 1024);</programlisting>
+            <programlisting>
+ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()))
+
+locator.setMinLargeMessageSize(25 * 1024);
+
+ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
+            </programlisting>
             <para><xref linkend="configuring-transports.client.side"/> will provide more information
                 on how to instantiate the session factory.</para>
         </section>
@@ -176,6 +184,9 @@ ClientMessage msg = session.createMessage();
 msg.setInputStream(dataInputStream);
 ...
             </programlisting>
+            
+            <para>Notice also that for messages with more than 2GiB the getBodySize() will return invalid values since 
+            this is an integer (which is also exposed to the JMS API). On those cases you can use the message property _HQ_LARGE_SIZE.</para>
         </section>
         <section id="large-messages.streaming.over.jms">
             <title>Streaming over JMS</title>

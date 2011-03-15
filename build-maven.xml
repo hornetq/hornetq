@@ -69,10 +69,6 @@
    <target name="uploadHornetQRa">
       <antcall target="upload">
          <param name="artifact.id" value="hornetq-ra"/>
-         <param name="artifact.type" value="rar"/>
-      </antcall>
-      <antcall target="upload">
-         <param name="artifact.id" value="hornetq-ra"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
@@ -268,12 +264,6 @@
     <antcall target="deploy-jar">
         <param name="artifact.id" value="hornetq-ra"/>
         <param name="file-name" value="hornetq-ra"/>
-    	<param name="artifact.type" value="rar"/>
-    </antcall>
-
-    <antcall target="deploy-jar">
-        <param name="artifact.id" value="hornetq-ra"/>
-        <param name="file-name" value="hornetq-ra"/>
     </antcall>
 
     <antcall target="deploy-jar">
@@ -284,7 +274,6 @@
    </target>
 
    <target  name="deploy-jar">
-   	  <property name="artifact.type" value="jar"/>
    	  <tempfile property="temporary.pom" prefix="pom" suffix=".xml"/>
       <echo file="${temporary.pom}"
             message="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;project&gt;${line.separator}
@@ -301,8 +290,8 @@
      <arg value="-DgroupId=org.hornetq"/>
      <arg value="-DartifactId=${artifact.id}"/>
      <arg value="-Dversion=${hornetq.version}"/>
-     <arg value="-Dpackaging=${artifact.type}"/>
-     <arg value="-Dfile=./build/jars/${file-name}.${artifact.type}"/>
+     <arg value="-Dpackaging=jar"/>
+     <arg value="-Dfile=./build/jars/${file-name}.jar"/>
      <arg value="-DrepositoryId=jboss-releases-repository"/>
      <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>

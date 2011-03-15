@@ -56,7 +56,7 @@
       <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
-      <fileset dir="${jboss.home}/server/default-with-hornetq/lib">
+      <fileset dir="${jboss.home}/server/default/lib">
          <include name="netty*.jar"/>
       </fileset>
    </path>
@@ -136,7 +136,7 @@
    </target>
 
    <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
-      <property name="profile" value="${jboss.home}/server/default-with-hornetq"/>
+      <property name="profile" value="${jboss.home}/server/default"/>
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
       <property name="deploy.dir" value="${example-profile}/deploy/"/>
       <mkdir dir="${example-profile}"/>
@@ -168,8 +168,8 @@
 
    <target name="validate-jboss">
       <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/default-with-hornetq"/>
-      <fail unless="default-config" message="${jboss.home}/server/default-with-hornetq not found!"/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
+      <fail unless="default-config" message="${jboss.home}/server/default not found!"/>
    </target>
 
    <target name="runExample" depends="validate-jboss,compile">

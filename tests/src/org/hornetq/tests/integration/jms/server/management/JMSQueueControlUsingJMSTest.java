@@ -202,6 +202,16 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (String)proxy.invokeOperation("listMessagesAsJSON", filter);
          }
 
+         public boolean moveMessage(String messageID, String otherQueueName, boolean rejectDuplicates) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName, rejectDuplicates);
+         }
+
+         public int moveMessages(String filter, String otherQueueName, boolean rejectDuplicates) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName, rejectDuplicates);
+         }
+
          public int moveMessages(final String filter, final String otherQueueName) throws Exception
          {
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);

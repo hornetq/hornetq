@@ -90,7 +90,7 @@ public class PageCursorStressTest extends ServiceTestBase
    public void testReadCache() throws Exception
    {
 
-      final int NUM_MESSAGES = 1000;
+      final int NUM_MESSAGES = 100;
 
       int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
 
@@ -98,7 +98,8 @@ public class PageCursorStressTest extends ServiceTestBase
 
       PageCursorProviderImpl cursorProvider = new PageCursorProviderImpl(lookupPageStore(ADDRESS),
                                                                          server.getStorageManager(),
-                                                                         server.getExecutorFactory());
+                                                                         server.getExecutorFactory(),
+                                                                         5);
 
       for (int i = 0; i < numberOfPages; i++)
       {

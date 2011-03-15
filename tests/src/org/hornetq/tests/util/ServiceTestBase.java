@@ -42,6 +42,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -203,6 +204,16 @@ public abstract class ServiceTestBase extends UnitTestCase
                                         final int maxAddressSize,
                                         final Map<String, AddressSettings> settings)
    {
+      return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
+   }
+   
+   protected HornetQServer createServer(final boolean realFiles,
+                                        final Configuration configuration,
+                                        final int pageSize,
+                                        final int maxAddressSize,
+                                        final AddressFullMessagePolicy fullPolicy,
+                                        final Map<String, AddressSettings> settings)
+   {
       HornetQServer server;
 
       if (realFiles)
@@ -222,6 +233,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(pageSize);
       defaultSetting.setMaxSizeBytes(maxAddressSize);
+      defaultSetting.setAddressFullMessagePolicy(fullPolicy);
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -482,15 +494,18 @@ public abstract class ServiceTestBase extends UnitTestCase
       File largeMessagesFileDir = new File(getLargeMessagesDir());
 
       // Deleting the file is async... we keep looking for a period of the time until the file is really gone
-      for (int i = 0; i < 100; i++)
+      long timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis() && largeMessagesFileDir.listFiles().length != expect)
       {
-         if (largeMessagesFileDir.listFiles().length != expect)
+         Thread.sleep(100);
+      }
+      
+      
+      if (expect != largeMessagesFileDir.listFiles().length)
+      {
+         for (File file : largeMessagesFileDir.listFiles())
          {
-            Thread.sleep(10);
-         }
-         else
-         {
-            break;
+            System.out.println("File " + file + " still on ");
          }
       }
 

@@ -342,7 +342,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       if (pendingTransactions.get(transactionID) != null)
       {
          // Sanity check, this should never happen
-         throw new IllegalStateException("Inconsistency during compacting: CommitRecord ID = " + transactionID +
+         log.warn("Inconsistency during compacting: CommitRecord ID = " + transactionID +
                                          " for an already committed transaction during compacting");
       }
       else
@@ -366,7 +366,7 @@ public class JournalCompactor extends AbstractJournalUpdateTask implements Journ
       if (newRecords.get(recordID) != null)
       {
          // Sanity check, it should never happen
-         throw new IllegalStateException("Inconsistency during compacting: Delete record being read on an existent record (id=" + recordID +
+         log.warn("Inconsistency during compacting: Delete record being read on an existent record (id=" + recordID +
                                          ")");
       }
 

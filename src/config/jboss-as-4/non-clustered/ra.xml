@@ -47,13 +47,19 @@ Copyright 2009 Red Hat, Inc.
    <resourceadapter>
       <resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter</resourceadapter-class>
       <config-property>
-         <description>The transport type</description>
+         <description>
+            The transport type. Multiple connectors can be configured by using a comma separated list,
+            i.e. org.hornetq.core.remoting.impl.invm.InVMConnectorFactory,org.hornetq.core.remoting.impl.invm.InVMConnectorFactory.
+         </description>
          <config-property-name>ConnectorClassName</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property-value>
       </config-property>
       <config-property>
-         <description>The transport configuration. These values must be in the form of key=val;key=val;</description>
+         <description>The transport configuration. These values must be in the form of key=val;key=val;,
+            if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
+            Each set of params maps to the connector classname specified.
+         </description>
          <config-property-name>ConnectionParameters</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>host=localhost;port=5445</config-property-value>
@@ -70,7 +76,19 @@ Copyright 2009 Red Hat, Inc.
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value>getTm</config-property-value>
       </config-property>
-      <!--
+            <!--
+      <config-property>
+        <description>Does we support HA</description>
+        <config-property-name>HA</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value>false</config-property-value>
+      </config-property>
+      <config-property>
+        <description>The method to use for locating the transactionmanager</description>
+        <config-property-name>TransactionManagerLocatorMethod</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>getTm</config-property-value>
+      </config-property>
       <config-property>
         <description>Use A local Transaction instead of XA?</description>
         <config-property-name>UseLocalTx</config-property-name>
@@ -90,26 +108,14 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-         <description>The Backup transport type</description>
-         <config-property-name>BackUpTransportType</config-property-name>
-         <config-property-type>java.lang.String</config-property-type>
-         <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-         <description>The Backup transport configuration. These values must be in the form of key=val;key=val;</description>
-         <config-property-name>TransportConfiguration</config-property-name>
-         <config-property-type>java.lang.String</config-property-type>
-         <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
         <description>The discovery group address</description>
-        <config-property-name>DiscoveryGroupAddress</config-property-name>
+        <config-property-name>DiscoveryAddress</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
         <description>The discovery group port</description>
-        <config-property-name>DiscoveryGroupPort</config-property-name>
+        <config-property-name>DiscoveryPort</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
@@ -174,8 +180,8 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The producer window size</description>
-        <config-property-name>ProducerWindowSize</config-property-name>
+        <description>The confirmation window size</description>
+        <config-property-name>ConfirmationWindowSize</config-property-name>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
@@ -198,7 +204,7 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The block on non-durable send</description>
+        <description>The block on non durable send</description>
         <config-property-name>BlockOnNonDurableSend</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
@@ -216,7 +222,7 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The max connections</description>        
+        <description>The max connections</description>
         <config-property-type>java.lang.Integer</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
@@ -236,12 +242,6 @@ Copyright 2009 Red Hat, Inc.
         <description>The retry interval multiplier</description>
         <config-property-name>RetryIntervalMultiplier</config-property-name>
         <config-property-type>java.lang.Double</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
-        <description>Should clean server shutdown trigger failover?</description>
-        <config-property-name>FailoverOnServerShutdown</config-property-name>
-        <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value></config-property-value>
       </config-property>
       <config-property>

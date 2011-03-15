@@ -17,19 +17,22 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A SoftValueConcurrentHashMap
+ * A SoftValueHashMap
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class SoftValueHashMap<K, V> implements Map<K, V>
+public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implements Map<K, V>
 {
    // The soft references that are already good.
    // too bad there's no way to override the queue method on ReferenceQueue, so I wouldn't need this
@@ -37,16 +40,42 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
 
    private final Map<K, AggregatedSoftReference> mapDelegate = new HashMap<K, AggregatedSoftReference>();
 
+   private final AtomicLong nextId = new AtomicLong(0);
+
+   private int maxElements;
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
 
+   public static abstract interface ValueCache
+   {
+      public abstract boolean isLive();
+   }
+
    // Constructors --------------------------------------------------
+
+   public SoftValueHashMap(final int maxElements)
+   {
+      this.maxElements = maxElements;
+   }
 
    // Public --------------------------------------------------------
 
+   
+   public void setMaxElements(final int maxElements)
+   {
+      this.maxElements = maxElements;
+      checkCacheSize();
+   }
+   
+   public int getMaxEelements()
+   {
+      return this.maxElements;
+   }
+   
    /**
     * @return
     * @see java.util.Map#size()
@@ -109,6 +138,7 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
       AggregatedSoftReference value = mapDelegate.get(key);
       if (value != null)
       {
+         value.used();
          return value.get();
       }
       else
@@ -127,6 +157,7 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
    {
       processQueue();
       AggregatedSoftReference refPut = mapDelegate.put(key, createReference(key, value));
+      checkCacheSize();
       if (refPut != null)
       {
          return refPut.get();
@@ -134,6 +165,66 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
       else
       {
          return null;
+      }
+   }
+
+   private void checkCacheSize()
+   {
+      if (maxElements > 0 && mapDelegate.size() > maxElements)
+      {
+         TreeSet<AggregatedSoftReference> usedReferences = new TreeSet<AggregatedSoftReference>(new ComparatorAgregated());
+         
+         for (AggregatedSoftReference ref : mapDelegate.values())
+         {
+            V v = ref.get();
+            
+            if (v != null && !v.isLive())
+            {
+               usedReferences.add(ref);
+            }
+         }
+         
+         for (AggregatedSoftReference ref : usedReferences)
+         {
+            mapDelegate.remove(ref.key);
+
+            if (mapDelegate.size() <= maxElements)
+            {
+               break;
+            }
+         }
+      }
+   }
+
+   class ComparatorAgregated implements Comparator<AggregatedSoftReference>
+   {
+      public int compare(AggregatedSoftReference o1, AggregatedSoftReference o2)
+      {
+         long k = o1.used - o2.used;
+
+         if (k > 0)
+         {
+            return 1;
+         }
+         else if (k < 0)
+         {
+            return -1;
+         }
+         
+         k = o1.id - o2.id;
+         
+         if (k > 0)
+         {
+            return 1;
+         }
+         else if (k < 0) 
+         {
+            return -1;
+         }
+         else
+         {
+            return 0;
+         }
       }
    }
 
@@ -222,7 +313,7 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
          V value = pair.getValue().get();
          if (value != null)
          {
-            set.add(new EntryElement<K,V>(pair.getKey(), value));
+            set.add(new EntryElement<K, V>(pair.getKey(), value));
          }
       }
       return set;
@@ -277,6 +368,20 @@ public class SoftValueHashMap<K, V> implements Map<K, V>
    class AggregatedSoftReference extends SoftReference<V>
    {
       final K key;
+
+      long id = nextId.incrementAndGet();
+
+      long used = 0;
+
+      public long getUsed()
+      {
+         return used;
+      }
+
+      public void used()
+      {
+         used++;
+      }
 
       public AggregatedSoftReference(final K key, final V referent)
       {

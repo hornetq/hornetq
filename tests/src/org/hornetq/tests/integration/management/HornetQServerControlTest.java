@@ -478,8 +478,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       String expiryAddress = "someExpiry";
       boolean lastValueQueue = true;
       int deliveryAttempts = 1;
-      long maxSizeBytes = 2;
-      int pageSizeBytes = 3;
+      long maxSizeBytes = 20;
+      int pageSizeBytes = 10;
+      int pageMaxCacheSize = 7;
       long redeliveryDelay = 4;
       long redistributionDelay = 5;
       boolean sendToDLAOnNoRoute = true;
@@ -492,10 +493,35 @@ public class HornetQServerControlTest extends ManagementTestBase
                                        deliveryAttempts,
                                        maxSizeBytes,
                                        pageSizeBytes,
+                                       pageMaxCacheSize,
                                        redeliveryDelay,
                                        redistributionDelay,
                                        sendToDLAOnNoRoute,
                                        addressFullMessagePolicy);
+
+
+      boolean ex = false;
+      try
+      {
+         serverControl.addAddressSettings(addressMatch,
+                                          DLA,
+                                          expiryAddress,
+                                          lastValueQueue,
+                                          deliveryAttempts,
+                                          100,
+                                          1000,
+                                          pageMaxCacheSize,
+                                          redeliveryDelay,
+                                          redistributionDelay,
+                                          sendToDLAOnNoRoute,
+                                          addressFullMessagePolicy);
+      }
+      catch (Exception expected)
+      {
+         ex=true;
+      }
+      
+      assertTrue("Exception expected", ex);
 
       //restartServer();
       serverControl = createManagementControl();
@@ -508,6 +534,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(lastValueQueue, info.isLastValueQueue());
       assertEquals(deliveryAttempts, info.getMaxDeliveryAttempts());
       assertEquals(maxSizeBytes, info.getMaxSizeBytes());
+      assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
       assertEquals(pageSizeBytes, info.getPageSizeBytes());
       assertEquals(redeliveryDelay, info.getRedeliveryDelay());
       assertEquals(redistributionDelay, info.getRedistributionDelay());

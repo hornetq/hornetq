@@ -18,6 +18,7 @@ import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -170,18 +171,22 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          waitLock.notify();
       }
 
+      socket.close();
+
+      socket = null;
+
       try
       {
-         thread.join();
+         thread.interrupt();
+         thread.join(10000);
+         if(thread.isAlive())
+         {
+            log.warn("Timed out waiting to stop discovery thread");
+         }
       }
       catch (InterruptedException e)
       {
       }
-
-
-      socket.close();
-
-      socket = null;
 
       thread = null;
 
@@ -300,6 +305,17 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             try
             {
                socket.receive(packet);
+            }
+            catch (SocketException e)
+            {
+               if (!started)
+               {
+                  return;
+               }
+               else
+               {
+                  log.warn(e.getMessage(), e);
+               }
             }
             catch (InterruptedIOException e)
             {
@@ -430,4 +446,5 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       
       return changed;
    }
+
 }

@@ -227,6 +227,8 @@ public class TransactionImpl implements Transaction
       {
          if (state == State.ROLLBACK_ONLY)
          {
+            rollback();
+            
             if (exception != null)
             {
                throw exception;
@@ -292,7 +294,7 @@ public class TransactionImpl implements Transaction
       {
          if (xid != null)
          {
-            if (state != State.PREPARED && state != State.ACTIVE)
+            if (state != State.PREPARED && state != State.ACTIVE && state != State.ROLLBACK_ONLY)
             {
                throw new IllegalStateException("Transaction is in invalid state " + state);
             }
@@ -308,8 +310,6 @@ public class TransactionImpl implements Transaction
          beforeRollback();
 
          doRollback();
-
-         state = State.ROLLEDBACK;
 
          // We use the Callback even for non persistence
          // If we are using non-persistence with replication, the replication manager will have
@@ -327,6 +327,7 @@ public class TransactionImpl implements Transaction
             public void done()
             {
                afterRollback();
+               state = State.ROLLEDBACK;
             }
          });
       }

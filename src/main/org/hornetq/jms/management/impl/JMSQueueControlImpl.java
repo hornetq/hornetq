@@ -284,9 +284,14 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
 
    public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
    {
+      return moveMessage(messageID, otherQueueName, false);
+   }
+
+   public boolean moveMessage(final String messageID, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   {
       String filter = JMSQueueControlImpl.createFilterForJMSMessageID(messageID);
       HornetQDestination otherQueue = HornetQDestination.createQueue(otherQueueName);
-      int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
+      int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress(), rejectDuplicates);
       if (moved != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
@@ -295,11 +300,17 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return true;
    }
 
-   public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
+   public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
    {
       String filter = JMSQueueControlImpl.createFilterFromJMSSelector(filterStr);
       HornetQDestination otherQueue = HornetQDestination.createQueue(otherQueueName);
-      return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
+      return coreQueueControl.moveMessages(filter, otherQueue.getAddress(), rejectDuplicates);
+   }
+
+
+   public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
+   {
+      return moveMessages(filterStr, otherQueueName, false);
    }
 
    @Operation(desc = "List all the existent consumers on the Queue")

@@ -1209,8 +1209,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.rollback(xid);
       clientSession.start();
       m = clientConsumer.receive(1000);
-      m.acknowledge();
       Assert.assertNotNull(m);
+      m.acknowledge();
       Assert.assertEquals(m.getBodyBuffer().readString(), "m1");
       m = clientConsumer.receive(1000);
       Assert.assertNotNull(m);

@@ -45,7 +45,9 @@ public class ClientSideLoadBalancingExample extends HornetQExample
    {
       InitialContext initialContext = null;
 
-      Connection connection = null;
+      Connection connectionA = null;
+      Connection connectionB = null;
+      Connection connectionC = null;
 
       try
       {
@@ -61,14 +63,22 @@ public class ClientSideLoadBalancingExample extends HornetQExample
          // Wait a little while to make sure broadcasts from all nodes have reached the client
          Thread.sleep(5000);
 
-         // Step 4. We create a single connection
-         connection = connectionFactory.createConnection();
-         
-         // Step 5. We create 3 JMS Sessions from the same connection. Since we are using round-robin 
+         // Step 4. We create 3 JMS connections from the same connection factory. Since we are using round-robin
          // load-balancing this should result in each sessions being connected to a different node of the cluster
-         Session sessionA = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sessionB = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         Session sessionC = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Connection conn = connectionFactory.createConnection();         	 
+         connectionA = connectionFactory.createConnection();
+         connectionB = connectionFactory.createConnection();
+         connectionC = connectionFactory.createConnection();
+         conn.close();         
+
+         // Step 5. We create JMS Sessions
+         Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionB = connectionB.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sessionC = connectionC.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         System.out.println("Session A - " + ((org.hornetq.core.client.impl.DelegatingSession) ((org.hornetq.jms.client.HornetQSession) sessionA).getCoreSession()).getConnection().getRemoteAddress() );
+         System.out.println("Session B - " + ((org.hornetq.core.client.impl.DelegatingSession) ((org.hornetq.jms.client.HornetQSession) sessionB).getCoreSession()).getConnection().getRemoteAddress() );
+         System.out.println("Session C - " + ((org.hornetq.core.client.impl.DelegatingSession) ((org.hornetq.jms.client.HornetQSession) sessionC).getCoreSession()).getConnection().getRemoteAddress() );
 
          // Step 6. We create JMS MessageProducer objects on the sessions
          MessageProducer producerA = sessionA.createProducer(queue);
@@ -94,7 +104,9 @@ public class ClientSideLoadBalancingExample extends HornetQExample
          }
          
          // Step 8. We start the connection to consume messages
-         connection.start();
+         connectionA.start();
+         connectionB.start();
+         connectionC.start();
          
          // Step 9. We consume messages from the 3 session, one at a time.
          // We try to consume one more message than expected from each session. If
@@ -110,9 +122,17 @@ public class ClientSideLoadBalancingExample extends HornetQExample
       {
          // Step 10. Be sure to close our resources!
 
-         if (connection != null)
+         if (connectionA != null)
          {
-            connection.close();
+            connectionA.close();
+         }
+         if (connectionB != null)
+         {
+            connectionB.close();
+         }
+         if (connectionC != null)
+         {
+            connectionC.close();
          }
 
          if (initialContext != null)

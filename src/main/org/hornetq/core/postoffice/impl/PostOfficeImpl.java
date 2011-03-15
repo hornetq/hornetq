@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -32,6 +33,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
@@ -77,6 +79,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
+
+   public static final SimpleString BRIDGE_CACHE_STR = new SimpleString("BRIDGE.");
 
    private final AddressManager addressManager;
 
@@ -466,6 +470,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
+
+      addressSettingsRepository.clearCache();
+
       Binding binding = addressManager.removeBinding(uniqueName);
 
       if (binding == null)
@@ -488,7 +495,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          managementService.unregisterDivert(uniqueName);
       }
-      
+
       if (binding.getType() != BindingType.DIVERT)
       {
          TypedProperties props = new TypedProperties();
@@ -541,7 +548,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       route(message, new RoutingContextImpl(tx), direct);
    }
 
+   public void route(final ServerMessage message,
+                     final Transaction tx,
+                     final boolean direct,
+                     final boolean rejectDuplicates) throws Exception
+   {
+      route(message, new RoutingContextImpl(tx), direct, rejectDuplicates);
+   }
+
    public void route(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
+   {
+      route(message, context, direct, true);
+   }
+
+   public void route(final ServerMessage message,
+                     final RoutingContext context,
+                     final boolean direct,
+                     boolean rejectDuplicates) throws Exception
    {
       // Sanity check
       if (message.getRefCount() > 0)
@@ -553,48 +576,21 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       setPagingStore(message);
 
-      byte[] duplicateIDBytes = message.getDuplicateIDBytes();
+      AtomicBoolean startedTX = new AtomicBoolean(false);
 
-      DuplicateIDCache cache = null;
+      if (!checkDuplicateID(message, context, rejectDuplicates, startedTX))
+      {
+         return;
+      }
+
       
-      if (duplicateIDBytes != null)
+      if (message.hasInternalProperties())
       {
-         cache = getDuplicateIDCache(message.getAddress());
-
-         if (cache.contains(duplicateIDBytes))
-         {
-            if (context.getTransaction() == null)
-            {
-               PostOfficeImpl.log.warn("Duplicate message detected - message will not be routed");
-            }
-            else
-            {
-               PostOfficeImpl.log.warn("Duplicate message detected - transaction will be rejected");
-
-               context.getTransaction().markAsRollbackOnly(null);
-            }
-
-            return;
-         }
+         // We need to perform some cleanup on internal properties,
+         // but we don't do it every time, otherwise it wouldn't be optimal
+         cleanupInternalPropertiesBeforeRouting(message);
       }
 
-      boolean startedTx = false;
-
-      if (cache != null)
-      {
-         if (context.getTransaction() == null)
-         {
-            // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
-
-            Transaction newTX = new TransactionImpl(storageManager);
-
-            context.setTransaction(newTX);
-
-            startedTx = true;
-         }
-
-         cache.addToCache(duplicateIDBytes, context.getTransaction());
-      }
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
@@ -638,7 +634,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          processRoute(message, context, direct);
       }
 
-      if (startedTx)
+      if (startedTX.get())
       {
          context.getTransaction().commit();
       }
@@ -805,6 +801,23 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    // Private -----------------------------------------------------------------
 
+   /**
+    * @param message
+    */
+   protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
+   {
+      for (SimpleString name : message.getPropertyNames())
+      {
+         // We use properties to establish routing context on clustering.
+         // However if the client resends the message after receiving, it needs to be removed
+         if (name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS))
+         {
+            message.removeProperty(name);
+         }
+      }
+   }
+
+
    private void setPagingStore(final ServerMessage message) throws Exception
    {
       PagingStore store = pagingManager.getPageStore(message.getAddress());
@@ -823,20 +836,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          processRoute(message, context, false);
       }
    }
-   
-   
+
    private class PageDelivery extends TransactionOperationAbstract
    {
       private Set<Queue> queues = new HashSet<Queue>();
-      
+
       public void addQueues(List<Queue> queueList)
       {
          queues.addAll(queueList);
       }
-      
+
       public void afterCommit(Transaction tx)
       {
-         // We need to try delivering async after paging, or nothing may start a delivery after paging since nothing is going towards the queues
+         // We need to try delivering async after paging, or nothing may start a delivery after paging since nothing is
+         // going towards the queues
          // The queue will try to depage case it's empty
          for (Queue queue : queues)
          {
@@ -851,7 +864,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          return Collections.emptyList();
       }
-      
+
    }
 
    private void processRoute(final ServerMessage message, final RoutingContext context, final boolean direct) throws Exception
@@ -859,57 +872,56 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 
       Transaction tx = context.getTransaction();
-      
-      
-      for (Map.Entry<SimpleString, RouteContextList> entry: context.getContexListing().entrySet())
+
+      for (Map.Entry<SimpleString, RouteContextList> entry : context.getContexListing().entrySet())
       {
          PagingStore store = pagingManager.getPageStore(entry.getKey());
-         
+
          if (store.page(message, context, entry.getValue()))
          {
-            
+
             // We need to kick delivery so the Queues may check for the cursors case they are empty
             schedulePageDelivery(tx, entry);
             continue;
          }
-   
+
          for (Queue queue : entry.getValue().getNonDurableQueues())
          {
             MessageReference reference = message.createReference(queue);
-   
+
             refs.add(reference);
-   
+
             if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
             {
                Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-   
+
                reference.setScheduledDeliveryTime(scheduledDeliveryTime);
             }
-   
+
             message.incrementRefCount();
          }
-   
+
          Iterator<Queue> iter = entry.getValue().getDurableQueues().iterator();
-   
+
          while (iter.hasNext())
          {
             Queue queue = iter.next();
-   
+
             MessageReference reference = message.createReference(queue);
-   
+
             refs.add(reference);
-   
+
             if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
             {
                Long scheduledDeliveryTime = message.getLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
-   
+
                reference.setScheduledDeliveryTime(scheduledDeliveryTime);
             }
-   
+
             if (message.isDurable())
             {
                int durableRefCount = message.incrementDurableRefCount();
-   
+
                if (durableRefCount == 1)
                {
                   if (tx != null)
@@ -921,18 +933,18 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      storageManager.storeMessage(message);
                   }
                }
-   
+
                if (tx != null)
                {
                   storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
-   
+
                   tx.setContainsPersistent();
                }
                else
                {
                   storageManager.storeReference(queue.getID(), message.getMessageID(), !iter.hasNext());
                }
-   
+
                if (message.containsProperty(Message.HDR_SCHEDULED_DELIVERY_TIME))
                {
                   if (tx != null)
@@ -945,11 +957,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   }
                }
             }
-   
+
             message.incrementRefCount();
          }
       }
-      
+
       if (tx != null)
       {
          tx.addOperation(new AddOperation(refs));
@@ -991,7 +1003,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             tx.putProperty(TransactionPropertyIndexes.PAGE_DELIVERY, delivery);
             tx.addOperation(delivery);
          }
-         
+
          delivery.addQueues(entry.getValue().getDurableQueues());
          delivery.addQueues(entry.getValue().getNonDurableQueues());
       }
@@ -1000,19 +1012,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          List<Queue> durableQueues = entry.getValue().getDurableQueues();
          List<Queue> nonDurableQueues = entry.getValue().getNonDurableQueues();
-         
+
          final List<Queue> queues = new ArrayList<Queue>(durableQueues.size() + nonDurableQueues.size());
-         
+
          queues.addAll(durableQueues);
          queues.addAll(nonDurableQueues);
 
          storageManager.afterCompleteOperations(new IOAsyncTask()
          {
-            
+
             public void onError(int errorCode, String errorMessage)
             {
             }
-            
+
             public void done()
             {
                for (Queue queue : queues)
@@ -1023,6 +1035,99 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
          });
       }
+   }
+
+   private boolean checkDuplicateID(final ServerMessage message,
+                                    final RoutingContext context,
+                                    boolean rejectDuplicates,
+                                    AtomicBoolean startedTX) throws Exception
+   {
+      // Check the DuplicateCache for the Bridge first
+
+      Object bridgeDup = message.getObjectProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID);
+      if (bridgeDup != null)
+      {
+         // if the message is being sent from the bridge, we just ignore the duplicate id, and use the internal one
+         byte[] bridgeDupBytes = (byte[])bridgeDup;
+
+         DuplicateIDCache cacheBridge = getDuplicateIDCache(BRIDGE_CACHE_STR.concat(message.getAddress()));
+
+         if (cacheBridge.contains(bridgeDupBytes))
+         {
+            StringBuffer warnMessage = new StringBuffer();
+            warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
+            for (SimpleString key : message.getPropertyNames())
+            {
+               warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
+            }
+            PostOfficeImpl.log.warn(warnMessage.toString());
+            
+            if (context.getTransaction() != null)
+            {
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
+            }
+
+            return false;
+         }
+         else
+         {
+            if (context.getTransaction() == null)
+            {
+               context.setTransaction(new TransactionImpl(storageManager));
+               startedTX.set(true);
+            }
+         }
+
+         cacheBridge.addToCache(bridgeDupBytes, context.getTransaction());
+
+         message.removeProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID);
+      }
+
+      byte[] duplicateIDBytes = message.getDuplicateIDBytes();
+
+      DuplicateIDCache cache = null;
+
+      boolean isDuplicate = false;
+
+      if (duplicateIDBytes != null)
+      {
+         cache = getDuplicateIDCache(message.getAddress());
+
+         isDuplicate = cache.contains(duplicateIDBytes);
+
+         if (rejectDuplicates && isDuplicate)
+         {
+            StringBuffer warnMessage = new StringBuffer();
+            warnMessage.append("Duplicate message detected - message will not be routed. Message information:\n");
+            for (SimpleString key : message.getPropertyNames())
+            {
+               warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
+            }
+            PostOfficeImpl.log.warn(warnMessage.toString());
+
+            if (context.getTransaction() != null)
+            {
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
+            }
+
+            return false;
+         }
+      }
+
+      if (cache != null && !isDuplicate)
+      {
+         if (context.getTransaction() == null)
+         {
+            // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
+            context.setTransaction(new TransactionImpl(storageManager));
+
+            startedTX.set(true);
+         }
+
+         cache.addToCache(duplicateIDBytes, context.getTransaction());
+      }
+
+      return true;
    }
 
    /**
@@ -1192,7 +1297,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             message.decrementRefCount();
          }
       }
-      
+
       public List<MessageReference> getRelatedMessageReferences()
       {
          return refs;

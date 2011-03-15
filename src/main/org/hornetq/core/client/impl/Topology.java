@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -27,10 +28,16 @@ import org.hornetq.api.core.client.ClusterTopologyListener;
  */
 public class Topology implements Serializable
 {
+   
    /**
     * 
     */
    private static final long serialVersionUID = -9037171688692471371L;
+
+   
+
+   private static final Logger log = Logger.getLogger(Topology.class);
+
    /*
     * topology describes the other cluster nodes that this server knows about:
     *
@@ -47,10 +54,9 @@ public class Topology implements Serializable
       TopologyMember currentMember = topology.get(nodeId);
       if (debug)
       {
-         if(member.getConnector().toString().contains("server-id=4"))
-         {
-            System.out.println("member.getConnector() = " + member.getConnector());
-         }
+         System.out.println("adding = " + nodeId + ":" + member.getConnector());
+         System.out.println("before----------------------------------");
+         System.out.println(describe());
       }
       if(currentMember == null)
       {
@@ -79,6 +85,12 @@ public class Topology implements Serializable
             member.getConnector().b = currentMember.getConnector().b;
          }
       }
+      if(debug)
+      {
+
+         System.out.println("after----------------------------------updated=" + replaced);
+         System.out.println(describe());
+      }
       return replaced;
    }
 
@@ -88,12 +100,13 @@ public class Topology implements Serializable
       return (member != null);
    }
 
-   public synchronized void fireListeners(ClusterTopologyListener listener)
+   public void sendTopology(ClusterTopologyListener listener)
    {
       int count = 0;
-      for (Map.Entry<String, TopologyMember> entry : topology.entrySet())
+      Map<String, TopologyMember> copy = new HashMap<String, TopologyMember>(topology);
+      for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
       {
-         listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == topology.size());
+         listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == copy.size());
       }
    }
 

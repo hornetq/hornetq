@@ -219,6 +219,8 @@ public class FileDeploymentManagerTest extends UnitTestCase
          file2.delete();
          file3.delete();
       }
+      
+      fdm.stop();
    }
 
    public void testRedeploy() throws Exception
@@ -266,6 +268,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       finally
       {
          file.delete();
+         fdm.stop();
       }
    }
 
@@ -324,6 +327,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       finally
       {
          file.delete();
+         fdm.stop();
       }
    }
 

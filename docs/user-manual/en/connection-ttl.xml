@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="connection-ttl">
     <title>Detecting Dead Connections</title>
     <para>In this section we will discuss connection time-to-live (TTL) and explain how HornetQ
@@ -29,12 +34,15 @@
         <para>Here's an example of a well behaved core client application closing its session and
             session factory in a finally block:</para>
         <programlisting>
+ServerLocator locator = null;
 ClientSessionFactory sf = null;
 ClientSession session = null;
 
 try
 {
-   sf = HornetQClient.createClientSessionFactory(...);
+   locator = HornetQClient.createServerLocatorWithoutHA(..);
+
+   sf = locator.createClientSessionFactory();;
 
    session = sf.createSession(...);
    
@@ -51,6 +59,11 @@ finally
    {
       sf.close();
    }
+
+   if(locator != null)
+   {
+      locator.close();
+   }
 }
         </programlisting>
         <para>And here's an example of a well behaved JMS client application:</para>
@@ -59,7 +72,7 @@ Connection jmsConnection = null;
 
 try
 {
-   ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactory(...);
+   ConnectionFactory jmsConnectionFactory = HornetQJMSClient.createConnectionFactoryWithoutHA(...);
 
    jmsConnection = jmsConnectionFactory.createConnection();
 

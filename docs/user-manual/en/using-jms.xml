@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="using-jms">
     <title>Using JMS</title>
     <para>Although HornetQ provides a JMS agnostic messaging API, many users will be more
@@ -266,7 +271,7 @@ System.out.println("Got order: " + receivedMessage.getText());
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
-ConnectionFactory cf = HornetQJMSClient.createConnectionFactory(transportConfiguration);
+ConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,transportConfiguration);
         </programlisting>
         <para>We also create the JMS Queue object via the HornetQJMSClient Utility class:</para>
         <programlisting>Queue orderQueue = HornetQJMSClient.createQueue("OrderQueue");</programlisting>

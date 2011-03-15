@@ -36,4 +36,6 @@ public interface DuplicateIDCache
    void deleteFromCache(byte [] duplicateID) throws Exception;
 
    void load(List<Pair<byte[], Long>> theIds) throws Exception;
+
+   void load(final Transaction tx, final byte[] duplID);
 }

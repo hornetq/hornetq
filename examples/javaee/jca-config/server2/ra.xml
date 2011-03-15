@@ -36,13 +36,19 @@ Copyright 2009 Red Hat, Inc.
    <resourceadapter>
       <resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter</resourceadapter-class>
       <config-property>
-         <description>The transport type</description>
+         <description>
+            The transport type. Multiple connectors can be configured by using a comma separated list,
+            i.e. org.hornetq.core.remoting.impl.invm.InVMConnectorFactory,org.hornetq.core.remoting.impl.invm.InVMConnectorFactory.
+         </description>
          <config-property-name>ConnectorClassName</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property-value>
       </config-property>
       <config-property>
-         <description>The transport configuration. These values must be in the form of key=val;key=val;</description>
+         <description>The transport configuration. These values must be in the form of key=val;key=val;,
+            if multiple connectors are used then each set must be separated by a comma i.e. host=host1;port=5445,host=host2;port=5446.
+            Each set of params maps to the connector classname specified.
+         </description>
          <config-property-name>ConnectionParameters</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>host=127.0.0.1;port=5445</config-property-value>

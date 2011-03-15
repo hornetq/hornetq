@@ -13,6 +13,7 @@
 
 package org.hornetq.core.paging.impl;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashSet;
@@ -22,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -45,7 +45,6 @@ import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
@@ -97,11 +96,11 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Used to schedule sync threads
    private final PageSyncTimer syncTimer;
 
-   private final long maxSize;
+   private long maxSize;
 
-   private final long pageSize;
+   private long pageSize;
 
-   private final AddressFullMessagePolicy addressFullMessagePolicy;
+   private AddressFullMessagePolicy addressFullMessagePolicy;
 
    private boolean printedDropMessagesWarning;
 
@@ -112,8 +111,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Bytes consumed by the queue on the memory
    private final AtomicLong sizeInBytes = new AtomicLong();
 
-   private final AtomicBoolean depaging = new AtomicBoolean(false);
-
    private volatile int numberOfPages;
 
    private volatile int firstPageId;
@@ -123,9 +120,6 @@ public class PagingStoreImpl implements TestSupportPageStore
    private volatile Page currentPage;
 
    private volatile boolean paging = false;
-
-   /** duplicate cache used at this address */
-   private final DuplicateIDCache duplicateCache;
 
    private final PageCursorProvider cursorProvider;
 
@@ -175,11 +169,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       this.storeName = storeName;
 
-      maxSize = addressSettings.getMaxSizeBytes();
-
-      pageSize = addressSettings.getPageSizeBytes();
-
-      addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+      applySetting(addressSettings);
 
       if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
       {
@@ -210,18 +200,25 @@ public class PagingStoreImpl implements TestSupportPageStore
          this.syncTimer = null;
       }
 
-      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory);
+      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory, addressSettings.getPageCacheMaxSize());
 
-      // Post office could be null on the backup node
-      if (postOffice == null)
-      {
-         this.duplicateCache = null;
-      }
-      else
-      {
-         this.duplicateCache = postOffice.getDuplicateIDCache(storeName);
-      }
+   }
 
+   /**
+    * @param addressSettings
+    */
+   public void applySetting(final AddressSettings addressSettings)
+   {
+      maxSize = addressSettings.getMaxSizeBytes();
+
+      pageSize = addressSettings.getPageSizeBytes();
+
+      addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+      
+      if (cursorProvider != null)
+      {
+         cursorProvider.setCacheMaxSize(addressSettings.getPageCacheMaxSize());
+      }
    }
 
    // Public --------------------------------------------------------
@@ -564,6 +561,13 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return currentPage;
    }
+   
+   public boolean checkPage(final int pageNumber)
+   {
+      String fileName = createFileName(pageNumber);
+      SequentialFile file = fileFactory.createSequentialFile(fileName, 1);
+      return file.exists();
+   }
 
    public Page createPage(final int pageNumber) throws Exception
    {
@@ -858,8 +862,6 @@ public class PagingStoreImpl implements TestSupportPageStore
             return false;
          }
 
-         PagedMessage pagedMessage;
-
          if (!message.isDurable())
          {
             // The address should never be transient when paging (even for non-persistent messages when paging)
@@ -867,7 +869,8 @@ public class PagingStoreImpl implements TestSupportPageStore
             message.bodyChanged();
          }
 
-         pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), installPageTransaction(tx, listCtx));
+
+         PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
 
          int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 
@@ -877,7 +880,9 @@ public class PagingStoreImpl implements TestSupportPageStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
-
+         
+         installPageTransaction(tx, listCtx, currentPage.getPageId());
+ 
          currentPage.write(pagedMessage);
 
          if (tx != null)
@@ -929,11 +934,11 @@ public class PagingStoreImpl implements TestSupportPageStore
       return ids;
    }
 
-   private long installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
+   private PageTransactionInfo installPageTransaction(final Transaction tx, final RouteContextList listCtx, int pageID) throws Exception
    {
       if (tx == null)
       {
-         return -1;
+         return null;
       }
       else
       {
@@ -948,7 +953,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          pgTX.increment(listCtx.getNumberOfQueues());
 
-         return tx.getID();
+         return pgTX;
       }
    }
 

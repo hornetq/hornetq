@@ -72,4 +72,6 @@ public abstract class NodeManager implements HornetQComponent
    public abstract boolean isAwaitingFailback() throws Exception;
 
    public abstract boolean isBackupLive() throws Exception;
+
+   public abstract void interrupt();
 }

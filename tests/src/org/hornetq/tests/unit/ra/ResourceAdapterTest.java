@@ -14,6 +14,9 @@
 package org.hornetq.tests.unit.ra;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 
 import javax.jms.Connection;
@@ -31,6 +34,7 @@ import javax.transaction.xa.XAResource;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -269,7 +273,9 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
-      connectionFactoryProperties.setConnectorClassName(NettyConnector.class.getName());
+      ArrayList<String> value = new ArrayList<String>();
+      value.add(NettyConnector.class.getName());
+      connectionFactoryProperties.setParsedConnectorClassNames(value);
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       Assert.assertNotSame(factory, defaultFactory);
@@ -285,6 +291,105 @@ public class ResourceAdapterTest extends ServiceTestBase
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       Assert.assertNotSame(factory, defaultFactory);
+   }
+
+   public void testCreateConnectionFactoryMultipleConnectors()
+   {
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+      ra.setConnectorClassName(NETTY_CONNECTOR_FACTORY + "," + INVM_CONNECTOR_FACTORY + "," + NETTY_CONNECTOR_FACTORY);
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(new ConnectionFactoryProperties());
+      TransportConfiguration[] configurations = factory.getServerLocator().getStaticTransportConfigurations();
+      assertNotNull(configurations);
+      assertEquals(3, configurations.length);
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
+      assertEquals(0, configurations[0].getParams().size());
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
+      assertEquals(0, configurations[1].getParams().size());
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
+      assertEquals(0, configurations[2].getParams().size());
+   }
+
+   public void testCreateConnectionFactoryMultipleConnectorsAndParams()
+   {
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+      ra.setConnectorClassName(NETTY_CONNECTOR_FACTORY + "," + INVM_CONNECTOR_FACTORY + "," + NETTY_CONNECTOR_FACTORY);
+      ra.setConnectionParameters("host=host1;port=5445, serverid=0, host=host2;port=5446");
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(new ConnectionFactoryProperties());
+      TransportConfiguration[] configurations = factory.getServerLocator().getStaticTransportConfigurations();
+      assertNotNull(configurations);
+      assertEquals(3, configurations.length);
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
+      assertEquals(2, configurations[0].getParams().size());
+      assertEquals("host1", configurations[0].getParams().get("host"));
+      assertEquals("5445", configurations[0].getParams().get("port"));
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
+      assertEquals(1, configurations[1].getParams().size());
+      assertEquals("0", configurations[1].getParams().get("serverid"));
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
+      assertEquals(2, configurations[2].getParams().size());
+      assertEquals("host2", configurations[2].getParams().get("host"));
+      assertEquals("5446", configurations[2].getParams().get("port"));
+   }
+
+   public void testCreateConnectionFactoryMultipleConnectorsOverride()
+   {
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+      ra.setConnectorClassName(NETTY_CONNECTOR_FACTORY + "," + INVM_CONNECTOR_FACTORY + "," + NETTY_CONNECTOR_FACTORY);
+      ConnectionFactoryProperties overrideProperties = new ConnectionFactoryProperties();
+      ArrayList<String> value = new ArrayList<String>();
+      value.add(INVM_CONNECTOR_FACTORY);
+      value.add(NETTY_CONNECTOR_FACTORY);
+      value.add(INVM_CONNECTOR_FACTORY);
+      overrideProperties.setParsedConnectorClassNames(value);
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(overrideProperties);
+      TransportConfiguration[] configurations = factory.getServerLocator().getStaticTransportConfigurations();
+      assertNotNull(configurations);
+      assertEquals(3, configurations.length);
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
+      assertEquals(0, configurations[0].getParams().size());
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
+      assertEquals(0, configurations[1].getParams().size());
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
+      assertEquals(0, configurations[2].getParams().size());
+   }
+
+   public void testCreateConnectionFactoryMultipleConnectorsOverrideAndParams()
+   {
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+      ra.setConnectorClassName(NETTY_CONNECTOR_FACTORY + "," + INVM_CONNECTOR_FACTORY + "," + NETTY_CONNECTOR_FACTORY);
+      ra.setConnectionParameters("host=host1;port=5445, serverid=0, host=host2;port=5446");
+      ConnectionFactoryProperties overrideProperties = new ConnectionFactoryProperties();
+      ArrayList<String> value = new ArrayList<String>();
+      value.add(INVM_CONNECTOR_FACTORY);
+      value.add(NETTY_CONNECTOR_FACTORY);
+      value.add(INVM_CONNECTOR_FACTORY);
+      overrideProperties.setParsedConnectorClassNames(value);
+      ArrayList<Map<String, Object>> connectionParameters = new ArrayList<Map<String, Object>>();
+      Map<String, Object> map1 = new HashMap<String, Object>();
+      map1.put("serverid", "0");
+      connectionParameters.add(map1);
+      Map<String, Object> map2 = new HashMap<String, Object>();
+      map2.put("host", "myhost");
+      map2.put("port", "5445");
+      connectionParameters.add(map2);
+      Map<String, Object> map3 = new HashMap<String, Object>();
+      map3.put("serverid", "1");
+      connectionParameters.add(map3);
+      overrideProperties.setParsedConnectionParameters(connectionParameters);
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(overrideProperties);
+      TransportConfiguration[] configurations = factory.getServerLocator().getStaticTransportConfigurations();
+      assertNotNull(configurations);
+      assertEquals(3, configurations.length);
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[0].getFactoryClassName());
+      assertEquals(1, configurations[0].getParams().size());
+      assertEquals("0", configurations[0].getParams().get("serverid"));
+      assertEquals(NETTY_CONNECTOR_FACTORY, configurations[1].getFactoryClassName());
+      assertEquals(2, configurations[1].getParams().size());
+      assertEquals("myhost", configurations[1].getParams().get("host"));
+      assertEquals("5445", configurations[1].getParams().get("port"));
+      assertEquals(INVM_CONNECTOR_FACTORY, configurations[2].getFactoryClassName());
+      assertEquals(1, configurations[2].getParams().size());
+      assertEquals("1", configurations[2].getParams().get("serverid"));
    }
 
    public void testCreateConnectionFactoryThrowsException() throws Exception
@@ -392,6 +497,8 @@ public class ResourceAdapterTest extends ServiceTestBase
 
          activation.start();
          activation.stop();
+         
+         ra.stop();
 
          locator.close();
 

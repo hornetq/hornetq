@@ -74,7 +74,7 @@ public class ChannelImpl implements Channel
    private CommandConfirmationHandler commandConfirmationHandler;
 
    private volatile boolean transferring;
-   
+
    public ChannelImpl(final CoreRemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
@@ -153,7 +153,7 @@ public class ChannelImpl implements Channel
    }
 
    // This must never called by more than one thread concurrently
-   
+
    public void send(final Packet packet, final boolean flush, final boolean batch)
    {
       synchronized (sendLock)
@@ -161,7 +161,7 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          HornetQBuffer buffer = packet.encode(connection);
-         
+
          lock.lock();
 
          try
@@ -193,14 +193,13 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
-         
-         //The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
-         //buffer is full, preventing any incoming buffers being handled and blocking failover
+
+         // The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
+         // buffer is full, preventing any incoming buffers being handled and blocking failover
          connection.getTransportConnection().write(buffer, flush, batch);
       }
    }
 
-   
    public Packet sendBlocking(final Packet packet) throws HornetQException
    {
       if (closed)
@@ -212,7 +211,7 @@ public class ChannelImpl implements Channel
       {
          throw new IllegalStateException("Cannot do a blocking call timeout on a server side connection");
       }
-      
+
       // Synchronized since can't be called concurrently by more than one thread and this can occur
       // E.g. blocking acknowledge() from inside a message handler at some time as other operation on main thread
       synchronized (sendBlockingLock)
@@ -300,6 +299,10 @@ public class ChannelImpl implements Channel
 
    public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
    {
+      if (confWindowSize < 0)
+      {
+         throw new IllegalStateException("You can't set confirmationHandler on a connection with confirmation-window-size < 0. Look at the documentation for more information.");
+      }
       commandConfirmationHandler = handler;
    }
 
@@ -501,6 +504,7 @@ public class ChannelImpl implements Channel
                                  lastReceivedCommandID +
                                  " first stored command id " +
                                  firstStoredCommandID);
+            firstStoredCommandID = lastReceivedCommandID + 1;
             return;
          }
 

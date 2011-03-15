@@ -123,9 +123,9 @@
    <property name="logs.dir" value="logs"/>
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
-   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
+   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/target/docbook/publish"/>
    <property name="rest-manual.build.dir" value="hornetq-rest/docbook/target/docbook/publish/en-US"/>
-   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
+   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/target/docbook/publish"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
@@ -193,6 +193,10 @@
    <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
    <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
    <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
+	
+	
+   <property name="test-udp-address" value="230.1.2.3"/> 
+   <property name="test-udp-port" value="6750"/>
 
    <!-- ======================================================================================== -->
    <!-- Classpath definition                                                                     -->
@@ -775,7 +779,7 @@
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest">
+           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest, eap-examples">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -1238,9 +1242,6 @@
 	  <include name="*.jar"/>
 	</fileset>
 	<fileset dir="${com.sun.xml.stream.lib}">
-	  <include name="*.jar"/>
-	</fileset>
-	<fileset dir="${org.slf4j.lib}">
 	  <include name="*.jar"/>
 	</fileset>
 	<fileset dir="${org.scannotation.lib}">
@@ -1735,6 +1736,8 @@
          <sysproperty key="twitter.consumerSecret" value="${twitter.consumerSecret}"/>
          <sysproperty key="twitter.accessToken" value="${twitter.accessToken}"/>
          <sysproperty key="twitter.accessTokenSecret" value="${twitter.accessTokenSecret}"/>
+     	 <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+     	 <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
       	 <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
@@ -1880,6 +1883,8 @@
 
           <sysproperty key="user.home" value="${user.home}"/>
           <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+     	  <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+    	  <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
          <jvmarg value="-Xmx1024M"/>
          <jvmarg value="-Dmodule.output=./"/>
          <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>

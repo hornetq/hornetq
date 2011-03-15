@@ -40,26 +40,110 @@ public class SoftValueMapTest extends UnitTestCase
    {
       forceGC();
       long maxMemory = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().freeMemory();
-      
+
       // each buffer will be 1/10th of the maxMemory
       int bufferSize = (int)(maxMemory / 100);
-      
-      SoftValueHashMap<Long, byte[]> softCache = new SoftValueHashMap<Long, byte[]>();
-      
-      final int MAX_ELEMENTS = 1000;
-      
-      for (long i = 0 ; i < MAX_ELEMENTS; i++)
+
+      class Value implements SoftValueHashMap.ValueCache
       {
-         softCache.put(i, new byte[bufferSize]);
+         byte[] payload;
+
+         Value(byte[] payload)
+         {
+            this.payload = payload;
+         }
+
+         /* (non-Javadoc)
+          * @see org.hornetq.utils.SoftValueHashMap.ValueCache#isLive()
+          */
+         public boolean isLive()
+         {
+            return false;
+         }
       }
-      
-      
+
+      SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(100);
+
+      final int MAX_ELEMENTS = 1000;
+
+      for (long i = 0; i < MAX_ELEMENTS; i++)
+      {
+         softCache.put(i, new Value(new byte[bufferSize]));
+      }
+
       assertTrue(softCache.size() < MAX_ELEMENTS);
       
+      System.out.println("SoftCache.size " + softCache.size());
+
       System.out.println("Soft cache has " + softCache.size() + " elements");
    }
 
-   
+
+   public void testEvictionsLeastUsed()
+   {
+      forceGC();
+
+      class Value implements SoftValueHashMap.ValueCache
+      {
+         byte[] payload;
+         
+         boolean live;
+
+         Value(byte[] payload)
+         {
+            this.payload = payload;
+         }
+
+         /* (non-Javadoc)
+          * @see org.hornetq.utils.SoftValueHashMap.ValueCache#isLive()
+          */
+         public boolean isLive()
+         {
+            return live;
+         }
+         
+         public void setLive(boolean live)
+         {
+            this.live = live;
+         }
+      }
+
+      SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(200);
+      
+      for (long i = 0 ; i < 100; i++)
+      {
+         Value v = new Value(new byte[1]);
+         v.setLive(true);
+         softCache.put(i, v);
+      }
+      
+      for (long i = 100; i < 200; i++)
+      {
+         Value v = new Value(new byte[1]);
+         softCache.put(i, v);
+      }
+      
+      assertNotNull(softCache.get(100l));
+      
+      softCache.put(300l, new Value(new byte[1]));
+      
+      // these are live, so they shouldn't go
+      
+      for (long i = 0; i < 100; i++)
+      {
+         assertNotNull(softCache.get(i));
+      }
+      
+      // this was accessed, so it shouldn't go
+      assertNotNull(softCache.get(100l));
+      
+      // this is the next one, so it should go
+      assertNull(softCache.get(101l));
+      
+      System.out.println("SoftCache.size " + softCache.size());
+
+      System.out.println("Soft cache has " + softCache.size() + " elements");
+   }
 
    // Package protected ---------------------------------------------
 

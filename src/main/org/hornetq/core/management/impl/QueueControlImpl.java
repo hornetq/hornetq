@@ -40,6 +40,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -400,17 +401,24 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          Filter filter = FilterImpl.createFilter(filterStr);
          List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
          queue.blockOnExecutorFuture();
-         Iterator<MessageReference> iterator = queue.iterator();
-         while (iterator.hasNext())
+         LinkedListIterator<MessageReference> iterator = queue.iterator();
+         try
          {
-            MessageReference ref = (MessageReference)iterator.next();
-            if (filter == null || filter.match(ref.getMessage()))
+            while (iterator.hasNext())
             {
-               Message message = ref.getMessage();
-               messages.add(message.toMap());
+               MessageReference ref = (MessageReference)iterator.next();
+               if (filter == null || filter.match(ref.getMessage()))
+               {
+                  Message message = ref.getMessage();
+                  messages.add(message.toMap());
+               }
             }
+            return (Map<String, Object>[])messages.toArray(new Map[messages.size()]);
          }
-         return (Map<String, Object>[])messages.toArray(new Map[messages.size()]);
+         finally
+         {
+            iterator.close();
+         }
       }
       catch (HornetQException e)
       {
@@ -451,17 +459,24 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          }
          else
          {
-            Iterator<MessageReference> iterator = queue.iterator();
-            int count = 0;
-            while (iterator.hasNext())
+            LinkedListIterator<MessageReference> iterator = queue.iterator();
+            try
             {
-               MessageReference ref = (MessageReference)iterator.next();
-               if (filter.match(ref.getMessage()))
+               int count = 0;
+               while (iterator.hasNext())
                {
-                  count++;
+                  MessageReference ref = (MessageReference)iterator.next();
+                  if (filter.match(ref.getMessage()))
+                  {
+                     count++;
+                  }
                }
+               return count;
             }
-            return count;
+            finally
+            {
+               iterator.close();
+            }
          }
       }
       finally
@@ -543,6 +558,11 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
 
    public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
    {
+      return moveMessage(messageID, otherQueueName, false);
+   }
+
+   public boolean moveMessage(final long messageID, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+   {
       checkStarted();
 
       clearIO();
@@ -555,7 +575,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
             throw new IllegalArgumentException("No queue found for " + otherQueueName);
          }
 
-         return queue.moveReference(messageID, binding.getAddress());
+         return queue.moveReference(messageID, binding.getAddress(), rejectDuplicates);
       }
       finally
       {
@@ -565,6 +585,11 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
    }
 
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
+   {
+      return moveMessages(filterStr, otherQueueName, false);
+   }
+
+   public int moveMessages(final String filterStr, final String otherQueueName, final boolean rejectDuplicates) throws Exception
    {
       checkStarted();
 
@@ -580,7 +605,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
             throw new IllegalArgumentException("No queue found for " + otherQueueName);
          }
 
-         int retValue = queue.moveReferences(filter, binding.getAddress());
+         int retValue = queue.moveReferences(filter, binding.getAddress(), rejectDuplicates);
 
          return retValue;
       }
@@ -816,7 +841,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                obj.put("sessionID", serverConsumer.getSessionID());
                obj.put("browseOnly", serverConsumer.isBrowseOnly());
                obj.put("creationTime", serverConsumer.getCreationTime());
-               
+
                jsonArray.put(obj);
             }
 

@@ -12,21 +12,14 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.util.ServiceTestBase;
 
 import javax.resource.ResourceException;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.XATerminator;
 import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.WorkManager;
-import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
-import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -117,7 +110,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setDiscoveryPort(i);
       qResourceAdapter.setDiscoveryRefreshTimeout(l);
       qResourceAdapter.setDupsOKBatchSize(i);
-      qResourceAdapter.setFailoverOnServerShutdown(b);
       qResourceAdapter.setMinLargeMessageSize(i);
       qResourceAdapter.setPassword(testpass);
       qResourceAdapter.setPreAcknowledge(b);
@@ -153,7 +145,6 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getDiscoveryPort(), i);
       assertEquals(qResourceAdapter.getDiscoveryRefreshTimeout(), l);
       assertEquals(qResourceAdapter.getDupsOKBatchSize(), i);
-      assertEquals(qResourceAdapter.getFailoverOnServerShutdown(), b);
       assertEquals(qResourceAdapter.getMinLargeMessageSize(), i);
       assertEquals(qResourceAdapter.getPassword(), testpass);
       assertEquals(qResourceAdapter.getPreAcknowledge(), b);
@@ -169,6 +160,280 @@ public class ResourceAdapterTest extends HornetQRATestBase
       assertEquals(qResourceAdapter.getUserName(), testuser);
    }
 
+   //https://issues.jboss.org/browse/JBPAPP-5790
+   public void testResourceAdapterSetup() throws Exception
+   {
+      HornetQResourceAdapter adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      HornetQConnectionFactory factory = adapter.getDefaultHornetQConnectionFactory();
+      long initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      long refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      int port = factory.getDiscoveryGroupConfiguration().getGroupPort();
+      
+      //defaults
+      assertEquals(10000l, refresh);
+      assertEquals(10000l, initWait);
+      assertEquals(9876, port);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryRefreshTimeout(1234l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+
+      //override refresh timeout
+      assertEquals(1234l, refresh);
+      assertEquals(10000l, initWait);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      
+      //override initial wait
+      assertEquals(10000l, refresh);
+      assertEquals(9999l, initWait);
+      
+      adapter = new HornetQResourceAdapter();
+      adapter.setDiscoveryAddress("231.1.1.1");
+      adapter.setDiscoveryPort(9876);
+      adapter.setDiscoveryInitialWaitTimeout(9999l);
+      factory = adapter.getDefaultHornetQConnectionFactory();
+      initWait = factory.getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout();
+      refresh = factory.getDiscoveryGroupConfiguration().getRefreshTimeout();
+      
+      //override initial wait
+      assertEquals(10000l, refresh);
+      assertEquals(9999l, initWait);
+
+   }
+
+    //https://issues.jboss.org/browse/JBPAPP-5836
+   public void testResourceAdapterSetupOverrideCFParams() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      //now override the connector class
+      spec.setConnectorClassName(NETTY_CONNECTOR_FACTORY);
+      spec.setConnectionParameters("port=5445");
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      qResourceAdapter.stop();
+      assertTrue(endpoint.released);
+   }
+
+   public void testResourceAdapterSetupOverrideNoCFParams() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageEndpoint endpoint = new DummyMessageEndpoint(latch);
+      DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, false);
+      qResourceAdapter.endpointActivation(endpointFactory, spec);
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+      assertTrue(endpoint.released);
+   }
+
+   public void testResourceAdapterSetupNoOverrideDiscovery() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setDiscoveryAddress("231.6.6.6");
+      qResourceAdapter.setDiscoveryPort(1234);
+      qResourceAdapter.setDiscoveryRefreshTimeout(1l);
+      qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      qResourceAdapter.stop();
+   }
+
+   public void testResourceAdapterSetupOverrideDiscovery() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setDiscoveryAddress("231.7.7.7");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setSetupAttempts(0);
+      spec.setDiscoveryAddress("231.6.6.6");
+      spec.setDiscoveryPort(1234);
+      spec.setDiscoveryInitialWaitTimeout(1l);
+      spec.setDiscoveryRefreshTimeout(1l);
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupAddress(), "231.6.6.6");
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getGroupPort(), 1234);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getRefreshTimeout(), 1l);
+      assertEquals(fac.getServerLocator().getDiscoveryGroupConfiguration().getDiscoveryInitialWaitTimeout(), 1l);
+      qResourceAdapter.stop();
+   }
+
+   public void testResourceAdapterSetupNoHAOverride() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      qResourceAdapter.setHA(true);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertTrue(fac.isHA());
+
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+   }
+
+   public void testResourceAdapterSetupNoHADefault() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertFalse(fac.isHA());
+
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+   }
+
+
+   public void testResourceAdapterSetupHAOverride() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setHA(true);
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertTrue(fac.isHA());
+
+      qResourceAdapter.stop();
+      assertTrue(spec.isHasBeenUpdated());
+   }
+
+   public void testResourceAdapterSetupNoReconnectAttemptsOverride() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      qResourceAdapter.setReconnectAttempts(100);
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertEquals(100, fac.getReconnectAttempts());
+
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+   }
+
+   public void testResourceAdapterSetupReconnectAttemptDefault() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertEquals(-1, fac.getReconnectAttempts());
+
+      qResourceAdapter.stop();
+      assertFalse(spec.isHasBeenUpdated());
+   }
+
+   public void testResourceAdapterSetupReconnectAttemptsOverride() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
+      qResourceAdapter.setConnectionParameters("server-id=0");
+      HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      qResourceAdapter.start(ctx);
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setDestination(MDBQUEUE);
+      spec.setReconnectAttempts(100);
+      HornetQConnectionFactory fac = qResourceAdapter.createHornetQConnectionFactory(spec);
+
+      assertEquals(100, fac.getReconnectAttempts());
+
+      qResourceAdapter.stop();
+      assertTrue(spec.isHasBeenUpdated());
+   }
+   
    @Override
    public boolean isSecure()
    {

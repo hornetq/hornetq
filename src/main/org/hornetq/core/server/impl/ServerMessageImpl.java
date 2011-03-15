@@ -106,6 +106,12 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return ref;
    }
 
+   
+   public boolean hasInternalProperties()
+   {
+      return properties.hasInternalProperties();
+   }
+   
    public synchronized int incrementRefCount() throws Exception
    {
       refCount++;
