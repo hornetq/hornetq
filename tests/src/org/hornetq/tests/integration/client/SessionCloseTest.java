@@ -158,7 +158,7 @@ public class SessionCloseTest extends UnitTestCase
       Assert.assertTrue(session.isXA());
       Assert.assertTrue(session.isClosed());
 
-      UnitTestCase.expectXAException(XAException.XAER_RMERR, new HornetQAction()
+      UnitTestCase.expectXAException(XAException.XA_RETRY, new HornetQAction()
       {
          public void run() throws XAException
          {
