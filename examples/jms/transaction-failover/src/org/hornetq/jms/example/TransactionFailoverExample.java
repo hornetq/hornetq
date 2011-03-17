@@ -151,7 +151,7 @@ public class TransactionFailoverExample extends HornetQExample
 
       if (killServer)
       {
-         killServer(1);
+         killServer(0);
 
          Thread.sleep(2000);
       }
