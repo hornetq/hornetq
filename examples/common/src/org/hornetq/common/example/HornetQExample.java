@@ -113,7 +113,7 @@ public abstract class HornetQExample
       file.createNewFile();
       
       // Sleep longer than the KillChecker check period
-      Thread.sleep(1000);
+      Thread.sleep(3000);
    }
 
    protected void stopServer(final int id) throws Exception

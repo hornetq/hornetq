@@ -151,9 +151,10 @@ public class TransactionFailoverExample extends HornetQExample
 
       if (killServer)
       {
+         Thread.sleep(2000);
+
          killServer(0);
 
-         Thread.sleep(2000);
       }
 
       // We send the remaining half of messages
