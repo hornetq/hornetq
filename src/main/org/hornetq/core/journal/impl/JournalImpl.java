@@ -1539,7 +1539,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                failureCallback.failedTransaction(transactionID, records, recordsToDelete);
             }
          }
-      });
+      }, fixBadTX);
 
       for (RecordInfo record : records)
       {
