@@ -404,7 +404,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          catch (HornetQException e)
          {
-            log.warn("Unable to send message, will try again once bridge reconnects");
+            log.warn("Unable to send message, will try again once bridge reconnects", e);
 
             refs.remove(ref);
 

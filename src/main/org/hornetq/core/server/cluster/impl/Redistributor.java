@@ -127,7 +127,7 @@ public class Redistributor implements Consumer
 
       if (routed)
       {
-         doRedistribute(reference, tx);
+         ackRedistribution(reference, tx);
 
          return HandleStatus.HANDLED;
       }
@@ -137,7 +137,7 @@ public class Redistributor implements Consumer
       }
    }
 
-   private void doRedistribute(final MessageReference reference, final Transaction tx) throws Exception
+   private void ackRedistribution(final MessageReference reference, final Transaction tx) throws Exception
    {
       reference.handled();
 

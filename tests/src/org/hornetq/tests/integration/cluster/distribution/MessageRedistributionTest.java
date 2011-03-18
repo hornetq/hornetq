@@ -107,7 +107,6 @@ public class MessageRedistributionTest extends ClusterTestBase
       MessageRedistributionTest.log.info("Test done");
    }
 
-   // https://issues.jboss.org/browse/JBPAPP-6130
    // https://issues.jboss.org/browse/HORNETQ-654
    public void testRedistributionWhenConsumerIsClosedAndRestart() throws Exception
    {
@@ -137,7 +136,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       waitForBindings(1, "queues.testaddress", 2, 2, false);
       waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-      send(0, "queues.testaddress", 9, true, null);
+      send(0, "queues.testaddress", 20, true, null);
 
       getReceivedOrder(0, true);
       int[] ids1 = getReceivedOrder(1, false);
@@ -157,6 +156,9 @@ public class MessageRedistributionTest extends ClusterTestBase
       }
 
       removeConsumer(1);
+      
+      // Need to wait some time as we need to handle all redistributions before we stop the servers
+      Thread.sleep(5000);
 
       for (int i = 0; i <= 2; i++)
       {
@@ -181,16 +183,14 @@ public class MessageRedistributionTest extends ClusterTestBase
       setupSessionFactory(2, isNetty());
 
       addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
       addConsumer(2, 2, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
       waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
       waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
 
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids1, 0, 2);
 

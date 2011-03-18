@@ -1132,9 +1132,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       do
       {
          message = consumer.consumer.receive(500);
-
          if (message != null)
          {
+            if (ack)
+            {
+               message.acknowledge();
+            }
+
             int count = (Integer)message.getObjectProperty(ClusterTestBase.COUNT_PROP);
 
             ints.add(count);
@@ -1149,6 +1153,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (Integer i : ints)
       {
          res[j++] = i;
+      }
+      
+      if (ack)
+      {
+         // just to flush acks
+         consumers[consumerID].session.commit();
       }
 
       return res;

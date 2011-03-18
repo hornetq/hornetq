@@ -674,6 +674,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
    {
+
+      // We have to copy the message and store it separately, otherwise we may lose remote bindings in case of restart before the message
+      // arrived the target node
+      // as described on https://issues.jboss.org/browse/JBPAPP-6130
+      ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
+      
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       boolean res = false;
@@ -682,11 +688,17 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          RoutingContext context = new RoutingContextImpl(tx);
 
-         boolean routed = bindings.redistribute(message, originatingQueue, context);
+         boolean routed = bindings.redistribute(copyRedistribute, originatingQueue, context);
 
          if (routed)
          {
-            processRoute(message, context, false);
+            if (message.isDurable())
+            {
+               storageManager.storeMessageTransactional(tx.getID(), copyRedistribute);
+               tx.setContainsPersistent();
+            }
+
+            processRoute(copyRedistribute, context, false);
 
             res = true;
          }
