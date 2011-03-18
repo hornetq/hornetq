@@ -2,6 +2,12 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
+   <!--  Don't change this name.
+         This is used by the dependency framework on the deployers,
+         to make sure this deployment is done before any other deployment -->
+   <name>HornetQ.main.config</name>
+
+
    <bindings-directory>${jboss.server.data.dir}/messaging/bindings</bindings-directory>
 
    <journal-directory>${jboss.server.data.dir}/messaging/journal</journal-directory>
