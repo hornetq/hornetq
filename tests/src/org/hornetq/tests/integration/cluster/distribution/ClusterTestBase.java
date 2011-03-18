@@ -175,7 +175,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_SERVERS = 10;
 
-   private ConsumerHolder[] consumers;
+   protected ConsumerHolder[] consumers;
 
    protected HornetQServer[] servers;
 
@@ -1112,6 +1112,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
    }
 
    protected int[] getReceivedOrder(final int consumerID) throws Exception
+   {
+      return getReceivedOrder(consumerID, false);
+   }
+
+   protected int[] getReceivedOrder(final int consumerID, final boolean ack) throws Exception
    {
       ConsumerHolder consumer = consumers[consumerID];
 
