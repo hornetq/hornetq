@@ -692,12 +692,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (routed)
          {
-            if (message.isDurable())
-            {
-               storageManager.storeMessageTransactional(tx.getID(), copyRedistribute);
-               tx.setContainsPersistent();
-            }
-
             processRoute(copyRedistribute, context, false);
 
             res = true;
