@@ -181,7 +181,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    public void route(final ServerMessage message, final RoutingContext context)
    {
       addRouteContextToMessage(message);
-         
+
       List<Queue> durableQueuesOnContext = context.getDurableQueues(address);
 
       if (!durableQueuesOnContext.contains(storeAndForwardQueue))
@@ -203,7 +203,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
          if (i == null)
          {
-            filterCounts.put(filterString, 0);
+            filterCounts.put(filterString, 1);
 
             filters.add(FilterImpl.createFilter(filterString));
          }
@@ -230,7 +230,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
             {
                filterCounts.remove(filterString);
 
-               filters.remove(filterString);
+               filters.remove(FilterImpl.createFilter(filterString));
             }
             else
             {
@@ -273,13 +273,17 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
              uniqueName +
              "]";
    }
-   
+
+   public Set<Filter> getFilters()
+   {
+      return filters;
+   }
+
    public void close() throws Exception
    {
       storeAndForwardQueue.close();
    }
 
-   
    /**
     * This will add routing information to the message.
     * This will be later processed during the delivery between the nodes. Because of that this has to be persisted as a property on the message.
@@ -308,6 +312,5 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
       message.putBytesProperty(idsHeaderName, ids);
    }
-
 
 }

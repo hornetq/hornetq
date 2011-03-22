@@ -107,14 +107,16 @@ public class FilterImpl implements Filter
       try
       {
          result = parser.parse(sfilterString, identifiers);
-         
+
          resultType = result.getClass();
       }
       catch (Throwable e)
       {
          FilterImpl.log.error("Invalid filter: " + str, e);
 
-         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString + " " + e.getMessage());
+         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString +
+                                                                                " " +
+                                                                                e.getMessage());
       }
    }
 
@@ -173,6 +175,41 @@ public class FilterImpl implements Filter
    }
 
    /* (non-Javadoc)
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((sfilterString == null) ? 0 : sfilterString.hashCode());
+      return result;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      FilterImpl other = (FilterImpl)obj;
+      if (sfilterString == null)
+      {
+         if (other.sfilterString != null)
+            return false;
+      }
+      else if (!sfilterString.equals(other.sfilterString))
+         return false;
+      return true;
+   }
+
+   /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
    @Override
@@ -187,7 +224,7 @@ public class FilterImpl implements Filter
    {
       if (FilterConstants.HORNETQ_USERID.equals(fieldName))
       {
-         //It's the stringified (hex) representation of a user id that can be used in a selector expression
+         // It's the stringified (hex) representation of a user id that can be used in a selector expression
          return new SimpleString("ID:" + msg.getUserID());
       }
       else if (FilterConstants.HORNETQ_PRIORITY.equals(fieldName))
