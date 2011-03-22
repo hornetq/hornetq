@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -747,6 +748,8 @@ public class PagingStoreImplTest extends UnitTestCase
       storeImpl.startPaging();
 
       assertNotNull(storeImpl.getCurrentPage());
+      
+      storeImpl.stop();
    }
 
    public void testOrderOnPaging() throws Throwable
