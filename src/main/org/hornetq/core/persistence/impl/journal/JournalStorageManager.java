@@ -2954,7 +2954,7 @@ public class JournalStorageManager implements StorageManager
 
       public String toString()
       {
-         return "ACK;" + refEncoding;
+         return "AddRef;" + refEncoding;
       }
 
    }
@@ -2970,7 +2970,7 @@ public class JournalStorageManager implements StorageManager
 
       public String toString()
       {
-         return "AddRef;" + refEncoding;
+         return "ACK;" + refEncoding;
       }
 
    }
