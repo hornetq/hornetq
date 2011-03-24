@@ -38,6 +38,24 @@ import org.hornetq.utils.LinkedListIterator;
 public class FakeQueue implements Queue
 {
    
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#isInternalQueue()
+    */
+   public boolean isInternalQueue()
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#setInternalQueue(boolean)
+    */
+   public void setInternalQueue(boolean internalQueue)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    PageSubscription subs;
    
    public boolean isDirectDeliver()

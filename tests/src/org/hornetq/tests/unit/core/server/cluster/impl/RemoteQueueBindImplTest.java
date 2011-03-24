@@ -102,6 +102,24 @@ public class RemoteQueueBindImplTest extends UnitTestCase
    {
 
       /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#isInternalQueue()
+       */
+      public boolean isInternalQueue()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#setInternalQueue(boolean)
+       */
+      public void setInternalQueue(boolean internalQueue)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
        * @see org.hornetq.core.server.Bindable#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
        */
       public void route(ServerMessage message, RoutingContext context) throws Exception
