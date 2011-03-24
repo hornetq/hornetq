@@ -166,4 +166,12 @@ public interface Queue extends Bindable
    boolean isDirectDeliver();
 
    SimpleString getAddress();
+   
+   /**
+    * We can't send stuff to DLQ on queues used on clustered-bridge-communication
+    * @return
+    */
+   boolean isInternalQueue();
+   
+   void setInternalQueue(boolean internalQueue);
 }

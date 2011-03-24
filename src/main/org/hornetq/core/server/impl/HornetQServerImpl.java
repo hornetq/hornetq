@@ -715,18 +715,44 @@ public class HornetQServerImpl implements HornetQServer
             HornetQServerImpl.log.debug("Waiting for " + task);
          }
 
-         threadPool.shutdown();
-
-         scheduledPool = null;
-
          if (memoryManager != null)
          {
             memoryManager.stop();
          }
+         
+         threadPool.shutdown();
+         
+         scheduledPool.shutdown();
 
-         addressSettingsRepository.clear();
+         try
+         {
+            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+         threadPool = null;
 
-         securityRepository.clear();
+         
+         try
+         {
+            if (!scheduledPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               HornetQServerImpl.log.warn("Timed out waiting for scheduled pool to terminate");
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+
+         threadPool = null;
+         
+         scheduledPool = null;
 
          pagingManager = null;
          securityStore = null;
@@ -764,19 +790,7 @@ public class HornetQServerImpl implements HornetQServer
          Logger.reset();
       }
 
-      try
-      {
-         if (!threadPool.awaitTermination(5000, TimeUnit.MILLISECONDS))
-         {
-            HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
-         }
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
-      threadPool = null;
-   }
+    }
 
    // HornetQServer implementation
    // -----------------------------------------------------------

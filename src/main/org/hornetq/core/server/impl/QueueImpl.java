@@ -32,7 +32,6 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.persistence.StorageManager;
@@ -153,6 +152,8 @@ public class QueueImpl implements Queue
    private volatile int consumerWithFilterCount;
 
    private final Runnable concurrentPoller = new ConcurrentPoller();
+   
+   private boolean internalQueue;
 
    private volatile boolean checkDirect;
 
@@ -1308,6 +1309,22 @@ public class QueueImpl implements Queue
       return directDeliver;
    }
 
+   /**
+    * @return the internalQueue
+    */
+   public boolean isInternalQueue()
+   {
+      return internalQueue;
+   }
+
+   /**
+    * @param internalQueue the internalQueue to set
+    */
+   public void setInternalQueue(boolean internalQueue)
+   {
+      this.internalQueue = internalQueue;
+   }
+
    // Public
    // -----------------------------------------------------------------------------
 
@@ -1582,9 +1599,15 @@ public class QueueImpl implements Queue
    {
       ServerMessage message = reference.getMessage();
 
+      if (internalQueue)
+      {
+         // no DLQ check on internal queues
+         return true;
+      }
+
       // TODO: DeliveryCount on paging
       
-      if (message.isDurable() && durable && !reference.isPaged())
+      if (!internalQueue && message.isDurable() && durable && !reference.isPaged())
       {
          storageManager.updateDeliveryCount(reference);
       }
