@@ -330,6 +330,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       System.out.println("=======================================================================");
 
+      for (HornetQServer hornetQServer : servers)
+      {
+         if (hornetQServer != null)
+         {
+            System.out.println(clusterDescription(hornetQServer));
+         }
+      }
       throw new IllegalStateException(msg);
    }
 
@@ -1793,7 +1800,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
          ClusterTestBase.log.info("started server " + servers[node]);
 
          ClusterTestBase.log.info("started server " + node);
-
+         /*
+         * we need to wait a lil while between server start up to allow the server to communicate in some order.
+         * This is to avoid split brain on startup
+         * */
+         Thread.sleep(500);
       }
       for (int node : nodes)
       {
