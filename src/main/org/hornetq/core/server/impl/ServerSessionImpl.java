@@ -993,7 +993,6 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             {
                try
                {
-                  System.out.println("Finishing close");
                   doClose(failed);
                }
                catch (Exception e)
