@@ -42,6 +42,7 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
@@ -146,6 +147,8 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    private volatile int timeoutSeconds;
    
    private Map<String, String> metaData;
+   
+   private OperationContext sessionContext;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
    private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString,  Pair<UUID, AtomicLong>>();
@@ -223,6 +226,22 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
+   /**
+    * @return the sessionContext
+    */
+   public OperationContext getSessionContext()
+   {
+      return sessionContext;
+   }
+
+   /**
+    * @param sessionContext the sessionContext to set
+    */
+   public void setSessionContext(OperationContext sessionContext)
+   {
+      this.sessionContext = sessionContext;
+   }
+
 
    public String getUsername()
    {

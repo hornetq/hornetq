@@ -23,6 +23,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.utils.json.JSONArray;
 
 /**
@@ -136,4 +137,10 @@ public interface ServerSession
    String getLastSentMessageID(String address);
 
    long getCreationTime();
+   
+
+   OperationContext getSessionContext();
+   
+   void setSessionContext(OperationContext context);
+
 }

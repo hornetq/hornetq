@@ -129,9 +129,9 @@ public class HornetQPacketHandler implements ChannelHandler
          Version version = server.getVersion();
          int[] compatibleList = version.getCompatibleVersionList();
          boolean isCompatibleClient = false;
-         for(int i=0; i<compatibleList.length; i++)
+         for (int i = 0; i < compatibleList.length; i++)
          {
-            if(compatibleList[i] == request.getVersion())
+            if (compatibleList[i] == request.getVersion())
             {
                isCompatibleClient = true;
                break;
@@ -165,22 +165,23 @@ public class HornetQPacketHandler implements ChannelHandler
 
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
-         ServerSession session = server.createSession(request.getName(),                                                      
+         ServerSession session = server.createSession(request.getName(),
                                                       request.getUsername(),
                                                       request.getPassword(),
-                                                      request.getMinLargeMessageSize(),                                                    
+                                                      request.getMinLargeMessageSize(),
                                                       connection,
                                                       request.isAutoCommitSends(),
                                                       request.isAutoCommitAcks(),
                                                       request.isPreAcknowledge(),
                                                       request.isXA(),
                                                       request.getDefaultAddress(),
-                                                      new CoreSessionCallback(request.getName(), protocolManager, channel));
+                                                      new CoreSessionCallback(request.getName(),
+                                                                              protocolManager,
+                                                                              channel));
+
+         session.setSessionContext(server.getStorageManager().newContext(server.getExecutorFactory().getExecutor()));
 
          ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session,
-                                                                             server.getStorageManager()
-                                                                                   .newContext(server.getExecutorFactory()
-                                                                                                     .getExecutor()),
                                                                              server.getStorageManager(),
                                                                              channel);
          channel.setHandler(handler);
@@ -201,11 +202,11 @@ public class HornetQPacketHandler implements ChannelHandler
          }
       }
       catch (Exception e)
-      {  
+      {
          log.error("Failed to create session ", e);
-         
+
          HornetQPacketHandler.log.error("Failed to create session", e);
-         
+
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
 
@@ -225,22 +226,22 @@ public class HornetQPacketHandler implements ChannelHandler
    private void handleReattachSession(final ReattachSessionMessage request)
    {
       Packet response = null;
-      
+
       try
       {
-   
+
          if (!server.isStarted())
          {
             response = new ReattachSessionResponseMessage(-1, false);
          }
-   
+
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());
-         
+
          if (!server.checkActivate())
          {
             response = new ReattachSessionResponseMessage(-1, false);
          }
-   
+
          if (sessionHandler == null)
          {
             response = new ReattachSessionResponseMessage(-1, false);
@@ -252,9 +253,9 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
-   
+
                sessionHandler.close();
-   
+
                response = new ReattachSessionResponseMessage(-1, false);
             }
             else
@@ -262,7 +263,7 @@ public class HornetQPacketHandler implements ChannelHandler
                // Reconnect the channel to the new connection
                int serverLastConfirmedCommandID = sessionHandler.transferConnection(connection,
                                                                                     request.getLastConfirmedCommandID());
-   
+
                response = new ReattachSessionResponseMessage(serverLastConfirmedCommandID, true);
             }
          }
@@ -270,7 +271,7 @@ public class HornetQPacketHandler implements ChannelHandler
       catch (Exception e)
       {
          HornetQPacketHandler.log.error("Failed to reattach session", e);
-         
+
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
 
