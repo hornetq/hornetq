@@ -953,24 +953,35 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
    public void close(final boolean failed)
    {
-      storageManager.afterCompleteOperations(new IOAsyncTask()
+      OperationContext formerCtx = storageManager.getContext();
+      
+      try
       {
-         public void onError(int errorCode, String errorMessage)
-         {
-         }
+         storageManager.setContext(sessionContext);
 
-         public void done()
+         storageManager.afterCompleteOperations(new IOAsyncTask()
          {
-            try
+            public void onError(int errorCode, String errorMessage)
             {
-               doClose(failed);
             }
-            catch (Exception e)
+   
+            public void done()
             {
-               log.error("Failed to close session", e);
+               try
+               {
+                  doClose(failed);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to close session", e);
+               }
             }
-         }
-      });
+         });
+      }
+      finally
+      {
+         storageManager.setContext(formerCtx);
+      }
    }
 
    public void closeConsumer(final long consumerID) throws Exception

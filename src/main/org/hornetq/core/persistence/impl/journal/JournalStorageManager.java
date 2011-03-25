@@ -744,15 +744,21 @@ public class JournalStorageManager implements StorageManager
 
    public void updateDeliveryCount(final MessageReference ref) throws Exception
    {
-      DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getID(),
-                                                                               ref.getDeliveryCount());
-
-      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
-                                        JournalStorageManager.UPDATE_DELIVERY_COUNT,
-                                        updateInfo,
-
-                                        syncNonTransactional,
-                                        getContext(syncNonTransactional));
+      // no need to store if it's the same value
+      // otherwise the journal will get OME in case of lots of redeliveries
+      if (ref.getDeliveryCount() != ref.getPersistedCount())
+      {
+         ref.setPersistedCount(ref.getDeliveryCount());
+         DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getID(),
+                                                                                  ref.getDeliveryCount());
+   
+         messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
+                                           JournalStorageManager.UPDATE_DELIVERY_COUNT,
+                                           updateInfo,
+   
+                                           syncNonTransactional,
+                                           getContext(syncNonTransactional));
+      }
 
    }
 

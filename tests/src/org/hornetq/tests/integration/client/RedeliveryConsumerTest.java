@@ -13,13 +13,27 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.journal.LoaderCallback;
+import org.hornetq.core.journal.PreparedTransactionInfo;
+import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -223,6 +237,111 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       session.close();
    }
 
+
+   public void testInfiniteDedeliveryMessageOnPersistent() throws Exception
+   {
+      internaltestInfiniteDedeliveryMessageOnPersistent(false);
+   }
+   
+   private void internaltestInfiniteDedeliveryMessageOnPersistent(final boolean strict) throws Exception
+   {
+      setUp(strict);
+      ClientSession session = factory.createSession(false, false, false);
+
+      RedeliveryConsumerTest.log.info("created");
+
+      ClientProducer prod = session.createProducer(ADDRESS);
+      prod.send(createTextMessage(session, "Hello"));
+      session.commit();
+      session.close();
+
+      
+      int expectedCount = 1;
+      for (int i = 0 ; i < 700; i++)
+      {
+         session = factory.createSession(false, false, false);
+         session.start();
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         assertEquals(expectedCount, msg.getDeliveryCount());
+
+         if (i % 100 == 0)
+         {
+            expectedCount++;
+            msg.acknowledge();
+            session.rollback();
+         }
+         session.close();
+      }
+
+      factory.close();
+      server.stop();
+      
+      setUp(false);
+      
+      for (int i = 0 ; i < 700; i++)
+      {
+         session = factory.createSession(false, false, false);
+         session.start();
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         assertEquals(expectedCount, msg.getDeliveryCount());
+         session.close();
+      }
+
+      server.stop();
+
+      
+      JournalImpl journal = new JournalImpl(server.getConfiguration().getJournalFileSize(), 
+                                            2, 
+                                            0,
+                                            0, 
+                                            new NIOSequentialFileFactory(server.getConfiguration().getJournalDirectory()),
+                                            "hornetq-data",
+                                            "hq",
+                                            1);
+      
+      
+      final AtomicInteger updates = new AtomicInteger();
+      
+      journal.start();
+      journal.load(new LoaderCallback()
+      {
+         
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+         }
+         
+         public void updateRecord(RecordInfo info)
+         {
+            if (info.userRecordType == JournalStorageManager.UPDATE_DELIVERY_COUNT)
+            {
+               updates.incrementAndGet();
+            }
+         }
+         
+         public void deleteRecord(long id)
+         {
+         }
+         
+         public void addRecord(RecordInfo info)
+         {
+         }
+         
+         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+         {
+         }
+      });
+      
+      journal.stop();
+      
+      
+      assertEquals(7, updates.get());
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -244,7 +363,14 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       factory = locator.createSessionFactory();
 
       ClientSession session = factory.createSession(false, false, false);
-      session.createQueue(ADDRESS, ADDRESS, true);
+      try
+      {
+         session.createQueue(ADDRESS, ADDRESS, true);
+      }
+      catch (HornetQException expected)
+      {
+         // in case of restart
+      }
 
       session.close();
    }

@@ -37,9 +37,11 @@ public class PagedReferenceImpl implements PagedReference
    private final PagePosition position;
 
    private WeakReference<PagedMessage> message;
-   
+
    private Long deliveryTime = null;
-   
+
+   private int persistedCount;
+
    private final PageSubscription subscription;
 
    public ServerMessage getMessage()
@@ -50,10 +52,10 @@ public class PagedReferenceImpl implements PagedReference
    public synchronized PagedMessage getPagedMessage()
    {
       PagedMessage returnMessage = message != null ? message.get() : null;
-      
+
       // We only keep a few references on the Queue from paging...
       // Besides those references are SoftReferenced on page cache...
-      // So, this will unlikely be null, 
+      // So, this will unlikely be null,
       // unless the Queue has stalled for some time after paging
       if (returnMessage == null)
       {
@@ -69,7 +71,9 @@ public class PagedReferenceImpl implements PagedReference
       return position;
    }
 
-   public PagedReferenceImpl(final PagePosition position, final PagedMessage message, final PageSubscription subscription)
+   public PagedReferenceImpl(final PagePosition position,
+                             final PagedMessage message,
+                             final PageSubscription subscription)
    {
       this.position = position;
       this.message = new WeakReference<PagedMessage>(message);
@@ -79,6 +83,16 @@ public class PagedReferenceImpl implements PagedReference
    public boolean isPaged()
    {
       return true;
+   }
+   
+   public void setPersistedCount(int count)
+   {
+      this.persistedCount = count;
+   }
+   
+   public int getPersistedCount()
+   {
+      return persistedCount;
    }
 
    /* (non-Javadoc)

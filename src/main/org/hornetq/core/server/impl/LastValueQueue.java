@@ -230,6 +230,16 @@ public class LastValueQueue extends QueueImpl
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
       
+      public void setPersistedCount(int count)
+      {
+         ref.setPersistedCount(count);
+      }
+      
+      public int getPersistedCount()
+      {
+         return ref.getPersistedCount();
+      }
+      
       public boolean isPaged()
       {
          return false;
