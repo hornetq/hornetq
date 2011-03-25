@@ -206,9 +206,19 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
+         public int moveMessages(final String filter, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName, rejectDuplicates);
+         }
+
          public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
          {
             return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
+         }
+
+         public boolean moveMessage(final long messageID, final String otherQueueName, final boolean rejectDuplicates) throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName, rejectDuplicates);
          }
 
          public int removeMessages(final String filter) throws Exception
@@ -265,7 +275,6 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          {
             return (String)proxy.invokeOperation("listConsumersAsJSON");
          }
-
       };
    }
 

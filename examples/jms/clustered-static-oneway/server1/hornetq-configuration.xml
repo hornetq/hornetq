@@ -45,7 +45,7 @@
          <retry-interval>500</retry-interval>
          <use-duplicate-detection>true</use-duplicate-detection>
          <forward-when-no-consumers>true</forward-when-no-consumers>
-         <max-hops>1</max-hops>
+         <max-hops>2</max-hops>
          <static-connectors allow-direct-connections-only="true">
             <connector-ref>server2-connector</connector-ref>
          </static-connectors>

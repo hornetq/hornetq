@@ -20,14 +20,19 @@ import javax.transaction.xa.XAResource;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 
 /**
  * 
  * A XAResourceRecovery instance that can be used to recover any JMS provider.
+ *
+ * In reality only recover,rollback and commit will be called but we still need to
+ * be implement all methods just in case.
  * 
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version <tt>$Revision: 1.1 $</tt>
  *
  * $Id$
@@ -58,13 +63,23 @@ public class HornetQXAResourceRecovery implements XAResourceRecovery
          HornetQXAResourceRecovery.log.trace(this + " intialise: " + config);
       }
 
-      ConfigParser parser = new ConfigParser(config);
-      String connectorFactoryClassName = parser.getConnectorFactoryClassName();
-      Map<String, Object> connectorParams = parser.getConnectorParameters();
-      String username = parser.getUsername();
-      String password = parser.getPassword();
+      String[] configs = config.split(";");
+      XARecoveryConfig[] xaRecoveryConfigs = new XARecoveryConfig[configs.length];
+      for (int i = 0, configsLength = configs.length; i < configsLength; i++)
+      {
+         String s = configs[i];
+         ConfigParser parser = new ConfigParser(s);
+         String connectorFactoryClassName = parser.getConnectorFactoryClassName();
+         Map<String, Object> connectorParams = parser.getConnectorParameters();
+         String username = parser.getUsername();
+         String password = parser.getPassword();
+         TransportConfiguration transportConfiguration = new TransportConfiguration(connectorFactoryClassName, connectorParams);
+         xaRecoveryConfigs[i] = new XARecoveryConfig(transportConfiguration, username, password);
+      }
 
-      res = new HornetQXAResourceWrapper(connectorFactoryClassName, connectorParams, username, password);
+
+
+      res = new HornetQXAResourceWrapper(xaRecoveryConfigs);
 
       if (HornetQXAResourceRecovery.log.isTraceEnabled())
       {

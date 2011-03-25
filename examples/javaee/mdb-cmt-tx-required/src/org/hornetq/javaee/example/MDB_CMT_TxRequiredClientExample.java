@@ -48,14 +48,18 @@ public class MDB_CMT_TxRequiredClientExample
 
          // Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
+         TextMessage message = null;
 
-         // Step 7. Create a Text Message
-         TextMessage message = session.createTextMessage("This is a text message");
+         for (int i = 0; i < 100; i++)
+         {
+// Step 7. Create a Text Message
+            message = session.createTextMessage("This is a text message");
 
-         System.out.println("Sent message: " + message.getText());
-
+            System.out.println("Sent message: " + message.getText());
          // Step 8. Send the Message
          producer.send(message);
+         }
+
 
          // Step 9,10 and 11 in MDBExample
       }

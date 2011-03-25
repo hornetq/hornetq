@@ -34,7 +34,7 @@
    </target>
      
    <target name="delete-files" depends="clean">
-      <delete file="./server1/KILL_ME"/>           
+      <delete file="./server0/KILL_ME"/>
    </target>
 
 </project>

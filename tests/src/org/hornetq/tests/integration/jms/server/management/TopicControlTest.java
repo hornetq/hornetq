@@ -18,7 +18,9 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 import javax.jms.TopicSubscriber;
 
 import junit.framework.Assert;
@@ -28,7 +30,6 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.SubscriptionInfo;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -298,29 +299,44 @@ public class TopicControlTest extends ManagementTestBase
    public void testDropAllSubscriptions() throws Exception
    {
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      TopicSubscriber durableSubscriber_1 = JMSUtil.createDurableSubscriber(connection_1,
-                                                                            topic,
-                                                                            clientID,
-                                                                            subscriptionName);
+      connection_1.setClientID(clientID);
+      Session sess1 = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      TopicSubscriber durableSubscriber_1 = sess1.createDurableSubscriber(topic, subscriptionName);
+
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      TopicSubscriber durableSubscriber_2 = JMSUtil.createDurableSubscriber(connection_2,
-                                                                            topic,
-                                                                            clientID,
-                                                                            subscriptionName + "2");
+      connection_2.setClientID(clientID + "2");
+      Session sess2 = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      TopicSubscriber durableSubscriber_2 = sess2.createDurableSubscriber(topic, subscriptionName + "2");
+      
+      connection_1.start();
+      connection_2.start();
+
+      Session sess = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      MessageProducer prod = sess.createProducer(topic);
+      
+      TextMessage msg1 = sess.createTextMessage("tst1");
+      prod.send(msg1);
+      
+      assertNotNull(durableSubscriber_1.receive(5000));
+      assertNotNull(durableSubscriber_2.receive(5000));
+      
+      connection_1.close();
+      connection_2.close();
 
       TopicControl topicControl = createManagementControl();
-      Assert.assertEquals(2, topicControl.getSubscriptionCount());
-
-      durableSubscriber_1.close();
-      durableSubscriber_2.close();
 
       Assert.assertEquals(2, topicControl.getSubscriptionCount());
       topicControl.dropAllSubscriptions();
 
       Assert.assertEquals(0, topicControl.getSubscriptionCount());
 
-      connection_1.close();
-      connection_2.close();
+      connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection_1.setClientID(clientID);
+      sess = connection_1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      prod = sess.createProducer(topic);
+      TextMessage msg2 = sess.createTextMessage("tst2");
+      prod.send(msg2);
+      
    }
 
    public void testRemoveAllMessages() throws Exception

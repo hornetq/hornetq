@@ -87,4 +87,7 @@ public interface ClientSessionInternal extends ClientSession
    void setAddress(Message message, SimpleString address);
    
    void setPacketSize(int packetSize);
+
+   void resetIfNeeded() throws HornetQException;
+
 }

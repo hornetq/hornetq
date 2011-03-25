@@ -29,6 +29,8 @@ public interface PageTransactionInfo extends EncodingSupport
    boolean isCommit();
 
    boolean isRollback();
+   
+   void setCommitted(boolean committed);
 
    void commit();
 
@@ -43,6 +45,8 @@ public interface PageTransactionInfo extends EncodingSupport
    void store(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
    
    void storeUpdate(StorageManager storageManager, PagingManager pagingManager, Transaction tx) throws Exception;
+   
+   void reloadUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int increment) throws Exception;
    
    void storeUpdate(StorageManager storageManager, PagingManager pagingManager) throws Exception;
 
@@ -63,4 +67,5 @@ public interface PageTransactionInfo extends EncodingSupport
     * @return true if the message will be delivered later, false if it should be delivered right away
     */
    boolean deliverAfterCommit(PageSubscription cursor, PagePosition cursorPos);
+
 }

@@ -168,6 +168,8 @@ public class JMSReconnectTest extends UnitTestCase
 
       conn.close();
 
+
+
       Assert.assertNotNull(listener.e);
 
       Assert.assertTrue(me == listener.e.getCause());

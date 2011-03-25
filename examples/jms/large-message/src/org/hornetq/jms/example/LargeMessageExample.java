@@ -150,7 +150,7 @@ public class LargeMessageExample extends HornetQExample
          // an empty body.
          BytesMessage messageReceived = (BytesMessage)messageConsumer.receive(120000);
 
-         System.out.println("Received message with: " + messageReceived.getBodyLength() +
+         System.out.println("Received message with: " + messageReceived.getLongProperty("_HQ_LARGE_SIZE") +
                             " bytes. Now streaming to file on disk.");
 
          // Step 13. We set an OutputStream on the message. This causes the message body to be written to the

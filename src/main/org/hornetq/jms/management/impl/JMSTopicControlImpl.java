@@ -267,7 +267,12 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
       {
-         serverControl.destroyQueue(queue);
+         // Drop all subscription shouldn't delete the dummy queue used to identify if the topic exists on the core queues.
+         // we will just ignore this queue
+         if (!queue.equals(managedTopic.getAddress()))
+         {
+            serverControl.destroyQueue(queue);
+         }
       }
    }
 

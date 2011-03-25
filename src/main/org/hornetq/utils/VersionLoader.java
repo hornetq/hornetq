@@ -15,9 +15,12 @@ package org.hornetq.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
 import org.hornetq.core.version.impl.VersionImpl;
@@ -35,19 +38,35 @@ public class VersionLoader
    private static final Logger log = Logger.getLogger(VersionLoader.class);
 
    public static final String VERSION_PROP_FILE_KEY = "hornetq.version.property.filename";
-   
+
    public static final String DEFAULT_PROP_FILE_NAME = "hornetq-version.properties";
 
    private static String PROP_FILE_NAME;
-   
+
    private static Version version;
 
    static
    {
       try
       {
-         PROP_FILE_NAME = System.getProperty(VersionLoader.VERSION_PROP_FILE_KEY); 
-         if(PROP_FILE_NAME == null)
+
+         try
+         {
+            PROP_FILE_NAME = AccessController.doPrivileged(new PrivilegedAction<String>()
+            {
+               public String run()
+               {
+                  return System.getProperty(VersionLoader.VERSION_PROP_FILE_KEY);
+               }
+            });
+         }
+         catch (Throwable e)
+         {
+            log.warn(e.getMessage(), e);
+            PROP_FILE_NAME = null;
+         }
+
+         if (PROP_FILE_NAME == null)
          {
             PROP_FILE_NAME = VersionLoader.DEFAULT_PROP_FILE_NAME;
          }
@@ -93,7 +112,7 @@ public class VersionLoader
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
             String nettyVersion = versionProps.getProperty("hornetq.netty.version");
             int[] compatibleVersionArray = parseCompatibleVersionList(versionProps.getProperty("hornetq.version.compatibleVersionList"));
-            
+
             return new VersionImpl(versionName,
                                    majorVersion,
                                    minorVersion,
@@ -126,39 +145,39 @@ public class VersionLoader
    private static int[] parseCompatibleVersionList(String property) throws IOException
    {
       int[] verArray = new int[0];
-      StringTokenizer tokenizer = new StringTokenizer(property,",");
-      while(tokenizer.hasMoreTokens())
+      StringTokenizer tokenizer = new StringTokenizer(property, ",");
+      while (tokenizer.hasMoreTokens())
       {
          int from = -1, to = -1;
          String token = tokenizer.nextToken();
-         
+
          int cursor = 0;
          char firstChar = token.charAt(0);
-         if(firstChar == '-')
+         if (firstChar == '-')
          {
             // "-n" pattern
             from = 0;
             cursor++;
-            for(;cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
-            if(cursor > 1)
+            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
+            if (cursor > 1)
             {
                to = Integer.parseInt(token.substring(1, cursor));
             }
          }
-         else if(Character.isDigit(firstChar))
+         else if (Character.isDigit(firstChar))
          {
-            for(;cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
+            for (; cursor < token.length() && Character.isDigit(token.charAt(cursor)); cursor++);
             from = Integer.parseInt(token.substring(0, cursor));
-            
-            if(cursor == token.length())
+
+            if (cursor == token.length())
             {
                // just "n" pattern
                to = from;
             }
-            else if(token.charAt(cursor)== '-')
+            else if (token.charAt(cursor) == '-')
             {
                cursor++;
-               if(cursor == token.length())
+               if (cursor == token.length())
                {
                   // "n-" pattern
                   to = Integer.MAX_VALUE;
@@ -171,19 +190,19 @@ public class VersionLoader
             }
          }
 
-         if(from != -1 && to != -1)
+         if (from != -1 && to != -1)
          {
             // merge version array
-            int[] newArray = new int[verArray.length + to-from+1];
+            int[] newArray = new int[verArray.length + to - from + 1];
             System.arraycopy(verArray, 0, newArray, 0, verArray.length);
-            for(int i=0; i<to-from+1; i++)
+            for (int i = 0; i < to - from + 1; i++)
             {
-               newArray[verArray.length+i] = from + i;
+               newArray[verArray.length + i] = from + i;
             }
             verArray = newArray;
          }
       }
-      
+
       return verArray;
    }
 }

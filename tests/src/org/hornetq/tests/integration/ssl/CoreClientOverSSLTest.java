@@ -140,6 +140,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
       ConfigurationImpl config = createBasicConfig();
       config.setSecurityEnabled(false);
       Map<String, Object> params = new HashMap<String, Object>();

@@ -172,6 +172,25 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
     */
    public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx) throws Exception
    {
+      internalUpdatePageManager(storageManager, pagingManager, tx, 1);
+   }
+   
+   public void reloadUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int increment) throws Exception
+   {
+      UpdatePageTXOperation updt = internalUpdatePageManager(storageManager, pagingManager, tx, increment);
+      updt.setStored();
+   }
+
+   /**
+    * @param storageManager
+    * @param pagingManager
+    * @param tx
+    */
+   protected UpdatePageTXOperation internalUpdatePageManager(final StorageManager storageManager,
+                                            final PagingManager pagingManager,
+                                            final Transaction tx,
+                                            final int increment)
+   {
       UpdatePageTXOperation pgtxUpdate = (UpdatePageTXOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION_UPDATE);
       
       if (pgtxUpdate == null)
@@ -183,7 +202,9 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       
       tx.setContainsPersistent();
       
-      pgtxUpdate.addUpdate(this);
+      pgtxUpdate.addUpdate(this, increment);
+      
+      return pgtxUpdate;
    }
    
    public void storeUpdate(final StorageManager storageManager, final PagingManager pagingManager) throws Exception
@@ -213,6 +234,11 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       return committed;
    }
+   
+   public void setCommitted(final boolean committed)
+   {
+      this.committed = committed;
+   }
 
    public boolean isRollback()
    {
@@ -228,8 +254,9 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       {
          for (Pair<PageSubscription, PagePosition> pos : lateDeliveries)
          {
-            pos.a.positionIgnored(pos.b);
+            pos.a.lateDeliveryRollback(pos.b);
          }
+         lateDeliveries = null;
       }
    }
 
@@ -250,6 +277,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       if (committed && useRedelivery)
       {
+         cursor.addPendingDelivery(cursorPos);
          cursor.redeliver(cursorPos);
          return true;
       }
@@ -271,6 +299,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          {
             lateDeliveries = new LinkedList<Pair<PageSubscription, PagePosition>>();
          }
+         cursor.addPendingDelivery(cursorPos);
          lateDeliveries.add(new Pair<PageSubscription, PagePosition>(cursor, cursorPos));
          return true;
       }
@@ -301,7 +330,12 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          this.pagingManager = pagingManager;
       }
       
-      public void addUpdate(PageTransactionInfo info)
+      public void setStored()
+      {
+         stored = true;
+      }
+      
+      public void addUpdate(final PageTransactionInfo info, final int increment)
       {
          AtomicInteger counter = countsToUpdate.get(info);
          
@@ -311,7 +345,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
             countsToUpdate.put(info, counter);
          }
          
-         counter.incrementAndGet();
+         counter.addAndGet(increment);
       }
       
       public void beforePrepare(Transaction tx) throws Exception

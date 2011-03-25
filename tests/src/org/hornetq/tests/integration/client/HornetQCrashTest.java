@@ -103,8 +103,20 @@ public class HornetQCrashTest extends UnitTestCase
             {
                HornetQCrashTest.log.info("Stopping server");
 
-               // Stop the server when a message arrives, to simulate a crash
-               server.stop();
+               new Thread()
+               {
+                  public void run()
+                  {
+                     try
+                     {
+                        server.stop();
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                     }
+                  }
+               }.start();
             }
             catch (Exception e)
             {

@@ -19,15 +19,16 @@ import javax.jms.MessageListener;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
@@ -55,7 +56,7 @@ public class HornetQMessageHandler implements MessageHandler
    /**
     * The session
     */
-   private final ClientSession session;
+   private final ClientSessionInternal session;
 
    private ClientConsumer consumer;
 
@@ -69,6 +70,8 @@ public class HornetQMessageHandler implements MessageHandler
    private boolean useLocalTx;
    
    private boolean transacted;
+   
+   private boolean useXA = false;
 
    private final int sessionNr;
 
@@ -76,7 +79,7 @@ public class HornetQMessageHandler implements MessageHandler
 
    public HornetQMessageHandler(final HornetQActivation activation,
                                 final TransactionManager tm,
-                                final ClientSession session,
+                                final ClientSessionInternal session,
                                 final int sessionNr)
    {
       this.activation = activation;
@@ -180,10 +183,12 @@ public class HornetQMessageHandler implements MessageHandler
       if (activation.isDeliveryTransacted() && !activation.getActivationSpec().isUseLocalTx())
       {
          endpoint = endpointFactory.createEndpoint(session);
+         useXA = true;
       }
       else
       {
          endpoint = endpointFactory.createEndpoint(null);
+         useXA = false;
       }
       consumer.setMessageHandler(this);
    }
@@ -245,6 +250,8 @@ public class HornetQMessageHandler implements MessageHandler
 
    public void onMessage(final ClientMessage message)
    {
+      HornetQMessageHandler.log.info("onMessage(" + message + ")");
+
       if (HornetQMessageHandler.trace)
       {
          HornetQMessageHandler.log.trace("onMessage(" + message + ")");
@@ -297,6 +304,35 @@ public class HornetQMessageHandler implements MessageHandler
          // we need to call before/afterDelivery as a pair
          if (beforeDelivery)
          {
+            if (useXA && tm != null)
+            {
+               // This is the job for the container,
+               // however if the container throws an exception because of some other errors,
+               // there are situations where the container is not setting the rollback only
+               // this is to avoid a scenario where afterDelivery would kick in
+               try
+               {
+                  Transaction tx = tm.getTransaction();
+                  if (tx != null)
+                  {
+                     tx.setRollbackOnly();
+                  }
+               }
+               catch (Exception e1)
+               {
+                  log.warn("unnable to clear the transaction", e1);
+                  try
+                  {
+                     session.rollback();
+                  }
+                  catch (HornetQException e2)
+                  {
+                     log.warn("Unable to rollback", e2);
+                     return;
+                  }
+               }
+            }
+
             try
             {
                endpoint.afterDelivery();
@@ -316,6 +352,17 @@ public class HornetQMessageHandler implements MessageHandler
             {
                HornetQMessageHandler.log.warn("Unable to roll local transaction back");
             }
+         }
+      }
+      finally
+      {
+         try
+         {
+            session.resetIfNeeded();
+         }
+         catch (HornetQException e)
+         {
+            log.warn("unable to reset session after failure");
          }
       }
 

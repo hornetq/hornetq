@@ -50,7 +50,7 @@ public class DeliveryOrderTest extends JMSTestCase
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
-         Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         Session sess2 = conn.createSession(true, Session.SESSION_TRANSACTED);
 
          MessageProducer prod = sess.createProducer(HornetQServerTestCase.queue1);
 
@@ -60,7 +60,7 @@ public class DeliveryOrderTest extends JMSTestCase
 
          final int NUM_MESSAGES = 1000;
 
-         MyListener listener = new MyListener(latch, NUM_MESSAGES);
+         MyListener listener = new MyListener(latch, sess2, NUM_MESSAGES);
 
          cons.setMessageListener(listener);
 
@@ -81,7 +81,7 @@ public class DeliveryOrderTest extends JMSTestCase
          // need extra commit for cases in which the last message index is not a multiple of 10
          sess.commit();
 
-         latch.await(20000, MILLISECONDS);
+         assertTrue(latch.await(20000, MILLISECONDS));
 
          if (listener.failed)
          {
@@ -109,11 +109,14 @@ public class DeliveryOrderTest extends JMSTestCase
       private volatile boolean failed;
 
       private String error;
+      
+      private final Session sess;
 
-      MyListener(final CountDownLatch latch, final int num)
+      MyListener(final CountDownLatch latch, final Session sess, final int num)
       {
          this.latch = latch;
          this.num = num;
+         this.sess = sess;
       }
 
       public void onMessage(final Message msg)
@@ -124,6 +127,9 @@ public class DeliveryOrderTest extends JMSTestCase
             return;
          }
 
+
+         System.out.println("Message " + msg);
+         
          try
          {
             TextMessage tm = (TextMessage)msg;
@@ -137,18 +143,16 @@ public class DeliveryOrderTest extends JMSTestCase
             }
 
             c++;
+            
+            if (c % 500 == 0)
+            {
+               sess.commit();
+            }
 
             if (c == num)
             {
+               sess.commit();
                latch.countDown();
-
-               try
-               {
-                  Thread.sleep(2000);
-               }
-               catch (Exception e)
-               {
-               }
             }
          }
          catch (JMSException e)

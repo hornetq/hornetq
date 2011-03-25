@@ -14,6 +14,7 @@
 package org.hornetq.core.paging.cursor;
 
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.LinkedListIterator;
@@ -30,6 +31,8 @@ public interface PageSubscription
 
    // Cursor query operations --------------------------------------
 
+   PagingStore getPagingStore();
+   
    // To be called before the server is down
    void stop();
 
@@ -84,9 +87,12 @@ public interface PageSubscription
 
    /**
     * To be called when the cursor decided to ignore a position.
+    * 
     * @param position
     */
    void positionIgnored(PagePosition position);
+   
+   void lateDeliveryRollback(PagePosition position);
 
    /**
     * To be used to avoid a redelivery of a prepared ACK after load
@@ -96,6 +102,8 @@ public interface PageSubscription
 
    void processReload() throws Exception;
 
+   void addPendingDelivery(final PagePosition position);
+   
    /**      
     * To be used on redeliveries
     * @param position

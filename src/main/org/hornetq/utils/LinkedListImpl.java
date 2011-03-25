@@ -41,7 +41,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
    private int size;
 
    // We store in an array rather than a Map for the best performance
-   private Iterator[] iters;
+   private volatile Iterator[] iters;
 
    private int numIters;
 
@@ -154,20 +154,20 @@ public class LinkedListImpl<E> implements LinkedList<E>
       return (Iterator[])Array.newInstance(Iterator.class, size);
    }
 
-   private void removeAfter(Node<E> after)
+   private void removeAfter(Node<E> node)
    {
-      Node<E> toRemove = after.next;
+      Node<E> toRemove = node.next;
 
-      after.next = toRemove.next;
+      node.next = toRemove.next;
 
       if (toRemove.next != null)
       {
-         toRemove.next.prev = after;
+         toRemove.next.prev = node;
       }
 
       if (toRemove == tail)
       {
-         tail = after;
+         tail = node;
       }
 
       size--;
@@ -182,15 +182,19 @@ public class LinkedListImpl<E> implements LinkedList<E>
       toRemove.next = toRemove.prev = null;
    }
 
-   private void nudgeIterators(Node<E> node)
+   private synchronized void nudgeIterators(Node<E> node)
    {
       for (int i = 0; i < numIters; i++)
       {        
-         iters[i].nudged(node);
+         Iterator iter = iters[i];
+         if (iter != null)
+         {
+            iter.nudged(node);
+         }
       }
    }
 
-   private void addIter(Iterator iter)
+   private synchronized void addIter(Iterator iter)
    {
       if (numIters == iters.length)
       {
@@ -202,7 +206,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       numIters++;
    }
 
-   private void resize(int newSize)
+   private synchronized void resize(int newSize)
    {
       Iterator[] newIters = createIteratorArray(newSize);
 
@@ -211,7 +215,7 @@ public class LinkedListImpl<E> implements LinkedList<E>
       iters = newIters;
    }
 
-   private void removeIter(Iterator iter)
+   private synchronized void removeIter(Iterator iter)
    {
       for (int i = 0; i < numIters; i++)
       {

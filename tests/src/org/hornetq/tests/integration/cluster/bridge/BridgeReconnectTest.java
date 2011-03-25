@@ -152,7 +152,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          server1.start();
          server0.start();
 
-
          BridgeReconnectTest.log.info("** failing connection");
          // Now we will simulate a failure of the bridge connection between server0 and server1
          server0.stop(true);
@@ -164,7 +163,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          ClientSessionFactory csf0 = locator.createSessionFactory(server2tc);
 
          ClientSession session0 = csf0.createSession(false, true, true);
-
 
          ClientProducer prod0 = session0.createProducer(testAddress);
 
@@ -210,12 +208,10 @@ public class BridgeReconnectTest extends BridgeTestBase
          service2.stop();
       }
 
-
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
       Assert.assertEquals(0, service2.getRemotingService().getConnections().size());
    }
-
 
    // Fail bridge and attempt failover a few times before succeeding
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
@@ -299,7 +295,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          // Now we will simulate a failure of the bridge connection between server0 and server1
          server0.stop(true);
 
-
          locator = HornetQClient.createServerLocatorWithHA(server2tc);
          locator.setReconnectAttempts(100);
          ClientSessionFactory csf0 = locator.createSessionFactory(server2tc);
@@ -313,7 +308,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          ClientConsumer cons2 = session2.createConsumer(queueName0);
 
          session2.start();
-
 
          final int numMessages = 10;
 
@@ -348,7 +342,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          server1.stop();
          service2.stop();
       }
-
 
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
@@ -479,7 +472,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          server0.stop();
          server1.stop();
       }
-
 
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
@@ -629,7 +621,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          server1.stop();
       }
 
-
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
@@ -773,7 +764,6 @@ public class BridgeReconnectTest extends BridgeTestBase
          server0.stop();
          server1.stop();
       }
-
 
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());

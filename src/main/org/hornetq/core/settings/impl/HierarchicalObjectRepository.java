@@ -69,12 +69,17 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void addMatch(final String match, final T value)
    {
-      cache.clear();
+      clearCache();
       Match.verify(match);
       Match<T> match1 = new Match<T>(match);
       match1.setValue(value);
       matches.put(match, match1);
       onChange();
+   }
+   
+   public int getCacheSize()
+   {
+      return cache.size();
    }
 
    /**
@@ -85,9 +90,10 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public T getMatch(final String match)
    {
-      if (cache.get(match) != null)
+      T cacheResult = cache.get(match);
+      if (cacheResult != null)
       {
-         return cache.get(match);
+         return cacheResult;
       }
       T actualMatch;
       HashMap<String, Match<T>> possibleMatches = getPossibleMatches(match);
@@ -153,7 +159,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    public void removeMatch(final String match)
    {
       matches.remove(match);
-      cache.clear();
+      clearCache();
       onChange();
    }
 
@@ -174,15 +180,20 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void setDefault(final T defaultValue)
    {
-      cache.clear();
+      clearCache();
       defaultmatch = defaultValue;
    }
 
    public void clear()
    {
-      cache.clear();
+      clearCache();
       listeners.clear();
       matches.clear();
+   }
+   
+   public void clearCache()
+   {
+      cache.clear();
    }
 
    private void onChange()

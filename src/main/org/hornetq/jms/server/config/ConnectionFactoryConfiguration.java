@@ -15,7 +15,6 @@ package org.hornetq.jms.server.config;
 
 import java.util.List;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.journal.EncodingSupport;
 
@@ -28,6 +27,9 @@ import org.hornetq.core.journal.EncodingSupport;
  */
 public interface ConnectionFactoryConfiguration extends EncodingSupport
 {
+   
+   boolean isPersisted();
+   
    String getName();
 
    String[] getBindings();

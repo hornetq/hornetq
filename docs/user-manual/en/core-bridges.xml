@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="core-bridges">
     <title>Core Bridges</title>
     <para>The function of a bridge is to consume messages from a source queue, and forward them to a
@@ -55,6 +60,7 @@
         org.hornetq.jms.example.HatColourChangeTransformer
     &lt;/transformer-class-name&gt;
     &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
+    &lt;ha&gt;true&lt;/ha&gt;
     &lt;retry-interval-multiplier&gt;1.0&lt;/retry-interval-multiplier&gt;
     &lt;reconnect-attempts&gt;-1&lt;/reconnect-attempts&gt;
     &lt;failover-on-server-shutdown&gt;false&lt;/failover-on-server-shutdown&gt;
@@ -110,6 +116,12 @@
                     method will be invoked with the message before it is forwarded. This gives you
                     the opportunity to transform the message's header or body before forwarding
                     it.</para>
+            </listitem>
+            <listitem>
+                <para><literal>ha</literal>. This optional parameter determines whether or not this
+                   bridge should support high availability. True means it will connect to any available
+                   server in a cluster and support failover. The default value is <literal
+                        >false</literal>.</para>
             </listitem>
             <listitem>
                 <para><literal>retry-interval</literal>. This optional parameter determines the

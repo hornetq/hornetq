@@ -16,10 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.group.GroupingHandler;
@@ -70,30 +72,45 @@ public class LocalGroupingHandler implements GroupingHandler
 
    public Response propose(final Proposal proposal) throws Exception
    {
-      if (proposal.getClusterName() == null)
+      OperationContext originalCtx = storageManager.getContext();
+      
+      try
       {
-         GroupBinding original = map.get(proposal.getGroupId());
-         return original == null ? null : new Response(proposal.getGroupId(), original.getClusterName());
-      }
-      GroupBinding groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
-      if (map.putIfAbsent(groupBinding.getGroupId(), groupBinding) == null)
-      {
-         groupBinding.setId(storageManager.generateUniqueID());
-         List<GroupBinding> newList = new ArrayList<GroupBinding>();
-         List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
-         if (oldList != null)
+         // the waitCompletion cannot be done inside an ordered executor or we would starve when the thread pool is full
+         storageManager.setContext(storageManager.newSingleThreadContext());
+      
+         if (proposal.getClusterName() == null)
          {
-            newList = oldList;
+            GroupBinding original = map.get(proposal.getGroupId());
+            return original == null ? null : new Response(proposal.getGroupId(), original.getClusterName());
          }
-         newList.add(groupBinding);
-         storageManager.addGrouping(groupBinding);
-         storageManager.waitOnOperations(timeout);
-         return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
+         GroupBinding groupBinding = new GroupBinding(proposal.getGroupId(), proposal.getClusterName());
+         if (map.putIfAbsent(groupBinding.getGroupId(), groupBinding) == null)
+         {
+            groupBinding.setId(storageManager.generateUniqueID());
+            List<GroupBinding> newList = new ArrayList<GroupBinding>();
+            List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
+            if (oldList != null)
+            {
+               newList = oldList;
+            }
+            newList.add(groupBinding);
+            storageManager.addGrouping(groupBinding);
+            if (!storageManager.waitOnOperations(timeout))
+            {
+               throw new HornetQException(HornetQException.IO_ERROR, "Timeout on waiting I/O completion");
+            }
+            return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
+         }
+         else
+         {
+            groupBinding = map.get(proposal.getGroupId());
+            return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
+         }
       }
-      else
+      finally
       {
-         groupBinding = map.get(proposal.getGroupId());
-         return new Response(groupBinding.getGroupId(), proposal.getClusterName(), groupBinding.getClusterName());
+         storageManager.setContext(originalCtx);
       }
    }
 

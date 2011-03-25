@@ -128,6 +128,11 @@ public class HornetQException extends Exception
     * server is starting and has not finish to be initialized)
     */
    public static final int SESSION_CREATION_REJECTED = 112;
+   
+   /**
+    * A DuplicateID was rejected.
+    */
+   public static final int DUPLICATE_ID_REJECTED = 113;
 
    
    // Native Error codes ----------------------------------------------

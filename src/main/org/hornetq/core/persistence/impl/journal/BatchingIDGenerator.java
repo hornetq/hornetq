@@ -135,9 +135,18 @@ public class BatchingIDGenerator implements IDGenerator
 
    // Inner classes -------------------------------------------------
 
-   private static final class IDCounterEncoding implements EncodingSupport
+   static final class IDCounterEncoding implements EncodingSupport
    {
       long id;
+
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "IDCounterEncoding [id=" + id + "]";
+      }
 
       IDCounterEncoding(final long id)
       {

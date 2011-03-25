@@ -49,7 +49,7 @@ public class PagedReferenceImpl implements PagedReference
 
    public synchronized PagedMessage getPagedMessage()
    {
-      PagedMessage returnMessage = message.get();
+      PagedMessage returnMessage = message != null ? message.get() : null;
       
       // We only keep a few references on the Queue from paging...
       // Besides those references are SoftReferenced on page cache...

@@ -201,16 +201,26 @@
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>
             <exclude name="core/perf/build.xml"/>
+            <exclude name="core/twitter-connector/build.xml"/>
             <exclude name="jms/applet/build.xml"/>
             <exclude name="jms/clustered-standalone/build.xml"/>
             <exclude name="jms/jms-bridge/build.xml"/>
             <exclude name="jms/large-message/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
             <exclude name="jms/stomp-websockets/build.xml"/>
+            <exclude name="jms/spring-integration/build.xml"/>
+            <exclude name="jms/stop-server-failover/build.xml"/>
          </fileset>
       </subant>
    	
-   	  <echo message="Do not forget to run jms/applet, jms/clustered-standalone, jms/stomp-websockets &amp; jms/jms-bridge examples manually!" />
+   	<echo message="Do not forget to run the following examples manually!" />
+      <echo message="twitter-connector"/>
+      <echo message="applet"/>
+      <echo message="jms-bridge"/>
+      <echo message="large-message"/>
+      <echo message="stomp-websockets"/>
+      <echo message="spring-integration"/>
+      <echo message="stop-server-failover"/>
    </target>
 
 </project>

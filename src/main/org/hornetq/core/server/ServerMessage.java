@@ -54,6 +54,9 @@ public interface ServerMessage extends MessageInternal, EncodingSupport
    void setPagingStore(PagingStore store);
 
    PagingStore getPagingStore();
+   
+   // Is there any _HQ_ property being used
+   boolean hasInternalProperties();
 
    boolean storeIsPaging();
 

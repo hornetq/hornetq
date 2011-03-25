@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="interoperability">
     <title>Interoperability</title>
     <section id="stomp">
@@ -30,11 +35,11 @@
             you must configure a <literal>NettyAcceptor</literal> with a <literal>protocol</literal>
             parameter set to <literal>stomp</literal>:</para>
 <programlisting>
-	&lt;acceptor name="stomp-acceptor">
-		&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
-		&lt;param key="protocol"  value="stomp"/>
-		&lt;param key="port"  value="61613"/>
-	&lt;/acceptor>
+&lt;acceptor name="stomp-acceptor">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol"  value="stomp"/>
+   &lt;param key="port"  value="61613"/>
+&lt;/acceptor>
 </programlisting>
           <para>With this configuration, HornetQ will accept Stomp connections on 
             the port <literal>61613</literal> (which is the default port of the Stomp brokers).</para>

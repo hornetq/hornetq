@@ -155,10 +155,17 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       private LinkedListIterator<T> lastIter;
       
       private int resetCount = lastReset;
+      
+      volatile boolean closed = false;
 
       PriorityLinkedListIterator()
       {
          index = levels.length - 1;
+      }
+      
+      protected void finalize()
+      {
+         close();
       }
 
       public void repeat()
@@ -173,13 +180,17 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       public void close()
       {
-         lastIter = null;
-
-         for (LinkedListIterator<T> iter : cachedIters)
+         if (!closed)
          {
-            if (iter != null)
+            closed = true;
+            lastIter = null;
+   
+            for (LinkedListIterator<T> iter : cachedIters)
             {
-               iter.close();
+               if (iter != null)
+               {
+                  iter.close();
+               }
             }
          }
       }

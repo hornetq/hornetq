@@ -421,7 +421,7 @@ public class StompDecoder
 
       if (contentLength != -1)
       {
-         if (pos + contentLength > data)
+         if (pos + contentLength + 1 > data)
          {
             // Need more bytes
          }
@@ -462,9 +462,11 @@ public class StompDecoder
       {
          if (data > pos)
          {
-            // More data still in the buffer from the next packet
+            if (workingBuffer[pos] == NEW_LINE) pos++;
 
-            System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
+            if (data > pos)
+              // More data still in the buffer from the next packet
+              System.arraycopy(workingBuffer, pos, workingBuffer, 0, data - pos);
          }
 
          data = data - pos;

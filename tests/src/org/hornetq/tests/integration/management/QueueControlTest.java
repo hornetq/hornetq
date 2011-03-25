@@ -20,23 +20,26 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.DayCounterInfo;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.api.core.management.MessageCounterInfo;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.json.JSONArray;
-import org.hornetq.utils.json.JSONObject;
 
 /**
  * A QueueControlTest
@@ -212,9 +215,8 @@ public class QueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(queue);
       Assert.assertEquals(1, queueControl.getConsumerCount());
 
-      
       System.out.println("Consumers: " + queueControl.listConsumersAsJSON());
-      
+
       JSONArray obj = new JSONArray(queueControl.listConsumersAsJSON());
 
       assertEquals(1, obj.length());
@@ -1269,6 +1271,163 @@ public class QueueControlTest extends ManagementTestBase
       Assert.assertNotNull(history);
 
       session.deleteQueue(queue);
+
+   }
+
+   public void testMoveMessagesBack() throws Exception
+   {
+      server.createQueue(new SimpleString("q1"), new SimpleString("q1"), null, true, false);
+      server.createQueue(new SimpleString("q2"), new SimpleString("q2"), null, true, false);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer("q1");
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+
+         msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
+
+         prod1.send(msg);
+      }
+
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer("q1", true);
+      session.start();
+
+      assertNotNull(consumer.receive(5000));
+      consumer.close();
+
+      QueueControl q1Control = ManagementControlHelper.createQueueControl(new SimpleString("q1"),
+                                                                          new SimpleString("q1"),
+                                                                          mbeanServer);
+
+      QueueControl q2Control = ManagementControlHelper.createQueueControl(new SimpleString("q2"),
+                                                                          new SimpleString("q2"),
+                                                                          mbeanServer);
+
+      assertEquals(10, q1Control.moveMessages(null, "q2"));
+
+      consumer = session.createConsumer("q2", true);
+
+      assertNotNull(consumer.receive(500));
+
+      consumer.close();
+
+      q2Control.moveMessages(null, "q1", false);
+
+      session.start();
+      consumer = session.createConsumer("q1");
+
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         System.out.println("msg = " + msg);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+
+      consumer.close();
+
+      session.deleteQueue("q1");
+
+      session.deleteQueue("q2");
+
+      session.close();
+
+      locator.close();
+
+   }
+
+   public void testMoveMessagesBack2() throws Exception
+   {
+      server.createQueue(new SimpleString("q1"), new SimpleString("q1"), null, true, false);
+      server.createQueue(new SimpleString("q2"), new SimpleString("q2"), null, true, false);
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+
+      ClientProducer prod1 = session.createProducer("q1");
+      
+      int NUMBER_OF_MSGS = 10;
+
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+
+         msg.putStringProperty(org.hornetq.api.core.Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("dupl-" + i));
+
+         prod1.send(msg);
+      }
+
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer("q1", true);
+      session.start();
+
+      assertNotNull(consumer.receive(5000));
+      consumer.close();
+
+      QueueControl q1Control = ManagementControlHelper.createQueueControl(new SimpleString("q1"),
+                                                                          new SimpleString("q1"),
+                                                                          mbeanServer);
+
+      QueueControl q2Control = ManagementControlHelper.createQueueControl(new SimpleString("q2"),
+                                                                          new SimpleString("q2"),
+                                                                          mbeanServer);
+
+      assertEquals(NUMBER_OF_MSGS, q1Control.moveMessages(null, "q2"));
+
+      long messageIDs[] = new long[NUMBER_OF_MSGS];
+      
+      consumer = session.createConsumer("q2", true);
+      
+      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         messageIDs[i] = msg.getMessageID();
+      }
+
+      assertNull(consumer.receiveImmediate());
+
+      consumer.close();
+      
+      for (int i = 0 ; i < NUMBER_OF_MSGS; i++)
+      {
+         q2Control.moveMessage(messageIDs[i], "q1");
+      }
+
+
+      session.start();
+      consumer = session.createConsumer("q1");
+
+      for (int i = 0; i < NUMBER_OF_MSGS; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         System.out.println("msg = " + msg);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+
+      consumer.close();
+
+      session.deleteQueue("q1");
+
+      session.deleteQueue("q2");
+
+      session.close();
+
+      locator.close();
 
    }
 

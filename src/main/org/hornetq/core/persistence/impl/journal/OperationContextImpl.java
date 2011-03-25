@@ -232,10 +232,16 @@ public class OperationContextImpl implements OperationContext
          {
             public void run()
             {
-               // If any IO is done inside the callback, it needs to be done on a new context
-               OperationContextImpl.clearContext();
-               task.done();
-               executorsPending.decrementAndGet();
+               try
+               {
+                  // If any IO is done inside the callback, it needs to be done on a new context
+                  OperationContextImpl.clearContext();
+                  task.done();
+               }
+               finally
+               {
+                  executorsPending.decrementAndGet();
+               }
             }
          });
       }
@@ -277,6 +283,25 @@ public class OperationContextImpl implements OperationContext
 
    class TaskHolder
    {
+      
+      
+      
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "TaskHolder [storeLined=" + storeLined +
+                ", replicationLined=" +
+                replicationLined +
+                ", pageLined=" +
+                pageLined +
+                ", task=" +
+                task +
+                "]";
+      }
+
       int storeLined;
 
       int replicationLined;
@@ -327,19 +352,39 @@ public class OperationContextImpl implements OperationContext
    @Override
    public String toString()
    {
-      return "OperationContextImpl [storeLineUp=" + storeLineUp +
+      StringBuffer buffer = new StringBuffer();
+      for (TaskHolder hold : tasks)
+      {
+         buffer.append("Task = " + hold + "\n");
+      }
+      
+      return "OperationContextImpl [minimalStore=" + minimalStore +
+             ", storeLineUp=" +
+             storeLineUp +
              ", stored=" +
              stored +
+             ", minimalReplicated=" +
+             minimalReplicated +
              ", replicationLineUp=" +
              replicationLineUp +
              ", replicated=" +
              replicated +
-             ", pageLineUp=" +
-             pageLineUp +
              ", paged=" +
              paged +
-             "]";
+             ", minimalPage=" +
+             minimalPage +
+             ", pageLineUp=" +
+             pageLineUp +
+             ", errorCode=" +
+             errorCode +
+             ", errorMessage=" +
+             errorMessage +
+             ", executorsPending=" +
+             executorsPending +
+             ", executor=" + this.executor +
+             "]" + buffer.toString();
    }
+
    
 
 }

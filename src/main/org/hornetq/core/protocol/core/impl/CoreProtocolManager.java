@@ -147,7 +147,7 @@ public class CoreProtocolManager implements ProtocolManager
                {
                   pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
                }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false);
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
             }
          }
       });

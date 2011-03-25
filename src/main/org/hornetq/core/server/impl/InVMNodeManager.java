@@ -128,6 +128,12 @@ public class InVMNodeManager extends NodeManager
       return liveLock.availablePermits() == 0;
    }
 
+   @Override
+   public void interrupt()
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
    private void releaseBackupNode()
    {
       if(backupLock != null)

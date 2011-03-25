@@ -333,6 +333,13 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
+       */
+      public void onChange()
+      {
+      }
+
    }
 
 }

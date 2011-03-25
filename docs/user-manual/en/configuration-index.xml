@@ -16,6 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                    a                              -->
 <!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
 <chapter id="configuration-index">
     <title>Configuration Reference</title>
     <para>This section is a quick index for looking up configuration. Click on the element name to
@@ -41,6 +46,18 @@
                         </row>
                     </thead>
                     <tbody>
+                        <row>
+                            <entry><link linkend="ha.allow-fail-back">allow-failback</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Will this server automatically shutdown if the original live server comes back up</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha/mode.shared.configuration">backup</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Is this server a backup server</entry>
+                            <entry>false</entry>
+                        </row>
                         <row>
                             <entry><link linkend="configuring.bindings.journal"
                                     >bindings-directory</link></entry>
@@ -97,6 +114,12 @@
                             <entry>true means that the server will load configuration from the
                                 configuration files</entry>
                             <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.allow-fail-back">failover-on-shutdown</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Will this backup server come live on a normal server shutdown</entry>
+                            <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
@@ -209,6 +232,12 @@
                             <entry>org.hornetq</entry>
                         </row>
                         <row>
+                            <entry>log-delegate-factory-class-name</entry>
+                            <entry>String</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="large.message.configuring"
                                     >large-messages-directory</link></entry>
                             <entry>String</entry>
@@ -312,6 +341,18 @@
                             <entry>Boolean</entry>
                             <entry>true means that id's are persisted to the journal</entry>
                             <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>remoting-interceptors</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.mode.shared">shared-store</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>is this server using a shared store for failover</entry>
+                            <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="server.scheduled.thread.pool"

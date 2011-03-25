@@ -62,6 +62,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
       assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 0);
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testSimpleMessageReceivedOnQueueWithSecuritySucceeds() throws Exception
@@ -91,5 +92,6 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
       assertEquals(((LocalQueueBinding)binding).getQueue().getConsumerCount(), 15);
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 }

@@ -53,7 +53,11 @@ public interface PostOffice extends HornetQComponent
 
    void route(ServerMessage message, Transaction tx, boolean direct) throws Exception;
 
+   void route(ServerMessage message, Transaction tx, boolean direct, boolean rejectDuplicates) throws Exception;
+
    void route(ServerMessage message, RoutingContext context, boolean direct) throws Exception;
+
+   void route(ServerMessage message, RoutingContext context, boolean direct, boolean rejectDuplicates) throws Exception;
 
    MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;
 

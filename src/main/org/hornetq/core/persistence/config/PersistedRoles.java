@@ -302,6 +302,32 @@ public class PersistedRoles implements EncodingSupport
          return false;
       return true;
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PersistedRoles [storeId=" + storeId +
+             ", addressMatch=" +
+             addressMatch +
+             ", sendRoles=" +
+             sendRoles +
+             ", consumeRoles=" +
+             consumeRoles +
+             ", createDurableQueueRoles=" +
+             createDurableQueueRoles +
+             ", deleteDurableQueueRoles=" +
+             deleteDurableQueueRoles +
+             ", createNonDurableQueueRoles=" +
+             createNonDurableQueueRoles +
+             ", deleteNonDurableQueueRoles=" +
+             deleteNonDurableQueueRoles +
+             ", manageRoles=" +
+             manageRoles +
+             "]";
+   }
    
    
    

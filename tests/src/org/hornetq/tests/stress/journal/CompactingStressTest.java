@@ -71,8 +71,6 @@ public class CompactingStressTest extends ServiceTestBase
       if (AsynchronousFileImpl.isLoaded())
       {
          internalTestCleanup(JournalType.ASYNCIO);
-         tearDown();
-         setUp();
       }
    }
 
@@ -163,7 +161,10 @@ public class CompactingStressTest extends ServiceTestBase
 
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
-      internalTestMultiProducer(JournalType.ASYNCIO);
+      if (AsynchronousFileImpl.isLoaded())
+      {
+         internalTestMultiProducer(JournalType.ASYNCIO);
+      }
    }
 
    public void testMultiProducerAndCompactNIO() throws Throwable

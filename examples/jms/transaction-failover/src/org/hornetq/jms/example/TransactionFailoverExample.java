@@ -50,7 +50,7 @@ public class TransactionFailoverExample extends HornetQExample
       try
       {
          // Step 1. Get an initial context for looking up JNDI from the server #1
-         initialContext = getContext(1);
+         initialContext = getContext(0);
 
          // Step 2. Look-up the JMS resources from JNDI
          Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
@@ -151,9 +151,10 @@ public class TransactionFailoverExample extends HornetQExample
 
       if (killServer)
       {
-         killServer(1);
-
          Thread.sleep(2000);
+
+         killServer(0);
+
       }
 
       // We send the remaining half of messages

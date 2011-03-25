@@ -69,6 +69,10 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
    public static final int TYPE_TOPIC_CONNECTION = 2;
 
+   public static final String EXCEPTION_FAILOVER = "FAILOVER";
+
+   public static final String EXCEPTION_DISCONNECT = "DISCONNECT";
+
    public static final SimpleString CONNECTION_ID_PROPERTY_NAME = new SimpleString("__HQ_CID");
 
    // Static ---------------------------------------------------------------------------------------
@@ -636,7 +640,7 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
 
                if (exceptionListener != null)
                {
-                  final JMSException je = new JMSException(me.toString());
+                  final JMSException je = new JMSException(me.toString(), failedOver?EXCEPTION_FAILOVER: EXCEPTION_DISCONNECT);
 
                   je.initCause(me);
 

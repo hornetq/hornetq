@@ -66,12 +66,58 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       super.tearDown();
    }
 
-   public void testSendAcknowledgements() throws Exception
+   public void testSetInvalidSendACK() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
 
+      locator.setConfirmationWindowSize(-1);
 
-      locator.setConfirmationWindowSize(1024);
+      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
+
+      try
+      {
+
+         boolean failed = false;
+         try
+         {
+            session.setSendAcknowledgementHandler(new SendAcknowledgementHandler()
+            {
+               public void sendAcknowledged(Message message)
+               {
+               }
+            });
+         }
+         catch (Throwable expected)
+         {
+            failed = true;
+         }
+
+         assertTrue("Expected a failure on setting ACK Handler", failed);
+
+         session.createQueue(address, queueName, false);
+      }
+      finally
+      {
+         session.close();
+      }
+   }
+
+   public void testSendAcknowledgementsNoWindowSize() throws Exception
+   {
+      testSendAcknowledgements(0);
+   }
+
+   public void testSendAcknowledgements() throws Exception
+   {
+      testSendAcknowledgements(1024);
+   }
+
+   public void testSendAcknowledgements(int windowSize) throws Exception
+   {
+      ServerLocator locator = createInVMNonHALocator();
+
+      locator.setConfirmationWindowSize(windowSize);
 
       ClientSessionFactory csf = locator.createSessionFactory();
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);

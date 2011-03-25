@@ -20,6 +20,7 @@ import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
  * 
@@ -54,6 +55,8 @@ public interface PagingStore extends HornetQComponent
    long getAddressSize();
    
    long getMaxSize();
+   
+   void applySetting(AddressSettings addressSettings);
 
    boolean isPaging();
 
@@ -68,6 +71,8 @@ public interface PagingStore extends HornetQComponent
    boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
 
    Page createPage(final int page) throws Exception;
+   
+   boolean checkPage(final int page) throws Exception;
    
    PagingManager getPagingManager();
    

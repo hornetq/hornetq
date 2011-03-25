@@ -38,6 +38,7 @@ import javax.management.MBeanServer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -87,6 +88,7 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
@@ -131,6 +133,13 @@ public class HornetQServerImpl implements HornetQServer
    // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
+   
+   // JMS Topics (which are outside of the scope of the core API) will require a dumb subscription with a dummy-filter at this current version
+   // as a way to keep its existence valid and TCK tests
+   // That subscription needs an invalid filter, however paging needs to ignore any subscription with this filter.
+   // For that reason, this filter needs to be rejected on paging or any other component on the system, and just be ignored for any purpose
+   // It's declared here as this filter is considered a global ignore
+   public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -210,6 +219,9 @@ public class HornetQServerImpl implements HornetQServer
    private volatile GroupingHandler groupingHandler;
    
    private NodeManager nodeManager;
+   
+   // Used to identify the server on tests... useful on debugging testcases
+   private String identity;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -282,7 +294,14 @@ public class HornetQServerImpl implements HornetQServer
     */
    protected NodeManager createNodeManager(final String directory)
    {
-      return new FileLockNodeManager(directory);
+      if (configuration.getJournalType() == JournalType.ASYNCIO && AsynchronousFileImpl.isLoaded())
+      {
+         return new AIOFileLockNodeManager(directory);
+      }
+      else
+      {
+         return new FileLockNodeManager(directory);
+      }
    }
 
    private class NoSharedStoreLiveActivation implements Activation
@@ -327,7 +346,7 @@ public class HornetQServerImpl implements HornetQServer
                // goes down they failover to us
                clusterManager.announceBackup();
                //
-               Thread.sleep(2000);
+               Thread.sleep(configuration.getFailbackDelay());
             }
 
             nodeManager.startLiveNode();
@@ -455,6 +474,8 @@ public class HornetQServerImpl implements HornetQServer
 
             while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
             {
+               nodeManager.interrupt();
+
                backupActivationThread.interrupt();
 
                Thread.sleep(1000);
@@ -538,7 +559,7 @@ public class HornetQServerImpl implements HornetQServer
       
       if (!configuration.isBackup())
       {
-         if (configuration.isSharedStore())
+         if (configuration.isSharedStore() && configuration.isPersistenceEnabled())
          {
             activation = new SharedStoreLiveActivation();
 
@@ -600,10 +621,6 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop(boolean failoverOnServerShutdown) throws Exception
    {
-      System.out.println("*** stop called on server");
-
-      System.out.flush();
-
       synchronized (this)
       {
          if (!started)
@@ -625,12 +642,17 @@ public class HornetQServerImpl implements HornetQServer
          }
 
       }
-
-      // we stop the remoting service outside a lock
-      if(remotingService == null)
+      
+      // We close all the exception in an attempt to let any pending IO to finish
+      // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
+      // It may still be possible to have this scenario on a real failure (without the use of XA)
+      // But at least we will do our best to avoid it on regular shutdowns
+      for (ServerSession session : sessions.values())
       {
-         System.out.println("HornetQServerImpl.stop");
+    	 log.info("closing a session" );
+         session.close(true);
       }
+
       remotingService.stop();
 
       synchronized (this)
@@ -703,18 +725,44 @@ public class HornetQServerImpl implements HornetQServer
             HornetQServerImpl.log.debug("Waiting for " + task);
          }
 
-         threadPool.shutdown();
-
-         scheduledPool = null;
-
          if (memoryManager != null)
          {
             memoryManager.stop();
          }
+         
+         threadPool.shutdown();
+         
+         scheduledPool.shutdown();
 
-         addressSettingsRepository.clear();
+         try
+         {
+            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+         threadPool = null;
 
-         securityRepository.clear();
+         
+         try
+         {
+            if (!scheduledPool.awaitTermination(10, TimeUnit.SECONDS))
+            {
+               HornetQServerImpl.log.warn("Timed out waiting for scheduled pool to terminate");
+            }
+         }
+         catch (InterruptedException e)
+         {
+            // Ignore
+         }
+
+         threadPool = null;
+         
+         scheduledPool = null;
 
          pagingManager = null;
          securityStore = null;
@@ -752,23 +800,21 @@ public class HornetQServerImpl implements HornetQServer
          Logger.reset();
       }
 
-      try
-      {
-         if (!threadPool.awaitTermination(5000, TimeUnit.MILLISECONDS))
-         {
-            HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
-         }
-      }
-      catch (InterruptedException e)
-      {
-         // Ignore
-      }
-      threadPool = null;
-   }
+    }
 
    // HornetQServer implementation
    // -----------------------------------------------------------
 
+   
+   public void setIdentity(String identity)
+   {
+      this.identity = identity;
+   }
+   
+   public String getIdentity()
+   {
+      return identity;
+   }
    
    public ScheduledExecutorService getScheduledPool()
    {
@@ -813,6 +859,11 @@ public class HornetQServerImpl implements HornetQServer
    public HierarchicalRepository<Set<Role>> getSecurityRepository()
    {
       return securityRepository;
+   }
+   
+   public NodeManager getNodeManager()
+   {
+      return nodeManager;
    }
 
    public HierarchicalRepository<AddressSettings> getAddressSettingsRepository()
@@ -1002,6 +1053,8 @@ public class HornetQServerImpl implements HornetQServer
 
    public void destroyQueue(final SimpleString queueName, final ServerSession session) throws Exception
    {
+      addressSettingsRepository.clearCache();
+
       Binding binding = postOffice.getBinding(queueName);
 
       if (binding == null)
@@ -1011,7 +1064,10 @@ public class HornetQServerImpl implements HornetQServer
 
       Queue queue = (Queue)binding.getBindable();
       
-      queue.getPageSubscription().close();
+      if (queue.getPageSubscription() != null)
+      {
+         queue.getPageSubscription().close();
+      }
 
       if (queue.getConsumerCount() != 0)
       {
@@ -1627,7 +1683,17 @@ public class HornetQServerImpl implements HornetQServer
       
       long queueID = storageManager.generateUniqueID();
 
-      PageSubscription pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+      PageSubscription pageSubscription;
+      
+      
+      if (filterString != null && filterString.toString().equals(GENERIC_IGNORED_FILTER))
+      {
+         pageSubscription = null;
+      }
+      else
+      {
+         pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+      }
 
       final Queue queue = queueFactory.createQueue(queueID,
                                                    address,
@@ -1706,8 +1772,6 @@ public class HornetQServerImpl implements HornetQServer
                                      transformer,
                                      postOffice,
                                      storageManager);
-      // pagingManager,
-      // storageManager);
 
       Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
 
@@ -1839,6 +1903,11 @@ public class HornetQServerImpl implements HornetQServer
             " does not exist and will not be created");
          }
       }
+   }
+   
+   public String toString()
+   {
+      return "HornetQServerImpl::" + (identity == null ? "" : (identity + ", ")) + (nodeManager != null ? ("serverUUID=" + nodeManager.getUUID()) : "");
    }
 
    // Inner classes

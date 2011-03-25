@@ -33,7 +33,8 @@ public class RealNodeManagerTest extends NodeManagerTest
    protected void setUp() throws Exception
    {
       super.setUp();
-      File file = new File(".", "server.lock");
+      clearData();
+      File file = new File(getTemporaryDir(), "server.lock");
       if(file.exists())
       {
          file.delete();
@@ -42,7 +43,7 @@ public class RealNodeManagerTest extends NodeManagerTest
 
    public void testId() throws Exception
    {
-      NodeManager nodeManager = new FileLockNodeManager(".");
+      NodeManager nodeManager = new FileLockNodeManager(getTemporaryDir());
       nodeManager.start();
       UUID id1 = nodeManager.getUUID();
       nodeManager.stop();

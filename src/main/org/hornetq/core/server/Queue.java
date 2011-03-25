@@ -14,7 +14,6 @@
 package org.hornetq.core.server;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -22,6 +21,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.LinkedListIterator;
 
 /**
  * 
@@ -68,7 +68,7 @@ public interface Queue extends Bindable
 
    void cancel(Transaction tx, MessageReference ref) throws Exception;
 
-   void cancel(MessageReference reference) throws Exception;
+   void cancel(MessageReference reference, long timeBase) throws Exception;
 
    void deliverAsync();
 
@@ -115,7 +115,11 @@ public interface Queue extends Bindable
 
    boolean moveReference(long messageID, SimpleString toAddress) throws Exception;
 
+   boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
+
    int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
+
+   int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception;
 
    void addRedistributor(long delay);
 
@@ -125,9 +129,9 @@ public interface Queue extends Bindable
 
    Collection<Consumer> getConsumers();
 
-   boolean checkDLQ(MessageReference ref) throws Exception;
+   boolean checkRedelivery(MessageReference ref, long timeBase) throws Exception;
 
-   Iterator<MessageReference> iterator();
+   LinkedListIterator<MessageReference> iterator();
 
    void setExpiryAddress(SimpleString expiryAddress);
 
@@ -155,11 +159,19 @@ public interface Queue extends Bindable
    
    void resetAllIterators();
 
-   void blockOnExecutorFuture();
+   boolean blockOnExecutorFuture();
    
    void close() throws Exception;
    
    boolean isDirectDeliver();
 
    SimpleString getAddress();
+   
+   /**
+    * We can't send stuff to DLQ on queues used on clustered-bridge-communication
+    * @return
+    */
+   boolean isInternalQueue();
+   
+   void setInternalQueue(boolean internalQueue);
 }

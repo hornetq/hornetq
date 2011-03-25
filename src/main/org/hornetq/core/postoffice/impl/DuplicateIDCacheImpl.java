@@ -145,10 +145,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
                storageManager.deleteDuplicateID(id.b);
                id.b = null;
             }
-            else
-            {
-               System.out.println("Can't delete duplicateID");
-            }
          }
       }
       
@@ -184,10 +180,15 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
             tx.setContainsPersistent();
          }
 
-         // For a tx, it's important that the entry is not added to the cache until commit (or prepare)
+         // For a tx, it's important that the entry is not added to the cache until commit
          // since if the client fails then resends them tx we don't want it to get rejected
          tx.addOperation(new AddDuplicateIDOperation(duplID, recordID));
       }
+   }
+
+   public void load(final Transaction tx, final byte[] duplID)
+   {
+      tx.addOperation(new AddDuplicateIDOperation(duplID, tx.getID()));
    }
 
    private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID)
@@ -292,7 +293,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       public void afterPrepare(final Transaction tx)
       {
-         process();
       }
 
       public void afterRollback(final Transaction tx)
@@ -302,14 +302,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;
-      }
-      
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getDistinctQueues()
-       */
-      public Collection<Queue> getDistinctQueues()
-      {
-         return Collections.emptySet();
       }
 
    }

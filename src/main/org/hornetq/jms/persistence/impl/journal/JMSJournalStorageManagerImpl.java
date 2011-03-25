@@ -152,6 +152,8 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       {
          jmsJournal.appendDeleteRecord(oldCF.getId(), false);
       }
+      
+      this.deleteJNDI(PersistedType.ConnectionFactory, cfName);
    }
 
    /* (non-Javadoc)
@@ -257,11 +259,7 @@ public class JMSJournalStorageManagerImpl implements JMSStorageManager
       
       PersistedJNDI currentJNDI = mapJNDI.remove(key);
 
-      if (currentJNDI == null)
-      {
-         return;
-      }
-      else
+      if (currentJNDI != null)
       {
          jmsJournal.appendDeleteRecord(currentJNDI.getId(), true);
       }

@@ -1,23 +1,27 @@
 <project name="HornetQ QuickStart Guide" default="all" basedir=".">
 
-  <property name="build.dir" value="build"/>
-  <property name="pdf.name"  value="HornetQ_QuickStartGuide.pdf"/>
-  <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
-  <target name="all" depends="clean">
-    <mkdir dir="en/images" />
-    <antcall target="lang.all"><param name="lang" value="en"/></antcall>
-
-    <!-- by default we don't build Chinese pdf documents because we
-         don't provide any Chinese fonts in the repo. -->
-    <antcall target="lang.dochtml"><param name="lang" value="zh"/></antcall>
-    <antcall target="lang.dochtmlsingle"><param name="lang" value="zh"/></antcall>
+  <target name="maven-init">
+    <property name="maven.home" location="${basedir}/../../tools/maven"/>
+    <echo message="Maven Home set to ${maven.home}"/>
   </target>
 
-  <target name="html.doc" description="creates the html docs only and opens a browser">
-    <mkdir dir="en/images" />
-    <antcall target="lang.dochtml"><param name="lang" value="en"/></antcall>
-    <antcall target="lang.dochtml"><param name="lang" value="zh"/></antcall>
-  </target>
+   <target name="clean" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="clean"/>
+      </exec>
+   </target>
+
+   <target name="all" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="install"/>
+      </exec>
+   </target>
 
 </project>

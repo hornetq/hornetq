@@ -51,6 +51,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.client.HornetQConnection;
 
 /**
  * The managed connection
@@ -555,6 +556,10 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
     */
    public void onException(final JMSException exception)
    {
+      if(HornetQConnection.EXCEPTION_FAILOVER.equals(exception.getErrorCode()))
+      {
+         return;
+      }
       if (HornetQRAManagedConnection.trace)
       {
          HornetQRAManagedConnection.log.trace("onException(" + exception + ")");

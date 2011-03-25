@@ -54,6 +54,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -101,13 +102,12 @@ public class UnitTestCase extends TestCase
 
    private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
-   
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
    // Static --------------------------------------------------------
 
-   protected  Configuration createDefaultConfig()
+   protected Configuration createDefaultConfig()
    {
       return createDefaultConfig(false);
    }
@@ -116,9 +116,7 @@ public class UnitTestCase extends TestCase
    {
       if (netty)
       {
-         return createDefaultConfig(new HashMap<String, Object>(),
-                                    INVM_ACCEPTOR_FACTORY,
-                                    NETTY_ACCEPTOR_FACTORY);
+         return createDefaultConfig(new HashMap<String, Object>(), INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
       }
       else
       {
@@ -127,8 +125,8 @@ public class UnitTestCase extends TestCase
    }
 
    protected static Configuration createClusteredDefaultConfig(final int index,
-                                                        final Map<String, Object> params,
-                                                        final String... acceptors)
+                                                               final Map<String, Object> params,
+                                                               final String... acceptors)
    {
       Configuration config = createDefaultConfig(index, params, acceptors);
 
@@ -138,8 +136,8 @@ public class UnitTestCase extends TestCase
    }
 
    protected static Configuration createDefaultConfig(final int index,
-                                               final Map<String, Object> params,
-                                               final String... acceptors)
+                                                      final Map<String, Object> params,
+                                                      final String... acceptors)
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -153,12 +151,11 @@ public class UnitTestCase extends TestCase
 
       return configuration;
    }
-   
+
    protected static ConfigurationImpl createBasicConfig()
    {
       return createBasicConfig(0);
    }
-
 
    /**
     * @param serverID
@@ -209,7 +206,6 @@ public class UnitTestCase extends TestCase
       return configuration;
    }
 
-
    protected static String getUDPDiscoveryAddress()
    {
       return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
@@ -233,7 +229,7 @@ public class UnitTestCase extends TestCase
 
    public static int getUDPDiscoveryPort(final int variant)
    {
-      return getUDPDiscoveryPort() + 1;
+      return getUDPDiscoveryPort() + variant;
    }
 
    protected static JournalType getDefaultJournalType()
@@ -858,6 +854,8 @@ public class UnitTestCase extends TestCase
 
    // Protected -----------------------------------------------------
 
+   Map<Thread, StackTraceElement[]> previousThreads;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -869,6 +867,8 @@ public class UnitTestCase extends TestCase
 
       // checkFreePort(TransportConstants.DEFAULT_PORT);
 
+      previousThreads = Thread.getAllStackTraces();
+
       UnitTestCase.log.info("###### starting test " + this.getClass().getName() + "." + getName());
    }
 
@@ -879,8 +879,8 @@ public class UnitTestCase extends TestCase
 
       deleteDirectory(new File(getTestDir()));
 
-      int invmSize =  InVMRegistry.instance.size();
-      if(invmSize > 0)
+      int invmSize = InVMRegistry.instance.size();
+      if (invmSize > 0)
       {
          InVMRegistry.instance.clear();
          fail("invm registry still had acceptors registered");
@@ -891,6 +891,9 @@ public class UnitTestCase extends TestCase
          AsynchronousFileImpl.resetMaxAIO();
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
+      
+      // We shutdown the global pools to give a better isolation between tests
+      ServerLocatorImpl.clearThreadPools();
 
       Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
@@ -906,12 +909,61 @@ public class UnitTestCase extends TestCase
                                              " id = " +
                                              thread.getId() +
                                              " has running locators on test " +
-                                             this.getName() + " on this following dump"));
+                                             this.getName() +
+                                             " on this following dump"));
                fail("test left serverlocator running, this could effect other tests");
+               // System.exit(0);
+            }
+            else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
+            {
+               alreadyFailedThread.add(thread);
+               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+                                             thread.getName() +
+                                             " id = " +
+                                             thread.getId() +
+                                             " is still broadcasting " +
+                                             this.getName() +
+                                             " on this following dump"));
+               fail("test left broadcastgroupimpl running, this could effect other tests");
                // System.exit(0);
             }
          }
       }
+
+      Map<Thread, StackTraceElement[]> postThreads = Thread.getAllStackTraces();
+
+      boolean failedThread = false;
+      if (postThreads.size() > previousThreads.size())
+      {
+         StringBuffer buffer = new StringBuffer();
+
+         
+         buffer.append("*********************************************************************************\n");
+         buffer.append("LEAKING THREADS\n");
+         
+         for (Thread aliveThread : postThreads.keySet())
+         {
+            if (!aliveThread.getName().contains("SunPKCS11") && !previousThreads.containsKey(aliveThread))
+            {
+               failedThread = true;
+               buffer.append("=============================================================================\n");
+               buffer.append("Thread " + aliveThread + " is still alive with the following stackTrace:\n");
+               StackTraceElement[] elements = postThreads.get(aliveThread);
+               for (StackTraceElement el : elements)
+               {
+                  buffer.append(el + "\n");
+               }
+            }
+
+         }
+         buffer.append("*********************************************************************************\n");
+
+         System.out.println(buffer.toString());
+
+      }
+      
+      //assertFalse("Thread Failed", failedThread);
+
       super.tearDown();
    }
 
@@ -1082,7 +1134,7 @@ public class UnitTestCase extends TestCase
          MessageReference o1 = iter1.next();
          MessageReference o2 = iter2.next();
 
-         Assert.assertTrue(o1 == o2);
+         Assert.assertTrue("expected " + o1 + " but was " + o2, o1 == o2);
       }
    }
 

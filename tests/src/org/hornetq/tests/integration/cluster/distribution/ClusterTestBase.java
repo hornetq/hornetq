@@ -175,7 +175,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_SERVERS = 10;
 
-   private ConsumerHolder[] consumers;
+   protected ConsumerHolder[] consumers;
 
    protected HornetQServer[] servers;
 
@@ -330,6 +330,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       System.out.println("=======================================================================");
 
+      for (HornetQServer hornetQServer : servers)
+      {
+         if (hornetQServer != null)
+         {
+            System.out.println(clusterDescription(hornetQServer));
+         }
+      }
       throw new IllegalStateException(msg);
    }
 
@@ -748,7 +755,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             
             ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
-
+            
+            
             if (message == null)
             {
                ClusterTestBase.log.info("*** dumping consumers:");
@@ -757,6 +765,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
                Assert.assertNotNull("consumer " + consumerID + " did not receive message " + j, message);
             }
+
+
 
             if (ack)
             {
@@ -1110,6 +1120,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected int[] getReceivedOrder(final int consumerID) throws Exception
    {
+      return getReceivedOrder(consumerID, false);
+   }
+
+   protected int[] getReceivedOrder(final int consumerID, final boolean ack) throws Exception
+   {
       ConsumerHolder consumer = consumers[consumerID];
 
       if (consumer == null)
@@ -1124,9 +1139,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
       do
       {
          message = consumer.consumer.receive(500);
-
          if (message != null)
          {
+            if (ack)
+            {
+               message.acknowledge();
+            }
+
             int count = (Integer)message.getObjectProperty(ClusterTestBase.COUNT_PROP);
 
             ints.add(count);
@@ -1141,6 +1160,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (Integer i : ints)
       {
          res[j++] = i;
+      }
+      
+      if (ack)
+      {
+         // just to flush acks
+         consumers[consumerID].session.commit();
       }
 
       return res;
@@ -1769,12 +1794,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       for (int node : nodes)
       {
-         ClusterTestBase.log.info("starting server " + node);
-
+         servers[node].setIdentity("server " + node);
+         ClusterTestBase.log.info("starting server " + servers[node]);
          servers[node].start();
+         ClusterTestBase.log.info("started server " + servers[node]);
 
          ClusterTestBase.log.info("started server " + node);
-
+         /*
+         * we need to wait a lil while between server start up to allow the server to communicate in some order.
+         * This is to avoid split brain on startup
+         * */
+         Thread.sleep(500);
       }
       for (int node : nodes)
       {

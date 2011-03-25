@@ -241,6 +241,19 @@
 			-->
 			<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                    value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
+
+       <!--you'll need something like this if the HornetQ Server is remote-->
+       <!--
+			<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+                   value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445"/>-->
+
+       <!--you'll need something like this if the HornetQ Server is remote and has failover configured-->
+              <!--
+                <property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ2"
+                          value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost,port=5445;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory,guest,guest,host=localhost2,port=5446"/>-->
+
+
+		   <property name="com.arjuna.ats.jta.xaRecoveryNode" value="1"/>
     </properties>
     <properties depends="arjuna,txoj,jta" name="recoverymanager">
         <!--

@@ -13,7 +13,9 @@
 package org.hornetq.ra;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.Context;
@@ -174,25 +176,48 @@ public class Util
       return context.lookup(name);
    }
 
-   public static Map<String, Object> parseConfig(final String config)
+   public static List<Map<String, Object>> parseConfig(final String config)
    {
-      HashMap<String, Object> result = new HashMap<String, Object>();
+      List<Map<String, Object>> result =new ArrayList<Map<String, Object>>();
 
-      String elements[] = config.split(";");
+      String[] topElements = config.split(",");
+
+      for (String topElement : topElements)
+      {
+         HashMap<String, Object> map = new HashMap<String, Object>();
+         result.add(map);
+
+         String elements[] = topElement.split(";");
+
+         for (String element : elements)
+         {
+            String expression[] = element.split("=");
+
+            if (expression.length != 2)
+            {
+               throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
+            }
+
+            map.put(expression[0].trim(), expression[1].trim());
+         }
+      }
+
+
+      return result;
+   }
+
+   public static List<String> parseConnectorConnectorConfig(String config)
+   {
+      List<String> res = new ArrayList<String>();
+
+      String[] elements = config.split(",");
 
       for (String element : elements)
       {
-         String expression[] = element.split("=");
-
-         if (expression.length != 2)
-         {
-            throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
-         }
-
-         result.put(expression[0].trim(), expression[1].trim());
+         res.add(element.trim());
       }
 
-      return result;
+      return res;
    }
    
 

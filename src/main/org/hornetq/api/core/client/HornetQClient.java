@@ -13,13 +13,9 @@
 package org.hornetq.api.core.client;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
-
-import java.util.List;
 
 /**
  * Utility class for creating HornetQ {@link ClientSessionFactory} objects.
@@ -72,6 +68,10 @@ public class HornetQClient
 
    public static final long DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT = 10000;
 
+   public static final long DEFAULT_DISCOVERY_REFRESH_TIMEOUT = 10000;
+
+   public static final int DEFAULT_DISCOVERY_PORT = 9876;
+
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
@@ -83,6 +83,8 @@ public class HornetQClient
    public static final int INITIAL_CONNECT_ATTEMPTS = 1;
    
    public static final boolean DEFAULT_FAILOVER_ON_INITIAL_CONNECTION = false;
+
+   public static final boolean DEFAULT_IS_HA = false;
 
    public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
 

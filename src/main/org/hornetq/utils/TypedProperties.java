@@ -49,10 +49,14 @@ import org.hornetq.core.logging.Logger;
 public class TypedProperties
 {
    private static final Logger log = Logger.getLogger(TypedProperties.class);
+   
+   private static final SimpleString HQ_PROPNAME = new SimpleString("_HQ_");
 
    private Map<SimpleString, PropertyValue> properties;
 
    private volatile int size;
+   
+   private boolean internalProperties;
 
    public TypedProperties()
    {
@@ -71,6 +75,11 @@ public class TypedProperties
    {
       properties = other.properties == null ? null : new HashMap<SimpleString, PropertyValue>(other.properties);
       size = other.size;
+   }
+   
+   public boolean hasInternalProperties()
+   {
+      return internalProperties;
    }
 
    public void putBooleanProperty(final SimpleString key, final boolean value)
@@ -610,6 +619,11 @@ public class TypedProperties
 
    private synchronized void doPutValue(final SimpleString key, final PropertyValue value)
    {
+      if (key.startsWith(HQ_PROPNAME))
+      {
+         internalProperties = true;
+      }
+      
       PropertyValue oldValue = properties.put(key, value);
       if (oldValue != null)
       {

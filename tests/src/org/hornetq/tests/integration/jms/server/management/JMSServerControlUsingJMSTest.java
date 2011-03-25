@@ -20,6 +20,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
@@ -28,6 +29,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQQueue;
+import org.hornetq.jms.client.HornetQQueueConnectionFactory;
 
 /**
  * A JMSServerControlUsingCoreTest
@@ -56,7 +58,79 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       }
       return names;
    }
-
+   
+   // The JMS test won't support the server being restarted, hence we have to do a slight different test on that case
+   public void testCreateConnectionFactory_CompleteList() throws Exception
+   {
+      JMSServerControl control = createManagementControl();
+      control.createConnectionFactory("test", //name
+                                      true, // ha
+                                      false, // useDiscovery
+                                      1, // cfType
+                                      "invm", // connectorNames
+                                      "tst", // jndiBindins
+                                      "tst", // clientID
+                                      1, // clientFailureCheckPeriod
+                                      1,  // connectionTTL
+                                      1, // callTimeout
+                                      1, // minLargeMessageSize
+                                      true, // compressLargeMessages
+                                      1, // consumerWindowSize
+                                      1, // consumerMaxRate
+                                      1, // confirmationWindowSize
+                                      1, // ProducerWindowSize
+                                      1, // producerMaxRate
+                                      true, // blockOnACK
+                                      true, // blockOnDurableSend
+                                      true, // blockOnNonDurableSend
+                                      true, // autoGroup
+                                      true, // preACK
+                                      HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, // loadBalancingClassName
+                                      1, // transactionBatchSize
+                                      1, // dupsOKBatchSize
+                                      true, // useGlobalPools
+                                      1, // scheduleThreadPoolSize
+                                      1, // threadPoolMaxSize
+                                      1, // retryInterval
+                                      1, // retryIntervalMultiplier
+                                      1, // maxRetryInterval
+                                      1, // reconnectAttempts
+                                      true, // failoverOnInitialConnection
+                                      "tst"); // groupID
+      
+      
+      HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
+      
+      assertEquals(true, cf.isHA());
+      assertEquals("tst", cf.getClientID());
+      assertEquals(1, cf.getClientFailureCheckPeriod());
+      assertEquals(1, cf.getConnectionTTL());
+      assertEquals(1, cf.getCallTimeout());
+      assertEquals(1, cf.getMinLargeMessageSize());
+      assertEquals(true, cf.isCompressLargeMessage());
+      assertEquals(1, cf.getConsumerWindowSize());
+      assertEquals(1, cf.getConfirmationWindowSize());
+      assertEquals(1, cf.getProducerWindowSize());
+      assertEquals(1, cf.getProducerMaxRate());
+      assertEquals(true, cf.isBlockOnAcknowledge());
+      assertEquals(true, cf.isBlockOnDurableSend());
+      assertEquals(true, cf.isBlockOnNonDurableSend());
+      assertEquals(true, cf.isAutoGroup());
+      assertEquals(true, cf.isPreAcknowledge());
+      assertEquals(HornetQClient.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME, cf.getConnectionLoadBalancingPolicyClassName());
+      assertEquals(1, cf.getTransactionBatchSize());
+      assertEquals(1, cf.getDupsOKBatchSize());
+      assertEquals(true, cf.isUseGlobalPools());
+      assertEquals(1, cf.getScheduledThreadPoolMaxSize());
+      assertEquals(1, cf.getThreadPoolMaxSize());
+      assertEquals(1, cf.getRetryInterval());
+      assertEquals(1.0, cf.getRetryIntervalMultiplier());
+      assertEquals(1, cf.getMaxRetryInterval());
+      assertEquals(1, cf.getReconnectAttempts());
+      assertEquals(true, cf.isFailoverOnInitialConnection());
+      assertEquals("tst", cf.getGroupID());
+      
+   }
    // Constructors --------------------------------------------------
 
    // JMSServerControlTest overrides --------------------------------
@@ -66,13 +140,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       return 1;
    }
 
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
@@ -93,12 +167,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    @Override
    protected JMSServerControl createManagementControl() throws Exception
    {
-      HornetQQueue managementQueue = (HornetQQueue) HornetQJMSClient.createQueue("hornetq.management");
+      HornetQQueue managementQueue = (HornetQQueue)HornetQJMSClient.createQueue("hornetq.management");
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
 
       return new JMSServerControl()
       {
-
 
          public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
          {
@@ -119,7 +192,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (Boolean)proxy.invokeOperation("createQueue", name, jndiBindings, selector, durable);
          }
-         
+
          public boolean createTopic(final String name) throws Exception
          {
             return (Boolean)proxy.invokeOperation("createTopic", name);
@@ -169,12 +242,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (String[])proxy.invokeOperation("listConnectionIDs");
          }
-         
+
          public String listConnectionsAsJSON() throws Exception
          {
             return (String)proxy.invokeOperation("listConnectionsAsJSON");
          }
-         
+
          public String listConsumersAsJSON(String connectionID) throws Exception
          {
             return (String)proxy.invokeOperation("listConsumersAsJSON", connectionID);
@@ -199,13 +272,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             proxy.invokeOperation("removeSecuritySettings", addressMatch);
          }
-         
+
          @SuppressWarnings("unchecked")
          public Set<Role> getSecuritySettings(String addressMatch) throws Exception
          {
             return (Set<Role>)proxy.invokeOperation("getSecuritySettings", addressMatch);
          }
-         
+
          public String getSecuritySettingsAsJSON(String addressMatch) throws Exception
          {
             return (String)proxy.invokeOperation("getSecuritySettingsAsJSON", addressMatch);
@@ -259,10 +332,15 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              Object[] bindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory", name, ha, useDiscovery, cfType, connectorNames, bindings);
-            
+
          }
 
-         public void createConnectionFactory(String name, boolean ha, boolean useDiscovery, int cfType, String connectors, String jndiBindings) throws Exception
+         public void createConnectionFactory(String name,
+                                             boolean ha,
+                                             boolean useDiscovery,
+                                             int cfType,
+                                             String connectors,
+                                             String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory", name, ha, useDiscovery, cfType, connectors, jndiBindings);
          }
@@ -272,6 +350,149 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
             return (String)proxy.invokeOperation("listAllConsumersAsJSON");
          }
 
+         public void createConnectionFactory(String name,
+                                             boolean ha,
+                                             boolean useDiscovery,
+                                             int cfType,
+                                             String[] connectors,
+                                             String[] jndiBindings,
+                                             String clientID,
+                                             long clientFailureCheckPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int minLargeMessageSize,
+                                             boolean compressLargeMessages,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int confirmationWindowSize,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnDurableSend,
+                                             boolean blockOnNonDurableSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             long maxRetryInterval,
+                                             int reconnectAttempts,
+                                             boolean failoverOnInitialConnection,
+                                             String groupId) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  ha,
+                                  useDiscovery,
+                                  cfType,
+                                  connectors,
+                                  jndiBindings,
+                                  clientID,
+                                  clientFailureCheckPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  minLargeMessageSize,
+                                  compressLargeMessages,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  confirmationWindowSize,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnDurableSend,
+                                  blockOnNonDurableSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  maxRetryInterval,
+                                  reconnectAttempts,
+                                  failoverOnInitialConnection,
+                                  groupId);
+         }
+
+         public void createConnectionFactory(String name,
+                                             boolean ha,
+                                             boolean useDiscovery,
+                                             int cfType,
+                                             String connectors,
+                                             String jndiBindings,
+                                             String clientID,
+                                             long clientFailureCheckPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int minLargeMessageSize,
+                                             boolean compressLargeMessages,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int confirmationWindowSize,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnDurableSend,
+                                             boolean blockOnNonDurableSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             long maxRetryInterval,
+                                             int reconnectAttempts,
+                                             boolean failoverOnInitialConnection,
+                                             String groupId) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  ha,
+                                  useDiscovery,
+                                  cfType,
+                                  connectors,
+                                  jndiBindings,
+                                  clientID,
+                                  clientFailureCheckPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  minLargeMessageSize,
+                                  compressLargeMessages,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  confirmationWindowSize,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnDurableSend,
+                                  blockOnNonDurableSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  maxRetryInterval,
+                                  reconnectAttempts,
+                                  failoverOnInitialConnection,
+                                  groupId);
+         }
 
       };
    }

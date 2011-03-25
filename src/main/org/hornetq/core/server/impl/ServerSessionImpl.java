@@ -579,7 +579,14 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
       doRollback(considerLastMessageAsDelivered, tx);
 
-      tx = new TransactionImpl(storageManager, timeoutSeconds);
+      if (xa)
+      {
+         tx = null;
+      }
+      else
+      {
+         tx = new TransactionImpl(storageManager, timeoutSeconds);
+      }
    }
 
    public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
@@ -877,6 +884,10 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             {
                throw new HornetQXAException(XAException.XAER_PROTO,
                                             "Cannot prepare transaction, it is suspended " + xid);
+            }
+            else if(theTx.getState() == Transaction.State.PREPARED)
+            {
+               log.info("ignoring prepare on xid as already called :" + xid);
             }
             else
             {

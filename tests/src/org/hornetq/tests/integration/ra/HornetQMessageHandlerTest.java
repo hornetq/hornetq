@@ -65,6 +65,8 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+
+      qResourceAdapter.stop();
    }
 
    public void testInvalidAckMode() throws Exception
@@ -82,6 +84,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       {
          //pass
       }
+      qResourceAdapter.stop();
    }
 
    public void testSimpleMessageReceivedOnQueueInLocalTX() throws Exception
@@ -117,6 +120,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "teststring");
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testSimpleMessageReceivedOnQueueWithSelector() throws Exception
@@ -152,6 +156,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "red");
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testEndpointDeactivated() throws Exception
@@ -174,6 +179,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
       assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 0);
       assertTrue(endpoint.released);
+      qResourceAdapter.stop();
    }
 
    public void testMaxSessions() throws Exception
@@ -195,6 +201,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       Binding binding = server.getPostOffice().getBinding(MDBQUEUEPREFIXEDSIMPLE);
       assertEquals(((LocalQueueBinding) binding).getQueue().getConsumerCount(), 1);
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testSimpleTopic() throws Exception
@@ -224,6 +231,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "test");
 
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testDurableSubscription() throws Exception
@@ -279,6 +287,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testNonDurableSubscription() throws Exception
@@ -325,6 +334,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testSelectorChangedWithTopic() throws Exception
@@ -380,6 +390,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "3");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
    }
 
    public void testSelectorNotChangedWithTopic() throws Exception
@@ -429,6 +440,7 @@ public class HornetQMessageHandlerTest extends HornetQRATestBase
       assertNotNull(endpoint.lastMessage);
       assertEquals(endpoint.lastMessage.getCoreMessage().getBodyBuffer().readString(), "2");
       qResourceAdapter.endpointDeactivation(endpointFactory, spec);
+      qResourceAdapter.stop();
 
    }
 

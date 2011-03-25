@@ -42,6 +42,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    // Attributes ----------------------------------------------------
 
    private String name;
+   
+   private boolean persisted;
 
    private String[] bindings;
 
@@ -154,6 +156,11 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public String getName()
    {
       return name;
+   }
+   
+   public boolean isPersisted()
+   {
+      return persisted;
    }
 
    /**
@@ -499,6 +506,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
     */
    public void decode(final HornetQBuffer buffer)
    {
+      persisted = true;
+      
       name = buffer.readSimpleString().toString();
 
       discoveryGroupName = BufferHelper.readNullableSimpleStringAsString(buffer);
@@ -516,6 +525,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             connectorNames.add(str.toString());
          }
       }
+      
+      ha = buffer.readBoolean();
 
       clientID = BufferHelper.readNullableSimpleStringAsString(buffer);
 
@@ -585,6 +596,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
     */
    public void encode(final HornetQBuffer buffer)
    {
+      persisted = true;
+      
       BufferHelper.writeAsSimpleString(buffer, name);
 
       BufferHelper.writeAsNullableSimpleString(buffer, discoveryGroupName);
@@ -602,6 +615,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
             BufferHelper.writeAsSimpleString(buffer, tc);
          }
       }
+      
+      buffer.writeBoolean(ha);
 
       BufferHelper.writeAsNullableSimpleString(buffer, clientID);
 
@@ -686,6 +701,9 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       }
       
       size += BufferHelper.sizeOfNullableSimpleString(clientID) +
+      
+              DataConstants.SIZE_BOOLEAN + 
+              // ha
 
               DataConstants.SIZE_LONG +
               // clientFailureCheckPeriod

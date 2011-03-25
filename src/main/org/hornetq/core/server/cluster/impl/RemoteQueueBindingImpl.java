@@ -180,27 +180,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    public void route(final ServerMessage message, final RoutingContext context)
    {
-      byte[] ids = message.getBytesProperty(idsHeaderName);
+      addRouteContextToMessage(message);
 
-      if (ids == null)
-      {
-         ids = new byte[8];
-      }
-      else
-      {
-         byte[] newIds = new byte[ids.length + 8];
-
-         System.arraycopy(ids, 0, newIds, 8, ids.length);
-
-         ids = newIds;
-      }
-
-      ByteBuffer buff = ByteBuffer.wrap(ids);
-
-      buff.putLong(remoteQueueID);
-
-      message.putBytesProperty(idsHeaderName, ids);
-         
       List<Queue> durableQueuesOnContext = context.getDurableQueues(address);
 
       if (!durableQueuesOnContext.contains(storeAndForwardQueue))
@@ -222,7 +203,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
          if (i == null)
          {
-            filterCounts.put(filterString, 0);
+            filterCounts.put(filterString, 1);
 
             filters.add(FilterImpl.createFilter(filterString));
          }
@@ -249,7 +230,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
             {
                filterCounts.remove(filterString);
 
-               filters.remove(filterString);
+               filters.remove(FilterImpl.createFilter(filterString));
             }
             else
             {
@@ -292,10 +273,44 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
              uniqueName +
              "]";
    }
-   
+
+   public Set<Filter> getFilters()
+   {
+      return filters;
+   }
+
    public void close() throws Exception
    {
       storeAndForwardQueue.close();
+   }
+
+   /**
+    * This will add routing information to the message.
+    * This will be later processed during the delivery between the nodes. Because of that this has to be persisted as a property on the message.
+    * @param message
+    */
+   private void addRouteContextToMessage(final ServerMessage message)
+   {
+      byte[] ids = message.getBytesProperty(idsHeaderName);
+
+      if (ids == null)
+      {
+         ids = new byte[8];
+      }
+      else
+      {
+         byte[] newIds = new byte[ids.length + 8];
+
+         System.arraycopy(ids, 0, newIds, 8, ids.length);
+
+         ids = newIds;
+      }
+
+      ByteBuffer buff = ByteBuffer.wrap(ids);
+
+      buff.putLong(remoteQueueID);
+
+      message.putBytesProperty(idsHeaderName, ids);
    }
 
 }

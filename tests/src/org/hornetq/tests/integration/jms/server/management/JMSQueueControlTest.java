@@ -762,6 +762,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
+   
    public void testMoveMessagesWithDuplicateIDSet() throws Exception
    {
       String otherQueueName = RandomUtil.randomString();
@@ -799,7 +800,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Assert.assertEquals(10, queueControl.getMessageCount());
 
-      int moved = queueControl.moveMessages(null, otherQueueName);
+      int moved = queueControl.moveMessages(null, otherQueueName, true);
 
       assertEquals(10, moved);
 
@@ -886,7 +887,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       for (int i = 0 ; i < 10; i++)
       {
-         queueControl.moveMessage(ids[i], otherQueueName);
+         queueControl.moveMessage(ids[i], otherQueueName, true);
       }
 
       assertEquals(0, queueControl.getDeliveringCount());
@@ -955,7 +956,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(1, queueControl.getMessageCount());
       Assert.assertEquals(1, otherQueueControl.getMessageCount());
 
-      int moved = queueControl.moveMessages(null, otherQueueName);
+      int moved = queueControl.moveMessages(null, otherQueueName, true);
 
       assertEquals(1, moved);
 

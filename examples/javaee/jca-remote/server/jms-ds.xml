@@ -29,6 +29,7 @@
       <rar-name>hornetq-ra.rar</rar-name>
       <connection-definition>org.hornetq.ra.HornetQRAConnectionFactory</connection-definition>
       <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
+      <!--if we over ride the connector class we must over ride the params too-->
       <config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</config-property>
       <config-property name="ConnectionParameters" type="java.lang.String">host=127.0.0.1;port=5446</config-property>
       <max-pool-size>20</max-pool-size>

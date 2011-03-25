@@ -5,12 +5,12 @@
     <name>HornetQ REST Interface Parent POM</name>
     <groupId>org.hornetq.rest</groupId>
     <artifactId>hornetq-rest-all</artifactId>
-    <version>2.2.0.CR1</version>
+    <version>2.2.2.CR1</version>
     <packaging>pom</packaging>
 
     <properties>
         <resteasy.version>2.0.1.GA</resteasy.version>
-        <hornetq.version>2.2.0.QA-10129</hornetq.version>
+        <hornetq.version>2.2.2.CR1</hornetq.version>
     </properties>
 
     <licenses>

@@ -55,7 +55,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
       super.setUp();
       clearData();
       locator = createInVMNonHALocator();
-      configuration = createDefaultConfig();
+      configuration = createDefaultConfig(true);
       configuration.setSecurityEnabled(isSecure());
       server = createServer(true, configuration);
       server.start();

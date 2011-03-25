@@ -34,6 +34,7 @@ import org.hornetq.jms.management.impl.JMSQueueControlImpl;
 import org.hornetq.jms.management.impl.JMSServerControlImpl;
 import org.hornetq.jms.management.impl.JMSTopicControlImpl;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.management.JMSManagementService;
 
 /*
@@ -121,10 +122,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public synchronized void registerConnectionFactory(final String name,
+                                                      final ConnectionFactoryConfiguration cfConfig,
                                                       final HornetQConnectionFactory connectionFactory) throws Exception
    {
       ObjectName objectName = managementService.getObjectNameBuilder().getConnectionFactoryObjectName(name);
-      JMSConnectionFactoryControlImpl control = new JMSConnectionFactoryControlImpl(connectionFactory, jmsServerManager, name);
+      JMSConnectionFactoryControlImpl control = new JMSConnectionFactoryControlImpl(cfConfig, connectionFactory, jmsServerManager, name);
       managementService.registerInJMX(objectName, control);
       managementService.registerInRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name, control);
    }

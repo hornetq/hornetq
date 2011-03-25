@@ -10,21 +10,28 @@
   ~  implied.  See the License for the specific language governing
   ~  permissions and limitations under the License.
   -->
-
-<project name="HornetQ User Manual" default="all" basedir=".">
-
-  <property name="build.dir" value="build"/>
-  <property name="pdf.name"  value="HornetQ_EAPManual.pdf"/>
-  <import file="${basedir}/../../lib/docbook-support/support.xml"/>
-
-  <target name="all" depends="clean">
-    <mkdir dir="en/images" />
-    <antcall target="lang.all"><param name="lang" value="en"/></antcall>
+<project name="HornetQ EAP Manual" default="all" basedir=".">
+  <target name="maven-init">
+    <property name="maven.home" location="${basedir}/../../tools/maven"/>
+    <echo message="Maven Home set to ${maven.home}"/>
   </target>
 
-  <target name="html.doc" description="creates the html docs only and opens a browser">
-    <mkdir dir="en/images" />
-    <antcall target="lang.dochtml"><param name="lang" value="en"/></antcall>
-  </target>
+   <target name="clean" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="clean"/>
+      </exec>
+   </target>
+
+   <target name="all" depends="maven-init">
+      <condition property="mvn.cmd" value="mvn.bat" else="mvn">
+         <os family="windows"/>
+      </condition>
+      <exec executable="${mvn.cmd}">
+        <arg line="install"/>
+      </exec>
+   </target>
 
 </project>

@@ -13,11 +13,13 @@
 
 package org.hornetq.tests.integration;
 
+import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -52,7 +54,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testSimpleDuplicateDetecion() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -122,7 +124,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testSimpleDuplicateDetectionWithString() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -185,14 +187,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.close();
 
       sf.close();
-      
+
       locator.close();
    }
 
    public void testCacheSize() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -351,7 +353,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testTransactedDuplicateDetection1() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -403,7 +405,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testTransactedDuplicateDetection2() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -449,7 +451,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testTransactedDuplicateDetection3() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -486,7 +488,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
 
-      session.commit();
+      try
+      {
+         session.commit();
+      }
+      catch (Exception e)
+      {
+         session.rollback();
+      }
 
       message = consumer.receive(250);
       Assert.assertEquals(0, message.getObjectProperty(propKey));
@@ -511,7 +520,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testEntireTransactionRejected() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -519,8 +528,12 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+      
+      final SimpleString queue2 = new SimpleString("queue2");
 
       session.createQueue(queueName, queueName, null, false);
+
+      session.createQueue(queue2, queue2, null, false);
 
       ClientProducer producer = session.createProducer(queueName);
 
@@ -528,6 +541,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
+      
+      ClientMessage message2 = createMessage(session,0);
+      ClientProducer producer2 = session.createProducer(queue2);
+      producer2.send(message2);
 
       session.commit();
 
@@ -536,6 +553,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session = sf.createSession(false, false, false);
 
       session.start();
+      
+      ClientConsumer consumer2 = session.createConsumer(queue2);
 
       producer = session.createProducer(queueName);
 
@@ -551,8 +570,21 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = createMessage(session, 4);
       producer.send(message);
+      
+      message = consumer2.receive(5000);
+      assertNotNull(message);
+      message.acknowledge();
+      
 
-      session.commit();
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
+         session.rollback();
+      }
 
       ClientConsumer consumer = session.createConsumer(queueName);
 
@@ -561,6 +593,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receiveImmediate();
       Assert.assertNull(message);
+      
+      
+      message = consumer2.receive(5000);
+      assertNotNull(message);
+      
+      message.acknowledge();
+      
+      session.commit();
 
       session.close();
 
@@ -572,7 +612,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testXADuplicateDetection1() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -651,7 +691,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testXADuplicateDetection2() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -732,7 +772,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
    public void testXADuplicateDetection3() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -809,10 +849,168 @@ public class DuplicateDetectionTest extends ServiceTestBase
       locator.close();
    }
 
+   public void testXADuplicateDetectionPrepareAndRollback() throws Exception
+   {
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, false);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+      producer.send(message);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.rollback(xid);
+
+      session.close();
+
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      producer.send(message);
+
+      session.end(xid2, XAResource.TMSUCCESS);
+
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+
+      session.close();
+
+      session = sf.createSession(false, false, false);
+      
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage msgRec = consumer.receive(5000);
+      assertNotNull(msgRec);
+      msgRec.acknowledge();
+
+      session.commit();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+   }
+
+   public void testXADuplicateDetectionPrepareAndRollbackStopServer() throws Exception
+   {
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
+
+      session.createQueue(queueName, queueName, null, true);
+
+      ClientProducer producer = session.createProducer(queueName);
+
+      ClientMessage message = createMessage(session, 0);
+      SimpleString dupID = new SimpleString("abcdefg");
+      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
+      producer.send(message);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.close();
+
+      messagingService.stop();
+
+      messagingService.start();
+
+      sf = locator.createSessionFactory();
+
+      session = sf.createSession(true, false, false);
+
+      session.start(xid, XAResource.TMJOIN);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.rollback(xid);
+
+      session.close();
+
+      Xid xid2 = new XidImpl("xa2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+
+      session = sf.createSession(true, false, false);
+
+      session.start(xid2, XAResource.TMNOFLAGS);
+
+      session.start();
+
+      producer = session.createProducer(queueName);
+
+      producer.send(message);
+
+      session.end(xid2, XAResource.TMSUCCESS);
+
+      session.prepare(xid2);
+
+      session.commit(xid2, false);
+
+      session.close();
+
+      session = sf.createSession(false, false, false);
+
+      session.start();
+
+      ClientConsumer consumer = session.createConsumer(queueName);
+
+      ClientMessage msgRec = consumer.receive(5000);
+      assertNotNull(msgRec);
+      msgRec.acknowledge();
+
+      session.commit();
+
+      session.close();
+
+      sf.close();
+
+      locator.close();
+   }
+
    public void testXADuplicateDetection4() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -862,9 +1060,16 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.end(xid2, XAResource.TMSUCCESS);
 
-      session.prepare(xid2);
+      try
+      {
+         session.prepare(xid2);
+         fail("Should throw an exception here!");
+      }
+      catch (XAException expected)
+      {
+      }
 
-      session.commit(xid2, false);
+      session.rollback(xid2);
 
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
@@ -913,7 +1118,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1000,7 +1205,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1082,7 +1287,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1175,7 +1380,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1277,7 +1482,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1364,7 +1569,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -1453,7 +1658,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, false, false);
@@ -1513,14 +1718,34 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      session.commit();
+
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
+         session.rollback();
+      }
+
       message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 
       message = createMessage(session, 2);
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      session.commit();
+      
+      try
+      {
+         session.commit();
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(e.getCode(), HornetQException.DUPLICATE_ID_REJECTED);
+         session.rollback();
+      }
+
       message2 = consumer.receiveImmediate();
       Assert.assertNull(message2);
 
@@ -1548,7 +1773,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -1651,7 +1876,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -1752,7 +1977,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       messagingService2.start();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-      
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(true, false, false);
@@ -1820,110 +2045,17 @@ public class DuplicateDetectionTest extends ServiceTestBase
       producer.send(message);
 
       session.end(xid2, XAResource.TMSUCCESS);
-      session.prepare(xid2);
-      session.commit(xid2, false);
-
-      Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid3, XAResource.TMNOFLAGS);
-
-      ClientMessage message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
-
-      message2 = consumer.receiveImmediate();
-      Assert.assertNull(message2);
-
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      messagingService2.stop();
-   }
-
-   public void testPersistXA2() throws Exception
-   {
-      messagingService.stop();
-
-      Configuration conf = createDefaultConfig();
-
-      conf.setIDCacheSize(cacheSize);
-
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
-
-      messagingService2.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      try
+      {
+         session.prepare(xid2);
+         fail("Should throw an exception here!");
+      }
+      catch (XAException expected)
+      {
+      }
       
-      ClientSessionFactory sf = locator.createSessionFactory();
+      session.rollback(xid2);
 
-      ClientSession session = sf.createSession(true, false, false);
-
-      Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid, XAResource.TMNOFLAGS);
-
-      session.start();
-
-      final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
-
-      session.createQueue(queueName, queueName, null, false);
-
-      ClientProducer producer = session.createProducer(queueName);
-
-      ClientConsumer consumer = session.createConsumer(queueName);
-
-      ClientMessage message = createMessage(session, 1);
-      SimpleString dupID = new SimpleString("abcdefg");
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-      producer.send(message);
-
-      message = createMessage(session, 2);
-      SimpleString dupID2 = new SimpleString("hijklmnopqr");
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
-      producer.send(message);
-
-      session.end(xid, XAResource.TMSUCCESS);
-      session.prepare(xid);
-
-      session.close();
-
-      sf.close();
-
-      messagingService2.stop();
-
-      messagingService2 = HornetQServers.newHornetQServer(conf);
-
-      messagingService2.start();
-
-      sf = locator.createSessionFactory();
-
-      session = sf.createSession(true, false, false);
-
-      Xid xid2 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
-
-      session.start(xid2, XAResource.TMNOFLAGS);
-
-      session.start();
-
-      session.createQueue(queueName, queueName, null, false);
-
-      producer = session.createProducer(queueName);
-
-      consumer = session.createConsumer(queueName);
-
-      message = createMessage(session, 1);
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
-      producer.send(message);
-
-      message = createMessage(session, 2);
-      message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
-      producer.send(message);
-
-      session.end(xid2, XAResource.TMSUCCESS);
-      session.prepare(xid2);
-      session.commit(xid2, false);
 
       Xid xid3 = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
@@ -1955,7 +2087,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      messagingService = HornetQServers.newHornetQServer(conf, false);
+      messagingService = HornetQServers.newHornetQServer(conf, true);
 
       messagingService.start();
    }

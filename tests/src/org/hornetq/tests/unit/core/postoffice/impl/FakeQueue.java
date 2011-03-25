@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.unit.core.postoffice.impl;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -27,6 +26,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
+import org.hornetq.utils.LinkedListIterator;
 
 /**
  * A FakeQueue
@@ -38,6 +38,24 @@ import org.hornetq.core.transaction.Transaction;
 public class FakeQueue implements Queue
 {
    
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#isInternalQueue()
+    */
+   public boolean isInternalQueue()
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#setInternalQueue(boolean)
+    */
+   public void setInternalQueue(boolean internalQueue)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
    PageSubscription subs;
    
    public boolean isDirectDeliver()
@@ -64,10 +82,9 @@ public class FakeQueue implements Queue
       
    }
 
-   public void blockOnExecutorFuture()
+   public boolean blockOnExecutorFuture()
    {
-      // TODO Auto-generated method stub
-      
+      return true;
    }
 
    public void addHead(MessageReference ref)
@@ -166,7 +183,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.server.MessageReference)
     */
-   public void cancel(final MessageReference reference) throws Exception
+   public void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
       // TODO Auto-generated method stub
 
@@ -211,7 +228,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference)
     */
-   public boolean checkDLQ(final MessageReference ref) throws Exception
+   public boolean checkRedelivery(final MessageReference ref, final long timeBase) throws Exception
    {
       // TODO Auto-generated method stub
       return false;
@@ -431,7 +448,7 @@ public class FakeQueue implements Queue
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#iterator()
     */
-   public Iterator<MessageReference> iterator()
+   public LinkedListIterator<MessageReference> iterator()
    {
       // TODO Auto-generated method stub
       return null;
@@ -619,6 +636,24 @@ public class FakeQueue implements Queue
    public void setPageSubscription(PageSubscription sub)
    {
       this.subs = sub;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#moveReference(long, org.hornetq.api.core.SimpleString, boolean)
+    */
+   public boolean moveReference(long messageID, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
+    */
+   public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
    }
 
 }

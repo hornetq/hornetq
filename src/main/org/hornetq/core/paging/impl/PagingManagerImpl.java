@@ -69,15 +69,38 @@ public class PagingManagerImpl implements PagingManager
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
+      addressSettingsRepository.registerListener(this);
       this.storageManager = storageManager;
    }
 
    // Public
    // ---------------------------------------------------------------------------------------------------------------------------
 
+   
+   // Hierarchical changes listener
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
+    */
+   public void onChange()
+   {
+      reaplySettings();
+   }
+
+
+   
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
+   public void reaplySettings()
+   {
+      for (PagingStore store : stores.values())
+      {
+         AddressSettings settings = this.addressSettingsRepository.getMatch(store.getAddress().toString());
+         store.applySetting(settings);
+      }
+   }
+   
    public SimpleString[] getStoreNames()
    {
       Set<SimpleString> names = stores.keySet();

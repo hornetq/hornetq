@@ -107,6 +107,9 @@ public class ClusterConnectionBridge extends BridgeImpl
       this.managementNotificationAddress = managementNotificationAddress;
       this.flowRecord = flowRecord;
       this.connector = connector;
+      
+      // we need to disable DLQ check on the clustered bridges
+      queue.setInternalQueue(true);
    }
 
    @Override
