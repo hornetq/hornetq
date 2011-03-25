@@ -950,6 +950,30 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    {
       setStarted(false);
    }
+   
+   public void waitContextCompletion()
+   {
+      OperationContext formerCtx = storageManager.getContext();
+      
+      try
+      {
+         try
+         {
+            if (!storageManager.waitOnOperations(10000))
+            {
+               log.warn("Couldn't finish context execution in 10 seconds", new Exception ("warning"));
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
+      }
+      finally
+      {
+         storageManager.setContext(formerCtx);
+      }
+   }
 
    public void close(final boolean failed)
    {
@@ -969,6 +993,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             {
                try
                {
+                  System.out.println("Finishing close");
                   doClose(failed);
                }
                catch (Exception e)

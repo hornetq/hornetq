@@ -652,6 +652,7 @@ public class HornetQServerImpl implements HornetQServer
       for (ServerSession session : sessions.values())
       {
          session.close(true);
+         session.waitContextCompletion();
       }
 
       remotingService.stop();
