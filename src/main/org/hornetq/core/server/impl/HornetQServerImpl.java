@@ -642,6 +642,16 @@ public class HornetQServerImpl implements HornetQServer
          }
 
       }
+      
+      // We close all the exception in an attempt to let any pending IO to finish
+      // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
+      // It may still be possible to have this scenario on a real failure (without the use of XA)
+      // But at least we will do our best to avoid it on regular shutdowns
+      for (ServerSession session : sessions.values())
+      {
+    	 log.info("closing a session" );
+         session.close(true);
+      }
 
       remotingService.stop();
 

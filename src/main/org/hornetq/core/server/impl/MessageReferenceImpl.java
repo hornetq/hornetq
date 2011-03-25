@@ -175,7 +175,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       return "Reference[" + getMessage().getMessageID() +
              "]:" +
-             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE");
+             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE") + ":" + getMessage() ;
    }
    // Package protected ---------------------------------------------
 

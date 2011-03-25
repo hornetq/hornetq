@@ -1062,10 +1062,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             StringBuffer warnMessage = new StringBuffer();
             warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
-            for (SimpleString key : message.getPropertyNames())
-            {
-               warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
-            }
+            warnMessage.append(message.toString());
             PostOfficeImpl.log.warn(warnMessage.toString());
             
             if (context.getTransaction() != null)
@@ -1105,10 +1102,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             StringBuffer warnMessage = new StringBuffer();
             warnMessage.append("Duplicate message detected - message will not be routed. Message information:\n");
-            for (SimpleString key : message.getPropertyNames())
-            {
-               warnMessage.append(key + "=" + message.getObjectProperty(key) + "\n");
-            }
+            warnMessage.append(message.toString());
             PostOfficeImpl.log.warn(warnMessage.toString());
 
             if (context.getTransaction() != null)

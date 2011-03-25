@@ -635,7 +635,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void resetIfNeeded() throws HornetQException
    {
-      if(rollbackOnly)
+      if (rollbackOnly)
       {
          log.warn("resetting session after failure");
          rollback(false);
@@ -1204,7 +1204,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkXA();
 
-      //we should never throw rollback if we have already prepared
+      // we should never throw rollback if we have already prepared
       if (rollbackOnly)
       {
          log.warn("committing transaction after failover occurred, any non persistent messages may be lost");
@@ -1223,8 +1223,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
-            //if we retry and its not there the assume that it was committed
-            if(xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
+            // if we retry and its not there the assume that it was committed
+            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
             {
                return;
             }
@@ -1395,7 +1395,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             }
             catch (HornetQException e1)
             {
-               //ignore and rollback
+               // ignore and rollback
             }
             log.warn("failover occurred during prepare rolling back");
             try
@@ -1481,8 +1481,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          if (response.isError())
          {
-            //if we retry and its not there the assume that it was rolled back
-            if(xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
+            // if we retry and its not there the assume that it was rolled back
+            if (xaRetry && response.getResponseCode() == XAException.XAER_NOTA)
             {
                return;
             }
@@ -1557,7 +1557,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
-         //we can retry this only because we know for sure that no work would have been done
+         // we can retry this only because we know for sure that no work would have been done
          if (e.getCode() == HornetQException.UNBLOCKED)
          {
             try
