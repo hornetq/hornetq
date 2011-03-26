@@ -47,6 +47,10 @@ public interface MessageReference
    int getDeliveryCount();
 
    void setDeliveryCount(int deliveryCount);
+   
+   void setPersistedCount(int deliveryCount);
+   
+   int getPersistedCount();
 
    void incrementDeliveryCount();
 

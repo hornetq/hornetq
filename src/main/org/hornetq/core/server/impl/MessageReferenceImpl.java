@@ -36,6 +36,8 @@ public class MessageReferenceImpl implements MessageReference
 
    private volatile int deliveryCount;
 
+   private volatile int persistedCount;
+
    private volatile long scheduledDeliveryTime;
 
    private final ServerMessage message;
@@ -91,6 +93,23 @@ public class MessageReferenceImpl implements MessageReference
    }
 
    // MessageReference implementation -------------------------------
+
+   /**
+    * @return the persistedCount
+    */
+   public int getPersistedCount()
+   {
+      return persistedCount;
+   }
+
+   /**
+    * @param persistedCount the persistedCount to set
+    */
+   public void setPersistedCount(int persistedCount)
+   {
+      this.persistedCount = persistedCount;
+   }
+
    public MessageReference copy(final Queue queue)
    {
       return new MessageReferenceImpl(this, queue);
@@ -109,6 +128,7 @@ public class MessageReferenceImpl implements MessageReference
    public void setDeliveryCount(final int deliveryCount)
    {
       this.deliveryCount = deliveryCount;
+      this.persistedCount = deliveryCount;
    }
 
    public void incrementDeliveryCount()
@@ -145,7 +165,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       queue.referenceHandled();
    }
-   
+
    public boolean isPaged()
    {
       return false;
@@ -167,7 +187,6 @@ public class MessageReferenceImpl implements MessageReference
       queue.acknowledge(tx, this);
    }
 
-
    // Public --------------------------------------------------------
 
    @Override
@@ -175,7 +194,9 @@ public class MessageReferenceImpl implements MessageReference
    {
       return "Reference[" + getMessage().getMessageID() +
              "]:" +
-             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE") + ":" + getMessage() ;
+             (getMessage().isDurable() ? "RELIABLE" : "NON-RELIABLE") +
+             ":" +
+             getMessage();
    }
    // Package protected ---------------------------------------------
 

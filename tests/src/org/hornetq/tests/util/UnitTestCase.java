@@ -875,25 +875,7 @@ public class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
-      OperationContextImpl.clearContext();
-
-      deleteDirectory(new File(getTestDir()));
-
-      int invmSize = InVMRegistry.instance.size();
-      if (invmSize > 0)
-      {
-         InVMRegistry.instance.clear();
-         fail("invm registry still had acceptors registered");
-      }
-
-      if (AsynchronousFileImpl.getTotalMaxIO() != 0)
-      {
-         AsynchronousFileImpl.resetMaxAIO();
-         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
-      }
-      
-      // We shutdown the global pools to give a better isolation between tests
-      ServerLocatorImpl.clearThreadPools();
+      cleanupPools();
 
       Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
@@ -965,6 +947,32 @@ public class UnitTestCase extends TestCase
       //assertFalse("Thread Failed", failedThread);
 
       super.tearDown();
+   }
+
+   /**
+    * 
+    */
+   protected void cleanupPools()
+   {
+      OperationContextImpl.clearContext();
+
+      deleteDirectory(new File(getTestDir()));
+
+      int invmSize = InVMRegistry.instance.size();
+      if (invmSize > 0)
+      {
+         InVMRegistry.instance.clear();
+         fail("invm registry still had acceptors registered");
+      }
+
+      if (AsynchronousFileImpl.getTotalMaxIO() != 0)
+      {
+         AsynchronousFileImpl.resetMaxAIO();
+         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+      }
+      
+      // We shutdown the global pools to give a better isolation between tests
+      ServerLocatorImpl.clearThreadPools();
    }
 
    protected byte[] autoEncode(final Object... args)

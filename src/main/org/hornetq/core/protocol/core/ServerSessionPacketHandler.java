@@ -114,8 +114,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
 
    private final ServerSession session;
 
-   private final OperationContext sessionContext;
-
    // Storagemanager here is used to set the Context
    private final StorageManager storageManager;
 
@@ -126,15 +124,12 @@ public class ServerSessionPacketHandler implements ChannelHandler
    private final boolean direct;
 
    public ServerSessionPacketHandler(final ServerSession session,
-                                     final OperationContext sessionContext,
                                      final StorageManager storageManager,
                                      final Channel channel)
    {
       this.session = session;
 
       this.storageManager = storageManager;
-
-      this.sessionContext = sessionContext;
 
       this.channel = channel;
 
@@ -197,7 +192,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       byte type = packet.getType();
 
-      storageManager.setContext(sessionContext);
+      storageManager.setContext(session.getSessionContext());
 
       Packet response = null;
       boolean flush = false;

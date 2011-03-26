@@ -94,7 +94,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       checkFreePort(5447);
       if (InVMRegistry.instance.size() > 0)
       {
-         System.exit(0);
+         fail("InVMREgistry size > 0");
       }
    }
 

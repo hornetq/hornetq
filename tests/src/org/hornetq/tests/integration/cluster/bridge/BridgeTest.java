@@ -682,8 +682,7 @@ public class BridgeTest extends ServiceTestBase
          server0.getConfiguration().setQueueConfigurations(queueConfigs0);
 
          server0.start();
-         
-         
+
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
 
@@ -710,30 +709,30 @@ public class BridgeTest extends ServiceTestBase
             producer0.send(message);
          }
 
-
          server1.start();
-         
+
          // Inserting the duplicateIDs so the bridge will fail in a few
          {
             long ids[] = new long[100];
-            
+
             Queue queue = server0.locateQueue(new SimpleString(queueName0));
             LinkedListIterator<MessageReference> iterator = queue.iterator();
-            
-            for (int i = 0 ; i < 100; i++)
+
+            for (int i = 0; i < 100; i++)
             {
                iterator.hasNext();
                ids[i] = iterator.next().getMessage().getMessageID();
             }
-            
+
             iterator.close();
 
-            DuplicateIDCache duplicateTargetCache = server1.getPostOffice().getDuplicateIDCache(PostOfficeImpl.BRIDGE_CACHE_STR.concat(forwardAddress));
-            
+            DuplicateIDCache duplicateTargetCache = server1.getPostOffice()
+                                                           .getDuplicateIDCache(PostOfficeImpl.BRIDGE_CACHE_STR.concat(forwardAddress));
+
             TransactionImpl tx = new TransactionImpl(server1.getStorageManager());
             for (long id : ids)
             {
-               byte [] duplicateArray = BridgeImpl.getDuplicateBytes(server0.getNodeManager().getUUID(), id);
+               byte[] duplicateArray = BridgeImpl.getDuplicateBytes(server0.getNodeManager().getUUID(), id);
                duplicateTargetCache.addToCache(duplicateArray, tx);
             }
             tx.commit();
@@ -946,9 +945,23 @@ public class BridgeTest extends ServiceTestBase
             locator.close();
          }
 
-         server0.stop();
+         try
+         {
+             server0.stop();
+         }
+         catch(Exception ignored)
+         {
+            
+         }
 
-         server1.stop();
+         try
+         {
+             server1.stop();
+         }
+         catch(Exception ignored)
+         {
+            
+         }
       }
 
    }
@@ -1255,7 +1268,7 @@ public class BridgeTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       clearData();
-      super.setUp();
+      super.tearDown();
    }
 
 }
