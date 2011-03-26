@@ -200,7 +200,7 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
       }
       if (secondCompactAt == currentOperation)
       {
-         journal.compact();
+         journal.testCompact();
       }
 
       currentOperation++;
@@ -236,7 +236,7 @@ public abstract class MixupCompactorBase extends JournalImplTestBase
          {
             try
             {
-               journal.compact();
+               journal.testCompact();
             }
             catch (Exception e)
             {

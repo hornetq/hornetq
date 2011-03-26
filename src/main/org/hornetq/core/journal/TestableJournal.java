@@ -53,7 +53,7 @@ public interface TestableJournal extends Journal
 
    boolean isAutoReclaim();
 
-   void compact() throws Exception;
+   void testCompact() throws Exception;
    
    JournalFile getCurrentFile();
    

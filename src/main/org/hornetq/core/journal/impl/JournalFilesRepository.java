@@ -79,7 +79,9 @@ public class JournalFilesRepository
 
    private final int userVersion;
 
-   private Executor filesExecutor;
+   private Executor openFilesExecutor;
+   
+   private Executor closeFilesExecutor;
 
    // Static --------------------------------------------------------
 
@@ -104,9 +106,10 @@ public class JournalFilesRepository
 
    // Public --------------------------------------------------------
 
-   public void setExecutor(final Executor executor)
+   public void setExecutor(final Executor fileExecutor, final Executor closeExecutor)
    {
-      filesExecutor = executor;
+      this.openFilesExecutor = fileExecutor;
+      this.closeFilesExecutor = closeExecutor;
    }
 
    public void clear()
@@ -358,13 +361,13 @@ public class JournalFilesRepository
          }
       };
 
-      if (filesExecutor == null)
+      if (openFilesExecutor == null)
       {
          run.run();
       }
       else
       {
-         filesExecutor.execute(run);
+         openFilesExecutor.execute(run);
       }
 
       JournalFile nextFile = null;
@@ -417,13 +420,15 @@ public class JournalFilesRepository
          }
       };
 
-      if (filesExecutor == null)
+      // We can't close files while the compactor is running
+      // as we may be closing files that are being read by the compactor
+      if (closeFilesExecutor == null)
       {
          run.run();
       }
       else
       {
-         filesExecutor.execute(run);
+         closeFilesExecutor.execute(run);
       }
 
    }

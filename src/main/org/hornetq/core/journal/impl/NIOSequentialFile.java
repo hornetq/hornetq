@@ -174,10 +174,14 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return read(bytes, null);
    }
 
-   public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
+   public synchronized int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
    {
       try
       {
+         if (channel == null)
+         {
+            throw new Exception("File " + this.getFileName() + " has a null channel");
+         }
          int bytesRead = channel.read(bytes);
 
          if (callback != null)

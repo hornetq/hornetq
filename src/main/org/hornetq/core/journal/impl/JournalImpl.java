@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1551,13 +1552,67 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       return info;
    }
+   
+   
+   public void testCompact() throws Exception
+   {
+      final AtomicInteger errors = new AtomicInteger(0);
+      
+      final CountDownLatch latch = new CountDownLatch(1);
+      
+      compactorRunning.set(true);
+      
+      // We can't use the executor for the compacting... or we would dead lock because of file open and creation
+      // operations (that will use the executor)
+      compactorExecutor.execute(new Runnable()
+      {
+         public void run()
+         {
+
+            try
+            {
+               JournalImpl.this.compact();
+            }
+            catch (Throwable e)
+            {
+               errors.incrementAndGet();
+               JournalImpl.log.error(e.getMessage(), e);
+               e.printStackTrace();
+            }
+            finally
+            {
+               latch.countDown();
+            }
+         }
+      });
+      
+      try
+      {
+         if (!latch.await(60, TimeUnit.SECONDS))
+         {
+            throw new RuntimeException("Didn't finish compact timely");
+         }
+         
+         if (errors.get() > 0)
+         {
+            throw new RuntimeException("Error during testCompact, look at the logs");
+         }
+      }
+      finally
+      {
+         compactorRunning.set(false);
+      }
+   }
 
    /**
     * 
     *  Note: This method can't be called from the main executor, as it will invoke other methods depending on it.
     *  
+    *  Note: only synchronized methods on journal are methods responsible for the life-cycle such as stop, start
+    *        records will still come as this is being executed
+    *  
     */
-   public synchronized void compact() throws Exception
+   protected synchronized void compact() throws Exception
    {
 
       if (compactor != null)
@@ -2489,7 +2544,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
       });
 
-      filesRepository.setExecutor(filesExecutor);
+      filesRepository.setExecutor(filesExecutor, compactorExecutor);
 
       fileFactory.start();
 
@@ -2521,7 +2576,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          filesExecutor.shutdown();
 
-         filesRepository.setExecutor(null);
+         filesRepository.setExecutor(null, null);
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
          {
@@ -2892,7 +2947,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             callback = null;
          }
 
-         if (sync)
+         if (sync && !compactorRunning.get())
          {
             // In an edge case the transaction could still have pending data from previous files.
             // This shouldn't cause any blocking issues, as this is here to guarantee we cover all possibilities
@@ -2956,7 +3011,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       if (autoReclaim && !compactorRunning.get())
       {
-         filesExecutor.execute(new Runnable()
+         compactorExecutor.execute(new Runnable()
          {
             public void run()
             {
