@@ -131,6 +131,19 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       Assert.assertFalse(iterNewFiles.hasNext());
 
    }
+   
+//   public void testRepeat() throws Exception
+//   {
+//      int i = 0 ;
+//      
+//      while (true)
+//      {
+//         System.out.println("#test (" + (i++) + ")");
+//         testCrashRenamingFiles();
+//         tearDown();
+//         setUp();
+//      }
+//   }
 
    public void testCrashRenamingFiles() throws Exception
    {
@@ -229,7 +242,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.appendDeleteRecord(i, true);
       }
 
-      journal.compact();
+      journal.testCompact();
 
       journal.stop();
 
@@ -277,7 +290,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       finishCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
 
@@ -316,7 +329,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       finishCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
 
@@ -347,7 +360,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       finishCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
 
@@ -367,6 +380,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       startJournal();
 
+      journal.setAutoReclaim(false);
+
       load();
 
       add(1);
@@ -375,7 +390,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       rollback(2);
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
 
@@ -408,7 +423,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      journal.compact();
+      journal.testCompact();
 
       add(10);
 
@@ -437,9 +452,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       updateTx(2, 1);
 
-      journal.compact();
+      journal.testCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       commit(2);
 
@@ -610,7 +625,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             try
             {
-               journal.compact();
+               journal.testCompact();
             }
             catch (Exception e)
             {
@@ -769,7 +784,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       if (createControlFile && deleteControlFile && renameFilesAfterCompacting)
       {
-         journal.compact();
+         journal.testCompact();
       }
 
       stopJournal();
@@ -822,7 +837,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       add(newRecord);
       update(newRecord);
 
-      journal.compact();
+      journal.testCompact();
 
       System.out.println("Debug after compact\n" + journal.debug());
 
@@ -874,7 +889,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -915,7 +930,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       finishCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -966,7 +981,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       add(newRecord);
       update(newRecord);
 
-      journal.compact();
+      journal.testCompact();
 
       System.out.println("Debug after compact\n" + journal.debug());
 
@@ -1025,7 +1040,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1117,7 +1132,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       finishCompact();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1201,11 +1216,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       System.out.println(journal.debug());
       System.out.println("*****************************************");
 
-      journal.compact();
+      journal.testCompact();
 
       add(idGenerator.generateID());
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1326,11 +1341,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       journal.forceMoveNextFile();
 
       // This operation used to be journal.cleanup(journal.getDataFiles()[0]); when cleanup was still in place
-      journal.compact();
+      journal.testCompact();
 
       journal.checkReclaimStatus();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1384,7 +1399,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       ExportJournal.exportJournal(getTestDir(), filePrefix, fileExtension, 2, this.fileSize, "/tmp/out4.dmp");
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1432,7 +1447,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.checkReclaimStatus();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1492,7 +1507,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.checkReclaimStatus();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1552,7 +1567,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.checkReclaimStatus();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1619,7 +1634,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      journal.compact();
+      journal.testCompact();
 
       stopJournal();
       createJournal();
@@ -1829,7 +1844,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
                {
                   Thread.sleep(500);
                   System.out.println("Compacting");
-                  ((JournalImpl)storage.getMessageJournal()).compact();
+                  ((JournalImpl)storage.getMessageJournal()).testCompact();
                   ((JournalImpl)storage.getMessageJournal()).checkReclaimStatus();
                }
             }

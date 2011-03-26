@@ -185,7 +185,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          {
             try
             {
-               journal.compact();
+               journal.testCompact();
             }
             catch (Throwable e)
             {
