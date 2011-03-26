@@ -25,8 +25,14 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.HornetQServer;
@@ -255,11 +261,6 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    protected abstract void setBody(ClientMessage message) throws Exception;
 
    protected abstract boolean checkSize(ClientMessage message);
-
-   protected int getNumThreads()
-   {
-      return 10;
-   }
 
    protected ClientSession createAutoCommitSession(final ClientSessionFactory sf) throws Exception
    {
@@ -1196,6 +1197,11 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    protected int getNumIterations()
    {
       return 2;
+   }
+   
+   protected int getNumThreads()
+   {
+      return 10;
    }
 
    @Override

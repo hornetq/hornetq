@@ -1062,8 +1062,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
                channel.returnBlocking();
             }
-
-            channel.setTransferring(false);
          }
          catch (Throwable t)
          {
@@ -1071,6 +1069,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
          finally
          {
+            channel.setTransferring(false);
             channel.unlock();
          }
 
