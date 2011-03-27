@@ -1655,8 +1655,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             // We need to move to the next file, as we need a clear start for negatives and positives counts
             moveNextFile(false);
 
-            filesRepository.drainClosedFiles();
-
             // Take the snapshots and replace the structures
 
             dataFilesToProcess.addAll(filesRepository.getDataFiles());
@@ -2544,7 +2542,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
       });
 
-      filesRepository.setExecutor(filesExecutor, compactorExecutor);
+      filesRepository.setExecutor(filesExecutor);
 
       fileFactory.start();
 
@@ -2576,7 +2574,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          filesExecutor.shutdown();
 
-         filesRepository.setExecutor(null, null);
+         filesRepository.setExecutor(null);
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
          {
@@ -2589,8 +2587,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          {
             currentFile.getFile().close();
          }
-
-         filesRepository.drainClosedFiles();
 
          filesRepository.clear();
 
@@ -2947,14 +2943,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             callback = null;
          }
 
-         if (sync && !compactorRunning.get())
-         {
-            // In an edge case the transaction could still have pending data from previous files.
-            // This shouldn't cause any blocking issues, as this is here to guarantee we cover all possibilities
-            // on guaranteeing the data is on the disk
-            tx.syncPreviousFiles(fileFactory.isSupportsCallbacks(), currentFile);
-         }
-
          // We need to add the number of records on currentFile if prepare or commit
          if (completeTransaction)
          {
@@ -2983,7 +2971,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    }
 
    // You need to guarantee lock.acquire() before calling this method
-   private void moveNextFile(final boolean scheduleReclaim) throws InterruptedException
+   private void moveNextFile(final boolean scheduleReclaim) throws Exception
    {
       filesRepository.closeFile(currentFile);
 
@@ -3017,7 +3005,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             {
                try
                {
-                  filesRepository.drainClosedFiles();
                   if (!checkReclaimStatus())
                   {
                      checkCompact();

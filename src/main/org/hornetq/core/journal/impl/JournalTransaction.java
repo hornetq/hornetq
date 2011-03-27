@@ -193,38 +193,6 @@ public class JournalTransaction
       data.setNumberOfRecords(getCounter(currentFile));
    }
 
-   /** 99.99 % of the times previous files will be already synced, since they are scheduled to be closed.
-    *  Because of that, this operation should be almost very fast.*/
-   public void syncPreviousFiles(final boolean callbacks, final JournalFile currentFile) throws Exception
-   {
-      if (callbacks)
-      {
-         if (callbackList != null)
-         {
-            for (Map.Entry<JournalFile, TransactionCallback> entry : callbackList.entrySet())
-            {
-               if (entry.getKey() != currentFile)
-               {
-                  entry.getValue().waitCompletion();
-               }
-            }
-         }
-      }
-      else
-      {
-         if (pendingFiles != null)
-         {
-            for (JournalFile file : pendingFiles)
-            {
-               if (file != currentFile)
-               {
-                  file.getFile().waitForClose();
-               }
-            }
-         }
-      }
-   }
-
    public TransactionCallback getCallback(final JournalFile file) throws Exception
    {
       if (callbackList == null)
