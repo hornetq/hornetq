@@ -59,8 +59,6 @@ public class JournalFilesRepository
 
    private final BlockingDeque<JournalFile> dataFiles = new LinkedBlockingDeque<JournalFile>();
 
-   private final BlockingQueue<JournalFile> pendingCloseFiles = new LinkedBlockingDeque<JournalFile>();
-
    private final ConcurrentLinkedQueue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 
    private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
@@ -80,8 +78,6 @@ public class JournalFilesRepository
    private final int userVersion;
 
    private Executor openFilesExecutor;
-   
-   private Executor closeFilesExecutor;
 
    // Static --------------------------------------------------------
 
@@ -106,17 +102,14 @@ public class JournalFilesRepository
 
    // Public --------------------------------------------------------
 
-   public void setExecutor(final Executor fileExecutor, final Executor closeExecutor)
+   public void setExecutor(final Executor fileExecutor)
    {
       this.openFilesExecutor = fileExecutor;
-      this.closeFilesExecutor = closeExecutor;
    }
 
-   public void clear()
+   public void clear() throws Exception
    {
       dataFiles.clear();
-
-      drainClosedFiles();
 
       freeFiles.clear();
 
@@ -269,7 +262,18 @@ public class JournalFilesRepository
     */
    public synchronized void addFreeFile(final JournalFile file, final boolean renameTmp) throws Exception
    {
-      if (file.getFile().size() != fileSize)
+      long calculatedSize = 0;
+      try
+      {
+         calculatedSize = file.getFile().size();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         System.out.println("Can't get file size on " + file);
+         System.exit(-1);
+      }
+      if (calculatedSize != fileSize)
       {
          JournalFilesRepository.log.warn("Deleting " + file + ".. as it doesn't have the configured size");
          file.getFile().delete();
@@ -315,23 +319,6 @@ public class JournalFilesRepository
    public int getOpenedFilesCount()
    {
       return openedFiles.size();
-   }
-
-   public void drainClosedFiles()
-   {
-      JournalFile file;
-      try
-      {
-         while ((file = pendingCloseFiles.poll()) != null)
-         {
-            file.getFile().close();
-         }
-      }
-      catch (Exception e)
-      {
-         JournalFilesRepository.log.warn(e.getMessage(), e);
-      }
-
    }
 
    /** 
@@ -406,31 +393,11 @@ public class JournalFilesRepository
       openedFiles.offer(nextOpenedFile);
    }
 
-   public void closeFile(final JournalFile file)
+   public void closeFile(final JournalFile file) throws Exception
    {
       fileFactory.deactivateBuffer();
-      pendingCloseFiles.add(file);
+      file.getFile().close();
       dataFiles.add(file);
-
-      Runnable run = new Runnable()
-      {
-         public void run()
-         {
-            drainClosedFiles();
-         }
-      };
-
-      // We can't close files while the compactor is running
-      // as we may be closing files that are being read by the compactor
-      if (closeFilesExecutor == null)
-      {
-         run.run();
-      }
-      else
-      {
-         closeFilesExecutor.execute(run);
-      }
-
    }
 
    /**
