@@ -39,18 +39,6 @@ public class NIOBufferedJournalCompactTest extends NIOJournalCompactTest
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
-   
-   public void testLoop() throws Exception
-   {
-      int i = 0 ;
-      while (true)
-      {
-         System.out.println("#test " + (i++));
-         testOnRollback();
-         tearDown();
-         setUp();
-      }
-   }
 
    // Protected -----------------------------------------------------
    @Override
