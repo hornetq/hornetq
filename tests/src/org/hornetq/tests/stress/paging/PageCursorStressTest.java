@@ -36,7 +36,6 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
-import org.hornetq.core.paging.cursor.impl.PageSubscriptionImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
@@ -527,11 +526,9 @@ public class PageCursorStressTest extends ServiceTestBase
          assertNull(iterator.next());
       }
 
-      server.stop();
-
       OperationContextImpl.clearContext();
-
-      createServer();
+      
+      ctx = generateCTX();
 
       pageStore = lookupPageStore(ADDRESS);
 
@@ -563,11 +560,7 @@ public class PageCursorStressTest extends ServiceTestBase
          assertEquals(i, readMessage.getMessage().getIntProperty("key").intValue());
       }
 
-      server.stop();
-
       OperationContextImpl.clearContext();
-
-      createServer();
 
       pageStore = lookupPageStore(ADDRESS);
 
@@ -919,63 +912,6 @@ public class PageCursorStressTest extends ServiceTestBase
 
    }
 
-   public void testCloseNonPersistentConsumer() throws Exception
-   {
-
-      final int NUM_MESSAGES = 100;
-
-      PageCursorProvider cursorProvider = lookupCursorProvider();
-
-      PageSubscription cursor = cursorProvider.createSubscription(11, null, false);
-      PageSubscriptionImpl cursor2 = (PageSubscriptionImpl)cursorProvider.createSubscription(12, null, false);
-      
-      this.queueList.add(new FakeQueue(new SimpleString("a"), 11));
-      
-      this.queueList.add(new FakeQueue(new SimpleString("b"), 12));
-
-      int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
-
-      System.out.println("NumberOfPages = " + numberOfPages);
-
-      queue.getPageSubscription().close();
-
-      PagedReference msg;
-      LinkedListIterator<PagedReference> iterator = cursor.iterator();
-      LinkedListIterator<PagedReference> iterator2 = cursor2.iterator();
-      
-      cursor2.bookmark(new PagePositionImpl(1, -1));
-
-      int key = 0;
-      while ((msg = iterator.next()) != null)
-      {
-         System.out.println("key = " + key);
-         assertEquals(key++, msg.getMessage().getIntProperty("key").intValue());
-         cursor.ack(msg);
-      }
-      assertEquals(NUM_MESSAGES, key);
-
-      forceGC();
-
-      for (int i = 0; i < 10; i++)
-      {
-         assertTrue(iterator2.hasNext());
-         msg = iterator2.next();
-         assertEquals(i, msg.getMessage().getIntProperty("key").intValue());
-      }
-
-      assertSame(cursor2.getProvider(), cursorProvider);
-
-      cursor2.close();
-
-      lookupPageStore(ADDRESS).flushExecutors();
-
-      server.stop();
-      createServer();
-      waitCleanup();
-      assertEquals(1, lookupPageStore(ADDRESS).getNumberOfPages());
-
-   }
-
    public void testNoCursors() throws Exception
    {
 
@@ -998,54 +934,6 @@ public class PageCursorStressTest extends ServiceTestBase
       waitCleanup();
       assertEquals(0, lookupPageStore(ADDRESS).getNumberOfPages());
 
-   }
-
-   public void testFirstMessageInTheMiddle() throws Exception
-   {
-
-      final int NUM_MESSAGES = 100;
-
-      PageCursorProvider cursorProvider = lookupCursorProvider();
-
-      PageSubscription cursor = cursorProvider.createSubscription(2, null, false);
-      
-      queueList.add(new FakeQueue(new SimpleString("tmp"), 2));
-
-      int numberOfPages = addMessages(NUM_MESSAGES, 1024 * 1024);
-
-      System.out.println("NumberOfPages = " + numberOfPages);
-
-      PageCache cache = cursorProvider.getPageCache(new PagePositionImpl(5, 0));
-
-      queue.getPageSubscription().close();
-
-      PagePosition startingPos = new PagePositionImpl(5, cache.getNumberOfMessages() / 2);
-      cursor.bookmark(startingPos);
-      PagedMessage msg = cache.getMessage(startingPos.getMessageNr() + 1);
-      msg.initMessage(server.getStorageManager());
-      int key = msg.getMessage().getIntProperty("key").intValue();
-
-      msg = null;
-
-      cache = null;
-      LinkedListIterator<PagedReference> iterator = cursor.iterator();
-
-      PagedReference msgCursor = null;
-      while ((msgCursor = iterator.next()) != null)
-      {
-         assertEquals(key++, msgCursor.getMessage().getIntProperty("key").intValue());
-         cursor.ack(msgCursor);
-      }
-      assertEquals(NUM_MESSAGES, key);
-
-      forceGC();
-
-      // assertTrue(cursorProvider.getCacheSize() < numberOfPages);
-
-      server.stop();
-      createServer();
-      waitCleanup();
-      assertEquals(1, lookupPageStore(ADDRESS).getNumberOfPages());
    }
 
    public void testFirstMessageInTheMiddlePersistent() throws Exception
@@ -1264,6 +1152,8 @@ public class PageCursorStressTest extends ServiceTestBase
       server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
+      
+      queueList.clear();
 
       try
       {

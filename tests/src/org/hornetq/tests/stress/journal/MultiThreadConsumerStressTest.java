@@ -55,12 +55,12 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      setupServer(JournalType.ASYNCIO);
+      setupServer(JournalType.NIO);
    }
 
    public void testProduceAndConsume() throws Throwable
    {
-      int numberOfConsumers = 60;
+      int numberOfConsumers = 5;
       // this test assumes numberOfConsumers == numberOfProducers
       int numberOfProducers = numberOfConsumers;
       int produceMessage = 10000;
@@ -120,7 +120,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       server.stop();
 
-      setupServer(JournalType.ASYNCIO);
+      setupServer(JournalType.NIO);
 
       ClientSession sess = sf.createSession(true, true);
 

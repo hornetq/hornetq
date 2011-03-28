@@ -221,15 +221,9 @@ public class PageStressTest extends ServiceTestBase
          ClientConsumer consumers[] = new ClientConsumer[] { session.createConsumer(queue[0]),
                                                             session.createConsumer(queue[1]) };
 
-         int reads = 0;
-
          while (true)
          {
             int msgs1 = readMessages(session, consumers[0], queue[0]);
-            if (reads++ == 0)
-            {
-               Assert.assertTrue(msgs1 > 0 && msgs1 < NUMBER_OF_MESSAGES);
-            }
             int msgs2 = readMessages(session, consumers[1], queue[1]);
             counters[0] += msgs1;
             counters[1] += msgs2;
