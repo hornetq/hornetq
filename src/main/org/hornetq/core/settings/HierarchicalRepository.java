@@ -26,6 +26,8 @@ public interface HierarchicalRepository<T>
     * @param value the value to hold agains the match
     */
    void addMatch(String match, T value);
+   
+   void addMatch(String match, T value, boolean immutableMatch);
 
    /**
     * return the value held against the nearest match
