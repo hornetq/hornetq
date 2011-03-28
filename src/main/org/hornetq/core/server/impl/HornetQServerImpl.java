@@ -1532,7 +1532,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       for (Map.Entry<String, Set<Role>> entry : configuration.getSecurityRoles().entrySet())
       {
-         securityRepository.addMatch(entry.getKey(), entry.getValue());
+         securityRepository.addMatch(entry.getKey(), entry.getValue(), true);
       }
    }
 
@@ -1552,7 +1552,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       for (Map.Entry<String, AddressSettings> entry : configuration.getAddressesSettings().entrySet())
       {
-         addressSettingsRepository.addMatch(entry.getKey(), entry.getValue());
+         addressSettingsRepository.addMatch(entry.getKey(), entry.getValue(), true);
       }
    }
 

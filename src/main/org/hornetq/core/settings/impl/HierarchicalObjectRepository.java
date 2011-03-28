@@ -17,8 +17,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.core.logging.Logger;
@@ -45,6 +47,15 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     * all the matches
     */
    private final Map<String, Match<T>> matches = new HashMap<String, Match<T>>();
+   
+   /**
+    * Certain values cannot be removed after installed.
+    * This is because we read a few records from the main config.
+    * JBoss AS deployer may remove them on undeploy, while we don't want to accept that since
+    * this could cause issues on shutdown.
+    * Notice you can still change these values. You just can't remove them.
+    */
+   private final Set<String> immutables = new HashSet<String>();
 
    /**
     * a regex comparator
@@ -61,15 +72,26 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    private final ArrayList<HierarchicalRepositoryChangeListener> listeners = new ArrayList<HierarchicalRepositoryChangeListener>();
 
+   
+   public void addMatch(final String match, final T value)
+   {
+      addMatch(match, value, false);
+   }
+   
+
    /**
     * Add a new match to the repository
     *
     * @param match The regex to use to match against
     * @param value the value to hold agains the match
     */
-   public void addMatch(final String match, final T value)
+   public void addMatch(final String match, final T value, final boolean immutableMatch)
    {
       clearCache();
+      if (immutableMatch)
+      {
+         immutables.add(match);
+      }
       Match.verify(match);
       Match<T> match1 = new Match<T>(match);
       match1.setValue(value);
@@ -158,9 +180,18 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void removeMatch(final String match)
    {
-      matches.remove(match);
-      clearCache();
-      onChange();
+      new Exception("Removing match " + match).printStackTrace();
+      boolean isImmutable = immutables.contains(match);
+      if (isImmutable)
+      {
+         log.info("Cannot remove match "  + match + " since it came from a main config");
+      }
+      else
+      {
+         matches.remove(match);
+         clearCache();
+         onChange();
+      }
    }
 
    public void registerListener(final HierarchicalRepositoryChangeListener listener)
