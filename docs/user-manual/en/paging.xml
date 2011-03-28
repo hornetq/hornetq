@@ -140,6 +140,13 @@
                                     they try and send further messages.</entry>
                                 <entry>PAGE</entry>
                             </row>
+                            <row>
+                                <entry><literal>page-max-cache-size</literal></entry>
+                                <entry>The system will keep up to &lt;<literal
+                                        >page-max-cache-size</literal> page files in memory to
+                                    optimize IO during paging navigation.</entry>
+                                <entry>5</entry>
+                            </row>
                         </tbody>
                     </tgroup>
                 </table>
@@ -190,9 +197,8 @@
                 <para>The other 9 queues are empty even though messages have been sent.</para>
             </listitem>
         </itemizedlist>
-        <para>In this example we have to wait until the last queue has delivered some of its
-            messages before we depage and the other queues finally receive some more
-            messages.</para>
+        <para>In this example all the other 9 queues will be consuming messages from the page
+            system. This may cause performance issues if this is an undesirable state.</para>
     </section>
     <section>
         <title>Example</title>
