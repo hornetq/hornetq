@@ -14,6 +14,7 @@
 package org.hornetq.tests.stress.remote;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
@@ -122,11 +123,11 @@ public class PingStressTest extends ServiceTestBase
 
       server.getRemotingService().addInterceptor(noPongInterceptor);
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+      locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+      locator.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
       final ClientSessionFactory csf1 = locator.createSessionFactory();
 
-      csf1.getServerLocator().setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
-      csf1.getServerLocator().setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
-      csf1.getServerLocator().setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
       final int numberOfSessions = 1;
       final int numberOfThreads = 30;
@@ -153,11 +154,11 @@ public class PingStressTest extends ServiceTestBase
             {
 
                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
-               final ClientSessionFactory csf2 = locator.createSessionFactory();
+               locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
+               locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
+               locator.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
-               csf2.getServerLocator().setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
-               csf2.getServerLocator().setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
-               csf2.getServerLocator().setCallTimeout(PingStressTest.PING_INTERVAL * 10);
+               final ClientSessionFactory csf2 = locator.createSessionFactory();
 
                // Start all at once to make concurrency worst
                flagAligned.countDown();
@@ -185,10 +186,15 @@ public class PingStressTest extends ServiceTestBase
                   Thread.sleep(PingStressTest.PING_INTERVAL * (threadNumber % 3));
 
                   session.close();
+                  
+                  csf2.close();
+                  
+                  locator.close();
                }
             }
             catch (Throwable e)
             {
+               e.printStackTrace();
                failure = e;
             }
          }
@@ -202,7 +208,7 @@ public class PingStressTest extends ServiceTestBase
          threads[i].start();
       }
 
-      flagAligned.await();
+      assertTrue(flagAligned.await(10, TimeUnit.SECONDS));
       flagStart.countDown();
 
       Throwable e = null;
@@ -219,6 +225,8 @@ public class PingStressTest extends ServiceTestBase
       {
          throw new Exception("Test Failed", e);
       }
+      
+      csf1.close();
 
    }
 
