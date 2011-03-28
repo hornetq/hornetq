@@ -60,7 +60,7 @@
             different physical volume to the message journal or paging directory.</para>
     </section>
     <section>
-        <title>Setting the limits</title>
+        <title>Configuring Parameters</title>
         <para>Any message larger than a certain size is considered a large message. Large messages
             will be split up and sent in fragments. This is determined by the parameter <literal
                 >min-large-message-size</literal></para>
@@ -78,14 +78,6 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
             </programlisting>
             <para><xref linkend="configuring-transports.client.side"/> will provide more information
                 on how to instantiate the session factory.</para>
-        </section>
-        <section>
-            <title>Compressed Large Messages</title>
-            <para>If you specify the boolean property <literal>compress-large-message</literal> on
-                the <literal>server locator</literal> or <literal>ConnectionFactory</literal> The
-                system will use the ZIP algorithm to compress the message body as the message is
-                transfered to the server's side. Notice that there's no special treatment at the
-                server's side, all the compressing and uncompressing is done at the client.</para>
         </section>
         <section>
             <title>Using JMS</title>
@@ -107,6 +99,14 @@ ClientSessionFactory factory = HornetQClient.createClientSessionFactory();
             <para>If the connection factory is being instantiated directly, the minimum large
                 message size is specified by <literal
                     >HornetQConnectionFactory.setMinLargeMessageSize</literal>.</para>
+        </section>
+        <section>
+            <title>Compressed Large Messages</title>
+            <para>If you specify the boolean property <literal>compress-large-message</literal> on
+                the <literal>server locator</literal> or <literal>ConnectionFactory</literal> The
+                system will use the ZIP algorithm to compress the message body as the message is
+                transfered to the server's side. Notice that there's no special treatment at the
+                server's side, all the compressing and uncompressing is done at the client.</para>
         </section>
     </section>
     <section>
