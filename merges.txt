@@ -5,3 +5,4 @@
 - branch_2_2    - trunk         - 10363:10371       - 25-mar-2011 - Andy
 - branch_2_2    - trunk         - 10373:10374       - 25-mar-2011 - Clebert
 - branch_2_2    - trunk         - 10384:10387       - 27-mar-2011 - Clebert
+- branch_2_2    - trunk         - 10390:10397       - 28-mar-2011 - Clebert
