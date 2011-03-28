@@ -184,7 +184,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       boolean isImmutable = immutables.contains(match);
       if (isImmutable)
       {
-         log.info("Cannot remove match "  + match + " since it came from a main config");
+         log.debug("Cannot remove match "  + match + " since it came from a main config");
       }
       else
       {
