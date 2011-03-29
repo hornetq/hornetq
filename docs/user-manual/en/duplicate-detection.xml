@@ -148,12 +148,4 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
         <para>For more information on cluster connections and how to configure them, please see <xref
                 linkend="clusters"/>.</para>
     </section>
-    <section>
-        <title>Duplicate Detection and Paging</title>
-        <para>HornetQ also uses duplicate detection when paging messages to storage. This is
-            so when a message is depaged from storage and server failure occurs, we do not end up
-            depaging the message more than once which could result in duplicate delivery.</para>
-        <para>For more information on paging and how to configure it, please see <xref
-                linkend="paging" />.</para>
-    </section>
 </chapter>
