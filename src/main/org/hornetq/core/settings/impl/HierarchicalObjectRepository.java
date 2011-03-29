@@ -180,7 +180,6 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
     */
    public void removeMatch(final String match)
    {
-      new Exception("Removing match " + match).printStackTrace();
       boolean isImmutable = immutables.contains(match);
       if (isImmutable)
       {
