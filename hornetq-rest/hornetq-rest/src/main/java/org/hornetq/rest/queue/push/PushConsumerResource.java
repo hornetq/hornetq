@@ -57,7 +57,8 @@ public class PushConsumerResource
 
    public void addRegistration(PushRegistration reg) throws Exception
    {
-      PushConsumer consumer = new PushConsumer(sessionFactory, destination, reg.getId(), reg);
+      if (reg.isEnabled() == false) return;
+      PushConsumer consumer = new PushConsumer(sessionFactory, destination, reg.getId(), reg, pushStore);
       consumer.start();
       consumers.put(reg.getId(), consumer);
    }
@@ -72,7 +73,7 @@ public class PushConsumerResource
       String genId = sessionCounter.getAndIncrement() + "-" + startup;
       registration.setId(genId);
       registration.setDestination(destination);
-      PushConsumer consumer = new PushConsumer(sessionFactory, destination, genId, registration);
+      PushConsumer consumer = new PushConsumer(sessionFactory, destination, genId, registration, pushStore);
       try
       {
          consumer.start();

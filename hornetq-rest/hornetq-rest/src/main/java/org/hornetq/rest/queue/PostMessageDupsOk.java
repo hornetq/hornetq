@@ -24,6 +24,7 @@ public class PostMessageDupsOk extends PostMessage
 {
 
    public void publish(HttpHeaders headers, byte[] body, boolean durable,
+                       Long ttl,
                        Long expiration,
                        Integer priority) throws Exception
    {
@@ -31,7 +32,7 @@ public class PostMessageDupsOk extends PostMessage
       try
       {
          ClientProducer producer = pooled.producer;
-         ClientMessage message = createHornetQMessage(headers, body, durable, expiration, priority, pooled.session);
+         ClientMessage message = createHornetQMessage(headers, body, durable, ttl, expiration, priority, pooled.session);
          producer.send(message);
          pool.add(pooled);
       }
@@ -52,6 +53,7 @@ public class PostMessageDupsOk extends PostMessage
    @POST
    public Response create(@Context HttpHeaders headers,
                           @QueryParam("durable") Boolean durable,
+                          @QueryParam("ttl") Long ttl,
                           @QueryParam("expiration") Long expiration,
                           @QueryParam("priority") Integer priority,
                           @Context UriInfo uriInfo,
@@ -64,7 +66,7 @@ public class PostMessageDupsOk extends PostMessage
          {
             isDurable = durable.booleanValue();
          }
-         publish(headers, body, isDurable, expiration, priority);
+         publish(headers, body, isDurable, ttl, expiration, priority);
       }
       catch (Exception e)
       {

@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class MessageServiceConfiguration
 {
    private int producerSessionPoolSize = 10;
+   private long producerTimeToLive = -1;
    private int timeoutTaskInterval = 1;
    private int consumerSessionTimeoutSeconds = 300;
    private int consumerWindowSize = -1;
@@ -87,6 +88,17 @@ public class MessageServiceConfiguration
       this.queuePushStoreDirectory = queuePushStoreDirectory;
    }
 
+   @XmlElement(name="producer-time-to-live")
+   public long getProducerTimeToLive()
+   {
+      return producerTimeToLive;
+   }
+
+   public void setProducerTimeToLive(long producerTimeToLive)
+   {
+      this.producerTimeToLive = producerTimeToLive;
+   }
+
    @XmlElement(name = "producer-session-pool-size")
    public int getProducerSessionPoolSize()
    {
@@ -130,4 +142,5 @@ public class MessageServiceConfiguration
    {
       this.consumerWindowSize = consumerWindowSize;
    }
+
 }

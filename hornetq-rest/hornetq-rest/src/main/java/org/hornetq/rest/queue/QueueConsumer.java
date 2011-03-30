@@ -139,12 +139,6 @@ public class QueueConsumer
       return checkIndexAndPoll(wait, info, info.getMatchedURIs().get(1), index);
    }
 
-   public synchronized Response runPoll(long wait, UriInfo info, String basePath)
-   {
-      ping();
-      return pollWithIndex(wait, info, basePath, -1);
-   }
-
    protected Response checkIndexAndPoll(long wait, UriInfo info, String basePath, long index)
    {
       ping();
@@ -167,7 +161,14 @@ public class QueueConsumer
       }
 
 
-      return pollWithIndex(wait, info, basePath, index);
+      try
+      {
+         return pollWithIndex(wait, info, basePath, index);
+      }
+      finally
+      {
+         ping(); // ping again as we don't want wait time included in timeout.
+      }
    }
 
    protected Response pollWithIndex(long wait, UriInfo info, String basePath, long index)

@@ -17,20 +17,22 @@ import org.hornetq.rest.queue.push.xml.PushRegistration;
 public class PushConsumer implements MessageHandler
 {
    private static final Logger log = Logger.getLogger(PushConsumer.class);
-   private PushRegistration registration;
+   protected PushRegistration registration;
    protected ClientSessionFactory factory;
    protected ClientSession session;
    protected ClientConsumer consumer;
    protected String destination;
    protected String id;
    protected PushStrategy strategy;
+   protected PushStore store;
 
-   public PushConsumer(ClientSessionFactory factory, String destination, String id, PushRegistration registration)
+   public PushConsumer(ClientSessionFactory factory, String destination, String id, PushRegistration registration, PushStore store)
    {
       this.factory = factory;
       this.destination = destination;
       this.id = id;
       this.registration = registration;
+      this.store = store;
    }
 
    public PushRegistration getRegistration()
@@ -108,14 +110,31 @@ public class PushConsumer implements MessageHandler
       }
    }
 
+   public void disableFromFailure()
+   {
+      registration.setEnabled(false);
+      try
+      {
+         if (registration.isDurable()) store.update(registration);
+      }
+      catch (Exception e)
+      {
+         log.error(e);
+      }
+      stop();
+   }
+
    @Override
    public void onMessage(ClientMessage clientMessage)
    {
-      if (strategy.push(clientMessage) == false)
+      boolean acknowledge = strategy.push(clientMessage);
+
+      if (registration.isDisableOnFailure())
       {
-         throw new RuntimeException("Failed to push message to " + registration.getTarget());
+         log.error("Failed to push message to "+ registration.getTarget() + " disabling push registration...");
+         disableFromFailure();
       }
-      else
+      if (acknowledge)
       {
          try
          {
@@ -126,6 +145,11 @@ public class PushConsumer implements MessageHandler
          {
             throw new RuntimeException(e);
          }
+      }
+      else
+      {
+         // let hornetq decide what to do
+         throw new RuntimeException("Failed to push message to "+ registration.getTarget());
       }
    }
 }

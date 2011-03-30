@@ -197,6 +197,7 @@ public class TopicDestinationsResource
       sender.setDestination(topicName);
       sender.setSessionFactory(manager.getSessionFactory());
       sender.setPoolSize(manager.getProducerPoolSize());
+      sender.setProducerTimeToLive(manager.getProducerTimeToLive());
       sender.setServiceManager(manager);
       sender.init();
       topicResource.setSender(sender);

@@ -86,15 +86,17 @@ public class SubscriptionsResource implements TimeoutTask.Callback
    public void testTimeout(String target)
    {
       QueueConsumer consumer = queueConsumers.get(target);
+      Subscription subscription = (Subscription)consumer;
       if (consumer == null) return;
       synchronized (consumer)
       {
-         if (System.currentTimeMillis() - consumer.getLastPingTime() > consumerTimeoutSeconds * 1000)
+         if (System.currentTimeMillis() - consumer.getLastPingTime() > subscription.getTimeout())
          {
-            log.warn("shutdown REST consumer because of session timeout for: " + consumer.getId());
+            log.warn("shutdown REST subscription because of session timeout for: " + consumer.getId());
             consumer.shutdown();
             queueConsumers.remove(consumer.getId());
             serviceManager.getTimeoutTask().remove(consumer.getId());
+            if (subscription.isDeleteWhenIdle()) deleteSubscriberQueue(consumer);
          }
       }
    }
@@ -124,8 +126,15 @@ public class SubscriptionsResource implements TimeoutTask.Callback
                                       @FormParam("autoAck") @DefaultValue("true") boolean autoAck,
                                       @FormParam("name") String subscriptionName,
                                       @FormParam("selector") String selector,
+                                      @FormParam("delete-when-idle") Boolean destroyWhenIdle,
+                                      @FormParam("idle-timeout") Long timeout,
                                       @Context UriInfo uriInfo)
    {
+
+      if (timeout == null) timeout = new Long(consumerTimeoutSeconds * 1000);
+      boolean deleteWhenIdle = !durable; // default is true if non-durable
+      if (destroyWhenIdle != null) deleteWhenIdle = destroyWhenIdle.booleanValue();
+
       if (subscriptionName != null)
       {
          // see if this is a reconnect
@@ -182,7 +191,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
                session.createTemporaryQueue(destination, subscriptionName);
             }
          }
-         QueueConsumer consumer = createConsumer(durable, autoAck, subscriptionName, selector);
+         QueueConsumer consumer = createConsumer(durable, autoAck, subscriptionName, selector, timeout, deleteWhenIdle);
          queueConsumers.put(consumer.getId(), consumer);
          serviceManager.getTimeoutTask().add(this, consumer.getId());
 
@@ -222,20 +231,22 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       }
    }
 
-   protected QueueConsumer createConsumer(boolean durable, boolean autoAck, String subscriptionName, String selector)
+   protected QueueConsumer createConsumer(boolean durable, boolean autoAck, String subscriptionName, String selector, long timeout, boolean deleteWhenIdle)
            throws HornetQException
    {
       QueueConsumer consumer;
       if (autoAck)
       {
-         SubscriptionResource subscription = new SubscriptionResource(sessionFactory, subscriptionName, subscriptionName, serviceManager, selector);
+         SubscriptionResource subscription = new SubscriptionResource(sessionFactory, subscriptionName, subscriptionName, serviceManager, selector, durable, timeout);
          subscription.setDurable(durable);
+         subscription.setDeleteWhenIdle(deleteWhenIdle);
          consumer = subscription;
       }
       else
       {
-         AcknowledgedSubscriptionResource subscription = new AcknowledgedSubscriptionResource(sessionFactory, subscriptionName, subscriptionName, serviceManager, selector);
+         AcknowledgedSubscriptionResource subscription = new AcknowledgedSubscriptionResource(sessionFactory, subscriptionName, subscriptionName, serviceManager, selector, durable, timeout);
          subscription.setDurable(durable);
+         subscription.setDeleteWhenIdle(deleteWhenIdle);
          consumer = subscription;
       }
       return consumer;
@@ -370,7 +381,7 @@ public class SubscriptionsResource implements TimeoutTask.Callback
          QueueConsumer tmp = null;
          try
          {
-            tmp = createConsumer(true, autoAck, subscriptionId, null);
+            tmp = createConsumer(true, autoAck, subscriptionId, null, consumerTimeoutSeconds * 1000, false);
          }
          catch (HornetQException e)
          {

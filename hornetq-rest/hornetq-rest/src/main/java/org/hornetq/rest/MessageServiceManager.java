@@ -175,6 +175,7 @@ public class MessageServiceManager
       queueManager.setDefaultSettings(defaultSettings);
       queueManager.setPushStoreFile(configuration.getQueuePushStoreDirectory());
       queueManager.setProducerPoolSize(configuration.getProducerSessionPoolSize());
+      queueManager.setProducerTimeToLive(configuration.getProducerTimeToLive());
       queueManager.setLinkStrategy(linkStrategy);
       queueManager.setRegistry(registry);
 
@@ -186,6 +187,7 @@ public class MessageServiceManager
       topicManager.setDefaultSettings(defaultSettings);
       topicManager.setPushStoreFile(configuration.getTopicPushStoreDirectory());
       topicManager.setProducerPoolSize(configuration.getProducerSessionPoolSize());
+      queueManager.setProducerTimeToLive(configuration.getProducerTimeToLive());
       topicManager.setLinkStrategy(linkStrategy);
       topicManager.setRegistry(registry);
 

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class PushSubscriptionsResource
 {
-   protected Map<String, PushConsumer> consumers = new ConcurrentHashMap<String, PushConsumer>();
+   protected Map<String, PushSubscription> consumers = new ConcurrentHashMap<String, PushSubscription>();
    protected ClientSessionFactory sessionFactory;
    protected String destination;
    protected final String startup = Long.toString(System.currentTimeMillis());
@@ -81,6 +81,7 @@ public class PushSubscriptionsResource
 
    public void addRegistration(PushTopicRegistration reg) throws Exception
    {
+      if (reg.isEnabled() == false) return;
       String destination = reg.getDestination();
       ClientSession session = sessionFactory.createSession(false, false, false);
       ClientSession.QueueQuery query = session.queueQuery(new SimpleString(destination));
@@ -89,7 +90,7 @@ public class PushSubscriptionsResource
       {
          createSession = createSubscription(destination, reg.isDurable());
       }
-      PushConsumer consumer = new PushConsumer(sessionFactory, reg.getDestination(), reg.getId(), reg);
+      PushSubscription consumer = new PushSubscription(sessionFactory, reg.getDestination(), reg.getId(), reg, pushStore);
       try
       {
          consumer.start();
@@ -139,7 +140,7 @@ public class PushSubscriptionsResource
       ClientSession createSession = createSubscription(genId, registration.isDurable());
       try
       {
-         PushConsumer consumer = new PushConsumer(sessionFactory, genId, genId, registration);
+         PushSubscription consumer = new PushSubscription(sessionFactory, genId, genId, registration, pushStore);
          try
          {
             consumer.start();
@@ -191,7 +192,7 @@ public class PushSubscriptionsResource
       deleteSubscriberQueue(consumer);
    }
 
-   public Map<String, PushConsumer> getConsumers()
+   public Map<String, PushSubscription> getConsumers()
    {
       return consumers;
    }
