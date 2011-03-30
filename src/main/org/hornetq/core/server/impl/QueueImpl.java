@@ -1889,11 +1889,6 @@ public class QueueImpl implements Queue
 
       queue.deliveringCount.decrementAndGet();
 
-      if (queue.deliveringCount.get() < 0)
-      {
-         new Exception("DeliveringCount became negative").printStackTrace();
-      }
-
       if (ref.isPaged())
       {
          // nothing to be done
