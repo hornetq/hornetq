@@ -5,7 +5,7 @@
   <bookinfo>
     <title>HornetQ REST Interface</title>
 
-    <releaseinfo>2.2.0</releaseinfo>
+    <releaseinfo>2.2.2</releaseinfo>
   </bookinfo>
 
   <toc></toc>
@@ -307,6 +307,7 @@ Content-Type: application/xml
    &lt;dups-ok&gt;true&lt;/dups-ok&gt;
    &lt;topic-push-store-dir&gt;topic-push-store&lt;/topic-push-store-dir&gt;
    &lt;queue-push-store-dir&gt;queue-push-store&lt;/queue-push-store-dir&gt;
+   &lt;producer-time-to-live&gt;0&lt;/producer-time-to-live&gt;
    &lt;producer-session-pool-size&gt;10&lt;/producer-session-pool-size&gt;
    &lt;session-timeout-task-interval&gt;1&lt;/session-timeout-task-interval&gt;
    &lt;consumer-session-timeout-seconds&gt;300&lt;/consumer-session-timeout-seconds&gt;
@@ -384,6 +385,15 @@ Content-Type: application/xml
             <para>The REST implementation pools HornetQ sessions for sending
             messages. This is the size of the pool. That number of sessions
             will be created at startup time.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>producer-time-to-live</term>
+
+          <listitem>
+            <para>Default time to live for posted messages. Default is no
+            ttl.</para>
           </listitem>
         </varlistentry>
 
@@ -809,9 +819,19 @@ Content-Type: application/xml
 &lt;/order&gt;
 </programlisting>
     </sect1>
-   <sect1>
-     <title>Expiration and Priority</title>
-     <para>You can set he expiration and the priority of the message in the queue or topic by setting an additional query parameter.  The <literal>expiration</literal> query parameter is an integer expressing the time in milliseconds until the message should be expired.  The <literal>priority</literal> is another query parameter with an integer value between 0 and 9 expressing the priority of the message. i.e.:</para>
+
+    <sect1>
+      <title>TTL, Expiration and Priority</title>
+
+      <para>You can set the time to live, expiration, and/or the priority of
+      the message in the queue or topic by setting an additional query
+      parameter. The <literal>expiration</literal> query parameter is an long
+      specify the time in milliseconds since epoch (a long date). The
+      <literal>ttl</literal> query parameter is a time in milliseconds you
+      want the message active. The <literal>priority</literal> is another
+      query parameter with an integer value between 0 and 9 expressing the
+      priority of the message. i.e.:</para>
+
       <programlisting>POST /queues/jms.queue.bar/create?expiration=30000&amp;priority=3
 Host: example.com
 Content-Type: application/xml
@@ -822,7 +842,7 @@ Content-Type: application/xml
    &lt;cost&gt;$199.99&lt;/cost&gt;
 &lt;/order&gt;
 </programlisting>
-   </sect1>
+    </sect1>
   </chapter>
 
   <chapter>
@@ -884,6 +904,7 @@ Content-Type: application/xml
           the server. Only usable on topics.</para>
         </listitem>
       </varlistentry>
+
       <varlistentry>
         <term>selector</term>
 
@@ -892,6 +913,24 @@ Content-Type: application/xml
           interface adds HTTP headers to the JMS message for REST produced
           messages. HTTP headers are prefixed with "http_" and every '-'
           charactor is converted to a '$'.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>idle-timeout</term>
+
+        <listitem>
+          <para>For a topic subscription, idle time in milliseconds in which
+          the consumer connections will be closed if idle.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>delete-when-idle</term>
+
+        <listitem>
+          <para>Boolean value, If true, a topic subscription will be deleted
+          (even if it is durable) when an the idle timeout is reached.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1509,6 +1548,9 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
        ]]&gt;
    &lt;/selector&gt;
    &lt;link rel="push" href="http://somewhere.com" type="application/json" method="PUT"/&gt;
+   &lt;maxRetries&gt;5&lt;/maxRetries&gt;
+   &lt;retryWaitMillis&gt;1000&lt;/retryWaitMillis&gt;
+   &lt;disableOnFailure&gt;true&lt;/disableOnFailure&gt;
 &lt;/push-registration&gt;
 </programlisting>
 
@@ -1524,6 +1566,19 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
       <para>The <literal>selector</literal> element is optional and defines a
       JMS message selector. You should enclose it within CDATA blocks as some
       of the selector characters are illegal XML.</para>
+
+      <para>The <literal>maxRetries</literal> element specifies how many times
+      a the server will try to push a message to a URL if there is a
+      connection failure.</para>
+
+      <para>The <literal>retryWaitMillis</literal> element specifies how long
+      to wait before performing a retry.</para>
+
+      <para>The <literal>disableOnFailure</literal> element, if set to true,
+      will disable the registration if all retries have failed. It will not
+      disable the connection on non-connection-failure issues (like a bad
+      request for instance). In these cases, the dead letter queue logic of
+      HornetQ will take over.</para>
 
       <para>The <literal>link</literal> element specifies the basis of the
       interaction. The <literal>href</literal> attribute contains the URL you
@@ -1595,7 +1650,7 @@ msg-consume-next: http://example.com/queues/jms.queue.bar/pull-consumers/333/con
 
       <para>The push XML for a topic is the same except the root element is
       push-topic-registration. (Also remember the <literal>selector</literal>
-      element is optional).  The rest of the document is the same. Here's an
+      element is optional). The rest of the document is the same. Here's an
       example of a template registration:</para>
 
       <programlisting>&lt;push-topic-registration&gt;
