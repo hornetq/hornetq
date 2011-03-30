@@ -261,8 +261,10 @@
                   <para>
                      The caveat to this rule is when XA is used either via JMS or through the core API.
                      If 2 phase commit is used and prepare has already ben called then rolling back could
-                     cause a <literal>HeuristicMixedException</literal>. Because of this there may be a
-                     chance that any non persistent messages could be lost. To avoid this use persistent
+                     cause a <literal>HeuristicMixedException</literal>. Because of this the commit will throw
+                     a <literal>XAException.XA_RETRY</literal> exception. This informs the Transaction Manager
+                     that it should retry the commit at some later point in time, a side effect of this is
+                     that any non persistent messages will be lost. To avoid this use persistent
                      messages when using XA. With acknowledgements this is not an issue since they are
                      flushed to the server before prepare gets called.
                   </para>
