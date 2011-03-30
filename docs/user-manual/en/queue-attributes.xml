@@ -132,7 +132,7 @@
             set paging on an address. This is explained <link linkend="paging">here</link>.</para>
         <para><literal>redistribution-delay</literal> defines how long to wait when the last
             consumer is closed on a queue before redistributing any messages. see <link
-                linkend="clusters.message-redistribution">here</link>.</para>
+                linkend="clusters">here</link>.</para>
         <para><literal>send-to-dla-on-no-route</literal>. If a message is sent to an address, but the server does not route it to any queues,
         for example, there might be no queues bound to that address, or none of the queues have filters that match, then normally that message
         would be discarded. However if this parameter is set to true for that address, if the message is not routed to any queues it will instead

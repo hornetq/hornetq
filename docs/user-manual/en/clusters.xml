@@ -14,7 +14,7 @@
   -->
 
 <chapter id="clusters">
-   <title>HornetQ and EAP Cluster Configuration</title>
+   <title>HornetQ and Application Server Cluster Configuration</title>
    <section>
       <title>Configuring Failover</title>
       <para>

@@ -304,7 +304,7 @@
                         >core.broadcastgroup.&lt;the broadcast group name&gt;</literal>). Broadcast
                      groups parameters can be retrieved using the <literal
                         >BroadcastGroupControl</literal> attributes (see <xref
-                        linkend="clusters.broadcast-groups"/>)</para>
+                        linkend="clusters"/>)</para>
                </listitem>
                <listitem>
                   <para>Discovery groups</para>
@@ -315,7 +315,7 @@
                         name&gt;"</literal> or the resource name <literal>core.discovery.&lt;the
                         discovery group name&gt;</literal>). Discovery groups parameters can be
                      retrieved using the <literal>DiscoveryGroupControl</literal> attributes (see
-                        <xref linkend="clusters.discovery-groups"/>)</para>
+                        <xref linkend="clusters"/>)</para>
                </listitem>
                <listitem>
                   <para>Cluster connections</para>
@@ -327,7 +327,7 @@
                         >core.clusterconnection.&lt;the cluster connection name&gt;</literal>).
                      Cluster connections parameters can be retrieved using the <literal
                         >ClusterConnectionControl</literal> attributes (see <xref
-                        linkend="clusters.cluster-connections"/>)</para>
+                        linkend="clusters"/>)</para>
                </listitem>
             </itemizedlist>
          </section>

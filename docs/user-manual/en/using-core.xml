@@ -16,11 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
-<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
-%BOOK_ENTITIES;
-]>
 <chapter id="using-core">
     <title>Using Core</title>
     <para>HornetQ core is a completely JMS-agnostic messaging system with its own non-JMS API. We
@@ -99,10 +94,10 @@
                 <para>In core, there is no concept of a Topic, Topic is a JMS only term. Instead, in
                     core, we just deal with <emphasis>addresses</emphasis> and
                         <emphasis>queues</emphasis>.</para>
-                <para>For example, a JMS topic would be implemented by a single address to which many
-                    queues are bound. Each queue represents a subscription of the topic. A JMS Queue
-                    would be implemented as a single address to which one queue is bound - that
-                    queue represents the JMS queue.</para>
+                <para>For example, a JMS topic would be implemented by a single address to which
+                    many queues are bound. Each queue represents a subscription of the topic. A JMS
+                    Queue would be implemented as a single address to which one queue is bound -
+                    that queue represents the JMS queue.</para>
             </note>
         </section>
         <section>
@@ -124,17 +119,17 @@
             <para>Clients use <literal>ServerLocator</literal> instances to create <literal
                     >ClientSessionFactory</literal> instances. <literal>ServerLocator</literal>
                 instances are used to locate servers and create connections to them. </para>
-           <para>In JMS terms think of a <literal>ServerLocator</literal> in the same way you would a
-           JMS Connection Factory</para>
-            <para><literal>ServerLocator</literal> instances are created using the
-                <literal>HornetQClient</literal> factory class.</para>
+            <para>In JMS terms think of a <literal>ServerLocator</literal> in the same way you would
+                a JMS Connection Factory</para>
+            <para><literal>ServerLocator</literal> instances are created using the <literal
+                    >HornetQClient</literal> factory class.</para>
         </section>
         <section>
             <title>ClientSessionFactory</title>
             <para>Clients use <literal>ClientSessionFactory</literal> instances to create <literal
                     >ClientSession</literal> instances. <literal>ClientSessionFactory</literal>
                 instances are basically the connection to a server</para>
-           <para> In JMS terms think of them as JMS Connections</para>
+            <para> In JMS terms think of them as JMS Connections</para>
             <para><literal>ClientSessionFactory</literal> instances are created using the <literal
                     >ServerLocator</literal> class.</para>
         </section>
@@ -176,11 +171,11 @@
         </section>
         <warning>
             <para>Please note that ClientSession, ClientProducer and ClientConsumer instances are
-                <emphasis>designed to be re-used</emphasis>.</para>
-            <para>It's an anti-pattern to create new ClientSession, ClientProducer and ClientConsumer instances
-                for each message you produce or consume. If you do this, your application will
-                perform very poorly. This is discussed further in the section on performance tuning
-                <xref linkend="perf-tuning"/>.</para>
+                    <emphasis>designed to be re-used</emphasis>.</para>
+            <para>It's an anti-pattern to create new ClientSession, ClientProducer and
+                ClientConsumer instances for each message you produce or consume. If you do this,
+                your application will perform very poorly. This is discussed further in the section
+                on performance tuning <xref linkend="perf-tuning"/>.</para>
         </warning>
     </section>
     <section>

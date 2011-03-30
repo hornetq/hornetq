@@ -170,9 +170,9 @@
                 number of different ways. They can be configured explicitly or probably the most
                 common way of doing this is to use <emphasis>server discovery</emphasis> for the
                 client to automatically discover the list. For full details on how to configure
-                server discovery, please see <xref linkend="clusters.server-discovery"/>.
+                server discovery, please see <xref linkend="clusters"/>.
                 Alternatively, the clients can explicitly connect to a specific server and download
-                the current servers and backups see <xref linkend="clusters.static.servers"/>.</para>
+                the current servers and backups see <xref linkend="clusters"/>.</para>
             <para>To enable automatic client failover, the client must be configured to allow
                 non-zero reconnection attempts (as explained in <xref linkend="client-reconnection"
                 />).</para>
