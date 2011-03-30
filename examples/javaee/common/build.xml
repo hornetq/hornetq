@@ -136,7 +136,7 @@
    </target>
 
    <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
-      <property name="profile" value="${jboss.home}/server/default"/>
+      <property name="profile" value="${jboss.home}/server/default-with-hornetq"/>
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
       <property name="deploy.dir" value="${example-profile}/deploy/"/>
       <mkdir dir="${example-profile}"/>
