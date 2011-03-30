@@ -250,8 +250,6 @@ public class HornetQMessageHandler implements MessageHandler
 
    public void onMessage(final ClientMessage message)
    {
-      HornetQMessageHandler.log.info("onMessage(" + message + ")");
-
       if (HornetQMessageHandler.trace)
       {
          HornetQMessageHandler.log.trace("onMessage(" + message + ")");
