@@ -1348,6 +1348,22 @@
          </fileset>
       </copy>
 
+      <mkdir dir="${build.distro.examples.dir}/rest"/>
+      <copy todir="${build.distro.examples.dir}/rest">
+	<fileset dir="hornetq-rest/examples">
+            <exclude name="build.properties"/>
+            <exclude name="**/target"/>
+            <exclude name="**/target/**"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/data**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/*.dat"/>
+            <exclude name="**/*.svn"/>
+            <exclude name="**/*.iml"/>
+            <exclude name="**/*.*~"/>
+	</fileset>
+      </copy>
+
       <chmod perm="ugo+rx" parallel="false" verbose="true">
          <fileset dir="${build.distro.examples.dir}">
             <include name="**/build.sh"/>
