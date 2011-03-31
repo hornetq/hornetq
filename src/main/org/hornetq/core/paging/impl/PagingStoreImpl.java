@@ -885,23 +885,9 @@ public class PagingStoreImpl implements TestSupportPageStore
  
          currentPage.write(pagedMessage);
 
-         if (tx != null)
+         if (sync || tx != null)
          {
-            SyncPageStoreTX syncPage = (SyncPageStoreTX)tx.getProperty(TransactionPropertyIndexes.PAGE_SYNC);
-            if (syncPage == null)
-            {
-               syncPage = new SyncPageStoreTX();
-               tx.putProperty(TransactionPropertyIndexes.PAGE_SYNC, syncPage);
-               tx.addOperation(syncPage);
-            }
-            syncPage.addStore(this);
-         }
-         else
-         {
-            if (sync)
-            {
-               sync();
-            }
+            sync();
          }
 
          return true;
@@ -954,63 +940,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          pgTX.increment(listCtx.getNumberOfQueues());
 
          return pgTX;
-      }
-   }
-
-   private static class SyncPageStoreTX extends TransactionOperationAbstract
-   {
-      Set<PagingStore> storesToSync = new HashSet<PagingStore>();
-
-      public void addStore(PagingStore store)
-      {
-         storesToSync.add(store);
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforePrepare(Transaction tx) throws Exception
-      {
-         sync();
-      }
-
-      void sync() throws Exception
-      {
-         OperationContext originalTX = OperationContextImpl.getContext();
-
-         try
-         {
-            // We only want to sync paging here, no need to wait for any other events
-            OperationContextImpl.clearContext();
-
-            for (PagingStore store : storesToSync)
-            {
-               store.sync();
-            }
-
-            // We can't perform a commit/sync on the journal before we can assure page files are synced or we may get
-            // out of sync
-            OperationContext ctx = OperationContextImpl.getContext();
-
-            if (ctx != null)
-            {
-               // if null it means there were no operations done before, hence no need to wait any completions
-               ctx.waitCompletion();
-            }
-         }
-         finally
-         {
-            OperationContextImpl.setContext(originalTX);
-         }
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
-       */
-      public void beforeCommit(Transaction tx) throws Exception
-      {
-         sync();
       }
    }
 
