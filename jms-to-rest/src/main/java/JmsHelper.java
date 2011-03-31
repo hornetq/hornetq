@@ -1,9 +1,11 @@
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -20,8 +22,7 @@ public class JmsHelper
       config.setConfigurationUrl(configFile);
       config.start();
       TransportConfiguration transport = config.getConnectorConfigurations().get("netty-connector");
-      ClientSessionFactory factory = HornetQClient.createClientSessionFactory(transport);
-      return new HornetQConnectionFactory(factory);
+      return new HornetQJMSConnectionFactory(HornetQClient.createServerLocatorWithoutHA(transport));
 
    }
 
