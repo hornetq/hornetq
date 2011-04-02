@@ -2696,7 +2696,7 @@ public class JournalStorageManager implements StorageManager
       int deliveryCount;
    }
 
-   private static final class CursorAckRecordEncoding implements EncodingSupport
+   public static final class CursorAckRecordEncoding implements EncodingSupport
    {
       public CursorAckRecordEncoding(final long queueID, final PagePosition position)
       {
@@ -2718,9 +2718,9 @@ public class JournalStorageManager implements StorageManager
          return "CursorAckRecordEncoding [queueID=" + queueID + ", position=" + position + "]";
       }
 
-      long queueID;
+      public long queueID;
 
-      PagePosition position;
+      public PagePosition position;
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
