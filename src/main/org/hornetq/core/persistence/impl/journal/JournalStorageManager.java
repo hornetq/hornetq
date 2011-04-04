@@ -1430,6 +1430,16 @@ public class JournalStorageManager implements StorageManager
 
       return bindingsInfo;
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+    */
+   public void lineUpContext()
+   {
+      messageJournal.lineUpContex(getContext());
+   }
+
 
    // HornetQComponent implementation
    // ------------------------------------------------------
@@ -3299,13 +3309,6 @@ public class JournalStorageManager implements StorageManager
       }
 
       journal.stop();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
-    */
-   public void lineUpContext()
-   {
    }
 
 }

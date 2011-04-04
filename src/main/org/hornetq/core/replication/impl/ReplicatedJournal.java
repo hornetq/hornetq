@@ -25,6 +25,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager;
 
@@ -564,6 +565,7 @@ public class ReplicatedJournal implements Journal
     */
    public void lineUpContex(IOCompletion callback)
    {
+      ((OperationContext)callback).replicationLineUp();
       localJournal.lineUpContex(callback);
    }
 

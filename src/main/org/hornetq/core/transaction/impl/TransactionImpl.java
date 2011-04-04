@@ -331,7 +331,7 @@ public class TransactionImpl implements Transaction
             }
          }
       });
-      ctx.storeLineUp();
+      storageManager.lineUpContext();
    }
 
    public void rollback() throws Exception
