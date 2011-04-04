@@ -713,6 +713,11 @@ public class JournalStorageManager implements StorageManager
    public void commit(final long txID, final boolean lineUpContext) throws Exception
    {
       messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional), lineUpContext);
+      if (!lineUpContext && !syncTransactional)
+      {
+         // if lineUpContext == false, we have previously lined up a context, hence we need to mark it as done even if syncTransactional = false
+         getContext(true).done();
+      }
    }
 
    public void rollback(final long txID) throws Exception
