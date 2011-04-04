@@ -416,7 +416,7 @@ public class FileLockNodeManager extends NodeManager
          if (interrupted)
          {
             interrupted = false;
-            throw new IOException(new InterruptedException());
+            throw new IOException("Lock was interrupted");
          }
       }
       while (lock == null);

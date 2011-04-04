@@ -215,7 +215,17 @@
       <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
       <path refid="org.jboss.naming.classpath"/>
-   </path>
+    </path>
+	
+   <path id="jms.compilation.jdk15.classpath">
+      <path location="${build.core.client.java5.classes.dir}"/>
+   	  <path refid="org.jboss.netty.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+    </path>
+		
 
    <path id="jboss.integration.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
@@ -566,7 +576,7 @@
 	            <pathelement path="${src.main.dir}"/>
 	         </src>
 	         <include name="**/jms/**/*.java"/>
-	         <classpath refid="jms.compilation.classpath"/>
+	         <classpath refid="jms.compilation.jdk15.classpath"/>
 	      </javac>
 	   </target>
 	
