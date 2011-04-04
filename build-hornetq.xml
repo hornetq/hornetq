@@ -561,12 +561,12 @@
 	             includeAntRuntime="${javac.include.ant.runtime}"
 	             includeJavaRuntime="${javac.include.java.runtime}"
                      encoding="${javac.encoding}"
-	             failonerror="${javac.fail.onerror}">
+	             failonerror="${javac.fail.onerror}" fork="true" executable="${jdk5.home}/bin/javac">
 	         <src>
 	            <pathelement path="${src.main.dir}"/>
 	         </src>
 	         <include name="**/jms/**/*.java"/>
-	         <classpath refid="jms.compilation.classpath" fork="true" executable="${jdk5.home}/bin/javac"/>
+	         <classpath refid="jms.compilation.classpath"/>
 	      </javac>
 	   </target>
 	
