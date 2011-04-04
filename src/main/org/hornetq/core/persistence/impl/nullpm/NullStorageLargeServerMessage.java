@@ -151,6 +151,13 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return getHeadersAndPropertiesEncodeSize();
    }
 
+   @Override
+   public String toString()
+   {
+      return "LargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

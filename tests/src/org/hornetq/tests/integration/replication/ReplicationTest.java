@@ -1059,5 +1059,23 @@ public class ReplicationTest extends ServiceTestBase
          return 0;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion, boolean)
+       */
+      public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
+       */
+      public void lineUpContex(IOCompletion callback)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 }

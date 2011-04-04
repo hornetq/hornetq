@@ -1289,7 +1289,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       SyncIOCompletion syncCompletion = getSyncCallback(sync);
 
-      appendCommitRecord(txID, sync, syncCompletion);
+      appendCommitRecord(txID, sync, syncCompletion, true);
 
       if (syncCompletion != null)
       {
@@ -1297,6 +1297,20 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
+    */
+   public void lineUpContex(IOCompletion callback)
+   {
+      callback.storeLineUp();
+   }
+
+   public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
+   {
+      appendCommitRecord(txID, sync, callback, true);
+   }
+
+   
    /**
     * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
     * <p>For example, a transaction was spread along 3 journal files with 10 pendingTransactions on each file. 
@@ -1314,7 +1328,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     *
     */
 
-   public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
+   public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback, boolean lineUpContext) throws Exception
    {
       if (state != JournalImpl.STATE_LOADED)
       {
@@ -1334,7 +1348,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, txID, null);
 
-         if (callback != null)
+         if (callback != null && lineUpContext)
          {
             callback.storeLineUp();
          }

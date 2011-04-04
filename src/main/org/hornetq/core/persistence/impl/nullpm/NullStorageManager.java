@@ -553,4 +553,20 @@ public class NullStorageManager implements StorageManager
       return 0;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#commit(long, boolean)
+    */
+   public void commit(long txID, boolean lineUpContext) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+    */
+   public void lineUpContext()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

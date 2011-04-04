@@ -288,6 +288,13 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       return file;
    }
 
+   @Override
+   public String toString()
+   {
+      return "LargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

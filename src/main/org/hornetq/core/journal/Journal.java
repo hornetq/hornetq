@@ -75,6 +75,15 @@ public interface Journal extends HornetQComponent
 
    void appendCommitRecord(long txID, boolean sync, IOCompletion callback) throws Exception;
 
+   /**
+    * @param txID
+    * @param sync
+    * @param callback
+    * @param useLineUp if appendCommitRecord should call a storeLineUp. This is because the caller may have already taken into account
+    * @throws Exception
+    */
+   void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception;
+
    /** 
     * 
     * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
@@ -106,6 +115,8 @@ public interface Journal extends HornetQComponent
     *  This is only useful if you're using the journal but not interested on the current data.
     *  Useful in situations where the journal is being replicated, copied... etc. */
    JournalLoadInformation loadInternalOnly() throws Exception;
+   
+   void lineUpContex(IOCompletion callback);
 
    JournalLoadInformation load(List<RecordInfo> committedRecords,
                                List<PreparedTransactionInfo> preparedTransactions,

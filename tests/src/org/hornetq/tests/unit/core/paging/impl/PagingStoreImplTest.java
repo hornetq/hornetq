@@ -1671,6 +1671,24 @@ public class PagingStoreImplTest extends UnitTestCase
          return getContext();
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#commit(long, boolean)
+       */
+      public void commit(long txID, boolean lineUpContext) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+       */
+      public void lineUpContext()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    class FakeStoreFactory implements PagingStoreFactory

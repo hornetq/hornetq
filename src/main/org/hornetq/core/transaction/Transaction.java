@@ -65,11 +65,9 @@ public interface Transaction
    
    boolean hasTimedOut(long currentTime, int defaultTimeout);
    
-   /** We don't want to look on operations at every send, so we keep the paging attribute and will only look at 
-    *  the PagingOperation case this attribute is true*/
-   boolean isPaging();
-   
-   void setPaging(boolean paging);
+   boolean isWaitBeforeCommit();
+
+   void setWaitBeforeCommit(boolean waitBeforeCommit);
 
    void putProperty(int index, Object property);
 

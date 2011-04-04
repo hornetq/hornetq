@@ -25,6 +25,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager;
 
@@ -172,7 +173,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID);
+      replicationManager.appendCommitRecord(journalID, txID, true);
       localJournal.appendCommitRecord(txID, sync);
    }
 
@@ -185,10 +186,25 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID);
+      replicationManager.appendCommitRecord(journalID, txID, true);
       localJournal.appendCommitRecord(txID, sync, callback);
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion, boolean)
+    */
+   public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
+   {
+      if (ReplicatedJournal.trace)
+      {
+         ReplicatedJournal.trace("AppendCommit " + txID);
+      }
+      replicationManager.appendCommitRecord(journalID, txID, lineUpContext);
+      localJournal.appendCommitRecord(txID, sync, callback, lineUpContext);
+      
+   }
+
+   
    /**
     * @param id
     * @param sync
@@ -543,6 +559,16 @@ public class ReplicatedJournal implements Journal
    {
       return localJournal.getUserVersion();
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
+    */
+   public void lineUpContex(IOCompletion callback)
+   {
+      ((OperationContext)callback).replicationLineUp();
+      localJournal.lineUpContex(callback);
+   }
+
 
    // Package protected ---------------------------------------------
 

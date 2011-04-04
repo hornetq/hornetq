@@ -707,7 +707,17 @@ public class JournalStorageManager implements StorageManager
 
    public void commit(final long txID) throws Exception
    {
-      messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional));
+      commit(txID, true);
+   }
+
+   public void commit(final long txID, final boolean lineUpContext) throws Exception
+   {
+      messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional), lineUpContext);
+      if (!lineUpContext && !syncTransactional)
+      {
+         // if lineUpContext == false, we have previously lined up a context, hence we need to mark it as done even if syncTransactional = false
+         getContext(true).done();
+      }
    }
 
    public void rollback(final long txID) throws Exception
@@ -1420,6 +1430,16 @@ public class JournalStorageManager implements StorageManager
 
       return bindingsInfo;
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+    */
+   public void lineUpContext()
+   {
+      messageJournal.lineUpContex(getContext());
+   }
+
 
    // HornetQComponent implementation
    // ------------------------------------------------------
@@ -2696,7 +2716,7 @@ public class JournalStorageManager implements StorageManager
       int deliveryCount;
    }
 
-   private static final class CursorAckRecordEncoding implements EncodingSupport
+   public static final class CursorAckRecordEncoding implements EncodingSupport
    {
       public CursorAckRecordEncoding(final long queueID, final PagePosition position)
       {
@@ -2718,9 +2738,9 @@ public class JournalStorageManager implements StorageManager
          return "CursorAckRecordEncoding [queueID=" + queueID + ", position=" + position + "]";
       }
 
-      long queueID;
+      public long queueID;
 
-      PagePosition position;
+      public PagePosition position;
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
