@@ -566,7 +566,7 @@
 	            <pathelement path="${src.main.dir}"/>
 	         </src>
 	         <include name="**/jms/**/*.java"/>
-	         <classpath refid="jms.compilation.classpath"/>
+	         <classpath refid="jms.compilation.classpath" fork="true" executable="${jdk5.home}/bin/javac"/>
 	      </javac>
 	   </target>
 	
