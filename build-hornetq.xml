@@ -34,6 +34,8 @@
 
    <property file="build-hornetq.properties" />
 
+   <property name="jdk5.home" value="${java.home}/../"/>
+
    <!-- ======================================================================================== -->
    <!-- Module name(s) & version                                                                 -->
    <!-- ======================================================================================== -->
@@ -499,7 +501,7 @@
              includeAntRuntime="${javac.include.ant.runtime}"
              includeJavaRuntime="${javac.include.java.runtime}"
              encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
+             failonerror="${javac.fail.onerror}" fork="true" executable="${jdk5.home}/bin/javac">
          <src>
             <pathelement path="${build.src.dir}"/>
             <pathelement path="${src.main.dir}"/>

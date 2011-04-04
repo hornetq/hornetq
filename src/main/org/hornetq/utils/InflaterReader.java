@@ -62,7 +62,9 @@ public class InflaterReader extends InputStream
          }
          catch (DataFormatException e)
          {
-            throw new IOException(e);
+            IOException e2 = new IOException(e.getMessage());
+            e2.initCause(e);
+            throw e2;
          }
       }
       

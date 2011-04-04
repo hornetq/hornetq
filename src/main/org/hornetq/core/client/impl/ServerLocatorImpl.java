@@ -1344,10 +1344,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          try
          {
-            List<Future<ClientSessionFactory>> futures = threadPool.invokeAll(connectors);
-            for (int i = 0, futuresSize = futures.size(); i < futuresSize; i++)
+            
+            List<Future<ClientSessionFactory>> futuresList = new ArrayList<Future<ClientSessionFactory>>();
+            
+            for (Connector conn : connectors)
             {
-               Future<ClientSessionFactory> future = futures.get(i);
+               futuresList.add(threadPool.submit(conn));
+            }
+            
+            for (int i = 0, futuresSize = futuresList.size(); i < futuresSize; i++)
+            {
+               Future<ClientSessionFactory> future = futuresList.get(i);
                try
                {
                   csf = future.get();
@@ -1364,7 +1371,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
             }
          }
-         catch (InterruptedException e)
+         catch (Exception e)
          {
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
          }

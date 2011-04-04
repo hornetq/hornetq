@@ -65,7 +65,9 @@ public class InflaterWriter extends OutputStream
          }
          catch (DataFormatException e)
          {
-            throw new IOException("Error decompressing data", e);
+            IOException ie = new IOException ("Error decompressing data");
+            ie.initCause(e);
+            throw ie;
          }
       }
    }
@@ -88,7 +90,9 @@ public class InflaterWriter extends OutputStream
          }
          catch (DataFormatException e)
          {
-            throw new IOException(e);
+            IOException io = new IOException (e.getMessage());
+            io.initCause(e);
+            throw io;
          }
       }
    }
