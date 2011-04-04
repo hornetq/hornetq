@@ -353,9 +353,12 @@ public class OperationContextImpl implements OperationContext
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();
-      for (TaskHolder hold : tasks)
+      if (tasks != null)
       {
-         buffer.append("Task = " + hold + "\n");
+         for (TaskHolder hold : tasks)
+         {
+            buffer.append("Task = " + hold + "\n");
+         }
       }
       
       return "OperationContextImpl [minimalStore=" + minimalStore +

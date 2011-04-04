@@ -889,6 +889,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             sync();
          }
+         
+         if (tx != null)
+         {
+            tx.setWaitBeforeCommit(true);
+         }
 
          return true;
       }

@@ -21,6 +21,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -48,7 +49,10 @@ public class TransactionImpl implements Transaction
 
    private final long id;
    
-   private boolean paging = false;
+   /**
+    * if the appendCommit has to be done only after the current operations are completed
+    */
+   private boolean waitBeforeCommit = false;
 
    private volatile State state = State.ACTIVE;
 
@@ -259,7 +263,16 @@ public class TransactionImpl implements Transaction
 
          if (containsPersistent || xid != null && state == State.PREPARED)
          {
-            storageManager.commit(id);
+
+            if (waitBeforeCommit)
+            {
+               // we will wait all the pending operations to finish before we can add this
+               asyncAppendCommit();
+            }
+            else
+            {
+               storageManager.commit(id);
+            }
 
             state = State.COMMITTED;
          }
@@ -286,6 +299,39 @@ public class TransactionImpl implements Transaction
          });
 
       }
+   }
+
+   /**
+    * 
+    */
+   protected void asyncAppendCommit()
+   {
+      final OperationContext ctx = storageManager.getContext(); 
+      storageManager.afterCompleteOperations(new IOAsyncTask()
+      {
+         public void onError(int errorCode, String errorMessage)
+         {
+         }
+         
+         public void done()
+         {
+            OperationContext originalCtx = storageManager.getContext();
+            try
+            {
+               storageManager.setContext(ctx);
+               storageManager.commit(id, false);
+            }
+            catch (Exception e)
+            {
+               onError(HornetQException.IO_ERROR, e.getMessage());
+            }
+            finally
+            {
+               storageManager.setContext(originalCtx);
+            }
+         }
+      });
+      ctx.storeLineUp();
    }
 
    public void rollback() throws Exception
@@ -361,14 +407,14 @@ public class TransactionImpl implements Transaction
       this.state = state;
    }
    
-   public boolean isPaging()
+   public boolean isWaitBeforeCommit()
    {
-      return paging;
+      return waitBeforeCommit;
    }
 
-   public void setPaging(boolean paging)
+   public void setWaitBeforeCommit(boolean waitBeforeCommit)
    {
-      this.paging = paging;
+      this.waitBeforeCommit = waitBeforeCommit;
    }
 
    public Xid getXid()

@@ -172,7 +172,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID);
+      replicationManager.appendCommitRecord(journalID, txID, true);
       localJournal.appendCommitRecord(txID, sync);
    }
 
@@ -185,10 +185,25 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID);
+      replicationManager.appendCommitRecord(journalID, txID, true);
       localJournal.appendCommitRecord(txID, sync, callback);
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion, boolean)
+    */
+   public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
+   {
+      if (ReplicatedJournal.trace)
+      {
+         ReplicatedJournal.trace("AppendCommit " + txID);
+      }
+      replicationManager.appendCommitRecord(journalID, txID, lineUpContext);
+      localJournal.appendCommitRecord(txID, sync, callback, lineUpContext);
+      
+   }
+
+   
    /**
     * @param id
     * @param sync
@@ -543,6 +558,15 @@ public class ReplicatedJournal implements Journal
    {
       return localJournal.getUserVersion();
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
+    */
+   public void lineUpContex(IOCompletion callback)
+   {
+      localJournal.lineUpContex(callback);
+   }
+
 
    // Package protected ---------------------------------------------
 

@@ -913,6 +913,8 @@ public class PagingOrderTest extends ServiceTestBase
       assertEquals(AddressFullMessagePolicy.PAGE, settings.getAddressFullMessagePolicy());
 
       store = server.getPagingManager().getPageStore(new SimpleString("TT"));
+      
+      conn.close();
 
       server.stop();
 

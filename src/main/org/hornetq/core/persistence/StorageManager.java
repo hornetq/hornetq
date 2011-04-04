@@ -54,6 +54,8 @@ public interface StorageManager extends HornetQComponent
 
    /** Get the context associated with the thread for later reuse */
    OperationContext getContext();
+   
+   void lineUpContext();
 
    /** It just creates an OperationContext without associating it */
    OperationContext newContext(Executor executor);
@@ -145,6 +147,8 @@ public interface StorageManager extends HornetQComponent
    void prepare(long txID, Xid xid) throws Exception;
 
    void commit(long txID) throws Exception;
+
+   void commit(long txID, boolean lineUpContext) throws Exception;
 
    void rollback(long txID) throws Exception;
 

@@ -165,11 +165,11 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#appendCommitRecord(byte, long, boolean)
     */
-   public void appendCommitRecord(final byte journalID, final long txID) throws Exception
+   public void appendCommitRecord(final byte journalID, final long txID, final boolean lineUp) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID));
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID), lineUp);
       }
    }
 
@@ -440,10 +440,18 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private void sendReplicatePacket(final Packet packet)
    {
+      sendReplicatePacket(packet, true);
+   }
+
+   private void sendReplicatePacket(final Packet packet, boolean lineUp)
+   {
       boolean runItNow = false;
 
       OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
-      repliToken.replicationLineUp();
+      if (lineUp)
+      {
+         repliToken.replicationLineUp();
+      }
 
       synchronized (replicationLock)
       {

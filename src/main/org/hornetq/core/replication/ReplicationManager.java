@@ -44,7 +44,7 @@ public interface ReplicationManager extends HornetQComponent
 
    void appendDeleteRecordTransactional(byte journalID, long txID, long id) throws Exception;
 
-   void appendCommitRecord(byte journalID, long txID) throws Exception;
+   void appendCommitRecord(byte journalID, long txID, boolean lineUp) throws Exception;
 
    void appendPrepareRecord(byte journalID, long txID, EncodingSupport transactionData) throws Exception;
 

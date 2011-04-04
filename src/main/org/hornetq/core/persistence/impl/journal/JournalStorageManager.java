@@ -707,7 +707,12 @@ public class JournalStorageManager implements StorageManager
 
    public void commit(final long txID) throws Exception
    {
-      messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional));
+      commit(txID, true);
+   }
+
+   public void commit(final long txID, final boolean lineUpContext) throws Exception
+   {
+      messageJournal.appendCommitRecord(txID, syncTransactional, getContext(syncTransactional), lineUpContext);
    }
 
    public void rollback(final long txID) throws Exception
@@ -3289,6 +3294,13 @@ public class JournalStorageManager implements StorageManager
       }
 
       journal.stop();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
+    */
+   public void lineUpContext()
+   {
    }
 
 }
