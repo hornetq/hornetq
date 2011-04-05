@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-core/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-core/src/main/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/hornetq-logging/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build/api" />
       <excludeFolder url="file://$MODULE_DIR$/build/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/jars" />

@@ -96,8 +96,10 @@
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="hornetq.core.module.jar" value="hornetq-core"/>
    <property name="hornetq.core.client.module.jar" value="hornetq-core-client"/>
+   <property name="hornetq.logging.module.jar" value="hornetq-logging"/>
    <property name="target.core.jar.dir" value="${hornetq.core.module.jar}/target"/>
    <property name="target.core.client.jar.dir" value="${hornetq.core.client.module.jar}/target"/>
+   <property name="target.logging.jar.dir" value="${hornetq.logging.module.jar}/target"/>
    <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
@@ -106,7 +108,6 @@
    <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
    <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
-   <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
    <property name="build.jars.dir" value="${build.dir}/jars"/>
    <property name="build.src.dir" value="${build.dir}/src"/>
@@ -425,7 +426,6 @@
    <target name="init" depends="createthirdparty">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${build.classes.dir}"/>
-      <mkdir dir="${build.core.classes.dir}"/>
       <mkdir dir="${build.core.client.java5.classes.dir}"/>
       <mkdir dir="${build.jms.classes.dir}"/>
       <mkdir dir="${build.jms.java5.classes.dir}"/>
@@ -434,7 +434,6 @@
       <mkdir dir="${build.twitter.integration.classes.dir}"/>
       <mkdir dir="${build.service.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
-      <mkdir dir="${build.logging.classes.dir}"/>
       <mkdir dir="${build.ra.classes.dir}"/>
       <mkdir dir="${build.jars.dir}"/>
       <mkdir dir="${build.src.dir}"/>
@@ -702,25 +701,7 @@
       </javac>
    </target>
 
-   <target name="compile-logging" depends="init">
-      <javac destdir="${build.logging.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="org/hornetq/integration/logging/**/*.java"/>
-         <classpath refid="logging.compilation.classpath"/>
-      </javac>
+   <target name="compile-logging" depends="jar-logging">
    </target>
 
    <target name="compile-ra" depends="init">
@@ -1008,12 +989,12 @@
       </jar>
    </target>
 
-   <target name="jar-logging" depends="compile-logging">
-
-      <jar jarfile="${build.jars.dir}/${logging.jar.name}">
-         <fileset dir="${build.logging.classes.dir}" includes="**"/>
-      </jar>
-
+   <target name="jar-logging">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-logging"/>
+      </ant>
    </target>
 
    <target name="jar-logging-sources">
@@ -1248,12 +1229,10 @@
       </copy>
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
-            <include name="${core.jar.name}"/>
             <include name="${jms.jar.name}"/>
             <include name="${jboss.integration.jar.name}"/>
             <include name="${service.sar.name}"/>
             <include name="${bootstrap.jar.name}"/>
-            <include name="${logging.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
          	<include name="${core.client.jar.name}"/>
@@ -1273,6 +1252,7 @@
       </copy>
       <copy file="${target.core.jar.dir}/hornetq-core-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core.jar"/>
       <copy file="${target.core.client.jar.dir}/hornetq-core-client-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core-client.jar"/>
+      <copy file="${target.logging.jar.dir}/hornetq-logging-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-logging.jar"/>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">
