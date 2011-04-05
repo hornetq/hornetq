@@ -462,13 +462,12 @@ public class PagingStoreImpl implements TestSupportPageStore
                   currentPage = createPage(currentPageId);
                   currentPage.open();
 
-                  List<PagedMessage> messages = currentPage.read();
+                  List<PagedMessage> messages = currentPage.read(storageManager);
 
                   LivePageCache pageCache = new LivePageCacheImpl(currentPage);
 
                   for (PagedMessage msg : messages)
                   {
-                     msg.initMessage(storageManager);
                      pageCache.addLiveMessage(msg);
                   }
 
@@ -646,7 +645,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                {
                   stopPaging();
                   returnPage.open();
-                  returnPage.delete();
+                  returnPage.delete(null);
 
                   // This will trigger this address to exit the page mode,
                   // and this will make HornetQ start using the journal again

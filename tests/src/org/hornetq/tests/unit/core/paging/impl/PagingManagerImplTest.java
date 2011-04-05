@@ -93,7 +93,7 @@ public class PagingManagerImplTest extends UnitTestCase
 
       page.open();
 
-      List<PagedMessage> msgs = page.read();
+      List<PagedMessage> msgs = page.read(new NullStorageManager());
 
       page.close();
 

@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.unit.core.paging.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +57,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -286,7 +286,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       page.open();
 
-      List<PagedMessage> msg = page.read();
+      List<PagedMessage> msg = page.read(new NullStorageManager());
 
       Assert.assertEquals(numMessages, msg.size());
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
@@ -374,7 +374,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
          page.open();
 
-         List<PagedMessage> msg = page.read();
+         List<PagedMessage> msg = page.read(new NullStorageManager());
 
          page.close();
 
@@ -399,9 +399,9 @@ public class PagingStoreImplTest extends UnitTestCase
 
       newPage.open();
 
-      Assert.assertEquals(1, newPage.read().size());
+      Assert.assertEquals(1, newPage.read(new NullStorageManager()).size());
 
-      newPage.delete();
+      newPage.delete(null);
 
       Assert.assertEquals(1, storeImpl.getNumberOfPages());
 
@@ -421,7 +421,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       page.open();
 
-      List<PagedMessage> msgs = page.read();
+      List<PagedMessage> msgs = page.read(new NullStorageManager());
 
       Assert.assertEquals(1, msgs.size());
 
@@ -603,7 +603,7 @@ public class PagingStoreImplTest extends UnitTestCase
       for (Page page : readPages)
       {
          page.open();
-         List<PagedMessage> msgs = page.read();
+         List<PagedMessage> msgs = page.read(new NullStorageManager());
          page.close();
 
          for (PagedMessage msg : msgs)
@@ -678,7 +678,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
          page.open();
 
-         List<PagedMessage> msgs = page.read();
+         List<PagedMessage> msgs = page.read(new NullStorageManager());
 
          page.close();
 
@@ -696,7 +696,7 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       lastPage.open();
-      List<PagedMessage> lastMessages = lastPage.read();
+      List<PagedMessage> lastMessages = lastPage.read(new NullStorageManager());
       lastPage.close();
       Assert.assertEquals(1, lastMessages.size());
 
@@ -856,7 +856,7 @@ public class PagingStoreImplTest extends UnitTestCase
                   if (page != null)
                   {
                      page.open();
-                     List<PagedMessage> messages = page.read();
+                     List<PagedMessage> messages = page.read(new NullStorageManager());
 
                      for (PagedMessage pgmsg : messages)
                      {
@@ -868,7 +868,7 @@ public class PagingStoreImplTest extends UnitTestCase
                      }
 
                      page.close();
-                     page.delete();
+                     page.delete(null);
                   }
                   else
                   {

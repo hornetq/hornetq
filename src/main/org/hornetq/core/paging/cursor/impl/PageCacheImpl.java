@@ -133,6 +133,14 @@ public class PageCacheImpl implements PageCache
       return "PageCacheImpl::page=" + page.getPageId() + " numberOfMessages = " + messages.length;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.cursor.PageCache#getMessages()
+    */
+   public PagedMessage[] getMessages()
+   {
+      return messages;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -143,6 +143,14 @@ public class LivePageCacheImpl implements LivePageCache
       this.isLive = false;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.cursor.PageCache#getMessages()
+    */
+   public PagedMessage[] getMessages()
+   {
+      return messages.toArray(new PagedMessage[messages.size()]);
+   }
+
 
    // Package protected ---------------------------------------------
 

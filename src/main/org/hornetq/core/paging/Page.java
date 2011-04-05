@@ -16,6 +16,7 @@ package org.hornetq.core.paging;
 import java.util.List;
 
 import org.hornetq.core.paging.cursor.LivePageCache;
+import org.hornetq.core.persistence.StorageManager;
 
 /**
  * 
@@ -29,7 +30,7 @@ public interface Page
 
    void write(PagedMessage message) throws Exception;
 
-   List<PagedMessage> read() throws Exception;
+   List<PagedMessage> read(StorageManager storage) throws Exception;
    
    void setLiveCache(LivePageCache pageCache);
 
@@ -43,5 +44,5 @@ public interface Page
 
    void close() throws Exception;
 
-   boolean delete() throws Exception;
+   boolean delete(PagedMessage[] messages) throws Exception;
 }

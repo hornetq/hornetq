@@ -533,7 +533,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          {
             if (deletePages)
             {
-               page.delete();
+               page.delete(null);
             }
          }
          else

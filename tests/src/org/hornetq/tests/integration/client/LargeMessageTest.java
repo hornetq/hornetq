@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
 import javax.transaction.xa.XAResource;
@@ -139,17 +140,16 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
-
    public void testLargeBufferTransacted() throws Exception
    {
       doTestLargeBuffer(true);
    }
-   
+
    public void testLargeBufferNotTransacted() throws Exception
    {
       doTestLargeBuffer(false);
    }
-   
+
    public void doTestLargeBuffer(boolean transacted) throws Exception
    {
       final int journalsize = 100 * 1024;
@@ -162,10 +162,10 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          Configuration config = createDefaultConfig(isNetty());
          config.setJournalFileSize(journalsize);
-         
+
          config.setJournalBufferSize_AIO(10 * 1024);
          config.setJournalBufferSize_NIO(10 * 1024);
-         
+
          server = createServer(true, config);
 
          server.start();
@@ -179,11 +179,10 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
          Message clientFile = session.createMessage(true);
-         for (int i = 0 ; i < messageSize; i++)
+         for (int i = 0; i < messageSize; i++)
          {
             clientFile.getBodyBuffer().writeByte(getSamplebyte(i));
          }
-         
 
          producer.send(clientFile);
 
@@ -197,26 +196,24 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
          ClientMessage msg1 = consumer.receive(5000);
          assertNotNull(msg1);
-         
+
          Assert.assertNotNull(msg1);
-         
-         for (int i = 0 ; i < messageSize; i++)
+
+         for (int i = 0; i < messageSize; i++)
          {
-            //System.out.print(msg1.getBodyBuffer().readByte() + "  ");
-            //if (i % 100 == 0) System.out.println();
-            assertEquals("position = "  + i, getSamplebyte(i), msg1.getBodyBuffer().readByte());
+            // System.out.print(msg1.getBodyBuffer().readByte() + "  ");
+            // if (i % 100 == 0) System.out.println();
+            assertEquals("position = " + i, getSamplebyte(i), msg1.getBodyBuffer().readByte());
          }
-       
+
          msg1.acknowledge();
-        
+
          consumer.close();
-         
-         
+
          if (transacted)
          {
             session.commit();
          }
-         
 
          session.close();
 
@@ -880,7 +877,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          producer2.send(msg1);
 
-
          session.commit();
 
          ClientMessage msg2 = consumer2.receive(10000);
@@ -939,9 +935,8 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         
          locator.setMinLargeMessageSize(200);
-         
+
          locator.setCacheLargeMessagesClient(true);
 
          ClientSessionFactory sf = locator.createSessionFactory();
@@ -968,19 +963,19 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.commit();
 
          compareString(messageSize, msgReceived);
-         
+
          msgReceived.getBodyBuffer().readerIndex(0);
-         
+
          producer.send(msgReceived);
 
          session.commit();
-         
+
          ClientMessage msgReceived2 = consumer.receive(10000);
 
          msgReceived2.acknowledge();
 
          compareString(messageSize, msgReceived2);
-         
+
          session.commit();
 
          session.close();
@@ -1016,7 +1011,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       assertNotNull(msg);
       for (long i = 0; i < messageSize; i++)
       {
-         Assert.assertEquals("position "  + i, UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
+         Assert.assertEquals("position " + i, UnitTestCase.getSamplebyte(i), msg.getBodyBuffer().readByte());
       }
    }
 
@@ -2365,7 +2360,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-
          locator.setMinLargeMessageSize(1024);
          locator.setConsumerWindowSize(1024 * 1024);
 
@@ -2468,7 +2462,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          server = createServer(true, isNetty());
 
          server.start();
-
 
          locator.setMinLargeMessageSize(100 * 1024);
 
@@ -2629,18 +2622,17 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
          LargeServerMessageImpl fileMessage = new LargeServerMessageImpl((JournalStorageManager)server.getStorageManager());
-         
+
          fileMessage.setMessageID(1005);
 
          for (int i = 0; i < LARGE_MESSAGE_SIZE; i++)
          {
             fileMessage.addBytes(new byte[] { UnitTestCase.getSamplebyte(i) });
          }
-         
+
          // The server would be doing this
          fileMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, LARGE_MESSAGE_SIZE);
 
- 
          fileMessage.releaseResources();
 
          session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
@@ -2807,6 +2799,158 @@ public class LargeMessageTest extends LargeMessageTestBase
          // printBuffer("message received : ", message2.getBody());
 
          session.close();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+   public void testPageOnLargeMessageMultipleQueues() throws Exception
+   {
+      Configuration config = createDefaultConfig(isNetty());
+
+      final int PAGE_MAX = 20 * 1024;
+
+      final int PAGE_SIZE = 10 * 1024;
+
+      HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
+
+      AddressSettings value = new AddressSettings();
+      map.put(LargeMessageTest.ADDRESS.toString(), value);
+      server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+      server.start();
+
+      final int numberOfBytes = 1024;
+
+      final int numberOfBytesBigMessage = 400000;
+
+      try
+      {
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         for (int i = 0; i < 100; i++)
+         {
+            message = session.createMessage(true);
+
+            message.getBodyBuffer().writerIndex(0);
+
+            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+
+            for (int j = 1; j <= numberOfBytes; j++)
+            {
+               message.getBodyBuffer().writeInt(j);
+            }
+
+            producer.send(message);
+         }
+
+         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+         clientFile.putBooleanProperty("TestLarge", true);
+         producer.send(clientFile);
+
+         for (int i = 0; i < 100; i++)
+         {
+            message = session.createMessage(true);
+
+            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+
+            producer.send(message);
+         }
+
+         session.close();
+
+         server.stop();
+
+         server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+         server.start();
+
+         sf = locator.createSessionFactory();
+
+         for (int ad = 0; ad < 2; ad++)
+         {
+            session = sf.createSession(false, false, false);
+
+            ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+
+            session.start();
+
+            for (int i = 0; i < 100; i++)
+            {
+               ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+
+               Assert.assertNotNull(message2);
+
+               message2.acknowledge();
+
+               Assert.assertNotNull(message2);
+            }
+
+            session.commit();
+
+            for (int i = 0; i < 5; i++)
+            {
+               ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
+
+               assertTrue(messageLarge.getBooleanProperty("TestLarge"));
+
+               Assert.assertNotNull(messageLarge);
+
+               ByteArrayOutputStream bout = new ByteArrayOutputStream();
+               messageLarge.acknowledge();
+               messageLarge.saveToOutputStream(bout);
+               byte[] body = bout.toByteArray();
+               assertEquals(numberOfBytesBigMessage, body.length);
+               for (int bi = 0; bi < body.length; bi++)
+               {
+                  assertEquals(getSamplebyte(bi), body[bi]);
+               }
+
+               if (i < 4)
+                  session.rollback();
+               else
+                  session.commit();
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
+               ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+
+               Assert.assertNotNull(message2);
+
+               message2.acknowledge();
+
+               Assert.assertNotNull(message2);
+            }
+
+            session.commit();
+
+            consumer.close();
+
+            session.close();
+
+         }
       }
       finally
       {

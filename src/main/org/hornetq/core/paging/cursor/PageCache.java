@@ -34,6 +34,8 @@ public interface PageCache extends SoftValueHashMap.ValueCache
    
    void setMessages(PagedMessage[] messages);
    
+   PagedMessage[] getMessages();
+   
    /**
     * If this cache is still being updated
     * @return
