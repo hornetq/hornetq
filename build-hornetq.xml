@@ -41,8 +41,8 @@
    <!-- ======================================================================================== -->
 
    <property name="module.name" value="hornetq"/>
-	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
-   <property file="src/config/common/hornetq-version.properties"/>
+	<!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
+   <property file="hornetq-core/src/main/resources/hornetq-version.properties"/>
    <property name="hornetq.version.revision" value="0" />
    <property name="hornetq.version.svnurl" value="https://svn.jboss.org/repos/hornetq/trunk"/>
    <property name="hornetq.version.string"
@@ -94,7 +94,10 @@
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
-   <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
+   <property name="hornetq.core.module.jar" value="hornetq-core"/>
+   <property name="hornetq.core.client.module.jar" value="hornetq-core-client"/>
+   <property name="target.core.jar.dir" value="${hornetq.core.module.jar}/target"/>
+   <property name="target.core.client.jar.dir" value="${hornetq.core.client.module.jar}/target"/>
    <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
@@ -119,7 +122,7 @@
    <property name="src.config.jbossas5.non-clustered.dir" value="${src.dir}/config/jboss-as-5/non-clustered"/>
    <property name="src.config.jbossas5.clustered.dir" value="${src.dir}/config/jboss-as-5/clustered"/>
    <property name="src.config.service.dir" value="${src.dir}/config/service"/>
-   <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
+   <property name="src.schema.dir" value="${hornetq.core.module.jar}/src/main/resources/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
    <property name="logs.dir" value="logs"/>
@@ -208,9 +211,14 @@
       <path refid="org.jboss.netty.classpath"/>
    </path>
 
+   <path id="core.target.jar">
+      <fileset dir="${target.core.jar.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
    <path id="jms.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
-   	  <path refid="org.jboss.netty.classpath"/>
+      <path refid="core.target.jar"/>
+   	<path refid="org.jboss.netty.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
@@ -228,19 +236,19 @@
 		
 
    <path id="jboss.integration.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
+      <path refid="core.target.jar"/>
       <path refid="org.jboss.security.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
    </path>
 
    <path id="twitter.integration.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
+      <path refid="core.target.jar"/>
       <path refid="org.twitter4j.classpath"/>
    </path>
 
    <path id="spring.integration.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
+      <path refid="core.target.jar"/>
       <path location="${build.jms.classes.dir}"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.springframework.classpath"/>
@@ -248,17 +256,18 @@
 
    <path id="jboss.service.compilation.classpath">
       <path refid="org.jboss.javaee.classpath"/>
-      <path location="${build.core.classes.dir}"/>
+      <path refid="core.target.jar"/>
       <path location="${build.jboss.integration.classes.dir}"/>
    </path>
 
    <path id="bootstrap.compilation.classpath">
-      <path location="${build.core.classes.dir}"/>
+      <path refid="core.target.jar"/>
       <path refid="org.jboss.microcontainer.classpath"/>
       <path refid="org.jboss.classpath"/>
    </path>
 
    <path id="logging.compilation.classpath">
+      <path refid="core.target.jar"/>
       <path refid="log4j.log4j.classpath"/>
    </path>
 
@@ -404,8 +413,12 @@
       </delete>
       <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
       <ant antfile="build-thirdparty.xml" target="maven-install">
-	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
-	<property name="maven.goal" value="clean"/>
+         <property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+         <property name="maven.goal" value="clean"/>
+      </ant>
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-f hornetq-core/pom.xml"/>
+         <property name="maven.goal" value="clean"/>
       </ant>
    </target>
 
@@ -447,10 +460,13 @@
    <!-- Compilation targets               -->
    <!-- ================================= -->
 
-   <target name="compile" depends="compile-jms, compile-core-client-java5"/>
+   <target name="compile" depends="compile-jms"/>
 
-   <target name="compile-core" depends="init">
-      <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
+   <target name="compile-core" depends="jar-core">
+    <!--  <exec executable="../tools/maven/bin/mvn" dir="hornetq-core">
+         <arg value="package"/>
+      </exec>-->
+     <!-- <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
       <javacc target="${src.main.dir}/org/hornetq/core/filter/impl/FilterParser.jj"
               outputdirectory="${build.src.dir}/org/hornetq/core/filter/impl"
               javacchome="${sun.javacc.lib}"
@@ -490,7 +506,7 @@
          <filterset>
                <filter token="NETTY.VERSION" value="${netty.version}"/>
          </filterset>
-      </copy>
+      </copy>-->
 
    </target>
 
@@ -778,7 +794,7 @@
       </schemavalidate>
       <schemavalidate file="${conf.dir}/hornetq-jms.xml">
          <schema namespace="urn:hornetq"
-                 file="${src.schema.dir}/hornetq-jms.xsd"/>
+                 file="src/config/common/schema/hornetq-jms.xsd"/>
       </schemavalidate>
    </target>
 
@@ -791,7 +807,7 @@
    </target>
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest, eap-examples">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest, eap-examples">
    </target>
 
    <target name="jar-jnp-client" depends="init">
@@ -820,20 +836,12 @@
       </jar>
    </target>
 
-   <target name="jar-core" depends="compile-core">
-
-      <jar jarfile="${build.jars.dir}/${core.jar.name}">
-         <fileset dir="${build.core.classes.dir}" includes="**"/>
-         <fileset dir="${src.config.dir}/common">
-            <include name="**/*.xsd"/>
-            <exclude name="**/hornetq-jms.xsd"/>
-         </fileset>
-         <manifest>
-            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
-            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
-         </manifest>
-      </jar>
-
+   <target name="jar-core" depends="init">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-core"/>
+      </ant>
    </target>
 
    <target name="jar-core-sources">
@@ -1017,36 +1025,11 @@
    </target>
 
    <target name="jar-core-client" depends="compile-core">
-      <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
-         <fileset dir="${build.core.classes.dir}">
-            <include name="hornetq-version.properties"/>
-            <include name="org/hornetq/api/**/*.class"/>
-            <include name="org/hornetq/*.class"/>
-            <include name="org/hornetq/core/buffers/**/*.class"/>
-            <include name="org/hornetq/core/client/**/*.class"/>
-            <include name="org/hornetq/core/filter/**/*.class"/>
-            <include name="org/hornetq/core/exception/**/*.class"/>
-            <include name="org/hornetq/core/remoting/impl/**/*.class"/>
-            <include name="org/hornetq/utils/**/*.class"/>
-            <include name="org/hornetq/core/cluster/**/*.class"/>
-            <include name="org/hornetq/core/list/**/*.class"/>
-            <include name="org/hornetq/core/logging/**/*.class"/>
-            <include name="org/hornetq/core/message/**/*.class"/>
-            <include name="org/hornetq/core/protocol/core/**/*.class"/>
-            <include name="org/hornetq/core/remoting/**/*.class"/>
-            <include name="org/hornetq/core/version/**/*.class"/>
-            <include name="org/hornetq/core/management/*.class"/>
-            <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
-            <include name="org/hornetq/spi/core/logging/*.class"/>
-            <include name="org/hornetq/spi/core/protocol/*.class"/>
-            <include name="org/hornetq/spi/core/remoting/*.class"/>
-
-         	<!-- required by SessionSendMessage -->
-            <include name="org/hornetq/core/server/ServerMessage.class"/>
-         	<include name="org/hornetq/core/journal/EncodingSupport.class"/>
-         </fileset>
-      </jar>
-
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-core-client"/>
+      </ant>
    </target>
 
    <target name="jar-core-client-sources">
@@ -1217,16 +1200,16 @@
 
    <target name="jar-rest" depends="jar-rest-init">
       <ant antfile="build-thirdparty.xml" target="maven-install">
-        <property name="maven.opts" value="-Dmaven.test.skip=true"/>
-	<property name="maven.goal" value="install"/>
-	<property name="working.dir" value="hornetq-rest"/>
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-rest"/>
       </ant>
    </target>
 
    <target name="rest-tests" depends="jar-rest">
       <ant antfile="build-thirdparty.xml" target="maven-install">
-	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
-	<property name="maven.goal" value="install"/>
+         <property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+         <property name="maven.goal" value="install"/>
       </ant>
    </target>
 
@@ -1288,6 +1271,8 @@
             <include name="jboss-jms-api.jar"/>
          </fileset>
       </copy>
+      <copy file="${target.core.jar.dir}/hornetq-core-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core.jar"/>
+      <copy file="${target.core.client.jar.dir}/hornetq-core-client-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core-client.jar"/>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">

@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.hornetq</groupId>
+    <artifactId>hornetq-core</artifactId>
+    <packaging>jar</packaging>
+    <version>2.2.3-SNAPSHOT</version>
+    <name>HornetQ Core</name>
+
+
+
+    <properties>
+        <netty.version>3.2.3.Final</netty.version>
+        <netty.version.string>3.2.3.Final</netty.version.string>
+        <hornetq.version.versionName>Stripey</hornetq.version.versionName>
+        <hornetq.version.majorVersion>2</hornetq.version.majorVersion>
+        <hornetq.version.minorVersion>2</hornetq.version.minorVersion>
+        <hornetq.version.microVersion>3</hornetq.version.microVersion>
+        <hornetq.version.incrementingVersion>122</hornetq.version.incrementingVersion>
+        <hornetq.version.versionSuffix>SNAPSHOT</hornetq.version.versionSuffix>
+        <hornetq.version.versionTag>SNAPSHOT</hornetq.version.versionTag>
+        <HornetQ-Version>${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})</HornetQ-Version>
+        <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+            <version>3.2.3.Final</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <version>2.2</version>
+              <configuration>
+                <archive>
+                  <manifestEntries>
+                    <HornetQ-Version>${HornetQ-Version}</HornetQ-Version>
+                    <HornetQ-SVN-URL>${HornetQ-SVN-URL}</HornetQ-SVN-URL>
+                  </manifestEntries>
+                </archive>
+              </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>javacc-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>javacc</id>
+                        <goals>
+                            <goal>javacc</goal>
+                        </goals>
+                        <configuration>
+                            <isStatic>false</isStatic>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -19,7 +19,7 @@ Copyright 2009 Red Hat, Inc.
    <groupId>org.hornetq</groupId>
    <artifactId>messaging</artifactId>
    <packaging>pom</packaging>
-   <version>2.2.1.GA</version>
+   <version>2.2.3-SNAPSHOT</version>
 
     <properties>
         <resteasy.version>2.1.0.GA</resteasy.version>
@@ -40,6 +40,10 @@ Copyright 2009 Red Hat, Inc.
       <connection>scm:svn:http://anonsvn.jboss.org/repos/messaging/trunk</connection>
       <developerConnection>scm:svn:https://svn.jboss.org/repos/messaging/trunk</developerConnection>
    </scm>
+
+    <modules>
+        <module>hornetq-core</module>
+    </modules>
    <build>
 
       <plugins>
