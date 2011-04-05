@@ -243,6 +243,10 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          DelegatingSession.debug = false;
       }
    }
+   
+   protected void addPayload(ClientMessage msg)
+   {
+   }
 
    private void doTestNonTransactional(final TestRunner runner) throws Exception
    {
@@ -274,6 +278,8 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   message.getBodyBuffer().writeString("message" + i);
 
                   message.putIntProperty("counter", i);
+                  
+                  addPayload(message);
 
                   producer.send(message);
 
@@ -402,6 +408,9 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                      message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("id:" + i +
                                                                                                     ",exec:" +
                                                                                                     executionId));
+                     
+                     addPayload(message);
+
 
                      producer.send(message);
                   }

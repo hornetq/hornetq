@@ -16,15 +16,20 @@ package org.hornetq.tests.integration.cluster.reattach;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.HornetQServer;
@@ -77,7 +82,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -94,10 +99,10 @@ public class ReattachTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                                false,
-                                                                0,
-                                                                System.currentTimeMillis(),
-                                                                (byte)1);
+                                                          false,
+                                                          0,
+                                                          System.currentTimeMillis(),
+                                                          (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
             message.getBodyBuffer().writeString("aardvarks");
             producer.send(message);
@@ -139,6 +144,77 @@ public class ReattachTest extends ServiceTestBase
    }
 
    /*
+    * Test failure on connection, but server is still up so should immediately reconnect
+    */
+   public void testOverflowCredits() throws Exception
+   {
+      final long retryInterval = 500;
+
+      final double retryMultiplier = 1d;
+
+      final int reconnectAttempts = 1;
+
+      locator.setRetryInterval(retryInterval);
+      locator.setRetryIntervalMultiplier(retryMultiplier);
+      locator.setReconnectAttempts(reconnectAttempts);
+      locator.setConfirmationWindowSize(1024 * 1024);
+      locator.setProducerWindowSize(1000);
+
+      final AtomicInteger count = new AtomicInteger(0);
+
+      Interceptor intercept = new Interceptor()
+      {
+
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            System.out.println("Intercept..." + packet.getClass().getName());
+            
+            if (packet instanceof SessionProducerCreditsMessage )
+            {
+               SessionProducerCreditsMessage credit = (SessionProducerCreditsMessage)packet;
+               
+               System.out.println("Credits: " + credit.getCredits());
+               if (count.incrementAndGet() == 2)
+               {
+                  System.out.println("Failing");
+                  connection.fail(new HornetQException(1, "bye"));
+                  return false;
+               }
+            }
+            return true;
+         }
+      };
+
+      locator.addInterceptor(intercept);
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ReattachTest.ADDRESS, ReattachTest.ADDRESS, null, false);
+
+      ClientProducer producer = session.createProducer(ReattachTest.ADDRESS);
+
+      final int numMessages = 10;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
+         message.putIntProperty(new SimpleString("count"), i);
+         message.getBodyBuffer().writeBytes(new byte[5000]);
+         producer.send(message);
+      }
+
+      session.close();
+
+      sf.close();
+   }
+
+   /*
     * Test failure on connection, simulate failure to create connection for a while, then 
     * allow connection to be recreated
     */
@@ -154,7 +230,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -167,10 +243,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -244,7 +320,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -277,10 +353,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -358,7 +434,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -371,10 +447,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -448,7 +524,7 @@ public class ReattachTest extends ServiceTestBase
          locator.setRetryIntervalMultiplier(retryMultiplier);
          locator.setReconnectAttempts(reconnectAttempts);
          locator.setConfirmationWindowSize(1024 * 1024);
-         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+         final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
          session = sf.createSession();
 
@@ -558,7 +634,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       InVMConnector.failOnCreateConnection = true;
 
@@ -656,7 +732,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -697,11 +773,11 @@ public class ReattachTest extends ServiceTestBase
 
       //
       // //Should throw exception since didn't reconnect
-      //      
+      //
       // try
       // {
       // session.start();
-      //         
+      //
       // fail("Should throw exception");
       // }
       // catch (HornetQException e)
@@ -728,7 +804,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -741,10 +817,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -791,12 +867,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-
       locator.setRetryInterval(retryInterval);
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -809,10 +884,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -884,12 +959,11 @@ public class ReattachTest extends ServiceTestBase
 
       final int reconnectAttempts = -1;
 
-
       locator.setRetryInterval(retryInterval);
       locator.setRetryIntervalMultiplier(retryMultiplier);
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -902,10 +976,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -967,7 +1041,7 @@ public class ReattachTest extends ServiceTestBase
       locator.setReconnectAttempts(reconnectAttempts);
       locator.setMaxRetryInterval(maxRetryInterval);
       locator.setConfirmationWindowSize(1024 * 1024);
-      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -980,10 +1054,10 @@ public class ReattachTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                             false,
-                                                             0,
-                                                             System.currentTimeMillis(),
-                                                             (byte)1);
+                                                       false,
+                                                       0,
+                                                       System.currentTimeMillis(),
+                                                       (byte)1);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBodyBuffer().writeString("aardvarks");
          producer.send(message);
@@ -1045,7 +1119,7 @@ public class ReattachTest extends ServiceTestBase
 
       service.start();
 
-      locator =  createFactory(false);
+      locator = createFactory(false);
    }
 
    @Override
@@ -1054,7 +1128,7 @@ public class ReattachTest extends ServiceTestBase
       InVMConnector.resetFailures();
 
       locator.close();
-      
+
       service.stop();
 
       Assert.assertEquals(0, InVMRegistry.instance.size());

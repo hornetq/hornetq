@@ -83,9 +83,13 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore.drainPermits();
 
+      int beforeFailure = arriving;
+      
       arriving = 0;
 
-      checkCredits(windowSize * 2);
+      // If we are waiting for more credits than what's configured, then we need to use what we tried before
+      // otherwise the client may starve as the credit will never arrive
+      checkCredits(Math.max(windowSize * 2, beforeFailure));
    }
 
    public void close()
