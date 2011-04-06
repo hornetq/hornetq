@@ -98,10 +98,12 @@
    <property name="hornetq.core.client.module.jar" value="hornetq-core-client"/>
    <property name="hornetq.logging.module.jar" value="hornetq-logging"/>
    <property name="hornetq.integration.as.module.jar" value="hornetq-jboss-as-integration"/>
+   <property name="hornetq.bootstrap.module.jar" value="hornetq-bootstrap"/>
    <property name="target.core.jar.dir" value="${hornetq.core.module.jar}/target"/>
    <property name="target.core.client.jar.dir" value="${hornetq.core.client.module.jar}/target"/>
    <property name="target.logging.jar.dir" value="${hornetq.logging.module.jar}/target"/>
    <property name="target.integration.as.jar.dir" value="${hornetq.integration.as.module.jar}/target"/>
+   <property name="target.bootstrap.jar.dir" value="${hornetq.bootstrap.module.jar}/target"/>
    <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
@@ -671,25 +673,7 @@
       </javac>
    </target>
 
-   <target name="compile-bootstrap" depends="compile-core">
-      <javac destdir="${build.bootstrap.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="org/hornetq/integration/bootstrap/**/*.java"/>
-         <classpath refid="bootstrap.compilation.classpath"/>
-      </javac>
+   <target name="compile-bootstrap" depends="jar-bootstrap">
    </target>
 
    <target name="compile-logging" depends="jar-logging">
@@ -964,13 +948,12 @@
       </jar>
    </target>
 
-   <target name="jar-bootstrap" depends="compile-bootstrap">
-
-      <jar jarfile="${build.jars.dir}/${bootstrap.jar.name}">
-         <fileset dir="${build.bootstrap.classes.dir}" includes="**"/>
-      </jar>
-
-   </target>
+   <target name="jar-bootstrap">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-bootstrap"/>
+      </ant>  </target>
 
    <target name="jar-bootstrap-sources">
       <jar jarfile="${build.jars.dir}/${bootstrap.sources.jar.name}">
@@ -1222,10 +1205,8 @@
          <fileset dir="${build.jars.dir}">
             <include name="${jms.jar.name}"/>
             <include name="${service.sar.name}"/>
-            <include name="${bootstrap.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
-         	<include name="${core.client.jar.name}"/>
             <include name="${core.client.java5.jar.name}"/>
          	<include name="${jms.client.jar.name}"/>
          	<include name="${jms.client.java5.jar.name}"/>
@@ -1244,6 +1225,7 @@
       <copy file="${target.core.client.jar.dir}/hornetq-core-client-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core-client.jar"/>
       <copy file="${target.logging.jar.dir}/hornetq-logging-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-logging.jar"/>
       <copy file="${target.integration.as.jar.dir}/hornetq-jboss-as-integration-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-jboss-as-integration.jar"/>
+      <copy file="${target.bootstrap.jar.dir}/hornetq-bootstrap-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-bootstrap.jar"/>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">
