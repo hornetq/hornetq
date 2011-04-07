@@ -95,12 +95,16 @@
    <property name="build.dir" value="build"/>
    <property name="build.classes.dir" value="${build.dir}/classes"/>
    <property name="hornetq.core.module.jar" value="hornetq-core"/>
+   <property name="hornetq.jms.module.jar" value="hornetq-jms"/>
+   <property name="hornetq.jms.client.module.jar" value="hornetq-jms-client"/>
    <property name="hornetq.core.client.module.jar" value="hornetq-core-client"/>
    <property name="hornetq.logging.module.jar" value="hornetq-logging"/>
    <property name="hornetq.integration.as.module.jar" value="hornetq-jboss-as-integration"/>
    <property name="hornetq.bootstrap.module.jar" value="hornetq-bootstrap"/>
    <property name="hornetq.twitter.module.jar" value="hornetq-twitter-integration"/>
    <property name="target.core.jar.dir" value="${hornetq.core.module.jar}/target"/>
+   <property name="target.jms.jar.dir" value="${hornetq.jms.module.jar}/target"/>
+   <property name="target.jms.client.jar.dir" value="${hornetq.jms.client.module.jar}/target"/>
    <property name="target.core.client.jar.dir" value="${hornetq.core.client.module.jar}/target"/>
    <property name="target.logging.jar.dir" value="${hornetq.logging.module.jar}/target"/>
    <property name="target.integration.as.jar.dir" value="${hornetq.integration.as.module.jar}/target"/>
@@ -224,13 +228,22 @@
       </fileset>
    </path>
 
+
+   <path id="jms.target.jar">
+      <fileset dir="${target.jms.jar.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+
    <path id="as.integration.target.jar">
       <fileset dir="${target.integration.as.jar.dir}">
          <include name="**/*.jar"/>
       </fileset>
    </path>
+
    <path id="jms.compilation.classpath">
       <path refid="core.target.jar"/>
+      <path refid="jms.target.jar"/>
    	<path refid="org.jboss.netty.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
@@ -270,6 +283,7 @@
    <path id="jboss.service.compilation.classpath">
       <path refid="org.jboss.javaee.classpath"/>
       <path refid="core.target.jar"/>
+      <path refid="jms.target.jar"/>
       <path refid="as.integration.target.jar"/>
       <path location="${build.jboss.integration.classes.dir}"/>
    </path>
@@ -566,25 +580,7 @@
 
    </target>
 	
-   <target name="compile-jms" depends="compile-core">
-      <javac destdir="${build.jms.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="**/jms/**/*.java"/>
-         <classpath refid="jms.compilation.classpath"/>
-      </javac>
+   <target name="compile-jms" depends="jar-jms">
    </target>
 
 	   <target name="compile-jms-java5" depends="compile-core-client-java5">
@@ -614,25 +610,8 @@
    <target name="compile-twitter-integration" depends="jar-twitter-integration">
    </target>
 
-   <target name="compile-spring-integration" depends="compile-core">
-      <javac destdir="${build.spring.integration.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="org/hornetq/integration/spring/**/*.java"/>
-         <classpath refid="spring.integration.compilation.classpath"/>
-      </javac>
+   <target name="compile-spring-integration" depends="jar-spring-integration">
+
    </target>
 
    <!-- author: Lucas Amador -->
@@ -734,7 +713,7 @@
       </schemavalidate>
       <schemavalidate file="${conf.dir}/hornetq-jms.xml">
          <schema namespace="urn:hornetq"
-                 file="src/config/common/schema/hornetq-jms.xsd"/>
+                 file="hornetq-jms/src/main/resources/schema/hornetq-jms.xsd"/>
       </schemavalidate>
    </target>
 
@@ -805,15 +784,12 @@
       </jar>
    </target>
 
-   <target name="jar-jms" depends="compile-jms">
-
-      <jar jarfile="${build.jars.dir}/${jms.jar.name}">
-         <fileset dir="${build.jms.classes.dir}" includes="**"/>
-         <fileset dir="${src.config.dir}/common">
-            <include name="**/hornetq-jms.xsd"/>
-         </fileset>
-      </jar>
-
+   <target name="jar-jms">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-jms"/>
+      </ant>
    </target>
 
    <target name="jar-jms-sources">
@@ -827,14 +803,12 @@
       </jar>
 	</target>
 
-   <target name="jar-jms-client" depends="compile-jms">
-
-      <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
-	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
-         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
-      </jar>
-
+   <target name="jar-jms-client" depends="jar-jms">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-jms-client"/>
+      </ant>
    </target>
 
    <target name="jar-jms-client-sources">
@@ -899,13 +873,13 @@
       </jar>
    </target>
 
-    <target name="jar-spring-integration" depends="compile-spring-integration">
-
-      <jar jarfile="${build.jars.dir}/${spring.integration.jar.name}">
-         <fileset dir="${build.spring.integration.classes.dir}" includes="**"/>
-      </jar>
-
-   </target>
+    <target name="jar-spring-integration">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-spring-integration"/>
+      </ant>
+    </target>
 
    <target name="jar-spring-integration-sources">
       <jar jarfile="${build.jars.dir}/${spring.integration.sources.jar.name}">
@@ -937,7 +911,8 @@
          <property name="maven.opts" value="-Dmaven.test.skip=true"/>
          <property name="maven.goal" value="install"/>
          <property name="working.dir" value="hornetq-bootstrap"/>
-      </ant>  </target>
+      </ant>
+   </target>
 
    <target name="jar-bootstrap-sources">
       <jar jarfile="${build.jars.dir}/${bootstrap.sources.jar.name}">
@@ -1206,6 +1181,8 @@
       </copy>
       <copy file="${target.core.jar.dir}/hornetq-core-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core.jar"/>
       <copy file="${target.core.client.jar.dir}/hornetq-core-client-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-core-client.jar"/>
+      <copy file="${target.jms.jar.dir}/hornetq-jms-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-jms.jar"/>
+      <copy file="${target.jms.client.jar.dir}/hornetq-jms-client-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-jms-client.jar"/>
       <copy file="${target.logging.jar.dir}/hornetq-logging-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-logging.jar"/>
       <copy file="${target.integration.as.jar.dir}/hornetq-jboss-as-integration-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-jboss-as-integration.jar"/>
       <copy file="${target.bootstrap.jar.dir}/hornetq-bootstrap-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-bootstrap.jar"/>
@@ -1415,12 +1392,12 @@
           <include name="**"/>
        </fileset>
     </copy>
-    <antcall target="javadoc"/>
+   <!-- <antcall target="javadoc"/>
     <copy todir="${build.distro.api.dir}/">
        <fileset dir="${build.api.dir}">
           <include name="**"/>
        </fileset>
-    </copy>
+    </copy>-->
    </target>
 
    <target name="restdoc">
@@ -1442,8 +1419,8 @@
     </target>
 
    <target name="javadoc">
-
-      <javadoc
+       <!--//todo-->
+      <!--<javadoc
       	doclet="org.jboss.apiviz.APIviz"
          docletpath="${thirdparty.dir}/org/jboss/apiviz/lib/apiviz.jar"
          destdir="${build.api.dir}"
@@ -1462,7 +1439,7 @@
          <group title="HornetQ SPI" packages="org.hornetq.spi.*"/>
       	<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
       	<link href="http://java.sun.com/javaee/5/docs/api/"/>
-      </javadoc>
+      </javadoc>-->
    </target>
 
    <target name="artifacts" depends="jar">
