@@ -1144,10 +1144,18 @@ public class JournalStorageManager implements StorageManager
          }
 
          Collection<AddMessageRecord> valueRecords = queueRecords.values();
+         
+         long currentTime = System.currentTimeMillis();
 
          for (AddMessageRecord record : valueRecords)
          {
             long scheduledDeliveryTime = record.scheduledDeliveryTime;
+            
+            if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
+            {
+               scheduledDeliveryTime = 0;
+               record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            }
 
             if (scheduledDeliveryTime != 0)
             {

@@ -12,6 +12,9 @@
  */
 package org.hornetq.tests.integration.scheduling;
 
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -32,6 +35,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic">Clebert Suconic</a>
  */
 public class ScheduledMessageTest extends ServiceTestBase
 {
@@ -52,6 +56,14 @@ public class ScheduledMessageTest extends ServiceTestBase
    {
       super.setUp();
       clearData();
+      startServer();
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected void startServer() throws Exception
+   {
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
@@ -64,7 +76,7 @@ public class ScheduledMessageTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       if (server != null)
       {
          try
@@ -282,10 +294,10 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                          false,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)1);
+                                                    false,
+                                                    0,
+                                                    System.currentTimeMillis(),
+                                                    (byte)1);
       message.getBodyBuffer().writeString("testINVMCoreClient");
       message.setDurable(true);
       long time = System.currentTimeMillis();
@@ -484,6 +496,47 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.close();
    }
 
+
+   public void testManyMessagesSameTime() throws Exception
+   {
+
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSession session = sessionFactory.createSession(false, false, false);
+      session.createQueue(atestq, atestq, null, true);
+      ClientProducer producer = session.createProducer(atestq);
+      long time = System.currentTimeMillis();
+      time += 1000;
+      
+      for (int i = 0; i < 1000; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("value", i);
+         message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, time);
+         producer.send(message);
+      }
+      
+      session.commit();
+      
+      
+      session.start();
+      ClientConsumer consumer = session.createConsumer(atestq);
+      
+      for (int i = 0 ; i < 1000; i++)
+      {
+         ClientMessage message = consumer.receive(15000);
+         assertNotNull(message);
+         message.acknowledge();
+         
+         assertEquals(i, message.getIntProperty("value").intValue());
+      }
+      
+      session.commit();
+
+      Assert.assertNull(consumer.receiveImmediate());
+
+      session.close();
+   }
+
    public void testScheduledAndNormalMessagesDeliveredCorrectly(final boolean recover) throws Exception
    {
 
@@ -607,6 +660,75 @@ public class ScheduledMessageTest extends ServiceTestBase
       Assert.assertNull(consumer.receiveImmediate());
       session.close();
    }
+   
+   
+   public void testPendingACKOnPrepared() throws Exception
+   {
+      
+      int NUMBER_OF_MESSAGES = 100;
+      
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSession session = sessionFactory.createSession(true, false, false);
+      session.createQueue(atestq, atestq, null, true);
+
+      ClientProducer producer = session.createProducer(atestq);
+      
+      long scheduled = System.currentTimeMillis() + 1000;
+      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty("value", i);
+         msg.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, scheduled);
+         producer.send(msg);
+      }
+      
+      session.close();
+      
+      
+      for (int i = 0 ; i < NUMBER_OF_MESSAGES; i++)
+      {
+         Xid xid = newXID();
+
+         session = sessionFactory.createSession(true, false, false);
+         
+         ClientConsumer consumer = session.createConsumer(atestq);
+         
+         session.start();
+
+         session.start(xid, XAResource.TMNOFLAGS);
+         
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         session.end(xid, XAResource.TMSUCCESS);
+         
+         session.prepare(xid);
+         
+         session.close();
+      }
+      
+      sessionFactory.close();
+      locator.close();
+      
+      server.stop();
+      
+      startServer();
+      
+      sessionFactory = locator.createSessionFactory();
+      
+      session = sessionFactory.createSession(false, false);
+      
+      ClientConsumer consumer = session.createConsumer(atestq);
+      
+      session.start();
+      
+      assertNull(consumer.receive(1000));
+      
+      session.close();
+      
+      sessionFactory.close();
+
+   }
 
    public void testScheduledDeliveryTX() throws Exception
    {
@@ -616,6 +738,116 @@ public class ScheduledMessageTest extends ServiceTestBase
    public void testScheduledDeliveryNoTX() throws Exception
    {
       scheduledDelivery(false);
+   }
+
+   public void testRedeliveryAfterPrepare() throws Exception
+   {
+      AddressSettings qs = new AddressSettings();
+      qs.setRedeliveryDelay(5000l);
+      server.getAddressSettingsRepository().addMatch(atestq.toString(), qs);
+
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSession session = sessionFactory.createSession(false, false, false);
+
+      session.createQueue(atestq, atestq, true);
+
+      ClientProducer producer = session.createProducer(atestq);
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.putIntProperty("key", i);
+         producer.send(msg);
+         session.commit();
+      }
+
+      session.close();
+
+      session = sessionFactory.createSession(true, false, false);
+
+      ClientConsumer consumer = session.createConsumer(atestq);
+
+      ArrayList<Xid> xids = new ArrayList<Xid>();
+
+      session.start();
+
+      for (int i = 0; i < 100; i++)
+      {
+         Xid xid = newXID();
+         session.start(xid, XAResource.TMNOFLAGS);
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+         xids.add(xid);
+      }
+
+      session.rollback(xids.get(0));
+      xids.set(0, null);
+      session.close();
+
+      server.stop();
+
+      configuration = createDefaultConfig();
+      configuration.setSecurityEnabled(false);
+      configuration.setJournalMinFiles(2);
+      configuration.getAddressesSettings().put(atestq.toString(), qs);
+
+      server = createServer(true, configuration);
+      server.start();
+
+      locator = createInVMNonHALocator();
+
+      final AtomicInteger count = new AtomicInteger(0);
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               ClientSessionFactory sf = locator.createSessionFactory();
+               ClientSession session = sf.createSession(false, false);
+               session.start();
+               ClientConsumer cons = session.createConsumer(atestq);
+               for (int i = 0; i < 100; i++)
+               {
+                  ClientMessage msg = cons.receive(100000);
+                  assertNotNull(msg);
+                  System.out.println("Received message " + msg);
+                  count.incrementAndGet();
+                  msg.acknowledge();
+                  session.commit();
+               }
+               session.close();
+               sf.close();
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               count.set(-1);
+            }
+         }
+      };
+
+      t.start();
+
+      sessionFactory = locator.createSessionFactory();
+
+      session = sessionFactory.createSession(true, false, false);
+
+      for (Xid xid : xids)
+      {
+         if (xid != null)
+         {
+            session.rollback(xid);
+         }
+      }
+
+      session.close();
+
+      t.join();
+
+      assertEquals(100, count.get());
    }
 
    // Private -------------------------------------------------------
@@ -770,10 +1002,10 @@ public class ScheduledMessageTest extends ServiceTestBase
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
       ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
-                                                          true,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)1);
+                                                    true,
+                                                    0,
+                                                    System.currentTimeMillis(),
+                                                    (byte)1);
       message.getBodyBuffer().writeString(body);
       return message;
    }
