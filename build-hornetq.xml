@@ -102,6 +102,7 @@
    <property name="hornetq.integration.as.module.jar" value="hornetq-jboss-as-integration"/>
    <property name="hornetq.bootstrap.module.jar" value="hornetq-bootstrap"/>
    <property name="hornetq.twitter.module.jar" value="hornetq-twitter-integration"/>
+   <property name="hornetq.service.module.jar" value="hornetq-service-sar"/>
    <property name="target.core.jar.dir" value="${hornetq.core.module.jar}/target"/>
    <property name="target.jms.jar.dir" value="${hornetq.jms.module.jar}/target"/>
    <property name="target.jms.client.jar.dir" value="${hornetq.jms.client.module.jar}/target"/>
@@ -110,6 +111,7 @@
    <property name="target.integration.as.jar.dir" value="${hornetq.integration.as.module.jar}/target"/>
    <property name="target.bootstrap.jar.dir" value="${hornetq.bootstrap.module.jar}/target"/>
    <property name="target.twitter.jar.dir" value="${hornetq.twitter.module.jar}/target"/>
+   <property name="target.service.jar.dir" value="${hornetq.service.module.jar}/target"/>
    <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
@@ -615,25 +617,7 @@
    </target>
 
    <!-- author: Lucas Amador -->
-   <target name="compile-jboss-service" depends="compile-core">
-      <javac destdir="${build.service.classes.dir}"
-             target="${javac.target}"
-             source="${javac.source}"
-             optimize="${javac.optimize}"
-             debug="${javac.debug}"
-             depend="${javac.depend}"
-             verbose="${javac.verbose}"
-             deprecation="${javac.deprecation}"
-             includeAntRuntime="${javac.include.ant.runtime}"
-             includeJavaRuntime="${javac.include.java.runtime}"
-             encoding="${javac.encoding}"
-             failonerror="${javac.fail.onerror}">
-         <src>
-            <pathelement path="${src.main.dir}"/>
-         </src>
-         <include name="org/hornetq/service/**/*.java"/>
-         <classpath refid="jboss.service.compilation.classpath"/>
-      </javac>
+   <target name="compile-jboss-service" depends="jar-jboss-service">
    </target>
 
    <target name="compile-bootstrap" depends="jar-bootstrap">
@@ -890,12 +874,12 @@
    </target>
 
 	<!-- author: Lucas Amador -->
-   <target name="jar-jboss-service" depends="compile-jboss-service">
-
-      <jar jarfile="${build.jars.dir}/${service.sar.name}">
-         <fileset dir="${build.service.classes.dir}" includes="**"/>
-      </jar>
-
+   <target name="jar-jboss-service" depends="jar-core">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+         <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+         <property name="maven.goal" value="install"/>
+         <property name="working.dir" value="hornetq-service-sar"/>
+      </ant>
    </target>
 
    <target name="jar-jboss-service-sources">
@@ -1162,15 +1146,11 @@
       </copy>
       <copy todir="${build.distro.lib.dir}">
          <fileset dir="${build.jars.dir}">
-            <include name="${jms.jar.name}"/>
-            <include name="${service.sar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
             <include name="${core.client.java5.jar.name}"/>
-         	<include name="${jms.client.jar.name}"/>
          	<include name="${jms.client.java5.jar.name}"/>
          	<include name="${jnp.client.jar.name}"/>
-         	<include name="${spring.integration.jar.name}"/>
          </fileset>
          <fileset dir="${org.jboss.naming.lib}">                                                   
             <include name="jnpserver.jar"/>
@@ -1187,6 +1167,7 @@
       <copy file="${target.integration.as.jar.dir}/hornetq-jboss-as-integration-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-jboss-as-integration.jar"/>
       <copy file="${target.bootstrap.jar.dir}/hornetq-bootstrap-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-bootstrap.jar"/>
       <copy file="${target.twitter.jar.dir}/hornetq-twitter-integration-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-twitter-integration.jar"/>
+      <copy file="${target.service.jar.dir}/hornetq-service-sar-2.2.3-SNAPSHOT.jar" tofile="${build.distro.lib.dir}/hornetq-service.jar"/>
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">

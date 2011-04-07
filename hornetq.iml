@@ -13,6 +13,7 @@
       <sourceFolder url="file://$MODULE_DIR$/hornetq-twitter-integration/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-spring-integration/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-jms/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/hornetq-service-sar/src/main/java" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build/api" />
       <excludeFolder url="file://$MODULE_DIR$/build/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/jars" />
