@@ -1,0 +1,83 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.hornetq</groupId>
+    <artifactId>hornetq-rar</artifactId>
+    <packaging>rar</packaging>
+    <version>2.2.3-SNAPSHOT</version>
+    <name>HornetQ JMS RA</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms-client</artifactId>
+            <version>2.2.3-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-jms</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.javaee</groupId>
+                    <artifactId>jboss-jms-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jboss.javaee</groupId>
+                    <artifactId>jboss-transaction-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jboss.jbossts</groupId>
+                    <artifactId>jbossjts</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-ra</artifactId>
+            <version>2.2.3-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-core-client</artifactId>
+            <version>2.2.3-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+       <dependency>
+          <groupId>org.jboss.netty</groupId>
+          <artifactId>netty</artifactId>
+          <version>3.2.3.Final</version>
+       </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-rar-plugin</artifactId>
+                <configuration>
+                   <raXmlFile>src/main/resources/ra.xml</raXmlFile>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
