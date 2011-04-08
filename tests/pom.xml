@@ -1,0 +1,30 @@
+<project>
+    <parent>
+       <groupId>org.hornetq</groupId>
+       <artifactId>hornetq-pom</artifactId>
+       <version>2.2.3-SNAPSHOT</version>
+    </parent>
+    <name>HornetQ Tests POM</name>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.hornetq.tests</groupId>
+    <artifactId>hornetq-tests-pom</artifactId>
+    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <modules>
+        <module>unit-tests</module>
+        <!--<module>jms-tests</module>-->
+    </modules>
+</project>

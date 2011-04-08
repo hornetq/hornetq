@@ -21,7 +21,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

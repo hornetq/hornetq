@@ -50,7 +50,7 @@ import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.utils.LinkedListIterator;
 
 /**

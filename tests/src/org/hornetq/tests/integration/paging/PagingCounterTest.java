@@ -29,7 +29,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A PagingCounterTest

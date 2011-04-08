@@ -35,7 +35,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A RedeliveryConsumerTest

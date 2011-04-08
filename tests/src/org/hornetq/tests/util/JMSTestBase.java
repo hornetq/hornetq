@@ -31,6 +31,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A JMSBaseTest

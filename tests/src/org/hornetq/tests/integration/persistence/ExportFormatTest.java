@@ -24,7 +24,7 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.ImportJournal;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A ExportFormatTest

@@ -22,7 +22,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A MessageRateTest

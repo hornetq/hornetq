@@ -16,14 +16,13 @@ package org.hornetq.tests.integration.logging;
 import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.logging.impl.JULLogDelegate;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.logging.Log4jLogDelegate;
 import org.hornetq.integration.logging.Log4jLogDelegateFactory;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A LogDelegateTest

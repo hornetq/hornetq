@@ -26,7 +26,7 @@ import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**

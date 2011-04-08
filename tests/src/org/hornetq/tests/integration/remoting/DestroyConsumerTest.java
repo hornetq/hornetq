@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.remoting;
 
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 public class DestroyConsumerTest extends ServiceTestBase
 {

@@ -38,6 +38,7 @@ import org.hornetq.jms.server.config.impl.JMSConfigurationImpl;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 
 /**
  * A JMSBaseTest

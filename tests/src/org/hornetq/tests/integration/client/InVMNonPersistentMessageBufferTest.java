@@ -18,8 +18,8 @@ import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.DataConstants;
 
 public class InVMNonPersistentMessageBufferTest extends ServiceTestBase

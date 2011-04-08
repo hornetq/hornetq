@@ -15,6 +15,7 @@
       <sourceFolder url="file://$MODULE_DIR$/hornetq-jms/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-service-sar/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/hornetq-ra/hornetq-ra-jar/src/main/java" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/ObjectStore" />
       <excludeFolder url="file://$MODULE_DIR$/build/api" />
       <excludeFolder url="file://$MODULE_DIR$/build/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/jars" />
@@ -31,6 +32,7 @@
       <excludeFolder url="file://$MODULE_DIR$/examples/jms/common/build" />
       <excludeFolder url="file://$MODULE_DIR$/examples/jms/queue/build" />
       <excludeFolder url="file://$MODULE_DIR$/journal-test" />
+      <excludeFolder url="file://$MODULE_DIR$/logs" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/output/classes" />
       <excludeFolder url="file://$MODULE_DIR$/output/etc" />

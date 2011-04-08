@@ -12,17 +12,6 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.Map;
-
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.tests.util.ServiceTestBase;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         Created Oct 26, 2009

@@ -36,7 +36,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.twitter.TwitterConstants;
 import org.hornetq.integration.twitter.TwitterIncomingConnectorServiceFactory;
 import org.hornetq.integration.twitter.TwitterOutgoingConnectorServiceFactory;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import twitter4j.*;
 import twitter4j.http.AccessToken;

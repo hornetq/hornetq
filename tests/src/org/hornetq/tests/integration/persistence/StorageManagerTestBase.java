@@ -28,7 +28,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.impl.journal.JMSJournalStorageManagerImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
-import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.unit.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.TimeAndCounterIDGenerator;

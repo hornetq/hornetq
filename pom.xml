@@ -38,6 +38,7 @@
         <HornetQ-Version>${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})</HornetQ-Version>
         <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
         <resteasy.version>2.1.0.GA</resteasy.version>
+        <skipTests>true</skipTests>
     </properties>
 
     <scm>
@@ -105,7 +106,7 @@
         <module>hornetq-jboss-as-integration</module>
         <module>hornetq-twitter-integration</module>
         <module>hornetq-service-sar</module>
-        <!--<module>tests</module>-->
+        <module>tests</module>
     </modules>
 
     <dependencyManagement>
@@ -399,6 +400,9 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <skipTests>${skipTests}</skipTests>
+                    </configuration>
                     <version>2.4</version>
                 </plugin>
                 <plugin>
