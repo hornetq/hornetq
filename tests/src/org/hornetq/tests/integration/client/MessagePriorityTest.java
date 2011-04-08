@@ -17,12 +17,16 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
@@ -261,6 +265,60 @@ public class MessagePriorityTest extends UnitTestCase
       consumer.close();
 
       session.deleteQueue(queue);
+   }
+   
+   
+   public void testManyMessages() throws Exception
+   {
+      SimpleString queue = RandomUtil.randomSimpleString();
+      SimpleString address = RandomUtil.randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      
+      for (int i = 0 ; i < 777; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.setPriority((byte)5);
+         msg.putBooleanProperty("fast", false);
+         producer.send(msg);
+      }
+      
+      for (int i = 0 ; i < 333; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.setPriority((byte)6);
+         msg.putBooleanProperty("fast", true);
+         producer.send(msg);
+      }
+
+      ClientConsumer consumer = session.createConsumer(queue);
+
+      session.start();
+      
+      
+      for (int i = 0 ; i < 333; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertTrue(msg.getBooleanProperty("fast"));
+      }
+      
+      for (int i = 0 ; i < 777; i++)
+      {
+         ClientMessage msg = consumer.receive(5000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertFalse(msg.getBooleanProperty("fast"));
+      }
+
+      consumer.close();
+
+      session.deleteQueue(queue);
+      
+      session.close();
    }
    
    
