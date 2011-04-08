@@ -1142,6 +1142,8 @@ public class JournalStorageManager implements StorageManager
 
             continue;
          }
+         
+         queue.pause();
 
          Collection<AddMessageRecord> valueRecords = queueRecords.values();
          
@@ -1224,6 +1226,11 @@ public class JournalStorageManager implements StorageManager
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);
+      }
+      
+      for (Queue queue : queues.values())
+      {
+         queue.resume();
       }
 
       if (System.getProperty("org.hornetq.opt.directblast") != null)
