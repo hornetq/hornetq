@@ -2,27 +2,32 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+   <parent>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-pom</artifactId>
+      <version>2.2.3-SNAPSHOT</version>
+   </parent>
+
     <groupId>org.hornetq</groupId>
     <artifactId>hornetq-service-sar</artifactId>
     <packaging>jar</packaging>
-    <version>2.2.3-SNAPSHOT</version>
     <name>HornetQ JBoss AS4 Integration</name>
 
     <dependencies>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
-            <version>2.2.3-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms</artifactId>
-            <version>2.2.3-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jboss-as-integration</artifactId>
-            <version>2.2.3-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -38,8 +43,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
         </plugins>

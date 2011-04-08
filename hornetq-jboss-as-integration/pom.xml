@@ -1,64 +1,64 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+   <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.hornetq</groupId>
-    <artifactId>hornetq-jboss-as-integration</artifactId>
-    <packaging>jar</packaging>
-    <version>2.2.3-SNAPSHOT</version>
-    <name>HornetQ JBoss AS Integration</name>
+   <parent>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-pom</artifactId>
+      <version>2.2.3-SNAPSHOT</version>
+   </parent>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-core</artifactId>
-            <version>2.2.3-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.security</groupId>
-            <artifactId>jboss-security-spi</artifactId>
-            <version>2.0.3.SP1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.security</groupId>
-            <artifactId>jbosssx</artifactId>
-            <version>2.0.3.SP1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-transaction-api</artifactId>
-            <version>1.0.1.GA</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.integration</groupId>
-            <artifactId>jboss-transaction-spi</artifactId>
-            <version>5.1.0.GA</version>
-        </dependency>
-        <!--this for xa recovery-->
-        <dependency>
-            <groupId>jboss.jbossts</groupId>
-            <artifactId>jbossjts</artifactId>
-            <version>4.6.1.GA</version>
-        </dependency>
-    </dependencies>
+   <groupId>org.hornetq</groupId>
+   <artifactId>hornetq-jboss-as-integration</artifactId>
+   <packaging>jar</packaging>
+   <name>HornetQ JBoss AS Integration</name>
 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+   <dependencies>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-core</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.security</groupId>
+         <artifactId>jboss-security-spi</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.security</groupId>
+         <artifactId>jbosssx</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.javaee</groupId>
+         <artifactId>jboss-transaction-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.integration</groupId>
+         <artifactId>jboss-transaction-spi</artifactId>
+      </dependency>
+      <!--this for xa recovery-->
+      <dependency>
+         <groupId>jboss.jbossts</groupId>
+         <artifactId>jbossjts</artifactId>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <resources>
+         <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+         </resource>
+      </resources>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+               <source>1.5</source>
+               <target>1.5</target>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 
 </project>

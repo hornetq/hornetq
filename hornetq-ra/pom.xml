@@ -1,26 +1,31 @@
 <project>
-    <name>HornetQ RAR POM</name>
-    <modelVersion>4.0.0</modelVersion>
+   <name>HornetQ RAR POM</name>
+   <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.hornetq</groupId>
-    <artifactId>hornetq-rar-pom</artifactId>
-    <version>2.2.3-SNAPSHOT</version>
-    <packaging>pom</packaging>
+   <parent>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-pom</artifactId>
+      <version>2.2.3-SNAPSHOT</version>
+   </parent>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+   <groupId>org.hornetq</groupId>
+   <artifactId>hornetq-rar-pom</artifactId>
+   <packaging>pom</packaging>
 
-    <modules>
-        <module>hornetq-ra-jar</module>
-        <module>hornetq-ra-rar</module>
-    </modules>
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+               <skip>true</skip>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <modules>
+      <module>hornetq-ra-jar</module>
+      <module>hornetq-ra-rar</module>
+   </modules>
 </project>
