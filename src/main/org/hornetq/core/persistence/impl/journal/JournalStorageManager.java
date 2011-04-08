@@ -1143,6 +1143,8 @@ public class JournalStorageManager implements StorageManager
             continue;
          }
          
+         // Redistribution could install a Redistributor while we are still loading records, what will be an issue with prepared ACKs
+         // We make sure te Queue is paused before we reroute values.
          queue.pause();
 
          Collection<AddMessageRecord> valueRecords = queueRecords.values();
