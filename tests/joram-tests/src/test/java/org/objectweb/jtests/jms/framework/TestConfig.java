@@ -24,7 +24,7 @@ import java.util.Properties;
 public class TestConfig
 {
    // name of the configuration file
-   private static final String PROP_FILE_NAME = "test.properties";
+   private static final String PROP_FILE_NAME = "config/test.properties";
 
    // name of the timeout property
    private static final String PROP_NAME = "timeout";

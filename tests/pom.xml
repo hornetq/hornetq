@@ -27,5 +27,6 @@
         <module>unit-tests</module>
         <module>integration-tests</module>
         <module>jms-tests</module>
+        <module>joram-tests</module>
     </modules>
 </project>

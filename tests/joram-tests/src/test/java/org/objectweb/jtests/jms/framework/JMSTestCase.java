@@ -35,7 +35,7 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
  */
 public abstract class JMSTestCase extends TestCase
 {
-   private static final String PROP_FILE_NAME = "provider.properties";
+   private static final String PROP_FILE_NAME = "config/provider.properties";
 
    protected Admin admin;
 
