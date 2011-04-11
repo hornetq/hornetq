@@ -227,6 +227,8 @@ public class PingStressTest extends ServiceTestBase
       }
       
       csf1.close();
+      
+      locator.close();
 
    }
 
