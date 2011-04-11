@@ -105,6 +105,7 @@
         <module>hornetq-bootstrap</module>
         <module>hornetq-jboss-as-integration</module>
         <module>hornetq-twitter-integration</module>
+        <module>hornetq-spring-integration</module>
         <module>hornetq-service-sar</module>
         <module>tests</module>
     </modules>

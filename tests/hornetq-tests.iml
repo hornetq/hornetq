@@ -5,6 +5,8 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/unit-tests/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/integration-tests/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/unit-tests/src/main/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/jms-tests" />
       <excludeFolder url="file://$MODULE_DIR$/joram-tests" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />

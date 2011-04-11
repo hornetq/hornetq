@@ -25,6 +25,7 @@
 
     <modules>
         <module>unit-tests</module>
-        <!--<module>jms-tests</module>-->
+        <module>integration-tests</module>
+        <module>jms-tests</module>
     </modules>
 </project>
