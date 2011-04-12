@@ -618,12 +618,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/hornetq.iml" filepath="$PROJECT_DIR$/hornetq.iml" />
-      <module fileurl="file://$PROJECT_DIR$/examples/core/hornetq-core-examples.iml" filepath="$PROJECT_DIR$/examples/core/hornetq-core-examples.iml" />
-      <module fileurl="file://$PROJECT_DIR$/examples/javaee/hornetq-javaee-examples.iml" filepath="$PROJECT_DIR$/examples/javaee/hornetq-javaee-examples.iml" />
-      <module fileurl="file://$PROJECT_DIR$/examples/jms/hornetq-jms-examples.iml" filepath="$PROJECT_DIR$/examples/jms/hornetq-jms-examples.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tests/jms-tests/hornetq-jms-tests.iml" filepath="$PROJECT_DIR$/tests/jms-tests/hornetq-jms-tests.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tests/joram-tests/hornetq-joram-tests.iml" filepath="$PROJECT_DIR$/tests/joram-tests/hornetq-joram-tests.iml" />
-      <module fileurl="file://$PROJECT_DIR$/tests/hornetq-tests.iml" filepath="$PROJECT_DIR$/tests/hornetq-tests.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
