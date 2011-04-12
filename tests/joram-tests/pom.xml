@@ -23,7 +23,7 @@
    <groupId>org.hornetq.tests</groupId>
    <artifactId>joram-tests</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ Unit Tests</name>
+   <name>HornetQ Joram Tests</name>
 
     <dependencies>
       <dependency>
