@@ -30,5 +30,6 @@
         <module>joram-tests</module>
         <module>soak-tests</module>
         <module>stress-tests</module>
+        <module>timing-tests</module>
     </modules>
 </project>

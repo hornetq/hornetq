@@ -13,14 +13,45 @@
 
 package org.hornetq.tests.timing.util;
 
+import junit.framework.Assert;
+import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.UUIDGenerator;
+
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
+public class UUIDTest extends UnitTestCase
 {
 
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   public void testManyUUIDs() throws Exception
+   {
+      final int MANY_TIMES = getTimes();
+      Set<String> uuidsSet = new HashSet<String>();
+
+      UUIDGenerator gen = UUIDGenerator.getInstance();
+      for (int i = 0; i < MANY_TIMES; i++)
+      {
+         uuidsSet.add(gen.generateStringUUID());
+      }
+
+      // we put them in a set to check duplicates
+      Assert.assertEquals(MANY_TIMES, uuidsSet.size());
+   }
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -35,7 +66,6 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
 
    // Protected -----------------------------------------------------
 
-   @Override
    protected int getTimes()
    {
       return 1000000;
