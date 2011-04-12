@@ -31,5 +31,6 @@
         <module>soak-tests</module>
         <module>stress-tests</module>
         <module>timing-tests</module>
+        <module>concurrent-tests</module>
     </modules>
 </project>

@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/soak-tests/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/stress-tests/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/timing-tests/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/concurrent-tests/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/jms-tests" />
       <excludeFolder url="file://$MODULE_DIR$/joram-tests" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
