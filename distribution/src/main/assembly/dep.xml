@@ -30,7 +30,24 @@
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
          </binaries>
-      </moduleSet> <moduleSet>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-core</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory></outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+               <includes>
+                  <include>**/*.xsd</include>
+               </includes>
+            </unpackOptions>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
             <include>org.hornetq:hornetq-core-client</include>
@@ -60,6 +77,22 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-jms</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory></outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+               <includes>
+                  <include>**/*.xsd</include>
+               </includes>
+            </unpackOptions>
          </binaries>
       </moduleSet>
       <moduleSet>
