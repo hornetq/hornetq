@@ -127,16 +127,16 @@
    <property name="build.src.dir" value="${build.dir}/src"/>
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
-   <property name="src.config.dir" value="${src.dir}/config"/>
-   <property name="src.config.standalone.non-clustered.dir" value="${src.dir}/config/stand-alone/non-clustered"/>
-   <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
-   <property name="src.config.trunk.non-clustered.dir" value="${src.dir}/config/trunk/non-clustered"/>
-   <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
-   <property name="src.config.jbossas4.non-clustered.dir" value="${src.dir}/config/jboss-as-4/non-clustered"/>
-   <property name="src.config.jbossas4.clustered.dir" value="${src.dir}/config/jboss-as-4/clustered"/>
-   <property name="src.config.jbossas5.non-clustered.dir" value="${src.dir}/config/jboss-as-5/non-clustered"/>
-   <property name="src.config.jbossas5.clustered.dir" value="${src.dir}/config/jboss-as-5/clustered"/>
-   <property name="src.config.service.dir" value="${src.dir}/config/service"/>
+   <property name="src.config.dir" value="distribution/src/main/resources/config"/>
+   <property name="src.config.standalone.non-clustered.dir" value="distribution/src/main/resources/config/stand-alone/non-clustered"/>
+   <property name="src.config.standalone.clustered.dir" value="distribution/src/main/resources/config/stand-alone/clustered"/>
+   <property name="src.config.trunk.non-clustered.dir" value="distribution/src/main/resources/config/trunk/non-clustered"/>
+   <property name="src.config.trunk.clustered.dir" value="distribution/src/main/resources/config/trunk/clustered"/>
+   <property name="src.config.jbossas4.non-clustered.dir" value="distribution/src/main/resources/config/jboss-as-4/non-clustered"/>
+   <property name="src.config.jbossas4.clustered.dir" value="distribution/src/main/resources/config/jboss-as-4/clustered"/>
+   <property name="src.config.jbossas5.non-clustered.dir" value="distribution/src/main/resources/config/jboss-as-5/non-clustered"/>
+   <property name="src.config.jbossas5.clustered.dir" value="distribution/src/main/resources/config/jboss-as-5/clustered"/>
+   <property name="src.config.service.dir" value="distribution/src/main/resources/config/service"/>
    <property name="src.schema.dir" value="${hornetq.core.module.jar}/src/main/resources/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
@@ -364,7 +364,7 @@
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
-      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="distribution/src/main/resources/config/common"/>
       <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
@@ -384,7 +384,7 @@
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${test.dir}/tmpfiles"/>
       <pathelement location="${test.classes.dir}"/>
-      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="distribution/src/main/resources/config/common"/>
       <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="apache.xerces.classpath"/>
@@ -406,7 +406,7 @@
 	  <!-- as a transitive dependency from JBoss TM -->
    	  <path refid="apache.logging.classpath"/>
       <pathelement location="${test.dir}/config"/>
-      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="distribution/src/main/resources/config/common"/>
    </path>
 
    <path id="joram.test.execution.classpath">
@@ -429,7 +429,7 @@
 	  <!-- we must include Apache commons logging   -->
 	  <!-- as a transitive dependency from JBoss TM -->
    	  <path refid="apache.logging.classpath"/>
-      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="distribution/src/main/resources/config/common"/>
       <path refid="org.jboss.naming.classpath"/>
    </path>
 
@@ -533,7 +533,7 @@
       <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
             outputproperty="netty.version" fork="true"/>
       <echo>setting netty version ${netty.version}</echo>
-      <copy file="${src.config.dir}/common/hornetq-version.properties"
+      <copy file="distribution/src/main/resources/config/common/hornetq-version.properties"
             tofile="${build.core.client.java5.classes.dir}/hornetq-version.properties" overwrite="true">
          <filterset>
                <filter token="NETTY.VERSION" value="${netty.version}"/>
@@ -659,7 +659,7 @@
          <fileset dir="${src.main.dir}">
             <include name="**/jms/**/*.java"/>
          </fileset>
-         <fileset dir="${src.config.dir}/common">
+         <fileset dir="distribution/src/main/resources/config/common">
             <include name="**/hornetq-jms.xsd"/>
          </fileset>
       </jar>
@@ -798,7 +798,7 @@
            <exclude name="**/build"/>
            <exclude name="**/data"/>
          </fileset>
-         <fileset dir="${src.config.dir}">
+         <fileset dir="distribution/src/main/resources/config">
            <include  name="jboss-as-4/**"/>
            <include  name="jboss-as-5/**"/>
            <include  name="jboss-as-6/**"/>
@@ -818,7 +818,7 @@
            <exclude name="**/build"/>
            <exclude name="**/data"/>
          </fileset>
-         <fileset dir="${src.config.dir}">
+         <fileset dir="distribution/src/main/resources/config">
            <include  name="jboss-as/**"/>
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
@@ -914,7 +914,7 @@
       <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
       <copy todir="${build.distro.config.dir}">
-         <fileset dir="${src.config.dir}">
+         <fileset dir="distribution/src/main/resources/config">
             <include name="*.xml"/>
             <include name="jndi.properties"/>
             <include name="logging.properties"/>
@@ -964,7 +964,7 @@
       <antcall target="dist-doc"/>
 
       <copy todir="${build.distro.licenses.dir}/">
-         <fileset dir="${licenses.dir}">
+         <fileset dir="distribution/src/main/resources/licenses">
             <include name="**"/>
          </fileset>
       </copy>
@@ -1015,8 +1015,8 @@
 
       <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
       <!-- by configuring the correct lib/config location                                                -->
-      <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
-      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/javaee-examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="distribution/src/main/resources/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="distribution/src/main/resources/config/javaee-examples-ant.properties" overwrite="true" />
 
       <zip basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.zip">
@@ -1192,7 +1192,7 @@
       <property name="build.resources.dir" value="${build.dir}/resources"/>
       <mkdir dir="${build.resources.dir}"/>
       <copy todir="${build.resources.dir}">
-         <fileset dir="${src.config.dir}">
+         <fileset dir="distribution/src/main/resources/config">
             <exclude name="*cluster*"/>
             <exclude name="*standalone*"/>
             <exclude name="*.properties"/>
