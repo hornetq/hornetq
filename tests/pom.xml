@@ -28,5 +28,6 @@
         <module>integration-tests</module>
         <module>jms-tests</module>
         <module>joram-tests</module>
+        <module>soak-tests</module>
     </modules>
 </project>
