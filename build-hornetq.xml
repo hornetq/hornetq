@@ -443,7 +443,7 @@
       <delete quiet="true">
          <fileset dir="${logs.dir}" includes="*"/>
       </delete>
-      <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
+      <ant antfile="examples/src/main/resources/build.xml" target="clean" inheritall="false"/>
       <ant antfile="build-thirdparty.xml" target="maven-install">
          <property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
          <property name="maven.goal" value="clean"/>

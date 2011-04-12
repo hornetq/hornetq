@@ -28,10 +28,10 @@
 <!-- =========================================================================================== -->
 
 
-<project default="clean" name="examples" basedir=".">
+<project default="clean" name="examples" basedir="../../../">
     <target name="clean">
         <subant target="clean" failonerror="true">
-           <fileset dir="." excludes="build.xml" includes="**/build.xml" />
+           <fileset dir="../../../" excludes="build.xml" includes="**/build.xml" />
         </subant>       
     </target>
 </project>

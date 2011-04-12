@@ -171,6 +171,16 @@
             <unpack>false</unpack>
          </binaries>
       </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-examples</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>examples</outputDirectory>
+         </binaries>
+      </moduleSet>
    </moduleSets>
   <fileSets>
     <fileSet>
