@@ -14,7 +14,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="compile" name="example" basedir=".">
+<project default="compile" name="example" basedir="">
 
    <property name="hornetq.run_script" value="false" />
 
@@ -164,7 +164,7 @@
 
    <target name="clean-all">
       <subant target="clean" failonerror="true">
-         <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
+         <fileset dir="../" includes="*/build.xml" excludes="common/build.xml"/>
       </subant>
    </target>
 
@@ -188,7 +188,7 @@
       <delete dir="./data" quiet="true"/>
       <!-- large-message creates huge .dat files -->
       <delete>
-         <fileset dir=".">
+         <fileset dir="">
             <include name="*.dat"/>
          </fileset>
       </delete>
@@ -196,7 +196,7 @@
 
    <target name="all" description="Run all the examples">
       <subant target="run" failonerror="true">
-         <fileset dir="..">
+         <fileset dir="../">
             <include name="core/*/build.xml"/>
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>

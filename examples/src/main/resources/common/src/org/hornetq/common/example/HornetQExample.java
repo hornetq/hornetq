@@ -160,7 +160,7 @@ public abstract class HornetQExample
                                                 "FAILED::",
                                                 config,
                                                 debugServer,
-                                                "hornetq-beans.xml");
+            "distribution/src/main/resources/config/stand-alone/non-clustered/hornetq-beans.xml");
    }
 
    protected void reStartServer(final int index) throws Exception
@@ -180,7 +180,7 @@ public abstract class HornetQExample
                                                 "FAILED::",
                                                 config,
                                                 debugServer,
-                                                "hornetq-beans.xml");
+            "distribution/src/main/resources/config/stand-alone/non-clustered/hornetq-beans.xml");
    }
 
    protected void startServers() throws Exception

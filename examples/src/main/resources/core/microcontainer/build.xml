@@ -40,7 +40,7 @@
          -->
       </fileset>
       <pathelement location="${classes.dir}"/>
-      <pathelement location="./server0"/>
+      <pathelement location="server0"/>
    </path>
 
    <target name="run" depends="compile">

@@ -11,7 +11,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="compile" name="javaeeexample" basedir=".">
+<project default="compile" name="javaeeexample" basedir="">
    <dirname property="imported.basedir" file="${ant.file.javaeeexample}"/>
    <property file="${imported.basedir}/config/ant.properties"/>
    <property name="example.config.dir" value="config"/>
