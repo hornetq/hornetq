@@ -126,7 +126,8 @@
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
          </binaries>
-      </moduleSet><!--
+      </moduleSet>
+      <!--
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
