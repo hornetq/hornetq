@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.cluster.reattach;
+package org.hornetq.tests.cluster.reattach;
 
 import java.util.HashMap;
 import java.util.HashSet;

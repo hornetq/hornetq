@@ -25,7 +25,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.unit.util.ServiceTestBase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * Simulates the journal being updated, compacted cleared up, 

@@ -29,9 +29,8 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.integration.remoting.PingTest;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.unit.util.ServiceTestBase;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
@@ -42,7 +41,7 @@ public class PingStressTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PingTest.class);
+   private static final Logger log = Logger.getLogger(PingStressTest.class);
 
    private static final long PING_INTERVAL = 500;
 

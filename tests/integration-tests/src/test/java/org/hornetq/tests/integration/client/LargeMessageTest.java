@@ -31,7 +31,7 @@ import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
+import org.hornetq.tests.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 

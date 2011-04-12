@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.cluster.reattach;
+package org.hornetq.tests.stress.failover;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
@@ -21,16 +21,14 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.cluster.reattach.MultiThreadRandomReattachTestBase;
 
 /**
+ * A MultiThreadRandomFailoverStressTest
  * 
- * A MultiThreadRandomReattachTest
- *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTestBase
+public class MultiThreadRandomReattachStressTest extends MultiThreadRandomReattachTestBase
 {
-   private static final Logger log = Logger.getLogger(MultiThreadRandomReattachTest.class);
+   private static final Logger log = Logger.getLogger(MultiThreadRandomReattachStressTest.class);
 
    @Override
    protected void start() throws Exception
@@ -60,6 +58,12 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
    protected boolean checkSize(final ClientMessage message)
    {
       return message.getBodyBuffer().readableBytes() == 250;
+   }
+
+   @Override
+   protected int getNumIterations()
+   {
+      return 100;
    }
 
 }

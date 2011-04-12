@@ -11,20 +11,20 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.stress.failover;
+package org.hornetq.tests.stress.chunk;
 
-import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
+import org.hornetq.tests.largemessage.LargeMessageTestBase;
 
 /**
- * A RandomFailoverStressTest
+ * A MessageChunkSoakTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * 
- * Created Jan 22, 2009 8:32:59 PM
+ * Created Oct 27, 2008 5:07:05 PM
  *
  *
  */
-public class RandomReattachStressTest extends RandomReattachTest
+public class LargeMessageStressTest extends LargeMessageTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -37,15 +37,28 @@ public class RandomReattachStressTest extends RandomReattachTest
 
    // Public --------------------------------------------------------
 
+   public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
+   {
+      testChunks(false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 1,
+                 200 * 1024l * 1024l + 1024l,
+                 120000,
+                 0,
+                 10 * 1024 * 1024,
+                 1024 * 1024);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected int getNumIterations()
-   {
-      return 100;
-   }
 
    // Private -------------------------------------------------------
 

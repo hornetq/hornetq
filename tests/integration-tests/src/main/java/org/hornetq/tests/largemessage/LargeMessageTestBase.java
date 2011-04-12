@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.largemessage;
+package org.hornetq.tests.largemessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

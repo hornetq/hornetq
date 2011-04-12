@@ -29,5 +29,6 @@
         <module>jms-tests</module>
         <module>joram-tests</module>
         <module>soak-tests</module>
+        <module>stress-tests</module>
     </modules>
 </project>
