@@ -1408,6 +1408,15 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          // TODO Auto-generated method stub
          
       }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.api.core.client.ClientSession#addMetaDataV1(java.lang.String, java.lang.String)
+       */
+      public void addMetaDataV1(String key, String data) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         
+      }
    }
 
 }

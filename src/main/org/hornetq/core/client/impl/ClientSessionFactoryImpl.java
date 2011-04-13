@@ -452,6 +452,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       stopPingingAfterOne = true;
    }
+   
+   public void resumePinging()
+   {
+      stopPingingAfterOne = false;
+   }
 
    // Protected
    // ------------------------------------------------------------------------------------

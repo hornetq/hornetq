@@ -186,6 +186,8 @@ public class PacketImpl implements Packet
    
    public static final byte SESS_ADD_METADATA = 104;
    
+   public static final byte SESS_ADD_METADATA2 = 105;
+   
    public static final byte CLUSTER_TOPOLOGY = 110;
 
    public static final byte NODE_ANNOUNCE = 111;

@@ -63,6 +63,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
@@ -476,6 +477,12 @@ public class ServerSessionPacketHandler implements ChannelHandler
                {
                   response = new NullResponseMessage();
                   SessionAddMetaDataMessage message = (SessionAddMetaDataMessage)packet;
+                  session.addMetaData(message.getKey(), message.getData());
+                  break;
+               }
+               case PacketImpl.SESS_ADD_METADATA2:
+               {
+                  SessionAddMetaDataMessageV2 message = (SessionAddMetaDataMessageV2)packet;
                   session.addMetaData(message.getKey(), message.getData());
                   break;
                }

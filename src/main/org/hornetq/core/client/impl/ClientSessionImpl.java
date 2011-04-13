@@ -47,6 +47,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMes
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage;
@@ -1085,14 +1086,20 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // Resetting the metadata after failover
       for (Map.Entry<String, String> entries : metadata.entrySet())
       {
-         sendPacketWithoutLock(new SessionAddMetaDataMessage(entries.getKey(), entries.getValue()));
+         sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }
  }
+
+   public void addMetaDataV1(String key, String data) throws HornetQException
+   {
+      metadata.put(key, data);
+      channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
+   }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
       metadata.put(key, data);
-      channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
+      channel.send(new SessionAddMetaDataMessageV2(key, data));
    }
 
    public ClientSessionFactoryInternal getSessionFactory()
