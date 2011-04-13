@@ -791,11 +791,11 @@ public class UnitTestCase extends TestCase
 
    /** It validates a Bean (POJO) using simple setters and getters with random values.
     *  You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them) */
-   protected void validateGettersAndSetters(final Object pojo, final String... IgnoredProperties) throws Exception
+   protected void validateGettersAndSetters(final Object pojo, final String... ignoredProperties) throws Exception
    {
       HashSet<String> ignoreSet = new HashSet<String>();
 
-      for (String ignore : IgnoredProperties)
+      for (String ignore : ignoredProperties)
       {
          ignoreSet.add(ignore);
       }
