@@ -13,6 +13,7 @@
 package org.hornetq.ra.inflow;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -84,7 +85,11 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    /** Transaction timeout */
    private Integer transactionTimeout;
 
-   private boolean useJNDI = true;
+   private Boolean useJNDI = true;
+
+   private String jndiParams = null;
+
+   private Hashtable parsedJndiParams;
 
    /* use local tx instead of XA*/
    private Boolean localTx;
@@ -137,6 +142,10 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
     */
    public boolean isUseJNDI()
    {
+      if(useJNDI == null)
+      {
+         return ra.isUseJNDI();
+      }
       return useJNDI;
    }
 
@@ -146,6 +155,34 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
    public void setUseJNDI(final boolean value)
    {
       useJNDI = value;
+   }
+
+   /**
+    *
+    * @return return the jndi params to use
+    */
+   public String getJndiParams()
+   {
+      if(jndiParams == null)
+      {
+         return ra.getJndiParams();
+      }
+      return jndiParams;
+   }
+
+   public void setJndiParams(String jndiParams)
+   {
+      this.jndiParams = jndiParams;
+      parsedJndiParams = Util.parseHashtableConfig(jndiParams);
+   }
+
+   public Hashtable getParsedJndiParams()
+   {
+      if(parsedJndiParams == null)
+      {
+         return ra.getParsedJndiParams();
+      }
+      return parsedJndiParams;
    }
 
    /**

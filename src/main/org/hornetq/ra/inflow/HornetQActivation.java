@@ -397,7 +397,15 @@ public class HornetQActivation
 
       if (spec.isUseJNDI())
       {
-         Context ctx = new InitialContext();
+         Context ctx;
+         if(spec.getParsedJndiParams() == null)
+         {
+            ctx = new InitialContext();
+         }
+         else
+         {
+            ctx = new InitialContext(spec.getParsedJndiParams());
+         }
          HornetQActivation.log.debug("Using context " + ctx.getEnvironment() + " for " + spec);
          if (HornetQActivation.trace)
          {

@@ -13,10 +13,7 @@
 package org.hornetq.ra;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -174,6 +171,27 @@ public class Util
    public static Object lookup(final Context context, final String name, final Class clazz) throws Exception
    {
       return context.lookup(name);
+   }
+
+   public static Hashtable parseHashtableConfig(final String config)
+   {
+      Hashtable hashtable = new Hashtable();
+
+      String[] topElements = config.split(",");
+
+      for (String element : topElements)
+      {
+         String expression[] = element.split("=");
+
+         if (expression.length != 2)
+         {
+            throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
+         }
+
+         hashtable.put(expression[0].trim(), expression[1].trim());
+      }
+
+      return hashtable;
    }
 
    public static List<Map<String, Object>> parseConfig(final String config)

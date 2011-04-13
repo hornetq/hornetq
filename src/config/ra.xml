@@ -83,6 +83,12 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
+        <description>The jndi params to use to look up the jms resources if local jndi is not to be used</description>
+        <config-property-name>JndiParams</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory,java.naming.provider.url=jnp://localhost:1199,java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</config-property-value>
+      </config-property>
+      <config-property>
         <description>The discovery group address</description>
         <config-property-name>DiscoveryAddress</config-property-name>
         <config-property-type>java.lang.String</config-property-type>

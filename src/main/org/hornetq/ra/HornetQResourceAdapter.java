@@ -14,6 +14,7 @@ package org.hornetq.ra;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,6 +103,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private HornetQConnectionFactory defaultHornetQConnectionFactory;
    
    private TransactionManager tm;
+
+   private String unparsedJndiParams;
 
    /**
     * Constructor
@@ -1090,6 +1093,41 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setPassword(password);
    }
 
+    /**
+    * @return the useJNDI
+    */
+   public boolean isUseJNDI()
+   {
+      return raProperties.isUseJNDI();
+   }
+
+   /**
+    * @param value the useJNDI to set
+    */
+   public void setUseJNDI(final boolean value)
+   {
+      raProperties.setUseJNDI(value);
+   }
+
+   /**
+    *
+    * @return return the jndi params to use
+    */
+   public String getJndiParams()
+   {
+      return unparsedJndiParams;
+   }
+
+   public void setJndiParams(String jndiParams)
+   {
+      unparsedJndiParams = jndiParams;
+      raProperties.setParsedJndiParams(Util.parseHashtableConfig(jndiParams));
+   }
+
+   public Hashtable getParsedJndiParams()
+   {
+      return raProperties.getParsedJndiParams();
+   }
    /**
     * Get the client ID
     *
@@ -1648,5 +1686,4 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          cf.setConnectionLoadBalancingPolicyClassName(val5);
       }
    }
-
 }
