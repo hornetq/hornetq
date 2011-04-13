@@ -1083,20 +1083,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       // Resetting the metadata after failover
-      try
+      for (Map.Entry<String, String> entries : metadata.entrySet())
       {
-         for (Map.Entry<String, String> entries : metadata.entrySet())
-         {
-            addMetaData(entries.getKey(), entries.getValue());
-         }
+         sendPacketWithoutLock(new SessionAddMetaDataMessage(entries.getKey(), entries.getValue()));
       }
-      catch (HornetQException e)
-      {
-
-         log.warn("Error on resending metadata: " + metadata, e);
-
-      }
-   }
+ }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
