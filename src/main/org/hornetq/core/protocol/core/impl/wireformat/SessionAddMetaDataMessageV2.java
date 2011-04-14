@@ -76,8 +76,6 @@ public class SessionAddMetaDataMessageV2 extends PacketImpl
       return requiresConfirmation;
    }
 
-
-
    public String getKey()
    {
       return key;

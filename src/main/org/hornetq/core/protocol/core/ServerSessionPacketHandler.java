@@ -483,6 +483,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
                case PacketImpl.SESS_ADD_METADATA2:
                {
                   SessionAddMetaDataMessageV2 message = (SessionAddMetaDataMessageV2)packet;
+                  if (message.isRequiresConfirmations())
+                  {
+                     response = new NullResponseMessage();
+                  }
                   session.addMetaData(message.getKey(), message.getData());
                   break;
                }

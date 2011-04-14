@@ -1099,7 +1099,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void addMetaData(String key, String data) throws HornetQException
    {
       metadata.put(key, data);
-      channel.send(new SessionAddMetaDataMessageV2(key, data));
+      channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
 
    public ClientSessionFactoryInternal getSessionFactory()

@@ -556,23 +556,9 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                        JMSServerControl2Test.PING_PERIOD);
          Connection connection = cf1.createConnection();
 
-         long timeout = System.currentTimeMillis() + 5000;
-
-         // Some of the send is asynchronous, so need to wait a few micro seconds eventually
-         while (System.currentTimeMillis() < timeout)
-         {
-            jsonStr = control.listConnectionsAsJSON();
-            assertNotNull(jsonStr);
-            infos = JMSConnectionInfo.from(jsonStr);
-            if (infos.length == 1)
-            {
-               break;
-            }
-            else
-            {
-               Thread.sleep(500);
-            }
-         }
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
          assertEquals(1, infos.length);
          for (JMSConnectionInfo info : infos)
          {
@@ -586,25 +572,9 @@ public class JMSServerControl2Test extends ManagementTestBase
                                                        JMSServerControl2Test.PING_PERIOD);
          Connection connection2 = cf2.createConnection();
 
-         timeout = System.currentTimeMillis() + 5000;
-         
-         // Some of the send is asynchronous, so need to wait a few micro seconds eventually
-         while (System.currentTimeMillis() < timeout)
-         {
-            jsonStr = control.listConnectionsAsJSON();
-            assertNotNull(jsonStr);
-            infos = JMSConnectionInfo.from(jsonStr);
-            
-            if (infos.length == 2)
-            {
-               break;
-            }
-            else
-            {
-               Thread.sleep(500);
-            }
-         }
-         
+         jsonStr = control.listConnectionsAsJSON();
+         assertNotNull(jsonStr);
+         infos = JMSConnectionInfo.from(jsonStr);
          assertEquals(2, infos.length);
          for (JMSConnectionInfo info : infos)
          {
