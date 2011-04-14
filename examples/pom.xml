@@ -22,9 +22,19 @@
       </resources>
       <plugins>
          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
+            <artifactId>maven-assembly-plugin</artifactId>
             <version>2.2</version>
+            <configuration>
+               <descriptor>src/main/assembly/dep.xml</descriptor>
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

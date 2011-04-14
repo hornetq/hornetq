@@ -2,14 +2,14 @@
   xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
   <id>bin</id>
-  <formats>
+  <formats><!--
     <format>tar.gz</format>
-    <format>zip</format>
+    <format>zip</format>-->
      <format>dir</format>
   </formats>
   <includeBaseDirectory>false</includeBaseDirectory>
    <moduleSets>
-      <moduleSet>
+    <!--  <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
             <include>org.hornetq:hornetq-bootstrap</include>
@@ -126,7 +126,7 @@
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
          </binaries>
-      </moduleSet>
+      </moduleSet>-->
       <!--
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -138,7 +138,7 @@
             <unpack>false</unpack>
          </binaries>
       </moduleSet>-->
-      <moduleSet>
+  <!--    <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
             <include>org.hornetq:hornetq-service-sar</include>
@@ -170,19 +170,24 @@
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
          </binaries>
-      </moduleSet>
+      </moduleSet>-->
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
             <include>org.hornetq:hornetq-examples</include>
          </includes>
-         <binaries>
+         <sources>
+            <outputDirectory>examples</outputDirectory>
+         </sources>
+        <!-- <binaries>
             <includeDependencies>false</includeDependencies>
             <outputDirectory>examples</outputDirectory>
-         </binaries>
+            <unpack>true</unpack>
+            <attachmentClassifier>sources</attachmentClassifier>
+         </binaries>-->
       </moduleSet>
    </moduleSets>
-  <fileSets>
+ <!-- <fileSets>
     <fileSet>
       <directory>src/main/resources/config</directory>
       <outputDirectory>config</outputDirectory>
@@ -199,5 +204,5 @@
       <directory>src/main/resources/licenses</directory>
       <outputDirectory>licenses</outputDirectory>
     </fileSet>
-  </fileSets>
+  </fileSets>-->
 </assembly>
