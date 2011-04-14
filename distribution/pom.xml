@@ -25,6 +25,9 @@
       </dependency>
    </dependencies>
 
+   <modules>
+      <module>jnp-client</module>
+   </modules>
 
    <build>
       <resources>

@@ -18,6 +18,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -29,6 +30,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -56,6 +58,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -67,6 +70,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -83,6 +87,7 @@
                   <include>**/*.xsd</include>
                </includes>
             </unpackOptions>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -94,6 +99,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet> <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -104,6 +110,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -115,6 +122,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <!--
@@ -137,6 +145,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -148,6 +157,7 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -159,6 +169,19 @@
             <includeDependencies>false</includeDependencies>
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:jnp-client</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
       <moduleSet>
@@ -196,6 +219,7 @@
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
+         <outputFileNameMapping>jboss-jms-api.jar</outputFileNameMapping>
       </dependencySet>
       <dependencySet>
          <includes>
@@ -203,6 +227,7 @@
          </includes>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
+         <outputFileNameMapping>jnpserver.jar</outputFileNameMapping>
       </dependencySet>
    </dependencySets>
   <fileSets>
