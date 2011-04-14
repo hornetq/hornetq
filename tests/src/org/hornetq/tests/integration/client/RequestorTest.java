@@ -18,14 +18,22 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientRequestor;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -56,7 +64,7 @@ public class RequestorTest extends UnitTestCase
    {
       final SimpleString key = RandomUtil.randomSimpleString();
       long value = RandomUtil.randomLong();
-      SimpleString requestAddress = RandomUtil.randomSimpleString();
+      SimpleString requestAddress = new SimpleString("AdTest");
       SimpleString requestQueue = RandomUtil.randomSimpleString();
 
       final ClientSession session = sf.createSession(false, true, true);
@@ -76,7 +84,59 @@ public class RequestorTest extends UnitTestCase
       Assert.assertNotNull("reply was not received", reply);
       Assert.assertEquals(value, reply.getObjectProperty(key));
 
+      Thread.sleep(5000);
       session.close();
+   }
+
+   public void testManyRequestsOverBlocked() throws Exception
+   {
+      final SimpleString key = RandomUtil.randomSimpleString();
+      long value = RandomUtil.randomLong();
+      
+      AddressSettings settings = new AddressSettings();
+      settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      settings.setMaxSizeBytes(1024);
+      service.getAddressSettingsRepository().addMatch("#", settings);
+
+      SimpleString requestAddress = new SimpleString("RequestAddress");
+      
+      SimpleString requestQueue = new SimpleString("RequestAddress Queue");
+
+      final ClientSession sessionRequest = sf.createSession(false, true, true);
+      
+      sessionRequest.createQueue(requestAddress, requestQueue);
+       
+      sessionRequest.start();
+
+      ClientConsumer requestConsumer = sessionRequest.createConsumer(requestQueue);
+      requestConsumer.setMessageHandler(new SimpleMessageHandler(key, sessionRequest));
+
+
+      for (int i = 0 ; i < 2000; i++)
+      {
+         System.out.println("i = " + i);
+         if (i % 100 == 0)
+         {
+            System.out.println(i);
+         }
+         final ClientSession session = sf.createSession(false, true, true);
+   
+         session.start();
+   
+         ClientRequestor requestor = new ClientRequestor(session, requestAddress);
+         ClientMessage request = session.createMessage(false);
+         request.putLongProperty(key, value);
+   
+         ClientMessage reply = requestor.request(request, 5000);
+         Assert.assertNotNull("reply was not received", reply);
+         reply.acknowledge();
+         Assert.assertEquals(value, reply.getObjectProperty(key));
+         requestor.close();
+         session.close();
+      }
+      
+      sessionRequest.close();
+
    }
 
    public void testTwoRequests() throws Exception
@@ -223,6 +283,7 @@ public class RequestorTest extends UnitTestCase
       service.start();
 
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      locator.setAckBatchSize(0);
       sf = locator.createSessionFactory();
    }
 
