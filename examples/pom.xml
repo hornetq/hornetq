@@ -10,7 +10,7 @@
 
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq-examples</artifactId>
-   <packaging>jar</packaging>
+   <packaging>pom</packaging>
    <name>HornetQ Examples</name>
 
    <build>

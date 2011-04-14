@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OVERRIDE_ANT_HOME=../../../tools/ant
+OVERRIDE_ANT_HOME=../../tools/ant
 export OVERRIDE_ANT_HOME
 
 if [ -f "../../../src/bin/build.sh" ]; then
@@ -8,7 +8,7 @@ if [ -f "../../../src/bin/build.sh" ]; then
    ../../../src/bin/build.sh "$@"
 else
    # running from the distro
-   ../../../bin/build.sh "$@"
+   ../../bin/build.sh "$@"
 fi
 
 
