@@ -68,16 +68,6 @@
             <outputDirectory>lib</outputDirectory>
             <unpack>false</unpack>
          </binaries>
-      </moduleSet> <moduleSet>
-         <useAllReactorProjects>true</useAllReactorProjects>
-         <includes>
-            <include>org.hornetq:hornetq-jms</include>
-         </includes>
-         <binaries>
-            <includeDependencies>false</includeDependencies>
-            <outputDirectory>lib</outputDirectory>
-            <unpack>false</unpack>
-         </binaries>
       </moduleSet>
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
@@ -199,6 +189,22 @@
       </sources>
       </moduleSet>
    </moduleSets>
+   <dependencySets>
+      <dependencySet>
+         <includes>
+            <include>org.jboss.javaee:jboss-jms-api</include>
+         </includes>
+         <outputDirectory>lib</outputDirectory>
+         <unpack>false</unpack>
+      </dependencySet>
+      <dependencySet>
+         <includes>
+            <include>org.jboss.naming:jnpserver</include>
+         </includes>
+         <outputDirectory>lib</outputDirectory>
+         <unpack>false</unpack>
+      </dependencySet>
+   </dependencySets>
   <fileSets>
     <fileSet>
       <directory>src/main/resources/config</directory>
