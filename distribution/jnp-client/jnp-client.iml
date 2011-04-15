@@ -13,6 +13,7 @@
     <orderEntry type="library" name="Maven: org.jboss:jboss-common-core:2.2.14.GA" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.logging:jboss-logging-spi:2.1.0.GA" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.javaee:jboss-jms-api:1.1.0.GA" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.3.Final" level="project" />
   </component>
 </module>
 

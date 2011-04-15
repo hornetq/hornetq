@@ -93,13 +93,8 @@
          </includes>
          <binaries>
             <includeDependencies>false</includeDependencies>
-            <outputDirectory></outputDirectory>
-            <unpack>true</unpack>
-            <unpackOptions>
-               <includes>
-                  <include>**/*.xsd</include>
-               </includes>
-            </unpackOptions>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
             <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
          </binaries>
       </moduleSet>
@@ -200,6 +195,18 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq:jboss-mc</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:hornetq-examples</include>
          </includes> <sources>
         <includeModuleDirectory>false</includeModuleDirectory>
@@ -241,6 +248,14 @@
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
          <outputFileNameMapping>jnpserver.jar</outputFileNameMapping>
+      </dependencySet>
+      <dependencySet>
+         <includes>
+            <include>org.jboss.netty:netty</include>
+         </includes>
+         <outputDirectory>lib</outputDirectory>
+         <unpack>false</unpack>
+         <outputFileNameMapping>netty.jar</outputFileNameMapping>
       </dependencySet>
    </dependencySets>
   <fileSets>

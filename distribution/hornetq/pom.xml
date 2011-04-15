@@ -11,7 +11,7 @@
 
    <groupId>org.hornetq</groupId>
    <artifactId>hornetq</artifactId>
-   <packaging>jar</packaging>
+   <packaging>pom</packaging>
    <name>Actual HornetQ Distribution</name>
 
    <build>

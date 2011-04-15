@@ -23,37 +23,17 @@
           <groupId>org.jboss.naming</groupId>
           <artifactId>jnpserver</artifactId>
       </dependency>
+      <dependency>
+          <groupId>org.jboss.netty</groupId>
+          <artifactId>netty</artifactId>
+      </dependency>
    </dependencies>
 
    <modules>
       <module>jnp-client</module>
+      <module>jboss-mc</module>
       <module>hornetq</module>
    </modules>
 
-  <!-- <build>
-      <resources>
-         <resource>
-            <directory>src/main/resources</directory>
-            <filtering>true</filtering>
-         </resource>
-      </resources>
-      <plugins>
-         <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>2.2</version>
-            <configuration>
-               <descriptor>src/main/assembly/dep.xml</descriptor>
-            </configuration>
-            <executions>
-               <execution>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>single</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>-->
 
 </project>
