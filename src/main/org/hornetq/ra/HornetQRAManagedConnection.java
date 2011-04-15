@@ -467,7 +467,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
       //
       if (xaResource == null)
       {
-            xaResource = xaSession.getXAResource();
+            xaResource = new HornetQRAXAResource(this, xaSession.getXAResource());
       }
 
       if (HornetQRAManagedConnection.trace)
@@ -475,7 +475,6 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
          HornetQRAManagedConnection.log.trace("XAResource=" + xaResource);
       }
 
-      xaResource = new HornetQRAXAResource(this, xaResource);
       return xaResource;
    }
 
