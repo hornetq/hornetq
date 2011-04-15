@@ -2,35 +2,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
+
    <parent>
       <groupId>org.hornetq</groupId>
-      <artifactId>hornetq-pom</artifactId>
+      <artifactId>hornetq-distribution</artifactId>
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
    <groupId>org.hornetq</groupId>
-   <artifactId>hornetq-distribution</artifactId>
-   <packaging>pom</packaging>
-   <name>HornetQ Distribution</name>
+   <artifactId>hornetq</artifactId>
+   <packaging>jar</packaging>
+   <name>Actual HornetQ Distribution</name>
 
-
-   <dependencies>
-       <dependency>
-           <groupId>org.jboss.javaee</groupId>
-           <artifactId>jboss-jms-api</artifactId>
-       </dependency>
-      <dependency>
-          <groupId>org.jboss.naming</groupId>
-          <artifactId>jnpserver</artifactId>
-      </dependency>
-   </dependencies>
-
-   <modules>
-      <module>jnp-client</module>
-      <module>hornetq</module>
-   </modules>
-
-  <!-- <build>
+   <build>
       <resources>
          <resource>
             <directory>src/main/resources</directory>
@@ -54,6 +38,6 @@
             </executions>
          </plugin>
       </plugins>
-   </build>-->
+   </build>
 
 </project>

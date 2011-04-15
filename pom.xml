@@ -6,7 +6,7 @@
     <packaging>pom</packaging>
     <version>2.2.3-SNAPSHOT</version>
 
-    <name>HornetQ</name>
+    <name>HornetQ Parent</name>
     <url>http://hornetq.org</url>
     <description>
         Putting the buzz in messaging
