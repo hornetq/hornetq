@@ -235,14 +235,12 @@ public class HornetQPacketHandler implements ChannelHandler
             response = new ReattachSessionResponseMessage(-1, false);
          }
 
+         log.debug("Reattaching request from " +  connection.getRemoteAddress());
+
+
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());
 
-         if (!server.checkActivate())
-         {
-            response = new ReattachSessionResponseMessage(-1, false);
-         }
-
-         if (sessionHandler == null)
+         if (!server.checkActivate() || sessionHandler == null)
          {
             response = new ReattachSessionResponseMessage(-1, false);
          }
@@ -253,7 +251,10 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
+               
+               log.warn("Reattach request from " + connection.getRemoteAddress() + " failed as there is no confirmationWindowSize configured, which may be ok for your system");
 
+               sessionHandler.closeListeners();
                sessionHandler.close();
 
                response = new ReattachSessionResponseMessage(-1, false);

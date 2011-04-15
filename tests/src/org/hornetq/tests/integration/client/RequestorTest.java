@@ -114,7 +114,6 @@ public class RequestorTest extends UnitTestCase
 
       for (int i = 0 ; i < 2000; i++)
       {
-         System.out.println("i = " + i);
          if (i % 100 == 0)
          {
             System.out.println(i);

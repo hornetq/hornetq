@@ -1606,6 +1606,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return remotingConnection;
    }
+   
+   public String toString()
+   {
+      StringBuffer buffer = new StringBuffer();
+      for (Map.Entry<String, String> entry : metadata.entrySet())
+      {
+         buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+      }
+      return "ClientSessionImpl::(" + buffer.toString() + ")";
+   }
 
    // Protected
    // ----------------------------------------------------------------------------

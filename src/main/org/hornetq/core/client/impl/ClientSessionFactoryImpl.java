@@ -1093,6 +1093,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                          0,
                                                                          clientFailureCheckPeriod,
                                                                          TimeUnit.MILLISECONDS);
+               // To make sure the first ping will be sent
+               pingRunnable.send();
             }
             // send a ping every time we create a new remoting connection
             // to set up its TTL on the server side
@@ -1313,8 +1315,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          first = false;
 
          long now = System.currentTimeMillis();
-
-         if (clientFailureCheckPeriod != -1 && now >= lastCheck + clientFailureCheckPeriod)
+         
+         if (clientFailureCheckPeriod != -1 && connectionTTL != -1 && now >= lastCheck + connectionTTL )
          {
             if (!connection.checkDataReceived())
             {
@@ -1340,6 +1342,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             }
          }
 
+         send();
+      }
+
+      /**
+       * 
+       */
+      public void send()
+      {
          // Send a ping
 
          Ping ping = new Ping(connectionTTL);

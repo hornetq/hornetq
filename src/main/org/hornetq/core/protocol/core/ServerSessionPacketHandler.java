@@ -587,6 +587,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
       }
    }
    
+   public void closeListeners()
+   {
+      List<CloseListener> listeners = remotingConnection.removeCloseListeners();
+      
+      for (CloseListener closeListener: listeners)
+      {
+         closeListener.connectionClosed();
+         if (closeListener instanceof FailureListener)
+         {
+            remotingConnection.removeFailureListener((FailureListener)closeListener);
+         }
+      }
+   }
+   
    public int transferConnection(final CoreRemotingConnection newConnection, final int lastReceivedCommandID)
    {
       // We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get
