@@ -2,18 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="a2aae645-dbcd-4d6e-9c99-efa05d93589a" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/hornetq-docs.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/pom.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/quickstart-guide/HornetQ_QuickStart_Guide-en.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/docs/user-manual/HornetQ_User_Manual-en.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/distribution/hornetq/src/main/assembly/dep.xml" afterPath="$PROJECT_DIR$/distribution/hornetq/src/main/assembly/dep.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/quickstart-guide/pom.xml" afterPath="$PROJECT_DIR$/docs/quickstart-guide/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/docs/user-manual/pom.xml" afterPath="$PROJECT_DIR$/docs/user-manual/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq-core/hornetq-core.iml" afterPath="$PROJECT_DIR$/hornetq-core/hornetq-core.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.ipr" afterPath="$PROJECT_DIR$/hornetq.ipr" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iws" afterPath="$PROJECT_DIR$/hornetq.iws" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/integration-tests/integration-tests.iml" afterPath="$PROJECT_DIR$/tests/integration-tests/integration-tests.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/concurrent-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/concurrent-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/integration-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/integration-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/jms-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/jms-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/joram-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/joram-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/performance-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/performance-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/pom.xml" afterPath="$PROJECT_DIR$/tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/soak-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/soak-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/stress-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/stress-tests/pom.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/timing-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/timing-tests/pom.xml" />
     </list>
     <ignored path=".idea/workspace.xml" />
     <ignored path="$USER_HOME_GRAILS$/" />
@@ -93,88 +92,88 @@
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="368" column="40" selection-start="13544" selection-end="14333" vertical-scroll-proportion="-23.08">
+            <state line="39" column="53" selection-start="1939" selection-end="1939" vertical-scroll-proportion="-10.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/hornetq-core/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="56" column="74" selection-start="1878" selection-end="1878" vertical-scroll-proportion="0.0">
+            <state line="33" column="24" selection-start="687" selection-end="986" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/distribution/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/timing-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build-thirdparty.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/build-thirdparty.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="59" column="7" selection-start="2534" selection-end="2538" vertical-scroll-proportion="15.84">
+            <state line="28" column="27" selection-start="1237" selection-end="1237" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/stress-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="30" selection-start="1262" selection-end="1262" vertical-scroll-proportion="0.0">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="build-hornetq.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/build-hornetq.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1148" column="62" selection-start="54984" selection-end="54990" vertical-scroll-proportion="-14.72">
+            <state line="28" column="39" selection-start="1249" selection-end="1249" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/user-manual/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/soak-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="26" column="46" selection-start="924" selection-end="1113" vertical-scroll-proportion="0.0">
+            <state line="28" column="25" selection-start="1231" selection-end="1231" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/docs/quickstart-guide/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/performance-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="3" selection-start="287" selection-end="287" vertical-scroll-proportion="0.0">
+            <state line="28" column="32" selection-start="1252" selection-end="1252" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
       <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/distribution/hornetq/pom.xml">
+        <entry file="file://$PROJECT_DIR$/tests/joram-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="38" column="18" selection-start="1244" selection-end="1244" vertical-scroll-proportion="0.0">
+            <state line="28" column="26" selection-start="1234" selection-end="1234" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dep.xml" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/distribution/hornetq/src/main/assembly/dep.xml">
+      <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/jms-tests/pom.xml">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="299" column="47" selection-start="11729" selection-end="11729" vertical-scroll-proportion="1.3950617">
+            <state line="129" column="40" selection-start="4633" selection-end="4633" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pom.xml" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/tests/integration-tests/pom.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="15" column="32" selection-start="614" selection-end="614" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="pom.xml" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/tests/concurrent-tests/pom.xml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="144" column="47" selection-start="5063" selection-end="5063" vertical-scroll-proportion="1.1160715">
               <folding />
             </state>
           </provider>
@@ -193,22 +192,22 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/examples/core/embedded-remote/build.sh" />
-        <option value="$PROJECT_DIR$/distribution/src/main/resources/config/examples/common/config/ant.properties" />
-        <option value="$PROJECT_DIR$/examples/common/build.xml" />
-        <option value="$PROJECT_DIR$/distribution/src/main/resources/examples/javaee/common/config/ant.properties" />
-        <option value="$PROJECT_DIR$/distribution/jboss-mc/pom.xml" />
-        <option value="$PROJECT_DIR$/distribution/src/main/assembly/dep.xml" />
-        <option value="$PROJECT_DIR$/distribution/jnp-client/pom.xml" />
-        <option value="$PROJECT_DIR$/distribution/pom.xml" />
-        <option value="$PROJECT_DIR$/examples/common/src/org/hornetq/common/example/HornetQExample.java" />
         <option value="$PROJECT_DIR$/docs/user-manual/pom.xml" />
-        <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/hornetq-core/pom.xml" />
         <option value="$PROJECT_DIR$/distribution/hornetq/pom.xml" />
         <option value="$PROJECT_DIR$/docs/quickstart-guide/pom.xml" />
         <option value="$PROJECT_DIR$/docs/pom.xml" />
         <option value="$PROJECT_DIR$/distribution/hornetq/src/main/assembly/dep.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/timing-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/stress-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/soak-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/performance-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/joram-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/jms-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/integration-tests/pom.xml" />
+        <option value="$PROJECT_DIR$/tests/concurrent-tests/pom.xml" />
       </list>
     </option>
   </component>
@@ -230,16 +229,6 @@
         <PATH_ELEMENT>
           <option name="myItemId" value="" />
           <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-      </PATH>
-      <PATH>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$RootNode" />
-        </PATH_ELEMENT>
-        <PATH_ELEMENT>
-          <option name="myItemId" value="HornetQ User Manual-(en)" />
-          <option name="myItemType" value="org.jetbrains.idea.maven.navigator.MavenProjectsStructure$ProjectNode" />
         </PATH_ELEMENT>
       </PATH>
     </treeState>
@@ -1196,7 +1185,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="native" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1210,7 +1199,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="unit-tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1224,29 +1217,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="user-manual" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq2" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="docs" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="quickstart-guide" />
+              <option name="myItemId" value="timing-tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1260,7 +1235,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="distribution" />
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="stress-tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1274,37 +1253,11 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="distribution" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq2" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="distribution" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="hornetq" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
+              <option name="myItemId" value="soak-tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1318,23 +1271,83 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="distribution" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="performance-tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq2" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="src" />
+              <option name="myItemId" value="tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="main" />
+              <option name="myItemId" value="joram-tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq2" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="assembly" />
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="jms-tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq2" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="integration-tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="hornetq2" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="tests" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="concurrent-tests" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1939,7 +1952,7 @@
     <frame x="0" y="24" width="1920" height="1152" extended-state="0" />
     <editor active="false" />
     <layout>
-      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.37362638" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3936064" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5174825" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -1951,10 +1964,10 @@
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.22398414" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24959914" sideWeight="0.7006937" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27669904" sideWeight="0.62637365" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.27669904" sideWeight="0.60639364" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Dependency Viewer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24325782" sideWeight="0.62637365" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24325782" sideWeight="0.60639364" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.23609756" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -2094,97 +2107,6 @@
     </buildFile>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/examples/jms/queue/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/common/build.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="52" selection-start="817" selection-end="817" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/common/src/org/hornetq/common/example/HornetQExample.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="164" column="0" selection-start="5470" selection-end="5470" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hornetq-core/src/main/java/org/hornetq/core/remoting/impl/netty/TransportConstants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="31" selection-start="902" selection-end="920" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hornetq-rest/docbook/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="34" column="76" selection-start="1450" selection-end="1450" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/org/jboss/maven/plugins/maven-jdocbook-plugin/2.2.1/maven-jdocbook-plugin-2.2.1.jar!/META-INF/maven/plugin.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="8" selection-start="1935" selection-end="1935" vertical-scroll-proportion="0.33292383">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build-thirdparty.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="59" column="7" selection-start="2534" selection-end="2538" vertical-scroll-proportion="15.84">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/build-hornetq.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1148" column="62" selection-start="54984" selection-end="54990" vertical-scroll-proportion="-14.72">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/distribution/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/hornetq-core/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="56" column="74" selection-start="1878" selection-end="1878" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="368" column="40" selection-start="13544" selection-end="14333" vertical-scroll-proportion="-23.08">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/distribution/hornetq/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="18" selection-start="1244" selection-end="1244" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/user-manual/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="46" selection-start="924" selection-end="1113" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/quickstart-guide/pom.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state line="6" column="3" selection-start="287" selection-end="287" vertical-scroll-proportion="0.0">
@@ -2201,7 +2123,98 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/distribution/hornetq/src/main/assembly/dep.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="299" column="47" selection-start="11729" selection-end="11729" vertical-scroll-proportion="1.3950617">
+        <state line="299" column="47" selection-start="11729" selection-end="11729" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hornetq-rest/examples/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/hornetq-rest/examples/dup-send/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/hornetq-tests-pom.iml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="39" column="53" selection-start="1939" selection-end="1939" vertical-scroll-proportion="-10.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="33" column="24" selection-start="687" selection-end="986" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/timing-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="27" selection-start="1237" selection-end="1237" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/stress-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="39" selection-start="1249" selection-end="1249" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/soak-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="25" selection-start="1231" selection-end="1231" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/performance-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="32" selection-start="1252" selection-end="1252" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/joram-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="28" column="26" selection-start="1234" selection-end="1234" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/jms-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="129" column="40" selection-start="4633" selection-end="4633" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/integration-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="15" column="32" selection-start="614" selection-end="614" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/concurrent-tests/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="47" selection-start="5063" selection-end="5063" vertical-scroll-proportion="1.1160715">
           <folding />
         </state>
       </provider>
