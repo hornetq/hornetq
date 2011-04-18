@@ -101,6 +101,22 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq:hornetq-jms</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory></outputDirectory>
+            <unpack>true</unpack>
+            <unpackOptions>
+               <includes>
+                  <include>**/*.xsd</include>
+               </includes>
+            </unpackOptions>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:hornetq-jms-client</include>
          </includes>
          <binaries>

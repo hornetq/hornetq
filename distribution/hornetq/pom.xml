@@ -133,6 +133,62 @@
                         <include>hornetq-configuration.xml</include>
                      </includes>
                   </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/stand-alone/clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/stand-alone/non-clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-4/clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-4/non-clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-5/clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-5/non-clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-6/clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/jboss-as-6/non-clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-jms.xsd</systemId>
+                     <includes>
+                        <include>hornetq-jms.xml</include>
+                     </includes>
+                  </validationSet>
                </validationSets>
             </configuration>
          </plugin>
