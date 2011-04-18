@@ -189,6 +189,20 @@
                         <include>hornetq-jms.xml</include>
                      </includes>
                   </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/standalone/clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-users.xsd</systemId>
+                     <includes>
+                        <include>hornetq-users.xml</include>
+                     </includes>
+                  </validationSet>
+                  <validationSet>
+                     <dir>src/main/resources/config/standalone/non-clustered</dir>
+                     <systemId>${build.directory}/${artifactId}-${project.version}-bin/schema/hornetq-users.xsd</systemId>
+                     <includes>
+                        <include>hornetq-users.xml</include>
+                     </includes>
+                  </validationSet>
                </validationSets>
             </configuration>
          </plugin>
