@@ -17,7 +17,14 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.jboss.project</groupId>
+
+   <parent>
+      <groupId>org.hornetq.docs</groupId>
+      <artifactId>hornetq-docs</artifactId>
+      <version>2.2.3-SNAPSHOT</version>
+   </parent>
+
+	<groupId>org.hornetq.docs</groupId>
 	<artifactId>${docname}-${translation}</artifactId>
 	<version>1.0</version>
 	<packaging>jdocbook</packaging>

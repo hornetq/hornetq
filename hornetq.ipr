@@ -381,6 +381,8 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/docs/quickstart-guide/HornetQ_QuickStart_Guide-en.iml" filepath="$PROJECT_DIR$/docs/quickstart-guide/HornetQ_QuickStart_Guide-en.iml" />
+      <module fileurl="file://$PROJECT_DIR$/docs/user-manual/HornetQ_User_Manual-en.iml" filepath="$PROJECT_DIR$/docs/user-manual/HornetQ_User_Manual-en.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/concurrent-tests/concurrent-tests.iml" filepath="$PROJECT_DIR$/tests/concurrent-tests/concurrent-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq.iml" filepath="$PROJECT_DIR$/hornetq.iml" />
       <module fileurl="file://$PROJECT_DIR$/distribution/hornetq/hornetq (1).iml" filepath="$PROJECT_DIR$/distribution/hornetq/hornetq (1).iml" />
@@ -388,6 +390,7 @@
       <module fileurl="file://$PROJECT_DIR$/hornetq-core/hornetq-core.iml" filepath="$PROJECT_DIR$/hornetq-core/hornetq-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-core-client/hornetq-core-client.iml" filepath="$PROJECT_DIR$/hornetq-core-client/hornetq-core-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/distribution/hornetq-distribution.iml" filepath="$PROJECT_DIR$/distribution/hornetq-distribution.iml" />
+      <module fileurl="file://$PROJECT_DIR$/docs/hornetq-docs.iml" filepath="$PROJECT_DIR$/docs/hornetq-docs.iml" />
       <module fileurl="file://$PROJECT_DIR$/examples/hornetq-examples.iml" filepath="$PROJECT_DIR$/examples/hornetq-examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-jboss-as-integration/hornetq-jboss-as-integration.iml" filepath="$PROJECT_DIR$/hornetq-jboss-as-integration/hornetq-jboss-as-integration.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-jms/hornetq-jms.iml" filepath="$PROJECT_DIR$/hornetq-jms/hornetq-jms.iml" />

@@ -290,5 +290,14 @@
       <directory>src/main/resources/examples</directory>
       <outputDirectory>examples</outputDirectory>
     </fileSet>
+     <!--todo, this is crap, there must be better jdocbook assembly integration-->
+      <fileSet>
+         <directory>../../docs/user-manual/target/docbook/publish/en</directory>
+         <outputDirectory>docs/user-manual</outputDirectory>
+      </fileSet>
+      <fileSet>
+         <directory>../../docs/quickstart-guide/target/docbook/publish/en</directory>
+         <outputDirectory>docs/quickstart-guide</outputDirectory>
+      </fileSet>
   </fileSets>
 </assembly>

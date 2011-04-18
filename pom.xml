@@ -109,6 +109,7 @@
         <module>hornetq-service-sar</module>
         <module>tests</module>
         <module>examples</module>
+        <module>docs</module>
         <module>distribution</module>
     </modules>
 
