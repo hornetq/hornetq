@@ -231,6 +231,17 @@
         </fileSets>
       </sources>
       </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
+            <include>org.hornetq:hornetq-core</include>
+         </includes>
+         <binaries>
+            <attachmentClassifier>javadoc</attachmentClassifier>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>docs/api</outputDirectory>
+         </binaries>
+      </moduleSet>
    </moduleSets>
    <dependencySets>
       <dependencySet>
