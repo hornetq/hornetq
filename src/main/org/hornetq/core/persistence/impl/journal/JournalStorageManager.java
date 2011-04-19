@@ -129,11 +129,6 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte SECURITY_RECORD = 26;
 
-   // type + expiration + timestamp + priority
-   public static final int SIZE_FIELDS = DataConstants.SIZE_INT + DataConstants.SIZE_LONG +
-                                         DataConstants.SIZE_LONG +
-                                         DataConstants.SIZE_BYTE;
-
    // Message journal record types
 
    public static final byte ADD_LARGE_MESSAGE = 30;
