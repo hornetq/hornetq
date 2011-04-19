@@ -3,11 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" readonly="true" id="a2aae645-dbcd-4d6e-9c99-efa05d93589a" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hornetq.iws" afterPath="$PROJECT_DIR$/hornetq.iws" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/concurrent-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/concurrent-tests/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/performance-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/performance-tests/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/soak-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/soak-tests/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/stress-tests/pom.xml" afterPath="$PROJECT_DIR$/tests/stress-tests/pom.xml" />
     </list>
     <ignored path=".idea/workspace.xml" />
     <ignored path="$USER_HOME_GRAILS$/" />
@@ -1972,7 +1967,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-4" y="24" width="1928" height="1160" extended-state="6" />
+    <frame x="-4" y="24" width="1928" height="1160" extended-state="7" />
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.35579783" sideWeight="0.0" order="7" side_tool="false" content_ui="tabs" />
@@ -2015,7 +2010,7 @@
     <option name="SHOW_ONLY_CHANGED_IN_SELECTION_DIFF" value="true" />
     <option name="CHECK_COMMIT_MESSAGE_SPELLING" value="true" />
     <option name="FORCE_NON_EMPTY_COMMENT" value="false" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated test profile" />
+    <option name="LAST_COMMIT_MESSAGE" value="intellij file" />
     <option name="MAKE_NEW_CHANGELIST_ACTIVE" value="true" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_FILES_UP_TO_DATE_BEFORE_COMMIT" value="false" />
@@ -2028,7 +2023,6 @@
     <option name="UPDATE_GROUP_BY_CHANGELIST" value="false" />
     <option name="SHOW_FILE_HISTORY_AS_TREE" value="false" />
     <option name="FILE_HISTORY_SPLITTER_PROPORTION" value="0.6" />
-    <MESSAGE value="mavenised examples&#10;" />
     <MESSAGE value="mavenised examples part 2&#10;" />
     <MESSAGE value="mavenised examples part 3&#10;" />
     <MESSAGE value="fixed pom name" />
@@ -2053,6 +2047,7 @@
     <MESSAGE value="added release profile" />
     <MESSAGE value="added test profile" />
     <MESSAGE value="updated test profile" />
+    <MESSAGE value="intellij file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
