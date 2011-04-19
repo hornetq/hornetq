@@ -25,10 +25,6 @@
    <packaging>jar</packaging>
    <name>HornetQ Joram Tests</name>
 
-   <properties>
-      <skipJoramTests>true</skipJoramTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>

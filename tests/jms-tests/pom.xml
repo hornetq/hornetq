@@ -12,10 +12,6 @@
    <packaging>jar</packaging>
    <name>HornetQ JMS Tests</name>
 
-   <properties>
-      <skipJmsTests>true</skipJmsTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>

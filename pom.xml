@@ -38,6 +38,10 @@
         <HornetQ-Version>${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})</HornetQ-Version>
         <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
         <resteasy.version>2.1.0.GA</resteasy.version>
+        <skipUnitTests>true</skipUnitTests>
+        <skipJmsTests>true</skipJmsTests>
+        <skipIntegrationTests>true</skipIntegrationTests>
+        <skipJoramTests>true</skipJoramTests>
         <skipTimingTests>true</skipTimingTests>
     </properties>
 
@@ -108,7 +112,6 @@
         <module>hornetq-spring-integration</module>
         <module>hornetq-service-sar</module>
         <module>hornetq-rest</module>
-        <module>tests</module>
     </modules>
 
     <dependencyManagement>
@@ -353,8 +356,14 @@
        </profile>
        <profile>
           <id>hudson-tests</id>
+          <modules>
+             <module>tests</module>
+          </modules>
           <properties>
-             <skipTimingTests>false</skipTimingTests>
+             <skipUnitTests>false</skipUnitTests>
+             <skipJmsTests>false</skipJmsTests>
+             <skipJoramTests>false</skipJoramTests>
+             <skipIntegrationTests>false</skipIntegrationTests>
           </properties>
        </profile>
     </profiles>

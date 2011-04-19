@@ -12,10 +12,6 @@
    <packaging>jar</packaging>
    <name>HornetQ Integration Tests</name>
 
-   <properties>
-      <skipIntegrationTests>true</skipIntegrationTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>
