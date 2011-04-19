@@ -91,7 +91,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       server.start();
 
       context = new InVMContext();
