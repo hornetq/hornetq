@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -231,8 +232,8 @@ public class PageSubscriptionImpl implements PageSubscription
             {
                if (entry.getKey() == lastAckedPosition.getPageNr())
                {
-                  // PageSubscriptionImpl.trace("We can't clear page " + entry.getKey() +
-                  // " now since it's the current page");
+                   PageSubscriptionImpl.trace("We can't clear page " + entry.getKey() +
+                   " now since it's the current page");
                }
                else
                {
@@ -846,7 +847,7 @@ public class PageSubscriptionImpl implements PageSubscription
       private final long pageId;
 
       // Confirmed ACKs on this page
-      private final List<PagePosition> acks = Collections.synchronizedList(new LinkedList<PagePosition>());
+      private final Set<PagePosition> acks = Collections.synchronizedSet(new LinkedHashSet<PagePosition>());
 
       private WeakReference<PageCache> cache;
 
@@ -934,8 +935,6 @@ public class PageSubscriptionImpl implements PageSubscription
 
       public void addACK(final PagePosition posACK)
       {
-         removedReferences.add(posACK);
-         acks.add(posACK);
 
          if (isTrace)
          {
@@ -944,11 +943,14 @@ public class PageSubscriptionImpl implements PageSubscription
                     (confirmed.get() + 1) +
                     " pendingTX = " + pendingTX +
                     ", page = " +
-                    pageId);
+                    pageId + " posACK = " + posACK);
          }
 
+         removedReferences.add(posACK);
+         boolean added = acks.add(posACK);
+
          // Negative could mean a bookmark on the first element for the page (example -1)
-         if (posACK.getMessageNr() >= 0)
+         if (added && posACK.getMessageNr() >= 0)
          {
             confirmed.incrementAndGet();
             checkDone();

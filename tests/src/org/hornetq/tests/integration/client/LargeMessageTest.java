@@ -2450,6 +2450,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
    
+   // JBPAPP-6237
    public void testPageOnLargeMessageMultipleQueues() throws Exception
    {
       Configuration config = createDefaultConfig(isNetty());
@@ -2591,6 +2592,144 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
       finally
       {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
+
+   // JBPAPP-6237
+   public void testPageOnLargeMessageMultipleQueues2() throws Exception
+   {
+      Configuration config = createDefaultConfig(isNetty());
+
+      final int PAGE_MAX = 20 * 1024;
+
+      final int PAGE_SIZE = 10 * 1024;
+
+      HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
+
+      AddressSettings value = new AddressSettings();
+      map.put(LargeMessageTest.ADDRESS.toString(), value);
+      server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+      server.start();
+
+      final int numberOfBytes = 1024;
+
+      final int numberOfBytesBigMessage = 400000;
+
+      try
+      {
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+         locator.setCompressLargeMessage(true);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(false, true, true);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+         int msgId = 0;
+
+         for (int i = 0; i < 100; i++)
+         {
+            ClientMessage message = session.createMessage(true);
+            
+            message.putIntProperty("msgID", msgId++);
+
+            message.putBooleanProperty("TestLarge", false);
+
+            message.getBodyBuffer().writerIndex(0);
+
+            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+
+            for (int j = 1; j <= numberOfBytes; j++)
+            {
+               message.getBodyBuffer().writeInt(j);
+            }
+
+            producer.send(message);
+         }
+
+
+         for (int i = 0; i < 10; i++)
+         {
+            ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+            clientFile.putBooleanProperty("TestLarge", true);
+            producer.send(clientFile);
+         }
+
+         session.close();
+
+         for (int ad = 0; ad < 2; ad++)
+         {
+            session = sf.createSession(false, false, false);
+
+            ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+
+            session.start();
+            
+            for (int received = 0 ; received < 5; received++)
+            {
+               for (int i = 0; i < 100; i++)
+               {
+                  ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+   
+                  Assert.assertNotNull(message2);
+                  
+                  assertFalse(message2.getBooleanProperty("TestLarge"));
+   
+                  message2.acknowledge();
+   
+                  Assert.assertNotNull(message2);
+               }
+   
+               for (int i = 0; i < 10; i++)
+               {
+                  ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
+   
+                  Assert.assertNotNull(messageLarge);
+                  
+                  assertTrue(messageLarge.getBooleanProperty("TestLarge"));
+   
+                  ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                  
+                  messageLarge.acknowledge();
+                  
+                  messageLarge.saveToOutputStream(bout);
+                  byte[] body = bout.toByteArray();
+                  assertEquals(numberOfBytesBigMessage, body.length);
+                  for (int bi = 0; bi < body.length; bi++)
+                  {
+                     assertEquals(getSamplebyte(bi), body[bi]);
+                  }
+               }
+               
+               session.rollback();
+            }
+
+            session.commit();
+
+            consumer.close();
+
+            session.close();
+
+         }
+      }
+      finally
+      {
+         locator.close();
          try
          {
             server.stop();
