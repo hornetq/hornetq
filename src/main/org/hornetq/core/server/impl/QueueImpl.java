@@ -899,20 +899,24 @@ public class QueueImpl implements Queue
             count++;
          }
          
-         // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
-         while (pageIterator.hasNext())
+         
+         if (pageIterator != null)
          {
-            PagedReference reference = pageIterator.next();
-            pageIterator.remove();
-
-            if (filter == null || filter.match(reference.getMessage()))
+            // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+            while (pageIterator.hasNext())
             {
-               count++;
-               pageSubscription.ack(reference);
-            }
-            else
-            {
-               addTail(reference, false);
+               PagedReference reference = pageIterator.next();
+               pageIterator.remove();
+   
+               if (filter == null || filter.match(reference.getMessage()))
+               {
+                  count++;
+                  pageSubscription.ack(reference);
+               }
+               else
+               {
+                  addTail(reference, false);
+               }
             }
          }
 
