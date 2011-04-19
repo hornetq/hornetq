@@ -2,16 +2,21 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+   <parent>
+      <groupId>org.hornetq</groupId>
+      <artifactId>hornetq-pom</artifactId>
+      <version>2.2.3-SNAPSHOT</version>
+   </parent>
+
     <name>HornetQ REST Interface Parent POM</name>
     <groupId>org.hornetq.rest</groupId>
     <artifactId>hornetq-rest-all</artifactId>
-    <version>2.2.3.-SNAPSHOT</version>
     <packaging>pom</packaging>
 
 
     <properties>
         <resteasy.version>2.1.0.GA</resteasy.version>
-        <hornetq.version>2.2.2.Final</hornetq.version>
+        <hornetq.version>${project.version}</hornetq.version>
     </properties>
 
     <licenses>
@@ -31,7 +36,7 @@
     </distributionManagement>
 
     <modules>
-        <module>hornetq-rest</module>
+       <module>hornetq-rest</module>
     </modules>
 
     <dependencyManagement>

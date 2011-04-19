@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_Rest_Manual.ent">
+%BOOK_ENTITIES;
+]>
+
+<chapter>
+  <title>Creating Destinations</title>
+
+  <para>You can create a durable queue or topic through the REST interface.
+  Currently you cannot create a temporary queue or topic. To create a queue
+  you do a POST to the relative URL /queues with an XML representation of
+  the queue. The XML syntax is the same queue syntax that you would specify
+  in hornetq-jms.xml if you were creating a queue there. For example:</para>
+
+  <programlisting>POST /queues
+ Host: example.com
+ Content-Type: application/hornetq.jms.queue+xml
+
+ &lt;queue name="testQueue"&gt;
+ &lt;durable&gt;true&lt;/durable&gt;
+ &lt;/queue&gt;
+
+ --- Response ---
+ HTTP/1.1 201 Created
+ Location: http://example.com/queues/jms.queue.testQueue
+ </programlisting>
+
+  <para>Notice that the Content-Type is
+  application/hornetq.jms.queue+xml.</para>
+
+  <para>Here's what creating a topic would look like:</para>
+
+  <programlisting>POST /topics
+ Host: example.com
+ Content-Type: application/hornetq.jms.topic+xml
+
+ &lt;topic name="testTopic"&gt;
+ &lt;/topic&gt;
+
+ --- Response ---
+ HTTP/1.1 201 Created
+ Location: http://example.com/topics/jms.topic.testTopic</programlisting>
+</chapter>

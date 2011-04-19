@@ -106,6 +106,7 @@
         <module>hornetq-twitter-integration</module>
         <module>hornetq-spring-integration</module>
         <module>hornetq-service-sar</module>
+        <module>hornetq-rest</module>
         <module>tests</module>
         <module>examples</module>
         <module>docs</module>

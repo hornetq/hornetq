@@ -30,6 +30,7 @@
    <modules>
       <module>user-manual</module>
       <module>quickstart-guide</module>
+      <module>rest-manual</module>
    </modules>
 
 

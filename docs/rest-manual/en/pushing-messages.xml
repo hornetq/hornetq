@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_Rest_Manual.ent">
+%BOOK_ENTITIES;
+]>
+
+<chapter>
+ <title>Pushing Messages</title>
+
+ <para>You can configure the HornetQ REST server to push messages to a
+ registered URL either remotely through the REST interface, or by creating
+ a pre-configured XML file for the HornetQ REST server to load at boot
+ time.</para>
+
+ <sect1>
+   <title>The Queue Push Subscription XML</title>
+
+   <para>Creating a push consumer for a queue first involves creating a
+   very simple XML document. This document tells the server if the push
+   subscription should survive server reboots (is it durable). It must
+   provide a URL to ship the forwarded message to. Finally, you have to
+   provide authentication information if the final endpoint requires
+   authentication. Here's a simple example:</para>
+
+   <programlisting>&lt;push-registration&gt;
+&lt;durable&gt;false&lt;/durable&gt;
+&lt;selector&gt;&lt;![CDATA[
+      SomeAttribute &gt; 1
+    ]]&gt;
+&lt;/selector&gt;
+&lt;link rel="push" href="http://somewhere.com" type="application/json" method="PUT"/&gt;
+&lt;maxRetries&gt;5&lt;/maxRetries&gt;
+&lt;retryWaitMillis&gt;1000&lt;/retryWaitMillis&gt;
+&lt;disableOnFailure&gt;true&lt;/disableOnFailure&gt;
+&lt;/push-registration&gt;
+</programlisting>
+
+   <para>The <literal>durable</literal> element specifies whether the
+   registration should be saved to disk so that if there is a server
+   restart, the push subscription will still work. This element is not
+   required. If left out it defaults to <literal>false</literal>. If
+   durable is set to true, an XML file for the push subscription will be
+   created within the directory specified by the
+   <literal>queue-push-store-dir</literal> config variable defined in
+   Chapter 2. (<literal>topic-push-store-dir</literal> for topics).</para>
+
+   <para>The <literal>selector</literal> element is optional and defines a
+   JMS message selector. You should enclose it within CDATA blocks as some
+   of the selector characters are illegal XML.</para>
+
+   <para>The <literal>maxRetries</literal> element specifies how many times
+   a the server will try to push a message to a URL if there is a
+   connection failure.</para>
+
+   <para>The <literal>retryWaitMillis</literal> element specifies how long
+   to wait before performing a retry.</para>
+
+   <para>The <literal>disableOnFailure</literal> element, if set to true,
+   will disable the registration if all retries have failed. It will not
+   disable the connection on non-connection-failure issues (like a bad
+   request for instance). In these cases, the dead letter queue logic of
+   HornetQ will take over.</para>
+
+   <para>The <literal>link</literal> element specifies the basis of the
+   interaction. The <literal>href</literal> attribute contains the URL you
+   want to interact with. It is the only required attribute. The
+   <literal>type</literal> attribute specifies the content-type ofwhat the
+   push URL is expecting. The <literal>method</literal> attribute defines
+   what HTTP method the server will use when it sends the message to the
+   server. If it is not provided it defaults to POST. The
+   <literal>rel</literal> attribute is very important and the value of it
+   triggers different behavior. Here's the values a rel attribute can
+   have:</para>
+
+   <variablelist>
+     <varlistentry>
+       <term>destination</term>
+
+       <listitem>
+         <para>The href URL is assumed to be a queue or topic resource of
+         another HornetQ REST server. The push registration will initially
+         do a HEAD request to this URL to obtain a msg-create-with-id
+         header. It will use this header to push new messages to the
+         HornetQ REST endpoint reliably. Here's an example:</para>
+
+         <programlisting>&lt;push-registration&gt;
+&lt;link rel="destination" href="http://somewhere.com/queues/jms.queue.foo"/&gt;
+&lt;/push-registration&gt;   </programlisting>
+       </listitem>
+     </varlistentry>
+
+     <varlistentry>
+       <term>template</term>
+
+       <listitem>
+         <para>In this case, the server is expecting the link element's
+         href attribute to be a URL expression. The URL expression must
+         have one and only one URL parameter within it. The server will use
+         a unique value to create the endpoint URL. Here's an
+         example:</para>
+
+         <programlisting>&lt;push-registration&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="PUT"/&gt;
+&lt;/push-registration&gt;
+</programlisting>
+
+         <para>In this example, the {id} sub-string is the one and only one
+         URL parameter.</para>
+       </listitem>
+     </varlistentry>
+
+     <varlistentry>
+       <term>user defined</term>
+
+       <listitem>
+         <para>If the rel attributes is not destination or template (or is
+         empty or missing), then the server will send an HTTP message to
+         the href URL using the HTTP method defined in the method
+         attribute. Here's an example:</para>
+
+         <programlisting>&lt;push-registration&gt;
+&lt;link href="http://somewhere.com" type="application/json" method="PUT"/&gt;
+&lt;/push-registration&gt;</programlisting>
+       </listitem>
+     </varlistentry>
+   </variablelist>
+ </sect1>
+
+ <sect1>
+   <title>The Topic Push Subscription XML</title>
+
+   <para>The push XML for a topic is the same except the root element is
+   push-topic-registration. (Also remember the <literal>selector</literal>
+   element is optional). The rest of the document is the same. Here's an
+   example of a template registration:</para>
+
+   <programlisting>&lt;push-topic-registration&gt;
+&lt;durable&gt;true&lt;/durable&gt;
+&lt;selector&gt;&lt;![CDATA[
+      SomeAttribute &gt; 1
+    ]]&gt;
+&lt;/selector&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="POST"/&gt;
+&lt;/push-topic registration&gt;</programlisting>
+ </sect1>
+
+ <sect1>
+   <title>Creating a Push Subscription at Runtime</title>
+
+   <para>Creating a push subscription at runtime involves getting the
+   factory resource URL from the msg-push-consumers header, if the
+   destination is a queue, or msg-push-subscriptions header, if the
+   destination is a topic. Here's an example of creating a push
+   registration for a queue:</para>
+
+   <orderedlist>
+     <listitem>
+       <para>First do a HEAD request to the queue resource:</para>
+
+       <programlisting>HEAD /queues/jms.queue.bar HTTP/1.1
+Host: example.com
+
+--- Response ---
+HTTP/1.1 200 Ok
+msg-create: http://example.com/queues/jms.queue.bar/create
+msg-pull-consumers: http://example.com/queues/jms.queue.bar/pull-consumers
+msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</programlisting>
+     </listitem>
+
+     <listitem>
+       <para>Next POST your subscription XML to the URL returned from
+       msg-push-consumers header</para>
+
+       <programlisting>POST /queues/jms.queue.bar/push-consumers
+Host: example.com
+Content-Type: application/xml
+
+&lt;push-registration&gt;
+&lt;link rel="destination" href="http://somewhere.com/queues/jms.queue.foo"/&gt;
+&lt;/push-registration&gt;
+
+--- Response ---
+HTTP/1.1 201 Created
+Location: http://example.com/queues/jms.queue.bar/push-consumers/1-333-1212
+</programlisting>
+
+       <para>The Location header contains the URL for the created resource.
+       If you want to unregister this, then do a HTTP DELETE on this
+       URL.</para>
+     </listitem>
+   </orderedlist>
+
+   <para>Here's an example of creating a push registration for a
+   topic:</para>
+
+   <orderedlist>
+     <listitem>
+       <para>First do a HEAD request to the topic resource:</para>
+
+       <programlisting>HEAD /topics/jms.topic.bar HTTP/1.1
+Host: example.com
+
+--- Response ---
+HTTP/1.1 200 Ok
+msg-create: http://example.com/topics/jms.topic.bar/create
+msg-pull-subscriptions: http://example.com/topics/jms.topic.bar/pull-subscriptions
+msg-push-subscriptions: http://example.com/topics/jms.topic.bar/push-subscriptions</programlisting>
+     </listitem>
+
+     <listitem>
+       <para>Next POST your subscription XML to the URL returned from
+       msg-push-subscriptions header</para>
+
+       <programlisting>POST /topics/jms.topic.bar/push-subscriptions
+Host: example.com
+Content-Type: application/xml
+
+&lt;push-registration&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}"/&gt;
+&lt;/push-registration&gt;
+
+--- Response ---
+HTTP/1.1 201 Created
+Location: http://example.com/topics/jms.topic.bar/push-subscriptions/1-333-1212
+</programlisting>
+
+       <para>The Location header contains the URL for the created resource.
+       If you want to unregister this, then do a HTTP DELETE on this
+       URL.</para>
+     </listitem>
+   </orderedlist>
+ </sect1>
+
+ <sect1>
+   <title>Creating a Push Subscription by Hand</title>
+
+   <para>You can create a push XML file yourself if you do not want to go
+   through the REST interface to create a push subscription. There is some
+   additional information you need to provide though. First, in the root
+   element, you must define a unique id attribute. You must also define a
+   destination element to specify the queue you should register a consumer
+   with. For a topic, the destination element is the name of the
+   subscription that will be reated. For a topic, you must also specify the
+   topic name within the topic element.</para>
+
+   <para>Here's an example of a hand-created queue registration. This file
+   must go in the directory specified by the queue-push-store-dir config
+   variable defined in Chapter 2:</para>
+
+   <programlisting>&lt;push-registration id="111"&gt;
+&lt;destination&gt;jms.queue.bar&lt;/destination&gt;
+&lt;durable&gt;true&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="PUT"/&gt;
+&lt;/push-registration&gt;</programlisting>
+
+   <para>Here's an example of a hand-created topic registration. This file
+   must go in the directory specified by the topic-push-store-dir config
+   variable defined in Chapter 2:</para>
+
+   <programlisting>&lt;push-topic-registration id="112"&gt;
+&lt;destination&gt;my-subscription-1&lt;/destination
+&lt;durable&gt;true&lt;/durable&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="PUT"/&gt;
+&lt;topic&gt;jms.topic.foo&lt;/topic&gt;
+&lt;/push-topic-registration&gt;</programlisting>
+ </sect1>
+
+ <sect1>
+   <title>Pushing to Authenticated Servers</title>
+
+   <para>Push subscriptions only support BASIC and DIGEST authentication
+   out of the box. Here is an example of adding BASIC
+   authentication:</para>
+
+   <programlisting>&lt;push-topic-registration&gt;
+&lt;durable&gt;true&lt;/durable&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="POST"/&gt;
+&lt;authentication&gt;
+   &lt;basic-auth&gt;
+      &lt;username&gt;guest&lt;/username&gt;
+      &lt;password&gt;geheim&lt;/password&gt;
+   &lt;/basic-auth&gt;
+&lt;/authentication&gt;
+&lt;/push-topic registration&gt;</programlisting>
+
+   <para>For DIGEST, just replace basic-auth with digest-auth.</para>
+
+   <para>For other authentication mechanisms, you can register headers you
+   want transmitted with each request. Use the header element with the name
+   attribute representing the name of the header. Here's what custom
+   headers might look like:</para>
+
+   <programlisting>&lt;push-topic-registration&gt;
+&lt;durable&gt;true&lt;/durable&gt;
+&lt;link rel="template" href="http://somewhere.com/resources/{id}/messages" method="POST"/&gt;
+&lt;header name="secret-header"&gt;jfdiwe3321&lt;/header&gt;
+&lt;/push-topic registration&gt;</programlisting>
+ </sect1>
+</chapter>
