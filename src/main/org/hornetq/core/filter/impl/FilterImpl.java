@@ -79,7 +79,7 @@ public class FilterImpl implements Filter
     */
    public static Filter createFilter(final String filterStr) throws HornetQException
    {
-      return FilterImpl.createFilter(SimpleString.toSimpleString(filterStr));
+      return FilterImpl.createFilter(SimpleString.toSimpleString(filterStr == null ? null : filterStr.trim()));
    }
 
    /**

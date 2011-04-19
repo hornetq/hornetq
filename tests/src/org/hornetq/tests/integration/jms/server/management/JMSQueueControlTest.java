@@ -22,6 +22,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.Context;
 
@@ -39,11 +40,11 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -1014,6 +1015,111 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.destroyQueue(otherQueueName);
    }
+   
+   public void testDeleteWithPaging() throws Exception
+   {
+      AddressSettings pagedSetting = new AddressSettings();
+      pagedSetting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      pagedSetting.setPageSizeBytes(10 * 1024);
+      pagedSetting.setMaxSizeBytes(100 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", pagedSetting);
+      
+      serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
+      
+      HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
+      
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+      
+      ClientProducer prod = session.createProducer(pagedQueue.getAddress());
+      
+      ClientMessage msg = session.createMessage(true);
+      
+      msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
+      for (int i = 0 ; i < 100; i++)
+      {
+         prod.send(msg);
+      }
+      
+      JMSQueueControl control = createManagementControl(pagedQueue);
+      
+      assertEquals(100, control.removeMessages("     "));
+      
+      
+      
+      session.start();
+      
+      ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
+      
+      assertNull(consumer.receive(300));
+
+      
+      session.close();
+
+      sf.close();
+      locator.close();
+   }
+
+   
+   public void testDeleteWithPagingAndFilter() throws Exception
+   {
+      AddressSettings pagedSetting = new AddressSettings();
+      pagedSetting.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      pagedSetting.setPageSizeBytes(10 * 1024);
+      pagedSetting.setMaxSizeBytes(100 * 1024);
+      server.getAddressSettingsRepository().addMatch("#", pagedSetting);
+      
+      serverManager.createQueue(true, "pagedTest", null, true, "/queue/pagedTest");
+      
+      HornetQQueue pagedQueue = (HornetQQueue)context.lookup("/queue/pagedTest");
+      
+
+      ServerLocator locator = createInVMNonHALocator();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(true, true);
+      
+      ClientProducer prod = session.createProducer(pagedQueue.getAddress());
+      for (int i = 0 ; i < 200; i++)
+      {
+         ClientMessage msg = session.createMessage(true);
+         msg.getBodyBuffer().writeBytes(new byte[90 * 1024]);
+         msg.putBooleanProperty("even", i % 2 == 0);
+         prod.send(msg);
+      }
+      
+      JMSQueueControl control = createManagementControl(pagedQueue);
+      
+      assertEquals(100, control.removeMessages("even=true"));
+      
+      session.start();
+      
+      ClientConsumer consumer = session.createConsumer(pagedQueue.getAddress());
+      
+      
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         ClientMessage msg = consumer.receive(1000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertFalse(msg.getBooleanProperty("even").booleanValue());
+      }
+      
+      assertNull(consumer.receive(300));
+
+      
+      session.close();
+
+
+      sf.close();
+      locator.close();
+   }
 
    public void testMoveMessageToUnknownQueue() throws Exception
    {
@@ -1070,7 +1176,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf.setFileDeploymentEnabled(false);
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);
@@ -1106,7 +1212,12 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    protected JMSQueueControl createManagementControl() throws Exception
    {
-      return ManagementControlHelper.createJMSQueueControl(queue, mbeanServer);
+      return createManagementControl(queue);
+   }
+
+   protected JMSQueueControl createManagementControl(HornetQQueue queueParameter) throws Exception
+   {
+      return ManagementControlHelper.createJMSQueueControl(queueParameter, mbeanServer);
    }
 
    // Private -------------------------------------------------------
