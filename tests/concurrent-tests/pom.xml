@@ -25,10 +25,6 @@
    <packaging>jar</packaging>
    <name>HornetQ concurrent Tests</name>
 
-   <properties>
-      <skipConcurrentTests>true</skipConcurrentTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>

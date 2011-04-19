@@ -25,10 +25,6 @@
    <packaging>jar</packaging>
    <name>HornetQ soak Tests</name>
 
-   <properties>
-      <skipSoakTests>true</skipSoakTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>
