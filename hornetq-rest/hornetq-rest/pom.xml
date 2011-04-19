@@ -12,6 +12,10 @@
     <packaging>jar</packaging>
     <name>HornetQ REST Interface Implementation</name>
 
+   <properties>
+      <skipRestTests>true</skipRestTests>
+   </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.hornetq</groupId>
@@ -94,6 +98,14 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <skipTests>${skipRestTests}</skipTests>
+            </configuration>
+            <version>2.4</version>
+         </plugin>
         </plugins>
     </build>
 

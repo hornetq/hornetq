@@ -38,6 +38,7 @@
         <HornetQ-Version>${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})</HornetQ-Version>
         <HornetQ-SVN-URL>https://svn.jboss.org/repos/hornetq/trunk</HornetQ-SVN-URL>
         <resteasy.version>2.1.0.GA</resteasy.version>
+        <skipTimingTests>true</skipTimingTests>
     </properties>
 
     <scm>
@@ -108,9 +109,6 @@
         <module>hornetq-service-sar</module>
         <module>hornetq-rest</module>
         <module>tests</module>
-        <module>examples</module>
-        <module>docs</module>
-        <module>distribution</module>
     </modules>
 
     <dependencyManagement>
@@ -344,30 +342,25 @@
             <url>https://repository.jboss.org/nexus/content/groups/public</url>
         </pluginRepository>
     </pluginRepositories>
+    <profiles>
+       <profile>
+          <id>release</id>
+          <modules>
+              <module>examples</module>
+              <module>docs</module>
+              <module>distribution</module>
+          </modules>
+       </profile>
+       <profile>
+          <id>hudson-tests</id>
+          <properties>
+             <skipTimingTests>false</skipTimingTests>
+          </properties>
+       </profile>
+    </profiles>
     <build>
         <pluginManagement>
             <plugins>
-                <!--
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.4</version>
-                    <configuration>
-                        <minmemory>128m</minmemory>
-                        <maxmemory>512m</maxmemory>
-                        <quiet>false</quiet>
-                        <aggregate>true</aggregate>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                -->
 
                 <plugin>
                   <groupId>org.codehaus.mojo</groupId>

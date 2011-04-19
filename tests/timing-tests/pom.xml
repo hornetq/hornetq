@@ -25,10 +25,6 @@
    <packaging>jar</packaging>
    <name>HornetQ timing Tests</name>
 
-   <properties>
-      <skipTimingTests>true</skipTimingTests>
-   </properties>
-
    <dependencies>
       <dependency>
          <groupId>org.hornetq.tests</groupId>

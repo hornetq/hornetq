@@ -199,6 +199,18 @@
       <moduleSet>
          <useAllReactorProjects>true</useAllReactorProjects>
          <includes>
+            <include>org.hornetq.rest:hornetq-rest</include>
+         </includes>
+         <binaries>
+            <includeDependencies>false</includeDependencies>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <outputFileNameMapping>${module.artifactId}.${module.extension}</outputFileNameMapping>
+         </binaries>
+      </moduleSet>
+      <moduleSet>
+         <useAllReactorProjects>true</useAllReactorProjects>
+         <includes>
             <include>org.hornetq:jnp-client</include>
          </includes>
          <binaries>
@@ -314,6 +326,10 @@
       <fileSet>
          <directory>../../docs/quickstart-guide/target/docbook/publish/en</directory>
          <outputDirectory>docs/quickstart-guide</outputDirectory>
+      </fileSet>
+      <fileSet>
+         <directory>../../docs/rest-manual/target/docbook/publish/en</directory>
+         <outputDirectory>docs/rest-manual</outputDirectory>
       </fileSet>
   </fileSets>
 </assembly>

@@ -65,6 +65,8 @@
                </execution>
             </executions>
          </plugin>
+         <!--todo get this to actually work-->
+         <!--
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>xml-maven-plugin</artifactId>
@@ -205,7 +207,7 @@
                   </validationSet>
                </validationSets>
             </configuration>
-         </plugin>
+         </plugin>-->
 
       </plugins>
    </build>
