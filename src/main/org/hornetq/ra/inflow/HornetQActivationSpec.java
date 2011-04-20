@@ -176,7 +176,7 @@ public class HornetQActivationSpec extends ConnectionFactoryProperties implement
       parsedJndiParams = Util.parseHashtableConfig(jndiParams);
    }
 
-   public Hashtable getParsedJndiParams()
+   public Hashtable<?,?> getParsedJndiParams()
    {
       if(parsedJndiParams == null)
       {

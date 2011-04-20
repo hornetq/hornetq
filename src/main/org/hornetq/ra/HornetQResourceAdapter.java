@@ -1124,7 +1124,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setParsedJndiParams(Util.parseHashtableConfig(jndiParams));
    }
 
-   public Hashtable getParsedJndiParams()
+   public Hashtable<?,?> getParsedJndiParams()
    {
       return raProperties.getParsedJndiParams();
    }

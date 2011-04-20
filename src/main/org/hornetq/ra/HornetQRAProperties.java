@@ -61,7 +61,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
 
    private long setupInterval = DEFAULT_SETUP_INTERVAL;
 
-   private Hashtable jndiParams;
+   private Hashtable<?,?> jndiParams;
 
    private boolean useJNDI;
 
@@ -152,13 +152,13 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
     *
     * @return return the jndi params to use
     */
-   public Hashtable getParsedJndiParams()
+   public Hashtable<?,?> getParsedJndiParams()
    {
       return jndiParams;
    }
 
 
-   public void setParsedJndiParams(Hashtable params)
+   public void setParsedJndiParams(Hashtable<?,?> params)
    {
       jndiParams = params;
    }

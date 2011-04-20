@@ -168,16 +168,21 @@ public class Util
     * @return the object
     * @throws Exception for any error
     */
-   public static Object lookup(final Context context, final String name, final Class clazz) throws Exception
+   public static Object lookup(final Context context, final String name, final Class<?> clazz) throws Exception
    {
       return context.lookup(name);
    }
 
-   public static Hashtable parseHashtableConfig(final String config)
+   /** 
+    * Used on parsing JNDI Configuration
+    * @param config
+    * @return
+    */
+   public static Hashtable<?,?> parseHashtableConfig(final String config)
    {
-      Hashtable hashtable = new Hashtable();
+      Hashtable<String,String> hashtable = new Hashtable<String, String>();
 
-      String[] topElements = config.split(",");
+      String[] topElements = config.split(";");
 
       for (String element : topElements)
       {
