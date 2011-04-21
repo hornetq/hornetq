@@ -447,6 +447,11 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       {
          run();
       }
+      
+      public String toString()
+      {
+         return "Temporary Cleaner for queue " + bindingName;
+      }
 
    }
 

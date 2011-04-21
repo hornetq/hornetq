@@ -98,7 +98,7 @@ public class PageImplTest extends UnitTestCase
       file.open();
       impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
-      List<PagedMessage> msgs = impl.read();
+      List<PagedMessage> msgs = impl.read(new NullStorageManager());
 
       Assert.assertEquals(numberOfElements, msgs.size());
 
@@ -115,7 +115,7 @@ public class PageImplTest extends UnitTestCase
                                                                                         .array());
       }
 
-      impl.delete();
+      impl.delete(null);
 
       Assert.assertEquals(0, factory.listFiles(".page").size());
 
@@ -170,7 +170,7 @@ public class PageImplTest extends UnitTestCase
       file.open();
       impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
-      List<PagedMessage> msgs = impl.read();
+      List<PagedMessage> msgs = impl.read(new NullStorageManager());
 
       Assert.assertEquals(numberOfElements, msgs.size());
 
@@ -187,7 +187,7 @@ public class PageImplTest extends UnitTestCase
                                                                                         .array());
       }
 
-      impl.delete();
+      impl.delete(null);
 
       Assert.assertEquals(0, factory.listFiles("page").size());
 

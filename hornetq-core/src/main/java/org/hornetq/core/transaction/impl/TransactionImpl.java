@@ -506,7 +506,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void afterRollback()
+   public synchronized void afterRollback()
    {
       if (operations != null)
       {
@@ -517,7 +517,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void beforeCommit() throws Exception
+   public synchronized void beforeCommit() throws Exception
    {
       if (operations != null)
       {
@@ -528,7 +528,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void beforePrepare() throws Exception
+   public synchronized void beforePrepare() throws Exception
    {
       if (operations != null)
       {
@@ -539,7 +539,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void beforeRollback() throws Exception
+   public synchronized void beforeRollback() throws Exception
    {
       if (operations != null)
       {
@@ -550,7 +550,7 @@ public class TransactionImpl implements Transaction
       }
    }
 
-   public void afterPrepare()
+   public synchronized void afterPrepare()
    {
       if (operations != null)
       {

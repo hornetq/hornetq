@@ -749,7 +749,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       if(clusterConnections.containsKey(config.getName()))
       {
-         log.warn("Clustwer Configuration  '" + config.getConnectorName() + "' already exists. The cluster connection will not be deployed.");
+         log.warn("Cluster Configuration  '" + config.getConnectorName() + "' already exists. The cluster connection will not be deployed.", new Exception ("trace"));
          return;
       }
 

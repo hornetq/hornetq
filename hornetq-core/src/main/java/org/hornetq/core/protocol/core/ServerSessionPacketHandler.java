@@ -63,6 +63,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionConsumerCloseMessage;
@@ -479,6 +480,16 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   session.addMetaData(message.getKey(), message.getData());
                   break;
                }
+               case PacketImpl.SESS_ADD_METADATA2:
+               {
+                  SessionAddMetaDataMessageV2 message = (SessionAddMetaDataMessageV2)packet;
+                  if (message.isRequiresConfirmations())
+                  {
+                     response = new NullResponseMessage();
+                  }
+                  session.addMetaData(message.getKey(), message.getData());
+                  break;
+               }
             }
          }
          catch (HornetQXAException e)
@@ -573,6 +584,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
       if (closeChannel)
       {
          channel.close();
+      }
+   }
+   
+   public void closeListeners()
+   {
+      List<CloseListener> listeners = remotingConnection.removeCloseListeners();
+      
+      for (CloseListener closeListener: listeners)
+      {
+         closeListener.connectionClosed();
+         if (closeListener instanceof FailureListener)
+         {
+            remotingConnection.removeFailureListener((FailureListener)closeListener);
+         }
       }
    }
    

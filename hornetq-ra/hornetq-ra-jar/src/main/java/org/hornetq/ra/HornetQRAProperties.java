@@ -13,6 +13,7 @@
 package org.hornetq.ra;
 
 import java.io.Serializable;
+import java.util.Hashtable;
 
 import org.hornetq.core.logging.Logger;
 
@@ -59,6 +60,10 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    private int setupAttempts = DEFAULT_SETUP_ATTEMPTS;
 
    private long setupInterval = DEFAULT_SETUP_INTERVAL;
+
+   private Hashtable<?,?> jndiParams;
+
+   private boolean useJNDI;
 
    /**
     * Constructor
@@ -127,6 +132,36 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       this.password = password;
    }
 
+    /**
+    * @return the useJNDI
+    */
+   public boolean isUseJNDI()
+   {
+      return useJNDI;
+   }
+
+   /**
+    * @param value the useJNDI to set
+    */
+   public void setUseJNDI(final boolean value)
+   {
+      useJNDI = value;
+   }
+
+   /**
+    *
+    * @return return the jndi params to use
+    */
+   public Hashtable<?,?> getParsedJndiParams()
+   {
+      return jndiParams;
+   }
+
+
+   public void setParsedJndiParams(Hashtable<?,?> params)
+   {
+      jndiParams = params;
+   }
    /**
     * Get the use XA flag
     * @return The value
@@ -202,4 +237,5 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       return "HornetQRAProperties[localTx=" + localTx +
          ", userName=" + userName + ", password=" + password + "]";
    }
+
 }

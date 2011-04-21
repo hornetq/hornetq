@@ -13,7 +13,18 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
@@ -331,6 +342,118 @@ public class MessageRedistributionTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 2, 1, false);
 
       verifyReceiveAll(20, 1);
+   }
+
+   public void testRedistributeWithScheduling() throws Exception
+   {
+      setupCluster(false);
+
+      AddressSettings setting = new AddressSettings();
+      setting.setRedeliveryDelay(10000);
+      servers[0].getAddressSettingsRepository().addMatch("queues.testaddress", setting);
+      servers[0].getAddressSettingsRepository().addMatch("queue0", setting);
+      servers[1].getAddressSettingsRepository().addMatch("queue0", setting);
+      servers[1].getAddressSettingsRepository().addMatch("queues.testaddress", setting);
+      
+      startServers(0);
+      
+      setupSessionFactory(0, isNetty());
+      
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      
+      ClientSession session0 = sfs[0].createSession(false, false, false);
+      
+      ClientProducer prod0 = session0.createProducer("queues.testaddress");
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         ClientMessage msg = session0.createMessage(true);
+         msg.putIntProperty("key", i);
+         
+         byte[] bytes = new byte[24];
+         
+         ByteBuffer bb = ByteBuffer.wrap(bytes);
+         
+         bb.putLong((long)i);
+         
+         msg.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
+
+         prod0.send(msg);
+         
+         session0.commit();
+      }
+      
+      session0.close();
+      
+      session0 = sfs[0].createSession(true, false, false);
+
+      ClientConsumer consumer0 = session0.createConsumer("queue0");
+      
+      session0.start();
+      
+      ArrayList<Xid> xids = new ArrayList<Xid>();
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         Xid xid = newXID();
+         
+         session0.start(xid, XAResource.TMNOFLAGS);
+         
+         ClientMessage msg = consumer0.receive(5000);
+         
+         msg.acknowledge();
+         
+         session0.end(xid, XAResource.TMSUCCESS);
+         
+         session0.prepare(xid);
+         
+         xids.add(xid);
+      }
+      
+      session0.close();
+      
+      sfs[0].close();
+      sfs[0] = null;
+      
+      
+      startServers(0, 1, 2);
+
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+      setupSessionFactory(2, isNetty());
+
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
+      
+      ClientSession session1 = sfs[1].createSession(false, false);
+      session1.start();
+      ClientConsumer consumer1 = session1.createConsumer("queue0");
+      
+      waitForBindings(0, "queues.testaddress", 1, 0, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 0, true);
+
+      waitForBindings(0, "queues.testaddress", 2, 1, false);
+      waitForBindings(1, "queues.testaddress", 2, 0, false);
+      waitForBindings(2, "queues.testaddress", 2, 1, false);
+      
+      session0 = sfs[0].createSession(true, false, false);
+      
+      for (Xid xid: xids)
+      {
+         session0.rollback(xid);
+      }
+      
+      
+      for (int i = 0 ; i < 100; i++)
+      {
+         ClientMessage msg = consumer1.receive(15000);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+      
+      session1.commit();
+      
    }
 
    public void testRedistributionWhenConsumerIsClosedQueuesWithFilters() throws Exception

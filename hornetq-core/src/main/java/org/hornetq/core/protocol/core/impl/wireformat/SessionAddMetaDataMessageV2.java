@@ -19,27 +19,39 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 /**
  * A SessionAddMetaDataMessage
  * 
- * Packet deprecated: It exists only to support old formats
+ * This packet replaces {@link SessionAddMetaDataMessage}
  *
- * @author <a href="mailto:hgao@redhat.com>Howard Gao</a>
+ * @author Clebert Suconic</a>
  *
  *
  */
-public class SessionAddMetaDataMessage extends PacketImpl
+public class SessionAddMetaDataMessageV2 extends PacketImpl
 {
    private String key;
    private String data;
+   /**
+    * It won require confirmation during failover / reconnect
+    */
+   private boolean requiresConfirmation = true;
 
-   public SessionAddMetaDataMessage()
+   public SessionAddMetaDataMessageV2()
    {
-      super(PacketImpl.SESS_ADD_METADATA);
+      super(PacketImpl.SESS_ADD_METADATA2);
    }
    
-   public SessionAddMetaDataMessage(String k, String d)
+   public SessionAddMetaDataMessageV2(String k, String d)
    {
       this();
       key = k;
       data = d;
+   }
+   
+   public SessionAddMetaDataMessageV2(String k, String d, boolean requiresConfirmation)
+   {
+      this();
+      key = k;
+      data = d;
+      this.requiresConfirmation = requiresConfirmation;
    }
 
    @Override
@@ -47,6 +59,7 @@ public class SessionAddMetaDataMessage extends PacketImpl
    {
       buffer.writeString(key);
       buffer.writeString(data);
+      buffer.writeBoolean(requiresConfirmation);
    }
 
    @Override
@@ -54,12 +67,13 @@ public class SessionAddMetaDataMessage extends PacketImpl
    {
       key = buffer.readString();
       data = buffer.readString();
+      requiresConfirmation = buffer.readBoolean();
    }
-
+   
    @Override
    public final boolean isRequiresConfirmations()
    {
-      return false;
+      return requiresConfirmation;
    }
 
    public String getKey()

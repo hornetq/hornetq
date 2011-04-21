@@ -14,11 +14,17 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
  * 
- * A Ping
+ * Ping is sent on the client side at {@link ClientSessionFactoryImpl}
+ * At the server's side is treated at {@link RemotingServiceImpl}
+ * 
+ * @See {@link RemotingConnection#checkDataReceived()}
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *

@@ -14,13 +14,14 @@
 package org.hornetq.tests.integration.client;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
-
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
@@ -36,10 +37,12 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.version.impl.VersionImpl;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.VersionLoader;
 
 /**

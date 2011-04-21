@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.core.deployers.impl;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
@@ -21,7 +22,9 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 

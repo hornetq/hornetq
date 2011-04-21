@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,14 +11,21 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.timing.util;
+package org.hornetq.tests.integration.ra;
+
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.integration.ra.HornetQRATestBase.MyBootstrapContext;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * A HornetQActivationTest
+ *
+ * @author clebertsuconic
+ *
  *
  */
-public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
+public class HornetQActivationTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -31,15 +38,26 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
 
    // Public --------------------------------------------------------
 
+   public void testValidateJNDIParameters() throws Exception
+   {
+      HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      HornetQActivationSpec spec = new HornetQActivationSpec();
+      spec.setResourceAdapter(qResourceAdapter);
+      spec.setUseJNDI(false);
+      spec.setDestinationType("javax.jms.Queue");
+      spec.setJndiParams("a=b;c=d;url=a1,a2,a3");
+      
+      assertEquals("b", spec.getParsedJndiParams().get("a"));
+      assertEquals("d", spec.getParsedJndiParams().get("c"));
+      assertEquals("a1,a2,a3", spec.getParsedJndiParams().get("url"));
+      
+      
+   }
+
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected int getTimes()
-   {
-      return 1000000;
-   }
 
    // Private -------------------------------------------------------
 

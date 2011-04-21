@@ -23,7 +23,13 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -34,14 +40,15 @@ import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A TemporaryQueueTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author Clebert Suconic
  */
 public class TemporaryQueueTest extends ServiceTestBase
 {
@@ -287,7 +294,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.close();
    }
 
-   public void _testQueueWithWildcard3() throws Exception
+   public void testQueueWithWildcard3() throws Exception
    {
       session.createQueue("a.b", "queue1");
       session.createTemporaryQueue("a.#", "queue2");
@@ -321,6 +328,40 @@ public class TemporaryQueueTest extends ServiceTestBase
       ClientConsumer consumer = session2.createConsumer(queue);
 
       session2.close();
+   }
+   
+   public void testRecreateConsumerOverServerFailure() throws Exception
+   {
+      ServerLocator serverWithReattach = createLocator();
+      serverWithReattach.setReconnectAttempts(-1);
+      serverWithReattach.setRetryInterval(1000);
+      serverWithReattach.setConfirmationWindowSize(-1);
+      ClientSessionFactory reattachSF = serverWithReattach.createSessionFactory();
+      
+      ClientSession session = reattachSF.createSession(false, false);
+      session.createTemporaryQueue("tmpAd", "tmpQ");
+      ClientConsumer consumer = session.createConsumer("tmpQ");
+      
+      ClientProducer prod = session.createProducer("tmpAd");
+      
+      session.start();
+      
+      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
+
+      conn.fail(new HornetQException(HornetQException.IO_ERROR));
+      
+      prod.send(session.createMessage(false));
+      session.commit();
+      
+      assertNotNull(consumer.receive(1000));
+      
+      session.close();
+      
+      reattachSF.close();
+      
+      serverWithReattach.close();
+      
+      
    }
 
    public void testDeleteTemporaryQueueWhenClientCrash() throws Exception
@@ -415,10 +456,16 @@ public class TemporaryQueueTest extends ServiceTestBase
       server = createServer(false, configuration);
       server.start();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      locator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
+      locator = createLocator();
       sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
+   }
+
+   protected ServerLocator createLocator()
+   {
+      ServerLocator retlocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      retlocator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
+      return retlocator;
    }
 
    @Override

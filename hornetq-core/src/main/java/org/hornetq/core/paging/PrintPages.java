@@ -108,7 +108,7 @@ public class PrintPages
                System.out.println("*******   Page " + pgid);
                Page page = pgStore.createPage(pgid);
                page.open();
-               List<PagedMessage> msgs = page.read();
+               List<PagedMessage> msgs = page.read(sm);
                page.close();
 
                int msgID = 0;

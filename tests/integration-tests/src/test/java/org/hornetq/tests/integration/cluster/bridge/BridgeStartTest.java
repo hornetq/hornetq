@@ -20,6 +20,7 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.*;

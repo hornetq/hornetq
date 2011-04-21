@@ -143,6 +143,74 @@ public class PageCursorProviderImpl implements PageCursorProvider
       return getPageCache(pos.getPageNr());
    }
 
+   public PageCache getPageCache(final long pageId)
+   {
+      try
+      {
+         boolean needToRead = false;
+         PageCache cache = null;
+         synchronized (softCache)
+         {
+            if (pageId > pagingStore.getCurrentWritingPage())
+            {
+               return null;
+            }
+
+            cache = softCache.get(pageId);
+            if (cache == null)
+            {
+               if (!pagingStore.checkPage((int)pageId))
+               {
+                  return null;
+               }
+
+               cache = createPageCache(pageId);
+               needToRead = true;
+               // anyone reading from this cache will have to wait reading to finish first
+               // we also want only one thread reading this cache
+               cache.lock();
+               softCache.put(pageId, cache);
+            }
+         }
+
+         // Reading is done outside of the synchronized block, however
+         // the page stays locked until the entire reading is finished
+         if (needToRead)
+         {
+            Page page = null;
+            try
+            {
+               page = pagingStore.createPage((int)pageId);
+
+               page.open();
+
+               List<PagedMessage> pgdMessages = page.read(storageManager);
+               cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
+            }
+            finally
+            {
+               try
+               {
+                  if (page != null)
+                  {
+                     page.close();
+                  }
+               }
+               catch (Throwable ignored)
+               {
+               }
+               cache.unlock();
+            }
+         }
+
+         return cache;
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("Couldn't complete paging due to an IO Exception on Paging - " + e.getMessage(), e);
+      }
+   }
+
    public void addPageCache(PageCache cache)
    {
       synchronized (softCache)
@@ -337,7 +405,29 @@ public class PageCursorProviderImpl implements PageCursorProvider
       {
          for (Page depagedPage : depagedPages)
          {
-            depagedPage.delete();
+            PageCache cache;
+            PagedMessage[] pgdMessages;
+            synchronized (softCache)
+            {
+               cache = softCache.remove((long)depagedPage.getPageId());
+            }
+            
+            if (cache == null)
+            {
+               // The page is not on cache any more
+               // We need to read the page-file before deleting it
+               // to make sure we remove any large-messages pending
+               depagedPage.open();
+               List<PagedMessage> pgdMessagesList = depagedPage.read(storageManager);
+               depagedPage.close();
+               pgdMessages = pgdMessagesList.toArray(new PagedMessage[pgdMessagesList.size()]);
+            }
+            else
+            {
+               pgdMessages = cache.getMessages();
+            }
+            
+            depagedPage.delete(pgdMessages);
             synchronized (softCache)
             {
                softCache.remove((long)depagedPage.getPageId());
@@ -420,79 +510,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       return minPage;
 
-   }
-
-   private PageCache getPageCache(final long pageId)
-   {
-      try
-      {
-         boolean needToRead = false;
-         PageCache cache = null;
-         synchronized (softCache)
-         {
-            if (pageId > pagingStore.getCurrentWritingPage())
-            {
-               return null;
-            }
-
-            cache = softCache.get(pageId);
-            if (cache == null)
-            {
-               if (!pagingStore.checkPage((int)pageId))
-               {
-                  return null;
-               }
-
-               cache = createPageCache(pageId);
-               needToRead = true;
-               // anyone reading from this cache will have to wait reading to finish first
-               // we also want only one thread reading this cache
-               cache.lock();
-               softCache.put(pageId, cache);
-            }
-         }
-
-         // Reading is done outside of the synchronized block, however
-         // the page stays locked until the entire reading is finished
-         if (needToRead)
-         {
-            Page page = null;
-            try
-            {
-               page = pagingStore.createPage((int)pageId);
-
-               page.open();
-
-               List<PagedMessage> pgdMessages = page.read();
-
-               for (PagedMessage pdgMessage : pgdMessages)
-               {
-                  pdgMessage.initMessage(storageManager);
-               }
-               cache.setMessages(pgdMessages.toArray(new PagedMessage[pgdMessages.size()]));
-            }
-            finally
-            {
-               try
-               {
-                  if (page != null)
-                  {
-                     page.close();
-                  }
-               }
-               catch (Throwable ignored)
-               {
-               }
-               cache.unlock();
-            }
-         }
-
-         return cache;
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException("Couldn't complete paging due to an IO Exception on Paging - " + e.getMessage(), e);
-      }
    }
 
    // Inner classes -------------------------------------------------

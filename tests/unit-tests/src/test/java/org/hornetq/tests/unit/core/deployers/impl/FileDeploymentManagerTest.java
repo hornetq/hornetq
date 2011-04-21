@@ -63,7 +63,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       FileDeploymentManagerTest.log.debug("Filename is " + filename);
 
-      File file = new File("target/tmpfiles/" + filename);
+      File file = new File("tests/tmpfiles/" + filename);
 
       FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
 
@@ -99,7 +99,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       FileDeploymentManagerTest.log.debug("Filename is " + filename);
 
-      File file = new File("target/tmpfiles/" + filename);
+      File file = new File("tests/tmpfiles/" + filename);
 
       FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
 
@@ -134,9 +134,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
       String filename2 = "fdm_test_file.xml2";
       String filename3 = "fdm_test_file.xml3";
 
-      File file1 = new File("target/tmpfiles/" + filename1);
-      File file2 = new File("target/tmpfiles/" + filename2);
-      File file3 = new File("target/tmpfiles/" + filename3);
+      File file1 = new File("tests/tmpfiles/" + filename1);
+      File file2 = new File("tests/tmpfiles/" + filename2);
+      File file3 = new File("tests/tmpfiles/" + filename3);
 
       file1.createNewFile();
       file2.createNewFile();
@@ -231,7 +231,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       String filename = "fdm_test_file.xml1";
 
-      File file = new File("target/tmpfiles/" + filename);
+      File file = new File("tests/tmpfiles/" + filename);
 
       file.createNewFile();
       long oldLastModified = file.lastModified();
@@ -280,7 +280,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       String filename = "fdm_test_file.xml1";
 
-      File file = new File("target/tmpfiles/" + filename);
+      File file = new File("tests/tmpfiles/" + filename);
 
       file.createNewFile();
 

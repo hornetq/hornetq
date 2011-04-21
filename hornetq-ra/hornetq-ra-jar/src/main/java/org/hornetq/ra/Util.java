@@ -13,10 +13,7 @@
 package org.hornetq.ra;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
@@ -171,9 +168,35 @@ public class Util
     * @return the object
     * @throws Exception for any error
     */
-   public static Object lookup(final Context context, final String name, final Class clazz) throws Exception
+   public static Object lookup(final Context context, final String name, final Class<?> clazz) throws Exception
    {
       return context.lookup(name);
+   }
+
+   /** 
+    * Used on parsing JNDI Configuration
+    * @param config
+    * @return
+    */
+   public static Hashtable<?,?> parseHashtableConfig(final String config)
+   {
+      Hashtable<String,String> hashtable = new Hashtable<String, String>();
+
+      String[] topElements = config.split(";");
+
+      for (String element : topElements)
+      {
+         String expression[] = element.split("=");
+
+         if (expression.length != 2)
+         {
+            throw new IllegalArgumentException("Invalid expression " + element + " at " + config);
+         }
+
+         hashtable.put(expression[0].trim(), expression[1].trim());
+      }
+
+      return hashtable;
    }
 
    public static List<Map<String, Object>> parseConfig(final String config)

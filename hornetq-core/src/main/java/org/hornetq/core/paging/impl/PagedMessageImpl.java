@@ -79,9 +79,11 @@ public class PagedMessageImpl implements PagedMessage
    {
       if (largeMessageLazyData != null)
       {
-         message = storage.createLargeMessage();
+         LargeServerMessage lgMessage = storage.createLargeMessage();
+         message = lgMessage;
          HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(largeMessageLazyData);
          message.decodeHeadersAndProperties(buffer);
+         lgMessage.incrementDelayDeletionCount();
          largeMessageLazyData = null;
       }
    }

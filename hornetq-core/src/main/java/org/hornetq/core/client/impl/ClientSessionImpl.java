@@ -47,6 +47,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionResponseMes
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessageV2;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionCloseMessage;
@@ -1083,25 +1084,22 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
 
       // Resetting the metadata after failover
-      try
+      for (Map.Entry<String, String> entries : metadata.entrySet())
       {
-         for (Map.Entry<String, String> entries : metadata.entrySet())
-         {
-            addMetaData(entries.getKey(), entries.getValue());
-         }
+         sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }
-      catch (HornetQException e)
-      {
+ }
 
-         log.warn("Error on resending metadata: " + metadata, e);
-
-      }
+   public void addMetaDataV1(String key, String data) throws HornetQException
+   {
+      metadata.put(key, data);
+      channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
    }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
       metadata.put(key, data);
-      channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
+      channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
 
    public ClientSessionFactoryInternal getSessionFactory()
@@ -1607,6 +1605,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public RemotingConnection getConnection()
    {
       return remotingConnection;
+   }
+   
+   public String toString()
+   {
+      StringBuffer buffer = new StringBuffer();
+      for (Map.Entry<String, String> entry : metadata.entrySet())
+      {
+         buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+      }
+      return "ClientSessionImpl::(" + buffer.toString() + ")";
    }
 
    // Protected

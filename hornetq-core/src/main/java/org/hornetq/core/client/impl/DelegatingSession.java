@@ -566,6 +566,13 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.addMetaData(key, data);
    }
+   
+   @Deprecated
+   public void addMetaDataV1(String key, String data) throws HornetQException
+   {
+      session.addMetaDataV1(key, data);
+   }
+
 
    public boolean isCompressLargeMessages()
    {

@@ -16,9 +16,9 @@ package org.hornetq.tests.integration.cluster.reattach;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.tests.cluster.reattach.MultiThreadRandomReattachTestBase;
 
 /**
  * 

@@ -28,6 +28,7 @@ import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -101,7 +102,7 @@ public class PageImpl implements Page, Comparable<Page>
       this.pageCache = pageCache;
    }
 
-   public List<PagedMessage> read() throws Exception
+   public List<PagedMessage> read(StorageManager storage) throws Exception
    {
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
@@ -140,6 +141,7 @@ public class PageImpl implements Page, Comparable<Page>
                      // constraint was already checked
                      throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
                   }
+                  msg.initMessage(storage);
                   messages.add(msg);
                }
                else
@@ -218,11 +220,27 @@ public class PageImpl implements Page, Comparable<Page>
       file.close();
    }
 
-   public boolean delete() throws Exception
+   public boolean delete(final PagedMessage[] messages) throws Exception
    {
       if (storageManager != null)
       {
          storageManager.pageDeleted(storeName, pageId);
+      }
+
+      if (messages != null)
+      {
+         for (PagedMessage msg : messages)
+         {
+            if (msg.getMessage().isLargeMessage())
+            {
+               LargeServerMessage lmsg = (LargeServerMessage)msg.getMessage();
+               
+               // Remember, cannot call delete directly here
+               // Because the large-message may be linked to another message
+               // or it may still being delivered even though it has been acked already
+               lmsg.decrementDelayDeletionCount();
+            }
+         }
       }
 
       try

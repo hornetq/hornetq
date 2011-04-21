@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,14 +11,20 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.timing.util;
+package org.hornetq.tests.integration.cluster.failover;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 
 /**
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * A NettyAsynchronousReattachTest
+ *
+ * @author clebertsuconic
+ *
  *
  */
-public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
+public class NettyAsynchronousReattachTest extends NettyAsynchronousFailoverTest
 {
 
    // Constants -----------------------------------------------------
@@ -34,12 +40,17 @@ public class UUIDTest extends org.hornetq.tests.unit.util.UUIDTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
 
-   @Override
-   protected int getTimes()
+   protected void crash(final ClientSession... sessions) throws Exception
    {
-      return 1000000;
+      for (ClientSession session : sessions)
+      {
+         ClientSessionInternal internalSession = (ClientSessionInternal) session;
+         internalSession.getConnection().fail(new HornetQException(HornetQException.NOT_CONNECTED, "oops"));
+      }
    }
+
 
    // Private -------------------------------------------------------
 

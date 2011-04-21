@@ -898,8 +898,35 @@ public class QueueImpl implements Queue
             acknowledge(tx, messageReference);
             count++;
          }
+         
+         
+         if (pageIterator != null)
+         {
+            // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+            while (pageIterator.hasNext())
+            {
+               PagedReference reference = pageIterator.next();
+               pageIterator.remove();
+   
+               if (filter == null || filter.match(reference.getMessage()))
+               {
+                  count++;
+                  pageSubscription.ack(reference);
+               }
+               else
+               {
+                  addTail(reference, false);
+               }
+            }
+         }
 
          tx.commit();
+         
+         
+         if (filter != null && pageIterator != null)
+         {
+            scheduleDepage();
+         }
 
          return count;
       }

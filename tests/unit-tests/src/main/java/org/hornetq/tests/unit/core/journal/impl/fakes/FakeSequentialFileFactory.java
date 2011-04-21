@@ -348,7 +348,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public void delete() throws Exception
       {
-         if (!open)
+         if (open)
          {
             close();
          }

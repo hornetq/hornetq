@@ -129,11 +129,6 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte SECURITY_RECORD = 26;
 
-   // type + expiration + timestamp + priority
-   public static final int SIZE_FIELDS = DataConstants.SIZE_INT + DataConstants.SIZE_LONG +
-                                         DataConstants.SIZE_LONG +
-                                         DataConstants.SIZE_BYTE;
-
    // Message journal record types
 
    public static final byte ADD_LARGE_MESSAGE = 30;
@@ -1142,12 +1137,24 @@ public class JournalStorageManager implements StorageManager
 
             continue;
          }
+         
+         // Redistribution could install a Redistributor while we are still loading records, what will be an issue with prepared ACKs
+         // We make sure te Queue is paused before we reroute values.
+         queue.pause();
 
          Collection<AddMessageRecord> valueRecords = queueRecords.values();
+         
+         long currentTime = System.currentTimeMillis();
 
          for (AddMessageRecord record : valueRecords)
          {
             long scheduledDeliveryTime = record.scheduledDeliveryTime;
+            
+            if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
+            {
+               scheduledDeliveryTime = 0;
+               record.message.removeProperty(Message.HDR_SCHEDULED_DELIVERY_TIME);
+            }
 
             if (scheduledDeliveryTime != 0)
             {
@@ -1216,6 +1223,11 @@ public class JournalStorageManager implements StorageManager
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);
+      }
+      
+      for (Queue queue : queues.values())
+      {
+         queue.resume();
       }
 
       if (System.getProperty("org.hornetq.opt.directblast") != null)
