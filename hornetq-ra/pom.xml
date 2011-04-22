@@ -12,6 +12,15 @@
    <artifactId>hornetq-rar-pom</artifactId>
    <packaging>pom</packaging>
 
+   <profiles>
+      <profile>
+         <id>release</id>
+         <modules>
+            <module>hornetq-ra-rar</module>
+         </modules>
+      </profile>
+   </profiles>
+
    <build>
       <plugins>
          <plugin>
@@ -26,6 +35,5 @@
 
    <modules>
       <module>hornetq-ra-jar</module>
-      <module>hornetq-ra-rar</module>
    </modules>
 </project>
