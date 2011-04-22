@@ -44,7 +44,7 @@
         - the head does not have to move.</para>
     <para>As delete records are added to the journal, HornetQ has a sophisticated file garbage
         collection algorithm which can determine if a particular journal file is needed any more -
-        i.e. has all it's data been deleted in the same or other files. If so, the file can be
+        i.e. has all its data been deleted in the same or other files. If so, the file can be
         reclaimed and re-used. </para>
     <para>HornetQ also has a compaction algorithm which removes dead space from the journal and
         compresses up the data so it takes up less files on disk.</para>
