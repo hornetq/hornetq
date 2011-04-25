@@ -87,6 +87,7 @@ public class PersistentPushQueueConsumerTest
 
       PushRegistration reg = new PushRegistration();
       reg.setDurable(true);
+      reg.setDisableOnFailure(true);
       XmlLink target = new XmlLink();
       target.setHref(generateURL("/queues/forwardQueue"));
       target.setRelationship("destination");

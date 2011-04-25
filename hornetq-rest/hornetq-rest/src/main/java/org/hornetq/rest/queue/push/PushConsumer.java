@@ -129,17 +129,13 @@ public class PushConsumer implements MessageHandler
    {
       boolean acknowledge = strategy.push(clientMessage);
 
-      if (registration.isDisableOnFailure())
-      {
-         log.error("Failed to push message to "+ registration.getTarget() + " disabling push registration...");
-         disableFromFailure();
-      }
       if (acknowledge)
       {
          try
          {
             log.debug("Acknowledging: " + clientMessage.getMessageID());
             clientMessage.acknowledge();
+            return;
          }
          catch (HornetQException e)
          {
@@ -148,8 +144,14 @@ public class PushConsumer implements MessageHandler
       }
       else
       {
+         if (registration.isDisableOnFailure())
+         {
+            log.error("Failed to push message to " + registration.getTarget() + " disabling push registration...");
+            disableFromFailure();
+            return;
+         }
          // let hornetq decide what to do
-         throw new RuntimeException("Failed to push message to "+ registration.getTarget());
+         throw new RuntimeException("Failed to push message to " + registration.getTarget());
       }
    }
 }
