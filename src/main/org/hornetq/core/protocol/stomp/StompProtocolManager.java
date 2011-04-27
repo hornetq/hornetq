@@ -600,51 +600,51 @@ class StompProtocolManager implements ProtocolManager
       return new StompFrame(Stomp.Responses.CONNECTED, h);
    }
 
-   public void cleanup(StompConnection connection)
+   public void cleanup(final StompConnection connection)
    {
       connection.setValid(false);
 
-      try
+      // Close the session outside of the lock on the StompConnection, otherwise it could dead lock
+      this.executor.execute(new Runnable()
       {
-         StompSession session = sessions.remove(connection.getID());
-         if (session != null)
+         public void run()
          {
-            try
+            StompSession session = sessions.remove(connection.getID());
+            if (session != null)
             {
-               session.getSession().rollback(true);
-               session.getSession().close(false);
-            }
-            catch (Exception e)
-            {
-               log.warn(e.getMessage(), e);
-            }
-         }
-
-         // removed the transacted session belonging to the connection
-         Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
-         while (iterator.hasNext())
-         {
-            Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
-            if (entry.getValue().getConnection() == connection)
-            {
-               ServerSession serverSession = entry.getValue().getSession();
                try
                {
-                  serverSession.rollback(true);
-                  serverSession.close(false);
+                  session.getSession().rollback(true);
+                  session.getSession().close(false);
                }
                catch (Exception e)
                {
                   log.warn(e.getMessage(), e);
                }
-               iterator.remove();
+            }
+
+            // removed the transacted session belonging to the connection
+            Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
+            while (iterator.hasNext())
+            {
+               Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
+               if (entry.getValue().getConnection() == connection)
+               {
+                  ServerSession serverSession = entry.getValue().getSession();
+                  try
+                  {
+                     serverSession.rollback(true);
+                     serverSession.close(false);
+                  }
+                  catch (Exception e)
+                  {
+                     log.warn(e.getMessage(), e);
+                  }
+                  iterator.remove();
+               }
             }
          }
-      }
-      finally
-      {
-         server.getStorageManager().clearContext();
-      }
+      });
    }
 
    private void sendReply(final StompConnection connection, final StompFrame frame)
