@@ -27,7 +27,7 @@ import org.hornetq.core.logging.Logger;
  *
  */
 public class StompDecoder
-{
+{         
    private static final Logger log = Logger.getLogger(StompDecoder.class);
 
    private static final boolean TRIM_LEADING_HEADER_VALUE_WHITESPACE = true;
@@ -67,6 +67,20 @@ public class StompDecoder
    private static final String COMMAND_UNSUBSCRIBE = "UNSUBSCRIBE";
 
    private static final int COMMAND_UNSUBSCRIBE_LENGTH = COMMAND_UNSUBSCRIBE.length();
+
+   /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+   private static final String COMMAND_CONNECTED = "CONNECTED";
+
+   private static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
+   
+   private static final String COMMAND_MESSAGE = "MESSAGE";
+
+   private static final int COMMAND_MESSAGE_LENGTH = COMMAND_MESSAGE.length();
+
+   private static final String COMMAND_ERROR = "ERROR";
+
+   private static final int COMMAND_ERROR_LENGTH = COMMAND_ERROR.length();
+   /**** end  ****/
 
    private static final byte A = (byte)'A';
 
@@ -232,6 +246,18 @@ public class StompDecoder
                   // COMMIT
                   command = COMMAND_COMMIT;
                }
+               /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+               else if (workingBuffer[offset+7]==E) 
+               {
+                  if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // CONNECTED
+                  command = COMMAND_CONNECTED;                  
+               }
+               /**** end ****/
                else
                {
                   if (!tryIncrement(offset + COMMAND_CONNECT_LENGTH + 1))
@@ -256,6 +282,32 @@ public class StompDecoder
 
                break;
             }
+            /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+            case E:
+            {
+               if (!tryIncrement(offset + COMMAND_ERROR_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // ERROR
+               command = COMMAND_ERROR;
+
+               break;
+            }
+            case M:
+            {
+               if (!tryIncrement(offset + COMMAND_MESSAGE_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // MESSAGE
+               command = COMMAND_MESSAGE;
+
+               break;
+            }
+            /**** end ****/
             case S:
             {
                if (workingBuffer[offset + 1] == E)
