@@ -19,6 +19,8 @@ import java.util.List;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 import javax.naming.NamingException;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -45,6 +47,8 @@ public class JMSTestBase extends ServiceTestBase
    protected HornetQServer server;
 
    protected JMSServerManagerImpl jmsServer;
+   
+   protected MBeanServer mbeanServer;
 
    protected ConnectionFactory cf;
 
@@ -101,15 +105,15 @@ public class JMSTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      mbeanServer = MBeanServerFactory.createMBeanServer();
 
       Configuration conf = createDefaultConfig(false);
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
       conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
 
-      server = HornetQServers.newHornetQServer(conf, usePersistence());
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
 
       jmsServer = new JMSServerManagerImpl(server);
       context = new InVMContext();
@@ -117,6 +121,17 @@ public class JMSTestBase extends ServiceTestBase
       jmsServer.start();
 
       registerConnectionFactory();
+   }
+   
+   @Override
+   protected Configuration createDefaultConfig(boolean netty)
+   {
+      Configuration conf = super.createDefaultConfig(netty);
+      
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      
+      return conf;
    }
 
    protected void restartServer() throws Exception
@@ -148,6 +163,13 @@ public class JMSTestBase extends ServiceTestBase
       jmsServer = null;
 
       context = null;
+
+      MBeanServerFactory.releaseMBeanServer(mbeanServer);
+
+      mbeanServer = null;
+
+      super.tearDown();
+
 
       super.tearDown();
    }
