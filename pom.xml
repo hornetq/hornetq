@@ -100,6 +100,13 @@
          <url>http://hornetq.com</url>
          <timezone>0</timezone>
       </developer>
+      <developer>
+         <id>franciscoborges</id>
+         <name>Francisco Borges</name>
+         <email>francisco.borges@redhat.com</email>
+         <url>http://hornetq.com</url>
+         <timezone>0</timezone>
+      </developer>
    </developers>
 
    <contributors>
