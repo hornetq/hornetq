@@ -151,7 +151,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                                  "server2",
                                                                               1000,
                                                                               true,
-                                                                              true,
+                                                                              false,
                                                                               MAX_HOPS,
                                                                               1024,
                                                                               toOtherServerPair, false));
@@ -196,7 +196,7 @@ public class JMSClusteredTestBase extends ServiceTestBase
                                                                               "server1",
                                                                               1000,
                                                                               true,
-                                                                              true,
+                                                                              false,
                                                                               MAX_HOPS,
                                                                               1024,
                                                                               toOtherServerPair, false));
