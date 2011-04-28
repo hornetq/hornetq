@@ -1,0 +1,29 @@
+-*-outline-*-
+
+If you need information about the HornetQ project please go to 
+
+http://community.jboss.org/wiki/HornetQ
+http://www.jboss.org/hornetq/
+
+[...]
+
+This file describes 'stuff one needs to know' to get started with this project.
+
+* Maven:
+
+You need Maven 2.2.1. 
+
+Using Maven 3.X will not work, due to compatibility problems
+<https://cwiki.apache.org/MAVEN/maven-3x-compatibility-notes.html>.
+
+* TESTS:
+
+To run the unittests
+
+% mvn -Phudson-tests tests
+
+** Generating reports from unit tests 
+
+% mvn install
+% mvn site # (this currently does not work)
+
