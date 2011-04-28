@@ -27,7 +27,7 @@ import org.hornetq.core.logging.Logger;
  *
  */
 public class StompDecoder
-{         
+{
    private static final Logger log = Logger.getLogger(StompDecoder.class);
 
    private static final boolean TRIM_LEADING_HEADER_VALUE_WHITESPACE = true;
@@ -80,6 +80,10 @@ public class StompDecoder
    private static final String COMMAND_ERROR = "ERROR";
 
    private static final int COMMAND_ERROR_LENGTH = COMMAND_ERROR.length();
+
+   private static final String COMMAND_RECEIPT = "RECEIPT";
+
+   private static final int COMMAND_RECEIPT_LENGTH = COMMAND_RECEIPT.length();
    /**** end  ****/
 
    private static final byte A = (byte)'A';
@@ -95,6 +99,8 @@ public class StompDecoder
    private static final byte M = (byte)'M';
 
    private static final byte S = (byte)'S';
+   
+   private static final byte R = (byte)'R';
 
    private static final byte U = (byte)'U';
 
@@ -279,6 +285,18 @@ public class StompDecoder
 
                // DISCONNECT
                command = COMMAND_DISCONNECT;
+
+               break;
+            }
+            case R:
+            {
+               if (!tryIncrement(offset + COMMAND_RECEIPT_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // RECEIPT
+               command = COMMAND_RECEIPT;
 
                break;
             }
