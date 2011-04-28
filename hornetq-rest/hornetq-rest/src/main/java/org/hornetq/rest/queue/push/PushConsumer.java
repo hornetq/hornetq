@@ -70,7 +70,7 @@ public class PushConsumer implements MessageHandler
       strategy.setRegistration(registration);
       strategy.start();
 
-      session = factory.createSession(false, false);
+      session = factory.createSession(true, true, 0);
       if (registration.getSelector() != null)
       {
          consumer = session.createConsumer(destination, SelectorTranslator.convertToHornetQFilterString(registration.getSelector()));

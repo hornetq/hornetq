@@ -198,7 +198,7 @@ public class QueueConsumer
    protected void createSession()
            throws HornetQException
    {
-      session = factory.createSession(true, true);
+      session = factory.createSession(true, true, 0);
       if (selector == null)
       {
          consumer = session.createConsumer(destination);
