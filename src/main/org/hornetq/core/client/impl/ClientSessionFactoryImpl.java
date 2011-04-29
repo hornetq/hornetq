@@ -17,6 +17,7 @@ import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -358,15 +359,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // inconsistencies
    public void removeSession(final ClientSessionInternal session, boolean failingOver)
    {
-      synchronized (createSessionLock)
+      synchronized (sessions)
       {
-         synchronized (failoverLock)
-         {
-            sessions.remove(session);
-         }
+         sessions.remove(session);
       }
    }
-
+   
    public void connectionReadyForWrites(final Object connectionID, final boolean ready)
    {
    }
@@ -413,8 +411,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          synchronized (failoverLock)
          {
+            HashSet<ClientSession> sessionsToClose;
+            synchronized (sessions)
+            {
+               sessionsToClose = new HashSet<ClientSession>(sessions);
+            }
             // work on a copied set. the session will be removed from sessions when session.close() is called
-            for (ClientSession session : new HashSet<ClientSession>(sessions))
+            for (ClientSession session : sessionsToClose)
             {
                try
                {
@@ -581,7 +584,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
          if (connection == null)
          {
-            sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+            synchronized (sessions)
+            {
+               sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+            }
             callFailureListeners(me, true, false);
          }
       }
@@ -729,7 +735,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                                                      sessionChannel,
                                                                      orderedExecutorFactory.getExecutor());
 
-               sessions.add(session);
+               synchronized (sessions)
+               {
+                  sessions.add(session);
+               }
 
                ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
 
@@ -839,7 +848,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       connection.setFailureListeners(newListeners);
 
-      for (ClientSessionInternal session : sessions)
+      HashSet<ClientSessionInternal> sessionsToFailover;
+      synchronized (sessions)
+      {
+         sessionsToFailover = new HashSet<ClientSessionInternal>(sessions);
+      }
+      
+      for (ClientSessionInternal session : sessionsToFailover)
       {
          session.handleFailover(connection);
       }
