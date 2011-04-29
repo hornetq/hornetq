@@ -103,7 +103,11 @@ public class Topology implements Serializable
    public void sendTopology(ClusterTopologyListener listener)
    {
       int count = 0;
-      Map<String, TopologyMember> copy = new HashMap<String, TopologyMember>(topology);
+      Map<String, TopologyMember> copy;
+      synchronized (this)
+      {
+         copy = new HashMap<String, TopologyMember>(topology);
+      }
       for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
       {
          listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == copy.size());

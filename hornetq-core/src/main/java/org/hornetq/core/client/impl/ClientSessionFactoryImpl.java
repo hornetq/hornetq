@@ -358,19 +358,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // inconsistencies
    public void removeSession(final ClientSessionInternal session, boolean failingOver)
    {
-      if (!failingOver)
+      synchronized (createSessionLock)
       {
-         synchronized (createSessionLock)
+         synchronized (failoverLock)
          {
-            synchronized (failoverLock)
-            {
-               sessions.remove(session);
-            }
+            sessions.remove(session);
          }
-      }
-      else
-      {
-         sessions.remove(session);
       }
    }
 
