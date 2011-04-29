@@ -22,7 +22,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq</groupId>
    <artifactId>hornetq</artifactId>
    <packaging>pom</packaging>
    <name>Actual HornetQ Distribution</name>

@@ -9,7 +9,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq</groupId>
    <artifactId>jnp-client</artifactId>
    <packaging>jar</packaging>
    <name>JBoss jnp client jar</name>

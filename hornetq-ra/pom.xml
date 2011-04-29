@@ -8,7 +8,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq</groupId>
    <artifactId>hornetq-rar-pom</artifactId>
    <packaging>pom</packaging>
 

@@ -21,7 +21,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-    <groupId>org.hornetq</groupId>
     <artifactId>hornetq-spring-integration</artifactId>
     <packaging>jar</packaging>
     <name>HornetQ Spring Integration</name>
