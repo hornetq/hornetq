@@ -436,20 +436,14 @@ public class TransactionImpl implements Transaction
       operations.add(operation);
    }
 
-   public void removeOperation(final TransactionOperation operation)
-   {
-      checkCreateOperations();
-
-      operations.remove(operation);
-   }
-
    public int getOperationsCount()
    {
       return operations.size();
    }
 
-   public List<TransactionOperation> getAllOperations() {
-      return operations;
+   public synchronized List<TransactionOperation> getAllOperations() 
+   {
+      return new ArrayList<TransactionOperation>(operations);
    }
    
    public void putProperty(final int index, final Object property)
@@ -495,7 +489,7 @@ public class TransactionImpl implements Transaction
       return new TransactionImpl(this);
    }
 
-   public void afterCommit()
+   public synchronized void afterCommit()
    {
       if (operations != null)
       {
