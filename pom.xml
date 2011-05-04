@@ -559,9 +559,7 @@
             <artifactId>maven-checkstyle-plugin</artifactId>
             <version>2.6</version>
             <configuration>
-               <configLocation>
-                  config/jboss_checks.xml
-               </configLocation>
+               <configLocation>checkstyle.xml</configLocation>
             </configuration>
          </plugin>
          <plugin>
