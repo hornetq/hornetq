@@ -27,7 +27,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -573,73 +572,44 @@ public class PageSubscriptionImpl implements PageSubscription
    public void close() throws Exception
    {
       final long tx = store.generateUniqueID();
-
-      final ArrayList<Exception> ex = new ArrayList<Exception>();
-
-      final AtomicBoolean isPersistent = new AtomicBoolean(false);
-
-      // We can't delete the records at the caller's thread
-      // because an executor may be holding the synchronized on PageCursorImpl
-      // what would lead to a dead lock
-      // so, we delete it inside the executor also
-      // and wait for the result
-      // The caller will be treating eventual IO exceptions and dispatching to the original thread's caller
-      executor.execute(new Runnable()
+      try
       {
-
-         public void run()
+   
+         boolean isPersistent = false;
+   
+         synchronized (PageSubscriptionImpl.this)
          {
-            try
+            for (PageCursorInfo cursor : consumedPages.values())
             {
-               synchronized (PageSubscriptionImpl.this)
+               for (PagePosition info : cursor.acks)
                {
-                  for (PageCursorInfo cursor : consumedPages.values())
+                  if (info.getRecordID() != 0)
                   {
-                     for (PagePosition info : cursor.acks)
-                     {
-                        if (info.getRecordID() != 0)
-                        {
-                           isPersistent.set(true);
-                           store.deleteCursorAcknowledgeTransactional(tx, info.getRecordID());
-                        }
-                     }
+                     isPersistent = true;
+                     store.deleteCursorAcknowledgeTransactional(tx, info.getRecordID());
                   }
                }
             }
-            catch (Exception e)
-            {
-               ex.add(e);
-               PageSubscriptionImpl.log.warn(e.getMessage(), e);
-            }
          }
-      });
-
-      Future future = new Future();
-
-      executor.execute(future);
-
-      while (!future.await(5000))
-      {
-         PageSubscriptionImpl.log.warn("Timeout on waiting cursor " + this + " to be closed");
-      }
-
-      if (isPersistent.get())
-      {
-         // Another reason to perform the commit at the main thread is because the OperationContext may only send the
-         // result to the client when
-         // the IO on commit is done
-         if (ex.size() == 0)
+    
+         if (isPersistent)
          {
             store.commit(tx);
          }
-         else
+   
+         cursorProvider.close(this);
+      }
+      catch (Exception e)
+      {
+         try
          {
             store.rollback(tx);
-            throw ex.get(0);
+         }
+         catch (Exception ignored)
+         {
+            // exception of the exception.. nothing that can be done here
          }
       }
-
-      cursorProvider.close(this);
    }
 
    /* (non-Javadoc)
