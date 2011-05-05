@@ -7,14 +7,18 @@ http://www.jboss.org/hornetq/
 
 [...]
 
-This file describes 'stuff one needs to know' to get started with this project.
+This file describes 'stuff one needs to know' to get started coding in
+this project.
 
 * Maven:
 
-You need Maven 2.2.1. 
+You need Maven 3.X. 
 
-Using Maven 3.X will not work, due to compatibility problems
-<https://cwiki.apache.org/MAVEN/maven-3x-compatibility-notes.html>.
+Do note that there are some compatibility issues with Maven 3.X still unsolved [1]. 
+This is specially true for the 'site' plugin [2].
+
+[1]: <https://cwiki.apache.org/MAVEN/maven-3x-compatibility-notes.html>
+[2]: <https://cwiki.apache.org/MAVEN/maven-3x-and-site-plugin.html>
 
 * TESTS:
 
