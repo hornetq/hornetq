@@ -107,7 +107,7 @@
                   <exclude>org/hornetq/jms/tests/XAResourceRecoveryTest.java</exclude>
                   <exclude>org/hornetq/jms/tests/XATest.java</exclude>
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
-                  <exclude>org/hoerntq/jms/tests/manual/**</exclude>
+                  <exclude>org/hornetq/jms/tests/manual/**</exclude>
                </excludes>
             </configuration>
          </plugin>
