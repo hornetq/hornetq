@@ -103,8 +103,8 @@
                   <exclude>**/cluster/**/*/java"</exclude>
                   <exclude>**/cluster/failover/*DiscoveryClusterWithBackupFailoverTest.java</exclude>
                   <exclude>**/cluster/failover/*GroupingFailoverReplicationTest.java</exclude>
-                  <exclude>**/cluster/failover/*Replicated*.java"</exclude>
-                  <exclude>**/cluster/replication/**.java"</exclude>
+                  <exclude>**/cluster/failover/*Replicated*.java</exclude>
+                  <exclude>**/cluster/replication/**.java</exclude>
                   <exclude>**/cluster/failover/*ReplicatedDistributionTest.java</exclude>
                   <exclude>**/cluster/failover/*SharedStoreDistributionTest.java</exclude>
                   <exclude>**/cluster/failover/*ReplicatedNettyAsynchronousFailoverTest.java</exclude>
