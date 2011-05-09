@@ -112,37 +112,10 @@
             <id>maven2-repository.dev.java.net</id>
             <url>http://download.java.net/maven/2</url>
         </pluginRepository>
-        <!-- <pluginRepository> -->
-        <!--     <id>maven-repository.dev.java.net</id> -->
-        <!--     <name>Java.net Maven 1 Repository (legacy)</name> -->
-        <!--     <url>http://download.java.net/maven/1</url> -->
-        <!--     <layout>legacy</layout> -->
-        <!-- </pluginRepository> -->
     </pluginRepositories>
     <build>
         <pluginManagement>
             <plugins>
-                <!--
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.4</version>
-                    <configuration>
-                        <minmemory>128m</minmemory>
-                        <maxmemory>512m</maxmemory>
-                        <quiet>false</quiet>
-                        <aggregate>true</aggregate>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                -->
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -285,28 +258,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
             </plugin>
-            <!--
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-changes-plugin</artifactId>
-               <reportSets>
-                  <reportSet>
-                     <reports>
-                        <report>jira-report</report>
-                     </reports>
-                  </reportSet>
-               </reportSets>
-            </plugin>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-changelog-plugin</artifactId>
-               <configuration>
-                  <type>range</type>
-                  <range>30</range>
-                  <headingDateFormat>dd MMM, yyyy</headingDateFormat>
-               </configuration>
-            </plugin>
-            -->
         </plugins>
     </reporting>
 </project>
