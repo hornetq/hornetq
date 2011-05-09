@@ -418,6 +418,11 @@
                <version>2.2</version>
             </plugin>
             <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-jar-plugin</artifactId>
+               <version>2.3.1</version>
+            </plugin>
+            <plugin>
                <groupId>net.sf.maven-sar</groupId>
                <artifactId>maven-sar-plugin</artifactId>
                <version>1.0</version>
