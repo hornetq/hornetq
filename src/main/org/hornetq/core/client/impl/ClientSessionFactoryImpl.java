@@ -17,7 +17,6 @@ import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
@@ -230,7 +232,18 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       if(live.equals(connectorConfig) && backUp != null)
       {
+         if (log.isDebugEnabled())
+         {
+              log.debug("Setting up backup config = " + backUp + " for live = " + live);
+         }
          backupConfig = backUp;
+      }
+      else
+      {
+         if (log.isDebugEnabled())
+         {
+            log.debug("ClientSessionFactoryImpl received backup update for live/backup pair = " + live + " / " + backUp + " but it didn't belong to " + this.connectorConfig);
+         }
       }
    }
 
@@ -875,6 +888,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                return;
             }
 
+            if (log.isDebugEnabled())
+            {
+               log.debug("Trying reconnection attempt " + count);
+            }
+
             getConnection();
 
             if (connection == null)
@@ -884,10 +902,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                if (reconnectAttempts != 0)
                {
                   count++;
-
+                  
                   if (reconnectAttempts != -1 && count == reconnectAttempts)
                   {
-                     log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up.");
+                     log.warn("Tried " + reconnectAttempts + " times to connect. Now giving up on reconnecting it.");
 
                      return;
                   }
@@ -989,10 +1007,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                connector.start();
 
+               if (log.isDebugEnabled())
+               {
+                  log.debug("Trying to connect at the main server using connector :" + connectorConfig);
+               }
+               
                tc = connector.createConnection();
 
                if (tc == null)
                {
+                  if (log.isDebugEnabled())
+                  {
+                     log.debug("Main server is not up. Hopefully there's a backup configured now!");
+                  }
+                  
                   try
                   {
                      connector.close();
@@ -1004,9 +1032,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   connector = null;
                }
             }
-            //if connection fails we can try the backup incase it has come live
+            //if connection fails we can try the backup in case it has come live
             if(connector == null && backupConfig != null)
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("Trying backup config = " + backupConfig);
+               }
                ConnectorFactory backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
                connector = backupConnectorFactory.createConnector(backupConfig.getParams(),
                                                          handler,
@@ -1022,6 +1054,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                   if (tc == null)
                   {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Backup is not active yet");
+                     }
+                     
                      try
                      {
                         connector.close();
@@ -1035,6 +1072,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   else
                   {
                      /*looks like the backup is now live, lets use that*/
+                     
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Connected to the backup at " + backupConfig);
+                     }
+                     
                      connectorConfig = backupConfig;
 
                      backupConfig = null;
@@ -1244,10 +1287,18 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             if (topMessage.isExit())
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("Notifying " + topMessage.getNodeID() + " going down");
+               }
                serverLocator.notifyNodeDown(topMessage.getNodeID());
             }
             else
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("Node " + topMessage.getNodeID() + " going up, connector = " + topMessage.getPair() + ", isLast=" + topMessage.isLast());
+               }
                serverLocator.notifyNodeUp(topMessage.getNodeID(),
                                           topMessage.getPair(),
                                           topMessage.isLast());
