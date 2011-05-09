@@ -63,6 +63,10 @@ public class RecordInfo
    @Override
    public boolean equals(final Object other)
    {
+	  if (!(other instanceof RecordInfo))
+	  {
+		   return false;
+      }
       RecordInfo r = (RecordInfo)other;
 
       return r.id == id;

@@ -38,9 +38,10 @@ public class Identifier
 {
    private final SimpleString name;
 
+   private final int hash;
+
    private Object value;
 
-   private final int hash;
 
    public Identifier(final SimpleString name)
    {
@@ -60,7 +61,7 @@ public class Identifier
    @Override
    public boolean equals(final Object obj)
    {
-      if (obj.getClass() != Identifier.class)
+      if (!(obj instanceof Identifier))
       {
          return false;
       }

@@ -17,27 +17,18 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
 /**
- * A Validators
+ * A Validators.
  *
  * @author jmesnil
- *
- *
  */
-public class Validators
+public final class Validators
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
    public static interface Validator
    {
       void validate(String name, Object value);
    }
 
-   public static Validator NO_CHECK = new Validator()
+   public static final Validator NO_CHECK = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -45,7 +36,7 @@ public class Validators
       }
    };
 
-   public static Validator NOT_NULL_OR_EMPTY = new Validator()
+   public static final Validator NOT_NULL_OR_EMPTY = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -57,7 +48,7 @@ public class Validators
       }
    };
 
-   public static Validator GT_ZERO = new Validator()
+   public static final Validator GT_ZERO = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -73,7 +64,7 @@ public class Validators
       }
    };
 
-   public static Validator PERCENTAGE = new Validator()
+   public static final Validator PERCENTAGE = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -87,7 +78,7 @@ public class Validators
       }
    };
 
-   public static Validator GE_ZERO = new Validator()
+   public static final Validator GE_ZERO = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -105,7 +96,7 @@ public class Validators
       }
    };
 
-   public static Validator MINUS_ONE_OR_GT_ZERO = new Validator()
+   public static final Validator MINUS_ONE_OR_GT_ZERO = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -123,7 +114,7 @@ public class Validators
       }
    };
 
-   public static Validator MINUS_ONE_OR_GE_ZERO = new Validator()
+   public static final Validator MINUS_ONE_OR_GE_ZERO = new Validator()
    {
       public void validate(final String name, final Object value)
       {
@@ -186,17 +177,4 @@ public class Validators
          }
       }
    };
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
