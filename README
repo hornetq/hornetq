@@ -31,3 +31,7 @@ To run the unittests
 % mvn install
 % mvn site # (this currently does not work)
 
+* Eclipse
+
+Install the m2Eclipse plugin, and run
+  $ mvn eclipse:eclipse
