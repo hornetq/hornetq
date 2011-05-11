@@ -15,7 +15,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
+
 	<modelVersion>4.0.0</modelVersion>
 
    <parent>
@@ -25,16 +25,16 @@
    </parent>
 
 	<groupId>org.hornetq.docs</groupId>
-	<artifactId>${docname}-${translation}</artifactId>
+	<artifactId>user-manual</artifactId>
 	<version>1.0</version>
 	<packaging>jdocbook</packaging>
-	<name>${bookname}-(${translation})</name>
+	<name>user-manual</name>
 
   <properties>
     <translation>en</translation>
     <docname>HornetQ_User_Manual</docname>
     <bookname>HornetQ User Manual</bookname>
-  </properties> 
+  </properties>
 
   <repositories>
       <repository>
@@ -78,7 +78,7 @@
           </snapshots>
     </pluginRepository-->
  </pluginRepositories>
-  
+
   <profiles>
 
     <!-- mvn compile -->
@@ -306,7 +306,7 @@
     			</options>
 			  </configuration>
 		  </plugin>
-		  
+
 	  </plugins>
   </build>-->
 
