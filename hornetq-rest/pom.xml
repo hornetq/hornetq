@@ -142,7 +142,7 @@
                         <linkXref>true</linkXref>
                         <sourceEncoding>utf-8</sourceEncoding>
                         <minimumTokens>100</minimumTokens>
-                        <targetJdk>1.5</targetJdk>
+                        <targetJdk>1.6</targetJdk>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -161,18 +161,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
