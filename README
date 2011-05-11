@@ -1,6 +1,6 @@
 -*-outline-*-
 
-If you need information about the HornetQ project please go to 
+If you need information about the HornetQ project please go to
 
 http://community.jboss.org/wiki/HornetQ
 http://www.jboss.org/hornetq/
@@ -12,7 +12,7 @@ this project.
 
 * Maven:
 
-You need Maven 3.X. 
+You need Maven 3.X.
 
 Do note that there are some compatibility issues with Maven 3.X still
 unsolved [1].  This is specially true for the 'site' plugin [2].
@@ -26,7 +26,7 @@ To run the unittests
 
 % mvn -Phudson-tests tests
 
-** Generating reports from unit tests 
+** Generating reports from unit tests
 
 % mvn install
 % mvn site # (this currently does not work)
@@ -39,3 +39,7 @@ $ mvn eclipse:eclipse
 
 ** Install the m2Eclipse plugin, and use it to import the root
    project. Each sub-project will be imported automatically.
+
+The M2Eclipse plugin has some limitations, after importing the projects
+you should use "Maven / Update project configuration" to fix up the
+projects. If necessary consult the M2Eclipse plugin FAQ.
