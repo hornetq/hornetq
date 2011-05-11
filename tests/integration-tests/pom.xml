@@ -97,8 +97,6 @@
                <excludes>
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
-                  <!-- excluded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
-                  <exclude>**/cluster/failover/*StaticClusterWithBackupFailoverTest.java</exclude>
                   <!--exclude any replication tests for now-->
                   <exclude>**/cluster/failover/*ClusterWithBackupFailoverTestBase.java</exclude>
                   <exclude>**/cluster/**/*/java</exclude>
