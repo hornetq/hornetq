@@ -1362,6 +1362,7 @@ public class QueueImpl implements Queue
       {
          return true;
       }
+      if (!(other instanceof QueueImpl)) return false;
 
       QueueImpl qother = (QueueImpl)other;
 
@@ -1932,7 +1933,7 @@ public class QueueImpl implements Queue
 
          if (count == 0)
          {
-            // Note - we MUST store the delete after the preceeding ack has been committed to storage, we cannot combine
+            // Note - we MUST store the delete after the preceding ack has been committed to storage, we cannot combine
             // the last ack and delete into a single delete.
             // This is because otherwise we could have a situation where the same message is being acked concurrently
             // from two different queues on different sessions.
@@ -1940,8 +1941,8 @@ public class QueueImpl implements Queue
             // ack isn't committed, then the server crashes and on
             // recovery the message is deleted even though the other ack never committed
 
-            // also note then when this happens as part of a trasaction its the tx commt of the ack that is important
-            // not this
+            // also note then when this happens as part of a transaction it is the tx commit of the ack that is 
+            // important not this
 
             // Also note that this delete shouldn't sync to disk, or else we would build up the executor's queue
             // as we can't delete each messaging with sync=true while adding messages transactionally.

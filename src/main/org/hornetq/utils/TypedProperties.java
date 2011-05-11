@@ -354,10 +354,6 @@ public class TypedProperties
    public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
-      if (value == null)
-      {
-         return Float.valueOf(null);
-      }
 
       if (value instanceof Float)
       {
@@ -369,7 +365,7 @@ public class TypedProperties
       }
       else
       {
-         throw new PropertyConversionException("Invalid conversion");
+         throw new PropertyConversionException("Invalid conversion " + key);
       }
    }
 
