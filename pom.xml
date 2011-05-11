@@ -386,11 +386,11 @@
             <skipJmsTests>false</skipJmsTests>
             <skipJoramTests>false</skipJoramTests>
             <skipIntegrationTests>false</skipIntegrationTests>
-            <skipTimingTests>true</skipTimingTests>
+            <skipTimingTests>false</skipTimingTests>
+            <skipConcurrentTests>false</skipConcurrentTests>
             <skipStressTests>true</skipStressTests>
             <skipSoakTests>true</skipSoakTests>
             <skipPerformanceTests>true</skipPerformanceTests>
-            <skipConcurrentTests>true</skipConcurrentTests>
          </properties>
       </profile>
    </profiles>
