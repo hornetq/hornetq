@@ -14,8 +14,8 @@ this project.
 
 You need Maven 3.X. 
 
-Do note that there are some compatibility issues with Maven 3.X still unsolved [1]. 
-This is specially true for the 'site' plugin [2].
+Do note that there are some compatibility issues with Maven 3.X still
+unsolved [1].  This is specially true for the 'site' plugin [2].
 
 [1]: <https://cwiki.apache.org/MAVEN/maven-3x-compatibility-notes.html>
 [2]: <https://cwiki.apache.org/MAVEN/maven-3x-and-site-plugin.html>
@@ -33,5 +33,9 @@ To run the unittests
 
 * Eclipse
 
-Install the m2Eclipse plugin, and run
-  $ mvn eclipse:eclipse
+** Use the Maven eclipse plugin to configure the sub-projects
+
+$ mvn eclipse:eclipse
+
+** Install the m2Eclipse plugin, and use it to import the root
+   project. Each sub-project will be imported automatically.

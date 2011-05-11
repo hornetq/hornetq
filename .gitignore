@@ -1,5 +1,6 @@
 target
 tests/jms-tests/data
+org.maven.ide.eclipse.prefs
 
 # /
 /build
