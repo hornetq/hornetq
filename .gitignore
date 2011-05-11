@@ -1,6 +1,11 @@
 target
 tests/jms-tests/data
+org.eclipse.jdt.core.prefs
+org.eclipse.jdt.ui.prefs
+!etc/org.eclipse.jdt.ui.prefs
+!etc/org.eclipse.jdt.core.prefs
 org.maven.ide.eclipse.prefs
+.classpath
 
 # /
 /build
@@ -24,7 +29,6 @@ org.maven.ide.eclipse.prefs
 # /distribution/jnp-client/
 /distribution/jnp-client/target
 /distribution/jnp-client/bin
-/distribution/jnp-client/.classpath
 /distribution/jnp-client/.project
 
 # /docs/
@@ -41,7 +45,6 @@ org.maven.ide.eclipse.prefs
 /docs/user-manual/build
 /docs/user-manual/target
 /docs/user-manual/bin
-/docs/user-manual/.classpath
 /docs/user-manual/.project
 
 # /examples/
@@ -631,37 +634,30 @@ org.maven.ide.eclipse.prefs
 
 # /hornetq-bootstrap/
 /hornetq-bootstrap/target
-/hornetq-bootstrap/.classpath
 /hornetq-bootstrap/.project
 
 # /hornetq-core/
 /hornetq-core/target
-/hornetq-core/.classpath
 /hornetq-core/.project
 
 # /hornetq-core-client/
 /hornetq-core-client/target
-/hornetq-core-client/.classpath
 /hornetq-core-client/.project
 
 # /hornetq-jboss-as-integration/
 /hornetq-jboss-as-integration/target
-/hornetq-jboss-as-integration/.classpath
 /hornetq-jboss-as-integration/.project
 
 # /hornetq-jms/
 /hornetq-jms/target
-/hornetq-jms/.classpath
 /hornetq-jms/.project
 
 # /hornetq-jms-client/
 /hornetq-jms-client/target
-/hornetq-jms-client/.classpath
 /hornetq-jms-client/.project
 
 # /hornetq-logging/
 /hornetq-logging/target
-/hornetq-logging/.classpath
 /hornetq-logging/.project
 
 # /hornetq-ra/
@@ -669,12 +665,10 @@ org.maven.ide.eclipse.prefs
 
 # /hornetq-ra/hornetq-ra-jar/
 /hornetq-ra/hornetq-ra-jar/target
-/hornetq-ra/hornetq-ra-jar/.classpath
 /hornetq-ra/hornetq-ra-jar/.project
 
 # /hornetq-ra/hornetq-ra-rar/
 /hornetq-ra/hornetq-ra-rar/target
-/hornetq-ra/hornetq-ra-rar/.classpath
 /hornetq-ra/hornetq-ra-rar/.project
 
 # /hornetq-rest/
@@ -685,20 +679,16 @@ org.maven.ide.eclipse.prefs
 
 # /hornetq-rest/hornetq-rest/
 /hornetq-rest/hornetq-rest/target
-/hornetq-rest/hornetq-rest/.classpath
 /hornetq-rest/hornetq-rest/.project
 
 # /hornetq-service-sar/
 /hornetq-service-sar/target
-/hornetq-service-sar/.classpath
 /hornetq-service-sar/.project
 
 # /hornetq-spring-integration/
 /hornetq-spring-integration/target
-/hornetq-spring-integration/.classpath
 /hornetq-spring-integration/.project
 
 # /hornetq-twitter-integration/
 /hornetq-twitter-integration/target
-/hornetq-twitter-integration/.classpath
 /hornetq-twitter-integration/.project
