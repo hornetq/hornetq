@@ -467,6 +467,7 @@
                <artifactId>maven-surefire-plugin</artifactId>
                <version>2.4</version>
                <configuration>
+                  <runOrder>alphabetical</runOrder>
                   <redirectTestOutputToFile>true</redirectTestOutputToFile>
                </configuration>
             </plugin>
