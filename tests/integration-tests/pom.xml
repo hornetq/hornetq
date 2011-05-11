@@ -114,7 +114,13 @@
                   <exclude>**/cluster/failover/Remote*.java</exclude>
                   <exclude>**/failover/remote/**.java</exclude>
                </excludes>
-            </configuration>
+          <systemProperties>
+            <property>
+              <name>java.library.path</name>
+              <value>${user.dir}/distribution/hornetq/src/main/resources/bin</value>
+            </property>
+          </systemProperties>
+         </configuration>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

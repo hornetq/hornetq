@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.journal;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -130,6 +131,10 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       File file = new File(getTestDir());
       deleteDirectory(file);
       file.mkdir();
+
+   	  Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+   	  fieldSysPath.setAccessible(true);
+   	  fieldSysPath.set(null, null);
    }
 
    // Private -------------------------------------------------------
