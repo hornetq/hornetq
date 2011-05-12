@@ -23,8 +23,7 @@ import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 
 /**
- * ConfigurationImpl
- * This class allows the Configuration class to be configured via a config file.
+ * A {@code FileConfiguration} reads configuration values from a file.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -39,8 +38,7 @@ public class FileConfiguration extends ConfigurationImpl
 
    private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
 
-   // For a bridge confirmations must be activated or send acknowledgements won't return
-
+   // For a bridge confirmations must be activated or sent acknowledgments won't return
    public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = 1024 * 1024;
 
    // Static --------------------------------------------------------------------------
@@ -59,25 +57,25 @@ public class FileConfiguration extends ConfigurationImpl
       {
          return;
       }
-      
-      
+
+
       URL url = getClass().getClassLoader().getResource(configurationUrl);
-      
+
       if (url == null)
       {
          // The URL is outside of the classloader. Trying a pure url now
          url = new URL(configurationUrl);
       }
-      
+
       FileConfiguration.log.debug("Loading server configuration from " + url);
 
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);
       Element e = org.hornetq.utils.XMLUtil.stringToElement(xml);
-      
+
       FileConfigurationParser parser = new FileConfigurationParser();
-      
+
       // https://jira.jboss.org/browse/HORNETQ-478 - We only want to validate AIO when
       //     starting the server
       //     and we don't want to do it when deploying hornetq-queues.xml which uses the same parser and XML format

@@ -46,7 +46,7 @@ public class VersionImpl implements Version, Serializable
    private final int incrementingVersion;
 
    private final String versionSuffix;
-   
+
    private final String nettyVersion;
 
    private final int[] compatibleVersionList;
@@ -75,12 +75,13 @@ public class VersionImpl implements Version, Serializable
       this.versionSuffix = versionSuffix;
 
       this.nettyVersion = nettyVersion;
-      
+
       this.compatibleVersionList = compatibleVersionList;
    }
 
    // Version implementation ------------------------------------------
 
+   @Override
    public String getFullVersion()
    {
       return majorVersion + "." +
@@ -96,41 +97,49 @@ public class VersionImpl implements Version, Serializable
              ")";
    }
 
+   @Override
    public String getVersionName()
    {
       return versionName;
    }
 
+   @Override
    public int getMajorVersion()
    {
       return majorVersion;
    }
 
+   @Override
    public int getMinorVersion()
    {
       return minorVersion;
    }
 
+   @Override
    public int getMicroVersion()
    {
       return microVersion;
    }
 
+   @Override
    public String getVersionSuffix()
    {
       return versionSuffix;
    }
 
+   @Override
    public int getIncrementingVersion()
    {
       return incrementingVersion;
    }
 
+   @Override
    public String getNettyVersion()
    {
       return nettyVersion;
    }
 
+   @Override
    public int[] getCompatibleVersionList()
    {
       return compatibleVersionList;
@@ -145,7 +154,7 @@ public class VersionImpl implements Version, Serializable
       {
          return true;
       }
-      if (other instanceof Version == false)
+      if (!(other instanceof Version))
       {
          return false;
       }
