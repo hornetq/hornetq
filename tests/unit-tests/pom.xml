@@ -7,7 +7,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq.tests</groupId>
    <artifactId>unit-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ Unit Tests</name>
@@ -52,25 +51,7 @@
    </dependencies>
 
    <build>
-      <testResources>
-         <testResource>
-            <directory>../config</directory>
-         </testResource>
-      </testResources>
       <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <excludes>
-                  <exclude>org/hornetq/tests/util/*.java</exclude>
-               </excludes>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-report-plugin</artifactId>
-         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
