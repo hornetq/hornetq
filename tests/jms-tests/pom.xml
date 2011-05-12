@@ -7,7 +7,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq.tests</groupId>
    <artifactId>jms-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ JMS Tests</name>
@@ -86,20 +85,12 @@
    </dependencies>
 
    <build>
-      <testResources>
-         <testResource>
-            <directory>config</directory>
-         </testResource>
-      </testResources>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
                <skipTests>${skipJmsTests}</skipTests>
-               <includes>
-                  <include>**/*Test.java</include>
-               </includes>
                <excludes>
                   <exclude>org/hornetq/jms/tests/JMSTestCase.java</exclude>
                   <exclude>org/hornetq/jms/tests/HornetqServerTestCase.java</exclude>
@@ -110,14 +101,6 @@
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/manual/**</exclude>
                </excludes>
-            </configuration>
-         </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-               <source>1.6</source>
-               <target>1.6</target>
             </configuration>
          </plugin>
       </plugins>
