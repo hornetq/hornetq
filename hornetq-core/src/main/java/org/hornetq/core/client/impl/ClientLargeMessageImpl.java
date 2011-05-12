@@ -27,8 +27,6 @@ import org.hornetq.utils.DataConstants;
  * until the buffer is filled up or the user set a streaming.
  *
  * @author clebertsuconic
- *
- *
  */
 public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientLargeMessageInternal
 {
@@ -49,6 +47,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @return the largeMessageSize
     */
+   @Override
    public long getLargeMessageSize()
    {
       return largeMessageSize;
@@ -57,6 +56,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @param largeMessageSize the largeMessageSize to set
     */
+   @Override
    public void setLargeMessageSize(long largeMessageSize)
    {
       this.largeMessageSize = largeMessageSize;
@@ -70,6 +70,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
 
    // Public --------------------------------------------------------
 
+   @Override
    public int getEncodeSize()
    {
       if (bodyBuffer != null)
@@ -85,16 +86,19 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @return the largeMessage
     */
+   @Override
    public boolean isLargeMessage()
    {
       return true;
    }
 
+   @Override
    public void setLargeMessageController(final LargeMessageController controller)
    {
       largeMessageController = controller;
    }
 
+   @Override
    public HornetQBuffer getBodyBuffer()
    {
       checkBuffer();
@@ -102,11 +106,13 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       return bodyBuffer;
    }
 
+   @Override
    public int getBodySize()
    {
       return getLongProperty(Message.HDR_LARGE_BODY_SIZE).intValue();
    }
 
+   @Override
    public LargeMessageController getLargeMessageController()
    {
       return largeMessageController;
@@ -115,6 +121,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
+   @Override
    public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
       if (bodyBuffer != null)
@@ -131,6 +138,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
     */
+   @Override
    public void setOutputStream(final OutputStream out) throws HornetQException
    {
       if (bodyBuffer != null)
@@ -146,6 +154,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ClientMessage#waitOutputStreamCompletion()
     */
+   @Override
    public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
       if (bodyBuffer != null)
@@ -158,6 +167,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       }
    }
 
+   @Override
    public void discardBody()
    {
       if (bodyBuffer != null)

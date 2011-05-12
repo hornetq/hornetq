@@ -17,7 +17,6 @@ import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,9 +28,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
-import org.hornetq.api.core.*;
+import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
@@ -203,6 +205,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
  
    }
 
+   @Override
    public void connect(int initialConnectAttempts, boolean failoverOnInitialConnection) throws HornetQException
    {
       // Get the connection
@@ -221,11 +224,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    }
 
+   @Override
    public TransportConfiguration getConnectorConfiguration()
    {
       return connectorConfig;
    }
 
+   @Override
    public void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp)
    {
       if(live.equals(connectorConfig) && backUp != null)
@@ -234,11 +239,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
+   @Override
    public Object getBackupConnector()
    {
       return backupConfig;
    }
 
+   @Override
    public ClientSession createSession(final String username,
                                       final String password,
                                       final boolean xa,
@@ -256,6 +263,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    ackBatchSize);
    }
 
+   @Override
    public ClientSession createSession(final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
                                       final int ackBatchSize) throws HornetQException
@@ -269,6 +277,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    ackBatchSize);
    }
 
+   @Override
    public ClientSession createXASession() throws HornetQException
    {
       return createSessionInternal(null,
@@ -280,6 +289,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    serverLocator.getAckBatchSize());
    }
 
+   @Override
    public ClientSession createTransactedSession() throws HornetQException
    {
       return createSessionInternal(null,
@@ -291,6 +301,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    serverLocator.getAckBatchSize());
    }
 
+   @Override
    public ClientSession createSession() throws HornetQException
    {
       return createSessionInternal(null,
@@ -302,6 +313,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    serverLocator.getAckBatchSize());
    }
 
+   @Override
    public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
       return createSessionInternal(null,
@@ -313,6 +325,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    serverLocator.getAckBatchSize());
    }
 
+   @Override
    public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
       return createSessionInternal(null,
@@ -324,6 +337,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                                    serverLocator.getAckBatchSize());
    }
 
+   @Override
    public ClientSession createSession(final boolean xa,
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
@@ -340,16 +354,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
+   @Override
    public void connectionCreated(final Connection connection, final ProtocolType protocol)
    {
    }
 
+   @Override
    public void connectionDestroyed(final Object connectionID)
    {
       handleConnectionFailure(connectionID,
                               new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected"));
    }
 
+   @Override
    public void connectionException(final Object connectionID, final HornetQException me)
    {
       handleConnectionFailure(connectionID, me);
@@ -357,6 +374,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    // Must be synchronized to prevent it happening concurrently with failover which can lead to
    // inconsistencies
+   @Override
    public void removeSession(final ClientSessionInternal session, boolean failingOver)
    {
       synchronized (sessions)
@@ -365,30 +383,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
    
+   @Override
    public void connectionReadyForWrites(final Object connectionID, final boolean ready)
    {
    }
 
+   @Override
    public synchronized int numConnections()
    {
       return connection != null ? 1 : 0;
    }
 
+   @Override
    public int numSessions()
    {
       return sessions.size();
    }
 
+   @Override
    public void addFailureListener(final SessionFailureListener listener)
    {
       listeners.add(listener);
    }
 
+   @Override
    public boolean removeFailureListener(final SessionFailureListener listener)
    {
       return listeners.remove(listener);
    }
 
+   @Override
    public void causeExit()
    {
       exitLoop = true;
@@ -398,6 +422,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
+   @Override
    public void close()
    {
       if (closed)
@@ -436,6 +461,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       closed = true;
    }
 
+   @Override
    public ServerLocator getServerLocator()
    {
       return serverLocator;
@@ -968,6 +994,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
+   @Override
    public CoreRemotingConnection getConnection()
    {
       if (connection == null)
@@ -1128,6 +1155,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       return connection;
    }
 
+   @Override
    public void finalize() throws Throwable
    {
       if (!closed)
@@ -1147,6 +1175,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       return AccessController.doPrivileged(new PrivilegedAction<ConnectorFactory>()
       {
+         @Override
          public ConnectorFactory run()
          {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -1212,6 +1241,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          this.conn = conn;
       }
 
+      @Override
       public void handlePacket(final Packet packet)
       {
          final byte type = packet.getType();
@@ -1224,6 +1254,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             {
                // Must be executed on new thread since cannot block the netty thread for a long time and fail can
                // cause reconnect loop
+               @Override
                public void run()
                {
                   SimpleString nodeID = msg.getNodeID();
@@ -1258,6 +1289,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private class DelegatingBufferHandler implements BufferHandler
    {
+      @Override
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          CoreRemotingConnection theConn = connection;
@@ -1278,6 +1310,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          this.connectionID = connectionID;
       }
 
+      @Override
       public void connectionFailed(final HornetQException me, boolean failedOver)
       {
          handleConnectionFailure(connectionID, me);
@@ -1293,6 +1326,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          pingRunnable = new WeakReference<PingRunnable>(runnable);
       }
 
+      @Override
       public void run()
       {
          PingRunnable runnable = pingRunnable.get();
@@ -1313,6 +1347,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       private long lastCheck = System.currentTimeMillis();
 
+      @Override
       public synchronized void run()
       {
          if (cancelled || stopPingingAfterOne && !first)
@@ -1336,6 +1371,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                threadPool.execute(new Runnable()
                {
                   // Must be executed on different thread
+                  @Override
                   public void run()
                   {
                      connection.fail(me);
