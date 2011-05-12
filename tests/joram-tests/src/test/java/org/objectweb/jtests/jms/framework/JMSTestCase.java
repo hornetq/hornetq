@@ -35,7 +35,7 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
  */
 public abstract class JMSTestCase extends TestCase
 {
-   private static final String PROP_FILE_NAME = "config/provider.properties";
+   private static final String PROP_FILE_NAME = "provider.properties";
 
    protected Admin admin;
 
@@ -57,11 +57,11 @@ public abstract class JMSTestCase extends TestCase
          {
             message += " [linked exception: " + linkedException + "]";
          }
-         super.fail(message);
+         fail(message);
       }
       else
       {
-         super.fail(e.getMessage());
+         fail(e.getMessage());
       }
    }
 

@@ -24,13 +24,13 @@ import java.util.Properties;
 public class TestConfig
 {
    // name of the configuration file
-   private static final String PROP_FILE_NAME = "config/test.properties";
+   private static final String PROP_FILE_NAME = "test.properties";
 
    // name of the timeout property
    private static final String PROP_NAME = "timeout";
 
    /**
-    * timeout value used by <code>receive</code> method in the tests. 
+    * timeout value used by <code>receive</code> method in the tests.
     * the value is specified in the <code>config/test.properties</code> file.
     */
    public static final long TIMEOUT;
