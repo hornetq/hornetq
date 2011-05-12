@@ -6,6 +6,7 @@ org.eclipse.jdt.ui.prefs
 !etc/org.eclipse.jdt.core.prefs
 org.maven.ide.eclipse.prefs
 .classpath
+/bin
 
 # /
 /build
