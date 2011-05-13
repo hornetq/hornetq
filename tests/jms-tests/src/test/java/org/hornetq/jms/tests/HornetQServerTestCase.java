@@ -35,7 +35,6 @@ import javax.transaction.TransactionManager;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -246,10 +245,9 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       destroyQueue("Queue4");
    }
 
-   // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1606
    public String[] getContainerConfig()
    {
-      return new String[] {"config/test-beans.xml"};
+      return new String[] {"test-beans.xml"};
    }
 
    protected HornetQServer getJmsServer() throws Exception
