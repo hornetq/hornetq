@@ -72,6 +72,8 @@ import org.hornetq.utils.PriorityLinkedListImpl;
 public class QueueImpl implements Queue
 {
    private static final Logger log = Logger.getLogger(QueueImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
 
@@ -396,7 +398,7 @@ public class QueueImpl implements Queue
 
    public void deliverAsync()
    {
-      executor.execute(deliverRunner);
+      getExecutor().execute(deliverRunner);
    }
 
    public void close() throws Exception
@@ -411,7 +413,15 @@ public class QueueImpl implements Queue
 
    public Executor getExecutor()
    {
-      return executor;
+      if (pageSubscription.isPaging())
+      {
+         // When in page mode, we don't want to have concurrent IO on the same PageStore
+         return pageSubscription.getExecutor();
+      }
+      else
+      {
+         return executor;
+      }
    }
 
    /* Only used on tests */
@@ -432,7 +442,7 @@ public class QueueImpl implements Queue
 
       if (!ok)
       {
-         log.warn("Couldn't finish waiting executors. Try increasing the thread pool size");
+         log.warn("Couldn't finish waiting executors. Try increasing the thread pool size", new Exception ("trace"));
       }
       
       return ok;
@@ -1440,6 +1450,8 @@ public class QueueImpl implements Queue
       int numRefs = messageReferences.size();
 
       int handled = 0;
+      
+      long timeout = System.currentTimeMillis() + 1000;
 
       while (handled < numRefs)
       {
@@ -1451,6 +1463,19 @@ public class QueueImpl implements Queue
 
             return;
          }
+         
+         if (pageSubscription != null && pageSubscription.isPaging() && System.currentTimeMillis() > timeout)
+         {
+            if (isTrace)
+            {
+               log.trace("Page delivery has been running for too long. Scheduling another delivery task now");
+            }
+            
+            deliverAsync();
+            
+            return;
+         }
+         
 
          ConsumerHolder holder = consumerList.get(pos);
 
@@ -1549,7 +1574,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      if (pageIterator != null && messageReferences.size() == 0 && pageIterator.hasNext())
+      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext()) 
       {
          scheduleDepage();
       }
@@ -1580,7 +1605,7 @@ public class QueueImpl implements Queue
 
    private void scheduleDepage()
    {
-      executor.execute(depageRunner);
+      pageSubscription.getExecutor().execute(depageRunner);
    }
 
    private void depage()
@@ -1629,11 +1654,13 @@ public class QueueImpl implements Queue
 
       if (internalQueue)
       {
+         if (isTrace)
+         {
+            log.trace("Queue " + this.getName() + " is an internal queue, no checkRedelivery");
+         }
          // no DLQ check on internal queues
          return true;
       }
-
-      // TODO: DeliveryCount on paging
       
       if (!internalQueue && message.isDurable() && durable && !reference.isPaged())
       {
@@ -1644,9 +1671,18 @@ public class QueueImpl implements Queue
 
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
 
+      if (isTrace)
+      {
+         log.trace("Checking redelivery for reference = " + reference + " with maxDeliveries = " + maxDeliveries + " on queue " + address);
+      }
+
       // First check DLA
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
+         if (isTrace)
+         {
+            log.trace("Sending reference " + reference + " to DLA");
+         }
          sendToDeadLetterAddress(reference);
 
          return false;

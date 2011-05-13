@@ -16,7 +16,6 @@ package org.hornetq.core.server.impl;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,8 +83,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private final ServerSession session;
 
-   private final Executor executor;
-
    private final Object lock = new Object();
 
    private volatile AtomicInteger availableCredits = new AtomicInteger(0);
@@ -152,8 +149,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       this.binding = binding;
 
       messageQueue = binding.getQueue();
-
-      this.executor = messageQueue.getExecutor();
 
       this.started = browseOnly || started;
 
@@ -376,7 +371,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       Future future = new Future();
 
-      executor.execute(future);
+      messageQueue.getExecutor().execute(future);
 
       boolean ok = future.await(10000);
 
@@ -483,7 +478,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          Future future = new Future();
 
-         executor.execute(future);
+         messageQueue.getExecutor().execute(future);
 
          boolean ok = future.await(10000);
 
@@ -668,7 +663,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             if (browseOnly)
             {
-               executor.execute(browserDeliverer);
+               messageQueue.getExecutor().execute(browserDeliverer);
             }
             else
             {
@@ -680,7 +675,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void resumeLargeMessage()
    {
-      executor.execute(resumeLargeMessageRunnable);
+      messageQueue.getExecutor().execute(resumeLargeMessageRunnable);
    }
 
    private void deliverLargeMessage(final MessageReference ref, final ServerMessage message) throws Exception
@@ -723,7 +718,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                {
                   if (browseOnly)
                   {
-                     executor.execute(browserDeliverer);
+                     messageQueue.getExecutor().execute(browserDeliverer);
                   }
                   else
                   {

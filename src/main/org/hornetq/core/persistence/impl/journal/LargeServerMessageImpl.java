@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.BodyEncoder;
@@ -48,6 +49,8 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    private final JournalStorageManager storageManager;
 
    private LargeServerMessage linkMessage;
+   
+   private boolean paged;
 
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
@@ -82,6 +85,11 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    // Public --------------------------------------------------------
 
+   public void setPaged()
+   {
+      paged = true;
+   }
+   
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#addBytes(byte[])
     */
@@ -260,27 +268,59 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
       }
    }
+   
+
+   public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
+   {
+      super.setOriginalHeaders(other, expiry);
+      
+      LargeServerMessageImpl otherLM = (LargeServerMessageImpl)other;
+      this.paged = otherLM.paged;
+      if (this.paged)
+      {
+         this.removeProperty(Message.HDR_ORIG_MESSAGE_ID); 
+      }
+   }
+
 
    @Override
    public synchronized ServerMessage copy(final long newID)
    {
-      incrementDelayDeletionCount();
-
-      long idToUse = messageID;
-
-      if (linkMessage != null)
+      if (!paged)
       {
-         idToUse = linkMessage.getMessageID();
+         incrementDelayDeletionCount();
+   
+         long idToUse = messageID;
+   
+         if (linkMessage != null)
+         {
+            idToUse = linkMessage.getMessageID();
+         }
+   
+         SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
+   
+         ServerMessage newMessage = new LargeServerMessageImpl(linkMessage == null ? this
+                                                                                  : (LargeServerMessageImpl)linkMessage,
+                                                               newfile,
+                                                               newID);
+         return newMessage;
       }
-
-      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
-
-      ServerMessage newMessage = new LargeServerMessageImpl(linkMessage == null ? this
-                                                                               : (LargeServerMessageImpl)linkMessage,
-                                                            newfile,
-                                                            newID);
-
-      return newMessage;
+      else
+      {
+         SequentialFile file = this.file;
+         
+         SequentialFile newFile = storageManager.createFileForLargeMessage(newID, durable);
+         
+         file.copyTo(newFile);
+         
+         LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this, newFile, newID);
+         
+         newMessage.linkMessage = null;
+         
+         newMessage.setPaged();
+         
+         return newMessage;
+      }
    }
 
    public SequentialFile getFile()

@@ -46,6 +46,7 @@ import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
@@ -200,7 +201,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          this.syncTimer = null;
       }
 
-      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executorFactory, addressSettings.getPageCacheMaxSize());
+      this.cursorProvider = new PageCursorProviderImpl(this, this.storageManager, executor, addressSettings.getPageCacheMaxSize());
 
    }
 
@@ -870,6 +871,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
 
          PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
+         
+         if (message.isLargeMessage())
+         {
+            ((LargeServerMessage)message).setPaged();
+         }
 
          int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 

@@ -30,7 +30,13 @@ public interface LargeServerMessage extends ServerMessage
    void setLinkedMessage(LargeServerMessage message);
 
    boolean isFileExists() throws Exception;
-
+   
+   /**
+    * We have to copy the large message content in case of DLQ and paged messages
+    * For that we need to pre-mark the LargeMessage with a flag when it is paged
+    */
+   void setPaged();
+   
    /** Close the files if opened */
    void releaseResources();
 

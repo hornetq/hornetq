@@ -36,6 +36,7 @@ import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
+import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
@@ -79,6 +80,8 @@ public class PrintPages
       {
 
          Pair<Map<Long, Set<PagePosition>>, Set<Long>> cursorACKs = PrintPages.loadCursorACKs(arg[1]);
+         
+         Set<Long> pgTXs = cursorACKs.b;
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
          final ExecutorService executor = Executors.newFixedThreadPool(10);
@@ -146,7 +149,7 @@ public class PrintPages
                         System.out.print(",");
                      }
                   }
-                  if (msg.getTransactionID() != 0 && ! cursorACKs.b.contains(msg.getTransactionID()));
+                  if (msg.getTransactionID() >= 0 && !pgTXs.contains(msg.getTransactionID()))
                   {
                      System.out.print(", **PG_TX_NOT_FOUND**");
                   }
@@ -230,7 +233,12 @@ public class PrintPages
             }
             else
             {
-               pgTXs.add(record.id);
+               PageTransactionInfoImpl pageTransactionInfo = new PageTransactionInfoImpl();
+
+               pageTransactionInfo.decode(buff);
+
+               pageTransactionInfo.setRecordID(record.id);
+               pgTXs.add(pageTransactionInfo.getTransactionID());
             }
          }
       }

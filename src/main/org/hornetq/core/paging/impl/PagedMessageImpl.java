@@ -84,6 +84,7 @@ public class PagedMessageImpl implements PagedMessage
          HornetQBuffer buffer = HornetQBuffers.dynamicBuffer(largeMessageLazyData);
          message.decodeHeadersAndProperties(buffer);
          lgMessage.incrementDelayDeletionCount();
+         lgMessage.setPaged();
          largeMessageLazyData = null;
       }
    }

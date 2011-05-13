@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PageSubscriptionCounter;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.MessageReference;
@@ -40,6 +41,8 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
 
    // Constants -----------------------------------------------------
    static final Logger log = Logger.getLogger(PageSubscriptionCounterImpl.class);
+   
+   static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -51,16 +54,18 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    private long recordID = -1;
 
    private boolean persistent;
+   
+   private final PageSubscription subscription;
 
    private final StorageManager storage;
+   
+   private final Executor executor;
 
    private final AtomicLong value = new AtomicLong(0);
 
    private final LinkedList<Long> incrementRecords = new LinkedList<Long>();
 
    private LinkedList<Pair<Long, Integer>> loadList;
-
-   private final Executor executor;
 
    private final Runnable cleanupCheck = new Runnable()
    {
@@ -77,14 +82,16 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
    // Constructors --------------------------------------------------
 
    public PageSubscriptionCounterImpl(final StorageManager storage,
+                                      final PageSubscription subscription,
+                                      final Executor executor,
                                       final boolean persistent,
-                                      final long subscriptionID,
-                                      final Executor executor)
+                                      final long subscriptionID)
    {
       this.subscriptionID = subscriptionID;
-      this.storage = storage;
       this.executor = executor;
+      this.storage = storage;
       this.persistent = persistent;
+      this.subscription = subscription;
    }
 
    /* (non-Javadoc)
@@ -253,10 +260,13 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
          }
 
          newRecordID = storage.storePageCounter(txCleanup, subscriptionID, valueReplace);
+         
+         if (isTrace)
+         {
+            log.trace("Replacing page-counter record = "  + recordID + " by record = " + newRecordID + " on subscriptionID = " + this.subscriptionID + " for queue = " + this.subscription.getQueue().getName());
+         }
 
          storage.commit(txCleanup);
-
-         storage.waitOnOperations();
      }
       catch (Exception e)
       {

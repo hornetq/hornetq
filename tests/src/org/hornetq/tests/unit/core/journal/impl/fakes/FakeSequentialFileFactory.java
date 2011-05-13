@@ -674,6 +674,15 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#copyTo(org.hornetq.core.journal.SequentialFile)
+       */
+      public void copyTo(SequentialFile newFileName)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    /* (non-Javadoc)
