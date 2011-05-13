@@ -413,7 +413,7 @@ public class QueueImpl implements Queue
 
    public Executor getExecutor()
    {
-      if (pageSubscription.isPaging())
+      if (pageSubscription != null && pageSubscription.isPaging())
       {
          // When in page mode, we don't want to have concurrent IO on the same PageStore
          return pageSubscription.getExecutor();
