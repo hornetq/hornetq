@@ -693,3 +693,15 @@ org.maven.ide.eclipse.prefs
 # /hornetq-twitter-integration/
 /hornetq-twitter-integration/target
 /hornetq-twitter-integration/.project
+/tests/concurrent-tests/.project
+/tests/integration-tests/.project
+/tests/jms-tests/.project
+/tests/joram-tests/.project
+/tests/performance-tests/.project
+/tests/.project
+/tests/soak-tests/.project
+/tests/stress-tests/.project
+/tests/timing-tests/.project
+/tests/unit-tests/.project
+/docs/rest-manual/.project
+/docs/quickstart-guide/.project
