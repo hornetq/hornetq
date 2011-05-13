@@ -95,7 +95,7 @@ public interface SequentialFile
 
    SequentialFile copy();
    
-   void copyTo(SequentialFile newFileName);
+   void copyTo(SequentialFile newFileName) throws Exception;
 
    void setTimedBuffer(TimedBuffer buffer);
 }

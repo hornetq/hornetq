@@ -307,19 +307,29 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       }
       else
       {
-         SequentialFile file = this.file;
-         
-         SequentialFile newFile = storageManager.createFileForLargeMessage(newID, durable);
-         
-         file.copyTo(newFile);
-         
-         LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this, newFile, newID);
-         
-         newMessage.linkMessage = null;
-         
-         newMessage.setPaged();
-         
-         return newMessage;
+         try
+         {
+            validateFile();
+            
+            SequentialFile file = this.file;
+            
+            SequentialFile newFile = storageManager.createFileForLargeMessage(newID, durable);
+            
+            file.copyTo(newFile);
+            
+            LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this, newFile, newID);
+            
+            newMessage.linkMessage = null;
+            
+            newMessage.setPaged();
+            
+            return newMessage;
+         }
+         catch (Exception e)
+         {
+            log.warn("Error on copying large message this for DLA or Expiry", e);
+            return null;
+         }
       }
    }
 

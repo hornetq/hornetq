@@ -120,7 +120,7 @@ public class PagingTest extends ServiceTestBase
    {
       locator.close();
 
-      super.tearDown();
+      //super.tearDown();
    }
 
    public void testPreparePersistent() throws Exception
@@ -3725,6 +3725,163 @@ public class PagingTest extends ServiceTestBase
          assertFalse(pgStoreAddress.isPaging());
 
          session.commit();
+
+         session.close();
+      }
+      finally
+      {
+         locator.close();
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testExpireLargeMessageOnPaging() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
+      AddressSettings dla = new AddressSettings();
+      dla.setMaxDeliveryAttempts(5);
+      dla.setDeadLetterAddress(new SimpleString("DLA"));
+      dla.setExpiryAddress(new SimpleString("DLA"));
+      settings.put(ADDRESS.toString(), dla);
+
+      final HornetQServer server = createServer(true, config, PagingTest.PAGE_SIZE, PagingTest.PAGE_MAX, settings);
+
+      server.start();
+
+      final int messageSize = 20;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         session.createQueue("DLA", "DLA");
+
+         PagingStore pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
+         pgStoreAddress.startPaging();
+         PagingStore pgStoreDLA = server.getPagingManager().getPageStore(new SimpleString("DLA"));
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         for (int i = 0; i < 500; i++)
+         {
+            log.info("send message #" + i);
+            message = session.createMessage(true);
+
+            message.putStringProperty("id", "str" + i);
+            
+            message.setExpiration(System.currentTimeMillis() + 2000);
+
+            if (i % 2 == 0)
+            {
+               message.setBodyInputStream(createFakeLargeStream(messageSize));
+            }
+            else
+            {
+               byte bytes[] = new byte[messageSize];
+               for (int s = 0 ; s < bytes.length; s++)
+               {
+                  bytes[s] = getSamplebyte(s);
+               }
+               message.getBodyBuffer().writeBytes(bytes);
+            }
+
+            producer.send(message);
+            
+            if ((i + 1) % 2 == 0)
+            {
+               session.commit();
+               if (i < 400)
+               {
+                  pgStoreAddress.forceAnotherPage();
+               }
+            }
+         }
+
+         session.commit();
+         
+         sf.close();
+         
+         locator.close();
+         
+         server.stop();
+         
+         Thread.sleep(3000);
+         
+         server.start();
+         
+         locator = createInVMNonHALocator();
+         
+         sf = locator.createSessionFactory();
+         
+         session = sf.createSession(false, false);
+         
+         session.start();
+         
+         ClientConsumer cons = session.createConsumer(ADDRESS);
+         
+         assertNull(cons.receive(1000));
+         
+         cons.close();
+         
+         cons = session.createConsumer("DLA");
+
+         for (int i = 0; i < 500; i++)
+         {
+            log.info("Received message " + i);
+            message = cons.receive(5000);
+            assertNotNull(message);
+            message.acknowledge();
+
+            message.saveToOutputStream(new OutputStream()
+            {
+               @Override
+               public void write(int b) throws IOException
+               {
+
+               }
+            });
+         }
+         
+         assertNull(cons.receiveImmediate());
+         
+         session.commit();
+         
+         cons.close();
+         
+         long timeout = System.currentTimeMillis() + 5000;
+         
+         pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
+         
+         while (timeout > System.currentTimeMillis() && pgStoreAddress.isPaging())
+         {
+            Thread.sleep(50);
+         }
+         
+         assertFalse(pgStoreAddress.isPaging());
 
          session.close();
       }
