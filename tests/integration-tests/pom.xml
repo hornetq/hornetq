@@ -106,12 +106,7 @@
                   <exclude>**/cluster/failover/Remote*.java</exclude>
                   <exclude>**/failover/remote/**.java</exclude>
                </excludes>
-          <systemProperties>
-            <property>
-              <name>java.library.path</name>
-              <value>${user.dir}/distribution/hornetq/src/main/resources/bin</value>
-            </property>
-          </systemProperties>
+              <argLine>-Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin</argLine>
          </configuration>
          </plugin>
          <plugin>
