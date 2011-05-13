@@ -81,8 +81,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final StorageManager storageManager;
 
-   private final PostOffice postOffice;
-
    private final DecimalFormat format = new DecimalFormat("000000000");
 
    private final AtomicInteger currentPageSize = new AtomicInteger(0);
@@ -149,12 +147,11 @@ public class PagingStoreImpl implements TestSupportPageStore
                           final long syncTimeout,
                           final PagingManager pagingManager,
                           final StorageManager storageManager,
-                          final PostOffice postOffice,
                           final SequentialFileFactory fileFactory,
                           final PagingStoreFactory storeFactory,
                           final SimpleString storeName,
                           final AddressSettings addressSettings,
-                          final ExecutorFactory executorFactory,
+                          final Executor executor,
                           final boolean syncNonTransactional)
    {
       if (pagingManager == null)
@@ -165,8 +162,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.address = address;
 
       this.storageManager = storageManager;
-
-      this.postOffice = postOffice;
 
       this.storeName = storeName;
 
@@ -182,7 +177,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                                          pageSize);
       }
 
-      this.executor = executorFactory.getExecutor();
+      this.executor = executor;
 
       this.pagingManager = pagingManager;
 

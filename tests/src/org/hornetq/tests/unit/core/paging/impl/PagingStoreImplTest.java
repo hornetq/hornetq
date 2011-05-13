@@ -143,12 +143,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                   100,
                                                   createMockManager(),
                                                   createStorageManagerMock(),
-                                                  createPostOfficeMock(),
                                                   factory,
                                                   null,
                                                   PagingStoreImplTest.destinationTestName,
                                                   addressSettings,
-                                                  getExecutorFactory(),
+                                                  getExecutorFactory().getExecutor(),
                                                   true);
 
       storeImpl.start();
@@ -181,12 +180,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                            100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
-                                                           createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            PagingStoreImplTest.destinationTestName,
                                                            addressSettings,
-                                                           getExecutorFactory(),
+                                                           getExecutorFactory().getExecutor(),
                                                            true);
 
       storeImpl.start();
@@ -219,12 +217,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                       100,
                                       createMockManager(),
                                       createStorageManagerMock(),
-                                      createPostOfficeMock(),
                                       factory,
                                       null,
                                       PagingStoreImplTest.destinationTestName,
                                       addressSettings,
-                                      getExecutorFactory(),
+                                      getExecutorFactory().getExecutor(),
                                       true);
 
       storeImpl.start();
@@ -248,12 +245,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                            100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
-                                                           createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            PagingStoreImplTest.destinationTestName,
                                                            addressSettings,
-                                                           getExecutorFactory(),
+                                                           getExecutorFactory().getExecutor(),
                                                            true);
 
       storeImpl.start();
@@ -325,12 +321,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                            100,
                                                            createMockManager(),
                                                            createStorageManagerMock(),
-                                                           createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            PagingStoreImplTest.destinationTestName,
                                                            addressSettings,
-                                                           getExecutorFactory(),
+                                                           getExecutorFactory().getExecutor(),
                                                            true);
 
       storeImpl.start();
@@ -474,12 +469,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                                  100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
-                                                                 createPostOfficeMock(),
                                                                  factory,
                                                                  storeFactory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 getExecutorFactory(),
+                                                                 getExecutorFactory().getExecutor(),
                                                                  true);
 
       storeImpl.start();
@@ -639,12 +633,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                             100,
                                                             createMockManager(),
                                                             createStorageManagerMock(),
-                                                            createPostOfficeMock(),
                                                             factory,
                                                             storeFactory,
                                                             new SimpleString("test"),
                                                             settings,
-                                                            getExecutorFactory(),
+                                                            getExecutorFactory().getExecutor(),
                                                             true);
       storeImpl2.start();
 
@@ -726,12 +719,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                                  100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
-                                                                 createPostOfficeMock(),
                                                                  factory,
                                                                  storeFactory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 getExecutorFactory(),
+                                                                 getExecutorFactory().getExecutor(),
                                                                  true);
 
       storeImpl.start();
@@ -770,12 +762,11 @@ public class PagingStoreImplTest extends UnitTestCase
                                                                  100,
                                                                  createMockManager(),
                                                                  createStorageManagerMock(),
-                                                                 createPostOfficeMock(),
                                                                  factory,
                                                                  storeFactory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 getExecutorFactory(),
+                                                                 getExecutorFactory().getExecutor(),
                                                                  false);
 
       storeImpl.start();
