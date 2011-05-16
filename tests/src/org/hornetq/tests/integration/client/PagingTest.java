@@ -120,7 +120,7 @@ public class PagingTest extends ServiceTestBase
    {
       locator.close();
 
-      //super.tearDown();
+      super.tearDown();
    }
 
    public void testPreparePersistent() throws Exception
@@ -2806,6 +2806,8 @@ public class PagingTest extends ServiceTestBase
          catch (Throwable ignored)
          {
          }
+         
+         OperationContextImpl.clearContext();
       }
 
    }

@@ -860,6 +860,8 @@ public class UnitTestCase extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));
 
