@@ -38,24 +38,27 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * 
- * A TypedProperties
- * 
+ * Property Value Conversion.
+ * <p>
+ * This implementation follows section 3.5.4 of the <i>Java Message Service<i>
+ * specification (Version 1.1 April 12, 2002).
+ * <p>
  * TODO - should have typed property getters and do conversions herein
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
+ * @see <i>Java Message Service<i> specification (Version 1.1 April 12, 2002), section 3.5.4.
  */
 public class TypedProperties
 {
    private static final Logger log = Logger.getLogger(TypedProperties.class);
-   
+
    private static final SimpleString HQ_PROPNAME = new SimpleString("_HQ_");
 
    private Map<SimpleString, PropertyValue> properties;
 
    private volatile int size;
-   
+
    private boolean internalProperties;
 
    public TypedProperties()
@@ -76,7 +79,7 @@ public class TypedProperties
       properties = other.properties == null ? null : new HashMap<SimpleString, PropertyValue>(other.properties);
       size = other.size;
    }
-   
+
    public boolean hasInternalProperties()
    {
       return internalProperties;
@@ -354,19 +357,17 @@ public class TypedProperties
    public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
    {
       Object value = doGetProperty(key);
-
+      if (value == null)
+         return Float.valueOf(null);
       if (value instanceof Float)
       {
          return ((Float)value).floatValue();
       }
-      else if (value instanceof SimpleString)
+      if (value instanceof SimpleString)
       {
          return Float.parseFloat(((SimpleString)value).toString());
       }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion " + key);
-      }
+      throw new PropertyConversionException("Invalid conversion: " + key);
    }
 
    public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
@@ -414,10 +415,7 @@ public class TypedProperties
       {
          return new SimpleString(value.toString());
       }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      throw new PropertyConversionException("Invalid conversion");
    }
 
    public Object removeProperty(final SimpleString key)
@@ -430,10 +428,10 @@ public class TypedProperties
       if (size == 0)
       {
          return false;
-         
+
       }
       else
-      {         
+      {
          return properties.containsKey(key);
       }
    }
@@ -442,7 +440,7 @@ public class TypedProperties
    {
       if (size == 0)
       {
-         return Collections.EMPTY_SET;         
+         return Collections.emptySet();
       }
       else
       {
@@ -461,7 +459,7 @@ public class TypedProperties
       else
       {
          int numHeaders = buffer.readInt();
-         
+
          properties = new HashMap<SimpleString, PropertyValue>(numHeaders);
          size = 0;
 
@@ -619,7 +617,7 @@ public class TypedProperties
       {
          internalProperties = true;
       }
-      
+
       PropertyValue oldValue = properties.put(key, value);
       if (oldValue != null)
       {

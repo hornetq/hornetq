@@ -20,7 +20,6 @@ import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
 import org.hornetq.core.version.impl.VersionImpl;
@@ -124,7 +123,7 @@ public class VersionLoader
          }
          catch (IOException e)
          {
-            // if we get here then the messaging hasnt been built properly and the version.properties is skewed in some
+            // if we get here then the messaging hasn't been built properly and the version.properties is skewed in some
             // way
             throw new RuntimeException("unable to load " + VersionLoader.PROP_FILE_NAME, e);
          }

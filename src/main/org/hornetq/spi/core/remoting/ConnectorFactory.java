@@ -28,7 +28,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public interface ConnectorFactory
 {
    /**
-    * creates a new instanc of a connector.
+    * creates a new instance of a connector.
     *
     * @param configuration       the configuration
     * @param handler             the handler
