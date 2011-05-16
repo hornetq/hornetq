@@ -33,8 +33,6 @@ import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -43,6 +41,8 @@ import org.hornetq.jms.tests.tools.ServerManagement;
 import org.hornetq.jms.tests.tools.container.Server;
 import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -50,7 +50,7 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class HornetQServerTestCase extends ProxyAssertSupport
+public abstract class HornetQServerTestCase extends ProxyAssertSupport
 {
    // Constants -----------------------------------------------------
 
@@ -61,8 +61,11 @@ public class HornetQServerTestCase extends ProxyAssertSupport
    protected final Logger log = Logger.getLogger(getClass());
 
    // Static --------------------------------------------------------
-  
-   /** Some testcases are time sensitive, and we need to make sure a GC would happen before certain scenarios*/
+
+	/**
+	 * Some test cases are time sensitive, and we need to make sure a GC would
+	 * happen before certain scenarios.
+	 */
    public static void forceGC()
    {
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
@@ -122,7 +125,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
          }
          catch (Exception e)
          {
-            // ignore, incase its a remote server
+            // ignore, in case its a remote server
          }
          if (!started)
          {
