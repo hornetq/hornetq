@@ -23,18 +23,18 @@ import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
  * A ServerLocator
  *
  * @author Tim Fox
- *
- *
  */
 public interface ServerLocator
 {
-   
-   /**
-    * This method will disable any checks when a GarbageCollection happens leaving connections open.
-    * The JMS Layer will make specific usage of this method, since the ConnectionFactory.finalize should release this.
-    * 
-    * Warn: You may leave resources unnatended if you call this method and don't take care of cleaning the resources yourself.
-    */
+
+	/**
+	 * This method will disable any checks when a GarbageCollection happens
+	 * leaving connections open. The JMS Layer will make specific usage of this
+	 * method, since the ConnectionFactory.finalize should release this.
+	 * 
+	 * Warning: You may leave resources unattended if you call this method and
+	 * don't take care of cleaning the resources yourself.
+	 */
    void disableFinalizeCheck();
    
    /**
@@ -244,20 +244,26 @@ public interface ServerLocator
     */
    void setProducerMaxRate(int producerMaxRate);
 
-   /**
-    * Returns whether consumers created through this factory will block while sending message acknowledgements or do it asynchronously.
-    * 
-    * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
-    * 
-    * @return whether consumers will block while sending message acknowledgements or do it asynchronously
-    */
+	/**
+	 * Returns whether consumers created through this factory will block while
+	 * sending message acknowledgments or do it asynchronously.
+	 * 
+	 * Default value is {@link HornetQClient#DEFAULT_BLOCK_ON_ACKNOWLEDGE}.
+	 * 
+	 * @return whether consumers will block while sending message
+	 *         acknowledgments or do it asynchronously
+	 */
    boolean isBlockOnAcknowledge();
 
-   /**
-    * Sets whether consumers created through this factory will block while sending message acknowledgements or do it asynchronously.
-    *
-    * @param blockOnAcknowledge <code>true</code> to block when sending message acknowledgements or <code>false</code> to send them asynchronously
-    */
+	/**
+	 * Sets whether consumers created through this factory will block while
+	 * sending message acknowledgments or do it asynchronously.
+	 * 
+	 * @param blockOnAcknowledge
+	 *            <code>true</code> to block when sending message
+	 *            acknowledgments or <code>false</code> to send them
+	 *            asynchronously
+	 */
    void setBlockOnAcknowledge(boolean blockOnAcknowledge);
 
    /**
@@ -341,30 +347,34 @@ public interface ServerLocator
     */
    boolean isPreAcknowledge();
 
-   /**
-    * Sets to <code>true</code> to pre-acknowledge consumed messages on the server before they are sent to consumers, else set to <code>false</code> to let
-    * clients acknowledge the message they consume.
-    * 
-    * @param preAcknowledge <code>true</code> to enable pre-acknowledgement, <code>false</code> else
-    */
+	/**
+	 * Sets to <code>true</code> to pre-acknowledge consumed messages on the
+	 * server before they are sent to consumers, else set to <code>false</code>
+	 * to let clients acknowledge the message they consume.
+	 * 
+	 * @param preAcknowledge
+	 *            <code>true</code> to enable pre-acknowledgment,
+	 *            <code>false</code> else
+	 */
    void setPreAcknowledge(boolean preAcknowledge);
 
-   /**
-    * Returns the acknowledgements batch size.
-    * 
-    * Default value is  {@link HornetQClient#DEFAULT_ACK_BATCH_SIZE}.
-    * 
-    * @return the acknowledgements batch size
-    */
+	/**
+	 * Returns the acknowledgments batch size.
+	 * 
+	 * Default value is {@link HornetQClient#DEFAULT_ACK_BATCH_SIZE}.
+	 * 
+	 * @return the acknowledgments batch size
+	 */
    int getAckBatchSize();
 
-   /**
-    * Sets the acknowledgements batch size.
-    * 
-    * Value must be equal or greater than 0.
-    * 
-    * @param ackBatchSize acknowledgements batch size
-    */
+	/**
+	 * Sets the acknowledgments batch size.
+	 * 
+	 * Value must be equal or greater than 0.
+	 * 
+	 * @param ackBatchSize
+	 *            acknowledgments batch size
+	 */
    void setAckBatchSize(int ackBatchSize);
 
    /**
