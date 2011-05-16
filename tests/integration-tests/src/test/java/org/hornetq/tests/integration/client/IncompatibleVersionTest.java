@@ -33,6 +33,8 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -180,13 +182,13 @@ public class IncompatibleVersionTest extends ServiceTestBase
       boolean result = false;
       try
       {
-         server = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+         server = SpawnedVMSupport.spawnVM(IncompatibleVersionTest.class.getCanonicalName(),
                                            new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                            "server",
                                            serverStartedString);
          Thread.sleep(2000);
       
-         Process client = SpawnedVMSupport.spawnVM("org.hornetq.tests.integration.client.IncompatibleVersionTest",
+         Process client = SpawnedVMSupport.spawnVM(IncompatibleVersionTest.class.getCanonicalName(),
                                                    new String[]{"-D" + VersionLoader.VERSION_PROP_FILE_KEY + "=" + propFileName},
                                                    "client");
       
@@ -216,7 +218,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       {
          Configuration conf = new ConfigurationImpl();
          conf.setSecurityEnabled(false);
-         conf.getAcceptorConfigurations().add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
+         conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName()));
          HornetQServer server = HornetQServers.newHornetQServer(conf, false);
          server.start();
          
@@ -227,7 +229,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
    {
       public void perform() throws Exception
       {
-         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory"));
+         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
          ClientSessionFactory sf = locator.createSessionFactory();
          ClientSession session = sf.createSession(false, true, true);
          log.info("### client: connected. server incrementingVersion = " + session.getVersion());
