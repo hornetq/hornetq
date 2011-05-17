@@ -92,8 +92,6 @@ public class PageSubscriptionImpl implements PageSubscription
 
    private final PageCursorProvider cursorProvider;
 
-   private final Executor executor;
-
    private volatile PagePosition lastAckedPosition;
 
    private List<PagePosition> recoveredACK;
@@ -101,6 +99,8 @@ public class PageSubscriptionImpl implements PageSubscription
    private final SortedMap<Long, PageCursorInfo> consumedPages = Collections.synchronizedSortedMap(new TreeMap<Long, PageCursorInfo>());
 
    private final PageSubscriptionCounter counter;
+   
+   private final Executor executor;
 
    private final AtomicLong deliveredCount = new AtomicLong(0);
 
@@ -126,7 +126,7 @@ public class PageSubscriptionImpl implements PageSubscription
       this.executor = executor;
       this.filter = filter;
       this.persistent = persistent;
-      this.counter = new PageSubscriptionCounterImpl(store, persistent, cursorId, executor);
+      this.counter = new PageSubscriptionCounterImpl(store, this, executor, persistent, cursorId);
    }
 
    // Public --------------------------------------------------------
@@ -224,7 +224,7 @@ public class PageSubscriptionImpl implements PageSubscription
       // First get the completed pages using a lock
       synchronized (this)
       {
-         for (Entry<Long, PageCursorInfo> entry : consumedPages.entrySet())
+         for (Entry<Long, PageCursorInfo> entry : consumedPages.entrySet()) 
          {
             PageCursorInfo info = entry.getValue();
             if (info.isDone() && !info.isPendingDelete() && lastAckedPosition != null)
@@ -687,6 +687,14 @@ public class PageSubscriptionImpl implements PageSubscription
       }
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.paging.cursor.PageSubscription#executeWithContext(java.lang.Runnable)
+    */
+   public Executor getExecutor()
+   {
+      return executor;
+   }
+
    private synchronized PageCursorInfo getPageInfo(final PagePosition pos)
    {
       return getPageInfo(pos, true);
@@ -734,8 +742,17 @@ public class PageSubscriptionImpl implements PageSubscription
    {
       if (lastAckedPosition == null || pos.compareTo(lastAckedPosition) > 0)
       {
+         if (isTrace)
+         {
+            log.trace("a new position is being processed as ACK");
+         }
          if (lastAckedPosition != null && lastAckedPosition.getPageNr() != pos.getPageNr())
          {
+            if (isTrace)
+            {
+               log.trace("Scheduling cleanup on pageSubscription for address = " + pageStore.getAddress() + " queue = " + this.getQueue().getName());
+            }
+            
             // there's a different page being acked, we will do the check right away
             if (autoCleanup)
             {
@@ -780,7 +797,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
    private PageTransactionInfo getPageTransaction(final PagedReference reference)
    {
-      if (reference.getPagedMessage().getTransactionID() != 0)
+      if (reference.getPagedMessage().getTransactionID() >= 0)
       {
          return pageStore.getPagingManager().getTransaction(reference.getPagedMessage().getTransactionID());
       }
@@ -816,6 +833,7 @@ public class PageSubscriptionImpl implements PageSubscription
 
       private final long pageId;
 
+      // TODO: Merge removedReferences and acks into a single structure
       // Confirmed ACKs on this page
       private final Set<PagePosition> acks = Collections.synchronizedSet(new LinkedHashSet<PagePosition>());
 
@@ -1135,6 +1153,13 @@ public class PageSubscriptionImpl implements PageSubscription
                {
                   ignored = true;
                }
+               
+               PageCursorInfo info = getPageInfo(message.getPosition(), false);
+               
+               if (info != null && info.isRemoved(message.getPosition()))
+               {
+                  continue;
+               }
 
                // 2nd ... if TX, is it committed?
                if (valid && message.getPagedMessage().getTransactionID() >= 0)
@@ -1145,7 +1170,7 @@ public class PageSubscriptionImpl implements PageSubscription
                   {
                      log.warn("Couldn't locate page transaction " + message.getPagedMessage().getTransactionID() +
                               ", ignoring message on position " +
-                              message.getPosition());
+                              message.getPosition() + " on address=" + pageStore.getAddress() + " queue=" + queue.getName());
                      valid = false;
                      ignored = true;
                   }
@@ -1166,7 +1191,7 @@ public class PageSubscriptionImpl implements PageSubscription
                   // Say you have a Browser that will only read the files... there's no need to control PageCursors is
                   // nothing
                   // is being changed. That's why the false is passed as a parameter here
-                  PageCursorInfo info = getPageInfo(message.getPosition(), false);
+                 
                   if (info != null && info.isRemoved(message.getPosition()))
                   {
                      valid = false;

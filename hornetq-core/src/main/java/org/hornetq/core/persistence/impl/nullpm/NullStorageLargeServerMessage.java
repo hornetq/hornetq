@@ -157,6 +157,13 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return "LargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#setPaged()
+    */
+   public void setPaged()
+   {
+   }
+
 
    // Package protected ---------------------------------------------
 

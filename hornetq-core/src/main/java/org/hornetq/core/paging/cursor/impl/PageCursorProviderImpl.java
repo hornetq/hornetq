@@ -30,7 +30,6 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagedReference;
 import org.hornetq.core.paging.cursor.PagedReferenceImpl;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.SoftValueHashMap;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
@@ -57,8 +56,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    private final StorageManager storageManager;
 
-   private final ExecutorFactory executorFactory;
-
+   // This is the same executor used at the PageStoreImpl. One Executor per pageStore
    private final Executor executor;
 
    private final SoftValueHashMap<Long, PageCache> softCache;
@@ -71,13 +69,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public PageCursorProviderImpl(final PagingStore pagingStore,
                                  final StorageManager storageManager,
-                                 final ExecutorFactory executorFactory,
+                                 final Executor executor,
                                  final int maxCacheSize)
    {
       this.pagingStore = pagingStore;
       this.storageManager = storageManager;
-      this.executorFactory = executorFactory;
-      this.executor = executorFactory.getExecutor();
+      this.executor = executor;
       this.softCache = new SoftValueHashMap<Long, PageCache>(maxCacheSize);
    }
 
@@ -96,13 +93,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
          throw new IllegalStateException("Cursor " + cursorID + " had already been created");
       }
 
-      activeCursor = new PageSubscriptionImpl(this,
-                                              pagingStore,
-                                              storageManager,
-                                              executorFactory.getExecutor(),
-                                              filter,
-                                              cursorID,
-                                              persistent);
+      activeCursor = new PageSubscriptionImpl(this, pagingStore, storageManager, executor, filter, cursorID, persistent);
       activeCursors.put(cursorID, activeCursor);
       return activeCursor;
    }
@@ -389,6 +380,17 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                pagingStore.stopPaging();
             }
+            else
+            {
+               if (log.isTraceEnabled())
+               {
+                  log.trace("Couldn't cleanup page on address " + this.pagingStore.getAddress() +
+                            " as numberOfPages == " +
+                            pagingStore.getNumberOfPages() +
+                            " and currentPage.numberOfMessages = " +
+                            pagingStore.getCurrentPage().getNumberOfMessages());
+               }
+            }
          }
          catch (Exception ex)
          {
@@ -411,7 +413,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                cache = softCache.remove((long)depagedPage.getPageId());
             }
-            
+
             if (cache == null)
             {
                // The page is not on cache any more
@@ -426,7 +428,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                pgdMessages = cache.getMessages();
             }
-            
+
             depagedPage.delete(pgdMessages);
             synchronized (softCache)
             {

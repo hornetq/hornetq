@@ -267,7 +267,6 @@ public class NettyAcceptor implements Acceptor
                                                              configuration);
    }
 
-   @Override
    public synchronized void start() throws Exception
    {
       if (channelFactory != null)
@@ -330,7 +329,6 @@ public class NettyAcceptor implements Acceptor
 
       ChannelPipelineFactory factory = new ChannelPipelineFactory()
       {
-         @Override
          public ChannelPipeline getPipeline() throws Exception
          {
             Map<String, ChannelHandler> handlers = new LinkedHashMap<String, ChannelHandler>();
@@ -349,7 +347,7 @@ public class NettyAcceptor implements Acceptor
             if (httpEnabled)
             {
                handlers.put("http-decoder", new HttpRequestDecoder());
-
+               
                handlers.put("http-aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.put("http-encoder", new HttpResponseEncoder());
@@ -486,7 +484,6 @@ public class NettyAcceptor implements Acceptor
       }
    }
 
-   @Override
    public synchronized void stop()
    {
       if (channelFactory == null)
@@ -562,13 +559,11 @@ public class NettyAcceptor implements Acceptor
       paused = false;
    }
 
-   @Override
    public boolean isStarted()
    {
       return channelFactory != null;
    }
 
-   @Override
    public void pause()
    {
       if (paused)
@@ -611,7 +606,6 @@ public class NettyAcceptor implements Acceptor
       paused = true;
    }
 
-   @Override
    public void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;
@@ -638,7 +632,6 @@ public class NettyAcceptor implements Acceptor
          {
             sslHandler.handshake().addListener(new ChannelFutureListener()
             {
-               @Override
                public void operationComplete(final ChannelFuture future) throws Exception
                {
                   if (future.isSuccess())
@@ -661,7 +654,6 @@ public class NettyAcceptor implements Acceptor
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      @Override
       public void connectionCreated(final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), (NettyConnection)connection) != null)
@@ -672,7 +664,6 @@ public class NettyAcceptor implements Acceptor
          listener.connectionCreated(connection, NettyAcceptor.this.protocol);
       }
 
-      @Override
       public void connectionDestroyed(final Object connectionID)
       {
          if (connections.remove(connectionID) != null)
@@ -681,7 +672,6 @@ public class NettyAcceptor implements Acceptor
          }
       }
 
-      @Override
       public void connectionException(final Object connectionID, final HornetQException me)
       {
          // Execute on different thread to avoid deadlocks
@@ -696,23 +686,21 @@ public class NettyAcceptor implements Acceptor
 
       }
 
-      @Override
       public void connectionReadyForWrites(final Object connectionID, boolean ready)
       {
          NettyConnection conn = connections.get(connectionID);
-
+         
          if (conn != null)
          {
             conn.fireReady(ready);
-         }
-      }
+         }         
+      }            
    }
 
    private class BatchFlusher implements Runnable
    {
       private boolean cancelled;
 
-      @Override
       public synchronized void run()
       {
          if (!cancelled)

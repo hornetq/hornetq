@@ -46,7 +46,7 @@ public class Topology implements Serializable
     */
    private Map<String, TopologyMember> topology = new HashMap<String, TopologyMember>();
 
-   private boolean debug;
+   private boolean debug = log.isDebugEnabled();
 
    public synchronized boolean addMember(String nodeId, TopologyMember member)
    {
@@ -54,9 +54,9 @@ public class Topology implements Serializable
       TopologyMember currentMember = topology.get(nodeId);
       if (debug)
       {
-         System.out.println("adding = " + nodeId + ":" + member.getConnector());
-         System.out.println("before----------------------------------");
-         System.out.println(describe());
+         log.info("adding = " + nodeId + ":" + member.getConnector());
+         log.info("before----------------------------------");
+         log.info(describe());
       }
       if(currentMember == null)
       {
@@ -87,9 +87,8 @@ public class Topology implements Serializable
       }
       if(debug)
       {
-
-         System.out.println("after----------------------------------updated=" + replaced);
-         System.out.println(describe());
+         log.info("Topology updated=" + replaced);
+         log.info(describe());
       }
       return replaced;
    }
@@ -97,6 +96,10 @@ public class Topology implements Serializable
    public synchronized boolean removeMember(String nodeId)
    {
       TopologyMember member = topology.remove(nodeId);
+      if (debug)
+      {
+         log.info("Removing member " + member);
+      }
       return (member != null);
    }
 

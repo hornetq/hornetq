@@ -47,7 +47,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @return the largeMessageSize
     */
-   @Override
    public long getLargeMessageSize()
    {
       return largeMessageSize;
@@ -56,7 +55,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
    /**
     * @param largeMessageSize the largeMessageSize to set
     */
-   @Override
    public void setLargeMessageSize(long largeMessageSize)
    {
       this.largeMessageSize = largeMessageSize;
@@ -92,7 +90,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       return true;
    }
 
-   @Override
    public void setLargeMessageController(final LargeMessageController controller)
    {
       largeMessageController = controller;
@@ -112,7 +109,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
       return getLongProperty(Message.HDR_LARGE_BODY_SIZE).intValue();
    }
 
-   @Override
    public LargeMessageController getLargeMessageController()
    {
       return largeMessageController;

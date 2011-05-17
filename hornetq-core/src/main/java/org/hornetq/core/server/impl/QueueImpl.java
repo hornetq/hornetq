@@ -72,6 +72,8 @@ import org.hornetq.utils.PriorityLinkedListImpl;
 public class QueueImpl implements Queue
 {
    private static final Logger log = Logger.getLogger(QueueImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
 
@@ -119,6 +121,8 @@ public class QueueImpl implements Queue
 
    private final Runnable deliverRunner = new DeliverRunner();
 
+   private volatile boolean depagePending = false;
+   
    private final Runnable depageRunner = new DepageRunner();
 
    private final StorageManager storageManager;
@@ -396,7 +400,7 @@ public class QueueImpl implements Queue
 
    public void deliverAsync()
    {
-      executor.execute(deliverRunner);
+      getExecutor().execute(deliverRunner);
    }
 
    public void close() throws Exception
@@ -411,7 +415,15 @@ public class QueueImpl implements Queue
 
    public Executor getExecutor()
    {
-      return executor;
+      if (pageSubscription != null && pageSubscription.isPaging())
+      {
+         // When in page mode, we don't want to have concurrent IO on the same PageStore
+         return pageSubscription.getExecutor();
+      }
+      else
+      {
+         return executor;
+      }
    }
 
    /* Only used on tests */
@@ -432,7 +444,7 @@ public class QueueImpl implements Queue
 
       if (!ok)
       {
-         log.warn("Couldn't finish waiting executors. Try increasing the thread pool size");
+         log.warn("Couldn't finish waiting executors. Try increasing the thread pool size", new Exception ("trace"));
       }
       
       return ok;
@@ -827,10 +839,18 @@ public class QueueImpl implements Queue
    {
       if (expiryAddress != null)
       {
+         if (isTrace)
+         {
+            log.trace("moving expired reference " + ref + " to address = " + expiryAddress + " from queue=" + this.getName(), new Exception ("trace"));
+         }
          move(expiryAddress, ref, true, false);
       }
       else
       {
+         if (isTrace)
+         {
+            log.trace("expiry is null, just acking expired message for reference " + ref + " from queue=" + this.getName());
+         }
          acknowledge(ref);
       }
    }
@@ -1440,6 +1460,8 @@ public class QueueImpl implements Queue
       int numRefs = messageReferences.size();
 
       int handled = 0;
+      
+      long timeout = System.currentTimeMillis() + 1000;
 
       while (handled < numRefs)
       {
@@ -1451,6 +1473,19 @@ public class QueueImpl implements Queue
 
             return;
          }
+         
+         if (pageSubscription != null && pageSubscription.isPaging() && System.currentTimeMillis() > timeout)
+         {
+            if (isTrace)
+            {
+               log.trace("Page delivery has been running for too long. Scheduling another delivery task now");
+            }
+            
+            deliverAsync();
+            
+            return;
+         }
+         
 
          ConsumerHolder holder = consumerList.get(pos);
 
@@ -1549,7 +1584,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      if (pageIterator != null && messageReferences.size() == 0 && pageIterator.hasNext())
+      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext()) 
       {
          scheduleDepage();
       }
@@ -1580,12 +1615,20 @@ public class QueueImpl implements Queue
 
    private void scheduleDepage()
    {
-      executor.execute(depageRunner);
+      if (!depagePending)
+      {
+         if (isTrace)
+         {
+            log.trace("Scheduling depage for queue " + this.getName());
+         }
+         depagePending = true;
+         pageSubscription.getExecutor().execute(depageRunner);
+      }
    }
 
    private void depage()
    {
-      if (paused || pageIterator == null || consumerList.isEmpty())
+      if (paused || pageIterator == null)
       {
          return;
       }
@@ -1593,13 +1636,15 @@ public class QueueImpl implements Queue
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
 
       // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+      int depaged = 0;
       while (queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
+         depaged++;
          PagedReference reference = pageIterator.next();
          addTail(reference, false);
          pageIterator.remove();
       }
-      // System.out.println("QueueMemorySize after depage = " + queueMemorySize.get() + " depaged " + nmessages);
+      log.debug("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
 
       deliverAsync();
    }
@@ -1629,11 +1674,13 @@ public class QueueImpl implements Queue
 
       if (internalQueue)
       {
+         if (isTrace)
+         {
+            log.trace("Queue " + this.getName() + " is an internal queue, no checkRedelivery");
+         }
          // no DLQ check on internal queues
          return true;
       }
-
-      // TODO: DeliveryCount on paging
       
       if (!internalQueue && message.isDurable() && durable && !reference.isPaged())
       {
@@ -1647,7 +1694,11 @@ public class QueueImpl implements Queue
       // First check DLA
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
-         sendToDeadLetterAddress(reference);
+         if (isTrace)
+         {
+            log.trace("Sending reference " + reference + " to DLA = " + addressSettings.getDeadLetterAddress() +  " since ref.getDeliveryCount=" + reference.getDeliveryCount() + "and maxDeliveries=" + maxDeliveries + " from queue=" + this.getName());
+         }
+         sendToDeadLetterAddress(reference, addressSettings.getDeadLetterAddress());
 
          return false;
       }
@@ -1658,6 +1709,10 @@ public class QueueImpl implements Queue
 
          if (redeliveryDelay > 0)
          {
+            if (isTrace)
+            {
+               log.trace("Setting redeliveryDelay=" + redeliveryDelay + " on reference=" + reference);
+            }
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
             
             if (message.isDurable() && durable)
@@ -1738,10 +1793,14 @@ public class QueueImpl implements Queue
       }
    }
 
+   
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
-      SimpleString deadLetterAddress = addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
-
+      sendToDeadLetterAddress(ref, addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress());
+   }
+   
+   private void sendToDeadLetterAddress(final MessageReference ref, final  SimpleString deadLetterAddress) throws Exception
+   {
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
@@ -1859,6 +1918,10 @@ public class QueueImpl implements Queue
    {
       if (reference.getMessage().isExpired())
       {
+         if (isTrace)
+         {
+            log.trace("Reference " + reference + " is expired");
+         }
          reference.handled();
 
          try
@@ -1941,7 +2004,7 @@ public class QueueImpl implements Queue
             // ack isn't committed, then the server crashes and on
             // recovery the message is deleted even though the other ack never committed
 
-            // also note then when this happens as part of a transaction it is the tx commit of the ack that is
+            // also note then when this happens as part of a transaction it is the tx commit of the ack that is 
             // important not this
 
             // Also note that this delete shouldn't sync to disk, or else we would build up the executor's queue
@@ -2152,6 +2215,7 @@ public class QueueImpl implements Queue
       {
          try
          {
+            depagePending = false;
             depage();
          }
          catch (Exception e)

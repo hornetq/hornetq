@@ -157,7 +157,7 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_ID_CACHE_SIZE = 2000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-
+   
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
 
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
@@ -185,7 +185,7 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
-
+   
    protected String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
@@ -231,7 +231,7 @@ public class ConfigurationImpl implements Configuration
    protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
-
+   
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
@@ -341,67 +341,56 @@ public class ConfigurationImpl implements Configuration
 
    // Public -------------------------------------------------------------------------
 
-   @Override
    public boolean isClustered()
    {
       return clustered;
    }
 
-   @Override
    public void setClustered(final boolean clustered)
    {
       this.clustered = clustered;
    }
 
-   @Override
    public boolean isAllowAutoFailBack()
    {
       return allowAutoFailBack;
    }
 
-   @Override
    public void setAllowAutoFailBack(boolean allowAutoFailBack)
    {
       this.allowAutoFailBack = allowAutoFailBack;
    }
 
-   @Override
    public boolean isBackup()
    {
       return backup;
    }
 
-   @Override
    public boolean isFileDeploymentEnabled()
    {
       return fileDeploymentEnabled;
    }
 
-   @Override
    public void setFileDeploymentEnabled(final boolean enable)
    {
       fileDeploymentEnabled = enable;
    }
 
-   @Override
    public boolean isPersistenceEnabled()
    {
       return persistenceEnabled;
    }
 
-   @Override
    public void setPersistenceEnabled(final boolean enable)
    {
       persistenceEnabled = enable;
    }
 
-   @Override
    public long getFileDeployerScanPeriod()
    {
       return fileDeploymentScanPeriod;
    }
 
-   @Override
    public void setFileDeployerScanPeriod(final long period)
    {
       fileDeploymentScanPeriod = period;
@@ -410,109 +399,91 @@ public class ConfigurationImpl implements Configuration
    /**
     * @return the persistDeliveryCountBeforeDelivery
     */
-   @Override
    public boolean isPersistDeliveryCountBeforeDelivery()
    {
       return persistDeliveryCountBeforeDelivery;
    }
 
-   @Override
    public void setPersistDeliveryCountBeforeDelivery(final boolean persistDeliveryCountBeforeDelivery)
    {
       this.persistDeliveryCountBeforeDelivery = persistDeliveryCountBeforeDelivery;
    }
 
-   @Override
    public void setBackup(final boolean backup)
    {
       this.backup = backup;
    }
 
-   @Override
    public boolean isSharedStore()
    {
       return sharedStore;
    }
 
-   @Override
    public void setSharedStore(final boolean sharedStore)
    {
       this.sharedStore = sharedStore;
    }
 
-   @Override
    public int getScheduledThreadPoolMaxSize()
    {
       return scheduledThreadPoolMaxSize;
    }
 
-   @Override
    public void setScheduledThreadPoolMaxSize(final int maxSize)
    {
       scheduledThreadPoolMaxSize = maxSize;
    }
 
-   @Override
    public int getThreadPoolMaxSize()
    {
       return threadPoolMaxSize;
    }
 
-   @Override
    public void setThreadPoolMaxSize(final int maxSize)
    {
       threadPoolMaxSize = maxSize;
    }
 
-   @Override
    public long getSecurityInvalidationInterval()
    {
       return securityInvalidationInterval;
    }
 
-   @Override
    public void setSecurityInvalidationInterval(final long interval)
    {
       securityInvalidationInterval = interval;
    }
 
-   @Override
    public long getConnectionTTLOverride()
    {
       return connectionTTLOverride;
    }
 
-   @Override
    public void setConnectionTTLOverride(final long ttl)
    {
       connectionTTLOverride = ttl;
    }
 
-   @Override
    public boolean isAsyncConnectionExecutionEnabled()
    {
       return asyncConnectionExecutionEnabled;
    }
 
-   @Override
    public void setEnabledAsyncConnectionExecution(final boolean enabled)
    {
       asyncConnectionExecutionEnabled = enabled;
    }
 
-   @Override
    public List<String> getInterceptorClassNames()
    {
       return interceptorClassNames;
    }
 
-   @Override
    public void setInterceptorClassNames(final List<String> interceptors)
    {
       interceptorClassNames = interceptors;
    }
 
-   @Override
    public Set<TransportConfiguration> getAcceptorConfigurations()
    {
       return acceptorConfigs;
@@ -528,31 +499,26 @@ public class ConfigurationImpl implements Configuration
       return connectorConfigs;
    }
 
-   @Override
    public void setConnectorConfigurations(final Map<String, TransportConfiguration> infos)
    {
       connectorConfigs = infos;
    }
 
-   @Override
    public String getLiveConnectorName()
    {
       return liveConnectorName;
    }
 
-   @Override
    public void setLiveConnectorName(final String liveConnectorName)
    {
       this.liveConnectorName = liveConnectorName;
    }
-
-   @Override
+   
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
    }
 
-   @Override
    public void setGroupingHandlerConfiguration(final GroupingHandlerConfiguration groupingHandlerConfiguration)
    {
       this.groupingHandlerConfiguration = groupingHandlerConfiguration;

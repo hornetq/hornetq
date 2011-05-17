@@ -2402,7 +2402,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class PageUpdateTXEncoding implements EncodingSupport
+   public static class PageUpdateTXEncoding implements EncodingSupport
    {
 
       public long pageTX;

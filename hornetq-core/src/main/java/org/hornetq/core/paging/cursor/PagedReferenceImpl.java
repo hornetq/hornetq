@@ -14,8 +14,10 @@
 package org.hornetq.core.paging.cursor;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.Message;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -34,6 +36,10 @@ public class PagedReferenceImpl implements PagedReference
 
    private static final long serialVersionUID = -8640232251318264710L;
 
+   private static final Logger log = Logger.getLogger(PagedReferenceImpl.class);
+
+   private static final boolean isTrace = log.isTraceEnabled();
+
    private final PagePosition position;
 
    private WeakReference<PagedMessage> message;
@@ -41,6 +47,8 @@ public class PagedReferenceImpl implements PagedReference
    private Long deliveryTime = null;
 
    private int persistedCount;
+
+   private AtomicInteger deliveryCount = new AtomicInteger(0);
 
    private final PageSubscription subscription;
 
@@ -84,12 +92,12 @@ public class PagedReferenceImpl implements PagedReference
    {
       return true;
    }
-   
+
    public void setPersistedCount(int count)
    {
       this.persistedCount = count;
    }
-   
+
    public int getPersistedCount()
    {
       return persistedCount;
@@ -100,8 +108,7 @@ public class PagedReferenceImpl implements PagedReference
     */
    public MessageReference copy(final Queue queue)
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new PagedReferenceImpl(this.position, this.getPagedMessage(), this.subscription);
    }
 
    /* (non-Javadoc)
@@ -137,8 +144,7 @@ public class PagedReferenceImpl implements PagedReference
     */
    public int getDeliveryCount()
    {
-      // TODO Auto-generated method stub
-      return 0;
+      return deliveryCount.get();
    }
 
    /* (non-Javadoc)
@@ -146,8 +152,7 @@ public class PagedReferenceImpl implements PagedReference
     */
    public void setDeliveryCount(final int deliveryCount)
    {
-      // TODO Auto-generated method stub
-
+      this.deliveryCount.set(deliveryCount);
    }
 
    /* (non-Javadoc)
@@ -155,7 +160,11 @@ public class PagedReferenceImpl implements PagedReference
     */
    public void incrementDeliveryCount()
    {
-      // TODO Auto-generated method stub
+      deliveryCount.incrementAndGet();
+      if (isTrace)
+      {
+         log.trace("deliveryCount = " + deliveryCount + " for " + this);
+      }
 
    }
 
@@ -164,8 +173,7 @@ public class PagedReferenceImpl implements PagedReference
     */
    public void decrementDeliveryCount()
    {
-      // TODO Auto-generated method stub
-
+      deliveryCount.decrementAndGet();
    }
 
    /* (non-Javadoc)
@@ -199,4 +207,25 @@ public class PagedReferenceImpl implements PagedReference
    {
       subscription.ackTx(tx, this);
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PagedReferenceImpl [position=" + position +
+             ", message=" +
+             message +
+             ", deliveryTime=" +
+             deliveryTime +
+             ", persistedCount=" +
+             persistedCount +
+             ", deliveryCount=" +
+             deliveryCount +
+             ", subscription=" +
+             subscription +
+             "]";
+   }
+
 }

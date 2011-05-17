@@ -106,12 +106,11 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                  syncTimeout,
                                  pagingManager,
                                  storageManager,
-                                 postOffice,
                                  null,
                                  this,
                                  address,
                                  settings,
-                                 executorFactory,
+                                 executorFactory.getExecutor(),
                                  syncNonTransactional);
    }
 
@@ -212,12 +211,11 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                                     syncTimeout,
                                                     pagingManager,
                                                     storageManager,
-                                                    postOffice,
                                                     factory,
                                                     this,
                                                     address,
                                                     settings,
-                                                    executorFactory,
+                                                    executorFactory.getExecutor(),
                                                     syncNonTransactional);
 
             storesReturn.add(store);

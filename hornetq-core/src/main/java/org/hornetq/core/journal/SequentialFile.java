@@ -94,6 +94,8 @@ public interface SequentialFile
    void renameTo(String newFileName) throws Exception;
 
    SequentialFile copy();
+   
+   void copyTo(SequentialFile newFileName) throws Exception;
 
    void setTimedBuffer(TimedBuffer buffer);
 }

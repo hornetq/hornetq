@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.OperationContext;
 
@@ -33,6 +34,9 @@ public class PageSyncTimer
 {
 
    // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(PageSyncTimer.class);
+
 
    // Attributes ----------------------------------------------------
    
@@ -83,6 +87,7 @@ public class PageSyncTimer
       OperationContext [] pendingSyncsArray;
       synchronized (this)
       {
+         
          pendingSync = false;
          pendingSyncsArray = new OperationContext[syncOperations.size()];
          pendingSyncsArray = syncOperations.toArray(pendingSyncsArray);
@@ -91,7 +96,10 @@ public class PageSyncTimer
       
       try
       {
-         store.ioSync();
+         if (pendingSyncsArray.length != 0)
+         {
+            store.ioSync();
+         }
       }
       catch (Exception e)
       {

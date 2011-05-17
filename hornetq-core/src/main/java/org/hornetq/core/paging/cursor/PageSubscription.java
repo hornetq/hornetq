@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging.cursor;
 
+import java.util.concurrent.Executor;
+
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.server.Queue;
@@ -131,4 +133,9 @@ public interface PageSubscription
     * @return
     */
    PagedMessage queryMessage(PagePosition pos);
+
+   /**
+    * @return
+    */
+   Executor getExecutor();
 }

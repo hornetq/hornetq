@@ -38,7 +38,7 @@ public class FileConfiguration extends ConfigurationImpl
 
    private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
 
-   // For a bridge confirmations must be activated or sent acknowledgments won't return
+   // For a bridge confirmations must be activated or send acknowledgments won't return
    public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = 1024 * 1024;
 
    // Static --------------------------------------------------------------------------
