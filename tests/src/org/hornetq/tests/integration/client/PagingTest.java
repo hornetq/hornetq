@@ -3791,7 +3791,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 500; i++)
          {
-            log.info("send message #" + i);
+            if (i % 100 == 0) log.info("send message #" + i);
             message = session.createMessage(true);
 
             message.putStringProperty("id", "str" + i);

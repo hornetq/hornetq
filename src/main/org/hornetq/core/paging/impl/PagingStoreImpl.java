@@ -880,19 +880,18 @@ public class PagingStoreImpl implements TestSupportPageStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
-         
-         installPageTransaction(tx, listCtx, currentPage.getPageId());
  
          currentPage.write(pagedMessage);
-
-         if (sync || tx != null)
-         {
-            sync();
-         }
          
          if (tx != null)
          {
+            installPageTransaction(tx, listCtx);
             tx.setWaitBeforeCommit(true);
+         }
+         else
+         if (sync && tx == null)
+         {
+            sync();
          }
 
          return true;
@@ -925,38 +924,46 @@ public class PagingStoreImpl implements TestSupportPageStore
       return ids;
    }
 
-   private PageTransactionInfo installPageTransaction(final Transaction tx, final RouteContextList listCtx, int pageID) throws Exception
+   private void installPageTransaction(final Transaction tx, final RouteContextList listCtx) throws Exception
    {
-      if (tx == null)
+      FinishPageMessageOperation pgOper = (FinishPageMessageOperation)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
+      if (pgOper == null)
       {
-         return null;
+         PageTransactionInfo pgTX = new PageTransactionInfoImpl(tx.getID());
+         pagingManager.addTransaction(pgTX);
+         pgOper = new FinishPageMessageOperation(pgTX, storageManager, pagingManager);
+         tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pgOper);
+         tx.addOperation(pgOper);
       }
-      else
-      {
-         PageTransactionInfo pgTX = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
-         if (pgTX == null)
-         {
-            pgTX = new PageTransactionInfoImpl(tx.getID());
-            pagingManager.addTransaction(pgTX);
-            tx.putProperty(TransactionPropertyIndexes.PAGE_TRANSACTION, pgTX);
-            tx.addOperation(new FinishPageMessageOperation(pgTX));
-         }
 
-         pgTX.increment(listCtx.getNumberOfQueues());
+      pgOper.addStore(this);
+      pgOper.pageTransaction.increment(listCtx.getNumberOfQueues());
 
-         return pgTX;
-      }
+      return;
    }
 
-   private class FinishPageMessageOperation implements TransactionOperation
+   private static class FinishPageMessageOperation implements TransactionOperation
    {
-      private final PageTransactionInfo pageTransaction;
+      public final PageTransactionInfo pageTransaction;
+      
+      private final StorageManager storageManager;
+      
+      private final PagingManager pagingManager;
+      
+      private final Set<PagingStore> usedStores = new HashSet<PagingStore>();
 
       private boolean stored = false;
+      
+      public void addStore(PagingStore store)
+      {
+         this.usedStores.add(store);
+      }
 
-      public FinishPageMessageOperation(final PageTransactionInfo pageTransaction)
+      public FinishPageMessageOperation(final PageTransactionInfo pageTransaction, final StorageManager storageManager, final PagingManager pagingManager)
       {
          this.pageTransaction = pageTransaction;
+         this.storageManager = storageManager;
+         this.pagingManager = pagingManager;
       }
 
       public void afterCommit(final Transaction tx)
@@ -985,11 +992,24 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       public void beforeCommit(final Transaction tx) throws Exception
       {
+         syncStore();
          storePageTX(tx);
+      }
+
+      /**
+       * @throws Exception
+       */
+      private void syncStore() throws Exception
+      {
+         for (PagingStore store : usedStores)
+         {
+            store.sync();
+         }
       }
 
       public void beforePrepare(final Transaction tx) throws Exception
       {
+         syncStore();
          storePageTX(tx);
       }
 
