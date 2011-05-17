@@ -674,6 +674,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
+      @Override
+      public void copyTo(SequentialFile newFileName) throws Exception
+      {
+         throw new UnsupportedOperationException();
+      }
+
    }
 
    /* (non-Javadoc)
