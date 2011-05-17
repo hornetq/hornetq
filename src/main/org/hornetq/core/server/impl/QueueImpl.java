@@ -121,6 +121,8 @@ public class QueueImpl implements Queue
 
    private final Runnable deliverRunner = new DeliverRunner();
 
+   private volatile boolean depagePending = false;
+   
    private final Runnable depageRunner = new DepageRunner();
 
    private final StorageManager storageManager;
@@ -837,10 +839,18 @@ public class QueueImpl implements Queue
    {
       if (expiryAddress != null)
       {
+         if (isTrace)
+         {
+            log.trace("moving expired reference " + ref + " to address = " + expiryAddress + " from queue=" + this.getName(), new Exception ("trace"));
+         }
          move(expiryAddress, ref, true, false);
       }
       else
       {
+         if (isTrace)
+         {
+            log.trace("expiry is null, just acking expired message for reference " + ref + " from queue=" + this.getName());
+         }
          acknowledge(ref);
       }
    }
@@ -1605,12 +1615,20 @@ public class QueueImpl implements Queue
 
    private void scheduleDepage()
    {
-      pageSubscription.getExecutor().execute(depageRunner);
+      if (!depagePending)
+      {
+         if (isTrace)
+         {
+            log.trace("Scheduling depage for queue " + this.getName());
+         }
+         depagePending = true;
+         pageSubscription.getExecutor().execute(depageRunner);
+      }
    }
 
    private void depage()
    {
-      if (paused || pageIterator == null || consumerList.isEmpty())
+      if (paused || pageIterator == null)
       {
          return;
       }
@@ -1618,13 +1636,15 @@ public class QueueImpl implements Queue
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
 
       // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+      int depaged = 0;
       while (queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
+         depaged++;
          PagedReference reference = pageIterator.next();
          addTail(reference, false);
          pageIterator.remove();
       }
-      // System.out.println("QueueMemorySize after depage = " + queueMemorySize.get() + " depaged " + nmessages);
+      log.debug("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
 
       deliverAsync();
    }
@@ -1898,6 +1918,10 @@ public class QueueImpl implements Queue
    {
       if (reference.getMessage().isExpired())
       {
+         if (isTrace)
+         {
+            log.trace("Reference " + reference + " is expired");
+         }
          reference.handled();
 
          try
@@ -2191,6 +2215,7 @@ public class QueueImpl implements Queue
       {
          try
          {
+            depagePending = false;
             depage();
          }
          catch (Exception e)

@@ -3844,13 +3844,12 @@ public class PagingTest extends ServiceTestBase
          
          session.start();
          
-         ClientConsumer cons = session.createConsumer(ADDRESS);
+         ClientConsumer consAddr = session.createConsumer(ADDRESS);
          
-         assertNull(cons.receive(1000));
+         assertNull(consAddr.receive(1000));
          
-         cons.close();
          
-         cons = session.createConsumer("DLA");
+         ClientConsumer cons = session.createConsumer("DLA");
 
          for (int i = 0; i < 500; i++)
          {
