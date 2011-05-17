@@ -3748,6 +3748,7 @@ public class PagingTest extends ServiceTestBase
       clearData();
 
       Configuration config = createDefaultConfig();
+      config.setMessageExpiryScanPeriod(500);
 
       config.setJournalSyncNonTransactional(false);
 

@@ -1671,19 +1671,14 @@ public class QueueImpl implements Queue
 
       int maxDeliveries = addressSettings.getMaxDeliveryAttempts();
 
-      if (isTrace)
-      {
-         log.trace("Checking redelivery for reference = " + reference + " with maxDeliveries = " + maxDeliveries + " on queue " + address);
-      }
-
       // First check DLA
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
          if (isTrace)
          {
-            log.trace("Sending reference " + reference + " to DLA");
+            log.trace("Sending reference " + reference + " to DLA = " + addressSettings.getDeadLetterAddress() +  " since ref.getDeliveryCount=" + reference.getDeliveryCount() + "and maxDeliveries=" + maxDeliveries + " from queue=" + this.getName());
          }
-         sendToDeadLetterAddress(reference);
+         sendToDeadLetterAddress(reference, addressSettings.getDeadLetterAddress());
 
          return false;
       }
@@ -1694,6 +1689,10 @@ public class QueueImpl implements Queue
 
          if (redeliveryDelay > 0)
          {
+            if (isTrace)
+            {
+               log.trace("Setting redeliveryDelay=" + redeliveryDelay + " on reference=" + reference);
+            }
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
             
             if (message.isDurable() && durable)
@@ -1774,10 +1773,14 @@ public class QueueImpl implements Queue
       }
    }
 
+   
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
-      SimpleString deadLetterAddress = addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
-
+      sendToDeadLetterAddress(ref, addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress());
+   }
+   
+   private void sendToDeadLetterAddress(final MessageReference ref, final  SimpleString deadLetterAddress) throws Exception
+   {
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
