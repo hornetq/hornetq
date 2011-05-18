@@ -541,8 +541,7 @@ public class UnitTestCase extends TestCase
          }
          catch (Exception e)
          {
-            System.out.println("port " + port + " is already bound");
-            System.exit(0);
+            throw new IllegalStateException("port " + port + " is already bound");
          }
          finally
          {
