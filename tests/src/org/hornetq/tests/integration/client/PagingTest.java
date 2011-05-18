@@ -3574,7 +3574,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         for (int i = 0; i < 500; i++)
+         for (int i = 0; i < 100; i++)
          {
             log.info("send message #" + i);
             message = session.createMessage(true);
@@ -3588,10 +3588,6 @@ public class PagingTest extends ServiceTestBase
             if ((i + 1) % 2 == 0)
             {
                session.commit();
-               if (i < 400)
-               {
-                  pgStoreAddress.forceAnotherPage();
-               }
             }
          }
 
@@ -3626,7 +3622,7 @@ public class PagingTest extends ServiceTestBase
             pgStoreDLA.startPaging();
          }
 
-         for (int i = 2; i < 500; i++)
+         for (int i = 2; i < 100; i++)
          {
             log.info("Received message " + i);
             message = cons.receive(5000);
@@ -3666,7 +3662,7 @@ public class PagingTest extends ServiceTestBase
          
          cons = session.createConsumer(ADDRESS);
 
-         for (int i = 2; i < 500; i++)
+         for (int i = 2; i < 100; i++)
          {
             log.info("Received message " + i);
             message = cons.receive(5000);
