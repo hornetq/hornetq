@@ -674,10 +674,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
-      @Override
-      public void copyTo(SequentialFile newFileName) throws Exception
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#copyTo(org.hornetq.core.journal.SequentialFile)
+       */
+      public void copyTo(SequentialFile newFileName)
       {
-         throw new UnsupportedOperationException();
+         // TODO Auto-generated method stub
+         
       }
 
    }

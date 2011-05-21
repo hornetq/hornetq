@@ -1,14 +1,14 @@
 /*
  * Copyright 2009 Red Hat, Inc.
- *  Red Hat licenses this file to you under the Apache License, version
- *  2.0 (the "License"); you may not use this file except in compliance
- *  with the License.  You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- *  implied.  See the License for the specific language governing
- *  permissions and limitations under the License.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
  */
 
 package org.hornetq.tests.util;
@@ -541,8 +541,7 @@ public class UnitTestCase extends TestCase
          }
          catch (Exception e)
          {
-            System.out.println("port " + port + " is already bound");
-            System.exit(0);
+            throw new IllegalStateException("port " + port + " is already bound");
          }
          finally
          {
@@ -791,11 +790,11 @@ public class UnitTestCase extends TestCase
 
    /** It validates a Bean (POJO) using simple setters and getters with random values.
     *  You can pass a list of properties to be ignored, as some properties will have a pre-defined domain (not being possible to use random-values on them) */
-   protected void validateGettersAndSetters(final Object pojo, final String... IgnoredProperties) throws Exception
+   protected void validateGettersAndSetters(final Object pojo, final String... ignoredProperties) throws Exception
    {
       HashSet<String> ignoreSet = new HashSet<String>();
 
-      for (String ignore : IgnoredProperties)
+      for (String ignore : ignoredProperties)
       {
          ignoreSet.add(ignore);
       }
@@ -860,6 +859,8 @@ public class UnitTestCase extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));
 
