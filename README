@@ -31,6 +31,10 @@ To run the unittests
 % mvn install
 % mvn site # (this currently does not work)
 
+* To build a release artifact
+
+% mvn install -Prelease
+
 * Eclipse
 
 ** Use the Maven eclipse plugin to configure the sub-projects
