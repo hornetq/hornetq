@@ -97,7 +97,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       PageCursorProviderImpl cursorProvider = new PageCursorProviderImpl(lookupPageStore(ADDRESS),
                                                                          server.getStorageManager(),
-                                                                         server.getExecutorFactory(),
+                                                                         server.getExecutorFactory().getExecutor(),
                                                                          5);
 
       for (int i = 0; i < numberOfPages; i++)

@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.stress.chunk;
 
-import org.hornetq.tests.largemessage.LargeMessageTestBase;
+import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 
 /**
  * A MessageChunkSoakTest
