@@ -469,7 +469,7 @@
                <configuration>
                   <testFailureIgnore>true</testFailureIgnore>
                   <runOrder>alphabetical</runOrder>
-                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                  <redirectTestOutputToFile>false</redirectTestOutputToFile>
                </configuration>
             </plugin>
             <plugin>
