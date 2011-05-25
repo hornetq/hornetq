@@ -32,6 +32,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientProducerCreditsImpl;
+import org.hornetq.core.client.impl.ClientProducerImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -41,6 +43,10 @@ import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.impl.ServerSessionImpl;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -562,6 +568,105 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       locator2.close();
    }
+   
+   public void testBlockingWithTemporaryQueue() throws Exception
+   {
+      
+      AddressSettings setting = new AddressSettings();
+      setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
+      setting.setMaxSizeBytes(1024 * 1024);
+      
+      server.getAddressSettingsRepository().addMatch("TestAD", setting);
+      
+      ClientSessionFactory consumerCF = locator.createSessionFactory();
+      ClientSession consumerSession = consumerCF.createSession(true, true);
+      consumerSession.addMetaData("consumer", "consumer");
+      consumerSession.createTemporaryQueue("TestAD", "Q1");
+      ClientConsumer consumer = consumerSession.createConsumer("Q1");
+      consumerSession.start();
+      
+      final ClientProducerImpl prod = (ClientProducerImpl)session.createProducer("TestAD");
+      
+      final AtomicInteger errors = new AtomicInteger(0);
+      
+      final AtomicInteger msgs = new AtomicInteger(0);
+      
+      final int TOTAL_MSG = 1000;
+      
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            try
+            {
+               for (int i = 0 ; i < TOTAL_MSG; i++)
+               {
+                  ClientMessage msg = session.createMessage(false);
+                  msg.getBodyBuffer().writeBytes(new byte[1024]);
+                  prod.send(msg);
+                  msgs.incrementAndGet();
+               }
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
+               errors.incrementAndGet();
+            }
+            
+            System.out.println("done");
+         }
+      };
+      
+      t.start();
+
+      while (msgs.get() == 0)
+      {
+         Thread.sleep(100);
+      }
+      
+      while (t.isAlive() && errors.get() == 0 && !prod.getProducerCredits().isBlocked())
+      {
+         Thread.sleep(100);
+      }
+      
+      assertEquals(0, errors.get());
+
+      ClientSessionFactory newConsumerCF = locator.createSessionFactory();
+      ClientSession newConsumerSession = newConsumerCF.createSession(true, true);
+      newConsumerSession.createTemporaryQueue("TestAD", "Q2");
+      ClientConsumer newConsumer = newConsumerSession.createConsumer("Q2");
+      newConsumerSession.start();
+      
+      int toReceive = TOTAL_MSG - msgs.get() - 1;
+
+      for (ServerSession sessionIterator: server.getSessions())
+      {
+         if (sessionIterator.getMetaData("consumer") != null)
+         {
+            System.out.println("Failing session");
+            ServerSessionImpl impl = (ServerSessionImpl) sessionIterator;
+            impl.getRemotingConnection().fail(new HornetQException(HornetQException.DISCONNECTED, "failure e"));
+         }
+      }
+      
+      int secondReceive = 0;
+      
+      ClientMessage msg = null;
+      while (secondReceive < toReceive && (msg = newConsumer.receive(5000)) != null)
+      {
+         msg.acknowledge();
+         secondReceive++;
+      }
+      
+      assertNull(newConsumer.receiveImmediate());
+      
+      assertEquals(toReceive, secondReceive);
+      
+      t.join();
+      
+      
+      
+   }
 
    // Package protected ---------------------------------------------
 
@@ -586,6 +691,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    {
       ServerLocator retlocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       retlocator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
+      retlocator.setClientFailureCheckPeriod(TemporaryQueueTest.CONNECTION_TTL / 3);
       return retlocator;
    }
 

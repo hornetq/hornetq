@@ -33,14 +33,16 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private final int windowSize;
 
+      private boolean blocked;
+
    private final SimpleString address;
 
    private final ClientSessionInternal session;
 
    private int arriving;
-   
+
    private int refCount;
-   
+
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
                                     final int windowSize)
@@ -64,7 +66,28 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    {
       checkCredits(credits);
 
-      semaphore.acquire(credits);
+      if (!semaphore.tryAcquire(credits))
+      {
+         this.blocked = true;
+         try
+         {
+            semaphore.acquire(credits);
+         }
+         finally
+         {
+            this.blocked = false;
+         }
+      }
+   }
+
+   public boolean isBlocked()
+   {
+      return blocked;
+   }
+
+   public int getBalance()
+   {
+      return semaphore.availablePermits();
    }
 
    public void receiveCredits(final int credits)
@@ -73,7 +96,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       {
          arriving -= credits;
       }
-      
+
       semaphore.release(credits);
    }
 
@@ -84,7 +107,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       semaphore.drainPermits();
 
       int beforeFailure = arriving;
-      
+
       arriving = 0;
 
       // If we are waiting for more credits than what's configured, then we need to use what we tried before
@@ -98,22 +121,22 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore.release(Integer.MAX_VALUE / 2);
    }
-    
+
    public synchronized void incrementRefCount()
    {
       refCount++;
    }
-   
+
    public synchronized int decrementRefCount()
    {
       return --refCount;
    }
-   
+
    public synchronized void releaseOutstanding()
    {
       semaphore.drainPermits();
    }
-   
+
    private void checkCredits(final int credits)
    {
       int needed = Math.max(credits, windowSize);

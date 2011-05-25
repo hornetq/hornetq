@@ -391,7 +391,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          securityStore.check(address, CheckType.CREATE_NON_DURABLE_QUEUE, this);
       }
 
-      server.createQueue(address, name, filterString, durable, temporary);
+      Queue queue = server.createQueue(address, name, filterString, durable, temporary);
 
       if (temporary)
       {
@@ -401,7 +401,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          // session is closed.
          // It is up to the user to delete the queue when finished with it
         
-         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name);
+         TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name, queue);
 
          remotingConnection.addCloseListener(cleaner);
          remotingConnection.addFailureListener(cleaner);
@@ -409,18 +409,32 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          tempQueueCleannerUppers.put(name, cleaner);
       }
    }
+   
+   
+   /**
+    * For test cases only
+    * @return
+    */
+   public RemotingConnection getRemotingConnection()
+   {
+      return remotingConnection;
+   }
 
    private static class TempQueueCleanerUpper implements CloseListener, FailureListener
    {
       private final PostOffice postOffice;
 
       private final SimpleString bindingName;
+      
+      private final Queue queue;
 
-      TempQueueCleanerUpper(final PostOffice postOffice, final SimpleString bindingName)
+      TempQueueCleanerUpper(final PostOffice postOffice, final SimpleString bindingName, final Queue queue)
       {
          this.postOffice = postOffice;
 
          this.bindingName = bindingName;
+         
+         this.queue = queue;
       }
 
       private void run()
@@ -431,6 +445,8 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             {
                postOffice.removeBinding(bindingName);
             }
+            
+            queue.deleteAllReferences();
          }
          catch (Exception e)
          {
