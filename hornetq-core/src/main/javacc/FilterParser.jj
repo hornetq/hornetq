@@ -34,6 +34,7 @@ import java.util.Set;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.SimpleStringReader;
 
+// CHECKSTYLE:OFF
 /**
  * A JavaCC 2.0 grammar for HornetQ filters
  *
@@ -49,7 +50,7 @@ public class FilterParser
    private static final String Ox = "0x";
    private static final String ZERRO = "0";
 
-   private Map identifierMap;
+   private Map<SimpleString, Identifier> identifierMap;
 
    public FilterParser()
    {
@@ -58,13 +59,13 @@ public class FilterParser
       this(new StringReader(""));
    }
 
-   public Object parse(SimpleString selector, Map identifierMap)
+   public Object parse(SimpleString selector, Map<SimpleString, Identifier> identifierMap)
       throws ParseException
    {
       return parse(selector, identifierMap, false);
    }
    
-   public Object parse(SimpleString selector, Map identifierMap, boolean trace)
+   public Object parse(SimpleString selector, Map<SimpleString, Identifier> identifierMap, boolean trace)
       throws ParseException
    {
       SimpleStringReader sr = new SimpleStringReader(selector);
@@ -112,13 +113,13 @@ public class FilterParser
       return new SimpleString(result.toString());
    }
    
-   public static Object doParse(SimpleString selector, Map identifierMap)
+   public static Object doParse(SimpleString selector, Map<SimpleString, Identifier> identifierMap)
       throws ParseException
    {
       return doParse(selector, identifierMap, false);
    }
    
-   public static Object doParse(SimpleString selector, Map identifierMap, boolean trace)
+   public static Object doParse(SimpleString selector, Map<SimpleString, Identifier> identifierMap, boolean trace)
       throws ParseException
    {
       FilterParser parser = new FilterParser();
@@ -334,7 +335,7 @@ Object comparisonExpression() :
    }
  |
    LOOKAHEAD(2147483647)
-   id=identifier() [ not=<NOT> ] <IN> <LPAREN> { set = new HashSet(); } stringList(set) <RPAREN>
+   id=identifier() [ not=<NOT> ] <IN> <LPAREN> { set = new HashSet<SimpleString>(); } stringList(set) <RPAREN>
    {
       if (not == null)
          return new Operator(Operator.IN, id, set);
@@ -399,14 +400,14 @@ Object comparisonExpression() :
    }
 }
 
-void stringList(Set set) :
+void stringList(Set<SimpleString> set) :
 {
 }
 {
    stringToken(set) ( <COMMA> stringToken(set))*
 }
 
-void stringToken(Set set) :
+void stringToken(Set<SimpleString> set) :
 {
    Token t = null;
 }
@@ -626,7 +627,7 @@ Object identifier() :
    id=<IDENTIFIER>
    {
       SimpleString simage = new SimpleString(id.image);
-      Identifier identifier = (Identifier) identifierMap.get(simage);
+      Identifier identifier = identifierMap.get(simage);
       if (identifier == null)
       {
          identifier = new Identifier(simage);
@@ -635,3 +636,4 @@ Object identifier() :
       return identifier;
    }
 }
+// CHECKSTYLE:ON
