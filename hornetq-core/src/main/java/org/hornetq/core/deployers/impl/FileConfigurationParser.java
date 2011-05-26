@@ -28,11 +28,18 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.*;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConnectorServiceConfiguration;
+import org.hornetq.core.config.CoreQueueConfiguration;
+import org.hornetq.core.config.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.JournalType;
@@ -139,7 +146,7 @@ public class FileConfigurationParser
    /**
     * @param validateAIO the validateAIO to set
     */
-   public void setValidateAIO(boolean validateAIO)
+   public void setValidateAIO(final boolean validateAIO)
    {
       this.validateAIO = validateAIO;
    }
@@ -479,14 +486,14 @@ public class FileConfigurationParser
 
       int journalBufferTimeout = XMLConfigurationUtil.getInteger(e,
                                                                  "journal-buffer-timeout",
-                                                                 config.getJournalType() == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
-                                                                                                               : ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
+                                                                 config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO
+                                                                                                               : JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
                                                                  Validators.GT_ZERO);
 
       int journalBufferSize = XMLConfigurationUtil.getInteger(e,
                                                               "journal-buffer-size",
-                                                              config.getJournalType() == JournalType.ASYNCIO ? ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
-                                                                                                            : ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
+                                                              config.getJournalType() == JournalType.ASYNCIO ? JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO
+                                                                                                            : JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
                                                               Validators.GT_ZERO);
 
       int journalMaxIO = XMLConfigurationUtil.getInteger(e,
@@ -1206,7 +1213,7 @@ public class FileConfigurationParser
       mainConfig.getBridgeConfigurations().add(config);
    }
 
-   private void getStaticConnectors(List<String> staticConnectorNames, Node child)
+   private void getStaticConnectors(final List<String> staticConnectorNames, final Node child)
    {
       NodeList children2 = ((Element)child).getElementsByTagName("connector-ref");
 

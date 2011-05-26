@@ -27,11 +27,8 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * A SyncSpeedTest
- * 
- * This class just provides some diagnostics on how fast your disk can sync
- * Useful when determining performance issues
- *
+ * SyncSpeedTest provides diagnostics on how fast your disk can sync.<p>
+ * It is used to investigate performance issues.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
  *
  *

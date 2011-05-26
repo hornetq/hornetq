@@ -54,8 +54,8 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
    public AIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir,
- JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
-				JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
+           JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+           JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
            false);
    }
 

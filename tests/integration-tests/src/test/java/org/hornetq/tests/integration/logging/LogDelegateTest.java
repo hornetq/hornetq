@@ -16,7 +16,6 @@ package org.hornetq.tests.integration.logging;
 import junit.framework.Assert;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.logging.impl.JULLogDelegate;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
