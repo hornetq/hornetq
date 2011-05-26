@@ -65,7 +65,11 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
@@ -90,13 +94,13 @@ public class UnitTestCase extends TestCase
 
    private static final Logger log = Logger.getLogger(UnitTestCase.class);
 
-   public static final String INVM_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";
+   public static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
 
-   public static final String INVM_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
+   public static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
 
-   public static final String NETTY_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
+   public static final String NETTY_ACCEPTOR_FACTORY = NettyAcceptorFactory.class.getCanonicalName();
 
-   public static final String NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
+   public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    // Attributes ----------------------------------------------------
 
@@ -211,7 +215,7 @@ public class UnitTestCase extends TestCase
       return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
    }
 
-   protected static String getUDPDiscoveryAddress(int variant)
+   protected static String getUDPDiscoveryAddress(final int variant)
    {
       String value = getUDPDiscoveryAddress();
 
@@ -274,7 +278,7 @@ public class UnitTestCase extends TestCase
       }
    }
 
-   public static void forceGC(Reference<?> ref, long timeout)
+   public static void forceGC(final Reference<?> ref, final long timeout)
    {
       long waitUntil = System.currentTimeMillis() + timeout;
       // A loop that will wait GC, using the minimal time as possible
@@ -859,7 +863,7 @@ public class UnitTestCase extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));
@@ -887,12 +891,12 @@ public class UnitTestCase extends TestCase
             if (stackTraceElement.getMethodName().contains("getConnectionWithRetry") && !alreadyFailedThread.contains(thread))
             {
                alreadyFailedThread.add(thread);
-               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+               System.out.println(threadDump(getName() + " has left threads running. Look at thread " +
                                              thread.getName() +
                                              " id = " +
                                              thread.getId() +
                                              " has running locators on test " +
-                                             this.getName() +
+                                             getName() +
                                              " on this following dump"));
                fail("test left serverlocator running, this could effect other tests");
                // System.exit(0);
@@ -900,12 +904,12 @@ public class UnitTestCase extends TestCase
             else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
             {
                alreadyFailedThread.add(thread);
-               System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
+               System.out.println(threadDump(getName() + " has left threads running. Look at thread " +
                                              thread.getName() +
                                              " id = " +
                                              thread.getId() +
                                              " is still broadcasting " +
-                                             this.getName() +
+                                             getName() +
                                              " on this following dump"));
                fail("test left broadcastgroupimpl running, this could effect other tests");
                // System.exit(0);
@@ -920,10 +924,10 @@ public class UnitTestCase extends TestCase
       {
          StringBuffer buffer = new StringBuffer();
 
-         
+
          buffer.append("*********************************************************************************\n");
          buffer.append("LEAKING THREADS\n");
-         
+
          for (Thread aliveThread : postThreads.keySet())
          {
             if (!aliveThread.getName().contains("SunPKCS11") && !previousThreads.containsKey(aliveThread))
@@ -944,14 +948,14 @@ public class UnitTestCase extends TestCase
          System.out.println(buffer.toString());
 
       }
-      
+
       //assertFalse("Thread Failed", failedThread);
 
       super.tearDown();
    }
 
    /**
-    * 
+    *
     */
    protected void cleanupPools()
    {
@@ -971,7 +975,7 @@ public class UnitTestCase extends TestCase
          AsynchronousFileImpl.resetMaxAIO();
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
-      
+
       // We shutdown the global pools to give a better isolation between tests
       ServerLocatorImpl.clearThreadPools();
    }
@@ -1218,7 +1222,9 @@ public class UnitTestCase extends TestCase
       return messageCount;
    }
 
-   protected List<QueueBinding> getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception
+   protected
+            List<QueueBinding>
+            getLocalQueueBindings(final PostOffice postOffice, final String address) throws Exception
    {
       ArrayList<QueueBinding> bindingsFound = new ArrayList<QueueBinding>();
 
