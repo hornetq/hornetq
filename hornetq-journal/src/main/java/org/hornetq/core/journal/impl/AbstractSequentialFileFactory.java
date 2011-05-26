@@ -25,16 +25,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- * 
+ *
  * An abstract SequentialFileFactory containing basic functionality for both AIO and NIO SequentialFactories
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -55,7 +54,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
 
    protected final long bufferTimeout;
 
-   /** 
+   /**
     * Asynchronous writes need to be done at another executor.
     * This needs to be done at NIO, or else we would have the callers thread blocking for the return.
     * At AIO this is necessary as context switches on writes would fire flushes at the kernel.
@@ -156,7 +155,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    {
    }
 
-   /** 
+   /**
     * Create the directory if it doesn't exist yet
     */
    public void createDirs() throws Exception
@@ -191,13 +190,13 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       return Arrays.asList(fileNames);
    }
 
-   private static ClassLoader getThisClassLoader()
+   protected static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
       {
          public ClassLoader run()
          {
-            return ClientSessionFactoryImpl.class.getClassLoader();
+            return AbstractSequentialFileFactory.class.getClassLoader(); // XXX FIXME!
          }
       });
 
