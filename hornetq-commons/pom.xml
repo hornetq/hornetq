@@ -8,9 +8,9 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <artifactId>hornetq-logging</artifactId>
+   <artifactId>hornetq-commons</artifactId>
    <packaging>jar</packaging>
-   <name>HornetQ Logging</name>
+   <name>HornetQ Commons</name>
 
    <dependencies>
       <dependency>
