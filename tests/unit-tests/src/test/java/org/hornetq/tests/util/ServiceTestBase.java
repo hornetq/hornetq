@@ -50,9 +50,9 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 
 /**
- * 
+ *
  * Base class with basic utilities on starting up a basic server
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -71,7 +71,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   private List<ServerLocator> locators = new ArrayList<ServerLocator>();
+   private final List<ServerLocator> locators = new ArrayList<ServerLocator>();
 
    @Override
    protected void tearDown() throws Exception
@@ -115,9 +115,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       return params;
    }
 
-   protected static TransportConfiguration createTransportConfiguration(boolean netty,
-                                                                        boolean acceptor,
-                                                                        Map<String, Object> params)
+   protected static TransportConfiguration createTransportConfiguration(final boolean netty,
+                                                                        final boolean acceptor,
+                                                                        final Map<String, Object> params)
    {
       String className;
       if (netty)
@@ -206,7 +206,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
    }
-   
+
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final int pageSize,
@@ -284,7 +284,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected HornetQServer createInVMFailoverServer(final boolean realFiles,
                                                     final Configuration configuration,
-                                                    NodeManager nodeManager)
+                                                    final NodeManager nodeManager)
    {
       return createInVMFailoverServer(realFiles,
                                       configuration,
@@ -299,7 +299,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                     final int pageSize,
                                                     final int maxAddressSize,
                                                     final Map<String, AddressSettings> settings,
-                                                    NodeManager nodeManager)
+                                                    final NodeManager nodeManager)
    {
       HornetQServer server;
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
@@ -417,7 +417,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected void createQueue(String address, String queue) throws Exception
+   protected void createQueue(final String address, final String queue) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -440,8 +440,9 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected ServerLocator createNonHALocator(final boolean isNetty)
    {
-      ServerLocator locatorWithoutHA = isNetty ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
-                                              : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      ServerLocator locatorWithoutHA =
+               isNetty ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
+                      : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       locators.add(locatorWithoutHA);
       return locatorWithoutHA;
    }
@@ -487,7 +488,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while
+    * if the file hasn't been deleted yet
     */
    protected void validateNoFilesOnLargeDir(final int expect) throws Exception
    {
@@ -499,8 +501,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          Thread.sleep(100);
       }
-      
-      
+
+
       if (expect != largeMessagesFileDir.listFiles().length)
       {
          for (File file : largeMessagesFileDir.listFiles())
@@ -513,7 +515,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while
+    * if the file hasn't been deleted yet
     */
    protected void validateNoFilesOnLargeDir() throws Exception
    {
@@ -527,43 +530,45 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       final NodeManager nodeManager;
 
-      public InVMNodeManagerServer(NodeManager nodeManager)
+      public InVMNodeManagerServer(final NodeManager nodeManager)
       {
          super();
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration, final NodeManager nodeManager)
       {
          super(configuration);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final MBeanServer mbeanServer,
+                                   final NodeManager nodeManager)
       {
          super(configuration, mbeanServer);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final HornetQSecurityManager securityManager,
+                                   final NodeManager nodeManager)
       {
          super(configuration, securityManager);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration,
-                                   MBeanServer mbeanServer,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final MBeanServer mbeanServer,
+                                   final HornetQSecurityManager securityManager,
+                                   final NodeManager nodeManager)
       {
          super(configuration, mbeanServer, securityManager);
          this.nodeManager = nodeManager;
       }
 
       @Override
-      protected NodeManager createNodeManager(String directory)
+      protected NodeManager createNodeManager(final String directory)
       {
          return nodeManager;
       }
