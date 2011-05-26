@@ -14,9 +14,8 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.hornetq</groupId>
-         <artifactId>hornetq-core</artifactId>
-         <version>${project.version}</version>
+         <groupId>org.jboss.netty</groupId>
+         <artifactId>netty</artifactId>
       </dependency>
       <dependency>
          <groupId>log4j</groupId>
