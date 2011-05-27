@@ -16,9 +16,9 @@ package org.hornetq.api.core;
 import java.io.Serializable;
 
 /**
- * 
+ *
  * A Pair is a holder for 2 objects.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -42,6 +42,7 @@ public class Pair<A, B> implements Serializable
    @Override
    public int hashCode()
    {
+      hash = -1;
       if (hash == -1)
       {
          if (a == null && b == null)
@@ -58,6 +59,7 @@ public class Pair<A, B> implements Serializable
    }
 
    @Override
+   @SuppressWarnings("rawtypes")
    public boolean equals(final Object other)
    {
       if (other == this)
@@ -70,7 +72,7 @@ public class Pair<A, B> implements Serializable
          return false;
       }
 
-      Pair<A, B> pother = (Pair<A, B>)other;
+      Pair pother = (Pair)other;
 
       return (pother.a == null ? a == null : pother.a.equals(a)) && (pother.b == null ? b == null : pother.b.equals(b));
 
