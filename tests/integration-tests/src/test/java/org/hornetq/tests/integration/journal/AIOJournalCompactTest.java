@@ -17,9 +17,9 @@ import java.io.File;
 
 import junit.framework.TestSuite;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.core.journal.impl.JournalConstants;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -60,7 +60,7 @@ public class AIOJournalCompactTest extends NIOJournalCompactTest
       file.mkdir();
 
       return new AIOSequentialFileFactory(getTestDir(),
-                                          ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+                                          JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
                                           1000000,
                                           false);
    }
