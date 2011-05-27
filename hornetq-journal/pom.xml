@@ -21,7 +21,6 @@
          <groupId>org.hornetq</groupId>
          <artifactId>hornetq-commons</artifactId>
          <version>${project.version}</version>
-         <scope>provided</scope>
       </dependency>
    </dependencies>
 
