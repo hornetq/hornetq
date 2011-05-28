@@ -16,6 +16,7 @@ package org.hornetq.tests.unit.core.list.impl;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.LinkedListIterator;
 import org.hornetq.utils.PriorityLinkedListImpl;
 
@@ -77,9 +78,9 @@ public abstract class PriorityLinkedListTestBase extends TestCase
    protected Wibble y;
 
    protected Wibble z;
-   
+
    private PriorityLinkedListImpl<Wibble> list;
-   
+
    protected abstract PriorityLinkedListImpl<Wibble> getList();
 
    public void setUp() throws Exception
@@ -133,7 +134,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       Wibble w = list.poll();
       Assert.assertEquals(a, w);
       Assert.assertTrue(list.isEmpty());
-      
+
       assertEquals(0, list.size());
    }
 
@@ -144,7 +145,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.addHead(c, 0);
       list.addHead(d, 0);
       list.addHead(e, 0);
-      
+
       assertEquals(5, list.size());
 
       Assert.assertEquals(e, list.poll());
@@ -153,7 +154,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       Assert.assertEquals(b, list.poll());
       Assert.assertEquals(a, list.poll());
       Assert.assertNull(list.poll());
-      
+
       assertEquals(0, list.size());
    }
 
@@ -172,11 +173,11 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       Assert.assertEquals(d, list.poll());
       Assert.assertEquals(e, list.poll());
       Assert.assertNull(list.poll());
-      
+
       assertEquals(0, list.size());
 
    }
-   
+
    public void testAddLastAndFirst() throws Exception
    {
       list.addTail(a, 0);
@@ -189,7 +190,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.addTail(h, 0);
       list.addTail(i, 0);
       list.addTail(j, 0);
-      
+
       list.addHead(k, 0);
       list.addHead(l, 0);
       list.addHead(m, 0);
@@ -200,7 +201,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.addHead(r, 0);
       list.addHead(s, 0);
       list.addHead(t, 0);
-      
+
       assertEquals(t, list.poll());
       assertEquals(s, list.poll());
       assertEquals(r, list.poll());
@@ -211,7 +212,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       assertEquals(m, list.poll());
       assertEquals(l, list.poll());
       assertEquals(k, list.poll());
-      
+
       assertEquals(a, list.poll());
       assertEquals(b, list.poll());
       assertEquals(c, list.poll());
@@ -223,7 +224,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       assertEquals(i, list.poll());
       assertEquals(j, list.poll());
    }
-   
+
    public void testAddLastAndFirstWithIterator() throws Exception
    {
       list.addTail(a, 0);
@@ -236,7 +237,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.addTail(h, 0);
       list.addTail(i, 0);
       list.addTail(j, 0);
-      
+
       list.addHead(k, 0);
       list.addHead(l, 0);
       list.addHead(m, 0);
@@ -247,9 +248,9 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.addHead(r, 0);
       list.addHead(s, 0);
       list.addHead(t, 0);
-      
+
       LinkedListIterator<Wibble> iter = list.iterator();
-           
+
       assertTrue(iter.hasNext());
       assertEquals(t, iter.next());
       assertTrue(iter.hasNext());
@@ -270,7 +271,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       assertEquals(l, iter.next());
       assertTrue(iter.hasNext());
       assertEquals(k, iter.next());
- 
+
       assertTrue(iter.hasNext());
       assertEquals(a, iter.next());
       assertTrue(iter.hasNext());
@@ -438,7 +439,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       Assert.assertEquals(a, list.poll());
 
       Assert.assertNull(list.poll());
-      
+
       assertEquals(0, list.size());
 
    }
@@ -567,8 +568,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       w = (Wibble)iter.next();
       Assert.assertEquals("z", w.s);
       assertFalse(iter.hasNext());
-      
-      
+
       iter = list.iterator();
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
@@ -617,7 +617,7 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       iter.remove();
 
       Assert.assertEquals(23, list.size());
-      
+
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("i", w.s);
@@ -671,7 +671,6 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       Assert.assertEquals("z", w.s);
       iter.remove();
 
-
       iter = list.iterator();
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
@@ -739,77 +738,75 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("y", w.s);
-      
+
       assertFalse(iter.hasNext());
       assertFalse(iter.hasNext());
 
-      //Test the elements added after iter created are seen
-      
+      // Test the elements added after iter created are seen
+
       list.addTail(a, 4);
       list.addTail(b, 4);
-      
+
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("a", w.s);
-      
+
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("b", w.s);
-      
-      assertFalse(iter.hasNext());      
-      
+
+      assertFalse(iter.hasNext());
+
       list.addTail(c, 4);
       list.addTail(d, 4);
-      
+
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("c", w.s);
-      
+
       assertTrue(iter.hasNext());
       w = (Wibble)iter.next();
       Assert.assertEquals("d", w.s);
-      
+
       assertFalse(iter.hasNext());
-      
 
    }
-   
+
    public void testIteratorPicksUpHigherPriorities()
    {
       list.addTail(a, 4);
       list.addTail(b, 4);
       list.addTail(c, 4);
-     
+
       LinkedListIterator<Wibble> iter = list.iterator();
-      
+
       assertTrue(iter.hasNext());
       assertEquals(a, iter.next());
-      
+
       assertTrue(iter.hasNext());
       assertEquals(b, iter.next());
-      
+
       list.addTail(d, 5);
       list.addTail(e, 5);
-      
+
       assertTrue(iter.hasNext());
       assertEquals(d, iter.next());
-      
+
       assertTrue(iter.hasNext());
       assertEquals(e, iter.next());
-      
+
       assertTrue(iter.hasNext());
       assertEquals(c, iter.next());
-      
+
       list.addTail(f, 1);
       list.addTail(g, 9);
-      
+
       assertTrue(iter.hasNext());
       assertEquals(g, iter.next());
-      
+
       assertTrue(iter.hasNext());
       assertEquals(f, iter.next());
    }
-
 
    public void testClear()
    {
@@ -827,6 +824,59 @@ public abstract class PriorityLinkedListTestBase extends TestCase
       list.clear();
 
       Assert.assertNull(list.poll());
+   }
+
+   public void testMixupIterator()
+   {
+      list.addTail(c, 5);
+      list.addTail(a, 4);
+      list.addTail(b, 4);
+
+      LinkedListIterator<Wibble> iter = list.iterator();
+
+      assertTrue(iter.hasNext());
+      assertEquals(c, iter.next());
+      assertTrue(iter.hasNext());
+      assertEquals(a, iter.next());
+      assertTrue(iter.hasNext());
+      assertEquals(b, iter.next());
+      list.addTail(d, 5);
+      assertTrue(iter.hasNext());
+      assertEquals(d, iter.next());
+   }
+
+   public void testMixupIterator2()
+   {
+      list.addTail(c, 5);
+      
+      list.addTail(k, 0);
+
+      list.addTail(a, 2);
+      list.addTail(b, 2);
+
+      LinkedListIterator<Wibble> iter = list.iterator();
+
+      assertTrue(iter.hasNext());
+      assertEquals(c, iter.next());
+      iter.remove();
+      
+      assertTrue(iter.hasNext());
+      assertEquals(a, iter.next());
+      iter.remove();
+      
+      assertTrue(iter.hasNext());
+      assertEquals(b, iter.next());
+      iter.remove();
+      
+      assertTrue(iter.hasNext());
+      assertEquals(k, iter.next());
+      iter.remove();
+      
+      list.addTail(d, 2);
+      
+      assertTrue(iter.hasNext());
+      assertEquals(d, iter.next());
+      iter.remove();
    }
 
    class Wibble

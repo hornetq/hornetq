@@ -16,8 +16,12 @@ package org.hornetq.core.server.cluster.impl;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CLOSED;
 import static org.hornetq.api.core.management.NotificationType.CONSUMER_CREATED;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -29,7 +33,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -272,6 +275,8 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          serverLocator.removeClusterTopologyListener(this);
       }
+      
+      log.debug("Cluster connection being stopped for node" + nodeUUID);
 
       synchronized (this)
       {
@@ -357,6 +362,8 @@ public class ClusterConnectionImpl implements ClusterConnection
          serverLocator.setBackup(server.getConfiguration().isBackup());
          serverLocator.setInitialConnectAttempts(-1);
          serverLocator.setConfirmationWindowSize(0);
+         serverLocator.setBlockOnDurableSend(false);
+         serverLocator.setBlockOnNonDurableSend(false);
 
          if(retryInterval > 0)
          {
@@ -388,6 +395,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    public synchronized void nodeDown(final String nodeID)
    {
+      log.debug("node " + nodeID + " being considered down on cluster connection for nodeID=" + nodeUUID);
       if (nodeID.equals(nodeUUID.toString()))
       {
          return;

@@ -513,7 +513,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No sf at " + node);
       }
 
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(false, false, false);
 
       try
       {
@@ -531,7 +531,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
 
             producer.send(message);
+            
+            if (i % 100 == 0)
+            {
+               session.commit();
+            }
          }
+         
+         session.commit();
       }
       finally
       {
@@ -1328,6 +1335,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          configuration.setJournalFileSize(100 * 1024);
          configuration.setJournalType(getDefaultJournalType());
          configuration.setSharedStore(sharedStorage);
+         configuration.setThreadPoolMaxSize(10);
          if (sharedStorage)
          {
             // Shared storage will share the node between the backup and live node

@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.Assert;
 
@@ -42,6 +45,7 @@ import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.LinkedListIterator;
@@ -947,20 +951,252 @@ public class BridgeTest extends ServiceTestBase
 
          try
          {
-             server0.stop();
+            server0.stop();
          }
-         catch(Exception ignored)
+         catch (Exception ignored)
          {
-            
+
          }
 
          try
          {
-             server1.stop();
+            server1.stop();
          }
-         catch(Exception ignored)
+         catch (Exception ignored)
          {
-            
+
+         }
+      }
+
+   }
+
+   public void testSawtoothLoad() throws Exception
+   {
+      Map<String, Object> server0Params = new HashMap<String, Object>();
+      HornetQServer server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
+      server0.getConfiguration().setThreadPoolMaxSize(10);
+
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      addTargetParameters(server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
+      server1.getConfiguration().setThreadPoolMaxSize(10);
+
+      final String testAddress = "testAddress";
+      final String queueName0 = "queue0";
+      final String forwardAddress = "forwardAddress";
+      final String queueName1 = "queue1";
+
+      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+      final TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+      final TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
+      connectors.put(server1tc.getName(), server1tc);
+
+      server0.getConfiguration().setConnectorConfigurations(connectors);
+
+      ArrayList<String> staticConnectors = new ArrayList<String>();
+      staticConnectors.add(server1tc.getName());
+
+      BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
+                                                                        queueName0,
+                                                                        forwardAddress,
+                                                                        null,
+                                                                        null,
+                                                                        1000,
+                                                                        1d,
+                                                                        -1,
+                                                                        false,
+                                                                        0,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        staticConnectors,
+                                                                        false,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_USER,
+                                                                        ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
+
+      List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+      bridgeConfigs.add(bridgeConfiguration);
+      server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+      CoreQueueConfiguration queueConfig0 = new CoreQueueConfiguration(testAddress, queueName0, null, true);
+      List<CoreQueueConfiguration> queueConfigs0 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs0.add(queueConfig0);
+      server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+      CoreQueueConfiguration queueConfig1 = new CoreQueueConfiguration(forwardAddress, queueName1, null, true);
+      List<CoreQueueConfiguration> queueConfigs1 = new ArrayList<CoreQueueConfiguration>();
+      queueConfigs1.add(queueConfig1);
+      server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+      try
+      {
+         server1.start();
+         server0.start();
+
+         final int numMessages = 10000;
+
+         final int totalrepeats = 10;
+
+         final AtomicInteger errors = new AtomicInteger(0);
+
+         // We shouldn't have more than 10K messages pending
+         final Semaphore semop = new Semaphore(10000);
+
+         class ConsumerThread extends Thread
+         {
+            public void run()
+            {
+               try
+               {
+                  ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(server1tc);
+
+                  ClientSessionFactory sf = locator.createSessionFactory();
+
+                  ClientSession session = sf.createSession(false, false);
+
+                  session.start();
+
+                  ClientConsumer consumer = session.createConsumer(queueName1);
+
+                  for (int i = 0; i < numMessages; i++)
+                  {
+                     ClientMessage message = consumer.receive(5000);
+
+                     Assert.assertNotNull(message);
+
+                     message.acknowledge();
+                     semop.release();
+                     if (i % 1000 == 0)
+                     {
+                        session.commit();
+                     }
+                  }
+
+                  session.commit();
+
+                  session.close();
+                  sf.close();
+                  locator.close();
+
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         };
+
+         class ProducerThread extends Thread
+         {
+            final int nmsg;
+            ProducerThread(int nmsg)
+            {
+               this.nmsg = nmsg;
+            }
+            public void run()
+            {
+               ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(server0tc);
+               
+               locator.setBlockOnDurableSend(false);
+               locator.setBlockOnNonDurableSend(false);
+
+               ClientSessionFactory sf = null;
+
+               ClientSession session = null;
+
+               ClientProducer producer = null;
+
+               try
+               {
+                  sf = locator.createSessionFactory();
+
+                  session = sf.createSession(false, true, true);
+
+                  producer = session.createProducer(new SimpleString(testAddress));
+
+                  for (int i = 0; i < nmsg; i++)
+                  {
+                     assertEquals(0, errors.get());
+                     ClientMessage message = session.createMessage(true);
+
+                     message.putIntProperty("seq", i);
+                     
+                     
+                     if (i % 100 == 0)
+                     {
+                        message.setPriority((byte)(RandomUtil.randomPositiveInt() % 9));
+                     }
+                     else
+                     {
+                        message.setPriority((byte)5);
+                     }
+
+                     message.getBodyBuffer().writeBytes(new byte[50]);
+
+                     producer.send(message);
+                     assertTrue(semop.tryAcquire(1, 10, TimeUnit.SECONDS));
+                  }
+               }
+               catch (Throwable e)
+               {
+                  e.printStackTrace(System.out);
+                  errors.incrementAndGet();
+               }
+               finally
+               {
+                  try
+                  {
+                     session.close();
+                     sf.close();
+                     locator.close();
+                  }
+                  catch (Exception ignored)
+                  {
+                     errors.incrementAndGet();
+                  }
+               }
+            }
+         }
+
+         for (int repeat = 0 ; repeat < totalrepeats; repeat++)
+         {
+            System.out.println("Repeat " + repeat);
+            ArrayList<Thread> threads = new ArrayList<Thread>();
+   
+            threads.add(new ConsumerThread());
+            threads.add(new ProducerThread(numMessages / 2));
+            threads.add(new ProducerThread(numMessages / 2));
+
+            for (Thread t : threads)
+            {
+               t.start();
+            }
+   
+            for (Thread t : threads)
+            {
+               t.join();
+            }
+   
+            assertEquals(0, errors.get());
+         }
+      }
+      finally
+      {
+         try
+         {
+            server0.stop();
+         }
+         catch (Exception ignored)
+         {
+
+         }
+
+         try
+         {
+            server1.stop();
+         }
+         catch (Exception ignored)
+         {
+
          }
       }
 
@@ -1142,11 +1378,11 @@ public class BridgeTest extends ServiceTestBase
          ArrayList<String> staticConnectors = new ArrayList<String>();
          staticConnectors.add(server1tc.getName());
          BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1", queueName0, null, // pass a null
-                                                                                                        // forwarding
-                                                                                                        // address to
-                                                                                                        // use messages'
-                                                                                                        // original
-                                                                                                        // address
+                                                                           // forwarding
+                                                                           // address to
+                                                                           // use messages'
+                                                                           // original
+                                                                           // address
                                                                            null,
                                                                            null,
                                                                            1000,

@@ -393,7 +393,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-
+      
       queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
 
       concurrentQueue.add(ref);
@@ -2055,7 +2055,7 @@ public class QueueImpl implements Queue
       }
       catch (Exception e)
       {
-         QueueImpl.log.warn("Unable to decrement reference counting", e);
+	      QueueImpl.log.warn("Unable to decrement reference counting", e);
       }
    }
 

@@ -64,6 +64,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(BridgeImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
    
@@ -77,7 +79,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final SimpleString name;
 
-   private Queue queue;
+   private final Queue queue;
 
    protected final Executor executor;
 
@@ -222,6 +224,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
       }
       
+      log.info("Bridge " + this.name + " being stopped");
+      
       stopping = true;
 
       executor.execute(new StopRunnable());
@@ -264,11 +268,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    public Queue getQueue()
    {
       return queue;
-   }
-
-   public void setQueue(final Queue queue)
-   {
-      this.queue = queue;
    }
 
    public Filter getFilter()
@@ -367,20 +366,25 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return HandleStatus.NO_MATCH;
       }
-
+      
       synchronized (this)
       {
          if (!active)
          {
+            log.debug(name + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
             return HandleStatus.BUSY;
          }
 
+		   if (isTrace)
+		   {
+		      log.trace("Bridge " + name + " is handling reference=" + ref); 
+		   }
          ref.handled();
 
          ServerMessage message = ref.getMessage();
 
          refs.add(ref);
-
+         
          message = beforeForward(message);
 
          SimpleString dest;
@@ -419,11 +423,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
+      log.warn(name + "::Connection failed with failedOver=" + failedOver, me);
       fail(false);
    }
 
    public void beforeReconnect(final HornetQException exception)
    {
+      log.warn(name + "::Connection failed before reconnect ", exception);
       fail(true);
    }
 
@@ -454,8 +460,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       // we want to cancel all unacked refs so they get resent
       // duplicate detection will ensure no dups are routed on the other side
 
+      log.debug(name + "::BridgeImpl::fail being called, beforeReconnect=" + beforeReconnect);
+      
       if (session.getConnection().isDestroyed())
       {
+         log.debug(name + "::Connection is destroyed, active = false now");
          active = false;
       }
 
@@ -467,7 +476,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                synchronized (this)
                {
-                  active = false;
+                  log.debug(name + "::Connection is destroyed, active = false now");
                }
 
                cancelRefs();
@@ -476,6 +485,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                afterConnect();
 
+               log.debug(name + "::After reconnect, setting active=true now");
                active = true;
 
                if (queue != null)
@@ -650,6 +660,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                {
                   return;
                }
+               
+               log.debug("Closing Session for bridge " + BridgeImpl.this.name);
 
                if (session != null)
                {

@@ -43,6 +43,8 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    private int highestPriority = -1;
 
+   private int lastPriority = -1;
+
    public PriorityLinkedListImpl(final int priorities)
    {
       this.priorities = priorities;
@@ -54,14 +56,25 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          levels[i] = new LinkedListImpl<T>();
       }
    }
-   
-   private void checkHighest(int priority)
+
+   private void checkHighest(final int priority)
    {
+      if (lastPriority != priority || priority > highestPriority)
+      {
+         lastPriority = priority;
+         if (lastReset == Integer.MAX_VALUE)
+         {
+            lastReset = 0;
+         }
+         else
+         {
+            lastReset++;
+         }
+      }
+
       if (priority > highestPriority)
       {
          highestPriority = priority;
-         
-         lastReset++;
       }
    }
 
@@ -150,19 +163,20 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    {
       private int index;
 
-      private LinkedListIterator<T>[] cachedIters = new LinkedListIterator[levels.length];
+      private final LinkedListIterator<T>[] cachedIters = new LinkedListIterator[levels.length];
 
       private LinkedListIterator<T> lastIter;
-      
+
       private int resetCount = lastReset;
-      
+
       volatile boolean closed = false;
 
       PriorityLinkedListIterator()
       {
          index = levels.length - 1;
       }
-      
+
+      @Override
       protected void finalize()
       {
          close();
@@ -184,7 +198,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          {
             closed = true;
             lastIter = null;
-   
+
             for (LinkedListIterator<T> iter : cachedIters)
             {
                if (iter != null)
@@ -194,13 +208,13 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
             }
          }
       }
-      
+
       private void checkReset()
       {
-         if (lastReset > resetCount)
+         if (lastReset != resetCount)
          {
             index = highestPriority;
-            
+
             resetCount = lastReset;
          }
       }
@@ -208,7 +222,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
       public boolean hasNext()
       {
          checkReset();
-         
+
          while (index >= 0)
          {
             lastIter = cachedIters[index];
@@ -255,10 +269,17 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
          }
 
          lastIter.remove();
-         
-         if (index == highestPriority && levels[index].size() == 0)
+
+         // This next statement would be the equivalent of:
+         // if (index == highestPriority && levels[index].size() == 0)
+         // However we have to keep checking all the previous levels
+         // otherwise we would cache a max that will not exist
+         // what would make us eventually having hasNext() returning false 
+         // as a bug
+         // Part of the fix for HORNETQ-705
+         for (int i = index; i >= 0 && levels[index].size() == 0; i--)
          {
-            highestPriority--;
+            highestPriority = i;
          }
 
          size--;

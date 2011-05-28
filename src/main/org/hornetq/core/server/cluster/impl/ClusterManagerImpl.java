@@ -22,7 +22,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
-
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
@@ -93,7 +92,7 @@ public class ClusterManagerImpl implements ClusterManager
    // regular client listeners to be notified of cluster topology changes.
    // they correspond to regular clients using a HA ServerLocator
    private Set<ClusterTopologyListener> clientListeners = new ConcurrentHashSet<ClusterTopologyListener>();
-   
+
    // cluster connections listeners to be notified of cluster topology changes
    // they correspond to cluster connections on *other nodes connected to this one*
    private Set<ClusterTopologyListener> clusterConnectionListeners = new ConcurrentHashSet<ClusterTopologyListener>();
@@ -103,6 +102,7 @@ public class ClusterManagerImpl implements ClusterManager
    private volatile ServerLocatorInternal backupServerLocator;
 
    private final List<ServerLocatorInternal> clusterLocators = new ArrayList<ServerLocatorInternal>();
+
    private Executor executor;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
@@ -173,10 +173,9 @@ public class ClusterManagerImpl implements ClusterManager
       {
          announceNode();
       }
-      
+
       started = true;
    }
-
 
    public synchronized void stop() throws Exception
    {
@@ -200,7 +199,7 @@ public class ClusterManagerImpl implements ClusterManager
             clusterConnection.stop();
             managementService.unregisterCluster(clusterConnection.getName().toString());
          }
-         
+
          clusterConnectionListeners.clear();
          clientListeners.clear();
          clusterConnections.clear();
@@ -216,7 +215,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       bridges.clear();
 
-      if(backupServerLocator != null)
+      if (backupServerLocator != null)
       {
          backupServerLocator.close();
          backupServerLocator = null;
@@ -238,7 +237,7 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       boolean removed = topology.removeMember(nodeID);
-      
+
       if (removed)
       {
 
@@ -262,23 +261,23 @@ public class ClusterManagerImpl implements ClusterManager
       TopologyMember member = new TopologyMember(connectorPair);
       boolean updated = topology.addMember(nodeID, member);
 
-      if(!updated)
+      if (!updated)
       {
          return;
       }
-      
+
       for (ClusterTopologyListener listener : clientListeners)
       {
          listener.nodeUP(nodeID, member.getConnector(), last);
       }
-
 
       for (ClusterTopologyListener listener : clusterConnectionListeners)
       {
          listener.nodeUP(nodeID, member.getConnector(), last);
       }
 
-      //if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster connections.
+      // if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster
+      // connections.
       if (nodeAnnounce)
       {
          for (ClusterConnection clusterConnection : clusterConnections.values())
@@ -287,7 +286,7 @@ public class ClusterManagerImpl implements ClusterManager
          }
       }
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -313,8 +312,7 @@ public class ClusterManagerImpl implements ClusterManager
       return clusterConnections.get(name.toString());
    }
 
-   public void addClusterTopologyListener(final ClusterTopologyListener listener,
-                                                     final boolean clusterConnection)
+   public void addClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)
    {
       synchronized (this)
       {
@@ -333,7 +331,7 @@ public class ClusterManagerImpl implements ClusterManager
    }
 
    public synchronized void removeClusterTopologyListener(final ClusterTopologyListener listener,
-                                                       final boolean clusterConnection)
+                                                          final boolean clusterConnection)
    {
       if (clusterConnection)
       {
@@ -349,9 +347,9 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return topology;
    }
-   
+
    // backup node becomes live
-  public synchronized void activate()
+   public synchronized void activate()
    {
       if (backup)
       {
@@ -360,7 +358,7 @@ public class ClusterManagerImpl implements ClusterManager
          String nodeID = server.getNodeID().toString();
 
          TopologyMember member = topology.getMember(nodeID);
-         //we swap the topology backup now = live
+         // we swap the topology backup now = live
          if (member != null)
          {
             member.getConnector().a = member.getConnector().b;
@@ -368,9 +366,9 @@ public class ClusterManagerImpl implements ClusterManager
             member.getConnector().b = null;
          }
 
-         if(backupServerLocator != null)
+         if (backupServerLocator != null)
          {
-            //todo we could use the topology of this to preempt it arriving from the cc
+            // todo we could use the topology of this to preempt it arriving from the cc
             try
             {
                backupServerLocator.close();
@@ -434,7 +432,7 @@ public class ClusterManagerImpl implements ClusterManager
    public void announceBackup() throws Exception
    {
       List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if(!configs.isEmpty())
+      if (!configs.isEmpty())
       {
          ClusterConnectionConfiguration config = configs.get(0);
 
@@ -442,8 +440,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          if (connector == null)
          {
-            log.warn("No connecor with name '" + config.getConnectorName() +
-                     "'. backup cannot be announced.");
+            log.warn("No connecor with name '" + config.getConnectorName() + "'. backup cannot be announced.");
             return;
          }
          announceBackup(config, connector);
@@ -469,11 +466,13 @@ public class ClusterManagerImpl implements ClusterManager
       {
          if (backup)
          {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(null, cc.getConnector()));
+            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(null,
+                                                                                                 cc.getConnector()));
          }
          else
          {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(cc.getConnector(), null));
+            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(cc.getConnector(),
+                                                                                                 null));
          }
 
          topology.addMember(nodeID, member);
@@ -482,11 +481,11 @@ public class ClusterManagerImpl implements ClusterManager
       {
          if (backup)
          {
-           // pair.b = cc.getConnector();
+            // pair.b = cc.getConnector();
          }
          else
          {
-           // pair.a = cc.getConnector();
+            // pair.a = cc.getConnector();
          }
       }
 
@@ -496,7 +495,7 @@ public class ClusterManagerImpl implements ClusterManager
       {
          listener.nodeUP(nodeID, member.getConnector(), false);
       }
-      
+
       for (ClusterTopologyListener listener : clusterConnectionListeners)
       {
          listener.nodeUP(nodeID, member.getConnector(), false);
@@ -685,6 +684,8 @@ public class ClusterManagerImpl implements ClusterManager
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
       serverLocator.setInitialConnectAttempts(config.getReconnectAttempts());
+      serverLocator.setBlockOnDurableSend(false);
+      serverLocator.setBlockOnNonDurableSend(false);
       clusterLocators.add(serverLocator);
       Bridge bridge = new BridgeImpl(serverLocator,
                                      nodeUUID,
@@ -720,7 +721,7 @@ public class ClusterManagerImpl implements ClusterManager
          managementService.unregisterBridge(name);
       }
    }
-   
+
    private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
@@ -746,10 +747,10 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-
-      if(clusterConnections.containsKey(config.getName()))
+      if (clusterConnections.containsKey(config.getName()))
       {
-         log.warn("Cluster Configuration  '" + config.getConnectorName() + "' already exists. The cluster connection will not be deployed.", new Exception ("trace"));
+         log.warn("Cluster Configuration  '" + config.getConnectorName() +
+                  "' already exists. The cluster connection will not be deployed.", new Exception("trace"));
          return;
       }
 
@@ -788,7 +789,8 @@ public class ClusterManagerImpl implements ClusterManager
       }
       else
       {
-         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null? connectorNameListToArray(config.getStaticConnectors()):null;
+         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
+                                                                                  : null;
 
          clusterConnection = new ClusterConnectionImpl(tcConfigs,
                                                        connector,
@@ -816,8 +818,8 @@ public class ClusterManagerImpl implements ClusterManager
       clusterConnections.put(config.getName(), clusterConnection);
 
       clusterConnection.start();
-      
-      if(backup)
+
+      if (backup)
       {
          announceBackup(config, connector);
       }
@@ -860,13 +862,15 @@ public class ClusterManagerImpl implements ClusterManager
                ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
                if (backupSessionFactory != null)
                {
-                  backupSessionFactory.getConnection().getChannel(0, -1).send(new NodeAnnounceMessage(nodeUUID.toString(), true, connector));
+                  backupSessionFactory.getConnection()
+                                      .getChannel(0, -1)
+                                      .send(new NodeAnnounceMessage(nodeUUID.toString(), true, connector));
                   log.info("backup announced");
                }
             }
             catch (Exception e)
             {
-               log.warn("Unable to announce backup", e); 
+               log.warn("Unable to announce backup", e);
             }
          }
       });
@@ -892,7 +896,8 @@ public class ClusterManagerImpl implements ClusterManager
       }
       return transformer;
    }
-   //for testing
+
+   // for testing
    public void clear()
    {
       bridges.clear();
@@ -904,7 +909,7 @@ public class ClusterManagerImpl implements ClusterManager
          }
          catch (Exception e)
          {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace();
          }
       }
       clusterConnections.clear();
