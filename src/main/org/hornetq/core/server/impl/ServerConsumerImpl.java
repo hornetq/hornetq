@@ -61,6 +61,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConsumerImpl.class);
+   
+   private static boolean isTrace = log.isTraceEnabled();
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -408,6 +410,10 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          for (MessageReference ref : deliveringRefs)
          {
+            if (isTrace)
+            {
+               log.trace("Cancelling reference for messageID = " + ref.getMessage().getMessageID() + ", ref = " + ref);
+            }
             if (performACK)
             {
                acknowledge(false, tx, ref.getMessage().getMessageID());

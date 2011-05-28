@@ -25,6 +25,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.hornetq.core.logging.Logger;
+
 /**
  * A SoftValueHashMap
  *
@@ -34,13 +36,17 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implements Map<K, V>
 {
+   private static final Logger log = Logger.getLogger(SoftValueHashMap.class);
+
+   private final boolean isTrace = log.isTraceEnabled();
+
    // The soft references that are already good.
    // too bad there's no way to override the queue method on ReferenceQueue, so I wouldn't need this
    private final ReferenceQueue<V> refQueue = new ReferenceQueue<V>();
 
    private final Map<K, AggregatedSoftReference> mapDelegate = new HashMap<K, AggregatedSoftReference>();
-
-   private final AtomicLong nextId = new AtomicLong(0);
+   
+   private final AtomicLong usedCounter = new AtomicLong(0);
 
    private int maxElements;
 
@@ -64,18 +70,17 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
    // Public --------------------------------------------------------
 
-   
    public void setMaxElements(final int maxElements)
    {
       this.maxElements = maxElements;
       checkCacheSize();
    }
-   
+
    public int getMaxEelements()
    {
       return this.maxElements;
    }
-   
+
    /**
     * @return
     * @see java.util.Map#size()
@@ -156,11 +161,13 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    public V put(final K key, final V value)
    {
       processQueue();
-      AggregatedSoftReference refPut = mapDelegate.put(key, createReference(key, value));
+      AggregatedSoftReference newRef = createReference(key, value);
+      AggregatedSoftReference oldRef = mapDelegate.put(key, newRef);
       checkCacheSize();
-      if (refPut != null)
+      newRef.used();
+      if (oldRef != null)
       {
-         return refPut.get();
+         return oldRef.get();
       }
       else
       {
@@ -173,11 +180,11 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
       if (maxElements > 0 && mapDelegate.size() > maxElements)
       {
          TreeSet<AggregatedSoftReference> usedReferences = new TreeSet<AggregatedSoftReference>(new ComparatorAgregated());
-         
+
          for (AggregatedSoftReference ref : mapDelegate.values())
          {
             V v = ref.get();
-            
+
             if (v != null && !v.isLive())
             {
                usedReferences.add(ref);
@@ -186,11 +193,19 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          
          for (AggregatedSoftReference ref : usedReferences)
          {
-            mapDelegate.remove(ref.key);
-
-            if (mapDelegate.size() <= maxElements)
+            if (ref.used > 0)
             {
-               break;
+               Object removed = mapDelegate.remove(ref.key);
+               
+               if (isTrace)
+               {
+                  log.trace("Removing " + removed + " with id = " + ref.key + " from SoftValueHashMap");
+               }
+   
+               if (mapDelegate.size() <= maxElements)
+               {
+                  break;
+               }
             }
          }
       }
@@ -210,14 +225,14 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          {
             return -1;
          }
-         
-         k = o1.id - o2.id;
-         
+
+         k = o1.hashCode() - o2.hashCode();
+
          if (k > 0)
          {
             return 1;
          }
-         else if (k < 0) 
+         else if (k < 0)
          {
             return -1;
          }
@@ -369,8 +384,6 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
    {
       final K key;
 
-      long id = nextId.incrementAndGet();
-
       long used = 0;
 
       public long getUsed()
@@ -380,7 +393,7 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
 
       public void used()
       {
-         used++;
+         used = usedCounter.incrementAndGet();
       }
 
       public AggregatedSoftReference(final K key, final V referent)
@@ -388,6 +401,17 @@ public class SoftValueHashMap<K, V extends SoftValueHashMap.ValueCache> implemen
          super(referent, refQueue);
          this.key = key;
       }
+      
+      /* (non-Javadoc)
+       * @see java.lang.Object#toString()
+       */
+      @Override
+      public String toString()
+      {
+         return "AggregatedSoftReference [key=" + key + ", used=" + used + "]";
+      }
+
+      
    }
 
    static final class EntryElement<K, V> implements Map.Entry<K, V>

@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,10 +41,7 @@ import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
@@ -56,9 +52,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Future;
 
 /**
@@ -882,7 +876,14 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
  
          currentPage.write(pagedMessage);
+
+         if (isTrace)
+         {
+            log.trace("Paging message " + pagedMessage + " on pageStore " + this.getStoreName() + 
+                      " pageId=" + currentPage.getPageId());
+         }
          
+        
          if (tx != null)
          {
             installPageTransaction(tx, listCtx);

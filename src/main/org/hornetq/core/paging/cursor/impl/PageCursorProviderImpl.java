@@ -49,6 +49,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageCursorProviderImpl.class);
+   
+   boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -160,6 +162,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // anyone reading from this cache will have to wait reading to finish first
                // we also want only one thread reading this cache
                cache.lock();
+               if (isTrace)
+               {
+                  log.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
+               }
                softCache.put(pageId, cache);
             }
          }
@@ -411,7 +417,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
             PagedMessage[] pgdMessages;
             synchronized (softCache)
             {
-               cache = softCache.remove((long)depagedPage.getPageId());
+               cache = softCache.get((long)depagedPage.getPageId());
+            }
+            
+            if (isTrace)
+            {
+               log.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
             }
 
             if (cache == null)
@@ -430,6 +441,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             }
 
             depagedPage.delete(pgdMessages);
+            
             synchronized (softCache)
             {
                softCache.remove((long)depagedPage.getPageId());

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.paging.impl;
 
+import java.util.Arrays;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.logging.Logger;
@@ -157,6 +159,22 @@ public class PagedMessageImpl implements PagedMessage
       return DataConstants.SIZE_LONG + DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + message.getEncodeSize() + 
              DataConstants.SIZE_INT + queueIDs.length * DataConstants.SIZE_LONG;
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PagedMessageImpl [queueIDs=" + Arrays.toString(queueIDs) +
+             ", transactionID=" +
+             transactionID +
+             ", message=" +
+             message +
+             "]";
+   }
+   
+   
 
    // Package protected ---------------------------------------------
 

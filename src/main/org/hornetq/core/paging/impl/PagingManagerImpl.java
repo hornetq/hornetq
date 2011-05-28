@@ -59,6 +59,7 @@ public class PagingManagerImpl implements PagingManager
    // --------------------------------------------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PagingManagerImpl.class);
+   private static boolean isTrace = log.isTraceEnabled();
 
    // Constructors
    // --------------------------------------------------------------------------------------------------------------------
@@ -167,16 +168,28 @@ public class PagingManagerImpl implements PagingManager
 
    public void addTransaction(final PageTransactionInfo pageTransaction)
    {
+      if (isTrace)
+      {
+         log.trace("Adding pageTransaction " + pageTransaction.getTransactionID());
+      }
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
    }
 
    public void removeTransaction(final long id)
    {
+      if (isTrace)
+      {
+         log.trace("Removing pageTransaction " +id);
+      }
       transactions.remove(id);
    }
 
    public PageTransactionInfo getTransaction(final long id)
    {
+      if (isTrace)
+      {
+         log.trace("looking up pageTX = " + id);
+      }
       return transactions.get(id);
    }
    

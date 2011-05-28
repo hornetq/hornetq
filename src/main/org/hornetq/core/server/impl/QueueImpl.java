@@ -82,6 +82,11 @@ public class QueueImpl implements Queue
    public static final int MAX_DELIVERIES_IN_LOOP = 1000;
 
    public static final int CHECK_QUEUE_SIZE_PERIOD = 100;
+   
+   /** If The system gets slow for any reason, this is the maximum time an Delivery or 
+       or depage executor should be hanging on
+   */
+   private static final int DELIVERY_TIMEOUT = 1000;
 
    private final long id;
 
@@ -1461,7 +1466,7 @@ public class QueueImpl implements Queue
 
       int handled = 0;
       
-      long timeout = System.currentTimeMillis() + 1000;
+      long timeout = System.currentTimeMillis() + DELIVERY_TIMEOUT;
 
       while (handled < numRefs)
       {
@@ -1474,11 +1479,11 @@ public class QueueImpl implements Queue
             return;
          }
          
-         if (pageSubscription != null && pageSubscription.isPaging() && System.currentTimeMillis() > timeout)
+         if (System.currentTimeMillis() > timeout)
          {
             if (isTrace)
             {
-               log.trace("Page delivery has been running for too long. Scheduling another delivery task now");
+               log.warn("delivery has been running for too long. Scheduling another delivery task now");
             }
             
             deliverAsync();
@@ -1523,6 +1528,11 @@ public class QueueImpl implements Queue
             }
 
             Consumer groupConsumer = null;
+            
+            if (isTrace)
+            {
+               log.trace("Queue " + this.getName() + " is delivering reference " + ref);
+            }
 
             // If a group id is set, then this overrides the consumer chosen round-robin
 
@@ -1584,7 +1594,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext()) 
+      if (pageIterator != null && messageReferences.size() == 0 && pageSubscription.isPaging() && pageIterator.hasNext() && !depagePending) 
       {
          scheduleDepage();
       }
@@ -1626,26 +1636,43 @@ public class QueueImpl implements Queue
       }
    }
 
-   private void depage()
+   private synchronized void depage()
    {
+      depagePending = false;
+
       if (paused || pageIterator == null)
       {
          return;
       }
 
       long maxSize = pageSubscription.getPagingStore().getPageSizeBytes();
+      
+      
+      long timeout = System.currentTimeMillis() + DELIVERY_TIMEOUT;
 
-      // System.out.println("QueueMemorySize before depage = " + queueMemorySize.get());
+      if (isTrace)
+      {
+         log.trace("QueueMemorySize before depage on queue=" + this.getName() + " is " + queueMemorySize.get());
+      }
+      
       int depaged = 0;
-      while (queueMemorySize.get() < maxSize && pageIterator.hasNext())
+      while (timeout > System.currentTimeMillis() && queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
          depaged++;
          PagedReference reference = pageIterator.next();
+         if (isTrace)
+         {
+            log.trace("Depaging reference " + reference + " on queue " + this.getName());
+         }
          addTail(reference, false);
          pageIterator.remove();
       }
-      log.debug("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
-
+      
+      if (isTrace)
+      {
+         log.trace("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
+      }
+      
       deliverAsync();
    }
 
@@ -2215,7 +2242,6 @@ public class QueueImpl implements Queue
       {
          try
          {
-            depagePending = false;
             depage();
          }
          catch (Exception e)

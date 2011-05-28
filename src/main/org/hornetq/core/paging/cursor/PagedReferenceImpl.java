@@ -216,7 +216,7 @@ public class PagedReferenceImpl implements PagedReference
    {
       return "PagedReferenceImpl [position=" + position +
              ", message=" +
-             message +
+             getPagedMessage() +
              ", deliveryTime=" +
              deliveryTime +
              ", persistedCount=" +

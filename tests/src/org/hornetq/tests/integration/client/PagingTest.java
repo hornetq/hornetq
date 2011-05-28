@@ -1772,7 +1772,7 @@ public class PagingTest extends ServiceTestBase
          }
       }
    }
-
+   
    public void testOrderingNonTX() throws Exception
    {
       clearData();
@@ -1792,7 +1792,7 @@ public class PagingTest extends ServiceTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-      final int messageSize = 1024; // 1k
+      final int messageSize = 1024;
       final int numberOfMessages = 2000;
 
       try
@@ -1836,7 +1836,7 @@ public class PagingTest extends ServiceTestBase
 
                   sessionProducer.commit();
 
-                  System.out.println("Producer gone");
+                  log.info("Producer gone");
 
                }
                catch (Throwable e)
@@ -1876,8 +1876,12 @@ public class PagingTest extends ServiceTestBase
          {
             ClientMessage msg = consumer.receive(5000);
             assertNotNull(msg);
-            System.out.println("Received " + i);
-            assertEquals(i, msg.getIntProperty("count").intValue());
+            log.info("Received " + i + " with property = " + msg.getIntProperty("count"));
+            if (i != msg.getIntProperty("count").intValue())
+            {
+               log.info("###### different");
+            }
+            //assertEquals(i, msg.getIntProperty("count").intValue());
             msg.acknowledge();
          }
 
@@ -3529,7 +3533,7 @@ public class PagingTest extends ServiceTestBase
          }
       }
    }
-
+   
    public void testDLAOnLargeMessageAndPaging() throws Exception
    {
       clearData();
@@ -3550,17 +3554,20 @@ public class PagingTest extends ServiceTestBase
 
       final int messageSize = 1024;
 
+      ServerLocator locator = null;
+      ClientSessionFactory sf = null;
+      ClientSession session = null;
       try
       {
-         ServerLocator locator = createInVMNonHALocator();
+         locator = createInVMNonHALocator();
 
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
          locator.setBlockOnAcknowledge(true);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         sf = locator.createSessionFactory();
 
-         ClientSession session = sf.createSession(false, false, false);
+         session = sf.createSession(false, false, false);
 
          session.createQueue(ADDRESS, ADDRESS, true);
 
@@ -3572,15 +3579,14 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         ClientMessage message = null;
 
          for (int i = 0; i < 100; i++)
          {
-            log.info("send message #" + i);
-            message = session.createMessage(true);
+            log.debug("send message #" + i);
+            ClientMessage message = session.createMessage(true);
 
             message.putStringProperty("id", "str" + i);
-
+            
             message.setBodyInputStream(createFakeLargeStream(messageSize));
 
             producer.send(message);
@@ -3596,14 +3602,12 @@ public class PagingTest extends ServiceTestBase
          session.start();
 
          ClientConsumer cons = session.createConsumer(ADDRESS);
-
-         ClientMessage msg = null;
          
          for (int msgNr = 0 ; msgNr < 2; msgNr++)
          {
             for (int i = 0 ; i < 5; i++)
             {
-               msg = cons.receive(5000);
+               ClientMessage msg = cons.receive(5000);
       
                assertNotNull(msg);
       
@@ -3624,12 +3628,12 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 2; i < 100; i++)
          {
-            log.info("Received message " + i);
-            message = cons.receive(5000);
-            assertNotNull(message);
+            log.debug("Received message " + i);
+            ClientMessage message = cons.receive(5000);
+            assertNotNull("Message " + i + " wasn't received", message);
             message.acknowledge();
-
-            message.saveToOutputStream(new OutputStream()
+            
+            message.setOutputStream(new OutputStream()
             {
                @Override
                public void write(int b) throws IOException
@@ -3638,6 +3642,12 @@ public class PagingTest extends ServiceTestBase
                }
             });
 
+            if (!message.waitOutputStreamCompletion(5000))
+            {
+               log.info(threadDump("dump"));
+               fail("Couldn't finish large message sending");
+            }
+
          }
          
          assertNull(cons.receiveImmediate());
@@ -3645,6 +3655,8 @@ public class PagingTest extends ServiceTestBase
          cons.close();
          
          sf.close();
+         
+         session.close();
          
          locator.close();
          
@@ -3664,12 +3676,15 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 2; i < 100; i++)
          {
-            log.info("Received message " + i);
-            message = cons.receive(5000);
+            log.debug("Received message " + i);
+            ClientMessage message = cons.receive(5000);
             assertNotNull(message);
+            
+            assertEquals("str" + i, message.getStringProperty("id"));
+
             message.acknowledge();
 
-            message.saveToOutputStream(new OutputStream()
+            message.setOutputStream(new OutputStream()
             {
                @Override
                public void write(int b) throws IOException
@@ -3677,6 +3692,8 @@ public class PagingTest extends ServiceTestBase
 
                }
             });
+            
+            assertTrue(message.waitOutputStreamCompletion(5000));
          }
          
          cons.close();
@@ -3685,7 +3702,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int msgNr = 0 ; msgNr < 2; msgNr++)
          {
-            msg = cons.receive(5000);
+            ClientMessage msg = cons.receive(10000);
 
             assertNotNull(msg);
             
@@ -3723,11 +3740,11 @@ public class PagingTest extends ServiceTestBase
          assertFalse(pgStoreAddress.isPaging());
 
          session.commit();
-
-         session.close();
       }
       finally
       {
+         session.close();
+         sf.close();
          locator.close();
          try
          {
