@@ -71,6 +71,9 @@ public interface Queue extends Bindable
    void cancel(MessageReference reference, long timeBase) throws Exception;
 
    void deliverAsync();
+   
+   /** This method will make sure that any pending message (including paged message) will be delivered  */
+   void forceDelivery();
 
    long getMessageCount();
 

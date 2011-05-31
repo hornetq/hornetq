@@ -87,7 +87,7 @@ public class PagingExample extends HornetQExample
          messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
          // Step 13. Send the message for about 1K, which should be over the memory limit imposed by the server
-         for (int i = 0; i < 1000; i++)
+         for (int i = 0; i < 10000; i++)
          {
             messageProducer.send(message);
          }
@@ -106,7 +106,7 @@ public class PagingExample extends HornetQExample
          // paging
          // until messages are ACKed
 
-         for (int i = 0; i < 1000; i++)
+         for (int i = 0; i < 10000; i++)
          {
             message = (BytesMessage)messageConsumer.receive(3000);
 

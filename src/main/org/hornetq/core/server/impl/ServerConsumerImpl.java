@@ -673,7 +673,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
             else
             {
-               messageQueue.deliverAsync();
+               messageQueue.forceDelivery();
             }
          }
       }

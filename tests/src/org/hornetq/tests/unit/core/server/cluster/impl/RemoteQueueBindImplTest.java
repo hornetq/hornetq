@@ -650,6 +650,15 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          return null;
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#forceDelivery()
+       */
+      public void forceDelivery()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
 }

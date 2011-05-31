@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
 
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
@@ -48,6 +47,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private static final boolean trace = ClientConsumerImpl.log.isTraceEnabled();
 
@@ -223,6 +224,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
+                        if (isTrace)
+                        {
+                           log.trace("Forcing delivery");
+                        }
                         session.forceDelivery(id, forceDeliveryCount++);
 
                         deliveryForced = true;
@@ -258,15 +263,26 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   long seq = m.getLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE);
 
-                  if (forcingDelivery && seq == forceDeliveryCount - 1)
+                  // Need to check if forceDelivery was called at this call
+                  // As we could be receiving a message that came from a previous call
+                  if (forcingDelivery && deliveryForced && seq == forceDeliveryCount - 1)
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue
                      resetIfSlowConsumer();
+                     
+                     if (isTrace)
+                     {
+                        log.trace("There was nothing on the queue, leaving it now:: returning null");
+                     }
 
                      return null;
                   }
                   else
                   {
+                     if (isTrace)
+                     {
+                        log.trace("Ignored force delivery answer as it belonged to another call");
+                     }
                      // Ignore the message
                      continue;
                   }
@@ -301,11 +317,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   largeMessageReceived = m;
                }
+               
+               if (isTrace)
+               {
+                  log.trace("Returning " + m);
+               }
 
                return m;
             }
             else
             {
+               if (isTrace)
+               {
+                  log.trace("Returning null");
+               }
                resetIfSlowConsumer();
                return null;
             }

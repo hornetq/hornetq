@@ -354,6 +354,149 @@ public class PagingTest extends ServiceTestBase
 
    }
 
+   public void testReceiveImmediate() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int messageSize = 1024;
+
+      final int numberOfMessages = 1000;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[messageSize];
+
+         ByteBuffer bb = ByteBuffer.wrap(body);
+
+         for (int j = 1; j <= messageSize; j++)
+         {
+            bb.put(getSamplebyte(j));
+         }
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(true);
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty(new SimpleString("id"), i);
+
+            producer.send(message);
+            if (i % 1000 == 0)
+            {
+               session.commit();
+            }
+         }
+         session.commit();
+         session.close();
+         
+         session = null;
+
+         sf.close();
+         locator.close();
+
+         server.stop();
+
+         server = createServer(true,
+                               config,
+                               PagingTest.PAGE_SIZE,
+                               PagingTest.PAGE_MAX,
+                               new HashMap<String, AddressSettings>());
+         server.start();
+
+         locator = createInVMNonHALocator();
+         sf = locator.createSessionFactory();
+
+         Queue queue = server.locateQueue(ADDRESS);
+
+         assertEquals(numberOfMessages, queue.getMessageCount());
+
+         LinkedList<Xid> xids = new LinkedList<Xid>();
+
+         int msgReceived = 0;
+         ClientSession sessionConsumer = sf.createSession(false, false, false);
+         sessionConsumer.start();
+         ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
+         for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
+         {
+            log.info("Received " + msgCount);
+            msgReceived++;
+            ClientMessage msg = consumer.receiveImmediate();
+            if (msg == null)
+            {
+               log.info("It's null. leaving now");
+               sessionConsumer.commit();
+               fail("Didn't receive a message");
+            }
+            msg.acknowledge();
+            
+            if (msgCount % 5 == 0)
+            {
+               log.info("commit");
+               sessionConsumer.commit();
+            }
+         }
+         
+         sessionConsumer.commit();
+         
+         sessionConsumer.close();
+
+         sf.close();
+
+         locator.close();
+
+         assertEquals(0, queue.getMessageCount());
+
+         long timeout = System.currentTimeMillis() + 5000;
+         while (timeout > System.currentTimeMillis() && queue.getPageSubscription().getPagingStore().isPaging())
+         {
+            Thread.sleep(100);
+         }
+         assertFalse(queue.getPageSubscription().getPagingStore().isPaging());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
    public void testMissingTXEverythingAcked() throws Exception
    {
       clearData();
@@ -3642,10 +3785,17 @@ public class PagingTest extends ServiceTestBase
                }
             });
 
-            if (!message.waitOutputStreamCompletion(5000))
+            try
             {
-               log.info(threadDump("dump"));
-               fail("Couldn't finish large message sending");
+               if (!message.waitOutputStreamCompletion(5000))
+               {
+                  log.info(threadDump("dump"));
+                  fail("Couldn't finish large message receiving");
+               }
+            }
+            catch (Throwable e)
+            {
+               fail("Couldn't finish large message receiving for id=" + message.getStringProperty("id") + " with messageID=" + message.getMessageID());
             }
 
          }

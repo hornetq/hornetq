@@ -403,6 +403,25 @@ public class QueueImpl implements Queue
       executor.execute(concurrentPoller);
    }
 
+   public void forceDelivery()
+   {
+      if (pageSubscription != null && pageSubscription.isPaging())
+      {
+         if (isTrace)
+         {
+         	log.trace("Force delivery scheduling depage");
+         }
+         scheduleDepage();
+      }
+      
+      if (isTrace)
+      {
+      	log.trace("Force delivery deliverying async");
+      }
+      
+      deliverAsync();
+   }
+   
    public void deliverAsync()
    {
       getExecutor().execute(deliverRunner);
@@ -1670,6 +1689,11 @@ public class QueueImpl implements Queue
       
       if (isTrace)
       {
+         if (depaged == 0 && queueMemorySize.get() >= maxSize)
+         {
+            log.trace("Couldn't depage any message as the maxSize on the queue was achieved. There are too many pending messages to be acked in reference to the page configuration");
+         }
+         
          log.trace("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
       }
       
