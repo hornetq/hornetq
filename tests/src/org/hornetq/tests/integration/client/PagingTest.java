@@ -3787,7 +3787,7 @@ public class PagingTest extends ServiceTestBase
 
             try
             {
-               if (!message.waitOutputStreamCompletion(5000))
+               if (!message.waitOutputStreamCompletion(10000))
                {
                   log.info(threadDump("dump"));
                   fail("Couldn't finish large message receiving");
@@ -3795,6 +3795,7 @@ public class PagingTest extends ServiceTestBase
             }
             catch (Throwable e)
             {
+               log.info(threadDump("dump"));
                fail("Couldn't finish large message receiving for id=" + message.getStringProperty("id") + " with messageID=" + message.getMessageID());
             }
 
@@ -3803,6 +3804,13 @@ public class PagingTest extends ServiceTestBase
          assertNull(cons.receiveImmediate());
 
          cons.close();
+         
+         cons = session.createConsumer("DLA");
+         
+         for (int i = 0 ; i < 2; i++)
+         {
+            assertNotNull(cons.receive(5000));
+         }
          
          sf.close();
          
@@ -3845,6 +3853,8 @@ public class PagingTest extends ServiceTestBase
             
             assertTrue(message.waitOutputStreamCompletion(5000));
          }
+         
+         assertNull(cons.receiveImmediate());
          
          cons.close();
          
