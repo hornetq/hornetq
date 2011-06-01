@@ -273,7 +273,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    @Override
    public String toString()
    {
-      return "ServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+      return "ServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() + 
+          ",expiration" + this.getExpiration() + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
    }
 
    // FIXME - this is stuff that is only used in large messages
