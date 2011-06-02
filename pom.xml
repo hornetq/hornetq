@@ -144,10 +144,11 @@
          </dependency>
          <!-- needed to compile JMS-->
          <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-jms-api</artifactId>
-            <version>1.1.0.GA</version>
+            <groupId>org.jboss.spec.javax.jms</groupId>
+            <artifactId>jboss-jms-api_1.1_spec</artifactId>
+            <version>1.0.0.Final</version>
          </dependency>
+
          <!-- needed to compile JavaEE examples-->
          <dependency>
             <groupId>org.jboss.javaee</groupId>
@@ -155,10 +156,11 @@
             <version>3.0.0.GA</version>
          </dependency>
          <dependency>
-            <groupId>org.jboss.javaee</groupId>
-            <artifactId>jboss-transaction-api</artifactId>
-            <version>1.0.1.GA</version>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+            <version>1.0.0.Final</version>
          </dependency>
+
          <!--this specifically for the JMS Bridge-->
          <dependency>
             <groupId>org.jboss.integration</groupId>
