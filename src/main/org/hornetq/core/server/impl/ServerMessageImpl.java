@@ -274,7 +274,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public String toString()
    {
       return "ServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() + 
-          ",expiration=" + this.getExpiration() + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+          ",expiration=" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : 0) + 
+          ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
    }
 
    // FIXME - this is stuff that is only used in large messages
