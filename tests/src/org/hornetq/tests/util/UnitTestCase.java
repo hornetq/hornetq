@@ -957,8 +957,6 @@ public class UnitTestCase extends TestCase
    {
       OperationContextImpl.clearContext();
 
-      deleteDirectory(new File(getTestDir()));
-
       int invmSize = InVMRegistry.instance.size();
       if (invmSize > 0)
       {

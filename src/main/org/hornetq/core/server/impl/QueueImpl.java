@@ -1502,7 +1502,7 @@ public class QueueImpl implements Queue
          {
             if (isTrace)
             {
-               log.warn("delivery has been running for too long. Scheduling another delivery task now");
+               log.trace("delivery has been running for too long. Scheduling another delivery task now");
             }
             
             deliverAsync();
@@ -1530,6 +1530,7 @@ public class QueueImpl implements Queue
          {
             ref = null;
          }
+         
 
          if (ref == null)
          {
@@ -1858,13 +1859,13 @@ public class QueueImpl implements Queue
 
          if (bindingList.getBindings().isEmpty())
          {
-            QueueImpl.log.warn("Message has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
+            QueueImpl.log.warn("Message " + ref + " has exceeded max delivery attempts. No bindings for Dead Letter Address " + deadLetterAddress +
                                " so dropping it");
          }
          else
          {
 
-            QueueImpl.log.warn("Message has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress +
+            QueueImpl.log.warn("Message " + ref + " has reached maximum delivery attempts, sending it to Dead Letter Address " + deadLetterAddress +
                                " from " +
                                name);
             move(deadLetterAddress, ref, false, false);

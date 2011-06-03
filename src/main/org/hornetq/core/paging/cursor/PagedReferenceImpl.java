@@ -163,7 +163,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.incrementAndGet();
       if (isTrace)
       {
-         log.trace("deliveryCount = " + deliveryCount + " for " + this);
+         log.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
       }
 
    }
@@ -174,6 +174,10 @@ public class PagedReferenceImpl implements PagedReference
    public void decrementDeliveryCount()
    {
       deliveryCount.decrementAndGet();
+      if (isTrace)
+      {
+         log.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+      }
    }
 
    /* (non-Javadoc)

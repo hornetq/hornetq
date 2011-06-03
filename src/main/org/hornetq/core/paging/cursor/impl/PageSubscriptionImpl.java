@@ -106,12 +106,14 @@ public class PageSubscriptionImpl implements PageSubscription
 
    // We only store the position for redeliveries. They will be read from the SoftCache again during delivery.
    private final ConcurrentLinkedQueue<PagePosition> redeliveries = new ConcurrentLinkedQueue<PagePosition>();
+   
+   
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public PageSubscriptionImpl(final PageCursorProvider cursorProvider,
+    public PageSubscriptionImpl(final PageCursorProvider cursorProvider,
                                final PagingStore pageStore,
                                final StorageManager store,
                                final Executor executor,
@@ -299,6 +301,16 @@ public class PageSubscriptionImpl implements PageSubscription
       tx.commit();
 
    }
+   
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + "]";
+   }
+
 
    private PagedReference getReference(PagePosition pos) throws Exception
    {
