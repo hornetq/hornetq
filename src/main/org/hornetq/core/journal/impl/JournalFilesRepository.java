@@ -356,26 +356,22 @@ public class JournalFilesRepository
    {
       return freeFiles.size();
    }
-
-   /**
-    * Add directly to the freeFiles structure without reinitializing the file.
-    * used on load() only
-    */
-   public void addFreeFileNoInit(final JournalFile file)
-   {
-      freeFiles.add(file);
-      
-      if (CHECK_CONSISTENCE)
-      {
-      	checkDataFiles();
-      }
-   }
-
    /**
     * @param file
     * @throws Exception
     */
    public synchronized void addFreeFile(final JournalFile file, final boolean renameTmp) throws Exception
+   {
+      addFreeFile(file, renameTmp, true);
+   }
+
+   /**
+    * @param file
+    * @param renameTmp - should rename the file as it's being added to free files
+    * @param checkDelete - should delete the file if max condition has been met
+    * @throws Exception
+    */
+   public synchronized void addFreeFile(final JournalFile file, final boolean renameTmp, final boolean checkDelete) throws Exception
    {
       long calculatedSize = 0;
       try
@@ -395,7 +391,7 @@ public class JournalFilesRepository
       }
       else
       // FIXME - size() involves a scan!!!
-      if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
+      if (!checkDelete || (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles))
       {
          // Re-initialise it
 
@@ -415,6 +411,17 @@ public class JournalFilesRepository
       }
       else
       {
+         if (trace)
+         {
+            log.trace("DataFiles.size() = " + dataFiles.size());
+            log.trace("openedFiles.size() = " + openedFiles.size());
+            log.trace("minfiles = " + minFiles);
+            log.trace("Free Files = "  + freeFiles.size());
+            log.trace("File " + file + 
+                      " being deleted as freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() (" + 
+                      (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size()) + 
+                      ") < minFiles (" + minFiles + ")" );
+         }
          file.getFile().delete();
       }
       

@@ -2155,7 +2155,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             if (changeData)
             {
                // Empty dataFiles with no data
-               filesRepository.addFreeFile(file, false);
+               filesRepository.addFreeFile(file, false, false);
             }
          }
       }
