@@ -910,10 +910,12 @@ public class JournalStorageManager implements StorageManager
 
                if (message == null)
                {
-                  throw new IllegalStateException("Cannot find message " + record.id);
+                  log.error("Cannot find message " + record.id);
                }
-
-               queueMessages.put(messageID, new AddMessageRecord(message));
+               else
+               {
+                  queueMessages.put(messageID, new AddMessageRecord(message));
+               }
 
                break;
             }
@@ -929,14 +931,16 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
+                  log.error("Cannot find queue messages for queueID=" + encoding.queueID + " on ack for messageID=" + messageID);
                }
-
-               AddMessageRecord rec = queueMessages.remove(messageID);
-
-               if (rec == null)
+               else
                {
-                  throw new IllegalStateException("Cannot find message " + messageID);
+                  AddMessageRecord rec = queueMessages.remove(messageID);
+   
+                  if (rec == null)
+                  {
+                     log.error("Cannot find message " + messageID);
+                  }
                }
 
                break;
@@ -1008,17 +1012,22 @@ public class JournalStorageManager implements StorageManager
 
                if (queueMessages == null)
                {
-                  throw new IllegalStateException("Cannot find queue messages " + encoding.queueID);
+                  log.error("Cannot find queue messages " + encoding.queueID + " for message " + messageID + " while processing scheduled messages");
                }
-
-               AddMessageRecord rec = queueMessages.get(messageID);
-
-               if (rec == null)
+               else
                {
-                  throw new IllegalStateException("Cannot find message " + messageID);
+   
+                  AddMessageRecord rec = queueMessages.get(messageID);
+   
+                  if (rec == null)
+                  {
+                     log.error("Cannot find message " + messageID);
+                  }
+                  else
+                  {
+                     rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
+                  }
                }
-
-               rec.scheduledDeliveryTime = encoding.scheduledDeliveryTime;
 
                break;
             }

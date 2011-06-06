@@ -3677,11 +3677,24 @@ public class PagingTest extends ServiceTestBase
       }
    }
    
+   public void testLoop() throws Exception
+   {
+      for (int i = 0 ; i < 1000; i++)
+      {
+         log.warn("#test " + i);
+         testDLAOnLargeMessageAndPaging();
+         tearDown();
+         setUp();
+      }
+      
+   }
+   
    public void testDLAOnLargeMessageAndPaging() throws Exception
    {
       clearData();
 
       Configuration config = createDefaultConfig();
+      config.setThreadPoolMaxSize(5);
 
       config.setJournalSyncNonTransactional(false);
 
@@ -3776,12 +3789,14 @@ public class PagingTest extends ServiceTestBase
             assertNotNull("Message " + i + " wasn't received", message);
             message.acknowledge();
             
+            final AtomicInteger bytesOutput = new AtomicInteger(0);
+            
             message.setOutputStream(new OutputStream()
             {
                @Override
                public void write(int b) throws IOException
                {
-
+                  bytesOutput.incrementAndGet();
                }
             });
 
@@ -3795,8 +3810,10 @@ public class PagingTest extends ServiceTestBase
             }
             catch (Throwable e)
             {
+               log.info("output bytes = " + bytesOutput);
                log.info(threadDump("dump"));
-               fail("Couldn't finish large message receiving for id=" + message.getStringProperty("id") + " with messageID=" + message.getMessageID());
+               fail("Couldn't finish large message receiving for id=" + 
+                    message.getStringProperty("id") + " with messageID=" + message.getMessageID());
             }
 
          }

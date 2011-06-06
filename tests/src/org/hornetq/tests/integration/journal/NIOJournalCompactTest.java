@@ -779,8 +779,10 @@ public class NIOJournalCompactTest extends JournalImplTestBase
             }
          }
       }
+      
+      long lastId = idGenerator.generateID();
 
-      add(idGenerator.generateID());
+      add(lastId);
 
       if (createControlFile && deleteControlFile && renameFilesAfterCompacting)
       {
@@ -791,6 +793,15 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       createJournal();
       startJournal();
       loadAndCheck();
+  
+      journal.forceMoveNextFile();
+      update(lastId);
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+      
 
    }
 
