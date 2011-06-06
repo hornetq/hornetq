@@ -3677,18 +3677,6 @@ public class PagingTest extends ServiceTestBase
       }
    }
    
-   public void testLoop() throws Exception
-   {
-      for (int i = 0 ; i < 1000; i++)
-      {
-         log.warn("#test " + i);
-         testDLAOnLargeMessageAndPaging();
-         tearDown();
-         setUp();
-      }
-      
-   }
-   
    public void testDLAOnLargeMessageAndPaging() throws Exception
    {
       clearData();
