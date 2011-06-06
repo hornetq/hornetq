@@ -314,16 +314,13 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    private void doSend(final Message message, final long timeToLive, HornetQDestination destination) throws JMSException
    {
-      if (message.getJMSExpiration() == 0)
+      if (timeToLive == 0)
       {
-         if (timeToLive == 0)
-         {
-            message.setJMSExpiration(0);
-         }
-         else
-         {
-            message.setJMSExpiration(System.currentTimeMillis() + timeToLive);
-         }
+         message.setJMSExpiration(0);
+      }
+      else
+      {
+         message.setJMSExpiration(System.currentTimeMillis() + timeToLive);
       }
 
       if (!disableMessageTimestamp)
