@@ -87,9 +87,8 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
 
-   public synchronized void registerQueue(final HornetQQueue queue) throws Exception
+   public synchronized void registerQueue(final HornetQQueue queue, final Queue serverQueue) throws Exception
    {
-      Queue serverQueue = server.locateQueue(new SimpleString(queue.getName()));
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),

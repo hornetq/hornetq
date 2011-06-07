@@ -1042,9 +1042,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                             SimpleString.toSimpleString(coreFilterString),
                             durable,
                             false);
+
          queues.put(queueName, hqQueue);
 
-         jmsManagementService.registerQueue(hqQueue);
+         jmsManagementService.registerQueue(hqQueue, queue);
 
          return true;
       }
