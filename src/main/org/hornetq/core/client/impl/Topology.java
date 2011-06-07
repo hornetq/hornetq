@@ -54,9 +54,9 @@ public class Topology implements Serializable
       TopologyMember currentMember = topology.get(nodeId);
       if (debug)
       {
-         log.info("adding = " + nodeId + ":" + member.getConnector());
-         log.info("before----------------------------------");
-         log.info(describe());
+         log.debug("adding = " + nodeId + ":" + member.getConnector());
+         log.debug("before----------------------------------");
+         log.debug(describe());
       }
       if(currentMember == null)
       {
@@ -87,8 +87,8 @@ public class Topology implements Serializable
       }
       if(debug)
       {
-         log.info("Topology updated=" + replaced);
-         log.info(describe());
+         log.debug("Topology updated=" + replaced);
+         log.debug(describe());
       }
       return replaced;
    }
@@ -98,7 +98,7 @@ public class Topology implements Serializable
       TopologyMember member = topology.remove(nodeId);
       if (debug)
       {
-         log.info("Removing member " + member);
+         log.debug("Removing member " + member);
       }
       return (member != null);
    }
