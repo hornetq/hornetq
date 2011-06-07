@@ -1550,6 +1550,10 @@ public class QueueImpl implements Queue
          {
             if (checkExpired(ref))
             {
+               if (isTrace)
+               {
+                  log.trace("Reference " + ref + " being expired");
+               }
                holder.iter.remove();
 
                refRemoved(ref);
