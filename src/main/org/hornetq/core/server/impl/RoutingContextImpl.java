@@ -125,9 +125,14 @@ public class RoutingContextImpl implements RoutingContext
       
       private List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
       
-      public int getNumberOfQueues()
+      public int getNumberOfDurableQueues()
       {
-         return durableQueue.size() + nonDurableQueue.size();
+         return durableQueue.size();
+      }
+      
+      public int getNumberOfNonDurableQueues()
+      {
+         return nonDurableQueue.size();
       }
 
       /* (non-Javadoc)

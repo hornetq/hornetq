@@ -938,7 +938,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       pgOper.addStore(this);
-      pgOper.pageTransaction.increment(listCtx.getNumberOfQueues());
+      pgOper.pageTransaction.increment(listCtx.getNumberOfDurableQueues(), listCtx.getNumberOfNonDurableQueues());
 
       return;
    }

@@ -113,7 +113,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       for (int i = 0; i < nr1; i++)
       {
-         trans.increment();
+         trans.increment(true);
       }
 
       Assert.assertEquals(nr1, trans.getNumberOfMessages());

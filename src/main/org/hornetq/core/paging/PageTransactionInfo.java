@@ -53,9 +53,9 @@ public interface PageTransactionInfo extends EncodingSupport
    // To be used after the update was stored or reload
    void onUpdate(int update, StorageManager storageManager, PagingManager pagingManager);
 
-   void increment();
+   void increment(boolean persistent);
    
-   void increment(int size);
+   void increment(int durableSize, int nonDurableSize);
 
    int getNumberOfMessages();
 

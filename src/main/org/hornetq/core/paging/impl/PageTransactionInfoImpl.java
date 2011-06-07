@@ -59,6 +59,8 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private AtomicInteger numberOfMessages = new AtomicInteger(0);
    
+   private AtomicInteger numberOfPersistentMessages = new AtomicInteger(0);
+   
    private List<Pair<PageSubscription, PagePosition>> lateDeliveries;
 
    // Static --------------------------------------------------------
@@ -110,14 +112,19 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       }
    }
 
-   public void increment()
+   public void increment(final boolean persistent)
    {
+      if (persistent)
+      {
+         numberOfPersistentMessages.incrementAndGet();
+      }
       numberOfMessages.incrementAndGet();
    }
    
-   public void increment(final int size)
+   public void increment(final int durableSize, final int nonDurableSize)
    {
-      numberOfMessages.addAndGet(size);
+      numberOfPersistentMessages.addAndGet(durableSize);
+      numberOfMessages.addAndGet(durableSize + nonDurableSize);
    }
 
    public int getNumberOfMessages()
@@ -131,13 +138,14 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    {
       transactionID = buffer.readLong();
       numberOfMessages.set(buffer.readInt());
+      numberOfPersistentMessages.set(numberOfMessages.get());
       committed = true;
    }
 
    public synchronized void encode(final HornetQBuffer buffer)
    {
       buffer.writeLong(transactionID);
-      buffer.writeInt(numberOfMessages.get());
+      buffer.writeInt(numberOfPersistentMessages.get());
    }
 
    public synchronized int getEncodeSize()
