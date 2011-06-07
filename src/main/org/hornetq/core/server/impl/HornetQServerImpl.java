@@ -1032,6 +1032,11 @@ public class HornetQServerImpl implements HornetQServer
    {
       Binding binding = postOffice.getBinding(queueName);
       
+      if (binding == null)
+      {
+         return null;
+      }
+      
       Bindable queue = binding.getBindable();
       
       if (!(queue instanceof Queue))
