@@ -195,7 +195,7 @@ public class PrintPages
       ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> txs = new ArrayList<PreparedTransactionInfo>();
 
-      messagesJournal.load(records, txs, null);
+      messagesJournal.load(records, txs, null, false);
 
       Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
       
