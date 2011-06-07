@@ -15,6 +15,7 @@ package org.hornetq.jms.server.management.impl;
 
 import javax.management.ObjectName;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -24,6 +25,8 @@ import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -52,13 +55,16 @@ public class JMSManagementServiceImpl implements JMSManagementService
    private final ManagementService managementService;
    
    private final JMSServerManager jmsServerManager;
+   
+   private final HornetQServer server;
 
    // Static --------------------------------------------------------
 
-   public JMSManagementServiceImpl(final ManagementService managementService, final JMSServerManager jmsServerManager)
+   public JMSManagementServiceImpl(final ManagementService managementService, final HornetQServer server, final JMSServerManager jmsServerManager)
    {
       this.managementService = managementService;
       this.jmsServerManager = jmsServerManager;
+      this.server = server;
    }
 
    // Public --------------------------------------------------------
@@ -83,11 +89,12 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized void registerQueue(final HornetQQueue queue) throws Exception
    {
+      Queue serverQueue = server.locateQueue(new SimpleString(queue.getName()));
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),
                                                   null,
-                                                  coreQueueControl,
+                                                  serverQueue,
                                                   false,
                                                   coreQueueControl.isDurable(),
                                                   messageCounterManager.getMaxDayCount());

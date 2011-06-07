@@ -246,7 +246,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          MessageCounter counter = new MessageCounter(queue.getName().toString(),
                                                      null,
-                                                     queueControl,
+                                                     queue,
                                                      false,
                                                      queue.isDurable(),
                                                      messageCounterManager.getMaxDayCount());

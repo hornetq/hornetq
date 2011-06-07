@@ -48,6 +48,7 @@ import org.hornetq.core.registry.JndiBindingRegistry;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
@@ -193,7 +194,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       active = true;
 
-      jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), this);
+      jmsManagementService = new JMSManagementServiceImpl(server.getManagementService(), server, this);
 
       try
       {
@@ -1036,7 +1037,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             coreFilterString = SelectorTranslator.convertToHornetQFilterString(selectorString);
          }
 
-         server.deployQueue(SimpleString.toSimpleString(hqQueue.getAddress()),
+         Queue queue = server.deployQueue(SimpleString.toSimpleString(hqQueue.getAddress()),
                             SimpleString.toSimpleString(hqQueue.getAddress()),
                             SimpleString.toSimpleString(coreFilterString),
                             durable,

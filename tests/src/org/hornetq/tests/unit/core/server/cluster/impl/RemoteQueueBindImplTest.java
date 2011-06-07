@@ -659,6 +659,24 @@ public class RemoteQueueBindImplTest extends UnitTestCase
          
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#getInstantMessageCount()
+       */
+      public long getInstantMessageCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#getInstantMessagesAdded()
+       */
+      public long getInstantMessagesAdded()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
    }
 
 }

@@ -76,6 +76,9 @@ public interface Queue extends Bindable
    void forceDelivery();
 
    long getMessageCount();
+   
+   /** Return the current message count without waiting for scheduled executors to finish */
+   long getInstantMessageCount();
 
    int getDeliveringCount();
 
@@ -86,6 +89,8 @@ public interface Queue extends Bindable
    List<MessageReference> getScheduledMessages();
 
    long getMessagesAdded();
+   
+   long getInstantMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
 

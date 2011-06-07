@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.hornetq.api.core.management.QueueControl;
+import org.hornetq.core.server.Queue;
 
 /**
  * This class stores message count informations for a given queue
@@ -58,8 +58,7 @@ public class MessageCounter
 
    private final boolean destDurable;
 
-   // destination queue
-   private final QueueControl destQueue;
+   private final Queue serverQueue;
 
    // counter
    private long countTotal;
@@ -95,7 +94,7 @@ public class MessageCounter
     */
    public MessageCounter(final String name,
                          final String subscription,
-                         final QueueControl queue,
+                         final Queue serverQueue,
                          final boolean topic,
                          final boolean durable,
                          final int daycountmax)
@@ -105,7 +104,7 @@ public class MessageCounter
       destSubscription = subscription;
       destTopic = topic;
       destDurable = durable;
-      destQueue = queue;
+      this.serverQueue = serverQueue;
 
       // initialize counter
       resetCounter();
@@ -115,6 +114,32 @@ public class MessageCounter
 
       setHistoryLimit(daycountmax);
    }
+   
+   private Runnable onTimeExecutor = new Runnable()
+   {
+      public void run()
+      {
+         long latestMessagesAdded = serverQueue.getInstantMessagesAdded();
+
+         long newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
+
+         countTotal += newMessagesAdded;
+         
+         lastMessagesAdded = latestMessagesAdded;
+
+         if (newMessagesAdded > 0)
+         {
+            timeLastAdd = System.currentTimeMillis();
+         }
+
+         // update timestamp
+         timeLastUpdate = System.currentTimeMillis();
+
+         // update message history
+         updateHistory(newMessagesAdded);
+         
+      }
+   };
 
    // Public --------------------------------------------------------
 
@@ -123,24 +148,11 @@ public class MessageCounter
     */
    public synchronized void onTimer()
    {
-      long latestMessagesAdded = destQueue.getMessagesAdded();
-
-      long newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
-
-      countTotal += newMessagesAdded;
-
-      lastMessagesAdded = latestMessagesAdded;
-
-      if (newMessagesAdded > 0)
-      {
-         timeLastAdd = System.currentTimeMillis();
-      }
-
-      // update timestamp
-      timeLastUpdate = System.currentTimeMillis();
-
-      // update message history
-      updateHistory(newMessagesAdded);
+      // Actor approach here: Instead of having the Counter locking the queue, we will use the Queue's executor
+      // instead of possibly making an lock on the queue.
+      // This way the scheduled Threads will be free to keep doing their pings in case the server is busy with paging or 
+      // any other deliveries
+      serverQueue.getExecutor().execute(onTimeExecutor);
    }
 
    public String getDestinationName()
@@ -190,7 +202,7 @@ public class MessageCounter
     */
    public long getMessageCount()
    {
-      return destQueue.getMessageCount();
+      return serverQueue.getInstantMessageCount();
    }
 
    /**
@@ -199,7 +211,7 @@ public class MessageCounter
     */
    public long getMessageCountDelta()
    {
-      long current = destQueue.getMessageCount();
+      long current = serverQueue.getInstantMessageCount();
       int delta = (int)(current - depthLast);
 
       depthLast = current;
@@ -334,8 +346,8 @@ public class MessageCounter
              destTopic +
              ", destDurable=" +
              destDurable +
-             ", destQueue=" +
-             destQueue +
+             ", serverQueue =" +
+             serverQueue +
              "]";
    }
 

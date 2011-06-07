@@ -727,7 +727,12 @@ public class QueueImpl implements Queue
    public long getMessageCount()
    {
       blockOnExecutorFuture();
-
+      
+      return getInstantMessageCount();
+   }
+   
+   public long getInstantMessageCount()
+   {
       synchronized (this)
       {
          if (pageSubscription != null)
@@ -892,7 +897,12 @@ public class QueueImpl implements Queue
    public long getMessagesAdded()
    {
       blockOnExecutorFuture();
-
+      
+      return getInstantMessagesAdded();
+  }
+   
+   public long getInstantMessagesAdded()
+   {
       synchronized (this)
       {
          if (pageSubscription != null)
@@ -904,7 +914,7 @@ public class QueueImpl implements Queue
             return messagesAdded;
          }
       }
-   }
+    }
 
    public int deleteAllReferences() throws Exception
    {
@@ -1543,6 +1553,8 @@ public class QueueImpl implements Queue
                holder.iter.remove();
 
                refRemoved(ref);
+               
+               handled++;
 
                continue;
             }
