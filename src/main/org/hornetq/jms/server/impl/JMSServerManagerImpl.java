@@ -154,6 +154,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       configFileName = null;
    }
 
+   public JMSServerManagerImpl(final HornetQServer server, final BindingRegistry registry) throws Exception
+   {
+      this.server = server;
+
+      this.coreConfig = server.getConfiguration();
+
+      configFileName = null;
+
+      this.registry = registry;
+   }
+
    public JMSServerManagerImpl(final HornetQServer server, final String configFileName) throws Exception
    {
       this.server = server;
@@ -173,6 +184,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       config = configuration;
    }
+
+
 
    public JMSServerManagerImpl(HornetQServer server, String configFilename, JMSStorageManager storageManager)
    {
@@ -1173,7 +1186,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(cfConfig.getFactoryType(), configs);
          }
       }
-
+      cf.setName(cfConfig.getName());
       cf.setClientID(cfConfig.getClientID());
       cf.setClientFailureCheckPeriod(cfConfig.getClientFailureCheckPeriod());
       cf.setConnectionTTL(cfConfig.getConnectionTTL());

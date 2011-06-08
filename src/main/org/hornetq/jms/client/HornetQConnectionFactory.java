@@ -65,6 +65,8 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    private boolean readOnly;
 
+   private String name;
+
    // Constructors ---------------------------------------------------------------------------------
 
    public HornetQConnectionFactory()
@@ -190,6 +192,14 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    }
 
    // Public ---------------------------------------------------------------------------------------
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   public String getName() {
+      return name;
+   }
 
    public boolean isHA()
    {
