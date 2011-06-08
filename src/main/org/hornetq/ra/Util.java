@@ -19,6 +19,7 @@ import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * Various utility functions
@@ -254,6 +255,18 @@ public class Util
     *  */
    public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
    {
+      try
+      {
+         ClassLoader loader = HornetQResourceAdapter.class.getClassLoader();
+         Class<?> aClass = loader.loadClass(locatorClass);
+         Object o = aClass.newInstance();
+         Method m = aClass.getMethod(locatorMethod);
+         return (TransactionManager)m.invoke(o);
+      }
+      catch (Throwable e)
+      {
+         log.debug(e.getMessage(), e);
+      }
       try
       {
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
