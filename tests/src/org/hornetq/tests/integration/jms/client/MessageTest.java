@@ -228,11 +228,22 @@ public class MessageTest extends JMSTestBase
          conn.start();
 
          Message msg = sess.createMessage();
+         
+         msg.setStringProperty("Test", "SomeValue");
+         
+         assertEquals("SomeValue", msg.getStringProperty("Test"));
+         
+         msg.setStringProperty("Test", null);
+         
+         assertEquals(null, msg.getStringProperty("Test"));
 
          msg.setObjectProperty(MessageTest.propName1, null);
+         
          msg.setStringProperty(MessageTest.propName2, null);
-
-         checkProperties(msg);
+         
+         msg.getStringProperty(MessageTest.propName1);
+         
+         msg.setStringProperty("Test", null);
 
          Message received = sendAndConsumeMessage(msg, prod, cons);
 

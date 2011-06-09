@@ -571,9 +571,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       if (value == null)
       {
-         // This is ok - when we try to read the same key it will return null too
-
-         properties.removeProperty(key);
+         properties.putNullValue(key);
       }
       else if (value instanceof Boolean)
       {
@@ -684,7 +682,7 @@ public abstract class MessageImpl implements MessageInternal
 
    public void putStringProperty(final String key, final String value)
    {
-      properties.putSimpleStringProperty(new SimpleString(key), new SimpleString(value));
+      properties.putSimpleStringProperty(new SimpleString(key), SimpleString.toSimpleString(value));
 
       bufferValid = false;
    }

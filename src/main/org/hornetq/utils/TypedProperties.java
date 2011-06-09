@@ -138,6 +138,12 @@ public class TypedProperties
       checkCreateProperties();
       doPutValue(key, value == null ? new NullValue() : new StringValue(value));
    }
+   
+   public void putNullValue(final SimpleString key)
+   {
+      checkCreateProperties();
+      doPutValue(key, new NullValue());
+   }
 
    public void putCharProperty(final SimpleString key, final char value)
    {
