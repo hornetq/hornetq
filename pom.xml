@@ -301,7 +301,8 @@
          <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.8.2</version>
+            <!-- There are newer versions of the JUnit but thet break our tests -->
+            <version>3.8.2</version>
          </dependency>
          <!--needed to compile the jms tests -->
          <dependency>
