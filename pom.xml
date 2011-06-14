@@ -148,6 +148,11 @@
             <artifactId>jboss-jms-api_1.1_spec</artifactId>
             <version>1.0.0.Final</version>
          </dependency>
+         <dependency>
+         	<groupId>org.jboss.javaee</groupId>
+         	<artifactId>jboss-transaction-api</artifactId>
+         	<version>1.0.1.20070913080910</version>
+         </dependency>
 
          <!-- needed to compile JavaEE examples-->
          <dependency>
@@ -161,7 +166,7 @@
             <version>1.0.0.Final</version>
          </dependency>
          <dependency>
-	   <groupId>org.jboss.javaee</groupId>
+            <groupId>org.jboss.javaee</groupId>
             <artifactId>jboss-jms-api</artifactId>
             <version>1.1.0.20070913080910</version>
          </dependency>
@@ -247,6 +252,7 @@
          <dependency>
             <groupId>org.twitter4j</groupId>
             <artifactId>twitter4j-core</artifactId>
+            <!-- there is a new version of this JAR but it breaks our usage of it -->
             <version>2.1.2</version>
          </dependency>
          <!--needed to compile the spring support-->
