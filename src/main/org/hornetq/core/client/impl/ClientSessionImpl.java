@@ -847,7 +847,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          return;
       }
       
-      log.debug("Calling close on session "  + this);
+      if (log.isDebugEnabled())
+      {
+         log.debug("Calling close on session "  + this);
+      }
 
       try
       {
@@ -1095,13 +1098,19 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addMetaDataV1(String key, String data) throws HornetQException
    {
-      metadata.put(key, data);
+      synchronized (metadata)
+      {
+         metadata.put(key, data);
+      }
       channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
    }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
-      metadata.put(key, data);
+      synchronized (metadata)
+      {
+         metadata.put(key, data);
+      }
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
    }
 
@@ -1617,12 +1626,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();
-      for (Map.Entry<String, String> entry : metadata.entrySet())
+      synchronized (metadata)
       {
-         buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+         for (Map.Entry<String, String> entry : metadata.entrySet())
+         {
+            buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+         }
       }
-      
-      return "ClientSessionImpl [name=" + name + ", username=" + username + ", closed=" + closed + " metaData=(" + buffer + ")]@" + Integer.toHexString(hashCode()) ;
+
+      return "ClientSessionImpl [name=" + name +
+             ", username=" +
+             username +
+             ", closed=" +
+             closed +
+             " metaData=(" +
+             buffer +
+             ")]@" +
+             Integer.toHexString(hashCode());
    }
 
    // Protected
