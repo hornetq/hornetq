@@ -578,4 +578,10 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.isCompressLargeMessages();
    }
+   
+   public String toString()
+   {
+      return "DelegatingSession [session=" + session + "]";
+   }
+
 }

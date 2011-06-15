@@ -137,4 +137,6 @@ public interface ClientSessionFactory
    ServerLocator getServerLocator();
    
    CoreRemotingConnection getConnection();
+
+    boolean isClosed();
 }

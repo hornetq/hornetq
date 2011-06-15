@@ -38,6 +38,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.BridgeControl;
 import org.hornetq.api.core.management.DivertControl;
@@ -1702,12 +1703,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                             forwardingAddress,
                                             filterString,
                                             transformerClassName,
+                                            clientFailureCheckPeriod,
+                                            HornetQClient.DEFAULT_CONNECTION_TTL,
                                             retryInterval,
+                                            HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                             retryIntervalMultiplier,
                                             reconnectAttempts,
                                             useDuplicateDetection,
                                             confirmationWindowSize,
-                                            clientFailureCheckPeriod,
                                             connectorNames,
                                             ha,
                                             user,
@@ -1721,12 +1724,14 @@ public class HornetQServerControlImpl extends AbstractControl implements HornetQ
                                             forwardingAddress,
                                             filterString,
                                             transformerClassName,
+                                            clientFailureCheckPeriod,
+                                            HornetQClient.DEFAULT_CONNECTION_TTL,
                                             retryInterval,
+                                            HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                             retryIntervalMultiplier,
                                             reconnectAttempts,
                                             useDuplicateDetection,
                                             confirmationWindowSize,
-                                            clientFailureCheckPeriod,
                                             connectors,
                                             ha,
                                             user,

@@ -77,6 +77,8 @@ import org.hornetq.utils.UUIDGenerator;
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
@@ -209,6 +211,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void onNotification(final Notification notification)
    {
+      if (isTrace)
+      {
+         log.trace("Receiving notification : " + notification);
+      }
       synchronized (notificationLock)
       {
          NotificationType type = notification.getType();
@@ -1306,6 +1312,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public Bindings createBindings(final SimpleString address) throws Exception
    {
-      return new BindingsImpl(server.getGroupingHandler(), pagingManager.getPageStore(address));
+      return new BindingsImpl(address, server.getGroupingHandler(), pagingManager.getPageStore(address));
    }
 }

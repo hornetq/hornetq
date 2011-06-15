@@ -63,13 +63,11 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
@@ -159,6 +157,8 @@ public class HornetQServerImpl implements HornetQServer
    private final MBeanServer mbeanServer;
 
    private volatile boolean started;
+   
+   private volatile boolean stopped;
 
    private volatile SecurityStore securityStore;
 
@@ -353,6 +353,11 @@ public class HornetQServerImpl implements HornetQServer
 
             nodeManager.startLiveNode();
 
+            if (stopped)
+            {
+               return;
+            }
+            
             initialisePart2();
             
             log.info("Server is now live");
@@ -379,6 +384,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private class SharedStoreBackupActivation implements Activation
    {
+      
+      volatile boolean closed = false;
       public void run()
       {
          try
@@ -396,6 +403,11 @@ public class HornetQServerImpl implements HornetQServer
             nodeManager.awaitLiveNode();
             
             configuration.setBackup(false);
+            
+            if (stopped)
+            {
+               return;
+            }
             
             initialisePart2();
             
@@ -480,6 +492,7 @@ public class HornetQServerImpl implements HornetQServer
 
                backupActivationThread.interrupt();
 
+               // TODO: do we really need this?
                Thread.sleep(1000);
             }
 
@@ -536,6 +549,8 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
+      stopped = false;
+      
       initialiseLogging();
 
       checkJournalDirectory();
@@ -618,6 +633,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop() throws Exception
    {
+      stopped = true;
       stop(configuration.isFailoverOnServerShutdown());
    }
 
@@ -1463,7 +1479,13 @@ public class HornetQServerImpl implements HornetQServer
    private void initialisePart2() throws Exception
    {
       // Load the journal and populate queues, transactions and caches in memory
-
+      
+      
+      if (stopped)
+      {
+         return;
+      }
+      
       pagingManager.reloadStores();
       
       JournalLoadInformation[] journalInfo = loadJournals();

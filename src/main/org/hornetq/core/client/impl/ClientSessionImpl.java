@@ -843,8 +843,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       if (closed)
       {
+         log.debug("Session was already closed, giving up now, this=" + this);
          return;
       }
+      
+      log.debug("Calling close on session "  + this);
 
       try
       {
@@ -1607,6 +1610,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return remotingConnection;
    }
    
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();
@@ -1614,7 +1621,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
       }
-      return "ClientSessionImpl::(" + buffer.toString() + ")";
+      
+      return "ClientSessionImpl [name=" + name + ", username=" + username + ", closed=" + closed + " metaData=(" + buffer + ")]@" + Integer.toHexString(hashCode()) ;
    }
 
    // Protected
@@ -1776,12 +1784,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private void doCleanup(boolean failingOver)
    {
       remotingConnection.removeFailureListener(this);
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("calling cleanup on " + this);
+      }
 
       synchronized (this)
       {
          closed = true;
 
          channel.close();
+         
+         // if the server is sending a disconnect
+         // any pending blocked operation could hang without this
+         channel.returnBlocking();
       }
 
       sessionFactory.removeSession(this, failingOver);

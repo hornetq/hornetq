@@ -140,6 +140,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
             staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupServer = createBackupServer();
+      backupServer.getServer().setIdentity("bkpIdentityServer");
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();

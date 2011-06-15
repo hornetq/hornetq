@@ -43,8 +43,14 @@ public interface Bridge extends Consumer, HornetQComponent
    boolean isUseDuplicateDetection();
 
    void activate();
-
+   
+   void flushExecutor();
+   
    void setNotificationService(NotificationService notificationService);
 
    RemotingConnection getForwardingConnection();
+
+   void pause() throws Exception;
+
+   void resume() throws Exception;
 }

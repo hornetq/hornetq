@@ -116,12 +116,14 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                            forwardAddress,
                                                                            null,
                                                                            null,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                            1000,
+                                                                           HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                            1d,
                                                                            0,
                                                                            true,
                                                                            1024,
-                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -188,6 +190,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
          bridge.stop();
+         bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)
          {

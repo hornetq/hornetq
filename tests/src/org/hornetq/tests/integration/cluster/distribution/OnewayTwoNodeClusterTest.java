@@ -119,7 +119,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
       verifyNotReceive(0);
    }
-
+   
    public void testStopAndStartTarget() throws Exception
    {
       startServers(0, 1);
@@ -150,9 +150,14 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
 
       stopServers(1);
 
-      OnewayTwoNodeClusterTest.log.info("restarting server 1");
+      OnewayTwoNodeClusterTest.log.info("restarting server 1(" + servers[1].getIdentity() + ")");
 
       startServers(1);
+      
+      //Thread.sleep(1000);
+      
+      log.info("Server 1 id="  + servers[1].getNodeID());
+      
 
       long end = System.currentTimeMillis();
 

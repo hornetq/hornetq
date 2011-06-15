@@ -83,6 +83,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -404,10 +406,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void causeExit()
    {
-      exitLoop = true;
       synchronized (waitLock)
       {
-         waitLock.notify();
+         exitLoop = true;
+         waitLock.notifyAll();
       }
    }
 
@@ -418,7 +420,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          return;
       }
 
-      // we need to stopthe factory from connecting if it is in the middle aof trying to failover before we get the lock
+      // we need to stop the factory from connecting if it is in the middle of trying to failover before we get the lock
       causeExit();
       synchronized (createSessionLock)
       {
@@ -449,7 +451,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       closed = true;
    }
 
-   public ServerLocator getServerLocator()
+    public boolean isClosed()
+    {
+        return closed;
+    }
+
+    public ServerLocator getServerLocator()
    {
       return serverLocator;
    }
@@ -497,6 +504,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             return;
          }
 
+         
+         if (isTrace)
+         {
+            log.trace("Client Connection failed, calling failure listeners and trying to reconnect, reconnectAttempts=" + reconnectAttempts);
+         }
+         
          // We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
          callFailureListeners(me, false, false);
 
@@ -881,13 +894,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       synchronized (waitLock)
       {
-         while (true)
+         while (!exitLoop)
          {
-            if (exitLoop)
-            {
-               return;
-            }
-
             if (log.isDebugEnabled())
             {
                log.debug("Trying reconnection attempt " + count);
@@ -910,14 +918,21 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                      return;
                   }
 
+                  if (isTrace)
+                  {
+                     log.trace("Waiting " + interval + 
+                               " milliseconds before next retry. RetryInterval=" + retryInterval + 
+                                  " and multiplier = " + retryIntervalMultiplier);
+                  }
+                  
                   try
                   {
-                     waitLock.wait(interval);
+                      waitLock.wait(interval);
                   }
                   catch (InterruptedException ignore)
                   {
                   }
-
+                  
                   // Exponential back-off
                   long newInterval = (long)(interval * retryIntervalMultiplier);
 
@@ -1084,6 +1099,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
                      connectorFactory = backupConnectorFactory;
                   }
+               }
+            }
+            else
+            {
+               if (isTrace)
+               {
+                  log.trace("No Backup configured!");
                }
             }
          }

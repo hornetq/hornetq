@@ -17,7 +17,12 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.lang.reflect.Array;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -32,7 +37,10 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
-import org.hornetq.core.config.*;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
@@ -682,8 +690,16 @@ public class ClusterManagerImpl implements ClusterManager
       serverLocator.setReconnectAttempts(config.getReconnectAttempts());
       serverLocator.setRetryInterval(config.getRetryInterval());
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
+      serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
       serverLocator.setInitialConnectAttempts(config.getReconnectAttempts());
+      serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
+      serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
+      if (!config.isUseDuplicateDetection())
+      {
+         log.debug("Bridge " + config.getName() + 
+                   " is configured to not use duplicate detecion, it will send messages synchronously");
+      }
       clusterLocators.add(serverLocator);
       Bridge bridge = new BridgeImpl(serverLocator,
                                      nodeUUID,
@@ -710,14 +726,21 @@ public class ClusterManagerImpl implements ClusterManager
       }
    }
 
-   public synchronized void destroyBridge(final String name) throws Exception
+   public void destroyBridge(final String name) throws Exception
    {
-      Bridge bridge = bridges.remove(name);
-      if (bridge != null)
+      Bridge bridge;
+      
+      synchronized (this)
       {
-         bridge.stop();
-         managementService.unregisterBridge(name);
+         bridge = bridges.remove(name);
+         if (bridge != null)
+         {
+            bridge.stop();
+            managementService.unregisterBridge(name);
+         }
       }
+      
+      bridge.flushExecutor();
    }
 
    private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
@@ -769,7 +792,12 @@ public class ClusterManagerImpl implements ClusterManager
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getClientFailureCheckPeriod(),
+                                                       config.getConnectionTTL(),
                                                        config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetryInterval(),
+                                                       config.getReconnectAttempts(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
@@ -794,7 +822,12 @@ public class ClusterManagerImpl implements ClusterManager
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getClientFailureCheckPeriod(),
+                                                       config.getConnectionTTL(),
                                                        config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetryInterval(),
+                                                       config.getReconnectAttempts(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),

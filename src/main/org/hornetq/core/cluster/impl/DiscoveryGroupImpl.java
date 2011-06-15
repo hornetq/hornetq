@@ -49,6 +49,8 @@ import org.hornetq.utils.TypedProperties;
 public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 {
    private static final Logger log = Logger.getLogger(DiscoveryGroupImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private static final int SOCKET_TIMEOUT = 500;
 
@@ -375,6 +377,14 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
             if (changed)
             {
+               if (isTrace)
+               {
+                  log.trace("Connectors changed on Discovery:");
+                  for (DiscoveryEntry connector : connectors.values())
+                  {
+                     log.trace(connector);
+                  }
+               }
                callListeners();
             }
 
@@ -438,6 +448,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
          if (entry.getValue().getLastUpdate() + timeout <= now)
          {
+            if (isTrace)
+            {
+               log.trace("Timed out node on discovery:" + entry.getValue());
+            }
             iter.remove();
 
             changed = true;

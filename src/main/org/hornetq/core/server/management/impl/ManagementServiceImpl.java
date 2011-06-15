@@ -84,6 +84,8 @@ public class ManagementServiceImpl implements ManagementService
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private final MBeanServer mbeanServer;
 
@@ -635,6 +637,12 @@ public class ManagementServiceImpl implements ManagementService
 
    public void sendNotification(final Notification notification) throws Exception
    {
+      if (isTrace)
+      {
+         log.trace("Sending Notification = "  + notification + 
+                   ", notificationEnabled=" + notificationsEnabled + 
+                   " messagingServerControl=" + messagingServerControl, new Exception ("trace"));
+      }
       if (messagingServerControl != null && notificationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence

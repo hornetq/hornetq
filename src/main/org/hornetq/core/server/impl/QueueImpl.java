@@ -853,6 +853,7 @@ public class QueueImpl implements Queue
 
    public synchronized void cancel(final MessageReference reference, final long timeBase) throws Exception
    {
+      deliveringCount.decrementAndGet();
       if (checkRedelivery(reference, timeBase))
       {
          if (!scheduledDeliveryHandler.checkAndSchedule(reference, false))
@@ -870,7 +871,7 @@ public class QueueImpl implements Queue
       {
          if (isTrace)
          {
-            log.trace("moving expired reference " + ref + " to address = " + expiryAddress + " from queue=" + this.getName(), new Exception ("trace"));
+            log.trace("moving expired reference " + ref + " to address = " + expiryAddress + " from queue=" + this.getName());
          }
          move(expiryAddress, ref, true, false);
       }

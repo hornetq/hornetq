@@ -23,10 +23,10 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -195,7 +195,16 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       while ((ref = refs.poll()) != null)
       {
+         if (isTrace)
+         {
+            log.trace("Cancelling reference " + ref + " on bridge " + this);
+         }
          list.addFirst(ref);
+      }
+      
+      if (isTrace && list.isEmpty())
+      {
+         log.trace("didn't have any references to cancel on bridge "  + this);
       }
 
       Queue queue = null;
@@ -210,27 +219,58 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
    }
+   
+   public void flushExecutor()
+   {
+      // Wait for any create objects runnable to complete
+      Future future = new Future();
+
+      executor.execute(future);
+
+      boolean ok = future.await(10000);
+
+      if (!ok)
+      {
+         BridgeImpl.log.warn("Timed out waiting to stop");
+      }
+   }
+
 
    public void stop() throws Exception
    {
-      if (started)
-      {
-         // We need to stop the csf here otherwise the stop runnable never runs since the createobjectsrunnable is
-         // trying to connect to the target
-         // server which isn't up in an infinite loop
-         if (csf != null)
-         {
-            csf.close();
-         }
-      }
-      
-      log.info("Bridge " + this.name + " being stopped");
+	  if (log.isDebugEnabled())
+	  {
+	     log.debug("Bridge " + this.name + " being stopped");
+	  }
       
       stopping = true;
 
       executor.execute(new StopRunnable());
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putSimpleStringProperty(new SimpleString("name"), name);
+         Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STOPPED, props);
+         try
+         {
+            notificationService.sendNotification(notification);
+         }
+         catch (Exception e)
+         {
+            BridgeImpl.log.warn("unable to send notification when broadcast group is stopped", e);
+         }
+      }
+   }
 
-      waitForRunnablesToComplete();
+   public void pause() throws Exception
+   {
+	  if (log.isDebugEnabled())
+	  {
+	     log.debug("Bridge " + this.name + " being paused");
+	  }
+
+      executor.execute(new PauseRunnable());
 
       if (notificationService != null)
       {
@@ -248,7 +288,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   public boolean isStarted()
+    public void resume() throws Exception
+    {
+        queue.addConsumer(BridgeImpl.this);
+        queue.deliverAsync();
+    }
+
+    public boolean isStarted()
    {
       return started;
    }
@@ -366,7 +412,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return HandleStatus.NO_MATCH;
       }
-      
+
       synchronized (this)
       {
          if (!active)
@@ -424,6 +470,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
       log.warn(name + "::Connection failed with failedOver=" + failedOver, me);
+      if (isTrace)
+      {
+         log.trace("Calling BridgeImpl::connectionFailed(HOrnetQException me=" + me + ", boolean failedOver=" + failedOver);
+      }
       fail(false);
    }
 
@@ -432,6 +482,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       log.warn(name + "::Connection failed before reconnect ", exception);
       fail(true);
    }
+   
+   
 
    // Package protected ---------------------------------------------
 
@@ -439,19 +491,29 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Private -------------------------------------------------------
 
-   private void waitForRunnablesToComplete()
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
    {
-      // Wait for any create objects runnable to complete
-      Future future = new Future();
-
-      executor.execute(future);
-
-      boolean ok = future.await(10000);
-
-      if (!ok)
-      {
-         BridgeImpl.log.warn("Timed out waiting to stop");
-      }
+      return this.getClass().getName() +
+             " [name=" + name +
+             ", nodeUUID=" +
+             nodeUUID +
+             ", queue=" +
+             queue +
+             ", filter=" +
+             filter +
+             ", forwardingAddress=" +
+             forwardingAddress +
+             ", useDuplicateDetection=" +
+             useDuplicateDetection +
+             ", active=" +
+             active +
+             ", stopping=" +
+             stopping +
+             "]";
    }
 
    private void fail(final boolean beforeReconnect)
@@ -468,37 +530,41 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          active = false;
       }
 
-      try
-      {
+
          if (!session.getConnection().isDestroyed())
          {
             if (beforeReconnect)
             {
-               synchronized (this)
-               {
-                  log.debug(name + "::Connection is destroyed, active = false now");
-               }
+               try {
+            	  log.debug(name + "::Connection is destroyed, active = false now");
 
-               cancelRefs();
+                  cancelRefs();
+               }
+               catch (Exception e)
+               {
+                   BridgeImpl.log.error("Failed to cancel refs", e);
+               }
             }
             else
             {
-               afterConnect();
-
-               log.debug(name + "::After reconnect, setting active=true now");
-               active = true;
-
-               if (queue != null)
+               try
                {
-                  queue.deliverAsync();
+                  afterConnect();
+
+                  log.debug(name + "::After reconnect, setting active=true now");
+                  active = true;
+
+                  if (queue != null)
+                  {
+                     queue.deliverAsync();
+                  }
+               }
+               catch (Exception e)
+               {
+                  BridgeImpl.log.error("Failed to call after connect", e);
                }
             }
          }
-      }
-      catch (Exception e)
-      {
-         BridgeImpl.log.error("Failed to cancel refs", e);
-      }
    }
 
    /* Hook for doing extra stuff after connection */
@@ -530,9 +596,21 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          try
          {
-            csf = createSessionFactory();
-            // Session is pre-acknowledge
-            session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
+            if (csf == null || csf.isClosed())
+            {
+                csf = createSessionFactory();
+                // Session is pre-acknowledge
+                session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
+                try
+                {
+                   session.addMetaData("Session-for-bridge", name.toString());
+                   session.addMetaData("nodeUUID", nodeUUID.toString());
+                }
+                catch (Throwable dontCare)
+                {
+                   // addMetaData here is just for debug purposes
+                }
+            }
 
             if (forwardingAddress != null)
             {
@@ -654,19 +732,24 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          try
          {
+            // We need to close the session outside of the lock,
+            // so any pending operation will be canceled right away
+            
+            // TODO: Why closing the CSF will make a few clustering and failover tests to 
+            //       either deadlock or take forever on waiting 
+            //       locks
+            csf.close();
+            csf = null;
+            if (session != null)
+            {
+               log.debug("Cleaning up session " + session);
+               session.close();
+               session.removeFailureListener(BridgeImpl.this);
+            }
+
             synchronized (BridgeImpl.this)
             {
-               if (!started)
-               {
-                  return;
-               }
-               
                log.debug("Closing Session for bridge " + BridgeImpl.this.name);
-
-               if (session != null)
-               {
-                  session.close();
-               }
 
                started = false;
 
@@ -688,6 +771,40 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          catch (Exception e)
          {
             BridgeImpl.log.error("Failed to stop bridge", e);
+         }
+      }
+   }
+
+   private class PauseRunnable implements Runnable
+   {
+      public void run()
+      {
+         try
+         {
+            synchronized (BridgeImpl.this)
+            {
+               log.debug("Closing Session for bridge " + BridgeImpl.this.name);
+
+               started = false;
+
+               active = false;
+
+            }
+
+            queue.removeConsumer(BridgeImpl.this);
+
+            cancelRefs();
+
+            if (queue != null)
+            {
+               queue.deliverAsync();
+            }
+
+            log.info("paused bridge " + name);
+         }
+         catch (Exception e)
+         {
+            BridgeImpl.log.error("Failed to pause bridge", e);
          }
       }
    }

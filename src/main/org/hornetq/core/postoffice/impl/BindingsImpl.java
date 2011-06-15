@@ -13,6 +13,8 @@
 
 package org.hornetq.core.postoffice.impl;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.List;
@@ -50,6 +52,8 @@ public class BindingsImpl implements Bindings
 {
    private static final Logger log = Logger.getLogger(BindingsImpl.class);
 
+   private static boolean isTrace = log.isTraceEnabled();
+
    private final ConcurrentMap<SimpleString, List<Binding>> routingNameBindingMap = new ConcurrentHashMap<SimpleString, List<Binding>>();
 
    private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
@@ -61,13 +65,16 @@ public class BindingsImpl implements Bindings
    private volatile boolean routeWhenNoConsumers;
 
    private final GroupingHandler groupingHandler;
-   
+
    private final PagingStore pageStore;
 
-   public BindingsImpl(final GroupingHandler groupingHandler, final PagingStore pageStore)
+   private final SimpleString name;
+
+   public BindingsImpl(final SimpleString name, final GroupingHandler groupingHandler, final PagingStore pageStore)
    {
       this.groupingHandler = groupingHandler;
       this.pageStore = pageStore;
+      this.name = name;
    }
 
    public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
@@ -82,6 +89,10 @@ public class BindingsImpl implements Bindings
 
    public void addBinding(final Binding binding)
    {
+      if (isTrace)
+      {
+         log.trace("addBinding(" + binding + ") being called");
+      }
       if (binding.isExclusive())
       {
          exclusiveBindings.add(binding);
@@ -108,6 +119,12 @@ public class BindingsImpl implements Bindings
       }
 
       bindingsMap.put(binding.getID(), binding);
+
+      if (isTrace)
+      {
+         log.trace("Adding binding " + binding + " into " + this + " bindingTable: " + debugBindings());
+      }
+
    }
 
    public void removeBinding(final Binding binding)
@@ -134,6 +151,11 @@ public class BindingsImpl implements Bindings
       }
 
       bindingsMap.remove(binding.getID());
+
+      if (isTrace)
+      {
+         log.trace("Removing binding " + binding + " into " + this + " bindingTable: " + debugBindings());
+      }
    }
 
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
@@ -142,6 +164,11 @@ public class BindingsImpl implements Bindings
       if (routeWhenNoConsumers)
       {
          return false;
+      }
+
+      if (isTrace)
+      {
+         log.trace("Redistributing message " + message);
       }
 
       SimpleString routingName = originatingQueue.getName();
@@ -222,12 +249,12 @@ public class BindingsImpl implements Bindings
          return false;
       }
    }
-   
+
    public PagingStore getPagingStore()
    {
       return pageStore;
    }
-   
+
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       boolean routed = false;
@@ -247,8 +274,8 @@ public class BindingsImpl implements Bindings
 
       if (!routed)
       {
-         //TODO this is a little inefficient since we do the lookup once to see if the property
-         //is there, then do it again to remove the actual property
+         // TODO this is a little inefficient since we do the lookup once to see if the property
+         // is there, then do it again to remove the actual property
          if (message.containsProperty(MessageImpl.HDR_ROUTE_TO_IDS))
          {
             routeFromCluster(message, context);
@@ -259,6 +286,10 @@ public class BindingsImpl implements Bindings
          }
          else
          {
+            if (isTrace)
+            {
+               log.trace("Routing message " + message + " on binding=" + this);
+            }
             for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
             {
                SimpleString routingName = entry.getKey();
@@ -283,6 +314,15 @@ public class BindingsImpl implements Bindings
       }
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "BindingsImpl [name=" + name + "]";
+   }
+
    private Binding getNextBinding(final ServerMessage message,
                                   final SimpleString routingName,
                                   final List<Binding> bindings)
@@ -290,9 +330,9 @@ public class BindingsImpl implements Bindings
       Integer ipos = routingNamePositions.get(routingName);
 
       int pos = ipos != null ? ipos : 0;
-      
+
       int length = bindings.size();
-      
+
       int startPos = pos;
 
       Binding theBinding = null;
@@ -470,6 +510,74 @@ public class BindingsImpl implements Bindings
          }
       }
    }
+   
+   private String debugBindings()
+   {
+      StringWriter writer = new StringWriter();
+
+      PrintWriter out = new PrintWriter(writer);
+
+      out.println("\n***************************************");
+
+      out.println("routingNameBindingMap:");
+      if (routingNameBindingMap.isEmpty())
+      {
+         out.println("EMPTY!");
+      }
+      for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
+      {
+         out.print("key=" + entry.getKey() + ", value=" + entry.getValue());
+//         for (Binding bind : entry.getValue())
+//         {
+//            out.print(bind + ",");
+//         }
+         out.println();
+      }
+      
+      out.println();
+      
+      out.println("RoutingNamePositions:");
+      if (routingNamePositions.isEmpty())
+      {
+         out.println("EMPTY!");
+      }
+      for (Map.Entry<SimpleString, Integer> entry : routingNamePositions.entrySet())
+      {
+         out.println("key=" + entry.getKey() + ", value=" + entry.getValue());
+      }
+      
+      out.println();
+      
+      out.println("BindingsMap:");
+      
+      if (bindingsMap.isEmpty())
+      {
+         out.println("EMPTY!");
+      }
+      for (Map.Entry<Long, Binding> entry : bindingsMap.entrySet())
+      {
+         out.println("Key=" + entry.getKey() + ", value=" + entry.getValue());
+      }
+      
+      out.println();
+      
+      out.println("ExclusiveBindings:");
+      if (exclusiveBindings.isEmpty())
+      {
+         out.println("EMPTY!");
+      }
+      
+      for (Binding binding: exclusiveBindings)
+      {
+         out.println(binding);
+      }
+
+      out.println("#####################################################");
+
+
+      return writer.toString();
+   }
+
 
    private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception
    {

@@ -971,7 +971,15 @@ public class UnitTestCase extends TestCase
       }
       
       // We shutdown the global pools to give a better isolation between tests
-      ServerLocatorImpl.clearThreadPools();
+      try
+      {
+         ServerLocatorImpl.clearThreadPools();
+      }
+      catch (Throwable e)
+      {
+         log.info(threadDump(e.getMessage()));
+         throw new RuntimeException (e.getMessage(), e);
+      }
    }
 
    protected byte[] autoEncode(final Object... args)

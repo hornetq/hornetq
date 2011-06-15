@@ -50,6 +50,8 @@ import org.hornetq.utils.UUIDGenerator;
 public class ClusterConnectionBridge extends BridgeImpl
 {
    private static final Logger log = Logger.getLogger(ClusterConnectionBridge.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private final MessageFlowRecord flowRecord;
 
@@ -195,7 +197,7 @@ public class ClusterConnectionBridge extends BridgeImpl
                                                 flowRecord.getAddress() +
                                                 "%')");
 
-         session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
+         session.createTemporaryQueue(managementNotificationAddress, notifQueueName, filter);
 
          notifConsumer = session.createConsumer(notifQueueName);
 
@@ -224,6 +226,12 @@ public class ClusterConnectionBridge extends BridgeImpl
    }
    
    @Override
+   public void stop() throws Exception
+   {
+      super.stop();
+   }
+   
+   @Override
    protected ClientSessionFactory createSessionFactory() throws Exception
    {
       //We create the session factory using the specified connector
@@ -234,6 +242,11 @@ public class ClusterConnectionBridge extends BridgeImpl
    @Override
    public void connectionFailed(HornetQException me, boolean failedOver)
    {
+	  if (isTrace)
+	  {
+	     log.trace("Connection Failed on ClusterConnectionBridge, failedOver = " + failedOver + ", sessionClosed = " + session.isClosed(), new Exception ("trace"));
+	  }
+
       if (!failedOver && !session.isClosed())
       {
          try

@@ -21,10 +21,15 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -118,12 +123,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -260,12 +267,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -386,12 +395,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -527,12 +538,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        clientFailureCheckPeriod,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        clientFailureCheckPeriod,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -661,12 +674,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
                                                                         false,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,

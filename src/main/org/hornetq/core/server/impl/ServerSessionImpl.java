@@ -88,6 +88,8 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    // Constants -----------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // Static -------------------------------------------------------------------------------
 
@@ -598,6 +600,10 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
    public void commit() throws Exception
    {
+      if (isTrace)
+      {
+         log.trace("Calling commit");
+      }
       try
       {
          tx.commit();
@@ -1075,7 +1081,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
-
+      
       SimpleString address = message.getAddress();
 
       message.setMessageID(id);
@@ -1095,6 +1101,12 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             message.setAddressTransient(defaultAddress);
          }
       }
+
+      if (isTrace)
+      {
+         log.trace("send(message=" + message + ", direct=" + direct + ") being called");
+      }
+
 
       if (message.getAddress().equals(managementAddress))
       {

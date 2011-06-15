@@ -69,10 +69,11 @@ public class ClusterRestartTest extends ClusterTestBase
 
          printBindings(2);
 
-         sendInRange(1, "queues.testaddress", 0, 10, false, null);
+         sendInRange(1, "queues.testaddress", 0, 10, true, null);
 
          System.out.println("stopping******************************************************");
          stopServers(0);
+         Thread.sleep(2000);
          System.out.println("stopped******************************************************");
          startServers(0);
 
@@ -87,7 +88,7 @@ public class ClusterRestartTest extends ClusterTestBase
 
          sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
-         verifyReceiveAllInRange(10, 20, 0);
+         verifyReceiveAllInRange(0, 20, 0);
          System.out.println("*****************************************************************************");
       }
       finally

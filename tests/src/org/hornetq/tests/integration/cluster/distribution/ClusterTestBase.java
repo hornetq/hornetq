@@ -1812,6 +1812,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          * we need to wait a lil while between server start up to allow the server to communicate in some order.
          * This is to avoid split brain on startup
          * */
+         // TODO: Do we really need this?
          Thread.sleep(500);
       }
       for (int node : nodes)
