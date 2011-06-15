@@ -96,7 +96,7 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-transaction-api</artifactId>
+         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
       </dependency>
       <!--this specifically for the JMS Bridge-->
       <dependency>
@@ -109,7 +109,7 @@
       </dependency>
       <dependency>
          <groupId>org.jboss.javaee</groupId>
-         <artifactId>jboss-jms-api</artifactId>
+         <artifactId>jboss-jms-api_1.1_spec</artifactId>
       </dependency>
    </dependencies>
 

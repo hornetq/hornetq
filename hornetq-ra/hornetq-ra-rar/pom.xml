@@ -28,11 +28,11 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.javaee</groupId>
-                    <artifactId>jboss-jms-api</artifactId>
+                    <artifactId>jboss-jms-api_1.1_spec</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jboss.javaee</groupId>
-                    <artifactId>jboss-transaction-api</artifactId>
+                    <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>jboss.jbossts</groupId>
