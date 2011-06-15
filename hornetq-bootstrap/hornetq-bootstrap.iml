@@ -12,7 +12,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="hornetq-core" />
+    <orderEntry type="module" module-name="hornetq-commons" />
     <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.3.Final" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
+    <orderEntry type="module" module-name="hornetq-journal" />
     <orderEntry type="library" name="Maven: org.jboss.microcontainer:jboss-kernel:2.0.6.GA" level="project" />
     <orderEntry type="library" name="Maven: org.jboss.microcontainer:jboss-dependency:2.0.6.GA" level="project" />
     <orderEntry type="library" name="Maven: org.jboss:jbossxb:2.0.1.GA" level="project" />

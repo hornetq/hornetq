@@ -7,13 +7,13 @@
       <sourceFolder url="file://$MODULE_DIR$/target/generated-sources/javacc" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/target/apidocs" />
-      <excludeFolder url="file://$MODULE_DIR$/target/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/target/maven-archiver" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="hornetq-commons" />
     <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.3.Final" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
+    <orderEntry type="module" module-name="hornetq-journal" />
   </component>
 </module>
 

@@ -392,6 +392,7 @@
       <module fileurl="file://$PROJECT_DIR$/hornetq.iml" filepath="$PROJECT_DIR$/hornetq.iml" />
       <module fileurl="file://$PROJECT_DIR$/distribution/hornetq/hornetq (1).iml" filepath="$PROJECT_DIR$/distribution/hornetq/hornetq (1).iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-bootstrap/hornetq-bootstrap.iml" filepath="$PROJECT_DIR$/hornetq-bootstrap/hornetq-bootstrap.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hornetq-commons/hornetq-commons.iml" filepath="$PROJECT_DIR$/hornetq-commons/hornetq-commons.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-core/hornetq-core.iml" filepath="$PROJECT_DIR$/hornetq-core/hornetq-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-core-client/hornetq-core-client.iml" filepath="$PROJECT_DIR$/hornetq-core-client/hornetq-core-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/distribution/hornetq-distribution.iml" filepath="$PROJECT_DIR$/distribution/hornetq-distribution.iml" />
@@ -400,7 +401,7 @@
       <module fileurl="file://$PROJECT_DIR$/hornetq-jboss-as-integration/hornetq-jboss-as-integration.iml" filepath="$PROJECT_DIR$/hornetq-jboss-as-integration/hornetq-jboss-as-integration.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-jms/hornetq-jms.iml" filepath="$PROJECT_DIR$/hornetq-jms/hornetq-jms.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-jms-client/hornetq-jms-client.iml" filepath="$PROJECT_DIR$/hornetq-jms-client/hornetq-jms-client.iml" />
-      <module fileurl="file://$PROJECT_DIR$/hornetq-logging/hornetq-logging.iml" filepath="$PROJECT_DIR$/hornetq-logging/hornetq-logging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/hornetq-journal/hornetq-journal.iml" filepath="$PROJECT_DIR$/hornetq-journal/hornetq-journal.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-ra/hornetq-ra-jar/hornetq-ra.iml" filepath="$PROJECT_DIR$/hornetq-ra/hornetq-ra-jar/hornetq-ra.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-ra/hornetq-ra-rar/hornetq-rar.iml" filepath="$PROJECT_DIR$/hornetq-ra/hornetq-ra-rar/hornetq-rar.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-ra/hornetq-rar-pom.iml" filepath="$PROJECT_DIR$/hornetq-ra/hornetq-rar-pom.iml" />
@@ -411,7 +412,6 @@
       <module fileurl="file://$PROJECT_DIR$/tests/hornetq-tests-pom.iml" filepath="$PROJECT_DIR$/tests/hornetq-tests-pom.iml" />
       <module fileurl="file://$PROJECT_DIR$/hornetq-twitter-integration/hornetq-twitter-integration.iml" filepath="$PROJECT_DIR$/hornetq-twitter-integration/hornetq-twitter-integration.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/integration-tests/integration-tests.iml" filepath="$PROJECT_DIR$/tests/integration-tests/integration-tests.iml" />
-      <module fileurl="file://$PROJECT_DIR$/distribution/jboss-mc/jboss-mc.iml" filepath="$PROJECT_DIR$/distribution/jboss-mc/jboss-mc.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/jms-tests/jms-tests.iml" filepath="$PROJECT_DIR$/tests/jms-tests/jms-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/distribution/jnp-client/jnp-client.iml" filepath="$PROJECT_DIR$/distribution/jnp-client/jnp-client.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/joram-tests/joram-tests.iml" filepath="$PROJECT_DIR$/tests/joram-tests/joram-tests.iml" />
@@ -693,6 +693,17 @@
         <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.14/log4j-1.2.14-sources.jar!/" />
       </SOURCES>
     </library>
+    <library name="Maven: log4j:log4j:1.2.16">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.16/log4j-1.2.16.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.16/log4j-1.2.16-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/log4j/log4j/1.2.16/log4j-1.2.16-sources.jar!/" />
+      </SOURCES>
+    </library>
     <library name="Maven: net.jcip:jcip-annotations:1.0">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/net/jcip/jcip-annotations/1.0/jcip-annotations-1.0.jar!/" />
@@ -790,6 +801,17 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/org/jboss/javaee/jboss-jms-api/1.1.0.GA/jboss-jms-api-1.1.0.GA-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.jboss.javaee:jboss-transaction-api:1.0.1.20070913080910">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/javaee/jboss-transaction-api/1.0.1.20070913080910/jboss-transaction-api-1.0.1.20070913080910.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/javaee/jboss-transaction-api/1.0.1.20070913080910/jboss-transaction-api-1.0.1.20070913080910-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/javaee/jboss-transaction-api/1.0.1.20070913080910/jboss-transaction-api-1.0.1.20070913080910-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: org.jboss.javaee:jboss-transaction-api:1.0.1.GA">
@@ -944,6 +966,28 @@
       </JAVADOC>
       <SOURCES>
         <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/jms/jboss-jms-api_1.1_spec/1.0.0.Beta1/jboss-jms-api_1.1_spec-1.0.0.Beta1-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec:1.0.0.Final">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/jms/jboss-jms-api_1.1_spec/1.0.0.Final/jboss-jms-api_1.1_spec-1.0.0.Final.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/jms/jboss-jms-api_1.1_spec/1.0.0.Final/jboss-jms-api_1.1_spec-1.0.0.Final-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/jms/jboss-jms-api_1.1_spec/1.0.0.Final/jboss-jms-api_1.1_spec-1.0.0.Final-sources.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="Maven: org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:1.0.0.Final">
+      <CLASSES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/transaction/jboss-transaction-api_1.1_spec/1.0.0.Final/jboss-transaction-api_1.1_spec-1.0.0.Final.jar!/" />
+      </CLASSES>
+      <JAVADOC>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/transaction/jboss-transaction-api_1.1_spec/1.0.0.Final/jboss-transaction-api_1.1_spec-1.0.0.Final-javadoc.jar!/" />
+      </JAVADOC>
+      <SOURCES>
+        <root url="jar://$MAVEN_REPOSITORY$/org/jboss/spec/javax/transaction/jboss-transaction-api_1.1_spec/1.0.0.Final/jboss-transaction-api_1.1_spec-1.0.0.Final-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: org.jboss:jboss-common-core:2.2.14.GA">

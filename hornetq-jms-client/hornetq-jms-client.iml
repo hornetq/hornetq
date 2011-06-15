@@ -10,9 +10,12 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="hornetq-jms" />
     <orderEntry type="module" module-name="hornetq-core" />
+    <orderEntry type="module" module-name="hornetq-commons" />
     <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.3.Final" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.javaee:jboss-jms-api:1.1.0.GA" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.javaee:jboss-transaction-api:1.0.1.GA" level="project" />
+    <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
+    <orderEntry type="module" module-name="hornetq-journal" />
+    <orderEntry type="library" name="Maven: org.jboss.spec.javax.jms:jboss-jms-api_1.1_spec:1.0.0.Final" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:1.0.0.Final" level="project" />
     <orderEntry type="library" name="Maven: jboss.jbossts:jbossjts:4.6.1.GA" level="project" />
   </component>
 </module>
