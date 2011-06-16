@@ -20,7 +20,6 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq.tests</groupId>
    <artifactId>timing-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ timing Tests</name>
@@ -52,7 +51,6 @@
          <artifactId>hornetq-jms</artifactId>
          <version>${project.version}</version>
          <scope>test</scope>
-         <type>test-jar</type>
       </dependency>
       <dependency>
          <groupId>org.hornetq</groupId>
