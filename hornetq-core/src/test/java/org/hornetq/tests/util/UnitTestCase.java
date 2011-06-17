@@ -85,7 +85,7 @@ import org.hornetq.utils.UUIDGenerator;
  * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
  *
  */
-public class UnitTestCase extends TestCase
+public abstract class UnitTestCase extends TestCase
 {
    // Constants -----------------------------------------------------
 

@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.version.impl;
+package org.hornetq.core.version.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
