@@ -63,13 +63,11 @@ import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
@@ -1181,7 +1179,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                             (long)configuration.getJournalBufferSize_NIO(),
+                                                             configuration.getJournalBufferSize_NIO(),
                                                              scheduledPool,
                                                              executorFactory,
                                                              configuration.isJournalSyncNonTransactional()),
@@ -1279,14 +1277,6 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       return true;
-   }
-
-   private class FileActivateRunner implements Runnable
-   {
-      public void run()
-      {
-
-      }
    }
 
    private void initialiseLogging()
@@ -1907,6 +1897,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
    
+   @Override
    public String toString()
    {
       return "HornetQServerImpl::" + (identity == null ? "" : (identity + ", ")) + (nodeManager != null ? ("serverUUID=" + nodeManager.getUUID()) : "");
