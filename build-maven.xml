@@ -280,7 +280,34 @@
  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;${line.separator}
  &lt;groupId&gt;org.hornetq&lt;/groupId&gt;${line.separator}
  &lt;artifactId&gt;${artifact.id}&lt;/artifactId&gt;${line.separator}
- &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}&lt;/project&gt;"/>
+ &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}
+  &lt;name&gt;HornetQ&lt;/name&gt;${line.separator}
+  &lt;url&gt;http://hornetq.org&lt;/url&gt;${line.separator}
+  &lt;description&gt;HornetQ Messaging System&lt;/description&gt;${line.separator}
+   &lt;licenses&gt;${line.separator}
+      &lt;license&gt;${line.separator}
+         &lt;name&gt;Apache 2&lt;/name&gt;${line.separator}
+         &lt;url&gt;http://www.apache.org/licenses/LICENSE-2.0.txt&lt;/url&gt;${line.separator}
+         &lt;distribution&gt;repo&lt;/distribution&gt;${line.separator}
+      &lt;/license&gt;${line.separator}
+   &lt;/licenses&gt;${line.separator}
+   &lt;developers&gt;${line.separator}
+      &lt;developer&gt;${line.separator}
+         &lt;name&gt;Clebert Suconic&lt;/name&gt;${line.separator}
+      &lt;/developer&gt;${line.separator}
+      &lt;developer&gt;${line.separator}
+         &lt;name&gt;Andy Taylor&lt;/name&gt;${line.separator}
+      &lt;/developer&gt;${line.separator}
+      &lt;developer&gt;${line.separator}
+         &lt;name&gt;Howard Gao&lt;/name&gt;${line.separator}
+      &lt;/developer&gt;${line.separator}
+   &lt;/developers&gt;${line.separator}
+   &lt;scm&gt;${line.separator}
+      &lt;connection&gt;scm:svn:http://anonsvn.jboss.org/repos/hornetq/trunk&lt;/connection&gt;${line.separator}
+      &lt;developerConnection&gt;scm:svn:https://svn.jboss.org/repos/hornetq/trunk&lt;/developerConnection&gt;${line.separator}
+      &lt;url&gt;http://fisheye.jboss.org/browse/hornetq&lt;/url&gt;${line.separator}
+   &lt;/scm&gt;${line.separator}
+ &lt;/project&gt;"/>
    	
     <!-- deploy the jar -->
     <exec executable="mvn">
