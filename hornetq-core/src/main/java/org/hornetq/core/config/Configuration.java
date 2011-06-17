@@ -29,21 +29,19 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
 
 /**
- *
  * A Configuration is used to configure HornetQ servers.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  */
 public interface Configuration extends Serializable
 {
    // General attributes -------------------------------------------------------------------
 
 
-   /** To be used on dependency management on the application server */
+   /** To be used on dependency management on the application server. */
    String getName();
 
-   /** To be used on dependency management on the application server */
+   /** To be used on dependency management on the application server. */
    void setName(String name);
 
    /**
@@ -59,13 +57,14 @@ public interface Configuration extends Serializable
    void setClustered(boolean clustered);
 
    /**
-    * returns whether a backup will auto die when a live server is failing back
+    * Returns whether a backup will auto die when a live server is failing back.
+    *
     * @return
     */
    public boolean isAllowAutoFailBack();
 
    /**
-    * whether a backup will auto die when a live server is failing back
+    * Whether a backup will auto die when a live server is failing back.
     *
     * @param allowAutoFailBack true if allowed
     */
@@ -279,13 +278,14 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    /**
-    * Returns the name of the connector used to connect to the live node - only used when using shared nothing (shared store = false).
-    * <br>
+    * Returns the name of the connector used to connect to the live node - only used when using
+    * shared nothing (shared store = false).
     */
    String getLiveConnectorName();
 
    /**
-    * Sets the name of the connector used to connect to the live node - only used when using shared nothing (shared store = false).
+    * Sets the name of the connector used to connect to the live node - only used when using shared
+    * nothing (shared store = false).
     */
    void setLiveConnectorName(String name);
 
@@ -864,13 +864,13 @@ public interface Configuration extends Serializable
     */
    List<ConnectorServiceConfiguration> getConnectorServiceConfigurations();
 
-   /*
-   * how long to wait before failback occurs on restart
-   * */
+   /**
+    * How long to wait before failback occurs on restart.
+    */
    long getFailbackDelay();
 
-   /*
-   * set the failback delay
-   * */
+   /**
+    * Set the failback delay.
+    */
    void setFailbackDelay(long delay);
 }
