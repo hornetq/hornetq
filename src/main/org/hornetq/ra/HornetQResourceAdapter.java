@@ -1224,8 +1224,42 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties.setSetupInterval(interval);
    }
 
+   public String getTransactionManagerLocatorClass()
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("getTransactionManagerLocatorClass()");
+      }
+      return raProperties.getTransactionManagerLocatorClass();
+   }
 
-   /**
+   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("setTransactionManagerLocatorClass(" + transactionManagerLocatorClass + ")");
+      }
+      raProperties.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
+   }
+
+   public String getTransactionManagerLocatorMethod()
+   {
+      if (HornetQResourceAdapter.trace) {
+         HornetQResourceAdapter.log.trace("getTransactionManagerLocatorMethod()");
+      }
+      return raProperties.getTransactionManagerLocatorMethod();
+   }
+
+   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   {
+      if (HornetQResourceAdapter.trace)
+      {
+         HornetQResourceAdapter.log.trace("setTransactionManagerLocatorMethod(" + transactionManagerLocatorMethod + ")");
+      }
+      raProperties.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
+   }
+
+    /**
     * Indicates whether some other object is "equal to" this one.
     *
     * @param obj Object with which to compare
