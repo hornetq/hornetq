@@ -41,6 +41,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.JAASSecurityManager;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.security.SimpleGroup;
 
@@ -870,8 +871,8 @@ public class SecurityTest extends ServiceTestBase
 
          ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
          ClientProducer prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(createTextMessage(sendingSession, "Test", true));
-         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
          try
          {
             sendingSession.commit();
@@ -890,8 +891,8 @@ public class SecurityTest extends ServiceTestBase
          sendingSession.start(xid, XAResource.TMNOFLAGS);
 
          prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(createTextMessage(sendingSession, "Test", true));
-         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
          sendingSession.end(xid, XAResource.TMSUCCESS);
 
          try

@@ -51,8 +51,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
@@ -77,7 +75,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
-import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -919,7 +916,6 @@ public class UnitTestCase extends TestCase
 
       Map<Thread, StackTraceElement[]> postThreads = Thread.getAllStackTraces();
 
-      boolean failedThread = false;
       if (postThreads.size() > previousThreads.size())
       {
          StringBuffer buffer = new StringBuffer();
@@ -932,7 +928,6 @@ public class UnitTestCase extends TestCase
          {
             if (!aliveThread.getName().contains("SunPKCS11") && !previousThreads.containsKey(aliveThread))
             {
-               failedThread = true;
                buffer.append("=============================================================================\n");
                buffer.append("Thread " + aliveThread + " is still alive with the following stackTrace:\n");
                StackTraceElement[] elements = postThreads.get(aliveThread);
@@ -948,8 +943,6 @@ public class UnitTestCase extends TestCase
          System.out.println(buffer.toString());
 
       }
-
-      //assertFalse("Thread Failed", failedThread);
 
       super.tearDown();
    }
@@ -1174,22 +1167,6 @@ public class UnitTestCase extends TestCase
    protected int calculateRecordSize(final int size, final int alignment)
    {
       return (size / alignment + (size % alignment != 0 ? 1 : 0)) * alignment;
-   }
-
-   protected ClientMessage createTextMessage(final String s, final ClientSession clientSession)
-   {
-      return createTextMessage(s, true, clientSession);
-   }
-
-   protected ClientMessage createTextMessage(final String s, final boolean durable, final ClientSession clientSession)
-   {
-      ClientMessage message = clientSession.createMessage(HornetQTextMessage.TYPE,
-                                                          durable,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)4);
-      message.getBodyBuffer().writeString(s);
-      return message;
    }
 
    protected XidImpl newXID()

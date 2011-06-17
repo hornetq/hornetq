@@ -23,6 +23,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -51,7 +52,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       ClientProducer producer = clientSession.createProducer(address);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(dlq);
       ClientMessage m = clientConsumer.receive(500);

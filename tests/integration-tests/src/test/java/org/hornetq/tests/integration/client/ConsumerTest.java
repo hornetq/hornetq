@@ -27,6 +27,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -82,7 +83,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -116,7 +117,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -150,7 +151,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -188,7 +189,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
 
@@ -228,7 +229,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
       session.close();
@@ -293,7 +294,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
          producer.send(message);
       }
             

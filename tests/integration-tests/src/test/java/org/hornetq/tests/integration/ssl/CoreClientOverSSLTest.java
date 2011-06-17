@@ -30,6 +30,7 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -76,7 +77,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
-      ClientMessage message = createTextMessage(text, session);
+      ClientMessage message = CreateMessage.createTextMessage(text, session);
       producer.send(message);
 
       ClientConsumer consumer = session.createConsumer(CoreClientOverSSLTest.QUEUE);

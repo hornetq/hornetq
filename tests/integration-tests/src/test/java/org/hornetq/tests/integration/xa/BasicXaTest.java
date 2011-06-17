@@ -31,6 +31,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -268,8 +269,8 @@ public class BasicXaTest extends ServiceTestBase
       ClientSession recSession = sessionFactory.createSession();
       recSession.start();
       ClientConsumer clientConsumer = recSession.createConsumer(atestq);
-      ClientMessage m1 = createTextMessage(clientSession, "m1");
-      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "m1", true);
+      ClientMessage m2 = CreateMessage.createTextMessage(clientSession, "m2", true);
       clientSession.start(xid, XAResource.TMNOFLAGS);
       clientProducer.send(m1);
       clientSession.end(xid, XAResource.TMSUSPEND);
@@ -294,7 +295,7 @@ public class BasicXaTest extends ServiceTestBase
       Xid xid3 = newXID();
       ClientProducer clientProducer = clientSession.createProducer(atestq);
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
-      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "m1", true);
       clientSession.start(xid, XAResource.TMNOFLAGS);
       clientProducer.send(m1);
       clientSession.end(xid, XAResource.TMSUCCESS);
@@ -320,10 +321,10 @@ public class BasicXaTest extends ServiceTestBase
    {
       Xid xid = newXID();
 
-      ClientMessage m1 = createTextMessage(clientSession, "m1");
-      ClientMessage m2 = createTextMessage(clientSession, "m2");
-      ClientMessage m3 = createTextMessage(clientSession, "m3");
-      ClientMessage m4 = createTextMessage(clientSession, "m4");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "m1", true);
+      ClientMessage m2 = CreateMessage.createTextMessage(clientSession, "m2", true);
+      ClientMessage m3 = CreateMessage.createTextMessage(clientSession, "m3", true);
+      ClientMessage m4 = CreateMessage.createTextMessage(clientSession, "m4", true);
       ClientProducer clientProducer = clientSession.createProducer(atestq);
       clientSession.start(xid, XAResource.TMNOFLAGS);
       clientProducer.send(m1);
@@ -362,10 +363,10 @@ public class BasicXaTest extends ServiceTestBase
 
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
-      ClientMessage m1 = createTextMessage(clientSession2, "m1");
-      ClientMessage m2 = createTextMessage(clientSession2, "m2");
-      ClientMessage m3 = createTextMessage(clientSession2, "m3");
-      ClientMessage m4 = createTextMessage(clientSession2, "m4");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession2, "m1", true);
+      ClientMessage m2 = CreateMessage.createTextMessage(clientSession2, "m2", true);
+      ClientMessage m3 = CreateMessage.createTextMessage(clientSession2, "m3", true);
+      ClientMessage m4 = CreateMessage.createTextMessage(clientSession2, "m4", true);
       clientProducer.send(m1);
       clientProducer.send(m2);
       clientProducer.send(m3);
@@ -414,7 +415,7 @@ public class BasicXaTest extends ServiceTestBase
       ClientProducer clientProducer = clientSession2.createProducer(atestq);
       for (int i = 0; i < numSessions; i++)
       {
-         clientProducer.send(createTextMessage(clientSession2, "m" + i));
+         clientProducer.send(CreateMessage.createTextMessage(clientSession2, "m" + i, true));
       }
       ClientSession[] clientSessions = new ClientSession[numSessions];
       ClientConsumer[] clientConsumers = new ClientConsumer[numSessions];
@@ -684,8 +685,8 @@ public class BasicXaTest extends ServiceTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         prodA.send(createTextMessage(sessionA, "A" + i));
-         prodB.send(createTextMessage(sessionB, "B" + i));
+         prodA.send(CreateMessage.createTextMessage(sessionA, "A" + i, true));
+         prodB.send(CreateMessage.createTextMessage(sessionB, "B" + i, true));
       }
 
       sessionA.end(xid, XAResource.TMSUCCESS);
@@ -774,7 +775,7 @@ public class BasicXaTest extends ServiceTestBase
             ClientProducer prod = session.createProducer(ADDRESS);
             for (int nmsg = 0; nmsg < NUMBER_OF_MSGS; nmsg++)
             {
-               ClientMessage msg = createTextMessage(session, "SimpleMessage" + nmsg);
+               ClientMessage msg = CreateMessage.createTextMessage(session, "SimpleMessage" + nmsg, true);
                prod.send(msg);
             }
 
@@ -784,7 +785,7 @@ public class BasicXaTest extends ServiceTestBase
                session.start(xid, XAResource.TMRESUME);
             }
 
-            prod.send(createTextMessage(session, "one more"));
+            prod.send(CreateMessage.createTextMessage(session, "one more", true));
 
             prod.close();
 
@@ -801,7 +802,7 @@ public class BasicXaTest extends ServiceTestBase
                // The Join Session will have its own queue, as it's not possible to guarantee ordering since this
                // producer will be using a different session
                ClientProducer newProd = newJoinSession.createProducer(ADDRESS.concat("-join"));
-               newProd.send(createTextMessage(newJoinSession, "After Join"));
+               newProd.send(CreateMessage.createTextMessage(newJoinSession, "After Join", true));
             }
 
             session.end(xid, XAResource.TMSUCCESS);

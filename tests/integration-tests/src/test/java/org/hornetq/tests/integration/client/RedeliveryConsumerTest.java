@@ -35,6 +35,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -97,7 +98,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < 10; i++)
       {
-         prod.send(createTextMessage(session, Integer.toString(i), persistent));
+         prod.send(CreateMessage.createTextMessage(session, Integer.toString(i), persistent));
       }
 
       session.commit();
@@ -196,7 +197,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       RedeliveryConsumerTest.log.info("created");
 
       ClientProducer prod = session.createProducer(ADDRESS);
-      prod.send(createTextMessage(session, "Hello"));
+      prod.send(CreateMessage.createTextMessage(session, "Hello", true));
       session.commit();
       session.close();
 
@@ -251,7 +252,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       RedeliveryConsumerTest.log.info("created");
 
       ClientProducer prod = session.createProducer(ADDRESS);
-      prod.send(createTextMessage(session, "Hello"));
+      prod.send(CreateMessage.createTextMessage(session, "Hello", true));
       session.commit();
       session.close();
 

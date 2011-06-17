@@ -31,6 +31,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -59,7 +60,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage m = createTextMessage("m" + i, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + i, clientSession);
          m.setExpiration(expiration);
          producer.send(m);
       }
@@ -80,10 +81,10 @@ public class ExpiryRunnerTest extends UnitTestCase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage m = createTextMessage("m" + i, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + i, clientSession);
          m.setExpiration(expiration);
          producer.send(m);
-         m = createTextMessage("m" + i, clientSession);
+         m = CreateMessage.createTextMessage("m" + i, clientSession);
          m.setExpiration(expiration);
          producer2.send(m);
       }
@@ -99,7 +100,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage m = createTextMessage("m" + i, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + i, clientSession);
          if (i % 2 == 0)
          {
             m.setExpiration(expiration);
@@ -119,7 +120,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       long expiration = System.currentTimeMillis() + 1000;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage m = createTextMessage("m" + i, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + i, clientSession);
          m.setExpiration(expiration);
          producer.send(m);
       }
@@ -151,7 +152,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage m = createTextMessage("m" + i, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + i, clientSession);
          m.setExpiration(expiration);
          producer.send(m);
       }
@@ -190,7 +191,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       long sendMessagesUntil = System.currentTimeMillis() + 2000;
       do
       {
-         ClientMessage m = createTextMessage("m" + numMessages++, clientSession);
+         ClientMessage m = CreateMessage.createTextMessage("m" + numMessages++, clientSession);
          m.setExpiration(expiration);
          producer.send(m);
          Thread.sleep(100);

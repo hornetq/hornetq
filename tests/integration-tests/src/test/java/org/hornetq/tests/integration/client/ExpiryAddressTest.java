@@ -25,6 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -53,7 +54,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -84,7 +85,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(ea, eq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
 
       producer.send(clientMessage);
@@ -136,7 +137,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(ea, eq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
       clientSession.start();
@@ -167,7 +168,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         ClientMessage tm = createTextMessage("Message:" + i, clientSession);
+         ClientMessage tm = CreateMessage.createTextMessage("Message:" + i, clientSession);
          tm.setExpiration(expiration);
          producer.send(tm);
       }
@@ -212,7 +213,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -241,7 +242,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -279,7 +280,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(specificExpiryAddress, specificExpiryQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 

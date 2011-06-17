@@ -45,6 +45,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UUIDGenerator;
@@ -722,10 +723,10 @@ public class HornetQServerControlTest extends ManagementTestBase
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
-      ClientMessage m1 = createTextMessage(clientSession, "");
-      ClientMessage m2 = createTextMessage(clientSession, "");
-      ClientMessage m3 = createTextMessage(clientSession, "");
-      ClientMessage m4 = createTextMessage(clientSession, "");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m2 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m3 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m4 = CreateMessage.createTextMessage(clientSession, "", true);
       m1.putStringProperty("m1", "m1");
       m2.putStringProperty("m2", "m2");
       m3.putStringProperty("m3", "m3");
@@ -767,10 +768,10 @@ public class HornetQServerControlTest extends ManagementTestBase
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
 
-      ClientMessage m1 = createTextMessage(clientSession, "");
-      ClientMessage m2 = createTextMessage(clientSession, "");
-      ClientMessage m3 = createTextMessage(clientSession, "");
-      ClientMessage m4 = createTextMessage(clientSession, "");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m2 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m3 = CreateMessage.createTextMessage(clientSession, "", true);
+      ClientMessage m4 = CreateMessage.createTextMessage(clientSession, "", true);
       m1.putStringProperty("m1", "m1");
       m2.putStringProperty("m2", "m2");
       m3.putStringProperty("m3", "m3");
@@ -809,7 +810,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       ClientSession clientSession = csf.createSession(true, false, false);
       clientSession.createQueue(recQueue, recQueue, null, true);
       clientSession.createQueue(sendQueue, sendQueue, null, true);
-      ClientMessage m1 = createTextMessage(clientSession, "");
+      ClientMessage m1 = CreateMessage.createTextMessage(clientSession, "", true);
       m1.putStringProperty("m1", "m1");
       ClientProducer clientProducer = clientSession.createProducer(recQueue);
       clientProducer.send(m1);

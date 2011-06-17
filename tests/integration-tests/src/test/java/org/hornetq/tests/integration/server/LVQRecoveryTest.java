@@ -26,6 +26,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -55,13 +56,13 @@ public class LVQRecoveryTest extends ServiceTestBase
       SimpleString messageId1 = new SimpleString("SMID1");
       SimpleString messageId2 = new SimpleString("SMID2");
       clientSessionXa.start(xid, XAResource.TMNOFLAGS);
-      ClientMessage m1 = createTextMessage("m1", clientSession);
+      ClientMessage m1 = CreateMessage.createTextMessage("m1", clientSession);
       m1.putStringProperty(Message.HDR_LAST_VALUE_NAME, messageId1);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
+      ClientMessage m2 = CreateMessage.createTextMessage("m2", clientSession);
       m2.putStringProperty(Message.HDR_LAST_VALUE_NAME, messageId2);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
+      ClientMessage m3 = CreateMessage.createTextMessage("m3", clientSession);
       m3.putStringProperty(Message.HDR_LAST_VALUE_NAME, messageId1);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
+      ClientMessage m4 = CreateMessage.createTextMessage("m4", clientSession);
       m4.putStringProperty(Message.HDR_LAST_VALUE_NAME, messageId2);
       producer.send(m1);
       producer.send(m2);
@@ -94,22 +95,22 @@ public class LVQRecoveryTest extends ServiceTestBase
       ClientConsumer consumer = clientSessionXa.createConsumer(qName1);
 
       SimpleString rh = new SimpleString("SMID1");
-      ClientMessage m1 = createTextMessage("m1", clientSession);
+      ClientMessage m1 = CreateMessage.createTextMessage("m1", clientSession);
       m1.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m1.setDurable(true);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
+      ClientMessage m2 = CreateMessage.createTextMessage("m2", clientSession);
       m2.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m2.setDurable(true);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
+      ClientMessage m3 = CreateMessage.createTextMessage("m3", clientSession);
       m3.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m3.setDurable(true);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
+      ClientMessage m4 = CreateMessage.createTextMessage("m4", clientSession);
       m4.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m4.setDurable(true);
-      ClientMessage m5 = createTextMessage("m5", clientSession);
+      ClientMessage m5 = CreateMessage.createTextMessage("m5", clientSession);
       m5.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m5.setDurable(true);
-      ClientMessage m6 = createTextMessage("m6", clientSession);
+      ClientMessage m6 = CreateMessage.createTextMessage("m6", clientSession);
       m6.putStringProperty(Message.HDR_LAST_VALUE_NAME, rh);
       m6.setDurable(true);
       clientSessionXa.start(xid, XAResource.TMNOFLAGS);

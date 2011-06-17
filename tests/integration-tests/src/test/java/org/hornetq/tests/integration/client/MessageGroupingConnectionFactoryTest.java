@@ -27,6 +27,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -64,7 +65,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, clientSession);
          clientProducer.send(message);
       }
       CountDownLatch latch = new CountDownLatch(numMessages);
@@ -91,7 +92,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = CreateMessage.createTextMessage("m" + i, clientSession);
          clientProducer.send(message);
          clientProducer2.send(message);
          clientProducer3.send(message);

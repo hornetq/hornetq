@@ -21,6 +21,7 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -81,7 +82,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         ClientMessage msg = createBytesMessage(session, new byte[0], true);
+         ClientMessage msg = CreateMessage.createBytesMessage(session, new byte[0], true);
          prod.send(msg);
       }
 
