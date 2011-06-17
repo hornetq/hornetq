@@ -48,7 +48,7 @@
    <property name="hornetq.version.string"
              value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})"/>
    <property name="module.version"
-             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.revision}.${hornetq.version.versionTag}"/>
+             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionTag}"/>
    <property name="build.artifact"
              value="${module.name}-${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}"/>
 
