@@ -106,18 +106,7 @@
                <excludes>
                   <exclude>**/ReplicatedJMSFailoverTest.java</exclude>
                   <exclude>org/hornetq/tests/util/*.java</exclude>
-                  <!--exclude any replication tests for now -->
-                  <exclude>**/cluster/failover/*ClusterWithBackupFailoverTestBase.java</exclude>
-                  <exclude>**/cluster/**/*/java</exclude>
-                  <exclude>**/cluster/failover/*DiscoveryClusterWithBackupFailoverTest.java</exclude>
-                  <exclude>**/cluster/failover/*GroupingFailoverReplicationTest.java</exclude>
-                  <exclude>**/cluster/failover/*Replicated*.java</exclude>
-                  <exclude>**/cluster/replication/**.java</exclude>
-                  <exclude>**/cluster/failover/*ReplicatedDistributionTest.java</exclude>
-                  <exclude>**/cluster/failover/*SharedStoreDistributionTest.java</exclude>
-                  <exclude>**/cluster/failover/*ReplicatedNettyAsynchronousFailoverTest.java</exclude>
-                  <exclude>**/cluster/*ReplicatedJMSFailoverTest.java</exclude>
-                  <exclude>**/integration/replication/*.java</exclude>
+                  <!-- exclude some replication tests for now -->
                   <exclude>**/cluster/failover/Remote*.java</exclude>
                   <exclude>**/failover/remote/**.java</exclude>
                </excludes>
