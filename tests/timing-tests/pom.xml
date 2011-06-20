@@ -26,6 +26,13 @@
 
    <dependencies>
       <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-core</artifactId>
+         <version>${project.version}</version>
+         <scope>test</scope>
+         <type>test-jar</type>
+      </dependency>
+      <dependency>
          <groupId>org.hornetq.tests</groupId>
          <artifactId>unit-tests</artifactId>
          <version>${project.version}</version>

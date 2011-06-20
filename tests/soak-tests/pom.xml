@@ -20,12 +20,18 @@
       <version>2.2.3-SNAPSHOT</version>
    </parent>
 
-   <groupId>org.hornetq.tests</groupId>
    <artifactId>soak-tests</artifactId>
    <packaging>jar</packaging>
    <name>HornetQ soak Tests</name>
 
    <dependencies>
+         <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-core</artifactId>
+         <version>${project.version}</version>
+         <scope>test</scope>
+         <type>test-jar</type>
+      </dependency>
       <dependency>
          <groupId>org.hornetq.tests</groupId>
          <artifactId>unit-tests</artifactId>
