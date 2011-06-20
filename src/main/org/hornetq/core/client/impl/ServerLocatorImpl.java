@@ -283,8 +283,24 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
       }
-      
-      loadBalancingPolicy = (ConnectionLoadBalancingPolicy)ClassloadingUtil.safeInitNewInstance(connectionLoadBalancingPolicyClassName);
+
+      AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            try
+            {
+               loadBalancingPolicy = (ConnectionLoadBalancingPolicy) ClassloadingUtil.safeInitNewInstance(connectionLoadBalancingPolicyClassName);
+               return null;
+            }
+            catch (Exception e)
+            {
+               throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
+                                                           "\"",
+                                                  e);
+            }
+         }
+      });
    }
 
    private synchronized void initialise() throws Exception

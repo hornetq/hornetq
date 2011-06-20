@@ -50,6 +50,7 @@ import org.hornetq.spi.core.remoting.AcceptorFactory;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -108,13 +109,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.server = server;
 
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
       {
          try
          {
-            Class<?> clazz = loader.loadClass(interceptorClass);
-            interceptors.add((Interceptor)clazz.newInstance());
+            interceptors.add((Interceptor) ClassloadingUtil.safeInitNewInstance(interceptorClass));
          }
          catch (Exception e)
          {

@@ -116,6 +116,7 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -1860,18 +1861,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private Object instantiateInstance(final String className)
    {
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
-      try
-      {
-         Class<?> clz = loader.loadClass(className);
-         Object object = clz.newInstance();
-
-         return object;
-      }
-      catch (Exception e)
-      {
-         throw new IllegalArgumentException("Error instantiating class \"" + className + "\"", e);
-      }
+       return ClassloadingUtil.safeInitNewInstance(className);
    }
 
    private static ClassLoader getThisClassLoader()

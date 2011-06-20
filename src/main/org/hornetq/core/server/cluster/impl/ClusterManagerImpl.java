@@ -45,6 +45,7 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.ManagementService;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.UUID;
@@ -880,11 +881,9 @@ public class ClusterManagerImpl implements ClusterManager
 
       if (transformerClassName != null)
       {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
          try
          {
-            Class<?> clz = loader.loadClass(transformerClassName);
-            transformer = (Transformer)clz.newInstance();
+            transformer = (Transformer) ClassloadingUtil.safeInitNewInstance(transformerClassName);
          }
          catch (Exception e)
          {

@@ -54,6 +54,7 @@ import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * 
@@ -942,10 +943,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          try
          {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class aClass = loader.loadClass(transactionManagerLocatorClass);
-            Object o = aClass.newInstance();
-            Method m = aClass.getMethod(transactionManagerLocatorMethod);
+            Object o = ClassloadingUtil.safeInitNewInstance(transactionManagerLocatorClass);
+            Method m = o.getClass().getMethod(transactionManagerLocatorMethod);
             tm = (TransactionManager)m.invoke(o);
          }
          catch (Exception e)

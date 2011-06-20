@@ -481,7 +481,7 @@ public class XMLUtil
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-      Schema schema = factory.newSchema(Thread.currentThread().getContextClassLoader().getResource(schemaFile));
+      Schema schema = factory.newSchema(ClassloadingUtil.findResource(schemaFile));
       Validator validator = schema.newValidator();
 
       // validate the DOM tree

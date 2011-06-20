@@ -30,6 +30,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import org.hornetq.utils.ClassloadingUtil;
+
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
@@ -185,7 +187,7 @@ public class SSLSupport
          }
          else
          {
-            URL url = Thread.currentThread().getContextClassLoader().getResource(storePath);
+            URL url = ClassloadingUtil.findResource(storePath);
             if (url != null)
             {
                return url;
