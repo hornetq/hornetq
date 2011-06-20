@@ -99,6 +99,8 @@ public abstract class UnitTestCase extends TestCase
 
    public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
+   protected static final String CLUSTER_PASSWORD = "HornetQ";
+
    // Attributes ----------------------------------------------------
 
    private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
@@ -175,6 +177,7 @@ public abstract class UnitTestCase extends TestCase
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(serverID, false));
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
@@ -203,7 +206,7 @@ public abstract class UnitTestCase extends TestCase
          TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
          configuration.getAcceptorConfigurations().add(transportConfig);
       }
-
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
