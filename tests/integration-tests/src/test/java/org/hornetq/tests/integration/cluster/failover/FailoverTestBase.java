@@ -167,6 +167,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
+      backupConfig = config1;
       backupServer = createBackupServer();
 
       Configuration config0 = super.createDefaultConfig();
@@ -177,6 +178,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       //liveConfig.setBackupConnectorName("toBackup");
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
+      liveConfig = config0;
       liveServer = createLiveServer();
 
       backupServer.start();
