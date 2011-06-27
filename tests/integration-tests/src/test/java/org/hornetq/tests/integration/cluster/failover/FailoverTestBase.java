@@ -56,6 +56,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    // Constants -----------------------------------------------------
 
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
+   protected static final String LIVE_NODE_NAME = "hqLIVE";
 
    // Attributes ----------------------------------------------------
 
@@ -167,13 +168,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
+      config1.setLiveConnectorName(LIVE_NODE_NAME);
       backupConfig = config1;
+
       backupServer = createBackupServer();
 
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-
+      config0.setName(LIVE_NODE_NAME);
       config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
       //liveConfig.setBackupConnectorName("toBackup");
       config0.setSecurityEnabled(false);
@@ -181,8 +184,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig = config0;
       liveServer = createLiveServer();
 
-      backupServer.start();
       liveServer.start();
+      backupServer.start();
    }
 
    @Override
