@@ -13,13 +13,12 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.api.core.HornetQException;
+import java.util.concurrent.Executor;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-
-import java.util.concurrent.Executor;
 
 /**
  * A ServerLocatorInternal
@@ -31,7 +30,7 @@ import java.util.concurrent.Executor;
 public interface ServerLocatorInternal extends ServerLocator
 {
    void start(Executor executor) throws Exception;
-   
+
    void factoryClosed(final ClientSessionFactory factory);
 
    void setNodeID(String nodeID);
@@ -53,7 +52,7 @@ public interface ServerLocatorInternal extends ServerLocator
    void setClusterTransportConfiguration(TransportConfiguration tc);
 
    boolean isBackup();
-   
+
    void setBackup(boolean backup);
 
    Topology getTopology();
