@@ -51,11 +51,9 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * A RepplicationManagerImpl
- *
+ * A ReplicationManagerImpl
+ * 
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicationManagerImpl implements ReplicationManager
 {

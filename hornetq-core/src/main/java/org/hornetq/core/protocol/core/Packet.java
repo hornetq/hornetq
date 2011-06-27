@@ -17,21 +17,22 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
- * A Packet represents a pcaket of data transmitted over a connection.
+ * A Packet represents a packet of data transmitted over a connection.
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Packet
 {
    /**
-    * This sets the channel id that should be used once the packet has been successfully decoded it is sent to the correct channel.
-    *
+    * Sets the channel id that should be used once the packet has been successfully decoded it is
+    * sent to the correct channel.
+    * 
     * @param channelID the id of the channel to handle the packet
     */
    void setChannelID(long channelID);
 
    /**
-    * returns the channel id of the channel that should handle this pcaket
+    * Returns the channel id of the channel that should handle this packet.
     *
     * @return the id of the channel
     */
@@ -81,6 +82,6 @@ public interface Packet
     * @return true if confirmation is required
     */
    boolean isRequiresConfirmations();
-   
+
    boolean isAsyncExec();
 }

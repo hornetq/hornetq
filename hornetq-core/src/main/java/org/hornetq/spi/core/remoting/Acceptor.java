@@ -17,11 +17,12 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.management.NotificationService;
 
 /**
- * An Acceptor is used by the Remoting Service to allow clients to connect. It should take care of dispatching client requests
- * to the Remoting Service's Dispatcher.
- *
+ * An Acceptor is used by the Remoting Service to allow clients to connect. It should take care of
+ * dispatching client requests to the Remoting Service's Dispatcher.
+ * 
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
+ * @see Connector
  */
 public interface Acceptor extends HornetQComponent
 {
