@@ -93,6 +93,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMe
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
@@ -163,7 +164,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 public class PacketDecoder
 {
    private static final Logger log = Logger.getLogger(PacketDecoder.class);
-   
+
    public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
@@ -522,6 +523,11 @@ public class PacketDecoder
          case SESS_ADD_METADATA2:
          {
             packet = new SessionAddMetaDataMessageV2();
+            break;
+         }
+         case PacketImpl.HA_BACKUP_REGISTRATION:
+         {
+            packet = new HaBackupRegistrationMessage();
             break;
          }
          default:

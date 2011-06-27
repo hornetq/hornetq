@@ -165,6 +165,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_backup");
       config1.getAcceptorConfigurations().clear();
       config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
+      config1.getConnectorConfigurations().put(LIVE_NODE_NAME, getConnectorTransportConfiguration(true));
+      //liveConfig.setBackupConnectorName("toBackup");
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
@@ -177,8 +179,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config0.getAcceptorConfigurations().clear();
       config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       config0.setName(LIVE_NODE_NAME);
-      config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      //liveConfig.setBackupConnectorName("toBackup");
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
       liveConfig = config0;

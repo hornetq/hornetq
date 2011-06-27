@@ -30,6 +30,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
@@ -108,24 +109,24 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-               
+
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
                   public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
                   {
                      channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
                   }
-                  
+
                   public void nodeDown(String nodeID)
                   {
                      channel0.send(new ClusterTopologyChangeMessage(nodeID));
                   }
                };
-               
+
                final boolean isCC = msg.isClusterConnection();
-               
+
                server.getClusterManager().addClusterTopologyListener(listener, isCC);
-               
+
                rc.addCloseListener(new CloseListener()
                {
                   public void connectionClosed()
@@ -149,15 +150,21 @@ public class CoreProtocolManager implements ProtocolManager
                }
                server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
             }
+            else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
+            {
+               HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
+               System.out.println("HA_BACKUP_REGISTRATION: " + msg);
+               System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
+            }
          }
       });
-      
-      
+
+
 
       return entry;
    }
 
-   private Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
+   private final Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
 
    public ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
@@ -179,9 +186,15 @@ public class CoreProtocolManager implements ProtocolManager
    }
 
    // This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
-   // optimised version HornetQFrameDecoder2, which nevers calls this
+   // optimised version HornetQFrameDecoder2, which never calls this
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "CoreProtocolManager(server=" + server + ")";
    }
 }

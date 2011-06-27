@@ -80,7 +80,7 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
@@ -521,14 +521,14 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart1();
 
             clusterManager.start();
-            // Try-Connect to live server using live-connector-ref
-            String liveConnectorsName = configuration.getLiveConnectorName();
-            if (liveConnectorsName == null)
+
+
+            String liveConnectorName = configuration.getLiveConnectorName();
+            if (liveConnectorName == null)
             {
                throw new IllegalArgumentException("Cannot have a replicated backup without configuring its live-server!");
             }
-            final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorsName);
-            log.info("config is " + config);
+            final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
             final ServerLocatorInternal serverLocator =
                      (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(config);
 
@@ -536,28 +536,30 @@ public class HornetQServerImpl implements HornetQServer
             // sit in loop and try and connect, if server is not live then it will return NOT_LIVE
             final ClientSessionFactory liveServerSessionFactory = serverLocator.connect();
 
-            if (liveServerSessionFactory != null)
+            if (liveServerSessionFactory == null)
             {
-               log.debug("announce backup to live-server");
-               liveServerSessionFactory.getConnection()
-                                       .getChannel(0, -1)
-                                       .send(new NodeAnnounceMessage(getNodeID().toString(), true, config));
-               log.info("backup announced");
+               // XXX
+               throw new RuntimeException("Need to retry...");
             }
+            log.info("announce backup to live-server (id=" + liveConnectorName + ")");
+            liveServerSessionFactory.getConnection()
+                                    .getChannel(0, -1)
+                                    .send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
+            log.info("backup registered");
+
 
             started = true;
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
-
             nodeManager.awaitLiveNode();
+            // Server node (i.e. Life node) is not running, now the backup takes over.
 
-            // XXX ???
+            // XXX this really belongs to this point?
+            initialisePart2();
+
             configuration.setBackup(false);
 
-            // XXX
-
-            initialisePart2();
          }
          catch (Exception e)
          {
@@ -1247,27 +1249,24 @@ public class HornetQServerImpl implements HornetQServer
 
    // private boolean startReplication() throws Exception
    // {
-   // String backupConnectorName = configuration.getBackupConnectorName();
+   // // get list of backup names!
    //
    // if (!configuration.isSharedStore() && backupConnectorName != null)
    // {
-   // TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+   // TransportConfiguration backupConnector =
+   // configuration.getConnectorConfigurations().get(backupConnectorName);
    //
    // if (backupConnector == null)
    // {
    // HornetQServerImpl.log.warn("connector with name '" + backupConnectorName +
    // "' is not defined in the configuration.");
+   // return false;
    // }
-   // else
-   // {
-   //
    // replicationFailoverManager = createBackupConnectionFailoverManager(backupConnector,
-   // threadPool,
-   // scheduledPool);
+   // threadPool, scheduledPool);
    //
    // replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
    // replicationManager.start();
-   // }
    // }
    //
    // return true;
