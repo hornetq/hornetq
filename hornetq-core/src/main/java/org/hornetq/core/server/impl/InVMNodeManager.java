@@ -13,25 +13,31 @@
 
 package org.hornetq.core.server.impl;
 
+import static org.hornetq.core.server.impl.InVMNodeManager.State.FAILING_BACK;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.LIVE;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.NOT_STARTED;
+import static org.hornetq.core.server.impl.InVMNodeManager.State.PAUSED;
+
+import java.util.concurrent.Semaphore;
+
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.utils.UUIDGenerator;
 
-import java.util.concurrent.Semaphore;
-
-import static org.hornetq.core.server.impl.InVMNodeManager.State.*;
-
 /**
- * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
- *         Date: Oct 13, 2010
- *         Time: 3:55:47 PM
+ * This is a _mock_ NodeManager and is used only in tests.
+ * <p>
+ * It allows writing tests without the need to spawn a new JVM.
+ * 
+ * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a> Date: Oct 13, 2010 Time: 3:55:47
+ *         PM
  */
 public class InVMNodeManager extends NodeManager
 {
 
-   private Semaphore liveLock;
+   private final Semaphore liveLock;
 
-   private Semaphore backupLock;
+   private final Semaphore backupLock;
 
    public enum State {LIVE, PAUSED, FAILING_BACK, NOT_STARTED}
 
@@ -119,7 +125,7 @@ public class InVMNodeManager extends NodeManager
    @Override
    public boolean isAwaitingFailback() throws Exception
    {
-      return state == FAILING_BACK; 
+      return state == FAILING_BACK;
    }
 
    @Override

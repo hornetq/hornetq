@@ -24,7 +24,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  *
  */
 public interface CoreRemotingConnection extends RemotingConnection
-{  
+{
    /**
     * return the channel with the channel id specified.
     * <p/>
@@ -74,7 +74,7 @@ public interface CoreRemotingConnection extends RemotingConnection
    long getIDGeneratorSequence();
 
    /**
-    * return the current tomeout for blocking calls
+    * Return the current timeout for blocking calls.
     *
     * @return the timeout in milliseconds
     */
@@ -86,7 +86,7 @@ public interface CoreRemotingConnection extends RemotingConnection
     * @return the lock
     */
    Object getTransferLock();
-   
+
    /**
     * Called periodically to flush any data in the batch buffer
     */

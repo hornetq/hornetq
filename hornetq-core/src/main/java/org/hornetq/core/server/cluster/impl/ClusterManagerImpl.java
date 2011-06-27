@@ -17,11 +17,15 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.lang.reflect.Array;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.Pair;
@@ -33,7 +37,10 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
-import org.hornetq.core.config.*;
+import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.config.BroadcastGroupConfiguration;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
@@ -54,7 +61,7 @@ import org.hornetq.utils.UUID;
  * A ClusterManagerImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 09:23:49
  *
  *
@@ -92,18 +99,18 @@ public class ClusterManagerImpl implements ClusterManager
 
    // regular client listeners to be notified of cluster topology changes.
    // they correspond to regular clients using a HA ServerLocator
-   private Set<ClusterTopologyListener> clientListeners = new ConcurrentHashSet<ClusterTopologyListener>();
-   
+   private final Set<ClusterTopologyListener> clientListeners = new ConcurrentHashSet<ClusterTopologyListener>();
+
    // cluster connections listeners to be notified of cluster topology changes
    // they correspond to cluster connections on *other nodes connected to this one*
-   private Set<ClusterTopologyListener> clusterConnectionListeners = new ConcurrentHashSet<ClusterTopologyListener>();
+   private final Set<ClusterTopologyListener> clusterConnectionListeners = new ConcurrentHashSet<ClusterTopologyListener>();
 
-   private Topology topology = new Topology();
+   private final Topology topology = new Topology();
 
    private volatile ServerLocatorInternal backupServerLocator;
 
    private final List<ServerLocatorInternal> clusterLocators = new ArrayList<ServerLocatorInternal>();
-   private Executor executor;
+   private final Executor executor;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final HornetQServer server,
@@ -173,7 +180,7 @@ public class ClusterManagerImpl implements ClusterManager
       {
          announceNode();
       }
-      
+
       started = true;
    }
 
@@ -200,7 +207,7 @@ public class ClusterManagerImpl implements ClusterManager
             clusterConnection.stop();
             managementService.unregisterCluster(clusterConnection.getName().toString());
          }
-         
+
          clusterConnectionListeners.clear();
          clientListeners.clear();
          clusterConnections.clear();
@@ -238,7 +245,7 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       boolean removed = topology.removeMember(nodeID);
-      
+
       if (removed)
       {
 
@@ -254,6 +261,7 @@ public class ClusterManagerImpl implements ClusterManager
       }
    }
 
+   // XXX Why is the interface's parameter 'backup' now 'last'?
    public void notifyNodeUp(final String nodeID,
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last,
@@ -349,7 +357,7 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return topology;
    }
-   
+
    // backup node becomes live
   public synchronized void activate()
    {
@@ -496,7 +504,7 @@ public class ClusterManagerImpl implements ClusterManager
       {
          listener.nodeUP(nodeID, member.getConnector(), false);
       }
-      
+
       for (ClusterTopologyListener listener : clusterConnectionListeners)
       {
          listener.nodeUP(nodeID, member.getConnector(), false);
@@ -720,7 +728,7 @@ public class ClusterManagerImpl implements ClusterManager
          managementService.unregisterBridge(name);
       }
    }
-   
+
    private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
@@ -816,7 +824,7 @@ public class ClusterManagerImpl implements ClusterManager
       clusterConnections.put(config.getName(), clusterConnection);
 
       clusterConnection.start();
-      
+
       if(backup)
       {
          announceBackup(config, connector);
@@ -866,7 +874,7 @@ public class ClusterManagerImpl implements ClusterManager
             }
             catch (Exception e)
             {
-               log.warn("Unable to announce backup", e); 
+               log.warn("Unable to announce backup", e);
             }
          }
       });
