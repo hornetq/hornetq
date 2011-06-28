@@ -54,6 +54,9 @@ public class CoreProtocolManager implements ProtocolManager
 
    private final List<Interceptor> interceptors;
 
+   private final Map<String, ServerSessionPacketHandler> sessionHandlers =
+            new ConcurrentHashMap<String, ServerSessionPacketHandler>();
+
    public CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
@@ -153,8 +156,18 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
             {
                HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
-               System.out.println("HA_BACKUP_REGISTRATION: " + msg);
+               System.out.println("HA_BACKUP_REGISTRATION: " + msg + " connector=" + msg.getConnector());
                System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
+               try
+               {
+                  server.addHaBackup(msg.getConnector());
+               }
+               catch (Exception e)
+               {
+                  // XXX This is not what we want
+                  e.printStackTrace();
+                  throw new RuntimeException(e);
+               }
             }
          }
       });
@@ -163,8 +176,6 @@ public class CoreProtocolManager implements ProtocolManager
 
       return entry;
    }
-
-   private final Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
 
    public ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {

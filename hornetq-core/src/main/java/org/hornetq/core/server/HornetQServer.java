@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -49,23 +50,23 @@ import org.hornetq.utils.ExecutorFactory;
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
  * external management interface of the HornetQ Server is defined by the HornetQServerManagement interface This
  * interface is never exposed outside the HornetQ server, e.g. by JMX or other means
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface HornetQServer extends HornetQComponent
 {
-   
+
    void setIdentity(String identity);
-   
+
    String getIdentity();
-   
+
    Configuration getConfiguration();
 
    RemotingService getRemotingService();
 
    StorageManager getStorageManager();
-   
+
    PagingManager getPagingManager();
 
    ManagementService getManagementService();
@@ -75,12 +76,12 @@ public interface HornetQServer extends HornetQComponent
    MBeanServer getMBeanServer();
 
    Version getVersion();
-   
+
    NodeManager getNodeManager();
 
    /**
     * Returns the resource to manage this HornetQ server.
-    * 
+    *
     * Using this control will throw IllegalStateException if the
     * server is not properly started.
     */
@@ -90,7 +91,7 @@ public interface HornetQServer extends HornetQComponent
 
    void unregisterActivateCallback(ActivateCallback callback);
 
-   /** The journal at the backup server has to be equivalent as the journal used on the live node. 
+   /** The journal at the backup server has to be equivalent as the journal used on the live node.
     *  Or else the backup node is out of sync. */
    ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
@@ -143,31 +144,31 @@ public interface HornetQServer extends HornetQComponent
                      SimpleString filterString,
                      boolean durable,
                      boolean temporary) throws Exception;
-   
+
    Queue locateQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
-   
+
    ExecutorFactory getExecutorFactory();
 
    void setGroupingHandler(GroupingHandler groupingHandler);
 
    GroupingHandler getGroupingHandler();
-   
+
    ReplicationEndpoint getReplicationEndpoint();
-   
+
    ReplicationManager getReplicationManager();
 
-   boolean checkActivate() throws Exception;      
-   
+   boolean checkActivate() throws Exception;
+
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;
 
    ConnectorsService getConnectorsService();
-   
+
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
@@ -175,4 +176,10 @@ public interface HornetQServer extends HornetQComponent
    ServerSession getSessionByID(String sessionID);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
+
+   /**
+    * @param connector
+    * @throws Exception
+    */
+   void addHaBackup(TransportConfiguration connector) throws Exception;
 }

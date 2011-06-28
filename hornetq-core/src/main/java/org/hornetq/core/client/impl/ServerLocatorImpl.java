@@ -18,8 +18,19 @@ import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.HornetQException;
@@ -57,13 +68,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
 
-   private Set<ClientSessionFactory> factories = new HashSet<ClientSessionFactory>();
+   private final Set<ClientSessionFactory> factories = new HashSet<ClientSessionFactory>();
 
    private TransportConfiguration[] initialConnectors;
 
-   private DiscoveryGroupConfiguration discoveryGroupConfiguration;
+   private final DiscoveryGroupConfiguration discoveryGroupConfiguration;
 
-   private StaticConnector staticConnector = new StaticConnector();
+   private final StaticConnector staticConnector = new StaticConnector();
 
    private Topology topology = new Topology();
 
@@ -158,14 +169,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private boolean backup;
 
    private final Exception e = new Exception();
-   
+
    // To be called when there are ServerLocator being finalized.
    // To be used on test assertions
    public static Runnable finalizeCallback = null;
-   
+
    public static synchronized void clearThreadPools()
    {
-      
+
       if (globalThreadPool != null)
       {
          globalThreadPool.shutdown();
@@ -184,7 +195,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             globalThreadPool = null;
          }
       }
-      
+
       if (globalScheduledThreadPool != null)
       {
          globalScheduledThreadPool.shutdown();
@@ -1318,8 +1329,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   class StaticConnector implements Serializable
+   final class StaticConnector implements Serializable
    {
+      private static final long serialVersionUID = 959566606042156036L;
       private List<Connector> connectors;
 
       public ClientSessionFactory connect() throws HornetQException
@@ -1344,14 +1356,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          try
          {
-            
+
             List<Future<ClientSessionFactory>> futuresList = new ArrayList<Future<ClientSessionFactory>>();
-            
+
             for (Connector conn : connectors)
             {
                futuresList.add(threadPool.submit(conn));
             }
-            
+
             for (int i = 0, futuresSize = futuresList.size(); i < futuresSize; i++)
             {
                Future<ClientSessionFactory> future = futuresList.get(i);
@@ -1359,7 +1371,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                {
                   csf = future.get();
                   if (csf != null)
+                  {
                      break;
+                  }
                }
                catch (Exception e)
                {
@@ -1415,6 +1429,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
       }
 
+      @Override
       public void finalize() throws Throwable
       {
          if (!closed && finalizeCheck)
@@ -1423,7 +1438,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                      System.identityHashCode(this));
 
             log.warn("The ServerLocator you didn't close was created here:", e);
-            
+
             if (ServerLocatorImpl.finalizeCallback != null)
             {
                ServerLocatorImpl.finalizeCallback.run();
@@ -1437,7 +1452,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       class Connector implements Callable<ClientSessionFactory>
       {
-         private TransportConfiguration initialConnector;
+         private final TransportConfiguration initialConnector;
 
          private volatile ClientSessionFactoryInternal factory;
 

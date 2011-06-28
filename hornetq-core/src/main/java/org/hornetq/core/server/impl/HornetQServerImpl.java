@@ -41,8 +41,10 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -85,6 +87,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
@@ -119,6 +122,7 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -208,6 +212,8 @@ public class HornetQServerImpl implements HornetQServer
    private Deployer securityDeployer;
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
+
+   private final Set<String> sharedNothingBackups = new ConcurrentHashSet<String>();
 
    private final Object initialiseLock = new Object();
 
@@ -575,6 +581,8 @@ public class HornetQServerImpl implements HornetQServer
    private Thread backupActivationThread;
 
    private Activation activation;
+
+   private ServerLocator serverLocator;
 
    public synchronized void start() throws Exception
    {
@@ -1247,30 +1255,22 @@ public class HornetQServerImpl implements HornetQServer
    // Private
    // --------------------------------------------------------------------------------------
 
-   // private boolean startReplication() throws Exception
-   // {
-   // // get list of backup names!
-   //
-   // if (!configuration.isSharedStore() && backupConnectorName != null)
-   // {
-   // TransportConfiguration backupConnector =
-   // configuration.getConnectorConfigurations().get(backupConnectorName);
-   //
-   // if (backupConnector == null)
-   // {
-   // HornetQServerImpl.log.warn("connector with name '" + backupConnectorName +
-   // "' is not defined in the configuration.");
-   // return false;
-   // }
-   // replicationFailoverManager = createBackupConnectionFailoverManager(backupConnector,
-   // threadPool, scheduledPool);
-   //
-   // replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
-   // replicationManager.start();
-   // }
-   //
-   // return true;
-   // }
+   private boolean startReplication(TransportConfiguration connector) throws Exception
+   {
+      assert !configuration.isSharedStore();
+      if (configuration.isSharedStore() || connector == null)
+      {
+         return true;
+      }
+
+      serverLocator = HornetQClient.createServerLocatorWithHA(connector);
+      ClientSessionFactoryInternal replicationFailoverManager =
+               (ClientSessionFactoryInternal)serverLocator.createSessionFactory(connector);
+      replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
+      replicationManager.start();
+
+      return true;
+   }
 
    private void callActivateCallbacks()
    {
@@ -1942,6 +1942,12 @@ public class HornetQServerImpl implements HornetQServer
       return "HornetQServerImpl::" + (identity == null ? "" : (identity + ", ")) + (nodeManager != null ? ("serverUUID=" + nodeManager.getUUID()) : "");
    }
 
-   // Inner classes
-   // --------------------------------------------------------------------------------
+   @Override
+   public void addHaBackup(TransportConfiguration connector) throws Exception
+   {
+      log.info(connector + " " + connector.getFactoryClassName() + " " + connector.getParams() + " " +
+               replicationManager);
+      startReplication(connector);
+      // throw new UnsupportedOperationException("unimplemented");
+   }
 }
