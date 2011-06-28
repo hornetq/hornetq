@@ -37,9 +37,13 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -165,7 +169,9 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_backup");
       config1.getAcceptorConfigurations().clear();
       config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.getConnectorConfigurations().put(LIVE_NODE_NAME, getConnectorTransportConfiguration(true));
+      TransportConfiguration tc = getConnectorTransportConfiguration(true);
+	config1.getConnectorConfigurations().put(LIVE_NODE_NAME, tc);
+
       //liveConfig.setBackupConnectorName("toBackup");
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
@@ -325,7 +331,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+         return new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName());
       }
       else
       {
@@ -333,7 +339,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
          server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", server1Params);
+         return new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), server1Params);
       }
    }
 
@@ -341,7 +347,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory");
+         return new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName());
       }
       else
       {
@@ -349,7 +355,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
          server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", server1Params);
+         return new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), server1Params);
       }
    }
 
@@ -357,7 +363,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory");
+         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName());
       }
       else
       {
@@ -366,7 +372,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
+         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName(),
                server1Params);
       }
    }
@@ -375,7 +381,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
+         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName());
       }
       else
       {
@@ -384,8 +390,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-               server1Params);
+         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), server1Params);
       }
    }
 
