@@ -1,4 +1,4 @@
-#Thu Jun 23 17:28:54 CEST 2011
+#Mon Jun 27 17:03:43 CEST 2011
 eclipse.preferences.version=1
 org.eclipse.jdt.core.codeComplete.argumentPrefixes=
 org.eclipse.jdt.core.codeComplete.argumentSuffixes=
@@ -26,8 +26,8 @@ org.eclipse.jdt.core.formatter.alignment_for_arguments_in_allocation_expression=
 org.eclipse.jdt.core.formatter.alignment_for_arguments_in_annotation=16
 org.eclipse.jdt.core.formatter.alignment_for_arguments_in_enum_constant=82
 org.eclipse.jdt.core.formatter.alignment_for_arguments_in_explicit_constructor_call=82
-org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation=82
-org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression=80
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation=18
+org.eclipse.jdt.core.formatter.alignment_for_arguments_in_qualified_allocation_expression=16
 org.eclipse.jdt.core.formatter.alignment_for_assignment=16
 org.eclipse.jdt.core.formatter.alignment_for_binary_expression=16
 org.eclipse.jdt.core.formatter.alignment_for_compact_if=82
@@ -106,7 +106,7 @@ org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_local_variabl
 org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_member=insert
 org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_method=insert
 org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_package=insert
-org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_parameter=do not insert
+org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_parameter=insert
 org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_type=insert
 org.eclipse.jdt.core.formatter.insert_new_line_after_label=do not insert
 org.eclipse.jdt.core.formatter.insert_new_line_after_opening_brace_in_array_initializer=do not insert
