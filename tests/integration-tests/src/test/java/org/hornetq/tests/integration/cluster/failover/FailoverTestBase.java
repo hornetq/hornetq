@@ -170,7 +170,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.getAcceptorConfigurations().clear();
       config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
       TransportConfiguration tc = getConnectorTransportConfiguration(true);
-	config1.getConnectorConfigurations().put(LIVE_NODE_NAME, tc);
+      config1.getConnectorConfigurations().put(LIVE_NODE_NAME, tc);
 
       //liveConfig.setBackupConnectorName("toBackup");
       config1.setSecurityEnabled(false);
@@ -180,6 +180,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig = config1;
 
       backupServer = createBackupServer();
+      backupServer.getServer().setIdentity("id_backup");
 
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
@@ -189,6 +190,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config0.setSharedStore(false);
       liveConfig = config0;
       liveServer = createLiveServer();
+      liveServer.getServer().setIdentity("id_live");
 
       liveServer.start();
       backupServer.start();
