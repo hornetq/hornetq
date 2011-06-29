@@ -87,6 +87,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.replication.impl.ReplicationEndpointImpl;
 import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
@@ -992,10 +993,16 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
-      if (!configuration.isBackup())
+      if (configuration.isBackup())
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is a backup server");
       }
+
+      assert replicationEndpoint == null;
+      replicationEndpoint = new ReplicationEndpointImpl(this);
+
+      if (replicationEndpoint == null)
+         System.err.println("endpoint is null!");
 
       if (replicationEndpoint.getChannel() != null)
       {
