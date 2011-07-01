@@ -33,6 +33,7 @@ import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
@@ -52,7 +53,7 @@ import org.hornetq.utils.ExecutorFactory;
 
 /**
  * A ReplicationManagerImpl
- * 
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public class ReplicationManagerImpl implements ReplicationManager
@@ -65,11 +66,10 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
-   private final ClientSessionFactoryInternal sessionFactory;
+//   private final ClientSessionFactoryInternal sessionFactory;
+//   private CoreRemotingConnection replicatingConnection;
 
-   private CoreRemotingConnection replicatingConnection;
-
-   private Channel replicatingChannel;
+   private final Channel replicatingChannel;
 
    private boolean started;
 
@@ -79,9 +79,11 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
 
-   private final ExecutorFactory executorFactory;
+   private ExecutorFactory executorFactory;
 
    private SessionFailureListener failureListener;
+
+   private final Channel systemChannel;
 
    // Static --------------------------------------------------------
 
@@ -90,15 +92,25 @@ public class ReplicationManagerImpl implements ReplicationManager
    public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory, final ExecutorFactory executorFactory)
    {
       super();
-      this.sessionFactory = sessionFactory;
       this.executorFactory = executorFactory;
+
+      CoreRemotingConnection conn = sessionFactory.getConnection();
+      systemChannel = conn.getChannel(CHANNEL_ID.SESSION.id, -1);
+      replicatingChannel = conn.getChannel(CHANNEL_ID.REPLICATION.id, -1);
    }
 
    // Public --------------------------------------------------------
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#replicate(byte[], org.hornetq.core.replication.ReplicationToken)
+   /**
+    * @param systemChannel
+    * @param replicatingChannel
     */
+   public ReplicationManagerImpl(Channel systemChannel, Channel replicatingChannel)
+   {
+      super();
+      this.systemChannel = systemChannel;
+      this.replicatingChannel = replicatingChannel;
+   }
 
    public void appendAddRecord(final byte journalID, final long id, final byte recordType, final EncodingSupport record)
    {
@@ -302,26 +314,21 @@ public class ReplicationManagerImpl implements ReplicationManager
          throw new IllegalStateException("ReplicationManager is already started");
       }
 
-      replicatingConnection = sessionFactory.getConnection();
-
-      if (replicatingConnection == null)
-      {
-         ReplicationManagerImpl.log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Backup server MUST be started before live server. Initialisation will not proceed.");
-      }
-
-      long channelID = replicatingConnection.generateChannelID();
-
-      Channel mainChannel = replicatingConnection.getChannel(1, -1);
-
-      replicatingChannel = replicatingConnection.getChannel(channelID, -1);
+//      replicatingConnection = sessionFactory.getConnection();
+//
+//      if (replicatingConnection == null)
+//      {
+//         ReplicationManagerImpl.log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
+//         throw new HornetQException(HornetQException.ILLEGAL_STATE,
+//                                    "Backup server MUST be started before live server. Initialisation will not proceed.");
+//      }
 
       replicatingChannel.setHandler(responseHandler);
 
-      CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID);
+      CreateReplicationSessionMessage replicationStartPackage =
+               new CreateReplicationSessionMessage(replicatingChannel.getID());
 
-      mainChannel.sendBlocking(replicationStartPackage);
+      systemChannel.sendBlocking(replicationStartPackage);
 
       failureListener = new SessionFailureListener()
       {
@@ -351,7 +358,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          {
          }
       };
-      sessionFactory.addFailureListener(failureListener);
+      // sessionFactory.addFailureListener(failureListener);
 
       started = true;
 
@@ -390,14 +397,14 @@ public class ReplicationManagerImpl implements ReplicationManager
          replicatingChannel.close();
       }
 
-      sessionFactory.causeExit();
-      sessionFactory.removeFailureListener(failureListener);
-      if (replicatingConnection != null)
-      {
-         replicatingConnection.destroy();
-      }
-
-      replicatingConnection = null;
+//      sessionFactory.causeExit();
+//      sessionFactory.removeFailureListener(failureListener);
+//      if (replicatingConnection != null)
+//      {
+//         replicatingConnection.destroy();
+//      }
+//
+//      replicatingConnection = null;
 
       started = false;
    }

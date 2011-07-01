@@ -44,7 +44,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -82,6 +81,7 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
@@ -123,7 +123,6 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
-import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -213,8 +212,6 @@ public class HornetQServerImpl implements HornetQServer
    private Deployer securityDeployer;
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
-
-   private final Set<String> sharedNothingBackups = new ConcurrentHashSet<String>();
 
    private final Object initialiseLock = new Object();
 
@@ -517,7 +514,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private class SharedNothingBackupActivation implements Activation
+   private final class SharedNothingBackupActivation implements Activation
    {
       public void run()
       {
@@ -550,10 +547,9 @@ public class HornetQServerImpl implements HornetQServer
             }
             log.info("announce backup to live-server (id=" + liveConnectorName + ")");
             liveServerSessionFactory.getConnection()
-                                    .getChannel(0, -1)
+                                    .getChannel(CHANNEL_ID.SESSION.id, -1)
                                     .send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
             log.info("backup registered");
-
 
             started = true;
 
@@ -639,7 +635,8 @@ public class HornetQServerImpl implements HornetQServer
          }
          else
          {
-            // Replicated
+            assert replicationEndpoint == null;
+            replicationEndpoint = new ReplicationEndpointImpl(this);
             activation = new SharedNothingBackupActivation();
          }
 
@@ -993,13 +990,11 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
-      if (configuration.isBackup())
+      if (!configuration.isBackup())
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is a backup server");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server " +
+                  getIdentity());
       }
-
-      assert replicationEndpoint == null;
-      replicationEndpoint = new ReplicationEndpointImpl(this);
 
       if (replicationEndpoint == null)
          System.err.println("endpoint is null!");
@@ -1262,22 +1257,22 @@ public class HornetQServerImpl implements HornetQServer
    // Private
    // --------------------------------------------------------------------------------------
 
-   private boolean startReplication(TransportConfiguration connector) throws Exception
-   {
-      assert !configuration.isSharedStore();
-      if (configuration.isSharedStore() || connector == null)
-      {
-         return true;
-      }
-
-      serverLocator = HornetQClient.createServerLocatorWithHA(connector);
-      ClientSessionFactoryInternal replicationFailoverManager =
-               (ClientSessionFactoryInternal)serverLocator.createSessionFactory(connector);
-      replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
-      replicationManager.start();
-
-      return true;
-   }
+//   private boolean startReplication(TransportConfiguration connector) throws Exception
+//   {
+//      assert !configuration.isSharedStore();
+//      if (configuration.isSharedStore() || connector == null)
+//      {
+//         return true;
+//      }
+//
+//      serverLocator = HornetQClient.createServerLocatorWithHA(connector);
+//      ClientSessionFactoryInternal replicationFailoverManager =
+//               (ClientSessionFactoryInternal)serverLocator.createSessionFactory(connector);
+//      replicationManager = new ReplicationManagerImpl(replicationFailoverManager, executorFactory);
+//      replicationManager.start();
+//
+//      return true;
+//   }
 
    private void callActivateCallbacks()
    {
@@ -1950,11 +1945,23 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public void addHaBackup(TransportConfiguration connector) throws Exception
+   public void addHaBackup(Channel systemChannel, Channel replicatingChannel) throws Exception
    {
-      log.info(connector + " " + connector.getFactoryClassName() + " " + connector.getParams() + " " +
-               replicationManager);
-      startReplication(connector);
-      // throw new UnsupportedOperationException("unimplemented");
+      if (!(storageManager instanceof JournalStorageManager))
+         return;
+      JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
+
+      System.out.println(HornetQServerImpl.class.getName() + " " + this.getIdentity() +
+               ": create a ReplicationManagerImpl. Using ChannelID=" + systemChannel);
+      // XXX not sure this is the right call to use
+//      final ServerLocatorInternal serverLocator =
+//               (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(connector);
+//      ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
+      replicationManager = new ReplicationManagerImpl(systemChannel, replicatingChannel);
+      System.out.println("rep.start()");
+      replicationManager.start();
+
+      System.out.println("add RepMan to JournalStorageManager...");
+      journalStorageManager.setReplicator(replicationManager);
    }
 }

@@ -29,6 +29,7 @@ import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -75,7 +76,7 @@ public class CoreProtocolManager implements ProtocolManager
                                                                                                              : null,
                                                                                                              server.getNodeID());
 
-      Channel channel1 = rc.getChannel(1, -1);
+      Channel channel1 = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
 
       ChannelHandler handler = new HornetQPacketHandler(this, server, channel1, rc);
 
@@ -90,7 +91,7 @@ public class CoreProtocolManager implements ProtocolManager
 
       final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
 
-      final Channel channel0 = rc.getChannel(0, -1);
+      final Channel channel0 = rc.getChannel(CHANNEL_ID.PING.id, -1);
 
       channel0.setHandler(new ChannelHandler()
       {
@@ -157,10 +158,14 @@ public class CoreProtocolManager implements ProtocolManager
             {
                HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
                System.out.println("HA_BACKUP_REGISTRATION: " + msg + " connector=" + msg.getConnector());
+               long channelID = msg.getChannelID();
+               Channel channelX = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
+               Channel replicationChannel = rc.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+               System.out.println("msg channelID: " + channelID);
                System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
                try
                {
-                  server.addHaBackup(msg.getConnector());
+                  server.addHaBackup(channelX, replicationChannel);
                }
                catch (Exception e)
                {

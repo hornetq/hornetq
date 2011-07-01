@@ -21,12 +21,13 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
+ * Used by the {@link JournalStorageManager} to update the replicated journal.
+ * 
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public interface ReplicationManager extends HornetQComponent
 {
@@ -79,7 +80,7 @@ public interface ReplicationManager extends HornetQComponent
 
    /**
     * @param journalInfo
-    * @throws HornetQException 
+    * @throws HornetQException
     */
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
 

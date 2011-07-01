@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.management.MBeanServer;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -177,9 +176,5 @@ public interface HornetQServer extends HornetQComponent
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
-   /**
-    * @param connector
-    * @throws Exception
-    */
-   void addHaBackup(TransportConfiguration connector) throws Exception;
+   void addHaBackup(Channel channelX, Channel replicationChannel) throws Exception;
 }

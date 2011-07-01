@@ -53,7 +53,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
@@ -98,13 +97,12 @@ import org.hornetq.utils.Base64;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
-import org.hornetq.utils.UUID;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
- * 
+ *
  * A JournalStorageManager
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -155,15 +153,13 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
-   private UUID persistentID;
-
    private final BatchingIDGenerator idGenerator;
 
-   private final ReplicationManager replicator;
+   private ReplicationManager replicator;
 
-   private final Journal messageJournal;
+   private Journal messageJournal;
 
-   private final Journal bindingsJournal;
+   private Journal bindingsJournal;
 
    private final SequentialFileFactory largeMessagesFactory;
 
@@ -330,6 +326,17 @@ public class JournalStorageManager implements StorageManager
       return replicator != null;
    }
 
+   public void setReplicator(ReplicationManager replicationManager)
+   {
+      assert replicationManager != null;
+      replicator = replicationManager;
+      Journal localMessageJournal = messageJournal;
+      Journal localBindingsJournal = bindingsJournal;
+      bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
+      messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
+      // XXX HORNETQ-720 obviously missing here is the synchronization step.
+   }
+
    public void waitOnOperations() throws Exception
    {
       if (!started)
@@ -340,9 +347,6 @@ public class JournalStorageManager implements StorageManager
       waitOnOperations(0);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#blockOnReplication()
-    */
    public boolean waitOnOperations(final long timeout) throws Exception
    {
       if (!started)
@@ -756,11 +760,11 @@ public class JournalStorageManager implements StorageManager
          ref.setPersistedCount(ref.getDeliveryCount());
          DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getID(),
                                                                                   ref.getDeliveryCount());
-   
+
          messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                            JournalStorageManager.UPDATE_DELIVERY_COUNT,
                                            updateInfo,
-   
+
                                            syncNonTransactional,
                                            getContext(syncNonTransactional));
       }
@@ -1137,19 +1141,19 @@ public class JournalStorageManager implements StorageManager
 
             continue;
          }
-         
+
          // Redistribution could install a Redistributor while we are still loading records, what will be an issue with prepared ACKs
          // We make sure te Queue is paused before we reroute values.
          queue.pause();
 
          Collection<AddMessageRecord> valueRecords = queueRecords.values();
-         
+
          long currentTime = System.currentTimeMillis();
 
          for (AddMessageRecord record : valueRecords)
          {
             long scheduledDeliveryTime = record.scheduledDeliveryTime;
-            
+
             if (scheduledDeliveryTime != 0 && scheduledDeliveryTime <= currentTime)
             {
                scheduledDeliveryTime = 0;
@@ -1224,7 +1228,7 @@ public class JournalStorageManager implements StorageManager
       {
          messageJournal.perfBlast(perfBlastPages);
       }
-      
+
       for (Queue queue : queues.values())
       {
          queue.resume();
@@ -1442,7 +1446,7 @@ public class JournalStorageManager implements StorageManager
 
       return bindingsInfo;
    }
-   
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
@@ -2990,6 +2994,7 @@ public class JournalStorageManager implements StorageManager
          this.refEncoding = refEncoding;
       }
 
+      @Override
       public String toString()
       {
          return "AddRef;" + refEncoding;
@@ -3006,6 +3011,7 @@ public class JournalStorageManager implements StorageManager
          this.refEncoding = refEncoding;
       }
 
+      @Override
       public String toString()
       {
          return "ACK;" + refEncoding;
@@ -3022,6 +3028,7 @@ public class JournalStorageManager implements StorageManager
 
       Message msg;
 
+      @Override
       public String toString()
       {
          StringBuffer buffer = new StringBuffer();
