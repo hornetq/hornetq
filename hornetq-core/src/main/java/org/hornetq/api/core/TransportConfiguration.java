@@ -53,27 +53,6 @@ public class TransportConfiguration implements Serializable
    private static final byte TYPE_STRING = 3;
 
    /**
-    * Utility method for splitting a comma separated list of hosts
-    *
-    * @param commaSeparatedHosts the comma separated host string
-    * @return the hosts
-    */
-   public static String[] splitHosts(final String commaSeparatedHosts)
-   {
-      if (commaSeparatedHosts == null)
-      {
-         return new String[0];
-      }
-      String[] hosts = commaSeparatedHosts.split(",");
-
-      for (int i = 0; i < hosts.length; i++)
-      {
-         hosts[i] = hosts[i].trim();
-      }
-      return hosts;
-   }
-
-   /**
     * Creates a default TransportConfiguration with no configured transport.
     */
    public TransportConfiguration()
