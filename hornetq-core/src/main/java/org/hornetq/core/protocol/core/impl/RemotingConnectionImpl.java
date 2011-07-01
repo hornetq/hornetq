@@ -30,6 +30,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
@@ -71,11 +72,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final boolean client;
 
-   // Channels 0-9 are reserved for the system
-   // 0 is for pinging
-   // 1 is for session creation and attachment
-   // 2 is for replication
-   private volatile SimpleIDGenerator idGenerator = new SimpleIDGenerator(10);
+   private volatile SimpleIDGenerator idGenerator = new SimpleIDGenerator(CHANNEL_ID.USER.id);
 
    private boolean idGeneratorSynced = false;
 
@@ -83,18 +80,16 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final Object failLock = new Object();
 
-   private final PacketDecoder decoder = new PacketDecoder();
-
    private volatile boolean dataReceived;
 
    private final Executor executor;
-   
+
    private volatile boolean executing;
-   
+
    private final SimpleString nodeID;
 
    private final long creationTime;
-   
+
    private String clientID;
 
    // Constructors
@@ -139,9 +134,9 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.client = client;
 
       this.executor = executor;
-      
+
       this.nodeID = nodeID;
-      
+
       this.creationTime = System.currentTimeMillis();
    }
 
@@ -174,7 +169,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       return transportConnection.getRemoteAddress();
    }
-   
+
    public long getCreationTime()
    {
       return creationTime;
@@ -247,26 +242,26 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    public List<CloseListener> removeCloseListeners()
    {
       List<CloseListener> ret = new ArrayList<CloseListener>(closeListeners);
-      
+
       closeListeners.clear();
-      
+
       return ret;
    }
 
    public List<FailureListener> removeFailureListeners()
    {
       List<FailureListener> ret = new ArrayList<FailureListener>(failureListeners);
-      
+
       failureListeners.clear();
-      
-      return ret; 
+
+      return ret;
    }
 
    public void setCloseListeners(List<CloseListener> listeners)
    {
       closeListeners.clear();
-      
-      closeListeners.addAll(listeners);      
+
+      closeListeners.addAll(listeners);
    }
 
    public HornetQBuffer createBuffer(final int size)
@@ -323,7 +318,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
       callClosingListeners();
    }
-   
+
    public void disconnect()
    {
       Channel channel0 = getChannel(0, -1);
@@ -331,13 +326,13 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       // And we remove all channels from the connection, this ensures no more packets will be processed after this
       // method is
       // complete
-      
+
       Set<Channel> allChannels = new HashSet<Channel>(channels.values());
 
       removeAllChannels();
 
       // Now we are 100% sure that no more packets will be processed we can flush then send the disconnect
-      
+
       for (Channel channel: allChannels)
       {
          channel.flushConfirmations();
@@ -408,7 +403,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
          }
       }
    }
-   
+
    public void checkFlushBatchBuffer()
    {
       transportConnection.checkFlushBatchBuffer();
@@ -421,12 +416,12 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       try
       {
-         final Packet packet = decoder.decode(buffer);
-            
+         final Packet packet = PacketDecoder.decode(buffer);
+
          if (packet.isAsyncExec() && executor != null)
          {
             executing = true;
-   
+
             executor.execute(new Runnable()
             {
                public void run()
@@ -439,7 +434,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
                   {
                      RemotingConnectionImpl.log.error("Unexpected error", t);
                   }
-   
+
                   executing = false;
                }
             });
@@ -451,13 +446,13 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
             {
                Thread.yield();
             }
-            
+
             // Pings must always be handled out of band so we can send pings back to the client quickly
             // otherwise they would get in the queue with everything else which might give an intolerable delay
             doBufferReceived(packet);
          }
-        
-         dataReceived = true;  
+
+         dataReceived = true;
       }
       catch (Exception e)
       {
@@ -515,8 +510,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       {
          channels.clear();
       }
-   }  
-   
+   }
+
    private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
@@ -572,7 +567,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       clientID = cID;
    }
-   
+
    public String getClientID()
    {
       return clientID;

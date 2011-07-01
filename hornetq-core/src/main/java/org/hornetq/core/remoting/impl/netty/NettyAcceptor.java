@@ -32,7 +32,6 @@ import javax.net.ssl.SSLEngine;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
@@ -467,7 +466,7 @@ public class NettyAcceptor implements Acceptor
 
    private void startServerChannels()
    {
-      String[] hosts = TransportConfiguration.splitHosts(host);
+      String[] hosts = NettyAcceptor.splitHosts(host);
       for (String h : hosts)
       {
          SocketAddress address;
@@ -612,6 +611,27 @@ public class NettyAcceptor implements Acceptor
    }
 
    // Inner classes -----------------------------------------------------------------------------
+
+   /**
+    * Utility method for splitting a comma separated list of hosts
+    *
+    * @param commaSeparatedHosts the comma separated host string
+    * @return the hosts
+    */
+   public static String[] splitHosts(final String commaSeparatedHosts)
+   {
+      if (commaSeparatedHosts == null)
+      {
+         return new String[0];
+      }
+      String[] hosts = commaSeparatedHosts.split(",");
+   
+      for (int i = 0; i < hosts.length; i++)
+      {
+         hosts[i] = hosts[i].trim();
+      }
+      return hosts;
+   }
 
    private final class HornetQServerChannelHandler extends HornetQChannelHandler
    {

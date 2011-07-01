@@ -85,7 +85,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -158,14 +157,16 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
  * A PacketDecoder
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
-public class PacketDecoder
+public final class PacketDecoder
 {
-   private static final Logger log = Logger.getLogger(PacketDecoder.class);
 
-   public Packet decode(final HornetQBuffer in)
+   private PacketDecoder()
+   {
+      // Utility
+   }
+
+   public static Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
 
