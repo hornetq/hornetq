@@ -80,8 +80,6 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
 
    private final Object failLock = new Object();
 
-   private final PacketDecoder decoder = new PacketDecoder();
-
    private volatile boolean dataReceived;
 
    private final Executor executor;
@@ -418,7 +416,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    {
       try
       {
-         final Packet packet = decoder.decode(buffer);
+         final Packet packet = PacketDecoder.decode(buffer);
 
          if (packet.isAsyncExec() && executor != null)
          {
