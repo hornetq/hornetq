@@ -25,12 +25,10 @@ import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
-import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReattachSessionMessage;
@@ -114,25 +112,6 @@ public class HornetQPacketHandler implements ChannelHandler
             handleCreateReplication(request);
 
             break;
-         }
-         case PacketImpl.HA_BACKUP_REGISTRATION:
-         {
-            HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
-            System.out.println("HA_BACKUP_REGISTRATION: " + msg + " connector=" + msg.getConnector());
-            long channelID = msg.getChannelID();
-            Channel channelX = connection.getChannel(CHANNEL_ID.SESSION.id, -1);
-            Channel replicationChannel = connection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
-            System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
-            try
-            {
-               server.addHaBackup(channelX, replicationChannel);
-            }
-            catch (Exception e)
-            {
-               // XXX This is not what we want
-               e.printStackTrace();
-               throw new RuntimeException(e);
-            }
          }
          default:
          {

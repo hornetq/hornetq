@@ -158,14 +158,10 @@ public class CoreProtocolManager implements ProtocolManager
             {
                HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
                System.out.println("HA_BACKUP_REGISTRATION: " + msg + " connector=" + msg.getConnector());
-               long channelID = msg.getChannelID();
-               Channel channelX = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
-               Channel replicationChannel = rc.getChannel(CHANNEL_ID.REPLICATION.id, -1);
-               System.out.println("msg channelID: " + channelID);
                System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
                try
                {
-                  server.addHaBackup(channelX, replicationChannel);
+                  server.addHaBackup(rc);
                }
                catch (Exception e)
                {

@@ -81,6 +81,7 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -547,7 +548,7 @@ public class HornetQServerImpl implements HornetQServer
             }
             log.info("announce backup to live-server (id=" + liveConnectorName + ")");
             liveServerSessionFactory.getConnection()
-                                    .getChannel(CHANNEL_ID.SESSION.id, -1)
+                                    .getChannel(CHANNEL_ID.PING.id, -1)
                                     .send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
             log.info("backup registered");
 
@@ -1945,19 +1946,15 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public void addHaBackup(Channel systemChannel, Channel replicatingChannel) throws Exception
+   public void addHaBackup(CoreRemotingConnection rc) throws Exception
    {
       if (!(storageManager instanceof JournalStorageManager))
          return;
       JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
 
       System.out.println(HornetQServerImpl.class.getName() + " " + this.getIdentity() +
-               ": create a ReplicationManagerImpl. Using ChannelID=" + systemChannel);
-      // XXX not sure this is the right call to use
-//      final ServerLocatorInternal serverLocator =
-//               (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(connector);
-//      ClientSessionFactoryInternal sessionFactory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
-      replicationManager = new ReplicationManagerImpl(systemChannel, replicatingChannel);
+               ": create a ReplicationManagerImpl");
+      replicationManager = new ReplicationManagerImpl(rc);
       System.out.println("rep.start()");
       replicationManager.start();
 

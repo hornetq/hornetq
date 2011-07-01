@@ -83,7 +83,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private SessionFailureListener failureListener;
 
-   private final Channel systemChannel;
+   private CoreRemotingConnection remotingConnection;
 
    // Static --------------------------------------------------------
 
@@ -95,21 +95,16 @@ public class ReplicationManagerImpl implements ReplicationManager
       this.executorFactory = executorFactory;
 
       CoreRemotingConnection conn = sessionFactory.getConnection();
-      systemChannel = conn.getChannel(CHANNEL_ID.SESSION.id, -1);
       replicatingChannel = conn.getChannel(CHANNEL_ID.REPLICATION.id, -1);
    }
 
-   // Public --------------------------------------------------------
-
    /**
-    * @param systemChannel
-    * @param replicatingChannel
+    * @param remotingConnection
     */
-   public ReplicationManagerImpl(Channel systemChannel, Channel replicatingChannel)
+   public ReplicationManagerImpl(CoreRemotingConnection remotingConnection)
    {
-      super();
-      this.systemChannel = systemChannel;
-      this.replicatingChannel = replicatingChannel;
+      replicatingChannel = remotingConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+      this.remotingConnection = remotingConnection;
    }
 
    public void appendAddRecord(final byte journalID, final long id, final byte recordType, final EncodingSupport record)
@@ -314,19 +309,12 @@ public class ReplicationManagerImpl implements ReplicationManager
          throw new IllegalStateException("ReplicationManager is already started");
       }
 
-//      replicatingConnection = sessionFactory.getConnection();
-//
-//      if (replicatingConnection == null)
-//      {
-//         ReplicationManagerImpl.log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
-//         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-//                                    "Backup server MUST be started before live server. Initialisation will not proceed.");
-//      }
-
       replicatingChannel.setHandler(responseHandler);
 
       CreateReplicationSessionMessage replicationStartPackage =
                new CreateReplicationSessionMessage(replicatingChannel.getID());
+
+      Channel systemChannel = remotingConnection.getChannel(CHANNEL_ID.SESSION.id, -1);
 
       systemChannel.sendBlocking(replicationStartPackage);
 
@@ -358,10 +346,9 @@ public class ReplicationManagerImpl implements ReplicationManager
          {
          }
       };
-      // sessionFactory.addFailureListener(failureListener);
+      remotingConnection.addFailureListener(failureListener);
 
       started = true;
-
       enabled = true;
    }
 
@@ -397,15 +384,14 @@ public class ReplicationManagerImpl implements ReplicationManager
          replicatingChannel.close();
       }
 
+      remotingConnection.removeFailureListener(failureListener);
 //      sessionFactory.causeExit();
-//      sessionFactory.removeFailureListener(failureListener);
 //      if (replicatingConnection != null)
 //      {
 //         replicatingConnection.destroy();
 //      }
 //
-//      replicatingConnection = null;
-
+      remotingConnection = null;
       started = false;
    }
 

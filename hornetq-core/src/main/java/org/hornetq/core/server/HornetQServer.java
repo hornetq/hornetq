@@ -28,6 +28,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
@@ -176,5 +177,5 @@ public interface HornetQServer extends HornetQComponent
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
-   void addHaBackup(Channel channelX, Channel replicationChannel) throws Exception;
+   void addHaBackup(CoreRemotingConnection rc) throws Exception;
 }
