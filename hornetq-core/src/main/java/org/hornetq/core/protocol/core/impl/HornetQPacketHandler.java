@@ -40,7 +40,7 @@ import org.hornetq.core.version.Version;
 
 /**
  * A packet handler for all packets that need to be handled at the server level
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -129,9 +129,9 @@ public class HornetQPacketHandler implements ChannelHandler
          Version version = server.getVersion();
          int[] compatibleList = version.getCompatibleVersionList();
          boolean isCompatibleClient = false;
-         for (int i = 0; i < compatibleList.length; i++)
+         for (int element : compatibleList)
          {
-            if (compatibleList[i] == request.getVersion())
+            if (element == request.getVersion())
             {
                isCompatibleClient = true;
                break;
@@ -194,7 +194,7 @@ public class HornetQPacketHandler implements ChannelHandler
       catch (HornetQException e)
       {
          log.error("Failed to create session ", e);
-         response = new HornetQExceptionMessage((HornetQException)e);
+         response = new HornetQExceptionMessage(e);
 
          if (e.getCode() == HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS)
          {
@@ -251,7 +251,7 @@ public class HornetQPacketHandler implements ChannelHandler
                // Even though session exists, we can't reattach since confi window size == -1,
                // i.e. we don't have a resend cache for commands, so we just close the old session
                // and let the client recreate
-               
+
                log.warn("Reattach request from " + connection.getRemoteAddress() + " failed as there is no confirmationWindowSize configured, which may be ok for your system");
 
                sessionHandler.closeListeners();
