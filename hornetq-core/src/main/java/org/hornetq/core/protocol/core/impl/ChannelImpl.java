@@ -37,9 +37,33 @@ import org.hornetq.core.protocol.core.impl.wireformat.PacketsConfirmedMessage;
  */
 public class ChannelImpl implements Channel
 {
+   public enum CHANNEL_ID {
+
+      /**
+       * Used for core protocol management.
+       * @see CoreProtocolManager
+       */
+      PING(0),
+      /** Session creation and attachment. */
+      SESSION(1),
+      /** Replication, i.e. for backups that do not share the journal. */
+      REPLICATION(2),
+      /**
+       * Channels [0-9] are reserved for the system, user channels must be greater than that.
+       */
+      USER(10);
+
+      public final long id;
+
+      CHANNEL_ID(long id)
+      {
+         this.id = id;
+      }
+   }
+
    private static final Logger log = Logger.getLogger(ChannelImpl.class);
 
-   private volatile long id;
+   private final long id;
 
    private ChannelHandler handler;
 
@@ -336,7 +360,7 @@ public class ChannelImpl implements Channel
 
          // And switch it
 
-         final CoreRemotingConnection rnewConnection = (CoreRemotingConnection)newConnection;
+         final CoreRemotingConnection rnewConnection = newConnection;
 
          rnewConnection.putChannel(id, this);
 
