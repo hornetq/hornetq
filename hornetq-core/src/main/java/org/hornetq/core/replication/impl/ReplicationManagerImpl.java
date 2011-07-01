@@ -316,7 +316,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       Channel systemChannel = remotingConnection.getChannel(CHANNEL_ID.SESSION.id, -1);
 
-      systemChannel.sendBlocking(replicationStartPackage);
+      systemChannel.send(replicationStartPackage);
 
       failureListener = new SessionFailureListener()
       {
