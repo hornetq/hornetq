@@ -317,41 +317,41 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private synchronized void initialise() throws Exception
    {
-      if (!readOnly)
+      if (readOnly)
       {
-         setThreadPools();
+         return;
+      }
 
-         instantiateLoadBalancingPolicy();
+      setThreadPools();
+      instantiateLoadBalancingPolicy();
 
-         if (discoveryGroupConfiguration != null)
+      if (discoveryGroupConfiguration != null)
+      {
+         InetAddress groupAddress = InetAddress.getByName(discoveryGroupConfiguration.getGroupAddress());
+         InetAddress lbAddress;
+
+         if (discoveryGroupConfiguration.getLocalBindAddress() != null)
          {
-            InetAddress groupAddress = InetAddress.getByName(discoveryGroupConfiguration.getGroupAddress());
-
-            InetAddress lbAddress;
-
-            if (discoveryGroupConfiguration.getLocalBindAddress() != null)
-            {
-               lbAddress = InetAddress.getByName(discoveryGroupConfiguration.getLocalBindAddress());
-            }
-            else
-            {
-               lbAddress = null;
-            }
-
-            discoveryGroup = new DiscoveryGroupImpl(nodeID,
-                                                    discoveryGroupConfiguration.getName(),
-                                                    lbAddress,
-                                                    groupAddress,
-                                                    discoveryGroupConfiguration.getGroupPort(),
-                                                    discoveryGroupConfiguration.getRefreshTimeout());
-
-            discoveryGroup.registerListener(this);
-
-            discoveryGroup.start();
+            lbAddress = InetAddress.getByName(discoveryGroupConfiguration.getLocalBindAddress());
+         }
+         else
+         {
+            lbAddress = null;
          }
 
-         readOnly = true;
+         discoveryGroup =
+                  new DiscoveryGroupImpl(nodeID,
+                                         discoveryGroupConfiguration.getName(),
+                                         lbAddress,
+                                         groupAddress,
+                                         discoveryGroupConfiguration.getGroupPort(),
+                                         discoveryGroupConfiguration.getRefreshTimeout());
+
+         discoveryGroup.registerListener(this);
+         discoveryGroup.start();
       }
+
+      readOnly = true;
    }
 
    private ServerLocatorImpl(final boolean useHA,

@@ -1954,11 +1954,10 @@ public class HornetQServerImpl implements HornetQServer
 
       System.out.println(HornetQServerImpl.class.getName() + " " + this.getIdentity() +
                ": create a ReplicationManagerImpl");
-      replicationManager = new ReplicationManagerImpl(rc);
-      System.out.println("rep.start()");
+      replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();
 
-      System.out.println("add RepMan to JournalStorageManager...");
       journalStorageManager.setReplicator(replicationManager);
+      System.out.println("HornetQServerImpl: ReplicationManagerImpl is started & added to JournalStorageManager...");
    }
 }

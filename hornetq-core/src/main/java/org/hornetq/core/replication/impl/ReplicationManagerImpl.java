@@ -79,7 +79,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
 
-   private ExecutorFactory executorFactory;
+   private final ExecutorFactory executorFactory;
 
    private SessionFailureListener failureListener;
 
@@ -89,7 +89,10 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Constructors --------------------------------------------------
 
-   public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory, final ExecutorFactory executorFactory)
+   // XXX remove constructor once the other one is stable
+   @Deprecated
+   public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory,
+                                 final ExecutorFactory executorFactory)
    {
       super();
       this.executorFactory = executorFactory;
@@ -101,8 +104,9 @@ public class ReplicationManagerImpl implements ReplicationManager
    /**
     * @param remotingConnection
     */
-   public ReplicationManagerImpl(CoreRemotingConnection remotingConnection)
+   public ReplicationManagerImpl(CoreRemotingConnection remotingConnection, final ExecutorFactory executorFactory)
    {
+      this.executorFactory = executorFactory;
       replicatingChannel = remotingConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
       this.remotingConnection = remotingConnection;
    }
