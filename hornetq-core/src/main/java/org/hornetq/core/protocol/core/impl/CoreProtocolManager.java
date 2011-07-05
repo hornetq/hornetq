@@ -163,7 +163,7 @@ public class CoreProtocolManager implements ProtocolManager
                   throw new RuntimeException(e);
                }
                server.getClusterManager().notifyNodeUp(msg.getNodeID(),
-                                                       getPairForNotification(msg.getConnector(), true), false, true);
+                                                       getPairForNotification(msg.getConnector(), true), true, true);
             }
          }
 
