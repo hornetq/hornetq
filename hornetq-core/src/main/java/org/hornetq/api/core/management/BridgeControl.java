@@ -13,12 +13,13 @@
 
 package org.hornetq.api.core.management;
 
+import org.hornetq.core.server.cluster.Bridge;
+
 
 /**
  * A BridgeControl is used to manage a Bridge.
- *
+ * @see Bridge
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public interface BridgeControl extends HornetQComponentControl
 {
@@ -76,9 +77,9 @@ public interface BridgeControl extends HornetQComponentControl
     * Returns whether this bridge is using duplicate detection.
     */
    boolean isUseDuplicateDetection();
-   
+
    /**
-    * Returns whether this bridge is using high availability    
+    * Returns whether this bridge is using high availability
     */
    boolean isHA();
 }

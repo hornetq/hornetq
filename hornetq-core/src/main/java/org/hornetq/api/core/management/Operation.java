@@ -23,7 +23,7 @@ import javax.management.MBeanOperationInfo;
 
 /**
  * Info for a MBean Operation.
- * <b>
+ * <p>
  * This annotation is used only for methods which can be invoked
  * through a GUI.
  * 

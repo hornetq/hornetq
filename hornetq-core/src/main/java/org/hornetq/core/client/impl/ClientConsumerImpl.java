@@ -17,7 +17,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
 
-import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
