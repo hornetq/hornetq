@@ -143,16 +143,9 @@ public class CoreProtocolManager implements ProtocolManager
             {
                NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
-               Pair<TransportConfiguration, TransportConfiguration> pair;
-               if (msg.isBackup())
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
-               }
-               else
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
-               }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(),
+                                                       getPairForNotification(msg.getConnector(), msg.isBackup()),
+                                                       false, true);
             }
             else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
             {
@@ -169,7 +162,20 @@ public class CoreProtocolManager implements ProtocolManager
                   e.printStackTrace();
                   throw new RuntimeException(e);
                }
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(),
+                                                       getPairForNotification(msg.getConnector(), true), false, true);
             }
+         }
+
+         private
+                  Pair<TransportConfiguration, TransportConfiguration>
+                  getPairForNotification(TransportConfiguration conn, boolean isBackup)
+         {
+            if (isBackup)
+            {
+               return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
+            }
+            return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
          }
       });
 
@@ -178,12 +184,12 @@ public class CoreProtocolManager implements ProtocolManager
       return entry;
    }
 
-   public ServerSessionPacketHandler getSessionHandler(final String sessionName)
+   ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
       return sessionHandlers.get(sessionName);
    }
 
-   public void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
+   void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
    {
       sessionHandlers.put(name, handler);
    }
