@@ -162,6 +162,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected void createReplicatedConfigs() throws Exception
    {
+      nodeManager = new InVMNodeManager();
+
       Configuration config1 = super.createDefaultConfig();
       config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
       config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");

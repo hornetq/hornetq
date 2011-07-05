@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.server.impl.InVMNodeManager;
 
 /**
  * A ReplicatedFailoverTest
@@ -40,20 +39,8 @@ public class ReplicatedFailoverTest extends FailoverTest
    // Protected -----------------------------------------------------
 
    @Override
-   protected void setUp() throws Exception
-   {
-      nodeManager = new InVMNodeManager();
-      super.setUp();
-   }
-
-   @Override
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
