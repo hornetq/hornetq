@@ -16,20 +16,20 @@ package org.hornetq.api.core.client;
 import org.hornetq.api.core.Message;
 
 /**
- * A SendAcknowledgementHandler notifies a client when an message sent asynchronously has been received by the server.
- * <br />
- * If the session is not blocking when sending durable or non-durable messages, the session can
- * set a SendAcknowledgementHandler to be notified later when the messages
- * has been received by the server. The method {@code sendAcknowledged} will be called with the message that
- * was sent asynchronously.
- *
+ * A SendAcknowledgementHandler notifies a client when an message sent asynchronously has been
+ * received by the server.
+ * <p>
+ * If the session is not blocking when sending durable or non-durable messages, the session can set
+ * a SendAcknowledgementHandler to be notified later when the messages has been received by the
+ * server. The method {@link #sendAcknowledged(Message)} will be called with the message that was
+ * sent asynchronously.
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface SendAcknowledgementHandler
 {
    /**
     * Notifies the client that a message sent asynchronously has been received by the server.
-    * 
+    *
     * @param message message sent asynchronously
     */
    void sendAcknowledged(Message message);
