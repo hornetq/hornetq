@@ -663,7 +663,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                start = now;
             }
 
-            if (toWait <= 0)
+            if (!receivedTopology)
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                           "Timed out waiting to receive cluster topology");
