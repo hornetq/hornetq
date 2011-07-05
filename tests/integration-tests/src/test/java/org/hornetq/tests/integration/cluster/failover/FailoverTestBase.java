@@ -121,6 +121,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
       return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
    }
 
+   private ClusterConnectionConfiguration createClusterConnectionConf(String name, String... connectors)
+   {
+      List<String> conn = new ArrayList<String>(connectors.length);
+      for (String iConn : connectors)
+      {
+         conn.add(iConn);
+      }
+      return new ClusterConnectionConfiguration("cluster1", "jms", name, -1, false, false, 1, 1, conn, false);
+   }
+
    /**
     * @throws Exception
     */
@@ -139,11 +149,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
-            staticConnectors, false);
-      backupConfig.getClusterConfigurations().add(cccLive);
+      backupConfig.getClusterConfigurations().add(createClusterConnectionConf(backupConnector.getName(),
+                                                                              liveConnector.getName()));
       backupServer = createBackupServer();
 
       liveConfig = super.createDefaultConfig();
@@ -152,10 +159,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      List<String> pairs = null;
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-            pairs, false);
-      liveConfig.getClusterConfigurations().add(ccc0);
+      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(liveConnector.getName()));
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createLiveServer();
    }
@@ -164,34 +168,39 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       nodeManager = new InVMNodeManager();
 
-      Configuration config1 = super.createDefaultConfig();
-      config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
-      config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");
-      config1.setPagingDirectory(config1.getPagingDirectory() + "_backup");
-      config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_backup");
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.getConnectorConfigurations().put(LIVE_NODE_NAME, getConnectorTransportConfiguration(true));
+      backupConfig = super.createDefaultConfig();
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + "_backup");
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + "_backup");
+      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + "_backup");
+      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + "_backup");
+      backupConfig.getAcceptorConfigurations().clear();
+      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
+      TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
+      TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+      // probably not necessary...
+      backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
+      backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
+      backupConfig.getClusterConfigurations()
+                  .add(createClusterConnectionConf(backupConnector.getName(), LIVE_NODE_NAME));
+      backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, getConnectorTransportConfiguration(true));
 
-      //liveConfig.setBackupConnectorName("toBackup");
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(false);
-      config1.setBackup(true);
-      config1.setLiveConnectorName(LIVE_NODE_NAME);
-      config1.setClustered(true);
-      backupConfig = config1;
+      backupConfig.setSecurityEnabled(false);
+      backupConfig.setSharedStore(false);
+      backupConfig.setBackup(true);
+      backupConfig.setLiveConnectorName(LIVE_NODE_NAME);
+      backupConfig.setClustered(true);
 
       backupServer = createBackupServer();
       backupServer.getServer().setIdentity("id_backup");
 
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-      config0.setName(LIVE_NODE_NAME);
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(false);
-      config0.setClustered(true);
-      liveConfig = config0;
+      liveConfig = super.createDefaultConfig();
+      liveConfig.getAcceptorConfigurations().clear();
+      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
+      liveConfig.setName(LIVE_NODE_NAME);
+      liveConfig.setSecurityEnabled(false);
+      liveConfig.setSharedStore(false);
+      liveConfig.setClustered(true);
+      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(liveConnector.getName()));
       liveServer = createLiveServer();
       liveServer.getServer().setIdentity("id_live");
 
@@ -203,15 +212,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       backupServer.stop();
-
       liveServer.stop();
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
       backupServer = null;
-
       liveServer = null;
-
       nodeManager = null;
 
       InVMConnector.failOnCreateConnection = false;

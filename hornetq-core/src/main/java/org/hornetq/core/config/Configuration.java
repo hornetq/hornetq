@@ -341,6 +341,9 @@ public interface Configuration extends Serializable
 
    /**
     * Returns the cluster connections configured for this server.
+    * <p>
+    * Modifying the returned list will modify the list of {@link ClusterConnectionConfiguration}
+    * used by this configuration.
     */
    List<ClusterConnectionConfiguration> getClusterConfigurations();
 
