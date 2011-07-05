@@ -48,9 +48,9 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A FailoverTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -2424,7 +2424,7 @@ public class FailoverTest extends FailoverTestBase
    /**
     * @param i
     * @param message
-    * @throws Exception 
+    * @throws Exception
     */
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {

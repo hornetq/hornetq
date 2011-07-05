@@ -176,6 +176,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSharedStore(false);
       config1.setBackup(true);
       config1.setLiveConnectorName(LIVE_NODE_NAME);
+      config1.setClustered(true);
       backupConfig = config1;
 
       backupServer = createBackupServer();
@@ -187,6 +188,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config0.setName(LIVE_NODE_NAME);
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
+      config0.setClustered(true);
       liveConfig = config0;
       liveServer = createLiveServer();
       liveServer.getServer().setIdentity("id_live");
@@ -245,8 +247,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
-      boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
-      assertTrue(ok);
+      assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
       return sf;
    }
 
