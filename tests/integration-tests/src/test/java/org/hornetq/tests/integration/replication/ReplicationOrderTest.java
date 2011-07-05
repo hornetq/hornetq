@@ -19,7 +19,13 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -127,25 +133,25 @@ public class ReplicationOrderTest extends FailoverTestBase
    }
 
    @Override
-   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
+   protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      Map<String, Object> server1Params = new HashMap<String, Object>();
-      if (!live)
-      {
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      }
-      return new TransportConfiguration(InVMAcceptorFactory.class.getName(), server1Params);
+      return createTransportConfiguration(InVMConnectorFactory.class.getName(), live);
    }
 
    @Override
-   protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
+   protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      Map<String, Object> server1Params = new HashMap<String, Object>();
+      return createTransportConfiguration(InVMAcceptorFactory.class.getName(), live);
+   }
+
+   private static TransportConfiguration createTransportConfiguration(String name, final boolean live)
+   {
+      Map<String, Object> serverParams = new HashMap<String, Object>();
       if (!live)
       {
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
+         serverParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       }
-      return new TransportConfiguration(InVMConnectorFactory.class.getName(), server1Params);
+      return new TransportConfiguration(name, serverParams);
    }
 
 }

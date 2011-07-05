@@ -286,57 +286,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
    }
 
-   protected void waitForBackup(long seconds)
-   {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (!backupServer.isInitialised())
-      {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            //ignore
-         }
-         if (backupServer.isInitialised())
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started");
-         }
-      }
-   }
-
-   protected void waitForBackup(long seconds, TestableServer server)
-   {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (!server.isInitialised())
-      {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            //ignore
-         }
-         if (server.isInitialised())
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("server never started");
-         }
-      }
-   }
-
-
    protected TransportConfiguration getInVMConnectorTransportConfiguration(final boolean live)
    {
       if (live)
