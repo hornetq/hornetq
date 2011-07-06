@@ -546,11 +546,14 @@ public class HornetQServerImpl implements HornetQServer
                // XXX
                throw new RuntimeException("Need to retry...");
             }
-            log.info("announce backup to live-server (id=" + liveConnectorName + ")");
+            CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
+            Channel liveChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
+            liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
+            liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1).setHandler(replicationEndpoint);
+
             liveServerSessionFactory.getConnection()
                                     .getChannel(CHANNEL_ID.PING.id, -1)
                                     .send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
-            log.info("backup registered");
 
             started = true;
 
@@ -1952,8 +1955,6 @@ public class HornetQServerImpl implements HornetQServer
          return;
       JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
 
-      System.out.println(HornetQServerImpl.class.getName() + " " + this.getIdentity() +
-               ": create a ReplicationManagerImpl");
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();
 
