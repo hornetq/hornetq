@@ -35,7 +35,6 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
@@ -314,42 +313,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
 
       replicatingChannel.setHandler(responseHandler);
-
-      CreateReplicationSessionMessage replicationStartPackage =
-               new CreateReplicationSessionMessage(replicatingChannel.getID());
-
-      Channel systemChannel = remotingConnection.getChannel(CHANNEL_ID.SESSION.id, -1);
-
-      systemChannel.send(replicationStartPackage);
-
-      failureListener = new SessionFailureListener()
-      {
-         public void connectionFailed(final HornetQException me, boolean failedOver)
-         {
-            if (me.getCode() == HornetQException.DISCONNECTED)
-            {
-               // Backup has shut down - no need to log a stack trace
-               ReplicationManagerImpl.log.warn("The backup node has been shut-down, replication will now stop");
-            }
-            else
-            {
-               ReplicationManagerImpl.log.warn("Connection to the backup node failed, removing replication now", me);
-            }
-
-            try
-            {
-               stop();
-            }
-            catch (Exception e)
-            {
-               ReplicationManagerImpl.log.warn(e.getMessage(), e);
-            }
-         }
-
-         public void beforeReconnect(final HornetQException me)
-         {
-         }
-      };
+      failureListener = new ReplicatedSessionFailureListener();
       remotingConnection.addFailureListener(failureListener);
 
       started = true;
@@ -486,7 +450,36 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Inner classes -------------------------------------------------
 
-   protected class ResponseHandler implements ChannelHandler
+   private final class ReplicatedSessionFailureListener implements SessionFailureListener
+   {
+      public void connectionFailed(final HornetQException me, boolean failedOver)
+      {
+         if (me.getCode() == HornetQException.DISCONNECTED)
+         {
+            // Backup has shut down - no need to log a stack trace
+            ReplicationManagerImpl.log.warn("The backup node has been shut-down, replication will now stop");
+         }
+         else
+         {
+            ReplicationManagerImpl.log.warn("Connection to the backup node failed, removing replication now", me);
+         }
+
+         try
+         {
+            stop();
+         }
+         catch (Exception e)
+         {
+            ReplicationManagerImpl.log.warn(e.getMessage(), e);
+         }
+      }
+
+      public void beforeReconnect(final HornetQException me)
+      {
+      }
+   }
+
+   private class ResponseHandler implements ChannelHandler
    {
       /* (non-Javadoc)
        * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
