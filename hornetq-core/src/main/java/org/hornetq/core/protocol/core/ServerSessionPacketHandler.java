@@ -54,7 +54,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.exception.HornetQXAException;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
@@ -121,7 +120,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    private final Channel channel;
 
    private volatile CoreRemotingConnection remotingConnection;
-   
+
    private final boolean direct;
 
    public ServerSessionPacketHandler(final ServerSession session,
@@ -135,10 +134,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
       this.channel = channel;
 
       this.remotingConnection = channel.getConnection();
-      
+
       //TODO think of a better way of doing this
       Connection conn = remotingConnection.getTransportConnection();
-      
+
       if (conn instanceof NettyConnection)
       {
          direct = ((NettyConnection)conn).isDirectDeliver();
@@ -188,7 +187,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       return channel;
    }
-   
+
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
@@ -199,7 +198,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
       boolean flush = false;
       boolean closeChannel = false;
       boolean requiresResponse = false;
-      
+
       try
       {
          try
@@ -207,8 +206,8 @@ public class ServerSessionPacketHandler implements ChannelHandler
             switch (type)
             {
                case SESS_CREATECONSUMER:
-               {                  
-                  SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet; 
+               {
+                  SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
                   requiresResponse = request.isRequiresResponse();
                   session.createConsumer(request.getID(),
                                          request.getQueueName(),
@@ -217,7 +216,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   if (requiresResponse)
                   {
                      // We send back queue information on the queue as a response- this allows the queue to
-                     // be automaticall recreated on failover
+                     // be automatically recreated on failover
                      response = new SessionQueueQueryResponseMessage(session.executeQueueQuery(request.getQueueName()));
                   }
 
@@ -239,7 +238,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
                   break;
                }
                case DELETE_QUEUE:
-               {                  
+               {
                   requiresResponse = true;
                   SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
                   session.deleteQueue(request.getQueueName());
@@ -507,7 +506,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          {
             if (requiresResponse)
             {
-               response = new HornetQExceptionMessage((HornetQException)e);
+               response = new HornetQExceptionMessage(e);
             }
             else
             {
@@ -586,11 +585,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
          channel.close();
       }
    }
-   
+
    public void closeListeners()
    {
       List<CloseListener> listeners = remotingConnection.removeCloseListeners();
-      
+
       for (CloseListener closeListener: listeners)
       {
          closeListener.connectionClosed();
@@ -600,7 +599,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          }
       }
    }
-   
+
    public int transferConnection(final CoreRemotingConnection newConnection, final int lastReceivedCommandID)
    {
       // We need to disable delivery on all the consumers while the transfer is occurring- otherwise packets might get
@@ -611,10 +610,10 @@ public class ServerSessionPacketHandler implements ChannelHandler
       // might be executed
       // before we have transferred the connection, leaving it in a started state
       session.setTransferring(true);
-            
+
       List<CloseListener> closeListeners = remotingConnection.removeCloseListeners();
       List<FailureListener> failureListeners = remotingConnection.removeFailureListeners();
-      
+
       // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
       // then the connection will get cleaned up anyway when the server ping timeout kicks in.
       // In the case the live server is really still up, i.e. a split brain situation (or in tests), then closing

@@ -149,8 +149,6 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
             {
                HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
-               System.out.println("HA_BACKUP_REGISTRATION: " + msg + " connector=" + msg.getConnector());
-               System.out.println("HA_BR: " + server.getIdentity() + ", toString=" + server);
                try
                {
                   server.addHaBackup(rc);

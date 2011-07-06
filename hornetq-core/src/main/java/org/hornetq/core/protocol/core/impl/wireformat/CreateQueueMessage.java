@@ -40,7 +40,7 @@ public class CreateQueueMessage extends PacketImpl
    private boolean durable;
 
    private boolean temporary;
-   
+
    private boolean requiresResponse;
 
    // Static --------------------------------------------------------
@@ -108,7 +108,7 @@ public class CreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
-   
+
    public boolean isRequiresResponse()
    {
       return requiresResponse;

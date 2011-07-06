@@ -309,17 +309,14 @@ public class HornetQPacketHandler implements ChannelHandler
 
          response = new NullResponseMessage();
       }
+      catch (HornetQException e)
+      {
+            response = new HornetQExceptionMessage(e);
+      }
       catch (Exception e)
       {
-         if (e instanceof HornetQException)
-         {
-            response = new HornetQExceptionMessage((HornetQException)e);
-         }
-         else
-         {
-            HornetQPacketHandler.log.warn(e.getMessage(), e);
-            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
-         }
+         HornetQPacketHandler.log.warn(e.getMessage(), e);
+         response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
 
       channel1.send(response);

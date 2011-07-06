@@ -76,7 +76,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final HornetQServer server;
 
    private Channel channel;
-   
+
    private Journal[] journals;
 
    private JournalStorageManager storage;
@@ -99,14 +99,14 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    }
 
    // Public --------------------------------------------------------
-   
+
    public void registerJournal(final byte id, final Journal journal)
    {
       if (journals == null || id >= journals.length)
       {
          Journal[] oldJournals = journals;
          journals = new Journal[id + 1];
-         
+
          if (oldJournals != null)
          {
             for (int i = 0 ; i < oldJournals.length; i++)
@@ -115,11 +115,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             }
          }
       }
-      
+
       journals[id] = journal;
    }
-   
-   /* 
+
+   /*
     * (non-Javadoc)
     * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
     */
@@ -266,7 +266,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
 
       largeMessages.clear();
-      
+
       pageManager.stop();
    }
 
