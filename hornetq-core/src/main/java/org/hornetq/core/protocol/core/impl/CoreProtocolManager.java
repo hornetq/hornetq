@@ -143,8 +143,7 @@ public class CoreProtocolManager implements ProtocolManager
             {
                NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(),
-                                                       getPairForNotification(msg.getConnector(), msg.isBackup()),
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), msg.isBackup()),
                                                        false, true);
             }
             else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
@@ -162,14 +161,12 @@ public class CoreProtocolManager implements ProtocolManager
                   e.printStackTrace();
                   throw new RuntimeException(e);
                }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(),
-                                                       getPairForNotification(msg.getConnector(), true), true, true);
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), true), true, true);
             }
          }
 
-         private
-                  Pair<TransportConfiguration, TransportConfiguration>
-                  getPairForNotification(TransportConfiguration conn, boolean isBackup)
+         private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
+                                                                              boolean isBackup)
          {
             if (isBackup)
             {
