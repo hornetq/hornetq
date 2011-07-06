@@ -126,54 +126,55 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    public void handlePacket(final Packet packet)
    {
       PacketImpl response = new ReplicationResponseMessage();
+      final byte type=packet.getType();
 
       try
       {
-         if (packet.getType() == PacketImpl.REPLICATION_APPEND)
+         if (type == PacketImpl.REPLICATION_APPEND)
          {
             handleAppendAddRecord((ReplicationAddMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_APPEND_TX)
+         else if (type == PacketImpl.REPLICATION_APPEND_TX)
          {
             handleAppendAddTXRecord((ReplicationAddTXMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_DELETE)
+         else if (type == PacketImpl.REPLICATION_DELETE)
          {
             handleAppendDelete((ReplicationDeleteMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_DELETE_TX)
+         else if (type == PacketImpl.REPLICATION_DELETE_TX)
          {
             handleAppendDeleteTX((ReplicationDeleteTXMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_PREPARE)
+         else if (type == PacketImpl.REPLICATION_PREPARE)
          {
             handlePrepare((ReplicationPrepareMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
+         else if (type == PacketImpl.REPLICATION_COMMIT_ROLLBACK)
          {
             handleCommitRollback((ReplicationCommitMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_PAGE_WRITE)
+         else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
          {
             handlePageWrite((ReplicationPageWriteMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_PAGE_EVENT)
+         else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
          {
             handlePageEvent((ReplicationPageEventMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
          {
             handleLargeMessageBegin((ReplicationLargeMessageBeingMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE)
          {
             handleLargeMessageWrite((ReplicationLargeMessageWriteMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
+         else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
          {
             handleLargeMessageEnd((ReplicationLargemessageEndMessage)packet);
          }
-         else if (packet.getType() == PacketImpl.REPLICATION_COMPARE_DATA)
+         else if (type == PacketImpl.REPLICATION_COMPARE_DATA)
          {
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
@@ -183,10 +184,15 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             ReplicationEndpointImpl.log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
          }
       }
+      catch (HornetQException e)
+      {
+         log.warn(e.getMessage(), e);
+         response = new HornetQExceptionMessage(e);
+      }
       catch (Exception e)
       {
-         ReplicationEndpointImpl.log.warn(e.getMessage(), e);
-         response = new HornetQExceptionMessage((HornetQException)e);
+         log.warn(e.getMessage(), e);
+         throw new RuntimeException(e);
       }
 
       channel.send(response);
@@ -616,7 +622,4 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       return this.journals[journalID];
    }
-
-   // Inner classes -------------------------------------------------
-
 }

@@ -144,11 +144,14 @@ public class HornetQServerImpl implements HornetQServer
 
    private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
 
-   // JMS Topics (which are outside of the scope of the core API) will require a dumb subscription with a dummy-filter at this current version
-   // as a way to keep its existence valid and TCK tests
-   // That subscription needs an invalid filter, however paging needs to ignore any subscription with this filter.
-   // For that reason, this filter needs to be rejected on paging or any other component on the system, and just be ignored for any purpose
-   // It's declared here as this filter is considered a global ignore
+   /*
+    * JMS Topics (which are outside of the scope of the core API) will require a dumb subscription
+    * with a dummy-filter at this current version as a way to keep its existence valid and TCK
+    * tests. That subscription needs an invalid filter, however paging needs to ignore any
+    * subscription with this filter. For that reason, this filter needs to be rejected on paging or
+    * any other component on the system, and just be ignored for any purpose It's declared here as
+    * this filter is considered a global ignore
+    */
    public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
    // Static
@@ -551,9 +554,7 @@ public class HornetQServerImpl implements HornetQServer
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
             liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1).setHandler(replicationEndpoint);
 
-            liveServerSessionFactory.getConnection()
-                                    .getChannel(CHANNEL_ID.PING.id, -1)
-                                    .send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
+            liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
 
             started = true;
 
@@ -1196,15 +1197,6 @@ public class HornetQServerImpl implements HornetQServer
    {
       return connectorsService;
    }
-
-   // Public
-   // ---------------------------------------------------------------------------------------
-
-   // Package protected
-   // ----------------------------------------------------------------------------
-
-   // Protected
-   // ------------------------------------------------------------------------------------
 
    /**
     * Protected so tests can change this behaviour
@@ -1959,6 +1951,5 @@ public class HornetQServerImpl implements HornetQServer
       replicationManager.start();
 
       journalStorageManager.setReplicator(replicationManager);
-      System.out.println("HornetQServerImpl: ReplicationManagerImpl is started & added to JournalStorageManager...");
    }
 }

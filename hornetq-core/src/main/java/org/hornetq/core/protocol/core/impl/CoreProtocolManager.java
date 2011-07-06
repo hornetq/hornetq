@@ -142,9 +142,9 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
             {
                NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
-
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), msg.isBackup()),
-                                                       false, true);
+               final boolean backup = msg.isBackup();
+               server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), backup), backup,
+                                                       true);
             }
             else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
             {

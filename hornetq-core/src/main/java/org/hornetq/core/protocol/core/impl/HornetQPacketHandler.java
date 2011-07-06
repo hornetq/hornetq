@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl;
 
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_REPLICATION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.api.core.HornetQException;
@@ -103,7 +102,7 @@ public class HornetQPacketHandler implements ChannelHandler
 
             break;
          }
-         case CREATE_REPLICATION:
+         case PacketImpl.CREATE_REPLICATION:
          {
             // Create queue can also be fielded here in the case of a replicated store and forward queue creation
 
@@ -115,7 +114,7 @@ public class HornetQPacketHandler implements ChannelHandler
          }
          default:
          {
-            HornetQPacketHandler.log.error("Invalid packet " + packet);
+            log.error("Invalid packet " + packet);
          }
       }
    }
@@ -205,7 +204,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          log.error("Failed to create session ", e);
 
-         HornetQPacketHandler.log.error("Failed to create session", e);
+         log.error("Failed to create session", e);
 
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
@@ -271,7 +270,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         HornetQPacketHandler.log.error("Failed to reattach session", e);
+         log.error("Failed to reattach session", e);
 
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
@@ -291,7 +290,7 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (Exception e)
       {
-         HornetQPacketHandler.log.error("Failed to handle create queue", e);
+         log.error("Failed to handle create queue", e);
       }
    }
 
@@ -311,11 +310,11 @@ public class HornetQPacketHandler implements ChannelHandler
       }
       catch (HornetQException e)
       {
-            response = new HornetQExceptionMessage(e);
+         response = new HornetQExceptionMessage(e);
       }
       catch (Exception e)
       {
-         HornetQPacketHandler.log.warn(e.getMessage(), e);
+         log.warn(e.getMessage(), e);
          response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
       }
 

@@ -54,7 +54,7 @@ public class CreateQueueMessage extends PacketImpl
                              final boolean temporary,
                              final boolean requiresResponse)
    {
-      super(PacketImpl.CREATE_QUEUE);
+      this();
 
       this.address = address;
       this.queueName = queueName;
