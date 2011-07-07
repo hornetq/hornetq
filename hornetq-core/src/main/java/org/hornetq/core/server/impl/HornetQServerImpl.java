@@ -553,6 +553,7 @@ public class HornetQServerImpl implements HornetQServer
             Channel liveChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
             liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1).setHandler(replicationEndpoint);
+            replicationEndpoint.start();
 
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
 
@@ -565,6 +566,7 @@ public class HornetQServerImpl implements HornetQServer
 
             // XXX this really belongs to this point?
             initialisePart2();
+
 
             configuration.setBackup(false);
 
