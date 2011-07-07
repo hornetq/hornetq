@@ -66,12 +66,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Attributes ----------------------------------------------------
 
-   private static final boolean trace = ReplicationEndpointImpl.log.isTraceEnabled();
-
-   private static void trace(final String msg)
-   {
-      ReplicationEndpointImpl.log.trace(msg);
-   }
+   private static final boolean trace = log.isTraceEnabled();
 
    private final HornetQServer server;
 
@@ -181,7 +176,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          else
          {
-            ReplicationEndpointImpl.log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
+            log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
          }
       }
       catch (HornetQException e)
@@ -259,7 +254,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             }
             catch (Exception e)
             {
-               ReplicationEndpointImpl.log.warn("Error while closing the page on backup", e);
+               log.warn("Error while closing the page on backup", e);
             }
          }
       }
@@ -304,7 +299,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          if (!journalInformation[i].equals(journalLoadInformation[i]))
          {
-            ReplicationEndpointImpl.log.warn("Journal comparisson mismatch:\n" + journalParametersToString(journalInformation));
+            log.warn("Journal comparisson mismatch:\n" + journalParametersToString(journalInformation));
             throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                        "Backup node can't connect to the live node as the data differs");
          }
@@ -363,7 +358,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          catch (Exception e)
          {
-            ReplicationEndpointImpl.log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
+            log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
          }
       }
    }
@@ -403,7 +398,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (message == null)
       {
-         ReplicationEndpointImpl.log.warn("Large MessageID " + messageId +
+         log.warn("Large MessageID " + messageId +
                                           "  is not available on backup server. Ignoring replication message");
       }
 
@@ -419,7 +414,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       LargeServerMessage largeMessage = storage.createLargeMessage();
       largeMessage.setDurable(true);
       largeMessage.setMessageID(packet.getMessageId());
-      ReplicationEndpointImpl.trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
+      log.trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
       largeMessages.put(largeMessage.getMessageID(), largeMessage);
    }
 
@@ -505,7 +500,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          if (ReplicationEndpointImpl.trace)
          {
-            ReplicationEndpointImpl.trace("Endpoint appendUpdate id = " + packet.getId());
+            log.trace("Endpoint appendUpdate id = " + packet.getId());
          }
          journalToUse.appendUpdateRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }
@@ -513,7 +508,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          if (ReplicationEndpointImpl.trace)
          {
-            ReplicationEndpointImpl.trace("Endpoint append id = " + packet.getId());
+            log.trace("Endpoint append id = " + packet.getId());
          }
          journalToUse.appendAddRecord(packet.getId(), packet.getRecordType(), packet.getRecordData(), false);
       }
@@ -620,6 +615,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    private Journal getJournal(final byte journalID)
    {
-      return this.journals[journalID];
+      return journals[journalID];
    }
 }
