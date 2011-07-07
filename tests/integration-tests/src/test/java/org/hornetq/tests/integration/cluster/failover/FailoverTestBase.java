@@ -60,7 +60,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    // Constants -----------------------------------------------------
 
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
-   protected static final String LIVE_NODE_NAME = "hqLIVE";
+   private static final String LIVE_NODE_NAME = "hqLIVE";
 
    // Attributes ----------------------------------------------------
 
@@ -166,6 +166,9 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected void createReplicatedConfigs() throws Exception
    {
+      final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
+      final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+
       nodeManager = new InVMNodeManager();
 
       backupConfig = super.createDefaultConfig();
@@ -175,14 +178,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + "_backup");
       backupConfig.getAcceptorConfigurations().clear();
       backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
-      TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
-      // probably not necessary...
+
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
       backupConfig.getClusterConfigurations()
                   .add(createClusterConnectionConf(backupConnector.getName(), LIVE_NODE_NAME));
-      backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, getConnectorTransportConfiguration(true));
 
       backupConfig.setSecurityEnabled(false);
       backupConfig.setSharedStore(false);
@@ -191,18 +191,20 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setClustered(true);
 
       backupServer = createBackupServer();
-      backupServer.getServer().setIdentity("id_backup");
+      backupServer.getServer().setIdentity("idBackup");
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
+
       liveConfig.setName(LIVE_NODE_NAME);
+      liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(false);
       liveConfig.setClustered(true);
-      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(liveConnector.getName()));
+      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(LIVE_NODE_NAME, LIVE_NODE_NAME));
       liveServer = createLiveServer();
-      liveServer.getServer().setIdentity("id_live");
+      liveServer.getServer().setIdentity("idLive");
 
       liveServer.start();
       backupServer.start();

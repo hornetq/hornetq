@@ -29,13 +29,11 @@ import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
  * A SameProcessHornetQServer
  *
  * @author jmesnil
- *
- *
  */
 public class SameProcessHornetQServer implements TestableServer
 {
-   
-   private HornetQServer server;
+
+   private final HornetQServer server;
 
    public SameProcessHornetQServer(HornetQServer server)
    {
@@ -106,7 +104,7 @@ public class SameProcessHornetQServer implements TestableServer
       // Wait to be informed of failure
       boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
 
-      Assert.assertTrue(ok);
+      Assert.assertTrue("failed to stop the server", ok);
    }
 
    /* (non-Javadoc)
@@ -127,7 +125,7 @@ public class SameProcessHornetQServer implements TestableServer
 
    // Public --------------------------------------------------------
 
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
