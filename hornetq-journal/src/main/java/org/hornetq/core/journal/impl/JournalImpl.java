@@ -2876,19 +2876,16 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    }
 
    /**
-    *
-    * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of pendingTransactions on the current file
-    * */
+    * @param completeTransaction If the appendRecord is for a prepare or commit, where we should
+    *           update the number of pendingTransactions on the current file
+    */
    private JournalFile appendRecord(final JournalInternalRecord encoder,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
                                     final IOAsyncTask parameterCallback) throws Exception
    {
-      if (state != JournalState.LOADED)
-      {
-         throw new IllegalStateException("The journal is not loaded " + state);
-      }
+      checkJournalIsLoaded();
 
       final IOAsyncTask callback;
 
