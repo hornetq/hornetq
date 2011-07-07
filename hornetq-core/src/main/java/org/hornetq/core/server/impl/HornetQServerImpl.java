@@ -557,6 +557,7 @@ public class HornetQServerImpl implements HornetQServer
             replicationChannel.setHandler(replicationEndpoint);
             connectToReplicationEndpoint(replicationChannel);
             replicationEndpoint.start();
+            clusterManager.announceBackup();
 
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
 
