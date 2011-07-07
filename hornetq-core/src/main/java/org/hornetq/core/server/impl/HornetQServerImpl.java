@@ -527,8 +527,9 @@ public class HornetQServerImpl implements HornetQServer
             nodeManager.startBackup();
 
             initialisePart1();
-
             clusterManager.start();
+            // XXX this really belongs to this point?
+            initialisePart2();
 
 
             String liveConnectorName = configuration.getLiveConnectorName();
@@ -552,7 +553,9 @@ public class HornetQServerImpl implements HornetQServer
             CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
             Channel liveChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
-            liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1).setHandler(replicationEndpoint);
+            Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+            replicationChannel.setHandler(replicationEndpoint);
+            connectToReplicationEndpoint(replicationChannel);
             replicationEndpoint.start();
 
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
@@ -563,10 +566,6 @@ public class HornetQServerImpl implements HornetQServer
                      "] started, waiting live to fail before it gets active");
             nodeManager.awaitLiveNode();
             // Server node (i.e. Life node) is not running, now the backup takes over.
-
-            // XXX this really belongs to this point?
-            initialisePart2();
-
 
             configuration.setBackup(false);
 
@@ -995,6 +994,10 @@ public class HornetQServerImpl implements HornetQServer
       return session;
    }
 
+   /**
+    * XXX FIXME to be made private, and method removed from Server interface once HORNETQ-720 is
+    * finished.
+    */
    public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
