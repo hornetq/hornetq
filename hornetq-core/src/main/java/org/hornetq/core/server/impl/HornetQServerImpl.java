@@ -552,8 +552,8 @@ public class HornetQServerImpl implements HornetQServer
             }
             CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
             Channel liveChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
-            liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
             Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+
             replicationChannel.setHandler(replicationEndpoint);
             connectToReplicationEndpoint(replicationChannel);
             replicationEndpoint.start();
