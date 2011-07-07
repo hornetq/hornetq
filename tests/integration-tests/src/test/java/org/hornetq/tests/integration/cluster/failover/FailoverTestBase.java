@@ -181,8 +181,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
-      backupConfig.getClusterConfigurations()
-                  .add(createClusterConnectionConf(backupConnector.getName(), LIVE_NODE_NAME));
+      backupConfig.getClusterConfigurations().add(createClusterConnectionConf(backupConnector.getName(),
+                                                                              backupConnector.getName()));
 
       backupConfig.setSecurityEnabled(false);
       backupConfig.setSharedStore(false);
