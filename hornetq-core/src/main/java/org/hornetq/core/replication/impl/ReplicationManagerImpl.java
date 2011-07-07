@@ -414,17 +414,15 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       synchronized (replicationLock)
       {
-         if (!enabled)
+         if (enabled)
          {
-            // Already replicating channel failed, so just play the action now
-
-            runItNow = true;
+            pendingTokens.add(repliToken);
+            replicatingChannel.send(packet);
          }
          else
          {
-            pendingTokens.add(repliToken);
-
-            replicatingChannel.send(packet);
+            // Already replicating channel failed, so just play the action now
+            runItNow = true;
          }
       }
 
