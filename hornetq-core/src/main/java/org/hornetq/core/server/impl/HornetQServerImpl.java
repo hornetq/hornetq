@@ -530,7 +530,7 @@ public class HornetQServerImpl implements HornetQServer
             clusterManager.start();
             // XXX this really belongs to this point?
             initialisePart2();
-
+            started = true;
 
             String liveConnectorName = configuration.getLiveConnectorName();
             if (liveConnectorName == null)
@@ -559,8 +559,6 @@ public class HornetQServerImpl implements HornetQServer
             replicationEndpoint.start();
 
             liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
-
-            started = true;
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
