@@ -274,7 +274,7 @@ public class ClusterManagerImpl implements ClusterManager
       {
          return;
       }
-      
+
       for (ClusterTopologyListener listener : clientListeners)
       {
          listener.nodeUP(nodeID, member.getConnector(), last);
@@ -295,7 +295,7 @@ public class ClusterManagerImpl implements ClusterManager
          }
       }
    }
-   
+
    public boolean isStarted()
    {
       return started;
@@ -450,7 +450,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          if (connector == null)
          {
-            log.warn("No connecor with name '" + config.getConnectorName() +
+            log.warn("No connector with name '" + config.getConnectorName() +
                      "'. backup cannot be announced.");
             return;
          }
@@ -749,7 +749,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       if (connector == null)
       {
-         log.warn("No connecor with name '" + config.getConnectorName() +
+         log.warn("No connector with name '" + config.getConnectorName() +
                   "'. The cluster connection will not be deployed.");
          return;
       }
