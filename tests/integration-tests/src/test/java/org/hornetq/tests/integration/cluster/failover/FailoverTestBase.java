@@ -206,8 +206,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveServer = createLiveServer();
       liveServer.getServer().setIdentity("idLive");
 
-      liveServer.start();
-      backupServer.start();
+      //liveServer.start();
+      //backupServer.start();
    }
 
    @Override

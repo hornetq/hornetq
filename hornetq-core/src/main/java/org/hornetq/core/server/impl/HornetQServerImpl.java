@@ -337,7 +337,14 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(boolean permanently) throws Exception
       {
-
+         if(permanently)
+         {
+            nodeManager.crashLiveServer();
+         }
+         else
+         {
+            nodeManager.pauseLiveServer();
+         }
       }
    }
 
@@ -558,7 +565,7 @@ public class HornetQServerImpl implements HornetQServer
             connectToReplicationEndpoint(replicationChannel);
             replicationEndpoint.start();
 
-            liveChannel.send(new HaBackupRegistrationMessage(getNodeID().toString(), config));
+            clusterManager.announceReplicatingBackup(liveChannel);
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");

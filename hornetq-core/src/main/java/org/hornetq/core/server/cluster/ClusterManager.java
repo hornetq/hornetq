@@ -22,6 +22,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
@@ -56,7 +57,10 @@ public interface ClusterManager extends HornetQComponent
 
    void announceBackup() throws Exception;
 
+   void announceReplicatingBackup(Channel liveChannel);
+
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
+
 }

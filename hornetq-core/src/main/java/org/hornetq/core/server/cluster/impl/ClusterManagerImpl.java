@@ -44,6 +44,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -455,6 +457,30 @@ public class ClusterManagerImpl implements ClusterManager
             return;
          }
          announceBackup(config, connector);
+      }
+      else
+      {
+         log.warn("no cluster connections defined, unable to announce backup");
+      }
+   }
+
+   @Override
+   public void announceReplicatingBackup(Channel liveChannel)
+   {
+      List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
+      if(!configs.isEmpty())
+      {
+         ClusterConnectionConfiguration config = configs.get(0);
+
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
+
+         if (connector == null)
+         {
+            log.warn("No connector with name '" + config.getConnectorName() +
+                     "'. backup cannot be announced.");
+            return;
+         }
+         liveChannel.send(new HaBackupRegistrationMessage(nodeUUID.toString(), connector));
       }
       else
       {
