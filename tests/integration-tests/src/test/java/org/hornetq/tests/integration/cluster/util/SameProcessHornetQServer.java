@@ -104,7 +104,7 @@ public class SameProcessHornetQServer implements TestableServer
       // Wait to be informed of failure
       boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
 
-      Assert.assertTrue("failed to stop the server", ok);
+      Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount(), ok);
    }
 
    /* (non-Javadoc)
