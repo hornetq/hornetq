@@ -89,14 +89,28 @@ public class JMSTestBase extends ServiceTestBase
     */
    protected Queue createQueue(final String name) throws Exception, NamingException
    {
-      jmsServer.createQueue(false, name, null, true, "/jms/" + name);
-
-      return (Queue)context.lookup("/jms/" + name);
+      return createQueue(false, name);
    }
 
    protected Topic createTopic(final String name) throws Exception, NamingException
    {
-      jmsServer.createTopic(false, name, "/jms/" + name);
+      return createTopic(false, name);
+   }
+
+   /**
+    * @throws Exception
+    * @throws NamingException
+    */
+   protected Queue createQueue(final boolean storeConfig, final String name) throws Exception, NamingException
+   {
+      jmsServer.createQueue(storeConfig, name, null, true, "/jms/" + name);
+
+      return (Queue)context.lookup("/jms/" + name);
+   }
+
+   protected Topic createTopic(final boolean storeConfig, final String name) throws Exception, NamingException
+   {
+      jmsServer.createTopic(storeConfig, name, "/jms/" + name);
 
       return (Topic)context.lookup("/jms/" + name);
    }
@@ -136,10 +150,10 @@ public class JMSTestBase extends ServiceTestBase
 
    protected void restartServer() throws Exception
    {
-      jmsServer.start();
-      jmsServer.activated();
       context = new InVMContext();
       jmsServer.setContext(context);
+      jmsServer.start();
+      jmsServer.activated();
       registerConnectionFactory();
    }
 
