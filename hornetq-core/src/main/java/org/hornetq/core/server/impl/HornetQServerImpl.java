@@ -535,9 +535,6 @@ public class HornetQServerImpl implements HornetQServer
 
             initialisePart1();
             clusterManager.start();
-            // XXX this really belongs to this point?
-            initialisePart2();
-            started = true;
 
             String liveConnectorName = configuration.getLiveConnectorName();
             if (liveConnectorName == null)
@@ -571,8 +568,11 @@ public class HornetQServerImpl implements HornetQServer
                      "] started, waiting live to fail before it gets active");
             nodeManager.awaitLiveNode();
             // Server node (i.e. Life node) is not running, now the backup takes over.
-
+            replicationEndpoint.stop();
             configuration.setBackup(false);
+
+            initialisePart2();
+            started = true;
 
          }
          catch (Exception e)

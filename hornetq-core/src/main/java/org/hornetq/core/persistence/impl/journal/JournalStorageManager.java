@@ -282,14 +282,9 @@ public class JournalStorageManager implements StorageManager
          throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
 
-      if (config.isBackup() && !config.isSharedStore())
-      {
-         idGenerator = null;
-      }
-      else
-      {
-         idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
-      }
+
+      idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
+
       Journal localMessage = new JournalImpl(config.getJournalFileSize(),
                                              config.getJournalMinFiles(),
                                              config.getJournalCompactMinFiles(),

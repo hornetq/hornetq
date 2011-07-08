@@ -156,11 +156,11 @@ public class HornetQPacketHandler implements ChannelHandler
             throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");
          }
 
-         if (!server.checkActivate())
+         /*if (!server.checkActivate())
          {
             throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED,
                                        "Server will not accept create session requests");
-         }
+         }*/
 
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
@@ -239,7 +239,7 @@ public class HornetQPacketHandler implements ChannelHandler
 
          ServerSessionPacketHandler sessionHandler = protocolManager.getSessionHandler(request.getName());
 
-         if (!server.checkActivate() || sessionHandler == null)
+         if (sessionHandler == null)
          {
             response = new ReattachSessionResponseMessage(-1, false);
          }
