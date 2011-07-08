@@ -74,6 +74,7 @@ import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
@@ -1673,13 +1674,13 @@ public class HornetQServerImpl implements HornetQServer
                              final boolean temporary,
                              final boolean ignoreIfExists) throws Exception
    {
-      Binding binding = postOffice.getBinding(queueName);
+      QueueBinding binding = (QueueBinding)postOffice.getBinding(queueName);
 
       if (binding != null)
       {
          if (ignoreIfExists)
          {
-            return null;
+            return binding.getQueue();
          }
          else
          {
