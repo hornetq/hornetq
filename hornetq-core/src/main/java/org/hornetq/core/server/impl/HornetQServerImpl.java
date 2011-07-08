@@ -564,13 +564,13 @@ public class HornetQServerImpl implements HornetQServer
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
+            started = true;
             nodeManager.awaitLiveNode();
             // Server node (i.e. Life node) is not running, now the backup takes over.
             replicationEndpoint.stop();
             configuration.setBackup(false);
 
             initialisePart2();
-            started = true;
 
          }
          catch (Exception e)
@@ -614,19 +614,20 @@ public class HornetQServerImpl implements HornetQServer
    {
       initialiseLogging();
 
+      if (started)
+      {
+         log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
+         return;
+      }
+
       checkJournalDirectory();
 
       nodeManager = createNodeManager(configuration.getJournalDirectory());
 
       nodeManager.start();
 
-      if (started)
-      {
-         HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
-         return;
-      }
-
-      HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting with configuration " + configuration);
+      HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") +
+               " server is starting with configuration " + configuration);
 
       if (configuration.isRunSyncSpeedTest())
       {
