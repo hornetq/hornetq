@@ -41,7 +41,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -83,7 +82,6 @@ import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
-import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
@@ -555,14 +553,14 @@ public class HornetQServerImpl implements HornetQServer
                throw new RuntimeException("Need to retry...");
             }
             CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
-            Channel liveChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
+            Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
             Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
 
             replicationChannel.setHandler(replicationEndpoint);
             connectToReplicationEndpoint(replicationChannel);
             replicationEndpoint.start();
 
-            clusterManager.announceReplicatingBackup(liveChannel);
+            clusterManager.announceReplicatingBackup(pingChannel);
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
@@ -611,8 +609,6 @@ public class HornetQServerImpl implements HornetQServer
    private Thread backupActivationThread;
 
    private Activation activation;
-
-   private ServerLocator serverLocator;
 
    public synchronized void start() throws Exception
    {
