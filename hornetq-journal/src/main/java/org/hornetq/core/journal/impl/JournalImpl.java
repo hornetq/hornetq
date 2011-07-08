@@ -1083,6 +1083,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
+   private void setJournalState(JournalState newState)
+   {
+      // log.info(this + " state=" + newState);
+      state = newState;
+   }
+
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
                                                final byte recordType,
@@ -1863,7 +1869,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       if (state != JournalState.STARTED)
       {
-         throw new IllegalStateException("Journal must be in started state");
+         throw new IllegalStateException("Journal " + this + " must be in started state, was " + state);
       }
 
       checkControlFile();
@@ -2177,7 +2183,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       filesRepository.pushOpenedFile();
 
-      state = JournalState.LOADED;
+      setJournalState(JournalState.LOADED);
 
       for (TransactionHolder transaction : loadTransactions.values())
       {
@@ -2515,7 +2521,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       if (state != JournalState.STOPPED)
       {
-         throw new IllegalStateException("Journal is not stopped");
+         throw new IllegalStateException("Journal " + this + " is not stopped, state is " + state);
       }
 
       filesExecutor = Executors.newSingleThreadExecutor(new ThreadFactory()
@@ -2540,7 +2546,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       fileFactory.start();
 
-      state = JournalState.STARTED;
+      setJournalState(JournalState.STARTED);
    }
 
    public synchronized void stop() throws Exception
@@ -2557,7 +2563,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       try
       {
 
-         state = JournalState.STOPPED;
+         setJournalState(JournalState.STOPPED);
 
          compactorExecutor.shutdown();
 
