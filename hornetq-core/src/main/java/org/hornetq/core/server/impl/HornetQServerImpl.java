@@ -583,6 +583,28 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(final boolean permanently) throws Exception
       {
+         if (configuration.isBackup())
+         {
+            long timeout = 30000;
+
+            long start = System.currentTimeMillis();
+
+            while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
+            {
+               nodeManager.interrupt();
+
+               backupActivationThread.interrupt();
+
+               Thread.sleep(1000);
+            }
+
+            if (System.currentTimeMillis() - start >= timeout)
+            {
+               log.warn("Timed out waiting for backup activation to exit");
+            }
+
+            nodeManager.stopBackup();
+         }
       }
    }
 
