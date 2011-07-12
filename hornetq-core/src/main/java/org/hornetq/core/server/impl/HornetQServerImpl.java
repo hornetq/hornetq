@@ -537,43 +537,64 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart1();
             clusterManager.start();
 
+
             String liveConnectorName = configuration.getLiveConnectorName();
             if (liveConnectorName == null)
             {
                throw new IllegalArgumentException("Cannot have a replicated backup without configuring its live-server!");
             }
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
-           serverLocator =
+            serverLocator =
                      (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(config);
 
             serverLocator.setReconnectAttempts(-1);
 
-            final ClientSessionFactory liveServerSessionFactory = serverLocator.connect();
-
-            if (liveServerSessionFactory == null)
+            threadPool.execute(new Runnable()
             {
-               // XXX
-               throw new RuntimeException("Need to retry...");
-            }
-            CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
-            Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
-            Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        final ClientSessionFactory liveServerSessionFactory = serverLocator.connect();
 
-            replicationChannel.setHandler(replicationEndpoint);
-            connectToReplicationEndpoint(replicationChannel);
-            replicationEndpoint.start();
+                        if (liveServerSessionFactory == null)
+                        {
+                           // XXX
+                           throw new RuntimeException("Need to retry...");
+                        }
+                        CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
+                        Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
+                        Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
 
-            clusterManager.announceReplicatingBackup(pingChannel);
+                        replicationChannel.setHandler(replicationEndpoint);
+                        connectToReplicationEndpoint(replicationChannel);
+                        replicationEndpoint.start();
+
+                        clusterManager.announceReplicatingBackup(pingChannel);
+                    }
+                    catch (Exception e)
+                    {
+                        log.warn("unable to announce backup for replication", e);
+                    }
+                }
+            });
+
 
             log.info("HornetQ Backup Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() +
                      "] started, waiting live to fail before it gets active");
             started = true;
-            nodeManager.awaitLiveNode();
+
             // Server node (i.e. Life node) is not running, now the backup takes over.
+            //we must remember to close stuff we don't need any more
+            nodeManager.awaitLiveNode();
+            serverLocator.close();
             replicationEndpoint.stop();
             configuration.setBackup(false);
 
             initialisePart2();
+
+            clusterManager.activate();
 
          }
          catch (Exception e)

@@ -1217,7 +1217,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          updateArraysAndPairs();
       }
 
-      if (last)
+      if (last && topologyArray != null)
       {
          receivedTopology = true;
       }

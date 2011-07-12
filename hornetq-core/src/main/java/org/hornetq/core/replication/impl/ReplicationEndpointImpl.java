@@ -87,7 +87,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
 
-   // Constructors --------------------------------------------------
+   private boolean started;
+
+    // Constructors --------------------------------------------------
    public ReplicationEndpointImpl(final HornetQServer server)
    {
       this.server = server;
@@ -198,7 +200,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    public boolean isStarted()
    {
-      return true;
+      return started;
    }
 
    /* (non-Javadoc)
@@ -229,6 +231,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       pageManager.start();
 
+       started = true;
+
    }
 
    /* (non-Javadoc)
@@ -236,6 +240,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    public void stop() throws Exception
    {
+      if(!started)
+      {
+          return;
+      }
       // This could be null if the backup server is being
       // shut down without any live server connecting here
       if (channel != null)
@@ -269,6 +277,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       largeMessages.clear();
 
       pageManager.stop();
+
+       started = false;
    }
 
    /* (non-Javadoc)
