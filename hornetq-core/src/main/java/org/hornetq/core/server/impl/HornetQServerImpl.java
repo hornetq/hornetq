@@ -727,7 +727,7 @@ public class HornetQServerImpl implements HornetQServer
       // But at least we will do our best to avoid it on regular shutdowns
       for (ServerSession session : sessions.values())
       {
-         session.close(true);
+         session.close(false);
          session.waitContextCompletion();
       }
 
