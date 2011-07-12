@@ -41,45 +41,11 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected TestableServer createLiveServer()
-   {
-      return new SameProcessHornetQServer(createServer(true, liveConfig));
-   }
-
-   @Override
-   protected TestableServer createBackupServer()
-   {
-      return new SameProcessHornetQServer(createServer(true, backupConfig));
-   }
 
    @Override
    protected void createConfigs() throws Exception
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
-      config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(false);
-      config1.setBackup(true);
-      backupConfig = config1;
-      backupServer = createBackupServer();
-
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-
-      /*liveConfig.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      liveConfig.setBackupConnectorName("toBackup");*/
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(false);
-      liveConfig = config0;
-      liveServer = createLiveServer();
-
-      backupServer.start();
-      liveServer.start();
+      createReplicatedConfigs();
    }
 
    // Private -------------------------------------------------------

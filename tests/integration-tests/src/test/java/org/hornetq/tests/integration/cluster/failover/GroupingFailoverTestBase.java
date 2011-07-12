@@ -24,9 +24,11 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
@@ -39,9 +41,10 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFails() throws Exception
    {
-     setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
+      NodeManager nodeManager = new InVMNodeManager();
+      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty(), nodeManager);
 
-      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty(), nodeManager);
 
       setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
 
@@ -117,9 +120,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
-      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
+      NodeManager nodeManager = new InVMNodeManager();
 
-      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
+      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty(), nodeManager);
+
+      setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty(), nodeManager);
 
       setupLiveServer(1, isFileStorage(), isSharedServer(), isNetty());
 

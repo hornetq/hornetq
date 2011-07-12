@@ -41,6 +41,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -525,6 +526,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private final class SharedNothingBackupActivation implements Activation
    {
+      private ServerLocatorInternal serverLocator;
+
       public void run()
       {
          try
@@ -540,11 +543,11 @@ public class HornetQServerImpl implements HornetQServer
                throw new IllegalArgumentException("Cannot have a replicated backup without configuring its live-server!");
             }
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
-            final ServerLocatorInternal serverLocator =
+           serverLocator =
                      (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(config);
 
-            // XXX Need to retry the connection a couple of times
-            // sit in loop and try and connect, if server is not live then it will return NOT_LIVE
+            serverLocator.setReconnectAttempts(-1);
+
             final ClientSessionFactory liveServerSessionFactory = serverLocator.connect();
 
             if (liveServerSessionFactory == null)
@@ -580,9 +583,16 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       public void close(final boolean permanently) throws Exception
-      {
+   {
+         if(serverLocator != null)
+         {
+            serverLocator.close();
+            serverLocator = null;
+         }
+
          if (configuration.isBackup())
          {
+
             long timeout = 30000;
 
             long start = System.currentTimeMillis();
