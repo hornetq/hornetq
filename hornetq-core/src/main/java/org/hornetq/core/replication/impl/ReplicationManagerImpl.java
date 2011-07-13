@@ -22,7 +22,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
@@ -87,18 +86,6 @@ public class ReplicationManagerImpl implements ReplicationManager
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   // XXX remove constructor once the other one is stable
-   @Deprecated
-   public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory,
-                                 final ExecutorFactory executorFactory)
-   {
-      super();
-      this.executorFactory = executorFactory;
-
-      CoreRemotingConnection conn = sessionFactory.getConnection();
-      replicatingChannel = conn.getChannel(CHANNEL_ID.REPLICATION.id, -1);
-   }
 
    /**
     * @param remotingConnection
