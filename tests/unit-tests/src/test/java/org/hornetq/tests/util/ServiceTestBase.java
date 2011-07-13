@@ -38,6 +38,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
@@ -94,6 +95,35 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          fail("InVMREgistry size > 0");
       }
+   }
+
+   protected final static void waitForComponent(final HornetQComponent component, final long seconds) throws Exception
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while (!component.isStarted())
+      {
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            // ignore
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("component did not start within timeout of " + seconds);
+         }
+      }
+   }
+
+   protected final void stopComponent(HornetQComponent component) throws Exception
+   {
+      if (component == null)
+         return;
+      if (component.isStarted())
+         component.stop();
    }
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)

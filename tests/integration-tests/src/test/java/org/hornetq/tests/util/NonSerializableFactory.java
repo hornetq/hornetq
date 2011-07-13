@@ -32,11 +32,12 @@ import org.jboss.util.naming.Util;
  * used by the default context when running in embedded local configuration
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class NonSerializableFactory implements ObjectFactory
+public final class NonSerializableFactory implements ObjectFactory
 {
 
-   public NonSerializableFactory()
+   private NonSerializableFactory()
    {
+      // Utility
    }
 
    public static void unbind(final Context ctx, final String strName) throws NamingException
