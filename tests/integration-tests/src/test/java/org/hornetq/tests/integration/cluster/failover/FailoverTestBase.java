@@ -35,19 +35,16 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -60,7 +57,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    // Constants -----------------------------------------------------
 
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
-   private static final String LIVE_NODE_NAME = "hqLIVE";
+
 
    // Attributes ----------------------------------------------------
 
@@ -121,19 +118,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
    }
 
-   private ClusterConnectionConfiguration createClusterConnectionConf(String name, String... connectors)
-   {
-      List<String> conn = new ArrayList<String>(connectors.length);
-      for (String iConn : connectors)
-      {
-         conn.add(iConn);
-      }
-      return new ClusterConnectionConfiguration("cluster1", "jms", name, -1, false, false, 1, 1, conn, false);
-   }
-
-   /**
-    * @throws Exception
-    */
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -149,8 +133,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      backupConfig.getClusterConfigurations().add(createClusterConnectionConf(backupConnector.getName(),
-                                                                              liveConnector.getName()));
+      ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
+                                                        liveConnector.getName());
       backupServer = createBackupServer();
 
       liveConfig = super.createDefaultConfig();
@@ -159,7 +143,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(liveConnector.getName()));
+      ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createLiveServer();
    }
@@ -172,42 +156,26 @@ public abstract class FailoverTestBase extends ServiceTestBase
       nodeManager = new InVMNodeManager();
 
       backupConfig = super.createDefaultConfig();
+      liveConfig = super.createDefaultConfig();
+      TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
+                                                     liveConnector);
+
       backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + "_backup");
       backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + "_backup");
       backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + "_backup");
       backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + "_backup");
-      backupConfig.getAcceptorConfigurations().clear();
-      backupConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-
-      backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      backupConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
-      backupConfig.getClusterConfigurations().add(createClusterConnectionConf(backupConnector.getName(),
-                                                                              backupConnector.getName()));
-
       backupConfig.setSecurityEnabled(false);
-      backupConfig.setSharedStore(false);
-      backupConfig.setBackup(true);
-      backupConfig.setLiveConnectorName(LIVE_NODE_NAME);
-      backupConfig.setClustered(true);
 
       backupServer = createBackupServer();
       backupServer.getServer().setIdentity("idBackup");
 
-      liveConfig = super.createDefaultConfig();
+
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-      liveConfig.setName(LIVE_NODE_NAME);
-      liveConfig.getConnectorConfigurations().put(LIVE_NODE_NAME, liveConnector);
-      liveConfig.setSecurityEnabled(false);
-      liveConfig.setSharedStore(false);
-      liveConfig.setClustered(true);
-      liveConfig.getClusterConfigurations().add(createClusterConnectionConf(LIVE_NODE_NAME, LIVE_NODE_NAME));
       liveServer = createLiveServer();
       liveServer.getServer().setIdentity("idLive");
-
-      //liveServer.start();
-      //backupServer.start();
    }
 
    @Override
@@ -261,8 +229,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       return sf;
    }
 
-   protected void waitForBackup(ClientSessionFactoryInternal sf, long seconds)
-         throws Exception
+   protected static void waitForBackup(ClientSessionFactoryInternal sf, long seconds) throws Exception
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
@@ -286,38 +253,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
          }
       }
       System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
-   }
-
-   protected TransportConfiguration getInVMConnectorTransportConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName());
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration(InVMConnectorFactory.class.getCanonicalName(), server1Params);
-      }
-   }
-
-   protected TransportConfiguration getInVMTransportAcceptorConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName());
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), server1Params);
-      }
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)

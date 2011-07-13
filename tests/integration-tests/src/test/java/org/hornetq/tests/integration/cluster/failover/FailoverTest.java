@@ -46,6 +46,7 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.RandomUtil;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  *
@@ -1875,13 +1876,13 @@ public class FailoverTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
    /**

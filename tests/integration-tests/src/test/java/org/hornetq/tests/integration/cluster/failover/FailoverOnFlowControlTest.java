@@ -28,6 +28,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * A FailoverOnFlowControlTest
@@ -49,8 +50,8 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
+
    public void testOverflowSend() throws Exception
    {
       ServerLocator locator = getServerLocator();
@@ -65,11 +66,11 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             System.out.println("Intercept..." + packet.getClass().getName());
-            
+
             if (packet instanceof SessionProducerCreditsMessage )
             {
                SessionProducerCreditsMessage credit = (SessionProducerCreditsMessage)packet;
-               
+
                System.out.println("Credits: " + credit.getCredits());
                if (count.incrementAndGet() == 2)
                {
@@ -87,7 +88,7 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
             return true;
          }
       };
-      
+
       locator.addInterceptor(interceptorClient);
 
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
@@ -97,27 +98,28 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-      
+
 
       final int numMessages = 10;
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(true);
-         
+
          message.getBodyBuffer().writeBytes(new byte[5000]);
 
          message.putIntProperty("counter", i);
 
          producer.send(message);
       }
-      
+
       session.close();
-      
+
       locator.close();
    }
 
 
+   @Override
    protected void createConfigs() throws Exception
    {
       super.createConfigs();
@@ -125,6 +127,7 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
       backupServer.getServer().getConfiguration().setJournalFileSize(1024 * 1024);
    }
 
+   @Override
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
       ServerLocatorInternal locator = super.getServerLocator();
@@ -140,13 +143,13 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 

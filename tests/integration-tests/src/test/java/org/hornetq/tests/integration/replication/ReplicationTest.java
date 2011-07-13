@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.replication;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -56,15 +57,19 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
 import org.hornetq.core.replication.impl.ReplicationManagerImpl;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -76,23 +81,18 @@ import org.hornetq.utils.OrderedExecutorFactory;
 public class ReplicationTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private ThreadFactory tFactory;
-
    private ExecutorService executor;
-
    private ExecutorFactory factory;
-
    private ScheduledExecutorService scheduledExecutor;
 
-   private HornetQServerImpl server;
+   private HornetQServerImpl backupServer;
+   /** This field is not always used. */
+   private HornetQServerImpl liveServer;
 
    private ServerLocator locator;
 
-   private ReplicationManagerImpl manager;
+   private ReplicationManager manager;
 
    // Static --------------------------------------------------------
 
@@ -100,32 +100,57 @@ public class ReplicationTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testBasicConnection() throws Exception
+   private void setupServer(boolean backup, boolean netty, String... interceptors) throws Exception
    {
-      boolean backup = true;
-      boolean netty = false;
-      setupServer(backup, netty);
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
-      manager.stop();
+      assert backup; // XXX
+
+      Configuration backupConfig = createDefaultConfig(netty);
+      Configuration liveConfig = createDefaultConfig(netty);
+      backupConfig.setBackup(backup);
+      if (interceptors.length > 0)
+      {
+         List<String> interceptorsList = Arrays.asList(interceptors);
+         backupConfig.setInterceptorClassNames(interceptorsList);
+      }
+
+      TransportConfiguration liveConnector = TransportConfigurationUtils.getInVMConnector(true);
+      TransportConfiguration backupConnector = TransportConfigurationUtils.getInVMConnector(false);
+      TransportConfiguration backupAcceptor = TransportConfigurationUtils.getInVMAcceptor(false);
+
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
+                                                     liveConnector);
+      if (backup)
+      {
+         liveServer = new HornetQServerImpl(liveConfig);
+         liveServer.start();
+         waitForComponent(liveServer);
+      }
+
+      backupServer = new HornetQServerImpl(backupConfig);
+      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      backupServer.start();
+      Thread.sleep(200); // XXX improve this
+      waitForComponent(backupServer);
    }
 
-   private void setupServer(boolean backup, boolean netty) throws Exception
+   private static void waitForComponent(HornetQComponent component) throws Exception
    {
-      Configuration config = createDefaultConfig(netty);
-      config.setBackup(backup);
-      server = new HornetQServerImpl(config);
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      server.start();
+      waitForComponent(component, 3);
+   }
+
+   public void testBasicConnection() throws Exception
+   {
+      setupServer(true, false);
+      waitForComponent(liveServer.getReplicationManager());
    }
 
    public void testInvalidJournal() throws Exception
    {
 
       setupServer(true, false);
+      manager = liveServer.getReplicationManager();
+      waitForComponent(manager);
 
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
       try
       {
          manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(2, 2),
@@ -134,7 +159,8 @@ public class ReplicationTest extends ServiceTestBase
       }
       catch (HornetQException e)
       {
-         e.printStackTrace();
+         if (e.getCode() != HornetQException.ILLEGAL_STATE)
+            e.printStackTrace();
          Assert.assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
       }
 
@@ -148,10 +174,8 @@ public class ReplicationTest extends ServiceTestBase
 
       setupServer(true, false);
 
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-
-      manager.start();
-
+      manager = liveServer.getReplicationManager();
+      waitForComponent(manager);
       try
       {
          ReplicationManagerImpl manager2 =
@@ -162,17 +186,19 @@ public class ReplicationTest extends ServiceTestBase
       }
       catch (Exception e)
       {
+         // expected
       }
+
    }
 
    public void testConnectIntoNonBackup() throws Exception
    {
       setupServer(false, false);
 
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-
       try
       {
+
+         manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
          manager.start();
          Assert.fail("Exception was expected");
       }
@@ -188,8 +214,8 @@ public class ReplicationTest extends ServiceTestBase
 
       StorageManager storage = getStorage();
 
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
+      manager = liveServer.getReplicationManager();
+      waitForComponent(manager);
 
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
@@ -226,8 +252,8 @@ public class ReplicationTest extends ServiceTestBase
       blockOnReplication(storage, manager);
 
       PagingManager pagingManager =
-               createPageManager(server.getStorageManager(), server.getConfiguration(), server.getExecutorFactory(),
-                                 server.getAddressSettingsRepository());
+               createPageManager(backupServer.getStorageManager(), backupServer.getConfiguration(), backupServer.getExecutorFactory(),
+                                 backupServer.getAddressSettingsRepository());
 
       PagingStore store = pagingManager.getPageStore(dummy);
       store.start();
@@ -266,25 +292,10 @@ public class ReplicationTest extends ServiceTestBase
    public void testSendPacketsWithFailure() throws Exception
    {
 
-      Configuration config = createDefaultConfig(false);
-
-      config.setBackup(true);
-
-      ArrayList<String> intercepts = new ArrayList<String>();
-
-      intercepts.add(TestInterceptor.class.getName());
-
-      config.setInterceptorClassNames(intercepts);
-
-      server = new HornetQServerImpl(config);
-
-      server.start();
-
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      setupServer(true, false, TestInterceptor.class.getName());
 
       StorageManager storage = getStorage();
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
+      manager = liveServer.getReplicationManager();
 
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
@@ -309,7 +320,7 @@ public class ReplicationTest extends ServiceTestBase
          }
       });
 
-      server.stop();
+      backupServer.stop();
 
       Assert.assertTrue(latch.await(50, TimeUnit.SECONDS));
 
@@ -408,7 +419,7 @@ public class ReplicationTest extends ServiceTestBase
     * @param manager
     * @return
     */
-   private void blockOnReplication(final StorageManager storage, final ReplicationManagerImpl manager) throws Exception
+   private void blockOnReplication(final StorageManager storage, final ReplicationManager manager) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
       storage.afterCompleteOperations(new IOAsyncTask()
@@ -427,29 +438,29 @@ public class ReplicationTest extends ServiceTestBase
       Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
 
-   public void testNoServer() throws Exception
-   {
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-
-      try
-      {
-         manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-         manager.start();
-         Assert.fail("Exception expected");
-      }
-      catch (HornetQException expected)
-      {
-         Assert.assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
-      }
-   }
+//   public void testNoServer() throws Exception
+//   {
+//      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+//
+//      try
+//      {
+//         manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
+//         manager.start();
+//         Assert.fail("Exception expected");
+//      }
+//      catch (HornetQException expected)
+//      {
+//         Assert.assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
+//      }
+//   }
 
    public void testNoActions() throws Exception
    {
 
       setupServer(true, false);
       StorageManager storage = getStorage();
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
+      manager = liveServer.getReplicationManager();
+      waitForComponent(manager);
 
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
@@ -482,9 +493,7 @@ public class ReplicationTest extends ServiceTestBase
       final ArrayList<Integer> executions = new ArrayList<Integer>();
 
       StorageManager storage = getStorage();
-      manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-      manager.start();
-
+      manager = liveServer.getReplicationManager();
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
       int numberOfAdds = 200;
@@ -568,19 +577,13 @@ public class ReplicationTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (manager != null)
-      {
-         if (manager.isStarted())
-            manager.stop();
-         manager = null;
-      }
 
-      if (server != null)
-      {
-         if (server.isStarted())
-            server.stop();
-         server = null;
-      }
+      stopComponent(manager);
+      manager = null;
+      stopComponent(liveServer);
+      liveServer = null;
+      stopComponent(backupServer);
+      backupServer = null;
 
       executor.shutdown();
 
@@ -592,6 +595,7 @@ public class ReplicationTest extends ServiceTestBase
       super.tearDown();
 
    }
+
 
    protected
             PagingManager
@@ -613,7 +617,7 @@ public class ReplicationTest extends ServiceTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   public static class TestInterceptor implements Interceptor
+   public static final class TestInterceptor implements Interceptor
    {
       static AtomicBoolean value = new AtomicBoolean(true);
 

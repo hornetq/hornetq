@@ -13,22 +13,29 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.Assert;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -133,6 +140,7 @@ public class FailBackManualTest extends FailoverTestBase
    }
 
 
+   @Override
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -176,13 +184,13 @@ public class FailBackManualTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 

@@ -23,16 +23,22 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * A MultiThreadFailoverTest
- * 
+ *
  * Test Failover where failure is prompted by another thread
  *
  * @author Tim Fox
@@ -47,7 +53,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
    private volatile ClientSessionFactoryInternal sf;
 
-   private Object lockFail = new Object();
+   private final Object lockFail = new Object();
 
    class MyListener implements SessionFailureListener
    {
@@ -170,7 +176,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             locator.setBlockOnNonDurableSend(true);
             locator.setBlockOnDurableSend(true);
             locator.setReconnectAttempts(-1);
-            sf = (ClientSessionFactoryInternal) createSessionFactoryAndWaitForTopology(locator, 2);
+            sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
 
             ClientSession createSession = sf.createSession(true, true);
@@ -198,7 +204,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             // Simulate failure on connection
             synchronized (lockFail)
             {
-               crash((ClientSession) createSession);
+               crash(createSession);
             }
 
             /*if (listener != null)
@@ -226,7 +232,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             Assert.assertEquals(0, sf.numSessions());
 
             locator.close();
-            
+
             Assert.assertEquals(0, sf.numConnections());
 
             if (i != numIts - 1)
@@ -243,7 +249,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          DelegatingSession.debug = false;
       }
    }
-   
+
    protected void addPayload(ClientMessage msg)
    {
    }
@@ -278,7 +284,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   message.getBodyBuffer().writeString("message" + i);
 
                   message.putIntProperty("counter", i);
-                  
+
                   addPayload(message);
 
                   producer.send(message);
@@ -408,7 +414,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                      message.putStringProperty(Message.HDR_DUPLICATE_DETECTION_ID, new SimpleString("id:" + i +
                                                                                                     ",exec:" +
                                                                                                     executionId));
-                     
+
                      addPayload(message);
 
 
@@ -439,13 +445,13 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             }
             while (retry);
 
-            
-            
+
+
             boolean blocked = false;
 
             retry = false;
-            
-            ClientConsumer consumer = null; 
+
+            ClientConsumer consumer = null;
             do
             {
                ArrayList<Integer> msgs = new ArrayList<Integer>();
@@ -473,7 +479,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   }
 
                   session.commit();
-                  
+
                   if (blocked)
                   {
                      assertTrue("msgs.size is expected to be 0 or "  + numMessages + " but it was " + msgs.size(), msgs.size() == 0 || msgs.size() == numMessages);
@@ -535,13 +541,13 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 }
