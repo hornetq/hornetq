@@ -144,60 +144,12 @@ public class ReplicationTest extends ServiceTestBase
       waitForComponent(liveServer.getReplicationManager());
    }
 
-   public void testInvalidJournal() throws Exception
-   {
-
-      setupServer(true, false);
-      manager = liveServer.getReplicationManager();
-      waitForComponent(manager);
-
-      try
-      {
-         manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(2, 2),
-                                                               new JournalLoadInformation(2, 2) });
-         Assert.fail("Exception was expected");
-      }
-      catch (HornetQException e)
-      {
-         if (e.getCode() != HornetQException.ILLEGAL_STATE)
-            e.printStackTrace();
-         Assert.assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
-      }
-
-      manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(), new JournalLoadInformation() });
-
-   }
-
-   // should throw an exception if a second server connects to the same backup
-   public void testInvalidConnection() throws Exception
-   {
-
-      setupServer(true, false);
-
-      manager = liveServer.getReplicationManager();
-      waitForComponent(manager);
-      try
-      {
-         ReplicationManagerImpl manager2 =
-                  new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-
-         manager2.start();
-         Assert.fail("Exception was expected");
-      }
-      catch (Exception e)
-      {
-         // expected
-      }
-
-   }
-
    public void testConnectIntoNonBackup() throws Exception
    {
       setupServer(false, false);
 
       try
       {
-
          manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
          manager.start();
          Assert.fail("Exception was expected");
@@ -437,22 +389,6 @@ public class ReplicationTest extends ServiceTestBase
 
       Assert.assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
-
-//   public void testNoServer() throws Exception
-//   {
-//      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-//
-//      try
-//      {
-//         manager = new ReplicationManagerImpl(locator.createSessionFactory().getConnection(), factory);
-//         manager.start();
-//         Assert.fail("Exception expected");
-//      }
-//      catch (HornetQException expected)
-//      {
-//         Assert.assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
-//      }
-//   }
 
    public void testNoActions() throws Exception
    {
