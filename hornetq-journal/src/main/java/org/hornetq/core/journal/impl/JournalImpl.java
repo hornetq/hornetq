@@ -204,8 +204,14 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    // After a record is appended, the usedFile can't be changed until the positives and negatives are updated
    private final ReentrantLock lockAppend = new ReentrantLock();
 
-   /** We don't lock the journal while compacting, however we need to lock it while taking and updating snapshots */
-   private final ReadWriteLock compactingLock = new ReentrantReadWriteLock();
+   /**
+    * We don't lock the journal during the whole compacting operation. During compacting we only
+    * lock it (i) when gathering the initial structure, and (ii) when replicating the structures
+    * after finished compacting.
+    * <p>
+    * However we need to lock it while taking and updating snapshots
+    */
+   private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
 
    private volatile JournalFile currentFile;
 
@@ -817,7 +823,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       try
       {
@@ -851,7 +857,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -889,7 +895,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       try
       {
@@ -942,7 +948,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -962,7 +968,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
       try
       {
 
@@ -1021,7 +1027,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1038,7 +1044,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       try
       {
@@ -1071,7 +1077,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1104,7 +1110,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       try
       {
@@ -1137,7 +1143,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1150,7 +1156,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       try
       {
@@ -1181,7 +1187,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1239,7 +1245,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       JournalTransaction tx = getTransactionInfo(txID);
 
@@ -1273,7 +1279,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1324,7 +1330,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       JournalTransaction tx = transactions.remove(txID);
 
@@ -1362,7 +1368,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1383,7 +1389,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       checkJournalIsLoaded();
 
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
 
       JournalTransaction tx = null;
 
@@ -1418,7 +1424,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
@@ -1640,7 +1646,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
-         compactingLock.writeLock().lock();
+         journalLock.writeLock().lock();
          try
          {
             if (state != JournalState.LOADED)
@@ -1685,7 +1691,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
          finally
          {
-            compactingLock.writeLock().unlock();
+            journalLock.writeLock().unlock();
          }
 
          Collections.sort(dataFilesToProcess, new JournalFileComparator());
@@ -1721,7 +1727,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          SequentialFile controlFile = createControlFile(dataFilesToProcess, compactor.getNewDataFiles(), null);
 
-         compactingLock.writeLock().lock();
+         journalLock.writeLock().lock();
          try
          {
             // Need to clear the compactor here, or the replay commands will send commands back (infinite loop)
@@ -1785,7 +1791,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
          finally
          {
-            compactingLock.writeLock().unlock();
+            journalLock.writeLock().unlock();
          }
 
          // At this point the journal is unlocked. We keep renaming files while the journal is already operational
@@ -2239,7 +2245,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
 
       // We can't start reclaim while compacting is working
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
       try
       {
          reclaimer.scan(getDataFiles());
@@ -2262,7 +2268,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
 
       return false;
@@ -2484,7 +2490,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    // In some tests we need to force the journal to move to a next file
    public void forceMoveNextFile() throws Exception
    {
-      compactingLock.readLock().lock();
+      journalLock.readLock().lock();
       try
       {
          lockAppend.lock();
@@ -2500,7 +2506,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
       finally
       {
-         compactingLock.readLock().unlock();
+         journalLock.readLock().unlock();
       }
    }
 
