@@ -1639,11 +1639,9 @@ public class FailoverTest extends FailoverTestBase
 
    public void testBackupServerNotRemoved() throws Exception
    {
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      createSessionFactory();
+
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener implements SessionFailureListener
@@ -1689,11 +1687,8 @@ public class FailoverTest extends FailoverTestBase
 
    public void testLiveAndBackupLiveComesBack() throws Exception
    {
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      createSessionFactory();
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener implements SessionFailureListener
@@ -1741,11 +1736,9 @@ public class FailoverTest extends FailoverTestBase
 
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
-      locator.setReconnectAttempts(-1);
-      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      createSessionFactory();
+
       final CountDownLatch latch = new CountDownLatch(1);
 
       class MyListener implements SessionFailureListener
