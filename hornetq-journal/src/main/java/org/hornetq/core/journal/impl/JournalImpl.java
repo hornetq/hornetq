@@ -118,7 +118,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    // FileID(Long) + JournalVersion + UserVersion
    public static final int SIZE_HEADER = DataConstants.SIZE_LONG + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
-   public static final int BASIC_SIZE = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
+   private static final int BASIC_SIZE = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_INT;
 
    public static final int SIZE_ADD_RECORD = JournalImpl.BASIC_SIZE + DataConstants.SIZE_LONG +
                                              DataConstants.SIZE_BYTE +
@@ -164,7 +164,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    public static final byte ROLLBACK_RECORD = 19;
 
-   public static final byte FILL_CHARACTER = (byte)'J';
+   protected static final byte FILL_CHARACTER = (byte)'J';
 
    // Attributes ----------------------------------------------------
 
