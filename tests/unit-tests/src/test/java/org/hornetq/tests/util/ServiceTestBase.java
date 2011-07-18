@@ -26,6 +26,7 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -61,14 +62,6 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-
-   protected static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
-
-   public static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
-
-   protected static final String NETTY_ACCEPTOR_FACTORY = NettyAcceptorFactory.class.getCanonicalName();
-
-   protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    private final List<ServerLocator> locators = new ArrayList<ServerLocator>();
 
@@ -487,6 +480,44 @@ public abstract class ServiceTestBase extends UnitTestCase
       m.getBodyBuffer().resetReaderIndex();
       return m.getBodyBuffer().readString();
    }
+
+   /**
+    * @param i
+    * @param message
+    * @throws Exception
+    */
+   protected void setBody(final int i, final ClientMessage message) throws Exception
+   {
+      message.getBodyBuffer().writeString("message" + i);
+   }
+
+   /**
+    * @param i
+    * @param message
+    */
+   protected void assertMessageBody(final int i, final ClientMessage message)
+   {
+      Assert.assertEquals("message" + i, message.getBodyBuffer().readString());
+   }
+
+   /**
+    * Send messages with pre-specified body.
+    * @param session
+    * @param producer
+    * @param numMessages
+    * @throws Exception
+    */
+   public void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
+   {
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         setBody(i, message);
+         message.putIntProperty("counter", i);
+         producer.send(message);
+      }
+   }
+
 
    /**
     * Deleting a file on LargeDire is an asynchronous process. We need to keep looking for a while

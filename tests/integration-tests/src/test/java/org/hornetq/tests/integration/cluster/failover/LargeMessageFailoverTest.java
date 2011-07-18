@@ -18,7 +18,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
@@ -37,11 +36,11 @@ public class LargeMessageFailoverTest extends FailoverTest
 
    private static final Logger log = Logger.getLogger(LargeMessageFailoverTest.class);
 
-   
+
    private static final int MIN_LARGE_MESSAGE = 1024;
-   
+
    private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
-   
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -53,7 +52,7 @@ public class LargeMessageFailoverTest extends FailoverTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    /**
     * @param name
     */
@@ -63,7 +62,7 @@ public class LargeMessageFailoverTest extends FailoverTest
    }
 
    /**
-    * 
+    *
     */
    public LargeMessageFailoverTest()
    {
@@ -96,8 +95,9 @@ public class LargeMessageFailoverTest extends FailoverTest
          Assert.assertEquals("equal at " + j, buffer.readByte(), UnitTestCase.getSamplebyte(j));
       }
    }
-   
 
+
+   @Override
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
       ServerLocator locator = super.getServerLocator();

@@ -250,16 +250,7 @@ public class FailoverTest extends FailoverTestBase
 
       final int numMessages = 10;
 
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
+      sendMessages(session, producer, numMessages);
 
       session.commit();
 
@@ -334,17 +325,7 @@ public class FailoverTest extends FailoverTestBase
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
 
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = session.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
+      sendMessages(session, producer, NUM_MESSAGES);
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1883,25 +1864,6 @@ public class FailoverTest extends FailoverTestBase
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
       return TransportConfigurationUtils.getInVMConnector(live);
-   }
-
-   /**
-    * @param i
-    * @param message
-    */
-   protected void assertMessageBody(final int i, final ClientMessage message)
-   {
-      Assert.assertEquals("message" + i, message.getBodyBuffer().readString());
-   }
-
-   /**
-    * @param i
-    * @param message
-    * @throws Exception
-    */
-   protected void setBody(final int i, final ClientMessage message) throws Exception
-   {
-      message.getBodyBuffer().writeString("message" + i);
    }
 
    protected void beforeRestart(TestableServer liveServer)
