@@ -38,6 +38,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
@@ -260,58 +261,51 @@ public class ReplicationTest extends ServiceTestBase
 
    public void testSendPacketsWithFailure() throws Exception
    {
-      int nMsg = 100;
+      final int nMsg = 100;
+      final int stop = 37;
       setupServer(true, false, TestInterceptor.class.getName());
 
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
-      final ClientSession session = locator.createSessionFactory().createSession();
+      ClientSessionFactory sf = locator.createSessionFactory();
+      final ClientSession session = sf.createSession();
+      final ClientSession session2 = sf.createSession();
       session.createQueue(ADDRESS, ADDRESS, null, true);
 
       final ClientProducer producer = session.createProducer(ADDRESS);
-      sendMessages(session, producer, nMsg);
 
-      // Now we start intercepting the communication with the backup
-      TestInterceptor.value.set(false);
-      sendMessages(session, producer, nMsg);
 
       session.start();
+      session2.start();
       try
       {
-         final ClientConsumer consumer = session.createConsumer(ADDRESS);
-         for (int i = 0; i < 2 * nMsg; i++)
+         final ClientConsumer consumer = session2.createConsumer(ADDRESS);
+         for (int i = 0; i < nMsg; i++)
          {
-            ClientMessage message = consumer.receive(1000);
-            Assert.assertNotNull("Message should exist!", message);
-            if (i < nMsg)
+
+            ClientMessage message = session.createMessage(true);
+            setBody(i, message);
+            message.putIntProperty("counter", i);
+            producer.send(message);
+            if (i == stop)
             {
-               assertMessageBody(i, message);
-               Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+               // Now we start intercepting the communication with the backup
+               TestInterceptor.value.set(false);
             }
-            message.acknowledge();
+            ClientMessage msgRcvd = consumer.receive(1000);
+            Assert.assertNotNull("Message should exist!", msgRcvd);
+            assertMessageBody(i, msgRcvd);
+            Assert.assertEquals(i, msgRcvd.getIntProperty("counter").intValue());
+            msgRcvd.acknowledge();
          }
-
-         final CountDownLatch latch = new CountDownLatch(1);
-         liveServer.getStorageManager().afterCompleteOperations(new IOAsyncTask()
-         {
-
-            public void onError(final int errorCode, final String errorMessage)
-            {
-            }
-
-            public void done()
-            {
-               latch.countDown();
-            }
-         });
-
-         Assert.assertTrue(latch.await(20, TimeUnit.SECONDS));
       }
       finally
       {
          TestInterceptor.value.set(false);
          if (!session.isClosed())
             session.commit();
+         if (!session2.isClosed())
+            session2.commit();
       }
    }
 
