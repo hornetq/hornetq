@@ -30,10 +30,8 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
@@ -183,8 +181,6 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             createSession.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
-            RemotingConnection conn = ((ClientSessionInternal)createSession).getConnection();
-
             Thread t = new Thread(runnable);
 
             t.setName("MainTEST");
@@ -198,8 +194,6 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             Thread.sleep(randomDelay);
 
             AsynchronousFailoverTest.log.info("Failing asynchronously");
-
-            MyListener listener = this.listener;
 
             // Simulate failure on connection
             synchronized (lockFail)
