@@ -303,6 +303,7 @@ public class FailBackAutoTest extends FailoverTestBase
     * @param message
     * @throws Exception
     */
+   @Override
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
       message.getBodyBuffer().writeString("message" + i);
