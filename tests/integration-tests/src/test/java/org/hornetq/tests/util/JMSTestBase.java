@@ -41,13 +41,13 @@ import org.hornetq.tests.unit.util.InVMContext;
  *
  *
  */
-public class JMSTestBase extends ServiceTestBase
+public abstract class JMSTestBase extends ServiceTestBase
 {
 
    protected HornetQServer server;
 
    protected JMSServerManagerImpl jmsServer;
-   
+
    protected MBeanServer mbeanServer;
 
    protected ConnectionFactory cf;
@@ -105,7 +105,7 @@ public class JMSTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       mbeanServer = MBeanServerFactory.createMBeanServer();
 
       Configuration conf = createDefaultConfig(false);
@@ -122,15 +122,15 @@ public class JMSTestBase extends ServiceTestBase
 
       registerConnectionFactory();
    }
-   
+
    @Override
    protected Configuration createDefaultConfig(boolean netty)
    {
       Configuration conf = super.createDefaultConfig(netty);
-      
+
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
-      
+
       return conf;
    }
 
