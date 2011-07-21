@@ -1582,26 +1582,29 @@ public class HornetQServerImpl implements HornetQServer
       {
          queueBindingInfosMap.put(queueBindingInfo.getId(), queueBindingInfo);
          
-         Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
-
-         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
-         
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-                                                queueBindingInfo.getAddress(),
-                                                queueBindingInfo.getQueueName(),
-                                                filter,
-                                                subscription,
-                                                true,
-                                                false);
-
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
-
-         queues.put(queueBindingInfo.getId(), queue);
-
-         postOffice.addBinding(binding);
-
-         managementService.registerAddress(queueBindingInfo.getAddress());
-         managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+         if (queueBindingInfo.getFilterString() == null || !queueBindingInfo.getFilterString().toString().equals(GENERIC_IGNORED_FILTER))
+         {
+            Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
+   
+            PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
+            
+            Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
+                                                   queueBindingInfo.getAddress(),
+                                                   queueBindingInfo.getQueueName(),
+                                                   filter,
+                                                   subscription,
+                                                   true,
+                                                   false);
+   
+            Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
+   
+            queues.put(queueBindingInfo.getId(), queue);
+   
+            postOffice.addBinding(binding);
+   
+            managementService.registerAddress(queueBindingInfo.getAddress());
+            managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+         }
          
          
       }

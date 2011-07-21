@@ -260,7 +260,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
             // If updateDeliveries = false (set by strict-update),
             // the updateDeliveryCount would still be updated after c
-            if (strictUpdateDeliveryCount)
+            if (strictUpdateDeliveryCount && !ref.isPaged())
             {
                if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue())
                {
