@@ -20,36 +20,20 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
  * A ReplicatedAsynchronousFailoverTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected TestableServer createLiveServer()
    {
-      return new SameProcessHornetQServer(createServer(true, liveConfig));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager));
    }
 
    @Override
    protected TestableServer createBackupServer()
    {
-      return new SameProcessHornetQServer(createServer(true, backupConfig));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
    }
 
    @Override

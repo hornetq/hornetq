@@ -292,7 +292,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   {
                      e.printStackTrace();
                   }
-                  Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
+                  Assert.assertEquals("Expected UNBLOCKED", HornetQException.UNBLOCKED, e.getCode());
 
                   retry = true;
                }
