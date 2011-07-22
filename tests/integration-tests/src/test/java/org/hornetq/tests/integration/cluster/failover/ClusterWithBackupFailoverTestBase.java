@@ -33,6 +33,7 @@ import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * 
@@ -46,6 +47,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
+   private static final String QUEUE_NAME = "queue0";
+  private static final String QUEUES_TESTADDRESS = "queues.testaddress";
    private static final Logger log = Logger.getLogger(ClusterWithBackupFailoverTestBase.class);
 
    protected abstract void setupCluster(final boolean forwardWhenNoConsumers) throws Exception;
@@ -87,98 +90,92 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
          setupSessionFactory(1, 4, isNetty(), false);
          setupSessionFactory(2, 5, isNetty(), false);
 
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-         createQueue(2, "queues.testaddress", "queue0", null, true);
+         createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+         createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+         createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+         addConsumer(0, 0, QUEUE_NAME, null);
+         addConsumer(1, 1, QUEUE_NAME, null);
+         addConsumer(2, 2, QUEUE_NAME, null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings();
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-         send(0, "queues.testaddress", 10, false, null);
+         send(0, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
+         send(1, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
+         send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
          failNode(0);
 
          // live nodes
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
 
          // live nodes
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+         waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
+         waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 2, 2, false);
+         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
 
          ClusterWithBackupFailoverTestBase.log.info("** now sending");
 
-         send(0, "queues.testaddress", 10, false, null);
+         send(0, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
+         send(1, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
+         send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
          failNode(1);
 
          // live nodes
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 1, 1, true);
-         waitForBindings(4, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
+         waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
 
          // live nodes
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+         waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 2, 2, false);
-         waitForBindings(4, "queues.testaddress", 2, 2, false);
+         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
+         waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
 
-         send(0, "queues.testaddress", 10, false, null);
+         send(0, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
+         send(1, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
+         send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
          failNode(2);
 
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 1, 1, true);
-         waitForBindings(4, "queues.testaddress", 1, 1, true);
-         waitForBindings(5, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
+         waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
+         waitForBindings(5, QUEUES_TESTADDRESS, 1, 1, true);
 
          // activated backup nodes
-         waitForBindings(3, "queues.testaddress", 2, 2, false);
-         waitForBindings(4, "queues.testaddress", 2, 2, false);
-         waitForBindings(5, "queues.testaddress", 2, 2, false);
+         waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
+         waitForBindings(4, QUEUES_TESTADDRESS, 2, 2, false);
+         waitForBindings(5, QUEUES_TESTADDRESS, 2, 2, false);
 
-         send(0, "queues.testaddress", 10, false, null);
+         send(0, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
+         send(1, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
+         send(2, QUEUES_TESTADDRESS, 10, false, null);
          verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
          removeConsumer(0);
@@ -188,6 +185,17 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
          stopServers();
 
          ClusterWithBackupFailoverTestBase.log.info("*** test done");
+   }
+
+   private void waitForBindings() throws Exception
+   {
+      waitForBindings(0, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
+
+      waitForBindings(0, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
    }
    
    public void testFailBackupNodes() throws Exception
@@ -200,86 +208,62 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupSessionFactory(1, 4, isNetty(), false);
       setupSessionFactory(2, 5, isNetty(), false);
 
-      createQueue(0, "queues.testaddress", "queue0", null, true);
-      createQueue(1, "queues.testaddress", "queue0", null, true);
-      createQueue(2, "queues.testaddress", "queue0", null, true);
+      createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
 
-      addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, QUEUE_NAME, null);
+      addConsumer(1, 1, QUEUE_NAME, null);
+      addConsumer(2, 2, QUEUE_NAME, null);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings();
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       failNode(3);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings();
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       failNode(4);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings();
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       failNode(5);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings();
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       
@@ -319,11 +303,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       if (isNetty())
       {
-         serverTC = new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params);
+         serverTC = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTC = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
+         serverTC = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
       HornetQServer server = getServer(node);
@@ -362,110 +346,104 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupSessionFactory(1, 4, isNetty(), false);
       setupSessionFactory(2, 5, isNetty(), false);
 
-      createQueue(0, "queues.testaddress", "queue0", null, true);
-      createQueue(1, "queues.testaddress", "queue0", null, true);
-      createQueue(2, "queues.testaddress", "queue0", null, true);
+      createQueue(0, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(1, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
+      createQueue(2, QUEUES_TESTADDRESS, QUEUE_NAME, null, true);
 
-      addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
+      addConsumer(0, 0, QUEUE_NAME, null);
+      addConsumer(1, 1, QUEUE_NAME, null);
+      addConsumer(2, 2, QUEUE_NAME, null);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings();
 
-      waitForBindings(0, "queues.testaddress", 2, 2, false);
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
-
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       failNode(0);
 
       // live nodes
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // activated backup nodes
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
+      waitForBindings(3, QUEUES_TESTADDRESS, 1, 1, true);
 
       // live nodes
-      waitForBindings(1, "queues.testaddress", 2, 2, false);
-      waitForBindings(2, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
       // activated backup nodes
-      waitForBindings(3, "queues.testaddress", 2, 2, false);
+      waitForBindings(3, QUEUES_TESTADDRESS, 2, 2, false);
 
       ClusterWithBackupFailoverTestBase.log.info("** now sending");
 
-      send(0, "queues.testaddress", 10, false, null);
+      send(0, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
       removeConsumer(0);
       failNode(3);
 
       // live nodes
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
 
       // live nodes
-      waitForBindings(1, "queues.testaddress", 1, 1, false);
-      waitForBindings(2, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, false);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
 
       failNode(1);
 
       // live nodes
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // activated backup nodes
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
+      waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
 
       // live nodes
-      waitForBindings(2, "queues.testaddress", 1, 1, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, false);
       // activated backup nodes
-      waitForBindings(4, "queues.testaddress", 1, 1, false);
+      waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, false);
 
-      send(1, "queues.testaddress", 10, false, null);
+      send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
 
       removeConsumer(1);
       failNode(4);
 
       // live nodes
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // live nodes
-      waitForBindings(2, "queues.testaddress", 1, 0, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 1, 0, false);
      
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
 
       failNode(2);
 
       // live nodes
-      waitForBindings(5, "queues.testaddress", 1, 1, true);
+      waitForBindings(5, QUEUES_TESTADDRESS, 1, 1, true);
       // live nodes
-      waitForBindings(5, "queues.testaddress", 0, 0, false);
+      waitForBindings(5, QUEUES_TESTADDRESS, 0, 0, false);
 
-      send(2, "queues.testaddress", 10, false, null);
+      send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
 
       removeConsumer(2);
