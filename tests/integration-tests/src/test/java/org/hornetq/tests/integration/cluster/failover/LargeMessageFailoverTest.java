@@ -73,12 +73,14 @@ public class LargeMessageFailoverTest extends FailoverTest
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
       // skip test because it triggers OutOfMemoryError.
+      Thread.sleep(1000);
    }
 
    @Override
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
    {
       // skip test because it triggers OutOfMemoryError.
+      Thread.sleep(1000);
    }
 
    /**

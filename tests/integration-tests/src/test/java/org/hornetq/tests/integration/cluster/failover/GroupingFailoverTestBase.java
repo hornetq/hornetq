@@ -12,12 +12,6 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.Topology;
@@ -25,7 +19,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
 /**
@@ -56,9 +49,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-
-      try
-      {
          startServers(0, 2, 1);
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
@@ -102,17 +92,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          System.out.println("*****************************************************************************");
       }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
-   }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
@@ -138,8 +117,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
 
-      try
-      {
          startServers(0, 2, 1);
 
          setupSessionFactory(0, isNetty());
@@ -203,17 +180,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          verifyReceiveAllWithGroupIDRoundRobin(2, 30, 1, 2);
 
          System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
    }
 
    private void waitForServerTopology(HornetQServer server, int nodes, int seconds)
@@ -237,17 +203,5 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
    }
 
    abstract boolean isSharedServer();
-
-   private void fail(final RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
-   {
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      Assert.assertTrue(ok);
-   }
 
 }

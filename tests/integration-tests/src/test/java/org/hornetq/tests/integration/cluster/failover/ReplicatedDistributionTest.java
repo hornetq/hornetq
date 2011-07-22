@@ -289,18 +289,4 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    {
       return false;
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      servers[2].stop();
-      servers[1].stop();
-      servers[3].stop();
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

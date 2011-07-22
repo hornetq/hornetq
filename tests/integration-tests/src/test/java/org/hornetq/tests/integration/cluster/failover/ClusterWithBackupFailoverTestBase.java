@@ -64,16 +64,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       setupServers();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServers();
-
-     // FailoverManagerImpl.disableDebug();
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -180,10 +170,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
          removeConsumer(0);
          removeConsumer(1);
          removeConsumer(2);
-
-         stopServers();
-
-         ClusterWithBackupFailoverTestBase.log.info("*** test done");
    }
 
    private void waitForBindings() throws Exception
@@ -270,26 +256,11 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       removeConsumer(0);
       removeConsumer(1);
       removeConsumer(2);
-
-      stopServers();
-
-      ClusterWithBackupFailoverTestBase.log.info("*** test done");
    }
 
    protected void setupCluster() throws Exception
    {
       setupCluster(false);
-   }
-
-   protected void stopServers() throws Exception
-   {
-
-      closeAllServerLocatorsFactories();
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      stopServers(0, 1, 2, 3, 4, 5);
    }
 
    protected void failNode(final int node) throws Exception
@@ -447,9 +418,5 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       removeConsumer(2);
       failNode(5);
-
-      stopServers();
-
-      ClusterWithBackupFailoverTestBase.log.info("*** test done");
    }
 }
