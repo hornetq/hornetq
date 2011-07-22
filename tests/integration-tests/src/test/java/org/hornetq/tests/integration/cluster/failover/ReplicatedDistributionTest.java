@@ -59,7 +59,6 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    {
       commonTestCode();
 
-      sessionOne.commit();
 
          for (int i = 0; i < 50; i++)
          {
@@ -126,9 +125,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    {
       commonTestCode();
 
-      sessionOne.commit();
-
-         for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 100; i++)
          {
             ClientMessage msg = consThree.receive(15000);
 
@@ -168,6 +165,8 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          msg.putIntProperty(new SimpleString("key"), i);
          producer.send(msg);
       }
+      sessionOne.commit();
+
    }
 
    // Package protected ---------------------------------------------
@@ -203,23 +202,24 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       super.setUp();
 
       setupLiveServer(1, true, isShared(), true);
-      setupBackupServer(2, 1, true, isShared(), true);
       setupLiveServer(3, true, isShared(), true);
+      setupBackupServer(2, 3, true, isShared(), true);
 
-      setupClusterConnectionWithBackups("test", "test", false, 1, true, 1, new int[] { 3 });
+      final String address = ReplicatedDistributionTest.ADDRESS.toString();
+      // notice the abuse of the method call, '3' is not a backup for '1'
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 1, new int[] { 3 });
+      setupClusterConnectionWithBackups("test", address, false, 1, true, 3, new int[] { 2, 1 });
 
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(0);
 
-      getServer(1).getAddressSettingsRepository().addMatch("test.*", as);
-      getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
-      getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
+      for (int i : new int[] { 1, 2, 3 })
+      {
+         getServer(i).getAddressSettingsRepository().addMatch("test.*", as);
+         getServer(i).start();
+      }
 
-      servers[1].start();
-      servers[3].start();
-      servers[2].start();
-
-      setupSessionFactory(1, 0, true, true);
+      setupSessionFactory(1, -1, true, true);
       setupSessionFactory(3, 2, true, true);
 
       sessionOne = sfs[1].createSession(true, true);
