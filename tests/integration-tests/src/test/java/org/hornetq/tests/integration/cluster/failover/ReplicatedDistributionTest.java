@@ -111,11 +111,11 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          fail(sessionThree);
 
          // sessionThree.close();
-         //         
+         //
          // setupSessionFactory(2, -1, true);
-         //         
+         //
          // sessionThree = sfs[2].createSession(true, true);
-         //         
+         //
          // sessionThree.start();
 
          // consThree = sessionThree.createConsumer(ADDRESS);
@@ -269,7 +269,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       setupLiveServer(1, true, isShared(), true);
       setupBackupServer(2, 1, true, isShared(), true);
-      setupBackupServer(3, 1, true, isShared(), true);
+      setupLiveServer(3, true, isShared(), true);
 
       setupClusterConnectionWithBackups("test", "test", false, 1, true, 1, new int[] { 3 });
 
