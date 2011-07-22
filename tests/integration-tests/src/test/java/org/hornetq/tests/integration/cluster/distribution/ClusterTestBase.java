@@ -188,7 +188,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       return consumers[node].consumer;
    }
-   
+
    protected void waitForMessages(final int node, final String address, final int count) throws Exception
    {
       HornetQServer server = servers[node];
@@ -752,10 +752,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          for (int j = msgStart; j < msgEnd; j++)
          {
-            
+
             ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
-            
-            
+
+
             if (message == null)
             {
                ClusterTestBase.log.info("*** dumping consumers:");
@@ -802,7 +802,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
       }
    }
-   
+
    protected String clusterDescription(HornetQServer server)
    {
       String br = "-------------------------\n";
@@ -1160,7 +1160,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          res[j++] = i;
       }
-      
+
       if (ack)
       {
          // just to flush acks
@@ -1203,11 +1203,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (netty)
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
       if (ha)
@@ -1240,11 +1240,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (netty)
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
       locators[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
@@ -1270,11 +1270,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (netty)
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
       }
       else
       {
-         serverTotc = new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY, params);
+         serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
 
@@ -1756,12 +1756,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          throw new IllegalStateException("No server at node " + nodeFrom);
       }
-      
+
       TransportConfiguration connectorFrom = createTransportConfiguration(netty, false, generateParams(nodeFrom, netty));
       serverFrom.getConfiguration().getConnectorConfigurations().put(name, connectorFrom);
 
       List<String> pairs = null;
-      
+
       if (nodeTo != -1)
       {
          TransportConfiguration serverTotc = createTransportConfiguration(netty, false, generateParams(nodeTo, netty));
@@ -1800,7 +1800,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       TransportConfiguration connectorFrom = createTransportConfiguration(netty, false, generateParams(nodeFrom, netty));
       serverFrom.getConfiguration().getConnectorConfigurations().put(connectorFrom.getName(), connectorFrom);
-      
+
       List<String> pairs = new ArrayList<String>();
       for (int element : nodesTo)
       {
@@ -1912,25 +1912,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (int node : nodes)
       {
          //wait for each server to start, it may be a backup and started in a separate thread
-         waitForServer(servers[node]);
-      }
-   }
-
-   private void waitForServer(HornetQServer server)
-         throws InterruptedException
-   {
-      long timetowait =System.currentTimeMillis() + 5000;
-      while(!server.isStarted())
-      {
-         Thread.sleep(100);
-         if(server.isStarted())
-         {
-            break;
-         }
-         else if(System.currentTimeMillis() > timetowait)
-         {
-            fail("server didnt start");
-         }
+         waitForComponent(servers[node], 5);
       }
    }
 
