@@ -368,8 +368,8 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
 
       // live nodes
-      waitForBindings(1, QUEUES_TESTADDRESS, 1, 1, false);
-      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, false);
+      waitForBindings(1, QUEUES_TESTADDRESS, 2, 1, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 1, false);
 
       send(1, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 1, 2);
@@ -385,7 +385,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, true);
 
       // live nodes
-      waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 1, false);
       // activated backup nodes
       waitForBindings(4, QUEUES_TESTADDRESS, 1, 1, false);
 
@@ -401,7 +401,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       // live nodes
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // live nodes
-      waitForBindings(2, QUEUES_TESTADDRESS, 1, 0, false);
+      waitForBindings(2, QUEUES_TESTADDRESS, 2, 0, false);
 
       send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
