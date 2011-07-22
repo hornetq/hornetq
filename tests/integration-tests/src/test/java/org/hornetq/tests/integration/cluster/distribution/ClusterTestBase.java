@@ -1333,28 +1333,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          Configuration configuration = createBasicConfig();
 
-         configuration.setSecurityEnabled(false);
-         configuration.setJournalMinFiles(2);
-         configuration.setJournalMaxIO_AIO(1000);
-         configuration.setJournalFileSize(100 * 1024);
-         configuration.setJournalType(getDefaultJournalType());
-         configuration.setSharedStore(sharedStorage);
-         if (sharedStorage)
-         {
-            // Shared storage will share the node between the backup and live node
-            configuration.setBindingsDirectory(getBindingsDir(node, false));
-            configuration.setJournalDirectory(getJournalDir(node, false));
-            configuration.setPagingDirectory(getPageDir(node, false));
-            configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
-         }
-         else
-         {
-            configuration.setBindingsDirectory(getBindingsDir(node, true));
-            configuration.setJournalDirectory(getJournalDir(node, true));
-            configuration.setPagingDirectory(getPageDir(node, true));
-            configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, true));
-         }
-         configuration.setClustered(true);
+         configureSomeCommonValues(node, node, sharedStorage, configuration);
          configuration.setJournalCompactMinFiles(0);
 
          configuration.getAcceptorConfigurations().clear();
@@ -1401,28 +1380,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          Configuration configuration = createBasicConfig();
 
-         configuration.setSecurityEnabled(false);
-         configuration.setJournalMinFiles(2);
-         configuration.setJournalMaxIO_AIO(1000);
-         configuration.setJournalFileSize(100 * 1024);
-         configuration.setJournalType(getDefaultJournalType());
-         configuration.setSharedStore(sharedStorage);
-         if (sharedStorage)
-         {
-            // Shared storage will share the node between the backup and live node
-            configuration.setBindingsDirectory(getBindingsDir(node, false));
-            configuration.setJournalDirectory(getJournalDir(node, false));
-            configuration.setPagingDirectory(getPageDir(node, false));
-            configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, false));
-         }
-         else
-         {
-            configuration.setBindingsDirectory(getBindingsDir(node, true));
-            configuration.setJournalDirectory(getJournalDir(node, true));
-            configuration.setPagingDirectory(getPageDir(node, true));
-            configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, true));
-         }
-         configuration.setClustered(true);
+         configureSomeCommonValues(node, node, sharedStorage, configuration);
          configuration.setJournalCompactMinFiles(0);
 
          configuration.getAcceptorConfigurations().clear();
@@ -1448,28 +1406,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       Configuration configuration = createBasicConfig();
 
-      configuration.setSecurityEnabled(false);
-      configuration.setJournalMinFiles(2);
-      configuration.setJournalMaxIO_AIO(1000);
-      configuration.setJournalFileSize(100 * 1024);
-      configuration.setJournalType(getDefaultJournalType());
-      configuration.setSharedStore(sharedStorage);
-      if (sharedStorage)
-      {
-         // Shared storage will share the node between the backup and live node
-         configuration.setBindingsDirectory(getBindingsDir(liveNode, false));
-         configuration.setJournalDirectory(getJournalDir(liveNode, false));
-         configuration.setPagingDirectory(getPageDir(liveNode, false));
-         configuration.setLargeMessagesDirectory(getLargeMessagesDir(liveNode, false));
-      }
-      else
-      {
-         configuration.setBindingsDirectory(getBindingsDir(node, true));
-         configuration.setJournalDirectory(getJournalDir(node, true));
-         configuration.setPagingDirectory(getPageDir(node, true));
-         configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, true));
-      }
-      configuration.setClustered(true);
+      configureSomeCommonValues(node, liveNode, sharedStorage, configuration);
+
       configuration.setJournalCompactMinFiles(0);
       configuration.setBackup(true);
 
@@ -1510,26 +1448,27 @@ public abstract class ClusterTestBase extends ServiceTestBase
       servers[node] = server;
    }
 
-   protected void setupBackupServer(final int node,
-                                     final int liveNode,
-                                     final boolean fileStorage,
-                                     final boolean sharedStorage,
-                                     final boolean netty,
-                                     NodeManager nodeManager)
+   private void configureSomeCommonValues(final int node,
+                                          final int liveNode,
+                                          final boolean sharedStorage,
+                                          Configuration configuration)
    {
-      if (servers[node] != null)
-      {
-         throw new IllegalArgumentException("Already a server at node " + node);
-      }
-
-      Configuration configuration = createBasicConfig();
-
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setJournalMaxIO_AIO(1000);
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(getDefaultJournalType());
+
+      configureCommonValues(node, liveNode, sharedStorage, configuration);
+   }
+
+   private void configureCommonValues(final int node,
+                                      final int liveNode,
+                                      final boolean sharedStorage,
+                                      Configuration configuration)
+   {
       configuration.setSharedStore(sharedStorage);
+      configuration.setClustered(true);
       if (sharedStorage)
       {
          // Shared storage will share the node between the backup and live node
@@ -1545,7 +1484,23 @@ public abstract class ClusterTestBase extends ServiceTestBase
          configuration.setPagingDirectory(getPageDir(node, true));
          configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, true));
       }
-      configuration.setClustered(true);
+   }
+
+   protected void setupBackupServer(final int node,
+                                     final int liveNode,
+                                     final boolean fileStorage,
+                                     final boolean sharedStorage,
+                                     final boolean netty,
+                                     NodeManager nodeManager)
+   {
+      if (servers[node] != null)
+      {
+         throw new IllegalArgumentException("Already a server at node " + node);
+      }
+
+      Configuration configuration = createBasicConfig();
+
+      configureSomeCommonValues(node, liveNode, sharedStorage, configuration);
       configuration.setJournalCompactMinFiles(0);
       configuration.setBackup(true);
 
@@ -1660,23 +1615,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
         Configuration configuration = createBasicConfig();
 
         configuration.setSecurityEnabled(false);
-        configuration.setSharedStore(sharedStorage);
-        if (sharedStorage)
-        {
-           // Shared storage will share the node between the backup and live node
-           configuration.setBindingsDirectory(getBindingsDir(liveNode, false));
-           configuration.setJournalDirectory(getJournalDir(liveNode, false));
-           configuration.setPagingDirectory(getPageDir(liveNode, false));
-           configuration.setLargeMessagesDirectory(getLargeMessagesDir(liveNode, false));
-        }
-        else
-        {
-           configuration.setBindingsDirectory(getBindingsDir(node, true));
-           configuration.setJournalDirectory(getJournalDir(node, true));
-           configuration.setPagingDirectory(getPageDir(node, true));
-           configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, true));
-        }
-        configuration.setClustered(true);
+        configureCommonValues(node, liveNode, sharedStorage, configuration);
+
         configuration.setBackup(true);
 
         configuration.getAcceptorConfigurations().clear();
