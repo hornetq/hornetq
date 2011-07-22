@@ -949,7 +949,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          ClientMessage msg = holder.consumer.receive(10000);
 
-         Assert.assertNotNull(msg);
+         Assert.assertNotNull("msg must exist", msg);
 
          int count = msg.getIntProperty(ClusterTestBase.COUNT_PROP);
 
@@ -992,7 +992,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             ClientMessage msg = holder.consumer.consumer.receive(10000);
 
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("msg must exist", msg);
 
             int p = msg.getIntProperty(ClusterTestBase.COUNT_PROP);
 
@@ -1904,14 +1904,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          ClusterTestBase.log.info("started server " + node);
          /*
-         * we need to wait a lil while between server start up to allow the server to communicate in some order.
-         * This is to avoid split brain on startup
-         * */
+          * we need to wait a little while between server start up to allow the server to
+          * communicate in some order. This is to avoid split brain on startup
+          */
          Thread.sleep(500);
       }
       for (int node : nodes)
       {
-         //wait for each server to start, it may be a backup and started in a separate thread
+         // wait for each server to start, it may be a backup and started in a separate thread
          waitForComponent(servers[node], 5);
       }
    }

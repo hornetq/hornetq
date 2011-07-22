@@ -152,12 +152,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+      final TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
 
       nodeManager = new InVMNodeManager();
+      backupConfig = createDefaultConfig();
+      liveConfig = createDefaultConfig();
 
-      backupConfig = super.createDefaultConfig();
-      liveConfig = super.createDefaultConfig();
-      TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
       ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
                                                      liveConnector);
 

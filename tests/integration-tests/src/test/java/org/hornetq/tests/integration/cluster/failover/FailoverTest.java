@@ -769,8 +769,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testXAMessagesNotSentSoNoRollbackOnCommit() throws Exception
@@ -1024,17 +1022,7 @@ public class FailoverTest extends FailoverTestBase
       ClientProducer producer = sendSession.createProducer(FailoverTestBase.ADDRESS);
 
 
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = sendSession.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
+      sendMessages(sendSession, producer,NUM_MESSAGES);
 
       Set<ClientSession> sessionSet = sessionConsumerMap.keySet();
       ClientSession[] sessions = new ClientSession[sessionSet.size()];
@@ -1521,17 +1509,7 @@ public class FailoverTest extends FailoverTestBase
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = session.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
+      sendMessages(session, producer,NUM_MESSAGES);
 
       class Committer extends Thread
       {
@@ -1589,17 +1567,7 @@ public class FailoverTest extends FailoverTestBase
       producer = session2.createProducer(FailoverTestBase.ADDRESS);
 
       // We now try and resend the messages since we get a transaction rolled back exception
-
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = session2.createMessage(true);
-
-         setBody(i, message);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
+      sendMessages(session2, producer,NUM_MESSAGES);
 
       session2.commit();
 

@@ -12,7 +12,6 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -22,11 +21,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.cluster.MessageFlowRecord;
-import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;

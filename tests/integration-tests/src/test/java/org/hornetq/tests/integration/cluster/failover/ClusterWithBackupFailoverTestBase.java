@@ -32,15 +32,14 @@ import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A ClusterWithBackupFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Mar 2009 16:31:21
  *
  *
@@ -48,7 +47,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
    private static final String QUEUE_NAME = "queue0";
-  private static final String QUEUES_TESTADDRESS = "queues.testaddress";
+   private static final String QUEUES_TESTADDRESS = "queues.testaddress";
    private static final Logger log = Logger.getLogger(ClusterWithBackupFailoverTestBase.class);
 
    protected abstract void setupCluster(final boolean forwardWhenNoConsumers) throws Exception;
@@ -197,7 +196,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(1, QUEUES_TESTADDRESS, 2, 2, false);
       waitForBindings(2, QUEUES_TESTADDRESS, 2, 2, false);
    }
-   
+
    public void testFailBackupNodes() throws Exception
    {
       setupCluster();
@@ -266,7 +265,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
 
-      
+
 
       removeConsumer(0);
       removeConsumer(1);
@@ -432,7 +431,7 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 1, true);
       // live nodes
       waitForBindings(2, QUEUES_TESTADDRESS, 1, 0, false);
-     
+
       send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 2);
 

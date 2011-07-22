@@ -898,7 +898,7 @@ public abstract class UnitTestCase extends TestCase
                                              " has running locators on test " +
                                              getName() +
                                              " on this following dump"));
-               fail("test left serverlocator running, this could effect other tests");
+               fail("test '" + getName() + "' left serverlocator running, this could effect other tests");
                // System.exit(0);
             }
             else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
