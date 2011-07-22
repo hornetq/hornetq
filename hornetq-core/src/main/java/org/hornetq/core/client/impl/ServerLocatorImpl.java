@@ -176,13 +176,19 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public static synchronized void clearThreadPools()
    {
-
       if (globalThreadPool != null)
       {
          globalThreadPool.shutdown();
+      }
+      if (globalScheduledThreadPool != null)
+      {
+         globalScheduledThreadPool.shutdown();
+      }
+      try
+      {
          try
          {
-            if (!globalThreadPool.awaitTermination(10, TimeUnit.SECONDS))
+            if (globalThreadPool != null && !globalThreadPool.awaitTermination(10, TimeUnit.SECONDS))
             {
                throw new IllegalStateException("Couldn't finish the globalThreadPool");
             }
@@ -190,29 +196,22 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          catch (InterruptedException e)
          {
          }
-         finally
-         {
-            globalThreadPool = null;
-         }
-      }
-
-      if (globalScheduledThreadPool != null)
-      {
-         globalScheduledThreadPool.shutdown();
          try
          {
-            if (!globalScheduledThreadPool.awaitTermination(10, TimeUnit.SECONDS))
+            if (globalScheduledThreadPool != null && !globalScheduledThreadPool.awaitTermination(10, TimeUnit.SECONDS))
             {
                throw new IllegalStateException("Couldn't finish the globalScheduledThreadPool");
             }
          }
+
          catch (InterruptedException e)
          {
          }
-         finally
-         {
-            globalScheduledThreadPool = null;
-         }
+      }
+      finally
+      {
+         globalThreadPool = null;
+         globalScheduledThreadPool = null;
       }
    }
 
