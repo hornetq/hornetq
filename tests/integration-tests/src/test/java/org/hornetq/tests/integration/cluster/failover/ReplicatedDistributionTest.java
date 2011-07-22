@@ -24,11 +24,11 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
 
 /**
  * A SymmetricFailoverTest
@@ -42,6 +42,10 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    // Constants -----------------------------------------------------
 
    private static final SimpleString ADDRESS = new SimpleString("test.SomeAddress");
+   private ClientSession sessionOne;
+   private ClientSession sessionThree;
+   private ClientConsumer consThree;
+   private ClientProducer producer;
 
    // Attributes ----------------------------------------------------
 
@@ -53,37 +57,9 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
    public void testRedistribution() throws Exception
    {
-      setupSessionFactory(1, 0, true, true);
-      setupSessionFactory(3, 2, true, true);
+      commonTestCode();
 
-      ClientSession sessionOne = sfs[1].createSession(true, true);
-
-      ClientSession sessionThree = sfs[3].createSession(false, false);
-
-      sessionOne.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
-
-      sessionThree.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
-
-      ClientConsumer consThree = sessionThree.createConsumer(ReplicatedDistributionTest.ADDRESS);
-
-      sessionThree.start();
-
-      waitForBindings(3, "test.SomeAddress", 1, 1, true);
-      waitForBindings(1, "test.SomeAddress", 1, 1, false);
-      try
-      {
-         ClientProducer producer = sessionOne.createProducer(ReplicatedDistributionTest.ADDRESS);
-
-         for (int i = 0; i < 100; i++)
-         {
-            ClientMessage msg = sessionOne.createMessage(true);
-
-            msg.putIntProperty(new SimpleString("key"), i);
-
-            producer.send(msg);
-         }
-
-         sessionOne.commit();
+      sessionOne.commit();
 
          for (int i = 0; i < 50; i++)
          {
@@ -144,47 +120,13 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
          Assert.assertNull(consOne.receiveImmediate());
-
-      }
-      finally
-      {
-         sessionOne.close();
-         sessionThree.close();
-      }
    }
 
    public void testSimpleRedistribution() throws Exception
    {
-      setupSessionFactory(1, 0, true, true);
-      setupSessionFactory(3, 2, true, true);
+      commonTestCode();
 
-      ClientSession sessionOne = sfs[1].createSession(true, true);
-
-      ClientSession sessionThree = sfs[3].createSession(false, false);
-
-      sessionOne.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
-
-      sessionThree.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
-
-      ClientConsumer consThree = sessionThree.createConsumer(ReplicatedDistributionTest.ADDRESS);
-
-      sessionThree.start();
-
-      waitForBindings(3, "test.SomeAddress", 1, 1, true);
-      waitForBindings(1, "test.SomeAddress", 1, 1, false);
-
-      try
-      {
-         ClientProducer producer = sessionOne.createProducer(ReplicatedDistributionTest.ADDRESS);
-
-         for (int i = 0; i < 100; i++)
-         {
-            ClientMessage msg = sessionOne.createMessage(true);
-            msg.putIntProperty(new SimpleString("key"), i);
-            producer.send(msg);
-         }
-
-         sessionOne.commit();
+      sessionOne.commit();
 
          for (int i = 0; i < 100; i++)
          {
@@ -211,12 +153,20 @@ public class ReplicatedDistributionTest extends ClusterTestBase
          ClientConsumer consOne = sessionOne.createConsumer(ReplicatedDistributionTest.ADDRESS);
 
          Assert.assertNull(consOne.receiveImmediate());
+   }
 
-      }
-      finally
+   private void commonTestCode() throws Exception, HornetQException
+   {
+      waitForBindings(3, "test.SomeAddress", 1, 1, true);
+      waitForBindings(1, "test.SomeAddress", 1, 1, false);
+
+      producer = sessionOne.createProducer(ReplicatedDistributionTest.ADDRESS);
+
+      for (int i = 0; i < 100; i++)
       {
-         sessionOne.close();
-         sessionThree.close();
+         ClientMessage msg = sessionOne.createMessage(true);
+         msg.putIntProperty(new SimpleString("key"), i);
+         producer.send(msg);
       }
    }
 
@@ -233,22 +183,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements SessionFailureListener
-      {
-         public void connectionFailed(final HornetQException me, boolean failedOver)
-         {
-            latch.countDown();
-         }
-
-         /* (non-Javadoc)
-          * @see org.hornetq.api.core.client.SessionFailureListener#beforeReconnect(org.hornetq.api.core.exception.HornetQException)
-          */
-         public void beforeReconnect(final HornetQException exception)
-         {
-         }
-      }
-
-      session.addFailureListener(new MyListener());
+      session.addFailureListener(new CountDownSessionFailureListener(latch));
 
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
@@ -280,9 +215,33 @@ public class ReplicatedDistributionTest extends ClusterTestBase
       getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
       getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
 
-      servers[2].start();
       servers[1].start();
       servers[3].start();
+      servers[2].start();
+
+      setupSessionFactory(1, 0, true, true);
+      setupSessionFactory(3, 2, true, true);
+
+      sessionOne = sfs[1].createSession(true, true);
+      sessionThree = sfs[3].createSession(false, false);
+
+      sessionOne.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
+      sessionThree.createQueue(ReplicatedDistributionTest.ADDRESS, ReplicatedDistributionTest.ADDRESS, true);
+
+      consThree = sessionThree.createConsumer(ReplicatedDistributionTest.ADDRESS);
+
+      sessionThree.start();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      if (sessionOne != null)
+         sessionOne.close();
+      if (sessionThree != null)
+         sessionThree.close();
+
+      super.tearDown();
    }
 
    protected boolean isShared()
