@@ -294,7 +294,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          for (Binding binding : bindings.getBindings())
          {
-            if (binding instanceof LocalQueueBinding && local || binding instanceof RemoteQueueBinding && !local)
+            if ((binding instanceof LocalQueueBinding && local) || (binding instanceof RemoteQueueBinding && !local))
             {
                QueueBinding qBinding = (QueueBinding)binding;
 
@@ -315,10 +315,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
-      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
-                   ", totConsumers = " +
-                   totConsumers +
-                   ")";
+      String msg =
+               "Timed out waiting for bindings [bindingCount = " + bindingCount + " (expected=" + count +
+                        ")], [totConsumers = " + totConsumers + ", expected" + consumerCount + ")";
 
       ClusterTestBase.log.error(msg);
 
