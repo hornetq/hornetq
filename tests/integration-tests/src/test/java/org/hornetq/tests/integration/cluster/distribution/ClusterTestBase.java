@@ -1881,8 +1881,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
 
       TransportConfiguration connectorConfig = createTransportConfiguration(netty, false, generateParams(node, netty));
-      server.getConfiguration().getConnectorConfigurations().put(name, connectorConfig);
-      
+      Configuration config = server.getConfiguration();
+      config.getConnectorConfigurations().put(name, connectorConfig);
+      assertEquals(config.isBackup(), node > 2);
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
                                                                                       address,
                                                                                       name,
