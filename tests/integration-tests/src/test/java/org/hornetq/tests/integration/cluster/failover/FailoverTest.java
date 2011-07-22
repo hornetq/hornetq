@@ -684,13 +684,13 @@ public class FailoverTest extends FailoverTestBase
    {
       createSessionFactory();
 
-      ClientSession session = createSession(sf, true, false, false);
+      final ClientSession session = createSession(sf, true, false, false);
 
       Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
 
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
 
-      ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
 
 
@@ -711,6 +711,7 @@ public class FailoverTest extends FailoverTestBase
       catch (XAException e)
       {
          Assert.assertEquals(XAException.XA_RBOTHER, e.errorCode);
+         session.rollback();
       }
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
@@ -721,6 +722,8 @@ public class FailoverTest extends FailoverTestBase
 
       Assert.assertNull(message);
 
+      producer.close();
+      consumer.close();
       session.close();
 
       closeSessionFactory();
