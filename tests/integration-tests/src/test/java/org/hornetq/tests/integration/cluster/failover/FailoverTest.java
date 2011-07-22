@@ -101,6 +101,7 @@ public class FailoverTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      closeSessionFactory();
       locator.close();
       super.tearDown();
    }
@@ -302,7 +303,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-285
@@ -334,8 +334,6 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testTransactedMessagesSentSoRollback() throws Exception
@@ -1356,7 +1354,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
    }
 
    public void testCommitOccurredUnblockedAndResendNoDuplicates() throws Exception
@@ -1504,6 +1501,8 @@ public class FailoverTest extends FailoverTestBase
 
    private void closeSessionFactory()
    {
+      if (sf == null)
+         return;
       sf.close();
       Assert.assertEquals(0, sf.numSessions());
       Assert.assertEquals(0, sf.numConnections());
@@ -1616,7 +1615,6 @@ public class FailoverTest extends FailoverTestBase
 
       session2.close();
 
-      closeSessionFactory();
    }
 
    public void testBackupServerNotRemoved() throws Exception
@@ -1663,8 +1661,6 @@ public class FailoverTest extends FailoverTestBase
       producer.send(message);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testLiveAndBackupLiveComesBack() throws Exception
@@ -1713,7 +1709,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
    }
 
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
