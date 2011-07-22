@@ -26,8 +26,6 @@ package org.hornetq.tests.integration.cluster.failover;
  * A FileStorageClusterWithBackupFailoverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class FileStorageDiscoveryClusterWithBackupFailoverTest extends DiscoveryClusterWithBackupFailoverTest
 {

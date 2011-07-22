@@ -369,7 +369,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull(message);
+      Assert.assertNull("null message", message);
 
       session.close();
 
@@ -1582,7 +1582,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull(message);
+      Assert.assertNull("Null message", message);
 
       session2.close();
 

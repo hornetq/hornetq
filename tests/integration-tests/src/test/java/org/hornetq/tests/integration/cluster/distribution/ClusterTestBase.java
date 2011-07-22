@@ -1549,21 +1549,21 @@ public abstract class ClusterTestBase extends ServiceTestBase
       configuration.setJournalCompactMinFiles(0);
       configuration.setBackup(true);
 
+      // add acceptor
       configuration.getAcceptorConfigurations().clear();
       TransportConfiguration acceptorConfig = createTransportConfiguration(netty, true, generateParams(node, netty));
       configuration.getAcceptorConfigurations().add(acceptorConfig);
-      //add backup connector
+
+
+      // add backup connector
       TransportConfiguration liveConfig = createTransportConfiguration(netty, false, generateParams(liveNode, netty));
       configuration.getConnectorConfigurations().put(liveConfig.getName(), liveConfig);
       TransportConfiguration backupConfig = createTransportConfiguration(netty, false, generateParams(node, netty));
       configuration.getConnectorConfigurations().put(backupConfig.getName(), backupConfig);
 
       configuration.setLiveConnectorName(liveConfig.getName());
-      HornetQServer server;
 
-      server = createInVMFailoverServer(fileStorage, configuration, nodeManager);
-
-      servers[node] = server;
+      servers[node] = createInVMFailoverServer(fileStorage, configuration, nodeManager);
    }
 
    protected void setupLiveServerWithDiscovery(final int node,
