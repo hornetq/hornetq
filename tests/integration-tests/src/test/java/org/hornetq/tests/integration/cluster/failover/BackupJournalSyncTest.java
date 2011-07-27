@@ -51,7 +51,6 @@ public class BackupJournalSyncTest extends FailoverTestBase
       assertFalse("backup is not started!", backupServer.isStarted());
 
       // BLOCK ON journals
-      // SYNC, (UNSET reclaim, lock, use next file, get file list, sync) iterate
       backupServer.start();
 
       waitForBackup(sessionFactory, 5);

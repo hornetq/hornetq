@@ -493,7 +493,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#perfBlast(int)
     */
-   public void perfBlast(final int pages) throws Exception
+   public void perfBlast(final int pages)
    {
       localJournal.perfBlast(pages);
    }

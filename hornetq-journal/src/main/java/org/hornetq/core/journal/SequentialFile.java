@@ -19,12 +19,12 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.impl.TimedBuffer;
 
 /**
- * 
+ *
  * A SequentialFile
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  */
 public interface SequentialFile
 {
@@ -69,7 +69,7 @@ public interface SequentialFile
 
    /** Write directly to the file without using any buffer */
    void writeDirect(ByteBuffer bytes, boolean sync) throws Exception;
-   
+
    /** Write directly to the file.
     *  This is used by compacting and other places where we write a big buffer in a single shot.
     *  writeInternal should always block until the entire write is sync on disk */
@@ -94,7 +94,7 @@ public interface SequentialFile
    void renameTo(String newFileName) throws Exception;
 
    SequentialFile copy();
-   
+
    void copyTo(SequentialFile newFileName) throws Exception;
 
    void setTimedBuffer(TimedBuffer buffer);

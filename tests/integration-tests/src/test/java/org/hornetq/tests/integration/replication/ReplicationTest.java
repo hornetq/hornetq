@@ -726,7 +726,7 @@ public class ReplicationTest extends ServiceTestBase
          return new JournalLoadInformation();
       }
 
-      public void perfBlast(final int pages) throws Exception
+      public void perfBlast(final int pages)
       {
 
       }

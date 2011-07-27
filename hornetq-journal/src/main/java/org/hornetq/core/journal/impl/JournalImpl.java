@@ -2395,7 +2395,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    /** Method for use on testcases.
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
-   public void debugWait() throws Exception
+   public void debugWait() throws InterruptedException
    {
       fileFactory.flush();
 
@@ -2501,7 +2501,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void perfBlast(final int pages) throws Exception
+   public void perfBlast(final int pages)
    {
       new PerfBlast(pages).start();
    }
