@@ -26,9 +26,9 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A AIOSequentialFile
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -227,7 +227,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    public void sync() throws Exception
    {
-      throw new IllegalArgumentException("This method is not supported on AIO");
+      throw new UnsupportedOperationException("This method is not supported on AIO");
    }
 
    public long size() throws Exception
@@ -268,7 +268,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
    }
 
    /**
-    * 
+    *
     * @param sync Not used on AIO
     *  */
    public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
