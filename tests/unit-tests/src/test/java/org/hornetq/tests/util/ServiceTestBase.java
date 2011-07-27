@@ -24,7 +24,9 @@ import javax.management.MBeanServer;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -33,7 +35,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -70,14 +71,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       for (ServerLocator locator : locators)
       {
-         try
-         {
-            locator.close();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
+         closeServerLocator(locator);
       }
       locators.clear();
       super.tearDown();
@@ -87,6 +81,20 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (InVMRegistry.instance.size() > 0)
       {
          fail("InVMREgistry size > 0");
+      }
+   }
+
+   public static final void closeServerLocator(ServerLocator locator)
+   {
+      if (locator == null)
+         return;
+      try
+      {
+         locator.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
       }
    }
 
@@ -111,12 +119,19 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected final void stopComponent(HornetQComponent component) throws Exception
+   protected static final void stopComponent(HornetQComponent component)
    {
       if (component == null)
          return;
       if (component.isStarted())
-         component.stop();
+         try
+         {
+            component.stop();
+         }
+         catch (Exception e)
+         {
+            // no-op
+         }
    }
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)
@@ -165,9 +180,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
       return new TransportConfiguration(className, params);
    }
-
-   // Static --------------------------------------------------------
-   private final Logger log = Logger.getLogger(this.getClass());
 
    // Constructors --------------------------------------------------
 
@@ -507,7 +519,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     * @param numMessages
     * @throws Exception
     */
-   public void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
+   public final void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
    {
       for (int i = 0; i < numMessages; i++)
       {
@@ -518,6 +530,19 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+
+   protected final
+            void receiveMessagesAndAck(ClientConsumer consumer, int start, int msgCount) throws HornetQException
+   {
+      for (int i = start; i < msgCount; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+         Assert.assertNotNull(message);
+         assertMessageBody(i, message);
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+         message.acknowledge();
+      }
+   }
 
    /**
     * Deleting a file on LargeDire is an asynchronous process. We need to keep looking for a while

@@ -182,8 +182,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      backupServer.stop();
-      liveServer.stop();
+      stopComponent(backupServer);
+      stopComponent(liveServer);
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
@@ -230,11 +230,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       return sf;
    }
 
-   protected static void waitForBackup(ClientSessionFactoryInternal sf, long seconds) throws Exception
+   protected static void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
    {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (sf.getBackupConnector() == null)
+      final long toWait = seconds * 1000;
+      final long time = System.currentTimeMillis();
+      while (sessionFactory.getBackupConnector() == null)
       {
          try
          {
@@ -244,7 +244,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          {
             //ignore
          }
-         if (sf.getBackupConnector() != null)
+         if (sessionFactory.getBackupConnector() != null)
          {
             break;
          }
@@ -253,7 +253,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
             fail("backup server never started");
          }
       }
-      System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
+      System.out.println("sf.getBackupConnector() = " + sessionFactory.getBackupConnector());
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)

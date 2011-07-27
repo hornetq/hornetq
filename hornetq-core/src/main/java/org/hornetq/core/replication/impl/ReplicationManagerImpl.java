@@ -370,9 +370,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
-    */
    public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
    {
       replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));

@@ -54,17 +54,7 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (locator != null)
-      {
-         try
-         {
-            locator.close();
-         }
-         catch (Exception e)
-         {
-            //
-         }
-      }
+      closeServerLocator(locator);
       super.tearDown();
    }
 

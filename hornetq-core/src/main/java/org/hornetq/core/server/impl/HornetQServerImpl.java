@@ -153,7 +153,7 @@ public class HornetQServerImpl implements HornetQServer
    public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
    // Static
-   // ---------------------------------------------------------------------------------------
+   // -----------------------------------------------------------------------------------
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -2005,6 +2005,7 @@ public class HornetQServerImpl implements HornetQServer
       if (!(storageManager instanceof JournalStorageManager))
          return;
       JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
+
 
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();

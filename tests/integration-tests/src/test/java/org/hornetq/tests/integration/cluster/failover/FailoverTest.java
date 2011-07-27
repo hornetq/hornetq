@@ -102,7 +102,7 @@ public class FailoverTest extends FailoverTestBase
    protected void tearDown() throws Exception
    {
       closeSessionFactory();
-      locator.close();
+      closeServerLocator(locator);
       super.tearDown();
    }
 
@@ -215,7 +215,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       crash(session);
 
@@ -346,7 +346,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       crash(session);
 
@@ -390,7 +390,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       crash(session);
 
@@ -442,7 +442,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       session.commit();
 
@@ -484,7 +484,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       // messages will be delivered to the consumer when the session is committed
       session.commit();
@@ -524,7 +524,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session1, producer);
+      sendMessagesSomeDurable(session1, producer);
 
       session1.commit();
 
@@ -652,7 +652,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       crash(session);
 
@@ -696,7 +696,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -746,7 +746,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -790,7 +790,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start(xid, XAResource.TMNOFLAGS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       session.end(xid, XAResource.TMSUCCESS);
 
@@ -831,7 +831,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session1, producer);
+      sendMessagesSomeDurable(session1, producer);
 
       session1.commit();
 
@@ -877,7 +877,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session1, producer);
+      sendMessagesSomeDurable(session1, producer);
 
       session1.commit();
 
@@ -925,7 +925,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session1.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session1, producer);
+      sendMessagesSomeDurable(session1, producer);
 
       session1.commit();
 
@@ -1067,7 +1067,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS, true);
 
@@ -1093,11 +1093,13 @@ public class FailoverTest extends FailoverTestBase
       closeSessionFactory();
    }
 
-   private void sendMessages(ClientSession session, ClientProducer producer) throws Exception, HornetQException
+   private void sendMessagesSomeDurable(ClientSession session, ClientProducer producer) throws Exception, HornetQException
    {
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         ClientMessage message = session.createMessage(isDurable(i));
+         // some are durable, some are not!
+         boolean durable = isDurable(i);
+         ClientMessage message = session.createMessage(durable);
          setBody(i, message);
          message.putIntProperty("counter", i);
          producer.send(message);
@@ -1114,7 +1116,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1179,7 +1181,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
 
@@ -1203,19 +1205,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       // Should get the same ones after failover since we didn't ack
-
-      for (int i = NUM_MESSAGES; i < NUM_MESSAGES * 2; i++)
-      {
-         ClientMessage message = consumer.receive(1000);
-
-         Assert.assertNotNull(message);
-
-         assertMessageBody(i, message);
-
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
-
-         message.acknowledge();
-      }
+      receiveMessagesAndAck(consumer, NUM_MESSAGES, NUM_MESSAGES * 2);
 
       session.close();
 
@@ -1224,14 +1214,7 @@ public class FailoverTest extends FailoverTestBase
 
    private void receiveMessages(ClientConsumer consumer) throws HornetQException
    {
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = consumer.receive(1000);
-         Assert.assertNotNull(message);
-         assertMessageBody(i, message);
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
-         message.acknowledge();
-      }
+      receiveMessagesAndAck(consumer, 0, NUM_MESSAGES);
    }
 
    public void testSimpleSendAfterFailoverDurableTemporary() throws Exception
@@ -1281,7 +1264,7 @@ public class FailoverTest extends FailoverTestBase
 
       crash(session);
 
-      sendMessages(session, producer);
+      sendMessagesSomeDurable(session, producer);
 
       receiveMessages(consumer);
 
