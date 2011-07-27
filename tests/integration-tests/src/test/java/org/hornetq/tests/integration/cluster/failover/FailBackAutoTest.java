@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -28,12 +27,12 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
@@ -80,7 +79,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      MyListener listener = new MyListener(latch);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
 
       session.addFailureListener(listener);
 
@@ -104,7 +103,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       final CountDownLatch latch2 = new CountDownLatch(1);
 
-      listener = new MyListener(latch2);
+      listener = new CountDownSessionFailureListener(latch2);
 
       session.addFailureListener(listener);
 
@@ -134,11 +133,10 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
 
-      MyListener listener = new MyListener(latch);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
@@ -148,7 +146,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       backupServer.start();
 
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -160,15 +158,13 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      CountDownLatch latch2 = new CountDownLatch(1);
-
-      listener = new MyListener(latch2);
+      listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
       liveServer.start();
 
-      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+      assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
 
@@ -180,7 +176,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      listener = new MyListener(latch3);
+      listener = new CountDownSessionFailureListener(latch3);
 
       session.addFailureListener(listener);
 
@@ -309,23 +305,4 @@ public class FailBackAutoTest extends FailoverTestBase
       message.getBodyBuffer().writeString("message" + i);
    }
 
-   class MyListener implements SessionFailureListener
-   {
-      private final CountDownLatch latch;
-
-      public MyListener(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void connectionFailed(final HornetQException me, boolean failedOver)
-      {
-         latch.countDown();
-      }
-
-      public void beforeReconnect(HornetQException exception)
-      {
-         System.out.println("MyListener.beforeReconnect");
-      }
-   }
 }

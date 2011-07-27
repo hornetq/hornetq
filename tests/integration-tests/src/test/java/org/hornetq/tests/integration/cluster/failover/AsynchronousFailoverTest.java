@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
@@ -28,10 +27,10 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
@@ -47,25 +46,11 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 {
    private static final Logger log = Logger.getLogger(AsynchronousFailoverTest.class);
 
-   private volatile MyListener listener;
+   private volatile CountDownSessionFailureListener listener;
 
    private volatile ClientSessionFactoryInternal sf;
 
    private final Object lockFail = new Object();
-
-   class MyListener implements SessionFailureListener
-   {
-      CountDownLatch latch = new CountDownLatch(1);
-
-      public void connectionFailed(final HornetQException me, boolean failedOver)
-      {
-         latch.countDown();
-      }
-
-      public void beforeReconnect(final HornetQException me)
-      {
-      }
-   }
 
    public void testNonTransactional() throws Throwable
    {
@@ -256,11 +241,9 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          ClientSession session = sf.createSession(true, true, 0);
 
-         MyListener listener = new MyListener();
+         listener = new CountDownSessionFailureListener();
 
          session.addFailureListener(listener);
-
-         this.listener = listener;
 
          ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -380,15 +363,14 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          try
          {
 
-            MyListener listener = new MyListener();
 
-            this.listener = listener;
             boolean retry = false;
 
             final int numMessages = 1000;
 
             session = sf.createSession(false, false);
 
+            listener = new CountDownSessionFailureListener();
             session.addFailureListener(listener);
 
             do
