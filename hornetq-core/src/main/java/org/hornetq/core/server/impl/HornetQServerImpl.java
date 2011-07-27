@@ -2003,9 +2003,11 @@ public class HornetQServerImpl implements HornetQServer
    public void addHaBackup(CoreRemotingConnection rc) throws Exception
    {
       if (!(storageManager instanceof JournalStorageManager))
-         return;
-      JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "unknown implementation of JournalStorageManager!");
+      }
 
+      JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
 
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();

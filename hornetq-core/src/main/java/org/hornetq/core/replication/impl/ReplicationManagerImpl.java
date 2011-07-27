@@ -13,6 +13,8 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -24,9 +26,11 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
@@ -40,6 +44,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFile;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
@@ -463,8 +468,10 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private class ResponseHandler implements ChannelHandler
    {
-      /* (non-Javadoc)
-       * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
+      /*
+       * (non-Javadoc)
+       * @see
+       * org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
        */
       public void handlePacket(final Packet packet)
       {
@@ -494,6 +501,21 @@ public class ReplicationManagerImpl implements ReplicationManager
          return 0;
       }
 
+   }
+
+   @Override
+   public void sendJournalFile(JournalFile jf, JournalContent content) throws IOException, HornetQException
+   {
+      FileInputStream file = new FileInputStream(jf.getFile().getFileName());
+      byte[] data = new byte[1 << 17]; // about 130 kB
+      while (true)
+      {
+         int bytesRead = file.read(data);
+         if (bytesRead == -1)
+            break;
+         replicatingChannel.sendBlocking(new ReplicationJournalFile(bytesRead, data, content));
+      }
+      throw new UnsupportedOperationException();
    }
 
 }

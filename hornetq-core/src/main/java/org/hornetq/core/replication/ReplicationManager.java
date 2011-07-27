@@ -13,20 +13,23 @@
 
 package org.hornetq.core.replication;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
  * Used by the {@link JournalStorageManager} to update the replicated journal.
- * 
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
 public interface ReplicationManager extends HornetQComponent
@@ -83,5 +86,11 @@ public interface ReplicationManager extends HornetQComponent
     * @throws HornetQException
     */
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
+
+   /**
+    * Sends the whole content of the file to be duplicated.
+    * @throws HornetQException
+    */
+   void sendJournalFile(JournalFile jf, JournalContent type) throws IOException, HornetQException;
 
 }

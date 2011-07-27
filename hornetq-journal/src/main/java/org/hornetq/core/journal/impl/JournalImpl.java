@@ -65,15 +65,11 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 
 /**
- *
- * <p>A circular log implementation.</p
- *
- * <p>Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
- *
+ * A circular log implementation.
+ * <p>
+ * Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public class JournalImpl implements TestableJournal, JournalRecordProvider
 {
@@ -1824,7 +1820,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             compactor = null;
          }
-         autoReclaim = previousReclaimValue;
+         setAutoReclaim(previousReclaimValue);
       }
 
    }
@@ -2350,11 +2346,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    public void setAutoReclaim(final boolean autoReclaim)
    {
       this.autoReclaim = autoReclaim;
-   }
-
-   public boolean isAutoReclaim()
-   {
-      return autoReclaim;
    }
 
    public String debug() throws Exception
@@ -3266,4 +3257,13 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
+   public void writeLock()
+   {
+      journalLock.writeLock().lock();
+   }
+
+   public void writeUnlock()
+   {
+      journalLock.writeLock().unlock();
+   }
 }

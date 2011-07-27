@@ -51,12 +51,9 @@ public interface TestableJournal extends Journal
 
    void setAutoReclaim(boolean autoReclaim);
 
-   boolean isAutoReclaim();
-
    void testCompact() throws Exception;
    
    JournalFile getCurrentFile();
-   
 
    /** This method is called automatically when a new file is opened.
     * @return true if it needs to re-check due to cleanup or other factors  */

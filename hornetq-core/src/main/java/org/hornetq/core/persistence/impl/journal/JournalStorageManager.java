@@ -14,6 +14,7 @@
 package org.hornetq.core.persistence.impl.journal;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
@@ -156,6 +157,11 @@ public class JournalStorageManager implements StorageManager
    private final BatchingIDGenerator idGenerator;
 
    private ReplicationManager replicator;
+
+   public enum JournalContent
+   {
+      MESSAGES, BINDINGS;
+   }
 
    private Journal messageJournal;
 
@@ -321,15 +327,74 @@ public class JournalStorageManager implements StorageManager
       return replicator != null;
    }
 
-   public void setReplicator(ReplicationManager replicationManager)
+   /**
+    * XXX FIXME Method ignores the synchronization of LargeMessages and Paging.
+    * <p>
+    * XXX A second version improvement would be to allow new operations to be sent to the backup,
+    * while we synchronize the existing logs.
+    * @param replicationManager
+    * @throws HornetQException
+    */
+   public void setReplicator(ReplicationManager replicationManager) throws Exception
    {
       assert replicationManager != null;
       replicator = replicationManager;
-      Journal localMessageJournal = messageJournal;
-      Journal localBindingsJournal = bindingsJournal;
+
+      if (!(messageJournal instanceof JournalImpl) || !(bindingsJournal instanceof JournalImpl))
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                    "journals here are not JournalImpl. You can't set a replicator!");
+      }
+      JournalImpl localMessageJournal = (JournalImpl)messageJournal;
+      JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
+      if (false)
+      {
+      localMessageJournal.writeLock();
+      localBindingsJournal.writeLock();
+
+      JournalFile[] messageFiles = prepateJournalForCopy(localMessageJournal);
+      JournalFile[] bindingsFiles = prepateJournalForCopy(localBindingsJournal);
+      localMessageJournal.writeUnlock();
+      localBindingsJournal.writeUnlock();
+
+      sendJournalFile(messageFiles, JournalContent.MESSAGES);
+      sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+      }
+      // XXX NEED to take a global lock on the StorageManager.
       bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
       messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
-      // XXX HORNETQ-720 obviously missing here is the synchronization step.
+   }
+
+   /**
+    * Send an entire journal file to a replicating server (a backup server that is).
+    * @param jf
+    * @param replicator2
+    * @throws IOException
+    * @throws HornetQException
+    */
+   private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws IOException, HornetQException
+   {
+      for (JournalFile jf : journalFiles)
+      {
+         replicator.sendJournalFile(jf, type);
+         jf.setCanReclaim(true);
+      }
+   }
+
+   private JournalFile[] prepateJournalForCopy(JournalImpl journal) throws Exception
+   {
+      journal.setAutoReclaim(false);
+      /*
+       * need to check whether it is safe to proceed if compacting is running (specially at the end
+       * of it)
+       */
+      journal.forceMoveNextFile();
+      JournalFile[] datafiles = journal.getDataFiles();
+      for (JournalFile jf : datafiles)
+      {
+         jf.setCanReclaim(false);
+      }
+      return datafiles;
    }
 
    public void waitOnOperations() throws Exception

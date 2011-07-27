@@ -321,10 +321,10 @@ public class JournalFilesRepository
       return openedFiles.size();
    }
 
-   /** 
+   /**
     * <p>This method will instantly return the opened file, and schedule opening and reclaiming.</p>
     * <p>In case there are no cached opened files, this method will block until the file was opened,
-    * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as HornetQ).</p> 
+    * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as HornetQ).</p>
     * */
    public JournalFile openFile() throws InterruptedException
    {
@@ -377,8 +377,8 @@ public class JournalFilesRepository
       return nextFile;
    }
 
-   /** 
-    * 
+   /**
+    *
     * Open a file and place it into the openedFiles queue
     * */
    public void pushOpenedFile() throws Exception
