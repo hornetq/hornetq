@@ -71,6 +71,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected NodeManager nodeManager;
 
+   protected boolean startBackupServer = true;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -102,7 +104,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       liveServer.start();
 
-      if (backupServer != null)
+      if (backupServer != null && startBackupServer)
       {
          backupServer.start();
       }
@@ -170,7 +172,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupServer = createBackupServer();
       backupServer.getServer().setIdentity("idBackup");
 
-
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
@@ -215,8 +216,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator, int topologyMembers)
-         throws Exception
+   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator,
+                                                                                 int topologyMembers) throws Exception
    {
       ClientSessionFactoryInternal sf;
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);

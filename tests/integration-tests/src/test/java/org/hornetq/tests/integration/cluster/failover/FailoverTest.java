@@ -1120,6 +1120,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
+      // Receive MSGs but don't ack!
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
          ClientMessage message = consumer.receive(1000);
