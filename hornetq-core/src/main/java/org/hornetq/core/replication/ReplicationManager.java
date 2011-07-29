@@ -93,4 +93,12 @@ public interface ReplicationManager extends HornetQComponent
     */
    void sendJournalFile(JournalFile jf, JournalContent type) throws IOException, HornetQException;
 
+   /**
+    * Reserve the following fileIDs in the backup server.
+    * @param datafiles
+    * @param contentType
+    * @throws HornetQException
+    */
+   void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException;
+
 }

@@ -106,6 +106,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
@@ -529,6 +530,11 @@ public final class PacketDecoder
          case PacketImpl.HA_BACKUP_REGISTRATION:
          {
             packet = new HaBackupRegistrationMessage();
+            break;
+         }
+         case PacketImpl.REPLICATION_FILE_ID:
+         {
+            packet = new ReplicationFileIdMessage();
             break;
          }
          default:

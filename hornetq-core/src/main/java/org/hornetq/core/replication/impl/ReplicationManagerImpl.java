@@ -44,7 +44,8 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFile;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
@@ -507,15 +508,23 @@ public class ReplicationManagerImpl implements ReplicationManager
    public void sendJournalFile(JournalFile jf, JournalContent content) throws IOException, HornetQException
    {
       FileInputStream file = new FileInputStream(jf.getFile().getFileName());
-      byte[] data = new byte[1 << 17]; // about 130 kB
+      final long id = jf.getFileID();
+      final byte[] data = new byte[1 << 17]; // about 130 kB
       while (true)
       {
          int bytesRead = file.read(data);
          if (bytesRead == -1)
             break;
-         replicatingChannel.sendBlocking(new ReplicationJournalFile(bytesRead, data, content));
+         replicatingChannel.sendBlocking(new ReplicationJournalFileMessage(bytesRead, data, content, id));
       }
+      // XXX probably need to sync the JournalFile(?)
       throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
+   {
+      replicatingChannel.sendBlocking(new ReplicationFileIdMessage(datafiles, contentType));
    }
 
 }

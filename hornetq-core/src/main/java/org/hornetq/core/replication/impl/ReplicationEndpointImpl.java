@@ -21,6 +21,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
@@ -28,6 +29,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -39,6 +41,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
@@ -80,9 +83,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    private JournalLoadInformation[] journalLoadInformation;
 
-   private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex = new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
-
-   private final ConcurrentMap<Long, LargeServerMessage> largeMessages = new ConcurrentHashMap<Long, LargeServerMessage>();
+   private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex =
+            new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
+   private final ConcurrentMap<Long, LargeServerMessage> largeMessages =
+            new ConcurrentHashMap<Long, LargeServerMessage>();
 
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
@@ -176,6 +180,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
+         else if (type == PacketImpl.REPLICATION_FILE_ID)
+         {
+            handleJournalFileIdReservation((ReplicationFileIdMessage)packet);
+         }
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
@@ -215,8 +223,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       server.getManagementService().setStorageManager(storage);
 
-      registerJournal((byte)1, storage.getMessageJournal());
-      registerJournal((byte)0, storage.getBindingsJournal());
+      registerJournal(JournalContent.MESSAGES.typeByte, storage.getMessageJournal());
+      registerJournal(JournalContent.BINDINGS.typeByte, storage.getBindingsJournal());
 
       // We only need to load internal structures on the backup...
       journalLoadInformation = storage.loadInternalOnly();
@@ -353,9 +361,24 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   /**
-    * @param packet
-    */
+
+   private void handleJournalFileIdReservation(final ReplicationFileIdMessage packet) throws HornetQException
+   {
+      final Journal journalIf = journals[packet.getJournalContentType().typeByte];
+      if (journalIf.isStarted())
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Journal can not be started!");
+      }
+
+      if (!(journalIf instanceof JournalImpl))
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                    "Journals of backup server are expected to be JournalImpl");
+      }
+      JournalImpl journal = (JournalImpl)journalIf;
+
+   }
+
    private void handleLargeMessageEnd(final ReplicationLargemessageEndMessage packet)
    {
       LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), true);

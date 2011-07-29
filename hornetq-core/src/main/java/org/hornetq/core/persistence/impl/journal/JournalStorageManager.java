@@ -160,7 +160,22 @@ public class JournalStorageManager implements StorageManager
 
    public enum JournalContent
    {
-      MESSAGES, BINDINGS;
+      BINDINGS((byte)0),      MESSAGES((byte)1);
+
+      public final byte typeByte;
+
+      JournalContent(byte b){
+         typeByte = b;
+      }
+
+      public static JournalContent getType(byte type)
+      {
+         if (MESSAGES.typeByte == type)
+            return MESSAGES;
+         if (BINDINGS.typeByte == type)
+            return BINDINGS;
+         throw new RuntimeException("invalid byte");
+      }
    }
 
    private Journal messageJournal;
@@ -337,6 +352,10 @@ public class JournalStorageManager implements StorageManager
     */
    public void setReplicator(ReplicationManager replicationManager) throws Exception
    {
+      if (!started)
+      {
+         throw new IllegalStateException("must be started...");
+      }
       assert replicationManager != null;
       replicator = replicationManager;
 
@@ -345,24 +364,28 @@ public class JournalStorageManager implements StorageManager
          throw new HornetQException(HornetQException.INTERNAL_ERROR,
                                     "journals here are not JournalImpl. You can't set a replicator!");
       }
-      JournalImpl localMessageJournal = (JournalImpl)messageJournal;
-      JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
-      if (false)
-      {
+      // XXX NEED to take a global lock on the StorageManager.
+
+      final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
+      final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
+
       localMessageJournal.writeLock();
       localBindingsJournal.writeLock();
 
-      JournalFile[] messageFiles = prepateJournalForCopy(localMessageJournal);
-      JournalFile[] bindingsFiles = prepateJournalForCopy(localBindingsJournal);
+      JournalFile[] messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
+      JournalFile[] bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+
       localMessageJournal.writeUnlock();
       localBindingsJournal.writeUnlock();
 
-      sendJournalFile(messageFiles, JournalContent.MESSAGES);
-      sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
-      }
-      // XXX NEED to take a global lock on the StorageManager.
+
       bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
       messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
+
+      sendJournalFile(messageFiles, JournalContent.MESSAGES);
+      sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+
+      // SEND "SYNC_DONE" msg to backup telling it can become operational.
    }
 
    /**
@@ -381,12 +404,12 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private JournalFile[] prepateJournalForCopy(JournalImpl journal) throws Exception
+   private JournalFile[] prepareJournalForCopy(JournalImpl journal, JournalContent contentType) throws Exception
    {
       journal.setAutoReclaim(false);
       /*
-       * need to check whether it is safe to proceed if compacting is running (specially at the end
-       * of it)
+       * XXX need to check whether it is safe to proceed if compacting is running (specially at the
+       * end of it)
        */
       journal.forceMoveNextFile();
       JournalFile[] datafiles = journal.getDataFiles();
@@ -394,6 +417,7 @@ public class JournalStorageManager implements StorageManager
       {
          jf.setCanReclaim(false);
       }
+      replicator.reserveFileIds(datafiles, contentType);
       return datafiles;
    }
 
