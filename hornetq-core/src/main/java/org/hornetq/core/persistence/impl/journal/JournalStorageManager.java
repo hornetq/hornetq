@@ -343,10 +343,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * XXX FIXME Method ignores the synchronization of LargeMessages and Paging.
-    * <p>
-    * XXX A second version improvement would be to allow new operations to be sent to the backup,
-    * while we synchronize the existing logs.
+    * XXX FIXME HORNETQ-720 Method ignores the synchronization of LargeMessages and Paging.
     * @param replicationManager
     * @throws HornetQException
     */
@@ -354,7 +351,7 @@ public class JournalStorageManager implements StorageManager
    {
       if (!started)
       {
-         throw new IllegalStateException("must be started...");
+         throw new IllegalStateException("JournalStorageManager must be started...");
       }
       assert replicationManager != null;
       replicator = replicationManager;
@@ -364,7 +361,7 @@ public class JournalStorageManager implements StorageManager
          throw new HornetQException(HornetQException.INTERNAL_ERROR,
                                     "journals here are not JournalImpl. You can't set a replicator!");
       }
-      // XXX NEED to take a global lock on the StorageManager.
+      // XXX HORNETQ-720 WRITE LOCK the StorageManager.
 
       final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
       final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
@@ -378,14 +375,15 @@ public class JournalStorageManager implements StorageManager
       localMessageJournal.writeUnlock();
       localBindingsJournal.writeUnlock();
 
-
       bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
       messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
+
+      // XXX HORNETQ-720 UNLOCK StorageManager...
 
       sendJournalFile(messageFiles, JournalContent.MESSAGES);
       sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
 
-      // SEND "SYNC_DONE" msg to backup telling it can become operational.
+      replicator.sendSynchronizationDone();
    }
 
    /**
@@ -408,8 +406,8 @@ public class JournalStorageManager implements StorageManager
    {
       journal.setAutoReclaim(false);
       /*
-       * XXX need to check whether it is safe to proceed if compacting is running (specially at the
-       * end of it)
+       * XXX HORNETQ-720 need to check whether it is safe to proceed if compacting is running
+       * (specially at the end of it)
        */
       journal.forceMoveNextFile();
       JournalFile[] datafiles = journal.getDataFiles();

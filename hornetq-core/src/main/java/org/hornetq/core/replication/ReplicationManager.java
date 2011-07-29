@@ -101,4 +101,11 @@ public interface ReplicationManager extends HornetQComponent
     */
    void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException;
 
+   /**
+    * Informs backup that data synchronization is done.
+    * <p>
+    * So if 'live' fails, the (up-to-date) backup now may take over its duties.
+    */
+   void sendSynchronizationDone();
+
 }

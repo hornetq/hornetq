@@ -513,9 +513,10 @@ public class ReplicationManagerImpl implements ReplicationManager
       while (true)
       {
          int bytesRead = file.read(data);
+         // sending -1 bytes will close the file.
+         replicatingChannel.send(new ReplicationJournalFileMessage(bytesRead, data, content, id));
          if (bytesRead == -1)
             break;
-         replicatingChannel.sendBlocking(new ReplicationJournalFileMessage(bytesRead, data, content, id));
       }
       // XXX probably need to sync the JournalFile(?)
       throw new UnsupportedOperationException();
@@ -524,7 +525,13 @@ public class ReplicationManagerImpl implements ReplicationManager
    @Override
    public void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
    {
-      replicatingChannel.sendBlocking(new ReplicationFileIdMessage(datafiles, contentType));
+      replicatingChannel.send(new ReplicationFileIdMessage(datafiles, contentType));
+   }
+
+   @Override
+   public void sendSynchronizationDone()
+   {
+      replicatingChannel.send(new ReplicationJournalFileMessage(-1, null, null, -1));
    }
 
 }

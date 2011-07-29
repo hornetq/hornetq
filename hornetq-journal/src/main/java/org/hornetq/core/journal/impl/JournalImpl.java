@@ -3266,4 +3266,64 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       journalLock.writeLock().unlock();
    }
+
+   /**
+    * @param fileIds
+    * @throws Exception
+    */
+   public void createFilesForRemoteSync(long[] fileIds) throws Exception
+   {
+      writeLock();
+      try
+      {
+         long maxID = -1;
+         for (long id : fileIds)
+         {
+            maxID = Math.max(maxID, id);
+            filesRepository.createRemoteBackupSyncFile(id);
+         }
+      }
+      finally
+      {
+         writeUnlock();
+      }
+   }
+
+   /**
+    * @param id
+    * @return
+    */
+   public JournalFile getRemoteBackupSyncFile(long id)
+   {
+      return filesRepository.getRemoteBackupSyncFile(id);
+   }
+
+   /**
+    *
+    */
+   public void finishRemoteBackupSync()
+   {
+      writeLock();
+      try
+      {
+         lockAppend.lock();
+         List<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>();
+         dataFilesToProcess.addAll(filesRepository.getDataFiles());
+         filesRepository.clearDataFiles();
+         dataFilesToProcess.addAll(filesRepository.getSyncFiles());
+         filesRepository.clearSyncFiles();
+         Collections.sort(dataFilesToProcess, new JournalFileComparator());
+         for (JournalFile file : dataFilesToProcess)
+         {
+            filesRepository.addDataFileOnTop(file);
+         }
+         // XXX HORNETQ-720 still missing a "reload" call
+      }
+      finally
+      {
+         lockAppend.unlock();
+         writeUnlock();
+      }
+
+   }
 }

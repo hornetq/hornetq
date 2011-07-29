@@ -219,6 +219,12 @@ public class HornetQServerImpl implements HornetQServer
 
    private boolean initialised;
 
+   /**
+    * Only applicable to 'remote backup servers'. If this flag is false the backup may not become
+    * 'live'.
+    */
+   private volatile boolean backupUpToDate = true;
+
   // private FailoverManager replicationFailoverManager;
 
    private ReplicationManager replicationManager;
@@ -587,8 +593,20 @@ public class HornetQServerImpl implements HornetQServer
             // Server node (i.e. Life node) is not running, now the backup takes over.
             //we must remember to close stuff we don't need any more
             nodeManager.awaitLiveNode();
+
             serverLocator.close();
             replicationEndpoint.stop();
+
+            if (!isRemoteBackupUpToDate())
+            {
+               /*
+                * XXX HORNETQ-720 Live is down, and this server was not in sync. Perhaps we should
+                * first try to wait a little longer to see if the 'live' comes back?
+                */
+               throw new RuntimeException("Backup Server was not yet in sync with live");
+            }
+
+
             configuration.setBackup(false);
 
             initialisePart2();
@@ -603,7 +621,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       public void close(final boolean permanently) throws Exception
-   {
+      {
          if(serverLocator != null)
          {
             serverLocator.close();
@@ -696,6 +714,7 @@ public class HornetQServerImpl implements HornetQServer
          else
          {
             assert replicationEndpoint == null;
+            backupUpToDate = false;
             replicationEndpoint = new ReplicationEndpointImpl(this);
             activation = new SharedNothingBackupActivation();
          }
@@ -2013,5 +2032,22 @@ public class HornetQServerImpl implements HornetQServer
       replicationManager.start();
 
       journalStorageManager.setReplicator(replicationManager);
+   }
+
+   /**
+    * Whether a remote backup server was in sync with its live server. If it was not in sync, it may
+    * not take over the live's functions.
+    * <p>
+    * A local backup server or a live server should always return {@code true}
+    * @return
+    */
+   public boolean isRemoteBackupUpToDate()
+   {
+      return backupUpToDate;
+   }
+
+   public void setRemoteBackupUpToDate(boolean isUpToDate)
+   {
+      backupUpToDate = isUpToDate;
    }
 }

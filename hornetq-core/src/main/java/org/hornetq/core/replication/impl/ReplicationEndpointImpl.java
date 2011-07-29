@@ -13,6 +13,7 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -21,6 +22,8 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
@@ -42,6 +45,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMess
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
@@ -50,15 +54,12 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 
 /**
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicationEndpointImpl implements ReplicationEndpoint
 {
@@ -71,7 +72,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    private static final boolean trace = log.isTraceEnabled();
 
-   private final HornetQServer server;
+   private final HornetQServerImpl server;
 
    private Channel channel;
 
@@ -94,7 +95,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private boolean started;
 
     // Constructors --------------------------------------------------
-   public ReplicationEndpointImpl(final HornetQServer server)
+   public ReplicationEndpointImpl(final HornetQServerImpl server)
    {
       this.server = server;
    }
@@ -183,6 +184,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          else if (type == PacketImpl.REPLICATION_FILE_ID)
          {
             handleJournalFileIdReservation((ReplicationFileIdMessage)packet);
+         }
+         else if (type == PacketImpl.REPLICATION_SYNC)
+         {
+            handleReplicationSynchronization((ReplicationJournalFileMessage)packet);
          }
          else
          {
@@ -362,21 +367,63 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Private -------------------------------------------------------
 
-   private void handleJournalFileIdReservation(final ReplicationFileIdMessage packet) throws HornetQException
+   private void handleReplicationSynchronization(ReplicationJournalFileMessage msg) throws Exception
    {
-      final Journal journalIf = journals[packet.getJournalContentType().typeByte];
-      if (journalIf.isStarted())
+      if (msg.isUpToDate())
       {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Journal can not be started!");
+         // XXX HORNETQ-720 must reload journals(?)
+         for (Journal j : journals)
+         {
+            JournalImpl journal = (JournalImpl)j;
+            journal.finishRemoteBackupSync();
+         }
+         server.setRemoteBackupUpToDate(true);
+         return;
       }
 
+      Journal journalIf = getJournal(msg.getJournalContent().typeByte);
+      JournalImpl journal = assertJournalImpl(journalIf);
+
+      long id = msg.getFileId();
+      JournalFile journalFile = journal.getRemoteBackupSyncFile(id);
+      byte[] data = msg.getData();
+      if (data == null)
+      {
+         journalFile.getFile().close();
+      }
+      else
+      {
+         SequentialFile sf = journalFile.getFile();
+         if (!sf.isOpen())
+         {
+            sf.open(1, false);
+         }
+         sf.writeDirect(ByteBuffer.wrap(data), true);
+      }
+      // journal.get
+   }
+
+   private void handleJournalFileIdReservation(final ReplicationFileIdMessage packet) throws Exception
+   {
+      if (server.isRemoteBackupUpToDate())
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
+      }
+
+      final Journal journalIf = journals[packet.getJournalContentType().typeByte];
+
+      JournalImpl journal = assertJournalImpl(journalIf);
+      journal.createFilesForRemoteSync(packet.getFileIds());
+   }
+
+   private static JournalImpl assertJournalImpl(final Journal journalIf) throws HornetQException
+   {
       if (!(journalIf instanceof JournalImpl))
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR,
                                     "Journals of backup server are expected to be JournalImpl");
       }
-      JournalImpl journal = (JournalImpl)journalIf;
-
+      return (JournalImpl)journalIf;
    }
 
    private void handleLargeMessageEnd(final ReplicationLargemessageEndMessage packet)

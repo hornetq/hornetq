@@ -15,6 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -62,6 +63,8 @@ public class JournalFilesRepository
    private final ConcurrentLinkedQueue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 
    private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
+
+   private Map<Long, JournalFile> filesReservedForSync;
 
    private final AtomicLong nextFileID = new AtomicLong(0);
 
@@ -175,7 +178,7 @@ public class JournalFilesRepository
          for (int i = 0; i < filesToCreate; i++)
          {
             // Keeping all files opened can be very costly (mainly on AIO)
-            freeFiles.add(createFile(false, false, true, false));
+            freeFiles.add(createFile(false, false, true, false, -1));
          }
       }
 
@@ -416,7 +419,7 @@ public class JournalFilesRepository
 
       if (nextFile == null)
       {
-         nextFile = createFile(keepOpened, multiAIO, initFile, tmpCompactExtension);
+         nextFile = createFile(keepOpened, multiAIO, initFile, tmpCompactExtension, -1);
       }
       else
       {
@@ -434,6 +437,12 @@ public class JournalFilesRepository
       return nextFile;
    }
 
+   public void createRemoteBackupSyncFile(long fileID) throws Exception
+   {
+      assert !filesReservedForSync.containsKey(Long.valueOf(fileID));
+      filesReservedForSync.put(Long.valueOf(fileID), createFile(false, false, false, false, fileID));
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -449,9 +458,10 @@ public class JournalFilesRepository
    private JournalFile createFile(final boolean keepOpened,
                                   final boolean multiAIO,
                                   final boolean init,
-                                  final boolean tmpCompact) throws Exception
+                                  final boolean tmpCompact,
+                                  final long fileIdPreSet) throws Exception
    {
-      long fileID = generateFileID();
+      long fileID = fileIdPreSet != -1 ? fileIdPreSet : generateFileID();
 
       String fileName;
 
@@ -560,6 +570,22 @@ public class JournalFilesRepository
       return jf;
    }
 
-   // Inner classes -------------------------------------------------
+   /**
+    * @param id
+    * @return
+    */
+   public JournalFile getRemoteBackupSyncFile(long id)
+   {
+      return filesReservedForSync.get(Long.valueOf(id));
+   }
 
+   public Collection<? extends JournalFile> getSyncFiles()
+   {
+      return filesReservedForSync.values();
+   }
+
+   public void clearSyncFiles()
+   {
+      filesReservedForSync.clear();
+   }
 }
