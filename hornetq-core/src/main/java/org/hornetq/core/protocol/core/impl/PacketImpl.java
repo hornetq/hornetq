@@ -38,7 +38,7 @@ public class PacketImpl implements Packet
 
    protected long channelID;
 
-   protected final byte type;
+   private final byte type;
 
    protected int size = -1;
 

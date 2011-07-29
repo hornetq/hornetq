@@ -87,7 +87,7 @@ public class SessionReceiveMessage extends MessagePacket
 
       int len = size - DataConstants.SIZE_INT;
       buffer.setInt(0, len);
-      buffer.setByte(DataConstants.SIZE_INT, type);
+      buffer.setByte(DataConstants.SIZE_INT, getType());
       buffer.setLong(DataConstants.SIZE_INT + DataConstants.SIZE_BYTE, channelID);
 
       // Position reader for reading by Netty
