@@ -3282,6 +3282,10 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             maxID = Math.max(maxID, id);
             filesRepository.createRemoteBackupSyncFile(id);
          }
+         if (maxID > 0)
+         {
+            filesRepository.setNextFileID(maxID);
+         }
       }
       finally
       {

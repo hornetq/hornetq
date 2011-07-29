@@ -536,6 +536,11 @@ public class JournalFilesRepository
       return nextFileID.incrementAndGet();
    }
 
+   public void setNextFileID(long value)
+   {
+      nextFileID.set(value);
+   }
+
    /** Get the ID part of the name */
    private long getFileNameID(final String fileName)
    {
