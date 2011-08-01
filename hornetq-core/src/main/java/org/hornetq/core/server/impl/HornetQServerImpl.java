@@ -580,7 +580,7 @@ public class HornetQServerImpl implements HornetQServer
                     }
                     catch (Exception e)
                     {
-                        log.warn("unable to announce backup for replication", e);
+                     log.warn("Unable to announce backup for replication.", e);
                     }
                 }
             });

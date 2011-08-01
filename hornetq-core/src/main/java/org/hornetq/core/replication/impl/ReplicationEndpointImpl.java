@@ -378,6 +378,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             journal.finishRemoteBackupSync();
          }
          server.setRemoteBackupUpToDate();
+         log.info("Backup server " + server + " is synchronized with live-server.");
          return;
       }
 
