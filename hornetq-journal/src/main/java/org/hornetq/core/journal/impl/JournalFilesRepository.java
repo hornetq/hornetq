@@ -150,22 +150,31 @@ public class JournalFilesRepository
 
       for (JournalFile file : files)
       {
-         long fileID = file.getFileID();
-         if (nextFileID.get() < fileID)
-         {
-            nextFileID.set(fileID);
-         }
-
-         long fileNameID = getFileNameID(file.getFile().getFileName());
+         final long fileIdFromFile = file.getFileID();
+         final long fileIdFromName = getFileNameID(file.getFile().getFileName());
 
          // The compactor could create a fileName but use a previously assigned ID.
          // Because of that we need to take both parts into account
-         if (nextFileID.get() < fileNameID)
-         {
-            nextFileID.set(fileNameID);
-         }
+         setNextFileID(Math.max(fileIdFromName, fileIdFromFile));
       }
+   }
 
+   /**
+    * Set the {link #nextFileID} value to {@code targetUpdate} if the current value is less than
+    * {@code targetUpdate}.
+    * @param targetUpdate
+    */
+   public void setNextFileID(final long targetUpdate)
+   {
+      while (true)
+      {
+         final long current = nextFileID.get();
+         if (current >= targetUpdate)
+            return;
+
+         if (nextFileID.compareAndSet(current, targetUpdate))
+            return;
+      }
    }
 
    public void ensureMinFiles() throws Exception
@@ -534,11 +543,6 @@ public class JournalFilesRepository
    private long generateFileID()
    {
       return nextFileID.incrementAndGet();
-   }
-
-   public void setNextFileID(long value)
-   {
-      nextFileID.set(value);
    }
 
    /** Get the ID part of the name */
