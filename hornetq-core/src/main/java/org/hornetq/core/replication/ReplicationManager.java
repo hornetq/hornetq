@@ -13,7 +13,6 @@
 
 package org.hornetq.core.replication;
 
-import java.io.IOException;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
@@ -90,8 +89,9 @@ public interface ReplicationManager extends HornetQComponent
    /**
     * Sends the whole content of the file to be duplicated.
     * @throws HornetQException
+    * @throws Exception
     */
-   void sendJournalFile(JournalFile jf, JournalContent type) throws IOException, HornetQException;
+   void sendJournalFile(JournalFile jf, JournalContent type) throws Exception;
 
    /**
     * Reserve the following fileIDs in the backup server.

@@ -393,7 +393,7 @@ public class JournalStorageManager implements StorageManager
     * @throws IOException
     * @throws HornetQException
     */
-   private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws IOException, HornetQException
+   private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws Exception
    {
       for (JournalFile jf : journalFiles)
       {

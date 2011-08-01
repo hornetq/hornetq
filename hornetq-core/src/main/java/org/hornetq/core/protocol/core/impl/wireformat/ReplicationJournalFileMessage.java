@@ -1,5 +1,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
+import java.nio.ByteBuffer;
+
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -14,24 +16,25 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
 public final class ReplicationJournalFileMessage extends PacketImpl
 {
 
-   private byte[] data;
+   private ByteBuffer data;
    private int dataSize;
    private JournalContent journalType;
    /** This value refers to {@link org.hornetq.core.journal.impl.JournalFile#getFileID()} */
    private long fileId;
    private boolean backupIsUpToDate = false;
+   private byte[] byteArray;
 
    public ReplicationJournalFileMessage()
    {
       super(REPLICATION_SYNC);
    }
 
-   public ReplicationJournalFileMessage(int size, byte[] data, JournalContent content, long id)
+   public ReplicationJournalFileMessage(int size, ByteBuffer buffer, JournalContent content, long id)
    {
       this();
       this.fileId = id;
       this.dataSize = size;
-      this.data = data;
+      this.data = buffer;
       this.journalType = content;
    }
 
@@ -46,7 +49,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
       // sending -1 will close the file
       if (dataSize > -1)
       {
-         buffer.writeBytes(data, 0, dataSize);
+         buffer.writeBytes(data);// (data, 0, dataSize);
       }
    }
 
@@ -63,8 +66,8 @@ public final class ReplicationJournalFileMessage extends PacketImpl
       int size = buffer.readInt();
       if (size > -1)
       {
-         data = new byte[size];
-         buffer.readBytes(data);
+         byteArray = new byte[size];
+         buffer.readBytes(byteArray);
       }
    }
 
@@ -75,7 +78,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
 
    public byte[] getData()
    {
-      return data;
+      return byteArray;
    }
 
    public JournalContent getJournalContent()

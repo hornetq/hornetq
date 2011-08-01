@@ -155,7 +155,7 @@ public class CoreProtocolManager implements ProtocolManager
                }
                catch (Exception e)
                {
-                  // XXX This is not what we want
+                  // XXX HORNETQ-720 This is not what we want
                   e.printStackTrace();
                   throw new RuntimeException(e);
                }

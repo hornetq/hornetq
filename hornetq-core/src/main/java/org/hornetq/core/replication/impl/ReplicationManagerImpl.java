@@ -13,8 +13,7 @@
 
 package org.hornetq.core.replication.impl;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -26,6 +25,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
@@ -505,16 +505,23 @@ public class ReplicationManagerImpl implements ReplicationManager
    }
 
    @Override
-   public void sendJournalFile(JournalFile jf, JournalContent content) throws IOException, HornetQException
+   public void sendJournalFile(JournalFile jf, JournalContent content) throws Exception
    {
-      FileInputStream file = new FileInputStream(jf.getFile().getFileName());
+      SequentialFile file = jf.getFile().copy();
+      if (!file.isOpen())
+      {
+         file.open(1, false);
+      }
       final long id = jf.getFileID();
-      final byte[] data = new byte[1 << 17]; // about 130 kB
+      final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
+
       while (true)
       {
-         int bytesRead = file.read(data);
-         // sending -1 bytes will close the file.
-         replicatingChannel.send(new ReplicationJournalFileMessage(bytesRead, data, content, id));
+         int bytesRead = file.read(buffer);
+         if (bytesRead > -1)
+            buffer.limit(bytesRead);
+         // sending -1 bytes will close the file at the backup
+         replicatingChannel.send(new ReplicationJournalFileMessage(bytesRead, buffer, content, id));
          if (bytesRead == -1)
             break;
       }
