@@ -56,14 +56,13 @@ public class BackupJournalSyncTest extends FailoverTestBase
          sendMessages(session, producer, N_MSGS);
       }
       backupServer.start();
-      waitForBackup(sessionFactory, 5);
+      waitForBackup(sessionFactory, 10);
       // XXX HORNETQ-720 must wait for backup to sync!
 
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
-      Set<Long> bckpIds = getFileIds(backupMsgJournal);
-      assertFalse(bckpIds.isEmpty());
+      Set<Long> backupIds = getFileIds(backupMsgJournal);
       Set<Long> liveIds = getFileIds(messageJournal);
-      assertEquals("sets must match! " + liveIds, bckpIds, liveIds);
+      assertEquals("sets must match! " + liveIds, liveIds, backupIds);
    }
 
    /**
