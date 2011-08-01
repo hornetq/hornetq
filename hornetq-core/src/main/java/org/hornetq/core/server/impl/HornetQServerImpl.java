@@ -2046,8 +2046,8 @@ public class HornetQServerImpl implements HornetQServer
       return backupUpToDate;
    }
 
-   public void setRemoteBackupUpToDate(boolean isUpToDate)
+   public void setRemoteBackupUpToDate()
    {
-      backupUpToDate = isUpToDate;
+      backupUpToDate = true;
    }
 }

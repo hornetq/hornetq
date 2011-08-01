@@ -508,25 +508,25 @@ public class ReplicationManagerImpl implements ReplicationManager
    public void sendJournalFile(JournalFile jf, JournalContent content) throws Exception
    {
       SequentialFile file = jf.getFile().copy();
+      log.info("Replication: sending " + jf + " to backup. " + file);
       if (!file.isOpen())
       {
          file.open(1, false);
       }
       final long id = jf.getFileID();
       final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
-
       while (true)
       {
          int bytesRead = file.read(buffer);
-         if (bytesRead > -1)
+         if (bytesRead > 0)
             buffer.limit(bytesRead);
-         // sending -1 bytes will close the file at the backup
+         buffer.rewind();
+
+         // sending -1 or 0 bytes will close the file at the backup
          replicatingChannel.send(new ReplicationJournalFileMessage(bytesRead, buffer, content, id));
-         if (bytesRead == -1)
+         if (bytesRead == -1 || bytesRead == 0)
             break;
       }
-      // XXX probably need to sync the JournalFile(?)
-      throw new UnsupportedOperationException();
    }
 
    @Override

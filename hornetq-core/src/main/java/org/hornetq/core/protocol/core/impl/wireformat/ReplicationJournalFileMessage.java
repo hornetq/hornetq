@@ -47,7 +47,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
       buffer.writeByte(journalType.typeByte);
       buffer.writeInt(dataSize);
       // sending -1 will close the file
-      if (dataSize > -1)
+      if (dataSize > 0)
       {
          buffer.writeBytes(data);// (data, 0, dataSize);
       }
@@ -64,7 +64,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
       }
       journalType = JournalContent.getType(buffer.readByte());
       int size = buffer.readInt();
-      if (size > -1)
+      if (size > 0)
       {
          byteArray = new byte[size];
          buffer.readBytes(byteArray);

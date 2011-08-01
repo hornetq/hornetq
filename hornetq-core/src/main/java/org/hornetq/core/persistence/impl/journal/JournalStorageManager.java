@@ -366,15 +366,21 @@ public class JournalStorageManager implements StorageManager
       final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
       final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
 
+      JournalFile[] messageFiles;
+      JournalFile[] bindingsFiles;
+
       localMessageJournal.writeLock();
       localBindingsJournal.writeLock();
-
-      JournalFile[] messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
-      JournalFile[] bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
-
-      localMessageJournal.writeUnlock();
-      localBindingsJournal.writeUnlock();
-
+      try
+      {
+         messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
+         bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+      }
+      finally
+      {
+         localMessageJournal.writeUnlock();
+         localBindingsJournal.writeUnlock();
+      }
       bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
       messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
 

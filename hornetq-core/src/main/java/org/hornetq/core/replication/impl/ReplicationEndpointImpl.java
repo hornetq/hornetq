@@ -377,7 +377,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             JournalImpl journal = (JournalImpl)j;
             journal.finishRemoteBackupSync();
          }
-         server.setRemoteBackupUpToDate(true);
+         server.setRemoteBackupUpToDate();
          return;
       }
 
