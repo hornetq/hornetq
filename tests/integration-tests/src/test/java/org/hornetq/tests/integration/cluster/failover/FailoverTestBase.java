@@ -41,6 +41,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -230,12 +231,29 @@ public abstract class FailoverTestBase extends ServiceTestBase
       return sf;
    }
 
-   protected static void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
+   /**
+    * This method will Waits for backup to be in the "started" state and to finish synchronization
+    * with the live.
+    * @param sessionFactory
+    * @param seconds
+    * @throws Exception
+    */
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
    {
       final long toWait = seconds * 1000;
       final long time = System.currentTimeMillis();
-      while (sessionFactory.getBackupConnector() == null)
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
+      while (true)
       {
+         if (sessionFactory.getBackupConnector() != null && actualServer.isRemoteBackupUpToDate())
+         {
+            break;
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup server never started (" + backupServer.isStarted() + "), or never finished synchronizing (" +
+                     actualServer.isRemoteBackupUpToDate() + ")");
+         }
          try
          {
             Thread.sleep(100);
@@ -244,16 +262,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
          {
             //ignore
          }
-         if (sessionFactory.getBackupConnector() != null)
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started");
-         }
       }
-      System.out.println("sf.getBackupConnector() = " + sessionFactory.getBackupConnector());
+
+      System.out.println("Backup server state: [started=" + actualServer.isStarted() + ", upToDate=" +
+               actualServer.isRemoteBackupUpToDate() + "]");
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
