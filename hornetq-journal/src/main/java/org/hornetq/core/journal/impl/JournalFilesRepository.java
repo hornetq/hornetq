@@ -14,6 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingDeque;
@@ -448,6 +449,10 @@ public class JournalFilesRepository
 
    public void createRemoteBackupSyncFile(long fileID) throws Exception
    {
+      if (filesReservedForSync == null)
+      {
+         filesReservedForSync = new HashMap<Long, JournalFile>();
+      }
       assert !filesReservedForSync.containsKey(Long.valueOf(fileID));
       filesReservedForSync.put(Long.valueOf(fileID), createFile(false, false, false, false, fileID));
    }
