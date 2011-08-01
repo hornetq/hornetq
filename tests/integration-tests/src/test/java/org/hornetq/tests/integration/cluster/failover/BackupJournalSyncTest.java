@@ -13,6 +13,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
@@ -57,18 +58,37 @@ public class BackupJournalSyncTest extends FailoverTestBase
       }
       backupServer.start();
       waitForBackup(sessionFactory, 10);
-      // XXX HORNETQ-720 must wait for backup to sync!
+      Set<Long> liveIds = getFileIds(messageJournal);
+      assertFalse("should not be initialized", backupServer.getServer().isInitialised());
+      crash(session);
+      waitForServerInitialization(backupServer.getServer(), 5);
 
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       Set<Long> backupIds = getFileIds(backupMsgJournal);
-      Set<Long> liveIds = getFileIds(messageJournal);
       assertEquals("sets must match! " + liveIds, liveIds, backupIds);
    }
 
-   /**
-    * @param backupMsgJournal
-    * @return
-    */
+   private static void waitForServerInitialization(HornetQServer server, int seconds)
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while (!server.isInitialised())
+      {
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            // ignore
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("component did not start within timeout of " + seconds);
+         }
+      }
+   }
+
    private Set<Long> getFileIds(JournalImpl journal)
    {
       Set<Long> results = new HashSet<Long>();
