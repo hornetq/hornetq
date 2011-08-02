@@ -204,8 +204,13 @@ public class AIOSequentialFile extends AbstractSequentialFile
    public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
    {
       int bytesToRead = bytes.limit();
-
       long positionToRead = position.getAndAdd(bytesToRead);
+
+      long size = size();
+      if (size < (positionToRead + bytesToRead))
+      {
+         bytesToRead = (int)(size - positionToRead);
+      }
 
       bytes.rewind();
 
