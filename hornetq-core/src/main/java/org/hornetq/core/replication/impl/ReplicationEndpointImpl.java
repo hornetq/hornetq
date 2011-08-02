@@ -410,7 +410,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
       }
-
       final Journal journalIf = journals[packet.getJournalContentType().typeByte];
 
       JournalImpl journal = assertJournalImpl(journalIf);

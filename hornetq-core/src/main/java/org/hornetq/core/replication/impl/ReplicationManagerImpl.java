@@ -69,10 +69,6 @@ public class ReplicationManagerImpl implements ReplicationManager
    // Attributes ----------------------------------------------------
 
    private final ResponseHandler responseHandler = new ResponseHandler();
-
-//   private final ClientSessionFactoryInternal sessionFactory;
-//   private CoreRemotingConnection replicatingConnection;
-
    private final Channel replicatingChannel;
 
    private boolean started;
@@ -424,6 +420,11 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
+   /**
+    * @throws IllegalStateException By default, all replicated packets generate a replicated
+    *            response. If your packets are triggering this exception, it may be because the
+    *            packets were not sent with {@link #sendReplicatePacket(Packet)}.
+    */
    private void replicated()
    {
       OperationContext ctx = pendingTokens.poll();
@@ -523,7 +524,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          buffer.rewind();
 
          // sending -1 or 0 bytes will close the file at the backup
-         replicatingChannel.send(new ReplicationJournalFileMessage(bytesRead, buffer, content, id));
+         sendReplicatePacket(new ReplicationJournalFileMessage(bytesRead, buffer, content, id));
          if (bytesRead == -1 || bytesRead == 0)
             break;
       }
@@ -532,13 +533,13 @@ public class ReplicationManagerImpl implements ReplicationManager
    @Override
    public void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
    {
-      replicatingChannel.send(new ReplicationFileIdMessage(datafiles, contentType));
+      sendReplicatePacket(new ReplicationFileIdMessage(datafiles, contentType));
    }
 
    @Override
    public void sendSynchronizationDone()
    {
-      replicatingChannel.send(new ReplicationJournalFileMessage(-1, null, null, -1));
+      sendReplicatePacket(new ReplicationJournalFileMessage(-1, null, null, -1));
    }
 
 }

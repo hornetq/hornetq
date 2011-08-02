@@ -6,7 +6,11 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalCo
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * Send all fileIDs used in the live server to the backup.
+ * Sends all fileIDs used in the live server to the backup. This is done so that we:
+ * <ol>
+ * <li>reserve those IDs in the backup;
+ * <li>start replicating while the journal synchronization is taking place.
+ * </ol>
  */
 public class ReplicationFileIdMessage extends PacketImpl
 {

@@ -58,6 +58,10 @@ public class BackupJournalSyncTest extends FailoverTestBase
       }
       backupServer.start();
       waitForBackup(sessionFactory, 10);
+
+      // SEND more messages, now with the backup replicating
+      sendMessages(session, producer, N_MSGS);
+
       Set<Long> liveIds = getFileIds(messageJournal);
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
       crash(session);
@@ -65,7 +69,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
 
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       Set<Long> backupIds = getFileIds(backupMsgJournal);
-      assertEquals("sets must match! " + liveIds, liveIds, backupIds);
+      assertEquals("File IDs must match!", liveIds, backupIds);
    }
 
    private static void waitForServerInitialization(HornetQServer server, int seconds)

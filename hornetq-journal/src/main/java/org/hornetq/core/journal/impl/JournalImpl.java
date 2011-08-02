@@ -15,6 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -3276,6 +3277,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       writeLock();
       try
       {
+         log.info("Reserving fileIDs before synchronization: " + Arrays.toString(fileIds));
          long maxID = -1;
          for (long id : fileIds)
          {
@@ -3321,7 +3323,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          {
             filesRepository.addDataFileOnTop(file);
          }
-         // XXX HORNETQ-720 still missing a "reload" call
+         // XXX HORNETQ-720 still missing a "reload" call?
       }
       finally
       {
