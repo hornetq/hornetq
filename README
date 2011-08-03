@@ -44,6 +44,6 @@ $ mvn eclipse:eclipse
 ** Install the m2Eclipse plugin, and use it to import the root
    project. Each sub-project will be imported automatically.
 
-The M2Eclipse plugin has some limitations, after importing the projects
-you should use "Maven / Update project configuration" to fix up the
-projects. If necessary consult the M2Eclipse plugin FAQ.
+The M2Eclipse plugin only works correctly with javacc Maven rules in
+Eclipse 3.7. In Eclipse 3.6 after importing the projects you should use
+"Maven / Update project configuration" to fix up the projects.
