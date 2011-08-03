@@ -1891,6 +1891,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       int lastDataPos = JournalImpl.SIZE_HEADER;
 
+      // AtomicLong is used only as a reference, not as an Atomic value
       final AtomicLong maxID = new AtomicLong(-1);
 
       for (final JournalFile file : orderedFiles)
@@ -1902,9 +1903,17 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          int resultLastPost = JournalImpl.readJournalFile(fileFactory, file, new JournalReaderCallback()
          {
 
+            private void checkID(final long id)
+            {
+               if (id > maxID.longValue())
+               {
+                  maxID.set(id);
+               }
+            }
+
             public void onReadAddRecord(final RecordInfo info) throws Exception
             {
-               setAtomicLong(info.id, maxID);
+               checkID(info.id);
 
                hasData.set(true);
 
@@ -1915,7 +1924,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             public void onReadUpdateRecord(final RecordInfo info) throws Exception
             {
-               setAtomicLong(info.id, maxID);
+               checkID(info.id);
 
                hasData.set(true);
 
@@ -1956,7 +1965,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             public void onReadAddRecordTX(final long transactionID, final RecordInfo info) throws Exception
             {
 
-               setAtomicLong(info.id, maxID);
+               checkID(info.id);
 
                hasData.set(true);
 
@@ -2201,7 +2210,10 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          {
             for (RecordInfo info : transaction.recordInfos)
             {
-               setAtomicLong(info.id, maxID);
+               if (info.id > maxID.get())
+               {
+                  maxID.set(info.id);
+               }
             }
 
             PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID, transaction.extraData);
@@ -2661,23 +2673,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          file.getFile().renameTo(newName);
       }
 
-   }
-
-   private static final void setAtomicLong(final long target, AtomicLong atomic)
-   {
-      while (true)
-      {
-         long value = atomic.get();
-         if (target > value)
-         {
-            if (atomic.compareAndSet(value, target))
-               return;
-         }
-         else
-         {
-            return;
-         }
-      }
    }
 
    /**
