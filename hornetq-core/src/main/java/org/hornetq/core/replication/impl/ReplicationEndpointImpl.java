@@ -14,6 +14,9 @@
 package org.hornetq.core.replication.impl;
 
 import java.nio.ByteBuffer;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -77,12 +80,16 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private Channel channel;
 
    private Journal[] journals;
+   private JournalLoadInformation[] journalLoadInformation;
+   // Files reserved in each journal for synchronization of existing data from the 'live' server
+   private final Map<JournalContent, Map<Long, JournalFile>> filesReservedForSync =
+            new HashMap<JournalContent, Map<Long, JournalFile>>();
 
    private JournalStorageManager storage;
 
    private PagingManager pageManager;
 
-   private JournalLoadInformation[] journalLoadInformation;
+
 
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex =
             new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
@@ -104,6 +111,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    public void registerJournal(final byte id, final Journal journal)
    {
+
       if (journals == null || id >= journals.length)
       {
          Journal[] oldJournals = journals;
@@ -228,8 +236,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       server.getManagementService().setStorageManager(storage);
 
-      registerJournal(JournalContent.MESSAGES.typeByte, storage.getMessageJournal());
       registerJournal(JournalContent.BINDINGS.typeByte, storage.getBindingsJournal());
+      registerJournal(JournalContent.MESSAGES.typeByte, storage.getMessageJournal());
+
+      for (JournalContent jc : EnumSet.allOf(JournalContent.class))
+      {
+         filesReservedForSync.put(jc, new HashMap<Long, JournalFile>());
+      }
 
       // We only need to load internal structures on the backup...
       journalLoadInformation = storage.loadInternalOnly();
@@ -371,22 +384,34 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       if (msg.isUpToDate())
       {
-         // XXX HORNETQ-720 must reload journals(?)
-         for (Journal j : journals)
+         for (Journal journal2 : journals)
          {
-            JournalImpl journal = (JournalImpl)j;
-            journal.finishRemoteBackupSync();
+            JournalImpl journal = (JournalImpl)journal2;
+            journal.writeLock();
+            try
+            {
+               if (journal.getDataFiles().length != 0)
+               {
+                  throw new IllegalStateException("Journal should not have any data files at this point");
+               }
+               // files should be already in place.
+               filesReservedForSync.remove(msg.getJournalContent());
+               // XXX HORNETQ-720 must reload journals
+               // XXX HORNETQ-720 must start using real journals
+            }
+            finally
+            {
+               journal.writeUnlock();
+            }
+
          }
          server.setRemoteBackupUpToDate();
          log.info("Backup server " + server + " is synchronized with live-server.");
          return;
       }
 
-      Journal journalIf = getJournal(msg.getJournalContent().typeByte);
-      JournalImpl journal = assertJournalImpl(journalIf);
-
       long id = msg.getFileId();
-      JournalFile journalFile = journal.getRemoteBackupSyncFile(id);
+      JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(Long.valueOf(id));
       byte[] data = msg.getData();
       if (data == null)
       {
@@ -401,7 +426,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          sf.writeDirect(ByteBuffer.wrap(data), true);
       }
-      // journal.get
    }
 
    private void handleJournalFileIdReservation(final ReplicationFileIdMessage packet) throws Exception
@@ -413,7 +437,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       final Journal journalIf = journals[packet.getJournalContentType().typeByte];
 
       JournalImpl journal = assertJournalImpl(journalIf);
-      journal.createFilesForRemoteSync(packet.getFileIds());
+      journal.createFilesForRemoteSync(packet.getFileIds(), filesReservedForSync.get(packet.getJournalContentType()));
    }
 
    private static JournalImpl assertJournalImpl(final Journal journalIf) throws HornetQException

@@ -14,9 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -64,8 +62,6 @@ public class JournalFilesRepository
    private final ConcurrentLinkedQueue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 
    private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
-
-   private Map<Long, JournalFile> filesReservedForSync;
 
    private final AtomicLong nextFileID = new AtomicLong(0);
 
@@ -447,14 +443,9 @@ public class JournalFilesRepository
       return nextFile;
    }
 
-   public void createRemoteBackupSyncFile(long fileID) throws Exception
+   public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
    {
-      if (filesReservedForSync == null)
-      {
-         filesReservedForSync = new HashMap<Long, JournalFile>();
-      }
-      assert !filesReservedForSync.containsKey(Long.valueOf(fileID));
-      filesReservedForSync.put(Long.valueOf(fileID), createFile(false, false, false, false, fileID));
+      return createFile(false, false, false, false, fileID);
    }
 
    // Package protected ---------------------------------------------
@@ -477,9 +468,7 @@ public class JournalFilesRepository
    {
       long fileID = fileIdPreSet != -1 ? fileIdPreSet : generateFileID();
 
-      String fileName;
-
-      fileName = createFileName(tmpCompact, fileID);
+      final String fileName = createFileName(tmpCompact, fileID);
 
       if (JournalFilesRepository.trace)
       {
@@ -582,24 +571,5 @@ public class JournalFilesRepository
       sf.close();
 
       return jf;
-   }
-
-   /**
-    * @param id
-    * @return
-    */
-   public JournalFile getRemoteBackupSyncFile(long id)
-   {
-      return filesReservedForSync.get(Long.valueOf(id));
-   }
-
-   public Collection<? extends JournalFile> getSyncFiles()
-   {
-      return filesReservedForSync.values();
-   }
-
-   public void clearSyncFiles()
-   {
-      filesReservedForSync.clear();
    }
 }

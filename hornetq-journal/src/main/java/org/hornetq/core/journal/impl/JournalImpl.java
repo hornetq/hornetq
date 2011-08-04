@@ -3199,7 +3199,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    }
 
-   private static class JournalFileComparator implements Comparator<JournalFile>
+   public static class JournalFileComparator implements Comparator<JournalFile>
    {
       public int compare(final JournalFile f1, final JournalFile f2)
       {
@@ -3273,7 +3273,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     * @param fileIds
     * @throws Exception
     */
-   public void createFilesForRemoteSync(long[] fileIds) throws Exception
+   public void createFilesForRemoteSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
    {
       writeLock();
       try
@@ -3283,7 +3283,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          for (long id : fileIds)
          {
             maxID = Math.max(maxID, id);
-            filesRepository.createRemoteBackupSyncFile(id);
+            map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id));
          }
          if (maxID > 0)
          {
@@ -3294,43 +3294,5 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       {
          writeUnlock();
       }
-   }
-
-   /**
-    * @param id
-    * @return
-    */
-   public JournalFile getRemoteBackupSyncFile(long id)
-   {
-      return filesRepository.getRemoteBackupSyncFile(id);
-   }
-
-   /**
-    *
-    */
-   public void finishRemoteBackupSync()
-   {
-      writeLock();
-      try
-      {
-         lockAppend.lock();
-         List<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>();
-         dataFilesToProcess.addAll(filesRepository.getDataFiles());
-         filesRepository.clearDataFiles();
-         dataFilesToProcess.addAll(filesRepository.getSyncFiles());
-         filesRepository.clearSyncFiles();
-         Collections.sort(dataFilesToProcess, new JournalFileComparator());
-         for (JournalFile file : dataFilesToProcess)
-         {
-            filesRepository.addDataFileOnTop(file);
-         }
-         // XXX HORNETQ-720 still missing a "reload" call?
-      }
-      finally
-      {
-         lockAppend.unlock();
-         writeUnlock();
-      }
-
    }
 }
