@@ -325,6 +325,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    public void compareJournalInformation(final JournalLoadInformation[] journalInformation) throws HornetQException
    {
+      if (!server.isRemoteBackupUpToDate())
+      {
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot compare journals if not in sync!");
+      }
+
       if (journalLoadInformation == null || journalLoadInformation.length != journalInformation.length)
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR,
