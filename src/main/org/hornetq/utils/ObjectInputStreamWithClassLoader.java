@@ -53,7 +53,9 @@ public class ObjectInputStreamWithClassLoader extends ObjectInputStream
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       try
       {
-         Class clazz = loader.loadClass(name);
+         // HORNETQ-747 https://issues.jboss.org/browse/HORNETQ-747
+         // Use Class.forName instead of ClassLoader.loadClass to avoid issues with loading arrays		 
+         Class clazz = Class.forName(name, false, loader);
          // sanity check only.. if a classLoader can't find a clazz, it will throw an exception
          if (clazz == null)
          {
