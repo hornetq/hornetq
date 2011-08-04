@@ -77,7 +77,9 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    private enum JournalState
    {
-      STOPPED, STARTED, LOADED;
+      STOPPED, STARTED,
+      /** When a replicating server is still not synchronized with its live. */
+      SYNCING, LOADED;
    }
    // Constants -----------------------------------------------------
 
@@ -100,7 +102,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    // Journal
    private static final void trace(final String message)
    {
-      JournalImpl.log.trace(message);
+      JournalImpl.log.info(message);
    }
 
    private static final void traceRecord(final String message)
@@ -304,6 +306,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       this.userVersion = userVersion;
    }
 
+   @Override
+   public String toString()
+   {
+      return super.toString() + " " + state;
+   }
+
    public void runDirectJournalBlast() throws Exception
    {
       final int numIts = 100000000;
@@ -411,7 +419,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       // since we can re-use dataFiles
 
       Collections.sort(orderedFiles, new JournalFileComparator());
-
       return orderedFiles;
    }
 
@@ -1425,6 +1432,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
+   // XXX make it protected?
    public int getAlignment() throws Exception
    {
       return fileFactory.getAlignment();
@@ -1458,7 +1466,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
       };
 
-      return this.load(dummyLoader);
+      return this.load(dummyLoader, true, true);
    }
 
    public JournalLoadInformation load(final List<RecordInfo> committedRecords,
@@ -1765,9 +1773,9 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
             localCompactor.replayPendingCommands();
 
-            // Merge transactions back after compacting
-            // This has to be done after the replay pending commands, as we need to delete committs that happened during
-            // the compacting
+            // Merge transactions back after compacting.
+            // This has to be done after the replay pending commands, as we need to delete commits
+            // that happened during the compacting
 
             for (JournalTransaction newTransaction : localCompactor.getNewTransactions().values())
             {
@@ -1868,11 +1876,20 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       return load(loadManager, true);
    }
 
-   public synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions) throws Exception
+   public JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions)
+            throws Exception
    {
+      return load(loadManager, fixFailingTransactions, false);
+   }
+
+   private synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions,
+            final boolean replicationSync) throws Exception
+   {
+
       if (state != JournalState.STARTED)
       {
-         throw new IllegalStateException("Journal " + this + " must be in started state, was " + state);
+         throw new IllegalStateException("Journal " + this + " must be in " + JournalState.STARTED + " state, was " +
+                  state);
       }
 
       checkControlFile();
@@ -2160,6 +2177,13 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             // Empty dataFiles with no data
             filesRepository.addFreeFileNoInit(file);
          }
+      }
+
+      if (replicationSync)
+      {
+         assert filesRepository.getDataFiles().isEmpty();
+         setJournalState(JournalState.SYNCING);
+         return new JournalLoadInformation(0, -1);
       }
 
       // Create any more files we need
@@ -3144,11 +3168,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   private HornetQBuffer newBuffer(final int size)
-   {
-      return HornetQBuffers.fixedBuffer(size);
-   }
-
    // Inner classes
    // ---------------------------------------------------------------------------
 
@@ -3156,11 +3175,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
 
       private static NullEncoding instance = new NullEncoding();
-
-      public static NullEncoding getInstance()
-      {
-         return NullEncoding.instance;
-      }
 
       public void decode(final HornetQBuffer buffer)
       {
@@ -3271,9 +3285,10 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    /**
     * @param fileIds
+    * @return
     * @throws Exception
     */
-   public void createFilesForRemoteSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
+   public JournalFile createFilesForRemoteSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
    {
       writeLock();
       try
@@ -3285,14 +3300,18 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             maxID = Math.max(maxID, id);
             map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id));
          }
-         if (maxID > 0)
-         {
-            filesRepository.setNextFileID(maxID);
-         }
+         maxID += 1;
+         filesRepository.setNextFileID(maxID);
+         return filesRepository.createRemoteBackupSyncFile(maxID);
       }
       finally
       {
          writeUnlock();
       }
+   }
+
+   public boolean getAutoReclaim()
+   {
+      return autoReclaim;
    }
 }

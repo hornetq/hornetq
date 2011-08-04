@@ -28,6 +28,7 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.ReplicatingJournal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
@@ -47,7 +48,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
@@ -56,6 +56,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
@@ -81,15 +82,17 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    private Journal[] journals;
    private JournalLoadInformation[] journalLoadInformation;
-   // Files reserved in each journal for synchronization of existing data from the 'live' server
+
+   /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
    private final Map<JournalContent, Map<Long, JournalFile>> filesReservedForSync =
             new HashMap<JournalContent, Map<Long, JournalFile>>();
+
+   /** Used to hold the real Journals before the backup is synchronized. */
+   private final Map<JournalContent, Journal> journalsHolder = new HashMap<JournalContent, Journal>();
 
    private JournalStorageManager storage;
 
    private PagingManager pageManager;
-
-
 
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex =
             new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
@@ -191,7 +194,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          else if (type == PacketImpl.REPLICATION_FILE_ID)
          {
-            handleJournalFileIdReservation((ReplicationFileIdMessage)packet);
+            handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
          }
          else if (type == PacketImpl.REPLICATION_SYNC)
          {
@@ -236,11 +239,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       server.getManagementService().setStorageManager(storage);
 
-      registerJournal(JournalContent.BINDINGS.typeByte, storage.getBindingsJournal());
-      registerJournal(JournalContent.MESSAGES.typeByte, storage.getMessageJournal());
+      journalsHolder.put(JournalContent.BINDINGS, storage.getBindingsJournal());
+      journalsHolder.put(JournalContent.MESSAGES, storage.getMessageJournal());
 
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
+         System.out.println("State? " + journalsHolder.get(jc));
          filesReservedForSync.put(jc, new HashMap<Long, JournalFile>());
       }
 
@@ -257,7 +261,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       pageManager.start();
 
-       started = true;
+      started = true;
 
    }
 
@@ -389,9 +393,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       if (msg.isUpToDate())
       {
-         for (Journal journal2 : journals)
+         for (JournalContent jc : EnumSet.allOf(JournalContent.class))
          {
-            JournalImpl journal = (JournalImpl)journal2;
+            JournalImpl journal = (JournalImpl)journalsHolder.get(jc);
             journal.writeLock();
             try
             {
@@ -401,6 +405,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                }
                // files should be already in place.
                filesReservedForSync.remove(msg.getJournalContent());
+               registerJournal(jc.typeByte, journalsHolder.get(jc));
                // XXX HORNETQ-720 must reload journals
                // XXX HORNETQ-720 must start using real journals
             }
@@ -417,6 +422,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       long id = msg.getFileId();
       JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(Long.valueOf(id));
+
       byte[] data = msg.getData();
       if (data == null)
       {
@@ -433,18 +439,27 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
    }
 
-   private void handleJournalFileIdReservation(final ReplicationFileIdMessage packet) throws Exception
+   /**
+    * Reserves files (with the given fileID) in the specified journal, and places a
+    * {@link ReplicatingJournal} in place to store messages while synchronization is going on.
+    * @param packet
+    * @throws Exception
+    */
+   private void handleStartReplicationSynchronization(final ReplicationStartSyncMessage packet) throws Exception
    {
       if (server.isRemoteBackupUpToDate())
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
       }
-      final Journal journalIf = journals[packet.getJournalContentType().typeByte];
+      final Journal journalIf = journalsHolder.get(packet.getJournalContentType());
 
       JournalImpl journal = assertJournalImpl(journalIf);
-      journal.createFilesForRemoteSync(packet.getFileIds(), filesReservedForSync.get(packet.getJournalContentType()));
+      Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
+      JournalFile current = journal.createFilesForRemoteSync(packet.getFileIds(), mapToFill);
+      registerJournal(packet.getJournalContentType().typeByte, new ReplicatingJournal(current));
    }
 
+   // XXX HORNETQ-720 really need to do away with this once the method calls get stable.
    private static JournalImpl assertJournalImpl(final Journal journalIf) throws HornetQException
    {
       if (!(journalIf instanceof JournalImpl))

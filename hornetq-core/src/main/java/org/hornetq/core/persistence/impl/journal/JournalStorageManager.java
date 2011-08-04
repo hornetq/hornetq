@@ -447,7 +447,7 @@ public class JournalStorageManager implements StorageManager
       {
          jf.setCanReclaim(false);
       }
-      replicator.reserveFileIds(datafiles, contentType);
+      replicator.sendStartSyncMessage(datafiles, contentType);
       return datafiles;
    }
 
@@ -1674,7 +1674,6 @@ public class JournalStorageManager implements StorageManager
       JournalLoadInformation[] info = new JournalLoadInformation[2];
       info[0] = bindingsJournal.loadInternalOnly();
       info[1] = messageJournal.loadInternalOnly();
-
       return info;
    }
 

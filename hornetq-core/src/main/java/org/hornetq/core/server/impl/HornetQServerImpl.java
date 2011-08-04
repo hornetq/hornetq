@@ -565,7 +565,7 @@ public class HornetQServerImpl implements HornetQServer
 
                         if (liveServerSessionFactory == null)
                         {
-                           // XXX
+                        // XXX HORNETQ-720
                            throw new RuntimeException("Need to retry...");
                         }
                         CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();

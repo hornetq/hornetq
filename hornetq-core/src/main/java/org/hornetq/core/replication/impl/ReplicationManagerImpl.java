@@ -44,7 +44,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationFileIdMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
@@ -52,6 +51,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEnd
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -509,7 +509,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    public void sendJournalFile(JournalFile jf, JournalContent content) throws Exception
    {
       SequentialFile file = jf.getFile().copy();
-      log.info("Replication: sending " + jf + " to backup. " + file);
+      log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
       if (!file.isOpen())
       {
          file.open(1, false);
@@ -531,9 +531,9 @@ public class ReplicationManagerImpl implements ReplicationManager
    }
 
    @Override
-   public void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
+   public void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
    {
-      sendReplicatePacket(new ReplicationFileIdMessage(datafiles, contentType));
+      sendReplicatePacket(new ReplicationStartSyncMessage(datafiles, contentType));
    }
 
    @Override

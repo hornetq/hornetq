@@ -99,7 +99,7 @@ public interface ReplicationManager extends HornetQComponent
     * @param contentType
     * @throws HornetQException
     */
-   void reserveFileIds(JournalFile[] datafiles, JournalContent contentType) throws HornetQException;
+   void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType) throws HornetQException;
 
    /**
     * Informs backup that data synchronization is done.

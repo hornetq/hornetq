@@ -12,18 +12,17 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * <li>start replicating while the journal synchronization is taking place.
  * </ol>
  */
-public class ReplicationFileIdMessage extends PacketImpl
+public class ReplicationStartSyncMessage extends PacketImpl
 {
-
    private long[] ids;
    private JournalContent journalType;
 
-   public ReplicationFileIdMessage()
+   public ReplicationStartSyncMessage()
    {
       super(REPLICATION_FILE_ID);
    }
 
-   public ReplicationFileIdMessage(JournalFile[] datafiles, JournalContent contentType)
+   public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType)
    {
       this();
       ids = new long[datafiles.length];
