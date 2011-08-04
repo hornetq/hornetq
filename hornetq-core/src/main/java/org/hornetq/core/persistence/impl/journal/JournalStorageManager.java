@@ -366,38 +366,56 @@ public class JournalStorageManager implements StorageManager
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
-      // XXX HORNETQ-720 WRITE LOCK the StorageManager.
-      storageManagerLock.writeLock().lock();
+      final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
+      final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
+
+      final boolean messageJournalAutoReclaim = localMessageJournal.getAutoReclaim();
+      final boolean bindingsJournalAutoReclaim = localBindingsJournal.getAutoReclaim();
+
       try
       {
-         final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
-         final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
-
-
-         localMessageJournal.writeLock();
-         localBindingsJournal.writeLock();
+         // XXX HORNETQ-720 WRITE LOCK the StorageManager.
+         storageManagerLock.writeLock().lock();
          try
          {
-            messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
-            bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+
+            localMessageJournal.writeLock();
+            localBindingsJournal.writeLock();
+            try
+            {
+               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
+               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+            }
+            finally
+            {
+               localMessageJournal.writeUnlock();
+               localBindingsJournal.writeUnlock();
+            }
+            bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
+            messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
          }
          finally
          {
-            localMessageJournal.writeUnlock();
-            localBindingsJournal.writeUnlock();
+            // XXX HORNETQ-720 UNLOCK StorageManager...
+            storageManagerLock.writeLock().unlock();
          }
-         bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
-         messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
+         sendJournalFile(messageFiles, JournalContent.MESSAGES);
+         sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+         try
+         {
+            storageManagerLock.writeLock().lock();
+            replicator.sendSynchronizationDone();
+         }
+         finally
+         {
+            storageManagerLock.writeLock().unlock();
+         }
       }
       finally
       {
-         // XXX HORNETQ-720 UNLOCK StorageManager...
-         storageManagerLock.writeLock().unlock();
+         localMessageJournal.setAutoReclaim(messageJournalAutoReclaim);
+         localBindingsJournal.setAutoReclaim(bindingsJournalAutoReclaim);
       }
-      sendJournalFile(messageFiles, JournalContent.MESSAGES);
-      sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
-
-      replicator.sendSynchronizationDone();
    }
 
    /**
