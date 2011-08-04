@@ -103,11 +103,6 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private BindingRegistry registry;
 
-   /**
-    * the context to bind to
-    */
-   private Context context;
-
    private Map<String, HornetQQueue> queues = new HashMap<String, HornetQQueue>();
 
    private Map<String, HornetQTopic> topics = new HashMap<String, HornetQTopic>();
@@ -264,8 +259,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       if (registry == null)
       {
          if (!contextSet)
-            context = new InitialContext();
-         registry = new JndiBindingRegistry(context);
+          registry = new JndiBindingRegistry(new InitialContext());
       }
 
       deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
@@ -326,9 +320,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       topicJNDI.clear();
       topics.clear();
 
-      if (context != null)
+      if (registry != null)
       {
-         context.close();
+         registry.close();
       }
 
       // it could be null if a backup
@@ -388,10 +382,9 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public synchronized void setContext(final Context context)
    {
-      this.context = context;
-
-      if (registry != null && registry instanceof JndiBindingRegistry)
+      if (registry == null || registry instanceof JndiBindingRegistry)
       {
+         registry = new JndiBindingRegistry(context);
          registry.setContext(context);
       }
 
@@ -1469,7 +1462,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
     */
    private void unbindJNDI(Map<String, List<String>> param)
    {
-      if (context != null)
+      if (registry != null)
       {
          for (List<String> elementList : param.values())
          {
@@ -1477,7 +1470,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
             {
                try
                {
-                  context.unbind(key);
+                  registry.unbind(key);
                }
                catch (Exception e)
                {
@@ -1608,13 +1601,13 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          keys.remove(name);
       }
-      if (context != null)
+      if (registry != null)
       {
          Iterator<String> iter = jndiBindings.iterator();
          while (iter.hasNext())
          {
             String jndiBinding = iter.next();
-            context.unbind(jndiBinding);
+            registry.unbind(jndiBinding);
             iter.remove();
          }
       }
@@ -1634,7 +1627,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       if (jndiBindings.remove(jndi))
       {
-         context.unbind(jndi);
+         registry.unbind(jndi);
          return true;
       }
       else
