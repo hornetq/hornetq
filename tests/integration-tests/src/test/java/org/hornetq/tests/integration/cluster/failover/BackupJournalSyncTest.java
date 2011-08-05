@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -13,7 +14,14 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
+import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.PacketImpl;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
@@ -24,6 +32,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
    private ClientSessionFactoryInternal sessionFactory;
    private ClientSession session;
    private ClientProducer producer;
+   private ReplicationChannelHandler handler;
    private static final int N_MSGS = 100;
 
    @Override
@@ -49,6 +58,8 @@ public class BackupJournalSyncTest extends FailoverTestBase
 
    public void testReserveFileIdValuesOnBackup() throws Exception
    {
+      handler = new ReplicationChannelHandler();
+      liveServer.addInterceptor(new BackupSyncDelay(handler));
       createProducerSendSomeMessages();
       JournalImpl messageJournal = getMessageJournalFromServer(liveServer);
       for (int i = 0; i < 5; i++)
@@ -57,10 +68,13 @@ public class BackupJournalSyncTest extends FailoverTestBase
          sendMessages(session, producer, N_MSGS);
       }
       backupServer.start();
-      waitForBackup(sessionFactory, 10);
+      waitForBackup(sessionFactory, 10, false);
 
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, N_MSGS);
+
+      handler.notifyAll();
+      waitForBackup(sessionFactory, 10, true);
 
       Set<Long> liveIds = getFileIds(messageJournal);
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
@@ -146,6 +160,10 @@ public class BackupJournalSyncTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      if (handler != null)
+      {
+         handler.notifyAll();
+      }
       if (sessionFactory != null)
          sessionFactory.close();
       if (session != null)
@@ -173,4 +191,71 @@ public class BackupJournalSyncTest extends FailoverTestBase
       return TransportConfigurationUtils.getInVMConnector(live);
    }
 
+   private class BackupSyncDelay implements Interceptor
+   {
+
+      private final ReplicationChannelHandler handler;
+
+      public BackupSyncDelay(ReplicationChannelHandler handler)
+      {
+         this.handler = handler;
+         // TODO Auto-generated constructor stub
+      }
+
+      @Override
+      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      {
+         if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
+         {
+            try
+            {
+               ReplicationEndpoint repEnd = backupServer.getServer().getReplicationEndpoint();
+               handler.addSubHandler(repEnd);
+               Channel repChannel = repEnd.getChannel();
+               repChannel.setHandler(handler);
+            }
+            catch (Exception e)
+            {
+               throw new RuntimeException(e);
+            }
+         }
+         return true;
+      }
+
+   }
+
+   private static class ReplicationChannelHandler implements ChannelHandler
+   {
+
+      private ChannelHandler handler;
+
+      public void addSubHandler(ChannelHandler handler)
+      {
+         this.handler = handler;
+      }
+
+      @Override
+      public void handlePacket(Packet packet)
+      {
+         System.out.println(packet);
+         if (packet.getType() == PacketImpl.REPLICATION_SYNC)
+         {
+            ReplicationJournalFileMessage syncMsg = (ReplicationJournalFileMessage)packet;
+            if (syncMsg.isUpToDate())
+            {
+               // Hold the message that notifies the backup that sync is done.
+               try
+               {
+                  wait();
+               }
+               catch (InterruptedException e)
+               {
+                  // no-op
+               }
+            }
+         }
+         handler.handlePacket(packet);
+      }
+
+   }
 }

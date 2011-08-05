@@ -21,7 +21,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
    private JournalContent journalType;
    /** This value refers to {@link org.hornetq.core.journal.impl.JournalFile#getFileID()} */
    private long fileId;
-   private boolean backupIsUpToDate = false;
+   private boolean backupIsUpToDate;
    private byte[] byteArray;
 
    public ReplicationJournalFileMessage()
@@ -33,6 +33,7 @@ public final class ReplicationJournalFileMessage extends PacketImpl
    {
       this();
       this.fileId = id;
+      this.backupIsUpToDate = id == -1;
       this.dataSize = size;
       this.data = buffer;
       this.journalType = content;

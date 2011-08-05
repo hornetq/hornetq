@@ -240,12 +240,22 @@ public abstract class FailoverTestBase extends ServiceTestBase
     */
    protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
    {
+      waitForBackup(sessionFactory, seconds, true);
+   }
+
+   /**
+    * @param sessionFactory
+    * @param seconds
+    * @param waitForSync whether to wait for sync'ing data with the live to finish or not
+    */
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds, boolean waitForSync)
+   {
       final long toWait = seconds * 1000;
       final long time = System.currentTimeMillis();
       final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
       while (true)
       {
-         if (sessionFactory.getBackupConnector() != null && actualServer.isRemoteBackupUpToDate())
+         if (sessionFactory.getBackupConnector() != null && (actualServer.isRemoteBackupUpToDate() || !waitForSync))
          {
             break;
          }
@@ -263,9 +273,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
             //ignore
          }
       }
-
-      System.out.println("Backup server state: [started=" + actualServer.isStarted() + ", upToDate=" +
-               actualServer.isRemoteBackupUpToDate() + "]");
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
