@@ -27,7 +27,6 @@ import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
@@ -90,10 +89,6 @@ public interface HornetQServer extends HornetQComponent
    void registerActivateCallback(ActivateCallback callback);
 
    void unregisterActivateCallback(ActivateCallback callback);
-
-   /** The journal at the backup server has to be equivalent as the journal used on the live node.
-    *  Or else the backup node is out of sync. */
-   ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
    ServerSession createSession(String name,
                                String username,

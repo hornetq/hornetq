@@ -1071,7 +1071,7 @@ public class HornetQServerImpl implements HornetQServer
     * XXX FIXME to be made private, and method removed from Server interface once HORNETQ-720 is
     * finished.
     */
-   public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
+   private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
       {
