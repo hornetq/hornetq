@@ -19,7 +19,7 @@ public class ReplicationStartSyncMessage extends PacketImpl
 
    public ReplicationStartSyncMessage()
    {
-      super(REPLICATION_FILE_ID);
+      super(REPLICATION_START_SYNC);
    }
 
    public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType)

@@ -533,7 +533,7 @@ public final class PacketDecoder
             packet = new HaBackupRegistrationMessage();
             break;
          }
-         case PacketImpl.REPLICATION_FILE_ID:
+         case PacketImpl.REPLICATION_START_SYNC:
          {
             packet = new ReplicationStartSyncMessage();
             break;

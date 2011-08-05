@@ -192,7 +192,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
-         else if (type == PacketImpl.REPLICATION_FILE_ID)
+         else if (type == PacketImpl.REPLICATION_START_SYNC)
          {
             handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
          }
