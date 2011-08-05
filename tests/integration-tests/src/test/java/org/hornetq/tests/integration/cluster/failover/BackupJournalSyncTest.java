@@ -72,8 +72,9 @@ public class BackupJournalSyncTest extends FailoverTestBase
 
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, N_MSGS);
+      handler.deliver = true;
+      sendMessages(session, producer, 1);
 
-      handler.notifyAll();
       waitForBackup(sessionFactory, 10, true);
 
       Set<Long> liveIds = getFileIds(messageJournal);
@@ -199,7 +200,6 @@ public class BackupJournalSyncTest extends FailoverTestBase
       public BackupSyncDelay(ReplicationChannelHandler handler)
       {
          this.handler = handler;
-         // TODO Auto-generated constructor stub
       }
 
       @Override
@@ -228,6 +228,8 @@ public class BackupJournalSyncTest extends FailoverTestBase
    {
 
       private ChannelHandler handler;
+      private Packet onHold;
+      public volatile boolean deliver;
 
       public void addSubHandler(ChannelHandler handler)
       {
@@ -237,21 +239,17 @@ public class BackupJournalSyncTest extends FailoverTestBase
       @Override
       public void handlePacket(Packet packet)
       {
-         System.out.println(packet);
+         if (onHold != null && deliver)
+         {
+            handler.handlePacket(onHold);
+         }
          if (packet.getType() == PacketImpl.REPLICATION_SYNC)
          {
             ReplicationJournalFileMessage syncMsg = (ReplicationJournalFileMessage)packet;
             if (syncMsg.isUpToDate())
             {
-               // Hold the message that notifies the backup that sync is done.
-               try
-               {
-                  wait();
-               }
-               catch (InterruptedException e)
-               {
-                  // no-op
-               }
+               onHold = packet;
+               return;
             }
          }
          handler.handlePacket(packet);

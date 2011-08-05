@@ -218,6 +218,8 @@ public class JournalStorageManager implements StorageManager
 
    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings = new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
+   private final boolean hasCallbackSupport;
+
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
    {
       this(config, executorFactory, null);
@@ -304,7 +306,7 @@ public class JournalStorageManager implements StorageManager
       {
          throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
-
+      hasCallbackSupport = journalFF.isSupportsCallbacks();
 
       idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
 
@@ -3478,6 +3480,11 @@ public class JournalStorageManager implements StorageManager
       }
 
       journal.stop();
+   }
+
+   public boolean hasCallbackSupport()
+   {
+      return hasCallbackSupport;
    }
 
 }
