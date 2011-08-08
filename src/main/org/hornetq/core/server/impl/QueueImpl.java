@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -400,7 +403,7 @@ public class QueueImpl implements Queue
 
       directDeliver = false;
 
-      executor.execute(concurrentPoller);
+      getExecutor().execute(concurrentPoller);
    }
 
    public void forceDelivery()
@@ -424,7 +427,13 @@ public class QueueImpl implements Queue
    
    public void deliverAsync()
    {
-      getExecutor().execute(deliverRunner);
+      try
+      {
+         getExecutor().execute(deliverRunner);
+      }
+      catch (RejectedExecutionException ignored)
+      {
+      }
    }
 
    public void close() throws Exception
@@ -726,9 +735,31 @@ public class QueueImpl implements Queue
 
    public long getMessageCount()
    {
-      blockOnExecutorFuture();
+      final CountDownLatch latch = new CountDownLatch(1);
+      final AtomicLong count = new AtomicLong(0);
       
-      return getInstantMessageCount();
+      getExecutor().execute(new Runnable()
+      {
+         public void run()
+         {
+            count.set(getInstantMessageCount());
+            latch.countDown();
+         }
+      });
+      
+      try
+      {
+         if (!latch.await(10, TimeUnit.SECONDS))
+         {
+            throw new IllegalStateException("Timed out on waiting for MessageCount");
+         }
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+      }
+      
+      return count.get();
    }
    
    public long getInstantMessageCount()
@@ -897,9 +928,31 @@ public class QueueImpl implements Queue
 
    public long getMessagesAdded()
    {
-      blockOnExecutorFuture();
+      final CountDownLatch latch = new CountDownLatch(1);
+      final AtomicLong count = new AtomicLong(0);
       
-      return getInstantMessagesAdded();
+      getExecutor().execute(new Runnable()
+      {
+         public void run()
+         {
+            count.set(getInstantMessagesAdded());
+            latch.countDown();
+         }
+      });
+      
+      try
+      {
+         if (!latch.await(10, TimeUnit.SECONDS))
+         {
+            throw new IllegalStateException("Timed out on waiting for MessagesAdded");
+         }
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+      }
+      
+      return count.get();
   }
    
    public long getInstantMessagesAdded()
@@ -1433,7 +1486,7 @@ public class QueueImpl implements Queue
    @Override
    public String toString()
    {
-      return "QueueImpl[name=" + name.toString() + "]@" + Integer.toHexString(System.identityHashCode(this));
+      return "QueueImpl[name=" + name.toString() + ", postOffice=" + this.postOffice + "]@" + Integer.toHexString(System.identityHashCode(this));
    }
 
    // Private

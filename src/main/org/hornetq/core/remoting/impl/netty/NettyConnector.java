@@ -256,6 +256,28 @@ public class NettyConnector implements Connector
       this.scheduledThreadPool = scheduledThreadPool;
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "NettyConnector [host=" + host +
+             ", port=" +
+             port +
+             ", httpEnabled=" +
+             httpEnabled +
+             ", useServlet=" +
+             useServlet +
+             ", servletPath=" +
+             servletPath +
+             ", sslEnabled=" +
+             sslEnabled +
+             ", useNio=" +
+             useNio +
+             "]";
+   }
+
    public synchronized void start()
    {
       if (channelFactory != null)

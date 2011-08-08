@@ -13,22 +13,28 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import junit.framework.Assert;
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.server.impl.InVMNodeManager;
-import org.hornetq.jms.client.HornetQTextMessage;
-import org.hornetq.utils.ReusableLatch;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import junit.framework.Assert;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.config.ClusterConnectionConfiguration;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -37,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class FailBackAutoTest extends FailoverTestBase
 {
+   Logger log = Logger.getLogger(FailBackAutoTest.class);
    private ServerLocatorInternal locator;
 
    @Override
@@ -62,7 +69,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
       super.tearDown();
    }
-
+ 
    public void testAutoFailback() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
@@ -78,11 +85,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.addFailureListener(listener);
 
-      backupServer.stop();
-
       liveServer.crash();
-
-      backupServer.start();
 
       assertTrue(latch.await(5, TimeUnit.SECONDS));
 
@@ -102,6 +105,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.addFailureListener(listener);
 
+      log.info("******* starting live server back");
       liveServer.start();
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
@@ -136,11 +140,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.addFailureListener(listener);
 
-      backupServer.stop();
-
       liveServer.crash();
-
-      backupServer.start();
 
       assertTrue(latch.await(5, TimeUnit.SECONDS));
 
@@ -160,8 +160,9 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.addFailureListener(listener);
 
+      log.info("restarting live node now");
       liveServer.start();
-
+      
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
@@ -178,7 +179,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.addFailureListener(listener);
 
-      waitForBackup(sf, 5);
+      waitForBackup(sf, 10);
 
       liveServer.crash();
 
@@ -204,6 +205,7 @@ public class FailBackAutoTest extends FailoverTestBase
       backupConfig.setSharedStore(true);
       backupConfig.setBackup(true);
       backupConfig.setClustered(true);
+      backupConfig.setFailbackDelay(1000);
       TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
@@ -220,6 +222,7 @@ public class FailBackAutoTest extends FailoverTestBase
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
+      liveConfig.setFailbackDelay(1000);
       liveConfig.setClustered(true);
       List<String> pairs = new ArrayList<String>();
       pairs.add(backupConnector.getName());

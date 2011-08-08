@@ -97,23 +97,28 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
+      
+      
+      
+      liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
 
       if (backupServer != null)
       {
+         backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServer");
          backupServer.start();
       }
    }
 
    protected TestableServer createLiveServer()
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager, 1));
    }
 
    protected TestableServer createBackupServer()
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager, 2));
    }
 
    /**
@@ -187,6 +192,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      logAndSystemOut("#test tearDown");
       backupServer.stop();
 
       liveServer.stop();
@@ -209,8 +215,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         e.printStackTrace();
-         System.exit(9);
+         throw e; 
       }
       try
       {
@@ -219,8 +224,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         e.printStackTrace();
-         System.exit(9);
+         throw e;
       }
    }
 
@@ -398,6 +402,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void crash(final ClientSession... sessions) throws Exception
    {
       liveServer.crash(sessions);
+   }
+
+   protected void crash(final boolean waitFailure, final ClientSession... sessions) throws Exception
+   {
+      liveServer.crash(waitFailure, sessions);
    }
 
    // Private -------------------------------------------------------

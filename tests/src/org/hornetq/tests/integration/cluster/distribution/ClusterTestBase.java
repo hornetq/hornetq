@@ -13,7 +13,10 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +38,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -82,7 +86,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 8,
                                        TransportConstants.DEFAULT_PORT + 9, };
 
-   private static final long WAIT_TIMEOUT = 5000;
+   private static final long WAIT_TIMEOUT = 10000;
 
    @Override
    protected void setUp() throws Exception
@@ -107,12 +111,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
 
       locators = new ServerLocator[ClusterTestBase.MAX_SERVERS];
+      
+      // To make sure the test will start with a clean VM
+      forceGC();
 
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      log.info("#test tearDown");
       for (ServerLocator locator : locators)
       {
          try
@@ -143,8 +151,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       nodeManagers = null;
 
       super.tearDown();
-
-    //  ServerLocatorImpl.shutdown();
    }
 
    // Private -------------------------------------------------------------------------------------------------------
@@ -241,22 +247,55 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       throw new IllegalStateException(msg);
    }
+   
+   protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
+   {
+      waitForTopology(server, nodes, WAIT_TIMEOUT);
+   }
+   
+   protected void waitForTopology(final HornetQServer server, final int nodes, final long timeout) throws Exception
+   {
+      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+
+
+      long start = System.currentTimeMillis();
+      
+      Topology topology = server.getClusterManager().getTopology();
+
+      do
+      {
+         if (nodes == topology.getMembers().size())
+         {
+           return;
+         }
+
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < timeout);
+      
+      String msg = "Timed out waiting for cluster topology of " + nodes + " (received " + topology.getMembers().size() + ") topology = " + topology + ")";
+
+      ClusterTestBase.log.error(msg);
+      
+      throw new Exception (msg);
+   }
 
    protected void waitForBindings(final int node,
                                   final String address,
-                                  final int count,
-                                  final int consumerCount,
+                                  final int expectedBindingCount,
+                                  final int expectedConsumerCount,
                                   final boolean local) throws Exception
    {
-      // System.out.println("waiting for bindings on node " + node +
-      // " address " +
-      // address +
-      // " count " +
-      // count +
-      // " consumerCount " +
-      // consumerCount +
-      // " local " +
-      // local);
+      log.debug("waiting for bindings on node " + node +
+                " address " +
+                address +
+                " expectedBindingCount " +
+                expectedBindingCount +
+                " consumerCount " +
+                expectedConsumerCount +
+                " local " +
+                local);
+
       HornetQServer server = servers[node];
 
       if (server == null)
@@ -292,7 +331,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         if (bindingCount == count && totConsumers == consumerCount)
+         if (bindingCount == expectedBindingCount && totConsumers == expectedConsumerCount)
          {
             return;
          }
@@ -301,18 +340,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       while (System.currentTimeMillis() - start < ClusterTestBase.WAIT_TIMEOUT);
 
-      // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
-
-      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
+      String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount + " (expecting " + expectedBindingCount + ") "+
                    ", totConsumers = " +
-                   totConsumers +
+                   totConsumers + " (expecting " + expectedConsumerCount + ")" + 
                    ")";
 
       ClusterTestBase.log.error(msg);
-
-      // Sending thread dump into junit report.. trying to get some information about the server case the binding didn't
-      // arrive
-      System.out.println(UnitTestCase.threadDump(msg));
 
       Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
 
@@ -328,16 +361,71 @@ public abstract class ClusterTestBase extends ServiceTestBase
             System.out.println("Binding = " + qBinding + ", queue=" + qBinding.getQueue());
          }
       }
-      System.out.println("=======================================================================");
 
-      for (HornetQServer hornetQServer : servers)
+      StringWriter writer = new StringWriter();
+      PrintWriter out = new PrintWriter(writer);
+      
+      try
       {
-         if (hornetQServer != null)
+         for (HornetQServer hornetQServer : servers)
          {
-            System.out.println(clusterDescription(hornetQServer));
+            if (hornetQServer != null)
+            {
+               out.println(clusterDescription(hornetQServer));
+               out.println(debugBindings(hornetQServer, hornetQServer.getConfiguration().getManagementNotificationAddress().toString()));
+            }
+         }
+         
+         for (HornetQServer hornetQServer : servers)
+         {
+            out.println("Management bindings on " + hornetQServer);
+            if (hornetQServer != null)
+            {
+               out.println(debugBindings(hornetQServer, hornetQServer.getConfiguration().getManagementNotificationAddress().toString()));
+            }
          }
       }
+      catch (Throwable dontCare)
+      {
+      }
+      
+      logAndSystemOut(writer.toString());
+      
       throw new IllegalStateException(msg);
+   }
+   
+   
+   protected String debugBindings(final HornetQServer server, final String address) throws Exception
+   {
+      
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+      
+      if (server == null)
+      {
+         return "server is shutdown";
+      }
+      PostOffice po = server.getPostOffice();
+
+      if (po == null)
+      {
+         return "server is shutdown";
+      }
+      Bindings bindings = po.getBindingsForAddress(new SimpleString(address));
+
+      out.println("=======================================================================");
+      out.println("Binding information for address = " + address + " on "  + server);
+
+      for (Binding binding : bindings.getBindings())
+      {
+         QueueBinding qBinding = (QueueBinding)binding;
+
+         out.println("Binding = " + qBinding + ", queue=" + qBinding.getQueue());
+      }
+      out.println("=======================================================================");
+      
+      return str.toString();
+
    }
 
    protected void createQueue(final int node,
@@ -361,6 +449,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          filterString = ClusterTestBase.FILTER_PROP.toString() + "='" + filterVal + "'";
       }
+      
+      log.info("Creating " + queueName + " , address " + address + " on " + servers[node]);
 
       session.createQueue(address, queueName, filterString, durable);
 
@@ -749,6 +839,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                    final int... consumerIDs) throws Exception
    {
       boolean outOfOrder = false;
+      String firstOutOfOrderMessage = null;
       for (int consumerID : consumerIDs)
       {
          ConsumerHolder holder = consumers[consumerID];
@@ -770,10 +861,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
                dumpConsumers();
 
-               Assert.assertNotNull("consumer " + consumerID + " did not receive message " + j, message);
+               Assert.fail("consumer " + consumerID + " did not receive message " + j);
             }
-
-
+            
+            log.info("msg on ClusterTestBase = " + message);            
 
             if (ack)
             {
@@ -787,15 +878,22 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             if (j != (Integer)message.getObjectProperty(ClusterTestBase.COUNT_PROP))
             {
+               if (firstOutOfOrderMessage == null)
+               {
+                  firstOutOfOrderMessage = "expected " + j + " received " + message.getObjectProperty(ClusterTestBase.COUNT_PROP);
+               }
                outOfOrder = true;
                System.out.println("Message j=" + j +
+                                  " was received out of order = " +
+                                  message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+               log.info("Message j=" + j +
                                   " was received out of order = " +
                                   message.getObjectProperty(ClusterTestBase.COUNT_PROP));
             }
          }
       }
 
-      Assert.assertFalse("Messages were consumed out of order, look at System.out for more information", outOfOrder);
+      Assert.assertFalse("Messages were consumed out of order::" + firstOutOfOrderMessage, outOfOrder);
    }
 
    private void dumpConsumers() throws Exception
@@ -815,7 +913,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       String br = "-------------------------\n";
       String out = br;
-      out += "HornetQ server " + server.getNodeID() + "\n";
+      out += "HornetQ server " + server + "\n";
       ClusterManager clusterManager = server.getClusterManager();
       if (clusterManager == null)
       {
@@ -825,7 +923,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          for (ClusterConnection cc : clusterManager.getClusterConnections())
          {
-            out += cc.description() + "\n";
+            out += cc.describe() + "\n";
          }
       }
       out += "\n\nfull topology:";
@@ -888,21 +986,32 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ConsumerHolder holder = consumers[consumerIDs[count]];
-
-         if (holder == null)
+         // We may use a negative number in some tests to ignore the consumer, case we know the server is down
+         if (consumerIDs[count] >= 0)
          {
-            throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+            ConsumerHolder holder = consumers[consumerIDs[count]];
+   
+            if (holder == null)
+            {
+               throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
+            }
+   
+            ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
+            
+            message.acknowledge();
+            
+            consumers[consumerIDs[count]].session.commit();
+            
+            System.out.println("Msg: " + message);
+   
+            Assert.assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
+   
+            Assert.assertEquals("consumer " + consumerIDs[count] + " message " + i,
+                                i,
+                                message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+
          }
-
-         ClientMessage message = holder.consumer.receive(WAIT_TIMEOUT);
-
-         Assert.assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
-
-         Assert.assertEquals("consumer " + consumerIDs[count] + " message " + i,
-                             i,
-                             message.getObjectProperty(ClusterTestBase.COUNT_PROP));
-
+         
          count++;
 
          if (count == consumerIDs.length)
@@ -1202,7 +1311,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       if (sfs[node] != null)
       {
-         throw new IllegalArgumentException("Already a server at " + node);
+         throw new IllegalArgumentException("Already a factory at " + node);
       }
 
       Map<String, Object> params = generateParams(node, netty);
@@ -1231,6 +1340,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       locators[node].setBlockOnDurableSend(true);
       ClientSessionFactory sf = locators[node].createSessionFactory();
 
+      sf.createSession().close();
       sfs[node] = sf;
    }
 
@@ -1363,24 +1473,28 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             if (sharedStorage)
             {
-               server = createInVMFailoverServer(true, configuration, nodeManagers[node]);
+               server = createInVMFailoverServer(true, configuration, nodeManagers[node], node);
             }
             else
             {
                server = HornetQServers.newHornetQServer(configuration);
+               server.setIdentity("Server " + node);
             }
          }
          else
          {
             if (sharedStorage)
             {
-               server = createInVMFailoverServer(false, configuration,  nodeManagers[node]);
+               server = createInVMFailoverServer(false, configuration,  nodeManagers[node], node);
             }
             else
             {
                server = HornetQServers.newHornetQServer(configuration, false);
+               server.setIdentity("Server " + node);
             }
          }
+         
+         server.setIdentity(this.getClass().getSimpleName() + "/Live(" + node + ")");
          servers[node] = server;
       }
 
@@ -1438,24 +1552,27 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          if (sharedStorage)
          {
-            server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode]);
+            server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode], liveNode);
          }
          else
          {
             server = HornetQServers.newHornetQServer(configuration);
+            server.setIdentity("Server " + liveNode);
          }
       }
       else
       {
          if (sharedStorage)
          {
-            server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode]);
+            server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode], liveNode);
          }
          else
          {
             server = HornetQServers.newHornetQServer(configuration, false);
+            server.setIdentity("Server " + liveNode);
          }
       }
+      server.setIdentity(this.getClass().getSimpleName() + "/Backup(" + node + " of live " + liveNode + ")");
       servers[node] = server;
    }
 
@@ -1516,22 +1633,24 @@ public abstract class ClusterTestBase extends ServiceTestBase
         {
            if (sharedStorage)
            {
-              server = createInVMFailoverServer(true, configuration, nodeManagers[node]);
+              server = createInVMFailoverServer(true, configuration, nodeManagers[node], node);
            }
            else
            {
               server = HornetQServers.newHornetQServer(configuration);
+              server.setIdentity("Server " + node);
            }
         }
         else
         {
            if (sharedStorage)
            {
-              server = createInVMFailoverServer(false, configuration, nodeManagers[node]);
+              server = createInVMFailoverServer(false, configuration, nodeManagers[node], node);
            }
            else
            {
               server = HornetQServers.newHornetQServer(configuration, false);
+              server.setIdentity("Server " + node);
            }
         }
         servers[node] = server;
@@ -1603,18 +1722,19 @@ public abstract class ClusterTestBase extends ServiceTestBase
         {
            if (sharedStorage)
            {
-              server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode]);
+              server = createInVMFailoverServer(true, configuration, nodeManagers[liveNode], liveNode);
            }
            else
            {
               server = HornetQServers.newHornetQServer(configuration);
+              server.setIdentity("Server " + liveNode);
            }
         }
         else
         {
            if (sharedStorage)
            {
-              server = createInVMFailoverServer(false, configuration, nodeManagers[liveNode]);
+              server = createInVMFailoverServer(false, configuration, nodeManagers[liveNode], liveNode);
            }
            else
            {
@@ -1714,18 +1834,89 @@ public abstract class ClusterTestBase extends ServiceTestBase
          pairs.add(serverTotc.getName());
       }
 
-      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-                                                                                      address,
-                                                                                      connectorFrom.getName(),
-                                                                                      250,
-                                                                                      true,
-                                                                                      forwardWhenNoConsumers,
-                                                                                      maxHops,
-                                                                                      1024,
-                                                                                      pairs, false);
+      ClusterConnectionConfiguration clusterConf = createClusterConfig(name,
+                                                                       address,
+                                                                       forwardWhenNoConsumers,
+                                                                       maxHops,
+                                                                       connectorFrom,
+                                                                       pairs);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
+
+   protected void setupClusterConnection(final String name,
+                                         final String address,
+                                         final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
+                                         final int reconnectAttempts,
+                                         final long retryInterval,
+                                         final boolean netty,
+                                         final int nodeFrom,
+                                         final int... nodesTo)
+   {
+      HornetQServer serverFrom = servers[nodeFrom];
+
+      if (serverFrom == null)
+      {
+         throw new IllegalStateException("No server at node " + nodeFrom);
+      }
+
+      TransportConfiguration connectorFrom = createTransportConfiguration(netty, false, generateParams(nodeFrom, netty));
+      serverFrom.getConfiguration().getConnectorConfigurations().put(connectorFrom.getName(), connectorFrom);
+      
+      List<String> pairs = new ArrayList<String>();
+      for (int element : nodesTo)
+      {
+         TransportConfiguration serverTotc = createTransportConfiguration(netty, false, generateParams(element, netty));
+         serverFrom.getConfiguration().getConnectorConfigurations().put(serverTotc.getName(), serverTotc);
+         pairs.add(serverTotc.getName());
+      }
+      ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+           address,
+           connectorFrom.getName(),
+           ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+           ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+           retryInterval,
+           ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+           ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+           reconnectAttempts,
+           true,
+           forwardWhenNoConsumers,
+           maxHops,
+           1024,
+           pairs,
+           false);
+
+      serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
+   }
+
+   /**
+    * @param name
+    * @param address
+    * @param forwardWhenNoConsumers
+    * @param maxHops
+    * @param connectorFrom
+    * @param pairs
+    * @return
+    */
+   protected ClusterConnectionConfiguration createClusterConfig(final String name,
+                                                                final String address,
+                                                                final boolean forwardWhenNoConsumers,
+                                                                final int maxHops,
+                                                                TransportConfiguration connectorFrom,
+                                                                List<String> pairs)
+     {
+        ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
+                                                                                        address,
+                                                                                        connectorFrom.getName(),
+                                                                                        250,
+                                                                                        true,
+                                                                                        forwardWhenNoConsumers,
+                                                                                        maxHops,
+                                                                                        1024,
+                                                                                        pairs, false);
+        return clusterConf;
+     }
 
    protected void setupClusterConnectionWithBackups(final String name,
                                                     final String address,
@@ -1802,27 +1993,28 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       for (int node : nodes)
       {
+         log.info("#test start node " + node);
          servers[node].setIdentity("server " + node);
          ClusterTestBase.log.info("starting server " + servers[node]);
          servers[node].start();
+
          ClusterTestBase.log.info("started server " + servers[node]);
 
          ClusterTestBase.log.info("started server " + node);
+
+         waitForServer(servers[node]);
+
          /*
-         * we need to wait a lil while between server start up to allow the server to communicate in some order.
-         * This is to avoid split brain on startup
-         * */
-         // TODO: Do we really need this?
+          * we need to wait a little while between server start up to allow the server to communicate in some order.
+          * This is to avoid split brain on startup
+          * */
          Thread.sleep(500);
       }
-      for (int node : nodes)
-      {
-         //wait for each server to start, it may be a backup and started in a separate thread
-         waitForServer(servers[node]);
-      }
+      
+      
    }
 
-   private void waitForServer(HornetQServer server)
+   protected void waitForServer(HornetQServer server)
          throws InterruptedException
    {
       long timetowait =System.currentTimeMillis() + 5000;
@@ -1856,15 +2048,17 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void stopServers(final int... nodes) throws Exception
    {
+      log.info("Stopping nodes "  + Arrays.toString(nodes));
       for (int node : nodes)
       {
-         if (servers[node].isStarted())
+         log.info("#test stop server " + node);
+         if (servers[node] != null && servers[node].isStarted())
          {
             try
             {
                ClusterTestBase.log.info("stopping server " + node);
                servers[node].stop();
-               ClusterTestBase.log.info("server stopped");
+               ClusterTestBase.log.info("server " + node + " stopped");
             }
             catch (Exception e)
             {

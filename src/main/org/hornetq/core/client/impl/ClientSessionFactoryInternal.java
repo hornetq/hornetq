@@ -46,4 +46,6 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp);
 
    Object getBackupConnector();
+
+   void setReconnectAttempts(int i);
 }

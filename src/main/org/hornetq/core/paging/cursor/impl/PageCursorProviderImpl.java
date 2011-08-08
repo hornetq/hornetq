@@ -89,6 +89,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
+      if (log.isDebugEnabled())
+      {
+         log.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+      }
       PageSubscription activeCursor = activeCursors.get(cursorID);
       if (activeCursor != null)
       {
@@ -330,6 +334,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
+            }
 
             ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
             cursorList.addAll(activeCursors.values());
@@ -344,8 +353,20 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   if (!cursor.isComplete(minPage))
                   {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
+                     }
+                     
                      complete = false;
                      break;
+                  }
+                  else
+                  {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Cursor " + cursor + "was considered **complete** at page " + minPage);
+                     }
                   }
                }
 
@@ -516,10 +537,19 @@ public class PageCursorProviderImpl implements PageCursorProvider
       for (PageSubscription cursor : cursorList)
       {
          long firstPage = cursor.getFirstPage();
+         if (log.isDebugEnabled())
+         {
+            log.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
+         }
          if (firstPage < minPage)
          {
             minPage = firstPage;
          }
+      }
+
+      if (log.isDebugEnabled())
+      {
+         log.debug(this.pagingStore.getAddress() + " has minPage=" + minPage);
       }
 
       return minPage;

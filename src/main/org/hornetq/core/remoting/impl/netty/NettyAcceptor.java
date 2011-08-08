@@ -136,6 +136,8 @@ public class NettyAcceptor implements Acceptor
    private final int nioRemotingThreads;
 
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
+   
+   private HttpAcceptorHandler httpHandler = null;
 
    private final ConcurrentMap<Object, NettyConnection> connections = new ConcurrentHashMap<Object, NettyConnection>();
 
@@ -352,7 +354,8 @@ public class NettyAcceptor implements Acceptor
 
                handlers.put("http-encoder", new HttpResponseEncoder());
 
-               handlers.put("http-handler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
+               httpHandler = new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime);
+               handlers.put("http-handler", httpHandler);
             }
 
             if (protocol == ProtocolType.CORE)
@@ -554,6 +557,11 @@ public class NettyAcceptor implements Acceptor
             // TODO Auto-generated catch block
             e.printStackTrace();
          }
+      }
+      
+      if (httpHandler != null)
+      {
+         httpHandler.shutdown();
       }
 
       paused = false;

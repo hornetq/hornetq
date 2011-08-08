@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.cluster.restart;
 import java.util.Collection;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
@@ -24,6 +25,8 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
  */
 public class ClusterRestartTest extends ClusterTestBase
 {
+   Logger log = Logger.getLogger(ClusterRestartTest.class);
+     
    public void testRestartWithQueuesCreateInDiffOrder() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -71,12 +74,11 @@ public class ClusterRestartTest extends ClusterTestBase
 
          sendInRange(1, "queues.testaddress", 0, 10, true, null);
 
-         System.out.println("stopping******************************************************");
+         log.info("stopping******************************************************");
          stopServers(0);
+         // Waiting some time after stopped
          Thread.sleep(2000);
-         System.out.println("stopped******************************************************");
          startServers(0);
-
          
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);

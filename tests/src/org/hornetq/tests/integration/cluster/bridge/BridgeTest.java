@@ -1043,7 +1043,7 @@ public class BridgeTest extends ServiceTestBase
          server1.start();
          server0.start();
 
-         final int numMessages = 1000;
+         final int numMessages = 300;
 
          final int totalrepeats = 3;
 

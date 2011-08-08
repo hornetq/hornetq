@@ -97,7 +97,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    // This is useful at debug time...
    // if you set it to true, all the appends, deletes, rollbacks, commits, etc.. are sent to System.out
-   private static final boolean TRACE_RECORDS = false;
+   private static final boolean TRACE_RECORDS = trace;
 
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging

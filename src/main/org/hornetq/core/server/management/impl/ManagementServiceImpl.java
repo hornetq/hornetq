@@ -641,7 +641,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          log.trace("Sending Notification = "  + notification + 
                    ", notificationEnabled=" + notificationsEnabled + 
-                   " messagingServerControl=" + messagingServerControl, new Exception ("trace"));
+                   " messagingServerControl=" + messagingServerControl);
       }
       if (messagingServerControl != null && notificationsEnabled)
       {
@@ -673,6 +673,10 @@ public class ManagementServiceImpl implements ManagementService
                // https://jira.jboss.org/jira/browse/HORNETQ-317
                if (messagingServer == null || !messagingServer.isInitialised())
                {
+            	  if (log.isDebugEnabled())
+            	  {
+            	     log.debug("ignoring message " + notification + " as the server is not initialized");
+            	  }
                   return;
                }
 

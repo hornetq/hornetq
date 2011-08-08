@@ -19,7 +19,6 @@ import javax.jms.Message;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
 
 /**
@@ -35,7 +34,7 @@ public class AutoGroupingTest extends GroupingTest
    @Override
    protected ConnectionFactory getCF() throws Exception
    {
-      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      HornetQJMSConnectionFactory cf = (HornetQJMSConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       
       cf.setAutoGroup(true);
       

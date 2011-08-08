@@ -15,11 +15,11 @@ package org.hornetq.core.server.cluster;
 
 import java.util.Map;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A ClusterConnection
@@ -35,26 +35,18 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    SimpleString getName();
 
    String getNodeID();
+   
+   HornetQServer getServer();
 
    /**
     * @return a Map of node ID and addresses
     */
    Map<String, String> getNodes();
 
-   void handleReplicatedAddBinding(SimpleString address,
-                                   SimpleString uniqueName,
-                                   SimpleString routingName,
-                                   long queueID,
-                                   SimpleString filterString,
-                                   SimpleString queueName,
-                                   int distance) throws Exception;
-
    void activate() throws Exception;
    
    TransportConfiguration getConnector();
 
    // for debug
-   String description();
-
-   void nodeAnnounced(String nodeID, Pair<TransportConfiguration,TransportConfiguration> connectorPair);
+   String describe();
 }

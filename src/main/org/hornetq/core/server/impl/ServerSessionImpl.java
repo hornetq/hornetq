@@ -443,6 +443,10 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       {
          try
          {
+        	if (log.isDebugEnabled())
+        	{
+        	   log.debug("deleting temporary queue " + bindingName);
+        	}
             if (postOffice.getBinding(bindingName) != null)
             {
                postOffice.removeBinding(bindingName);

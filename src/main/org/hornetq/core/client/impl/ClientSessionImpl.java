@@ -516,6 +516,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
+      if (log.isTraceEnabled())
+      {
+         log.trace("Sending commit");
+      }
+      
       if (rollbackOnly)
       {
          rollbackOnFailover();
@@ -928,12 +933,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
             if (response.isReattached())
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("ClientSession reattached fine, replaying commands");
+               }
                // The session was found on the server - we reattached transparently ok
 
                channel.replayCommands(response.getLastConfirmedCommandID());
             }
             else
             {
+
+               if (log.isDebugEnabled())
+               {
+                  log.debug("ClientSession couldn't be reattached, creating a new session");
+               }
 
                // The session wasn't found on the server - probably we're failing over onto a backup server where the
                // session won't exist or the target server has been restarted - in this case the session will need to be

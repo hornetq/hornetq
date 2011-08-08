@@ -14,6 +14,8 @@
 package org.hornetq.core.server.impl;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.nio.channels.ClosedChannelException;
 import java.security.AccessController;
@@ -317,7 +319,14 @@ public class HornetQServerImpl implements HornetQServer
 
             initialisePart2();
 
-            log.info("Server is now live");
+            if (identity != null)
+            {
+               log.info("Server " + identity + " is now live");
+            }
+            else
+            {
+               log.info("Server is now live");
+            }
          }
          catch (Exception e)
          {
@@ -436,13 +445,18 @@ public class HornetQServerImpl implements HornetQServer
                               {
                                  try
                                  {
+                                    log.debug(HornetQServerImpl.this + "::Stopping live node in favor of failback");
                                     stop(true);
+                                    // We need to wait some time before we start the backup again
+                                    // otherwise we may eventually start before the live had a chance to get it
+                                    Thread.sleep(configuration.getFailbackDelay());
                                     configuration.setBackup(true);
+                                    log.debug(HornetQServerImpl.this + "::Starting backup node now after failback");
                                     start();
                                  }
                                  catch (Exception e)
                                  {
-                                    log.info("unable to restart server, please kill and restart manually", e);
+                                    log.warn("unable to restart server, please kill and restart manually", e);
                                  }
                               }
                            });
@@ -451,6 +465,7 @@ public class HornetQServerImpl implements HornetQServer
                      }
                      catch (Exception e)
                      {
+                        log.debug(e.getMessage(), e);
                         //hopefully it will work next call
                      }
                   }
@@ -492,9 +507,9 @@ public class HornetQServerImpl implements HornetQServer
                nodeManager.interrupt();
 
                backupActivationThread.interrupt();
+               
+               backupActivationThread.join(1000);
 
-               // TODO: do we really need this?
-               Thread.sleep(1000);
             }
 
             if (System.currentTimeMillis() - start >= timeout)
@@ -593,7 +608,7 @@ public class HornetQServerImpl implements HornetQServer
          }
          started = true;
 
-         HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() + "] started");
+         HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " [" + nodeManager.getNodeId() + "]" + (this.identity != null ? " (" + identity : ")") + " started");
       }
 
 
@@ -741,7 +756,7 @@ public class HornetQServerImpl implements HornetQServer
 
          for (Runnable task : tasks)
          {
-            HornetQServerImpl.log.debug("Waiting for " + task);
+            HornetQServerImpl.log.debug(this + "::Waiting for " + task);
          }
 
          if (memoryManager != null)
@@ -824,6 +839,16 @@ public class HornetQServerImpl implements HornetQServer
    // HornetQServer implementation
    // -----------------------------------------------------------
 
+   public String describe()
+   {
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+      
+      out.println("Information about server " + this.identity);
+      out.println("Cluster Connection:" + this.getClusterManager().describe());
+      
+      return str.toString();
+   }
    
    public void setIdentity(String identity)
    {
@@ -838,6 +863,11 @@ public class HornetQServerImpl implements HornetQServer
    public ScheduledExecutorService getScheduledPool()
    {
       return scheduledPool;
+   }
+   
+   public ExecutorService getThreadPool()
+   {
+      return threadPool;
    }
    
    public Configuration getConfiguration()
@@ -905,7 +935,7 @@ public class HornetQServerImpl implements HornetQServer
       return version;
    }
 
-   public synchronized boolean isStarted()
+   public boolean isStarted()
    {
       return started;
    }
@@ -1135,7 +1165,7 @@ public class HornetQServerImpl implements HornetQServer
       activateCallbacks.remove(callback);
    }
 
-   public synchronized ExecutorFactory getExecutorFactory()
+   public ExecutorFactory getExecutorFactory()
    {
       return executorFactory;
    }
@@ -1325,7 +1355,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-threads" + System.identityHashCode(this),
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-" + this.toString(),
                                                         false,
                                                         getThisClassLoader());
 
@@ -1603,26 +1633,29 @@ public class HornetQServerImpl implements HornetQServer
       {
          queueBindingInfosMap.put(queueBindingInfo.getId(), queueBindingInfo);
          
-         Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
-
-         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
-         
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
-                                                queueBindingInfo.getAddress(),
-                                                queueBindingInfo.getQueueName(),
-                                                filter,
-                                                subscription,
-                                                true,
-                                                false);
-
-         Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
-
-         queues.put(queueBindingInfo.getId(), queue);
-
-         postOffice.addBinding(binding);
-
-         managementService.registerAddress(queueBindingInfo.getAddress());
-         managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+         if (queueBindingInfo.getFilterString() == null || !queueBindingInfo.getFilterString().toString().equals(GENERIC_IGNORED_FILTER))
+         {
+            Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
+   
+            PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
+            
+            Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
+                                                   queueBindingInfo.getAddress(),
+                                                   queueBindingInfo.getQueueName(),
+                                                   filter,
+                                                   subscription,
+                                                   true,
+                                                   false);
+   
+            Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeManager.getNodeId());
+   
+            queues.put(queueBindingInfo.getId(), queue);
+   
+            postOffice.addBinding(binding);
+   
+            managementService.registerAddress(queueBindingInfo.getAddress());
+            managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+         }
          
          
       }

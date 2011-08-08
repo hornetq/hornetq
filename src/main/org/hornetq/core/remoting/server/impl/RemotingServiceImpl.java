@@ -64,6 +64,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
 
@@ -265,11 +267,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       failureCheckAndFlushThread.close();
+      
 
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
+         if (log.isDebugEnabled())
+         {
+            log.debug("Pausing acceptor " + acceptor);
+         }
          acceptor.pause();
+      }
+
+      if (log.isDebugEnabled())
+      {
+         log.debug("Sending disconnect on live connections");
       }
 
       // Now we ensure that no connections will process any more packets after this method is complete
@@ -277,6 +289,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       for (ConnectionEntry entry : connections.values())
       {
          RemotingConnection conn = entry.connection;
+         
+         if (log.isTraceEnabled())
+         {
+            log.trace("Sending connection.disconnection packet to " + conn);
+         }
 
          conn.disconnect();
       }
@@ -369,6 +386,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       ConnectionEntry entry = pmgr.createConnectionEntry(connection);
 
+      if (isTrace)
+      {
+         log.trace("Connection created " + connection);
+      }
+      
       connections.put(connection.getID(), entry);
 
       if (config.isBackup())
@@ -379,6 +401,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    
    public void connectionDestroyed(final Object connectionID)
    {
+
+	  if (isTrace)
+	  {
+	     log.trace("Connection removed " + connectionID + " from server " + this.server, new Exception ("trace"));
+	  }
+      
       ConnectionEntry conn = connections.get(connectionID);
 
       if (conn != null)
@@ -458,6 +486,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             conn.connection.bufferReceived(connectionID, buffer);
          }
+         else
+         {
+        	if (log.isTraceEnabled())
+        	{
+        	   log.trace("ConnectionID = "  + connectionID + " was already closed, so ignoring packet");
+        	}
+         }
       }
    }
 
@@ -474,7 +509,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          this.pauseInterval = pauseInterval;
       }
 
-      public synchronized void close()
+      public void close()
       {
          closed = true;
 

@@ -42,6 +42,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      log.info("#test tearDown");
       stopServers();
 
       super.tearDown();
@@ -1827,5 +1828,12 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       stopServers(0, 1, 2, 3, 4);
    }
+   
+
+   protected boolean isFileStorage()
+   {
+      return false;
+   }
+
 
 }

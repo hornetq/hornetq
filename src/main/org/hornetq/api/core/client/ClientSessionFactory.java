@@ -133,10 +133,16 @@ public interface ClientSessionFactory
                                int ackBatchSize) throws HornetQException;
 
    void close();
+
+   /**
+    * Opposed to close, will call cleanup only on every created session and children objects.
+    */
+   void cleanup();
    
    ServerLocator getServerLocator();
    
    CoreRemotingConnection getConnection();
 
     boolean isClosed();
+
 }

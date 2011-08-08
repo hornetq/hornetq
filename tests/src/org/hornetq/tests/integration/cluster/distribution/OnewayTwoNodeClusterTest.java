@@ -47,6 +47,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      log.info("#test Tear down");
       closeAllConsumers();
 
       closeAllSessionFactories();

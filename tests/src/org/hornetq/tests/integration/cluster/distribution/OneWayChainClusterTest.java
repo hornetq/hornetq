@@ -314,29 +314,33 @@ public class OneWayChainClusterTest extends ClusterTestBase
       verifyReceiveRoundRobin(10, 0, 1);
       verifyNotReceive(0, 1);
 
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[2]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
+      log.info("============================================ before restart");
+      log.info(clusterDescription(servers[0]));
+      log.info(clusterDescription(servers[1]));
+      log.info(clusterDescription(servers[2]));
+      log.info(clusterDescription(servers[3]));
+      log.info(clusterDescription(servers[4]));
 
       stopServers(2);
 
       Thread.sleep(2000);
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
+
+      log.info("============================================ after stop");
+      log.info(clusterDescription(servers[0]));
+      log.info(clusterDescription(servers[1]));
+      log.info(clusterDescription(servers[3]));
+      log.info(clusterDescription(servers[4]));
 
       startServers(2);
 
       Thread.sleep(2000);
 
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[2]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
+      log.info("============================================ after start");
+      log.info(clusterDescription(servers[0]));
+      log.info(clusterDescription(servers[1]));
+      log.info(clusterDescription(servers[2]));
+      log.info(clusterDescription(servers[3]));
+      log.info(clusterDescription(servers[4]));
 
       
       send(0, "queues.testaddress", 10, false, null);

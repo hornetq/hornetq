@@ -58,38 +58,47 @@ public class ClusterWithBackupTest extends ClusterTestBase
    {
       return false;
    }
-
-   public void testBasicRoundRobin() throws Exception
+   
+   public void testBasicRoundRobin() throws Throwable
    {
-      setupCluster();
-
-      startServers(0, 1, 2, 3, 4, 5);
-
-      setupSessionFactory(3, isNetty());
-      setupSessionFactory(4, isNetty());
-      setupSessionFactory(5, isNetty());
-
-      createQueue(3, "queues.testaddress", "queue0", null, false);
-      createQueue(4, "queues.testaddress", "queue0", null, false);
-      createQueue(5, "queues.testaddress", "queue0", null, false);
-
-      addConsumer(0, 3, "queue0", null);
-      addConsumer(1, 4, "queue0", null);
-      addConsumer(2, 5, "queue0", null);
-
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
-      waitForBindings(5, "queues.testaddress", 1, 1, true);
-
-      waitForBindings(3, "queues.testaddress", 2, 2, false);
-      waitForBindings(4, "queues.testaddress", 2, 2, false);
-      waitForBindings(5, "queues.testaddress", 2, 2, false);
-
-      send(3, "queues.testaddress", 100, false, null);
-
-      verifyReceiveRoundRobinInSomeOrder(100, 0, 1, 2);
-
-      verifyNotReceive(0, 0, 1, 2);
+      try
+      {
+         setupCluster();
+   
+         startServers(0, 1, 2, 3, 4, 5);
+   
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
+         setupSessionFactory(5, isNetty());
+   
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
+         createQueue(5, "queues.testaddress", "queue0", null, false);
+   
+         addConsumer(0, 3, "queue0", null);
+         addConsumer(1, 4, "queue0", null);
+         addConsumer(2, 5, "queue0", null);
+   
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
+         waitForBindings(5, "queues.testaddress", 1, 1, true);
+   
+         waitForBindings(3, "queues.testaddress", 2, 2, false);
+         waitForBindings(4, "queues.testaddress", 2, 2, false);
+         waitForBindings(5, "queues.testaddress", 2, 2, false);
+   
+         send(3, "queues.testaddress", 100, false, null);
+   
+         verifyReceiveRoundRobinInSomeOrder(100, 0, 1, 2);
+   
+         verifyNotReceive(0, 0, 1, 2);
+      }
+      catch (Throwable e)
+      {
+         e.printStackTrace();
+         log.error(e.getMessage(), e);
+         throw e;
+      }
    }
 
    protected void setupCluster() throws Exception

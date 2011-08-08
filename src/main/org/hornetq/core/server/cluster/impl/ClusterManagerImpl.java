@@ -15,9 +15,11 @@ package org.hornetq.core.server.cluster.impl;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
@@ -90,28 +93,20 @@ public class ClusterManagerImpl implements ClusterManager
 
    private volatile boolean started;
 
-   private boolean backup;
+   private volatile boolean backup;
 
    private final boolean clustered;
 
    // the cluster connections which links this node to other cluster nodes
    private final Map<String, ClusterConnection> clusterConnections = new HashMap<String, ClusterConnection>();
 
-   // regular client listeners to be notified of cluster topology changes.
-   // they correspond to regular clients using a HA ServerLocator
-   private Set<ClusterTopologyListener> clientListeners = new ConcurrentHashSet<ClusterTopologyListener>();
-
-   // cluster connections listeners to be notified of cluster topology changes
-   // they correspond to cluster connections on *other nodes connected to this one*
-   private Set<ClusterTopologyListener> clusterConnectionListeners = new ConcurrentHashSet<ClusterTopologyListener>();
-
-   private Topology topology = new Topology();
+   private final Topology topology = new Topology(this);
 
    private volatile ServerLocatorInternal backupServerLocator;
 
-   private final List<ServerLocatorInternal> clusterLocators = new ArrayList<ServerLocatorInternal>();
+   private final Set<ServerLocator> clusterLocators = new ConcurrentHashSet<ServerLocator>();
 
-   private Executor executor;
+   private final Executor executor;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
                              final HornetQServer server,
@@ -148,7 +143,31 @@ public class ClusterManagerImpl implements ClusterManager
 
       this.clustered = clustered;
    }
+   
+   public String describe()
+   {
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+      
+      out.println("Information on " + this);
+      out.println("*******************************************************");
+      out.println("Topology: " + topology.describe("Toopology on " + this));
+      
+      for (ClusterConnection conn : this.clusterConnections.values())
+      {
+         out.println(conn.describe());
+      }
+      
+      out.println("*******************************************************");
 
+      return str.toString();
+   }
+
+   public String toString()
+   {
+      return "ClusterManagerImpl[server=" + server + "]@" + System.identityHashCode(this);
+   }
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -208,11 +227,6 @@ public class ClusterManagerImpl implements ClusterManager
             managementService.unregisterCluster(clusterConnection.getName().toString());
          }
 
-         clusterConnectionListeners.clear();
-         clientListeners.clear();
-         clusterConnections.clear();
-         topology.clear();
-
       }
 
       for (Bridge bridge : bridges.values())
@@ -229,12 +243,20 @@ public class ClusterManagerImpl implements ClusterManager
          backupServerLocator = null;
       }
 
-      for (ServerLocatorInternal clusterLocator : clusterLocators)
+      executor.execute(new Runnable()
       {
-         clusterLocator.close();
-      }
-      clusterLocators.clear();
+         public void run()
+         {
+            for (ServerLocator clusterLocator : clusterLocators)
+            {
+               clusterLocator.close();
+            }
+            clusterLocators.clear();
+         }
+      });
       started = false;
+
+      clusterConnections.clear();
    }
 
    public void notifyNodeDown(String nodeID)
@@ -243,22 +265,11 @@ public class ClusterManagerImpl implements ClusterManager
       {
          return;
       }
+      
+      log.debug(this + "::removing nodeID=" + nodeID, new Exception ("trace"));
 
-      boolean removed = topology.removeMember(nodeID);
+      topology.removeMember(nodeID);
 
-      if (removed)
-      {
-
-         for (ClusterTopologyListener listener : clientListeners)
-         {
-            listener.nodeDown(nodeID);
-         }
-
-         for (ClusterTopologyListener listener : clusterConnectionListeners)
-         {
-            listener.nodeDown(nodeID);
-         }
-      }
    }
 
    public void notifyNodeUp(final String nodeID,
@@ -266,31 +277,45 @@ public class ClusterManagerImpl implements ClusterManager
                             final boolean last,
                             final boolean nodeAnnounce)
    {
-      TopologyMember member = new TopologyMember(connectorPair);
-      boolean updated = topology.addMember(nodeID, member);
+      if (log.isDebugEnabled())
+      {
+         log.debug(this + "::NodeUp " + nodeID + connectorPair + ", nodeAnnounce=" + nodeAnnounce);
+      }
 
+      TopologyMember member = new TopologyMember(connectorPair);
+      boolean updated = topology.addMember(nodeID, member, last);
+      
       if (!updated)
       {
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + " ignored notifyNodeUp on nodeID=" + nodeID + " pair=" + connectorPair + " as the topology already knew about it");
+         }
          return;
       }
 
-      for (ClusterTopologyListener listener : clientListeners)
+      if (log.isDebugEnabled())
       {
-         listener.nodeUP(nodeID, member.getConnector(), last);
+         log.debug(this + " received notifyNodeUp nodeID=" + nodeID + " connectorPair=" + connectorPair + 
+                   ", nodeAnnounce=" + nodeAnnounce + ", last=" + last);
       }
-
-      for (ClusterTopologyListener listener : clusterConnectionListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), last);
-      }
-
+      
       // if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster
       // connections.
       if (nodeAnnounce)
       {
+         if (log.isDebugEnabled())
+         {
+            log.debug("Informing " + nodeID + " to " + clusterConnections.toString());
+         }
          for (ClusterConnection clusterConnection : clusterConnections.values())
          {
-            clusterConnection.nodeAnnounced(nodeID, connectorPair);
+            if (log.isTraceEnabled())
+            {
+               log.trace(this + " information clusterConnection=" + clusterConnection + 
+                         " nodeID=" + nodeID + " connectorPair=" + connectorPair + " last=" + last);
+            }
+            clusterConnection.nodeUP(nodeID, connectorPair, last);
          }
       }
    }
@@ -322,33 +347,22 @@ public class ClusterManagerImpl implements ClusterManager
 
    public void addClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)
    {
-      synchronized (this)
-      {
-         if (clusterConnection)
-         {
-            this.clusterConnectionListeners.add(listener);
-         }
-         else
-         {
-            this.clientListeners.add(listener);
-         }
-      }
+      topology.addClusterTopologyListener(listener);
 
       // We now need to send the current topology to the client
-      topology.sendTopology(listener);
+      executor.execute(new Runnable(){
+         public void run()
+         {
+            topology.sendTopology(listener);
+            
+         }
+      });
    }
 
-   public synchronized void removeClusterTopologyListener(final ClusterTopologyListener listener,
+   public void removeClusterTopologyListener(final ClusterTopologyListener listener,
                                                           final boolean clusterConnection)
    {
-      if (clusterConnection)
-      {
-         this.clusterConnectionListeners.remove(listener);
-      }
-      else
-      {
-         this.clientListeners.remove(listener);
-      }
+      topology.removeClusterTopologyListener(listener);
    }
 
    public Topology getTopology()
@@ -366,13 +380,9 @@ public class ClusterManagerImpl implements ClusterManager
          String nodeID = server.getNodeID().toString();
 
          TopologyMember member = topology.getMember(nodeID);
-         // we swap the topology backup now = live
-         if (member != null)
-         {
-            member.getConnector().a = member.getConnector().b;
-
-            member.getConnector().b = null;
-         }
+         //swap backup as live and send it to everybody
+         member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(member.getConnector().b, null));
+         topology.addMember(nodeID, member, false);
 
          if (backupServerLocator != null)
          {
@@ -424,16 +434,8 @@ public class ClusterManagerImpl implements ClusterManager
                log.warn("unable to start bridge " + bridge.getName(), e);
             }
          }
-
-         for (ClusterTopologyListener listener : clientListeners)
-         {
-            listener.nodeUP(nodeID, member.getConnector(), false);
-         }
-
-         for (ClusterTopologyListener listener : clusterConnectionListeners)
-         {
-            listener.nodeUP(nodeID, member.getConnector(), false);
-         }
+         
+         topology.sendMemberToListeners(nodeID, member);
       }
    }
 
@@ -457,6 +459,11 @@ public class ClusterManagerImpl implements ClusterManager
       {
          log.warn("no cluster connections defined, unable to announce backup");
       }
+   }
+   
+   void addClusterLocator(final ServerLocatorInternal serverLocator)
+   {
+      this.clusterLocators.add(serverLocator);
    }
 
    private synchronized void announceNode()
@@ -483,7 +490,7 @@ public class ClusterManagerImpl implements ClusterManager
                                                                                                  null));
          }
 
-         topology.addMember(nodeID, member);
+         topology.addMember(nodeID, member, false);
       }
       else
       {
@@ -496,19 +503,6 @@ public class ClusterManagerImpl implements ClusterManager
             // pair.a = cc.getConnector();
          }
       }
-
-      // Propagate the announcement
-
-      for (ClusterTopologyListener listener : clientListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), false);
-      }
-
-      for (ClusterTopologyListener listener : clusterConnectionListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), false);
-      }
-
    }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
@@ -687,12 +681,14 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
-      serverLocator.setReconnectAttempts(config.getReconnectAttempts());
+      
+      // We are going to manually retry on the bridge in case of failure
+      serverLocator.setReconnectAttempts(0);
+      serverLocator.setInitialConnectAttempts(-1);
       serverLocator.setRetryInterval(config.getRetryInterval());
-      serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
       serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
+      serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
-      serverLocator.setInitialConnectAttempts(config.getReconnectAttempts());
       serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
       if (!config.isUseDuplicateDetection())
@@ -700,8 +696,14 @@ public class ClusterManagerImpl implements ClusterManager
          log.debug("Bridge " + config.getName() + 
                    " is configured to not use duplicate detecion, it will send messages synchronously");
       }
+      
       clusterLocators.add(serverLocator);
+      
       Bridge bridge = new BridgeImpl(serverLocator,
+                                     config.getReconnectAttempts(),
+                                     config.getRetryInterval(),
+                                     config.getRetryIntervalMultiplier(),
+                                     config.getMaxRetryInterval(),
                                      nodeUUID,
                                      new SimpleString(config.getName()),
                                      queue,
@@ -786,9 +788,17 @@ public class ClusterManagerImpl implements ClusterManager
          {
             ClusterManagerImpl.log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
                                         "'. The cluster connection will not be deployed.");
+            return;
+         }
+         
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + " Starting a Discovery Group Cluster Connection, name=" + config.getDiscoveryGroupName() + ", dg=" + dg);
          }
 
-         clusterConnection = new ClusterConnectionImpl(dg,
+         clusterConnection = new ClusterConnectionImpl(this,
+                                                       topology,
+                                                       dg,
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
@@ -817,8 +827,15 @@ public class ClusterManagerImpl implements ClusterManager
       {
          TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
                                                                                   : null;
+         
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + " defining cluster connection towards " + Arrays.toString(tcConfigs));
+         }
 
-         clusterConnection = new ClusterConnectionImpl(tcConfigs,
+         clusterConnection = new ClusterConnectionImpl(this,
+                                                       topology,
+                                                       tcConfigs,
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
@@ -848,6 +865,10 @@ public class ClusterManagerImpl implements ClusterManager
 
       clusterConnections.put(config.getName(), clusterConnection);
 
+      if (log.isDebugEnabled())
+      {
+         log.debug("ClusterConnection.start at " + clusterConnection, new Exception ("trace"));
+      }
       clusterConnection.start();
 
       if (backup)
@@ -864,6 +885,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(tcConfigs);
          backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
       }
       else if (config.getDiscoveryGroupName() != null)
       {
@@ -878,6 +900,7 @@ public class ClusterManagerImpl implements ClusterManager
 
          backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(dg);
          backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
       }
       else
       {
@@ -890,6 +913,10 @@ public class ClusterManagerImpl implements ClusterManager
          {
             try
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug(ClusterManagerImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
+               }
                ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
                if (backupSessionFactory != null)
                {
@@ -901,7 +928,7 @@ public class ClusterManagerImpl implements ClusterManager
             }
             catch (Exception e)
             {
-               log.warn("Unable to announce backup", e);
+               log.warn("Unable to announce backup, retrying", e);
             }
          }
       });
@@ -931,6 +958,17 @@ public class ClusterManagerImpl implements ClusterManager
    // for testing
    public void clear()
    {
+      for (Bridge bridge : bridges.values())
+      {
+         try
+         {
+            bridge.stop();
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
+      }
       bridges.clear();
       for (ClusterConnection clusterConnection : clusterConnections.values())
       {

@@ -128,6 +128,8 @@ public class InVMConnector implements Connector
       if (InVMConnector.failOnCreateConnection)
       {
          InVMConnector.incFailures();
+         
+         log.debug("Returning null on InVMConnector for tests");
          // For testing only
          return null;
       }

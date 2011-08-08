@@ -13,6 +13,7 @@
 package org.hornetq.tests.integration.client;
 
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -42,6 +43,16 @@ public class JMSMessageCounterTest extends JMSTestBase
    }
 
 
+   public void testLoop() throws Exception
+   {
+      for (int i = 0 ; i < 100; i++)
+      {
+         log.info("#test " + i);
+         testMessageCounter();
+         tearDown();
+         setUp();
+      }
+   }
 
    public void testMessageCounter() throws Exception
    {
@@ -52,6 +63,7 @@ public class JMSMessageCounterTest extends JMSTestBase
       Queue queue = createQueue(true, "Test");
       
       MessageProducer producer = sess.createProducer(queue);
+      producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
       final int numMessages = 100;
 

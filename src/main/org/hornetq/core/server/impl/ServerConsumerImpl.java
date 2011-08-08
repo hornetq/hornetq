@@ -232,12 +232,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             return HandleStatus.BUSY;
          }
-
+         
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
          if (largeMessageInDelivery)
          {
             return HandleStatus.BUSY;
+         }
+
+         if (log.isTraceEnabled())
+         {
+            log.trace("Handling reference " + ref);
          }
 
          final ServerMessage message = ref.getMessage();
@@ -260,9 +265,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
             // If updateDeliveries = false (set by strict-update),
             // the updateDeliveryCount would still be updated after c
-            if (strictUpdateDeliveryCount)
+            if (strictUpdateDeliveryCount && !ref.isPaged())
             {
-               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue())
+               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue() && !ref.isPaged())
                {
                   storageManager.updateDeliveryCount(ref);
                }

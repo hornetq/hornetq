@@ -129,4 +129,30 @@ public class QueueInfo implements Serializable
    {
       numberOfConsumers--;
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "QueueInfo [routingName=" + routingName +
+             ", clusterName=" +
+             clusterName +
+             ", address=" +
+             address +
+             ", filterString=" +
+             filterString +
+             ", id=" +
+             id +
+             ", filterStrings=" +
+             filterStrings +
+             ", numberOfConsumers=" +
+             numberOfConsumers +
+             ", distance=" +
+             distance +
+             "]";
+   }
+   
+   
 }

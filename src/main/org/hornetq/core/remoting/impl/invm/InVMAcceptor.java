@@ -228,20 +228,22 @@ public class InVMAcceptor implements Acceptor
 
       public void connectionDestroyed(final Object connectionID)
       {
-         if (connections.remove(connectionID) != null)
+         InVMConnection connection = (InVMConnection)connections.remove(connectionID);
+         
+         if (connection != null)
          {
+ 
             listener.connectionDestroyed(connectionID);
 
-            // Execute on different thread to avoid deadlocks
-            new Thread()
+              // Execute on different thread after all the packets are sent, to avoid deadlocks
+            connection.getExecutor().execute(new Runnable()
             {
-               @Override
                public void run()
                {
-                  // Remove on the other side too
-                  connector.disconnect((String)connectionID);
+                 // Remove on the other side too
+                   connector.disconnect((String)connectionID);
                }
-            }.start();
+            });
          }
       }
 

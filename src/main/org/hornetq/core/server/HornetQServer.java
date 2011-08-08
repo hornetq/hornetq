@@ -15,6 +15,7 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -56,9 +57,14 @@ import org.hornetq.utils.ExecutorFactory;
 public interface HornetQServer extends HornetQComponent
 {
    
+   /** This method was created mainly for testing but it may be used in scenarios where 
+    *  you need to have more than one Server inside the same VM.
+    *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
    void setIdentity(String identity);
    
    String getIdentity();
+   
+   String describe();
    
    Configuration getConfiguration();
 
@@ -149,6 +155,8 @@ public interface HornetQServer extends HornetQComponent
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
+   
+   ExecutorService getThreadPool();
    
    ExecutorFactory getExecutorFactory();
 

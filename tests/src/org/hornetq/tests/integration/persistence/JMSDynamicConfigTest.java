@@ -52,7 +52,7 @@ public class JMSDynamicConfigTest extends JMSTestBase
    {
       ArrayList<String> connectors = new ArrayList<String>();
 
-      connectors.add("netty");
+      connectors.add("invm");
 
       ConnectionFactoryConfiguration cfg = new ConnectionFactoryConfigurationImpl("tst", false, connectors, "tt");
       jmsServer.createConnectionFactory(true, cfg, "tst");

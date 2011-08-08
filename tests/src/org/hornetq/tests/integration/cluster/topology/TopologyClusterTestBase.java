@@ -26,6 +26,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -194,6 +195,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       startServers(0);
 
       ServerLocator locator = createHAServerLocator();
+      
+      ((ServerLocatorImpl)locator).getTopology().setOwner("testReceive");
 
       final List<String> nodes = new ArrayList<String>();
       final CountDownLatch upLatch = new CountDownLatch(5);
@@ -207,8 +210,15 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          {
             if(!nodes.contains(nodeID))
             {
+               System.out.println("Node UP " + nodeID + " added");
+               log.info("Node UP " + nodeID + " added");
                nodes.add(nodeID);
                upLatch.countDown();
+            }
+            else
+            {
+               System.out.println("Node UP " + nodeID + " was already here");
+               log.info("Node UP " + nodeID + " was already here");
             }
          }
 
@@ -216,8 +226,15 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          {
             if (nodes.contains(nodeID))
             {
+               log.info("Node down " + nodeID + " accepted");
+               System.out.println("Node down " + nodeID + " accepted");
                nodes.remove(nodeID);
                downLatch.countDown();
+            }
+            else
+            {
+               log.info("Node down " + nodeID + " already removed");
+               System.out.println("Node down " + nodeID + " already removed");
             }
          }
       });

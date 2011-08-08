@@ -308,7 +308,7 @@ public class PageSubscriptionImpl implements PageSubscription
    @Override
    public String toString()
    {
-      return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + "]";
+      return "PageSubscriptionImpl [cursorId=" + cursorId + ", queue=" + queue + ", filter = " + filter + "]";
    }
 
 
@@ -648,21 +648,41 @@ public class PageSubscriptionImpl implements PageSubscription
          Collections.sort(recoveredACK);
 
          boolean first = true;
+         
+         long txDeleteCursorOnReload = -1;
 
          for (PagePosition pos : recoveredACK)
          {
             lastAckedPosition = pos;
-            PageCursorInfo positions = getPageInfo(pos);
-            if (first)
+            PageCursorInfo pageInfo = getPageInfo(pos);
+            
+            if (pageInfo == null)
             {
-               first = false;
-               if (pos.getMessageNr() > 0)
+               log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal");
+               if (txDeleteCursorOnReload == -1)
                {
-                  positions.confirmed.addAndGet(pos.getMessageNr());
+                  txDeleteCursorOnReload = store.generateUniqueID();
                }
+               store.deleteCursorAcknowledgeTransactional(txDeleteCursorOnReload, pos.getRecordID());
+             }
+            else
+            {
+               if (first)
+               {
+                  first = false;
+                  if (pos.getMessageNr() > 0)
+                  {
+                     pageInfo.confirmed.addAndGet(pos.getMessageNr());
+                  }
+               }
+   
+               pageInfo.addACK(pos);
             }
-
-            positions.addACK(pos);
+         }
+         
+         if (txDeleteCursorOnReload >= 0)
+         {
+            store.commit(txDeleteCursorOnReload);
          }
 
          recoveredACK.clear();
@@ -723,6 +743,10 @@ public class PageSubscriptionImpl implements PageSubscription
       if (create && pageInfo == null)
       {
          PageCache cache = cursorProvider.getPageCache(pos);
+         if (cache == null)
+         {
+            return null;
+         }
          pageInfo = new PageCursorInfo(pos.getPageNr(), cache.getNumberOfMessages(), cache);
          consumedPages.put(pos.getPageNr(), pageInfo);
       }

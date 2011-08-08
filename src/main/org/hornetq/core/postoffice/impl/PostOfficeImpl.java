@@ -213,7 +213,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       if (isTrace)
       {
-         log.trace("Receiving notification : " + notification);
+         log.trace("Receiving notification : " + notification + " on server " + this.server);
       }
       synchronized (notificationLock)
       {
@@ -470,6 +470,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
+      
+      if (isTrace)
+      {
+         log.trace("Sending notification for addBinding " + binding + " from server " + server);
+      }
 
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
    }
@@ -747,6 +752,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
+      }
 
       Queue queue = (Queue)binding.getBindable();
 
@@ -763,6 +773,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          for (QueueInfo info : queueInfos.values())
          {
+            if (log.isTraceEnabled())
+            {
+               log.trace("QueueInfo on sendQueueInfoToQueue = " + info);
+            }
             if (info.getAddress().startsWith(address))
             {
                message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
@@ -783,7 +797,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
 
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
+                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());   
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
@@ -809,6 +823,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
       }
 
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PostOfficeImpl [server=" + server + "]";
    }
 
    // Private -----------------------------------------------------------------
@@ -1106,14 +1129,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (rejectDuplicates && isDuplicate)
          {
-            StringBuffer warnMessage = new StringBuffer();
-            warnMessage.append("Duplicate message detected - message will not be routed. Message information:\n");
-            warnMessage.append(message.toString());
-            PostOfficeImpl.log.warn(warnMessage.toString());
+            String warnMessage = "Duplicate message detected - message will not be routed. Message information:" + message.toString();
+            PostOfficeImpl.log.warn(warnMessage);
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
             }
 
             return false;

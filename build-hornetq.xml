@@ -44,6 +44,7 @@
 	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
    <property file="src/config/common/hornetq-version.properties"/>
    <property name="hornetq.version.revision" value="0" />
+   <property name="twitter.consumerKey" value="null"/>
    <property name="hornetq.version.svnurl" value="https://svn.jboss.org/repos/hornetq/branches/Branch_2_2_EAP"/>
    <property name="hornetq.version.string"
              value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})"/>

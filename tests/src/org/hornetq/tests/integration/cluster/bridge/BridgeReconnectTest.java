@@ -57,6 +57,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeReconnectTest.class);
 
+   private final int NUM_MESSAGES = 100;
    protected boolean isNetty()
    {
       return false;
@@ -129,7 +130,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
@@ -181,7 +182,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session2.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -273,7 +274,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
@@ -318,7 +319,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session2.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -401,7 +402,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
@@ -451,7 +452,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          forwardingConnection = getForwardingConnection(bridge);
          forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -544,7 +545,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
@@ -596,7 +597,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session1.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -637,7 +638,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
-
+   
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -680,7 +681,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
                                                                         staticConnectors,
                                                                         false,
@@ -725,8 +726,8 @@ public class BridgeReconnectTest extends BridgeTestBase
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
          forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-         final int numMessages = 10;
+         
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -737,19 +738,32 @@ public class BridgeReconnectTest extends BridgeTestBase
 
             prod0.send(message);
          }
+         int outOfOrder = -1;
+         int supposed = -1;
 
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage r1 = cons1.receive(1500);
             Assert.assertNotNull(r1);
-            Assert.assertEquals(i, r1.getObjectProperty(propKey));
+            if (outOfOrder == -1 && i != r1.getIntProperty(propKey).intValue())
+            {
+               outOfOrder = r1.getIntProperty(propKey).intValue();
+               supposed = i;
+            }
          }
+         if (outOfOrder != -1)
+         {
+            fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
+         }
+
+         log.info("=========== second failure, sending message");
+
 
          // Fail again - should reconnect
          forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         forwardingConnection.fail(new HornetQException(5));
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -762,12 +776,22 @@ public class BridgeReconnectTest extends BridgeTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage r1 = cons1.receive(1500);
-            Assert.assertNotNull(r1);
-            Assert.assertEquals(i, r1.getObjectProperty(propKey));
+            Assert.assertNotNull("Didn't receive message", r1);
+            if (outOfOrder == -1 && i != r1.getIntProperty(propKey).intValue())
+            {
+               outOfOrder = r1.getIntProperty(propKey).intValue();
+               supposed = i;
+            }
          }
+         
 
          session0.close();
          session1.close();
+
+         if (outOfOrder != -1)
+         {
+            fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
+         }
       }
       finally
       {

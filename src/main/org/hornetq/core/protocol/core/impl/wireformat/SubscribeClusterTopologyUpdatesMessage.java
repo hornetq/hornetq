@@ -66,6 +66,17 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
       clusterConnection = buffer.readBoolean();
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "SubscribeClusterTopologyUpdatesMessage [clusterConnection=" + clusterConnection +
+             ", toString()=" +
+             super.toString() +
+             "]";
+   }
 
    // Package protected ---------------------------------------------
 

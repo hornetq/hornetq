@@ -125,7 +125,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config1.setPagingDirectory(config1.getPagingDirectory() + "_" + liveNode);
       config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager)));
+      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, nodeid)));
    }
 
    protected void createLiveConfig(int liveNode, int ... otherLiveNodes)
@@ -155,7 +155,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.setPagingDirectory(config0.getPagingDirectory() + "_" + liveNode);
       config0.setLargeMessagesDirectory(config0.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager)));
+      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
    protected boolean isNetty()

@@ -47,6 +47,7 @@ public class MessageSender
          MessageProducer producer = session.createProducer(destination);
          TextMessage message = session.createTextMessage(msg);
          producer.send(message);
+         conn.close();
       }
       catch (Exception ex)
       {

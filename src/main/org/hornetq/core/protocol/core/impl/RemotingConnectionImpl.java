@@ -48,6 +48,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    // ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingConnectionImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -145,8 +147,25 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       this.creationTime = System.currentTimeMillis();
    }
 
+   
+   
+   
    // RemotingConnection implementation
    // ------------------------------------------------------------
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "RemotingConnectionImpl [clientID=" + clientID +
+             ", nodeID=" +
+             nodeID +
+             ", transportConnection=" +
+             transportConnection +
+             "]";
+   }
 
    public Connection getTransportConnection()
    {
@@ -422,6 +441,11 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       try
       {
          final Packet packet = decoder.decode(buffer);
+         
+         if (isTrace)
+         {
+            log.trace("handling packet " + packet);
+         }
             
          if (packet.isAsyncExec() && executor != null)
          {

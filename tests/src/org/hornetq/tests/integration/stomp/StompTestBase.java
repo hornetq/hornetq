@@ -87,6 +87,8 @@ public abstract class StompTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
+      
+      forceGC();
 
       server = createServer();
       server.start();

@@ -92,6 +92,22 @@ public class NodeAnnounceMessage extends PacketImpl
       connector.decode(buffer);
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "NodeAnnounceMessage [backup=" + backup +
+             ", connector=" +
+             connector +
+             ", nodeID=" +
+             nodeID +
+             ", toString()=" +
+             super.toString() +
+             "]";
+   }
+
 
    // Package protected ---------------------------------------------
 

@@ -24,6 +24,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
@@ -49,6 +50,10 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class CoreProtocolManager implements ProtocolManager
 {
+   private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
+   
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -113,12 +118,17 @@ public class CoreProtocolManager implements ProtocolManager
                {
                   public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
                   {
-                     channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                      channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
                   }
                   
                   public void nodeDown(String nodeID)
                   {
-                     channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                      channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                  }
+                  
+                  public String toString()
+                  {
+                     return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
                   }
                };
                
@@ -146,6 +156,10 @@ public class CoreProtocolManager implements ProtocolManager
                else
                {
                   pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
+               }
+               if (isTrace)
+               {
+                  log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
                server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
             }

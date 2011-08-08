@@ -259,6 +259,7 @@ public class UnitTestCase extends TestCase
 
    public static void forceGC()
    {
+      log.info("#test forceGC");
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
       // A loop that will wait GC, using the minimal time as possible
       while (dumbReference.get() != null)
@@ -266,12 +267,13 @@ public class UnitTestCase extends TestCase
          System.gc();
          try
          {
-            Thread.sleep(500);
+            Thread.sleep(100);
          }
          catch (InterruptedException e)
          {
          }
       }
+      log.info("#test forceGC Done");
    }
 
    public static void forceGC(Reference<?> ref, long timeout)
@@ -362,6 +364,23 @@ public class UnitTestCase extends TestCase
       out.println("*******************************************************************************");
 
       return str.toString();
+   }
+   
+   /** Sends the message to both logger and System.out (for unit report) */
+   public void logAndSystemOut(String message, Exception e)
+   {
+      Logger log = Logger.getLogger(this.getClass());
+      log.info(message, e);
+      System.out.println(message);
+      e.printStackTrace(System.out);
+   }
+
+   /** Sends the message to both logger and System.out (for unit report) */
+   public void logAndSystemOut(String message)
+   {
+      Logger log = Logger.getLogger(this.getClass());
+      log.info(message);
+      System.out.println(this.getClass().getName() + "::" + message);
    }
 
    protected static TestSuite createAIOTestSuite(final Class<?> clazz)
@@ -870,7 +889,7 @@ public class UnitTestCase extends TestCase
 
       previousThreads = Thread.getAllStackTraces();
 
-      UnitTestCase.log.info("###### starting test " + this.getClass().getName() + "." + getName());
+      logAndSystemOut("#test " + getName());
    }
 
    @Override
@@ -908,18 +927,53 @@ public class UnitTestCase extends TestCase
                                              this.getName() +
                                              " on this following dump"));
                fail("test left broadcastgroupimpl running, this could effect other tests");
-               // System.exit(0);
             }
          }
       }
 
+      
+      
+      StringBuffer buffer = null;
+      
+      boolean failed =  true;
+      
+      long timeout = System.currentTimeMillis() + 10000;
+      while (failed && timeout > System.currentTimeMillis())
+      {
+         buffer = new StringBuffer();
+         
+         failed = checkThread(buffer);
+         
+         if (failed)
+         {
+            forceGC();
+            Thread.sleep(500);
+            log.info("There are still threads running, trying again");
+         }
+      }
+      
+      if (failed)
+      {
+         logAndSystemOut("Thread leaged on test " + this.getClass().getName() + "::" + 
+                         this.getName() + "\n" + buffer.toString());
+         fail("Thread leakage");
+      }
+
+      super.tearDown();
+   }
+
+   /**
+    * @param buffer
+    * @return
+    */
+   private boolean checkThread(StringBuffer buffer)
+   {
+      boolean failedThread = false;
+
       Map<Thread, StackTraceElement[]> postThreads = Thread.getAllStackTraces();
 
-      boolean failedThread = false;
       if (postThreads.size() > previousThreads.size())
       {
-         StringBuffer buffer = new StringBuffer();
-
          
          buffer.append("*********************************************************************************\n");
          buffer.append("LEAKING THREADS\n");
@@ -941,13 +995,8 @@ public class UnitTestCase extends TestCase
          }
          buffer.append("*********************************************************************************\n");
 
-         System.out.println(buffer.toString());
-
       }
-      
-      //assertFalse("Thread Failed", failedThread);
-
-      super.tearDown();
+      return failedThread;
    }
 
    /**
@@ -961,6 +1010,7 @@ public class UnitTestCase extends TestCase
       if (invmSize > 0)
       {
          InVMRegistry.instance.clear();
+         log.info(threadDump("Thread dump"));
          fail("invm registry still had acceptors registered");
       }
 
@@ -978,6 +1028,7 @@ public class UnitTestCase extends TestCase
       catch (Throwable e)
       {
          log.info(threadDump(e.getMessage()));
+         System.err.println(threadDump(e.getMessage()));
          throw new RuntimeException (e.getMessage(), e);
       }
    }

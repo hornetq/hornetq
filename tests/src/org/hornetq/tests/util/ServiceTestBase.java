@@ -284,14 +284,16 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected HornetQServer createInVMFailoverServer(final boolean realFiles,
                                                     final Configuration configuration,
-                                                    NodeManager nodeManager)
+                                                    final NodeManager nodeManager,
+                                                    final int id)
    {
       return createInVMFailoverServer(realFiles,
                                       configuration,
                                       -1,
                                       -1,
                                       new HashMap<String, AddressSettings>(),
-                                      nodeManager);
+                                      nodeManager,
+                                      id);
    }
 
    protected HornetQServer createInVMFailoverServer(final boolean realFiles,
@@ -299,7 +301,8 @@ public abstract class ServiceTestBase extends UnitTestCase
                                                     final int pageSize,
                                                     final int maxAddressSize,
                                                     final Map<String, AddressSettings> settings,
-                                                    NodeManager nodeManager)
+                                                    NodeManager nodeManager,
+                                                    final int id)
    {
       HornetQServer server;
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
@@ -308,6 +311,8 @@ public abstract class ServiceTestBase extends UnitTestCase
                                          ManagementFactory.getPlatformMBeanServer(),
                                          securityManager,
                                          nodeManager);
+      
+      server.setIdentity("Server " + id);
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
       {

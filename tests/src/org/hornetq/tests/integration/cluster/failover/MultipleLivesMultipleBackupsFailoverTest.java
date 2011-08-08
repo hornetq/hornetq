@@ -25,6 +25,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -55,7 +56,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       }
       super.tearDown();
    }
-
+   
    public void testMultipleFailovers2LiveServers() throws Exception
    {
       NodeManager nodeManager1 = new InVMNodeManager();
@@ -157,7 +158,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config1.setPagingDirectory(config1.getPagingDirectory() + "_" + liveNode);
       config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager)));
+      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, liveNode)));
    }
 
    protected void createLiveConfig(NodeManager nodeManager, int liveNode, int ... otherLiveNodes)
@@ -187,7 +188,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config0.setPagingDirectory(config0.getPagingDirectory() + "_" + liveNode);
       config0.setLargeMessagesDirectory(config0.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager)));
+      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
    protected boolean isNetty()

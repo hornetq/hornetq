@@ -18,6 +18,8 @@ import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -26,10 +28,11 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.api.core.management.NotificationType;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
@@ -53,6 +56,7 @@ import org.hornetq.utils.UUID;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author Clebert Suconic
  *
  * Created 12 Nov 2008 11:37:35
  *
@@ -64,16 +68,16 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(BridgeImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
-   
+
    private static final SimpleString JMS_QUEUE_ADDRESS_PREFIX = new SimpleString("jms.queue.");
-   
+
    private static final SimpleString JMS_TOPIC_ADDRESS_PREFIX = new SimpleString("jms.topic.");
 
-   protected final ServerLocatorInternal serverLocator;
+   protected final ServerLocator serverLocator;
 
    private final UUID nodeUUID;
 
@@ -82,6 +86,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final Queue queue;
 
    protected final Executor executor;
+
+   protected final ScheduledExecutorService scheduledExecutor;
+
+   /** Used when there's a scheduled reconnection */
+   protected ScheduledFuture<?> futureScheduledReconnection;
 
    private final Filter filter;
 
@@ -102,14 +111,24 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private final boolean useDuplicateDetection;
 
    private volatile boolean active;
-   
-   private volatile boolean stopping;
 
    private final String user;
 
    private final String password;
 
    private boolean activated;
+
+   private final int reconnectAttempts;
+
+   private int reconnectAttemptsInUse;
+
+   private final long retryInterval;
+
+   private final double retryMultiplier;
+
+   private final long maxRetryInterval;
+
+   private int retryCount = 0;
 
    private NotificationService notificationService;
 
@@ -119,7 +138,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Public --------------------------------------------------------
 
-   public BridgeImpl(final ServerLocatorInternal serverLocator,
+   public BridgeImpl(final ServerLocator serverLocator,
+                     final int reconnectAttempts,
+                     final long retryInterval,
+                     final double retryMultiplier,
+                     final long maxRetryInterval,
                      final UUID nodeUUID,
                      final SimpleString name,
                      final Queue queue,
@@ -134,6 +157,17 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final boolean activated,
                      final StorageManager storageManager) throws Exception
    {
+
+      this.reconnectAttempts = reconnectAttempts;
+      
+      this.reconnectAttemptsInUse = -1;
+
+      this.retryInterval = retryInterval;
+
+      this.retryMultiplier = retryMultiplier;
+
+      this.maxRetryInterval = maxRetryInterval;
+
       this.serverLocator = serverLocator;
 
       this.nodeUUID = nodeUUID;
@@ -143,6 +177,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.queue = queue;
 
       this.executor = executor;
+
+      this.scheduledExecutor = scheduledExecutor;
 
       filter = FilterImpl.createFilter(filterString);
 
@@ -187,7 +223,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   private void cancelRefs() throws Exception
+   private void cancelRefs()
    {
       MessageReference ref;
 
@@ -201,25 +237,32 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
          list.addFirst(ref);
       }
-      
+
       if (isTrace && list.isEmpty())
       {
-         log.trace("didn't have any references to cancel on bridge "  + this);
+         log.trace("didn't have any references to cancel on bridge " + this);
       }
 
-      Queue queue = null;
-      
+      Queue refqueue = null;
+
       long timeBase = System.currentTimeMillis();
 
       for (MessageReference ref2 : list)
       {
-         queue = ref2.getQueue();
+         refqueue = ref2.getQueue();
 
-         queue.cancel(ref2, timeBase);
+         try
+         {
+            refqueue.cancel(ref2, timeBase);
+         }
+         catch (Exception e)
+         {
+            // There isn't much we can do besides log an error
+            log.error("Couldn't cancel reference " + ref2, e);
+         }
       }
-
    }
-   
+
    public void flushExecutor()
    {
       // Wait for any create objects runnable to complete
@@ -235,18 +278,20 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-
    public void stop() throws Exception
    {
-	  if (log.isDebugEnabled())
-	  {
-	     log.debug("Bridge " + this.name + " being stopped");
-	  }
+      if (log.isDebugEnabled())
+      {
+         log.debug("Bridge " + this.name + " being stopped");
+      }
       
-      stopping = true;
+      if (futureScheduledReconnection != null)
+      {
+         futureScheduledReconnection.cancel(true);
+      }
 
       executor.execute(new StopRunnable());
-      
+
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
@@ -265,10 +310,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void pause() throws Exception
    {
-	  if (log.isDebugEnabled())
-	  {
-	     log.debug("Bridge " + this.name + " being paused");
-	  }
+      if (log.isDebugEnabled())
+      {
+         log.debug("Bridge " + this.name + " being paused");
+      }
 
       executor.execute(new PauseRunnable());
 
@@ -288,13 +333,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-    public void resume() throws Exception
-    {
-        queue.addConsumer(BridgeImpl.this);
-        queue.deliverAsync();
-    }
+   public void resume() throws Exception
+   {
+      queue.addConsumer(BridgeImpl.this);
+      queue.deliverAsync();
+   }
 
-    public boolean isStarted()
+   public boolean isStarted()
    {
       return started;
    }
@@ -303,7 +348,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       activated = true;
 
-      executor.execute(new CreateObjectsRunnable());
+      executor.execute(new ConnectRunnable());
    }
 
    public SimpleString getName()
@@ -359,6 +404,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          if (ref != null)
          {
+            if (isTrace)
+            {
+               log.trace(this + " Acking " + ref + " on queue " + ref.getQueue());
+            }
             ref.getQueue().acknowledge(ref);
          }
       }
@@ -377,7 +426,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          // We keep our own DuplicateID for the Bridge, so bouncing back and forths will work fine
          byte[] bytes = getDuplicateBytes(nodeUUID, message.getMessageID());
-   
+
          message.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
       }
 
@@ -396,13 +445,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    public static byte[] getDuplicateBytes(final UUID nodeUUID, final long messageID)
    {
       byte[] bytes = new byte[24];
-  
+
       ByteBuffer bb = ByteBuffer.wrap(bytes);
-  
+
       bb.put(nodeUUID.asBytes());
-  
+
       bb.putLong(messageID);
-      
+
       return bytes;
    }
 
@@ -417,20 +466,23 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          if (!active)
          {
-            log.debug(name + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
+            if (log.isDebugEnabled())
+            {
+            	log.debug(this + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
+            }
             return HandleStatus.BUSY;
          }
 
-		   if (isTrace)
-		   {
-		      log.trace("Bridge " + name + " is handling reference=" + ref); 
-		   }
+         if (isTrace)
+         {
+            log.trace("Bridge " + this + " is handling reference=" + ref);
+         }
          ref.handled();
 
          ServerMessage message = ref.getMessage();
 
          refs.add(ref);
-         
+
          message = beforeForward(message);
 
          SimpleString dest;
@@ -444,17 +496,17 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             // Preserve the original address
             dest = message.getAddress();
          }
-         //if we failover during send then there is a chance that the
-         //that this will throw a disconnect, we need to remove the message
-         //from the acks so it will get resent, duplicate detection will cope
-         //with any messages resent
+         // if we failover during send then there is a chance that the
+         // that this will throw a disconnect, we need to remove the message
+         // from the acks so it will get resent, duplicate detection will cope
+         // with any messages resent
          try
          {
             producer.send(dest, message);
          }
          catch (HornetQException e)
          {
-            log.warn("Unable to send message, will try again once bridge reconnects", e);
+            log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
 
             refs.remove(ref);
 
@@ -469,21 +521,40 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
-      log.warn(name + "::Connection failed with failedOver=" + failedOver, me);
-      if (isTrace)
+      
+      log.warn(this + "::Connection failed with failedOver=" + failedOver + "-" + me, me);
+      
+      try
       {
-         log.trace("Calling BridgeImpl::connectionFailed(HOrnetQException me=" + me + ", boolean failedOver=" + failedOver);
+         csf.cleanup();
       }
-      fail(false);
+      catch (Throwable dontCare)
+      {
+      }
+
+      try
+      {
+         session.cleanUp(false);
+      }
+      catch (Throwable dontCare)
+      {
+      }
+      
+      fail(me.getCode() == HornetQException.DISCONNECTED);
+
+      tryScheduleRetryReconnect(me.getCode());
+   }
+   
+   protected void tryScheduleRetryReconnect(final int code)
+   {
+      scheduleRetryConnect();
    }
 
    public void beforeReconnect(final HornetQException exception)
    {
-      log.warn(name + "::Connection failed before reconnect ", exception);
-      fail(true);
+//      log.warn(name + "::Connection failed before reconnect ", exception);
+//      fail(false);
    }
-   
-   
 
    // Package protected ---------------------------------------------
 
@@ -497,231 +568,209 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    @Override
    public String toString()
    {
-      return this.getClass().getName() +
-             " [name=" + name +
-             ", nodeUUID=" +
-             nodeUUID +
-             ", queue=" +
-             queue +
-             ", filter=" +
-             filter +
-             ", forwardingAddress=" +
-             forwardingAddress +
-             ", useDuplicateDetection=" +
-             useDuplicateDetection +
-             ", active=" +
-             active +
-             ", stopping=" +
-             stopping +
-             "]";
+      return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + " [name=" + name + ", queue=" + queue + " targetConnector=" + this.serverLocator + "]";
    }
 
-   private void fail(final boolean beforeReconnect)
+   protected void fail(final boolean permanently)
    {
-      // This will get called even after the bridge reconnects - in this case
-      // we want to cancel all unacked refs so they get resent
-      // duplicate detection will ensure no dups are routed on the other side
+      log.debug(this + "::fail being called, permanently=" + permanently);
 
-      log.debug(name + "::BridgeImpl::fail being called, beforeReconnect=" + beforeReconnect);
-      
-      if (session.getConnection().isDestroyed())
+      if (queue != null)
       {
-         log.debug(name + "::Connection is destroyed, active = false now");
-         active = false;
-      }
-
-
-         if (!session.getConnection().isDestroyed())
+         try
          {
-            if (beforeReconnect)
+            if (isTrace)
             {
-               try {
-            	  log.debug(name + "::Connection is destroyed, active = false now");
-
-                  cancelRefs();
-               }
-               catch (Exception e)
-               {
-                   BridgeImpl.log.error("Failed to cancel refs", e);
-               }
+               log.trace("Removing consumer on fail " + this + " from queue " + queue);
             }
-            else
-            {
-               try
-               {
-                  afterConnect();
-
-                  log.debug(name + "::After reconnect, setting active=true now");
-                  active = true;
-
-                  if (queue != null)
-                  {
-                     queue.deliverAsync();
-                  }
-               }
-               catch (Exception e)
-               {
-                  BridgeImpl.log.error("Failed to call after connect", e);
-               }
-            }
+            queue.removeConsumer(this);
          }
+         catch (Exception dontcare)
+         {
+            log.debug(dontcare);
+         }
+      }
+      
+      cancelRefs();
+      if (queue != null)
+      {
+         queue.deliverAsync();
+      }
    }
 
    /* Hook for doing extra stuff after connection */
    protected void afterConnect() throws Exception
    {
-      //NOOP
+      retryCount = 0;
+      reconnectAttemptsInUse = reconnectAttempts;
+      if (futureScheduledReconnection != null)
+      {
+         futureScheduledReconnection.cancel(true);
+         futureScheduledReconnection = null;
+      }
    }
 
    /* Hook for creating session factory */
-   protected ClientSessionFactory createSessionFactory() throws Exception
+   protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
-      return serverLocator.createSessionFactory();
+      ClientSessionFactoryInternal csf = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
+      csf.setReconnectAttempts(0);
+      //csf.setInitialReconnectAttempts(1);
+      return csf;
    }
 
    /* This is called only when the bridge is activated */
-   protected synchronized boolean createObjects()
+   protected void connect()
    {
-      if (!started)
+      BridgeImpl.log.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
+
+      retryCount++;
+      
+      try
       {
-         return false;
-      }
-
-      boolean retry = false;
-      int retryCount = 0;
-
-      do
-      {
-         BridgeImpl.log.info("Connecting bridge " + name + " to its destination [" + nodeUUID.toString() + "]");
-
-         try
+         if (csf == null || csf.isClosed())
          {
-            if (csf == null || csf.isClosed())
-            {
-                csf = createSessionFactory();
-                // Session is pre-acknowledge
-                session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
-                try
-                {
-                   session.addMetaData("Session-for-bridge", name.toString());
-                   session.addMetaData("nodeUUID", nodeUUID.toString());
-                }
-                catch (Throwable dontCare)
-                {
-                   // addMetaData here is just for debug purposes
-                }
-            }
-
-            if (forwardingAddress != null)
-            {
-               BindingQuery query = null;
-               
-               try
-               {
-                  query = session.bindingQuery(forwardingAddress);
-               }
-               catch (Throwable e)
-               {
-                  log.warn("Error on querying binding. Retrying", e);
-                  retry = true;
-                  Thread.sleep(100);
-                  continue;
-               }
-   
-               if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
-               {
-                  if (!query.isExists())
-                  {
-                     retryCount ++;
-                     if (serverLocator.getReconnectAttempts() > 0)
-                     {
-                        if (retryCount > serverLocator.getReconnectAttempts())
-                        {
-                           log.warn("Retried " + forwardingAddress + " up to the configured reconnectAttempts(" + serverLocator.getReconnectAttempts() + "). Giving up now. The bridge " + this.getName() + " will not be activated");
-                           return false;
-                        }
-                     }
-   
-                     log.warn("Address " + forwardingAddress + " doesn't have any bindings yet, retry #(" + retryCount + ")");
-                     Thread.sleep(serverLocator.getRetryInterval());
-                     retry = true;
-                     csf.close();
-                     session.close();
-                     continue;
-                  }
-               }
-               else
-               {
-                  if (!query.isExists())
-                  {
-                     log.info("Bridge " + this.getName() + " connected to fowardingAddress=" + this.getForwardingAddress() + ". " + getForwardingAddress() + " doesn't have any bindings what means messages will be ignored until a binding is created.");
-                  }
-               }
-            }
-
-            if (session == null)
-            {
-               // This can happen if the bridge is shutdown
-               return false;
-            }
-
-            producer = session.createProducer();
-            session.addFailureListener(BridgeImpl.this);
-            session.setSendAcknowledgementHandler(BridgeImpl.this);
-
-            afterConnect();
-
-            active = true;
-
-            queue.addConsumer(BridgeImpl.this);
-            queue.deliverAsync();
-
-            BridgeImpl.log.info("Bridge " + name + " is connected [" + nodeUUID + "-> " +  name +"]");
-
-            return true;
+            csf = createSessionFactory();
+            // Session is pre-acknowledge
+            session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
          }
-         catch (HornetQException e)
+
+         if (forwardingAddress != null)
          {
-            if (csf != null)
+            BindingQuery query = null;
+
+            try
             {
-               csf.close();
+               query = session.bindingQuery(forwardingAddress);
+            }
+            catch (Throwable e)
+            {
+               log.warn("Error on querying binding on bridge " + this.name + ". Retrying in 100 milliseconds", e);
+               // This was an issue during startup, we will not count this retry
+               retryCount--;
+
+               scheduleRetryConnectFixedTimeout(100);
+               return;
             }
 
-            // the session was created while its server was starting, retry it:
-            if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+            if (forwardingAddress.startsWith(BridgeImpl.JMS_QUEUE_ADDRESS_PREFIX) || forwardingAddress.startsWith(BridgeImpl.JMS_TOPIC_ADDRESS_PREFIX))
             {
-               BridgeImpl.log.warn("Server is starting, retry to create the session for bridge " + name);
-
-               // Sleep a little to prevent spinning too much
-               try
+               if (!query.isExists())
                {
-                  Thread.sleep(10);
+                  log.warn("Address " + forwardingAddress +
+                           " doesn't have any bindings yet, retry #(" +
+                           retryCount +
+                           ")");
+                  scheduleRetryConnect();
+                  return;
                }
-               catch (InterruptedException ignore)
-               {
-               }
-
-               retry = true;
-
-               continue;
             }
             else
             {
-               BridgeImpl.log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
-
-               return false;
+               if (!query.isExists())
+               {
+                  log.info("Bridge " + this.getName() +
+                           " connected to fowardingAddress=" +
+                           this.getForwardingAddress() +
+                           ". " +
+                           getForwardingAddress() +
+                           " doesn't have any bindings what means messages will be ignored until a binding is created.");
+               }
             }
          }
-         catch (Exception e)
-         {
-            BridgeImpl.log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.", e);
 
-            return false;
+         producer = session.createProducer();
+         session.addFailureListener(BridgeImpl.this);
+         session.setSendAcknowledgementHandler(BridgeImpl.this);
+
+         afterConnect();
+
+         active = true;
+
+         queue.addConsumer(BridgeImpl.this);
+         queue.deliverAsync();
+
+         BridgeImpl.log.info("Bridge " + this + " is connected");
+
+         return;
+      }
+      catch (HornetQException e)
+      {
+         // the session was created while its server was starting, retry it:
+         if (e.getCode() == HornetQException.SESSION_CREATION_REJECTED)
+         {
+            BridgeImpl.log.warn("Server is starting, retry to create the session for bridge " + name);
+
+            // We are not going to count this one as a retry
+            retryCount--;
+            scheduleRetryConnectFixedTimeout(this.retryInterval);
+            return;
+         }
+         else
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
+            }
          }
       }
-      while (retry && !stopping);
+      catch (Exception e)
+      {
+         BridgeImpl.log.warn("Bridge " + this + " is unable to connect to destination. It will be disabled.", e);
+      }
 
-      return false;
+      scheduleRetryConnect();
+
+   }
+
+   protected void scheduleRetryConnect()
+   {
+      if (reconnectAttemptsInUse >= 0 && retryCount > reconnectAttempts)
+      {
+         log.warn("Bridge " + this.name +
+                  " achieved " +
+                  retryCount +
+                  " maxattempts=" +
+                  reconnectAttempts +
+                  " it will stop retrying to reconnect");
+         fail(true);
+         return;
+      }
+
+      long timeout = (long)(this.retryInterval * Math.pow(this.retryMultiplier, retryCount));
+      if (timeout == 0)
+      {
+         timeout = this.retryInterval;
+      }
+      if (timeout > maxRetryInterval)
+      {
+         timeout = maxRetryInterval;
+      }
+      
+      log.debug("Bridge " + this + " retrying connection #" + retryCount + ", maxRetry=" + reconnectAttemptsInUse + ", timeout=" + timeout);
+
+      scheduleRetryConnectFixedTimeout(timeout);
+   }
+
+   protected void scheduleRetryConnectFixedTimeout(final long milliseconds)
+   {
+      if (csf != null)
+      {
+         try
+         {
+            csf.cleanup();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
+      }
+
+      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(), milliseconds, TimeUnit.MILLISECONDS);
    }
 
    // Inner classes -------------------------------------------------
@@ -732,19 +781,18 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          try
          {
-            // We need to close the session outside of the lock,
-            // so any pending operation will be canceled right away
+            log.debug("stopping bridge " + BridgeImpl.this);
             
-            // TODO: Why closing the CSF will make a few clustering and failover tests to 
-            //       either deadlock or take forever on waiting 
-            //       locks
-            csf.close();
-            csf = null;
             if (session != null)
             {
                log.debug("Cleaning up session " + session);
                session.close();
                session.removeFailureListener(BridgeImpl.this);
+            }
+
+            if (csf != null)
+            {
+               csf.cleanup();
             }
 
             synchronized (BridgeImpl.this)
@@ -757,14 +805,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             }
 
+            if (isTrace)
+            {
+               log.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
+            }
             queue.removeConsumer(BridgeImpl.this);
 
-            cancelRefs();
-
-            if (queue != null)
-            {
-               queue.deliverAsync();
-            }
+            internalCancelReferences();
 
             log.info("stopped bridge " + name);
          }
@@ -783,22 +830,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             synchronized (BridgeImpl.this)
             {
-               log.debug("Closing Session for bridge " + BridgeImpl.this.name);
-
                started = false;
 
                active = false;
-
             }
 
             queue.removeConsumer(BridgeImpl.this);
 
-            cancelRefs();
-
-            if (queue != null)
-            {
-               queue.deliverAsync();
-            }
+            internalCancelReferences();
 
             log.info("paused bridge " + name);
          }
@@ -807,18 +846,33 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             BridgeImpl.log.error("Failed to pause bridge", e);
          }
       }
+
    }
 
-   private class CreateObjectsRunnable implements Runnable
+   private void internalCancelReferences()
+   {
+      cancelRefs();
+
+      if (queue != null)
+      {
+         queue.deliverAsync();
+      }
+   }
+
+   // The scheduling will still use the main executor here
+   private class FutureConnectRunnable implements Runnable
+   {
+      public void run()
+      {
+         executor.execute(new ConnectRunnable());
+      }
+   }
+
+   private class ConnectRunnable implements Runnable
    {
       public synchronized void run()
       {
-         if (!createObjects())
-         {
-            active = false;
-
-            started = false;
-         }
+         connect();
       }
    }
 }
