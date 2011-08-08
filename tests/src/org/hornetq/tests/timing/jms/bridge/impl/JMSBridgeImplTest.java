@@ -210,6 +210,8 @@ public class JMSBridgeImplTest extends UnitTestCase
       Thread.sleep(50);
       Assert.assertFalse(bridge.isStarted());
       Assert.assertTrue(bridge.isFailed());
+      
+      bridge.stop();
 
    }
 
