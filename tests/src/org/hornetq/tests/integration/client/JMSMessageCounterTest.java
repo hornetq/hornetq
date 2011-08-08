@@ -31,29 +31,12 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class JMSMessageCounterTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(JMSMessageCounterTest.class);
-
-   private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
-   
-   
 
    protected boolean usePersistence()
    {
       return true;
    }
-
-
-   public void testLoop() throws Exception
-   {
-      for (int i = 0 ; i < 100; i++)
-      {
-         log.info("#test " + i);
-         testMessageCounter();
-         tearDown();
-         setUp();
-      }
-   }
-
+   
    public void testMessageCounter() throws Exception
    {
 
