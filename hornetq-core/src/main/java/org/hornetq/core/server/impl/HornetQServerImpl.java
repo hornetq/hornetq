@@ -542,7 +542,6 @@ public class HornetQServerImpl implements HornetQServer
             initialisePart1();
             clusterManager.start();
 
-
             String liveConnectorName = configuration.getLiveConnectorName();
             if (liveConnectorName == null)
             {
@@ -606,11 +605,10 @@ public class HornetQServerImpl implements HornetQServer
                throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup Server was not yet in sync with live");
             }
 
-
             configuration.setBackup(false);
+            storageManager.start();
 
             initialisePart2();
-
             clusterManager.activate();
 
          }
