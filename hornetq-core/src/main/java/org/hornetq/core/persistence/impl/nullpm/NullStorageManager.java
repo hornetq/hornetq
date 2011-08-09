@@ -24,6 +24,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
@@ -47,9 +48,9 @@ import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 
 /**
- * 
+ *
  * A NullStorageManager
- * 
+ *
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -59,47 +60,47 @@ public class NullStorageManager implements StorageManager
    private final AtomicLong idSequence = new AtomicLong(0);
 
    private volatile boolean started;
-   
+
    private static final OperationContext dummyContext = new OperationContext()
    {
-      
+
       public void onError(int errorCode, String errorMessage)
       {
       }
-      
+
       public void done()
       {
       }
-      
+
       public void storeLineUp()
       {
       }
-      
+
       public boolean waitCompletion(long timeout) throws Exception
       {
          return true;
       }
-      
+
       public void waitCompletion() throws Exception
       {
       }
-      
+
       public void replicationLineUp()
       {
       }
-      
+
       public void replicationDone()
       {
       }
-      
+
       public void pageSyncLineUp()
       {
       }
-      
+
       public void pageSyncDone()
       {
       }
-      
+
       public void executeOnCompletion(IOAsyncTask runnable)
       {
          runnable.done();
@@ -235,7 +236,7 @@ public class NullStorageManager implements StorageManager
    public LargeServerMessage createLargeMessage(final long id, final MessageInternal message)
    {
       NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
-      
+
       largeMessage.copyHeadersAndProperties(message);
 
       largeMessage.setMessageID(id);
@@ -407,8 +408,8 @@ public class NullStorageManager implements StorageManager
    {
       return dummyContext;
    }
-   
-   
+
+
    public OperationContext newSingleThreadContext()
    {
       return dummyContext;
@@ -566,7 +567,25 @@ public class NullStorageManager implements StorageManager
    public void lineUpContext()
    {
       // TODO Auto-generated method stub
-      
+
+   }
+
+   @Override
+   public boolean hasCallbackSupport()
+   {
+      return false;
+   }
+
+   @Override
+   public Journal getBindingsJournal()
+   {
+      return null;
+   }
+
+   @Override
+   public Journal getMessageJournal()
+   {
+      return null;
    }
 
 }

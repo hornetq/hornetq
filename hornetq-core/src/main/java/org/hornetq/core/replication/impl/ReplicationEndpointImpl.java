@@ -35,7 +35,7 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.Packet;
@@ -90,7 +90,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    /** Used to hold the real Journals before the backup is synchronized. */
    private final Map<JournalContent, Journal> journalsHolder = new HashMap<JournalContent, Journal>();
 
-   private JournalStorageManager storage;
+   private StorageManager storage;
 
    private PagingManager pageManager;
 
@@ -234,7 +234,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       Configuration config = server.getConfiguration();
 
-      storage = new JournalStorageManager(config, server.getExecutorFactory());
+      storage = server.getStorageManager();
       storage.start();
 
       server.getManagementService().setStorageManager(storage);
