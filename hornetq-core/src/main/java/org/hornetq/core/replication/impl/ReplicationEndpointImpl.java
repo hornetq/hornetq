@@ -81,7 +81,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private Channel channel;
 
    private Journal[] journals;
-   private JournalLoadInformation[] journalLoadInformation;
+   private final JournalLoadInformation[] journalLoadInformation = new JournalLoadInformation[2];
 
    /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
    private final Map<JournalContent, Map<Long, JournalFile>> filesReservedForSync =
@@ -244,12 +244,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
-         System.out.println("State? " + journalsHolder.get(jc));
          filesReservedForSync.put(jc, new HashMap<Long, JournalFile>());
+         // We only need to load internal structures on the backup...
+         journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly();
       }
-
-      // We only need to load internal structures on the backup...
-      journalLoadInformation = storage.loadInternalOnly();
 
       pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
                                                                     config.getJournalBufferSize_NIO(),
@@ -395,7 +393,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          for (JournalContent jc : EnumSet.allOf(JournalContent.class))
          {
-            JournalImpl journal = (JournalImpl)journalsHolder.get(jc);
+            JournalImpl journal = (JournalImpl)journalsHolder.remove(jc);
             journal.writeLock();
             try
             {
@@ -404,10 +402,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                   throw new IllegalStateException("Journal should not have any data files at this point");
                }
                // files should be already in place.
-               filesReservedForSync.remove(msg.getJournalContent());
-               registerJournal(jc.typeByte, journalsHolder.get(jc));
+               filesReservedForSync.remove(jc);
+               registerJournal(jc.typeByte, journal);
+               journal.loadInternalOnly();
                // XXX HORNETQ-720 must reload journals
                // XXX HORNETQ-720 must start using real journals
+
             }
             finally
             {

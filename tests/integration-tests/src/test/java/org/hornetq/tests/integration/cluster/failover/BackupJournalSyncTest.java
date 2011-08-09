@@ -161,10 +161,6 @@ public class BackupJournalSyncTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (handler != null)
-      {
-         handler.notifyAll();
-      }
       if (sessionFactory != null)
          sessionFactory.close();
       if (session != null)

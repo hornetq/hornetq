@@ -570,6 +570,11 @@ public class ReplicatedJournal implements Journal
       localJournal.lineUpContex(callback);
    }
 
+   @Override
+   public JournalLoadInformation loadSyncOnly() throws Exception
+   {
+      return localJournal.loadSyncOnly();
+   }
 
    // Package protected ---------------------------------------------
 

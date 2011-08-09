@@ -111,10 +111,17 @@ public interface Journal extends HornetQComponent
 
    JournalLoadInformation load(LoaderCallback reloadManager) throws Exception;
 
-   /** Load internal data structures and not expose any data.
-    *  This is only useful if you're using the journal but not interested on the current data.
-    *  Useful in situations where the journal is being replicated, copied... etc. */
+   /**
+    * Load internal data structures and not expose any data. This is only useful if you're using the
+    * journal but not interested on the current data. Useful in situations where the journal is
+    * being replicated, copied... etc.
+    */
    JournalLoadInformation loadInternalOnly() throws Exception;
+
+   /**
+    * Load internal data structures, and remain waiting for synchronization to complete.
+    */
+   JournalLoadInformation loadSyncOnly() throws Exception;
 
    void lineUpContex(IOCompletion callback);
 

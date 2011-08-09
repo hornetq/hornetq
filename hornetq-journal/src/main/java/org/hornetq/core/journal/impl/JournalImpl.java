@@ -1298,35 +1298,39 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return fileFactory.getAlignment();
    }
 
+   private static class DummyLoader implements LoaderCallback
+   {
+      static final LoaderCallback INSTANCE = new DummyLoader();
+      public void failedTransaction(final long transactionID, final List<RecordInfo> records,
+               final List<RecordInfo> recordsToDelete)
+      {
+      }
+
+      public void updateRecord(final RecordInfo info)
+      {
+      }
+
+      public void deleteRecord(final long id)
+      {
+      }
+
+      public void addRecord(final RecordInfo info)
+      {
+      }
+
+      public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
+      {
+      }
+   }
+
    public synchronized JournalLoadInformation loadInternalOnly() throws Exception
    {
-      LoaderCallback dummyLoader = new LoaderCallback()
-      {
+      return load(DummyLoader.INSTANCE, true, false);
+   }
 
-         public void failedTransaction(final long transactionID,
-                                       final List<RecordInfo> records,
-                                       final List<RecordInfo> recordsToDelete)
-         {
-         }
-
-         public void updateRecord(final RecordInfo info)
-         {
-         }
-
-         public void deleteRecord(final long id)
-         {
-         }
-
-         public void addRecord(final RecordInfo info)
-         {
-         }
-
-         public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
-         {
-         }
-      };
-
-      return this.load(dummyLoader, true, true);
+   public synchronized JournalLoadInformation loadSyncOnly() throws Exception
+   {
+      return load(DummyLoader.INSTANCE, true, true);
    }
 
    public JournalLoadInformation load(final List<RecordInfo> committedRecords,
@@ -1746,11 +1750,15 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions,
             final boolean replicationSync) throws Exception
    {
-
-      if (state != JournalState.STARTED)
+      System.out.println("LOAD! " + state + " " + replicationSync);
+      if (state == JournalState.STOPPED || state == JournalState.LOADED)
       {
          throw new IllegalStateException("Journal " + this + " must be in " + JournalState.STARTED + " state, was " +
                   state);
+      }
+      if (state == JournalState.SYNCING && replicationSync)
+      {
+         throw new IllegalStateException("Journal must be state " + JournalState.STARTED);
       }
 
       checkControlFile();

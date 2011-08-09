@@ -223,4 +223,10 @@ public class ReplicatingJournal extends JournalBase implements Journal
    {
       throw new UnsupportedOperationException();
    }
+
+   @Override
+   public JournalLoadInformation loadSyncOnly() throws Exception
+   {
+      throw new UnsupportedOperationException();
+   }
 }

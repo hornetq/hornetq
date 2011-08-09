@@ -846,5 +846,16 @@ public class ReplicationTest extends ServiceTestBase
 
       }
 
+      /*
+       * (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#loadSyncOnly()
+       */
+      @Override
+      public JournalLoadInformation loadSyncOnly() throws Exception
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
    }
 }
