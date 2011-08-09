@@ -14,7 +14,6 @@ import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
-import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
@@ -22,23 +21,22 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
  * Journal used at a replicating backup server during the synchronization of data with the 'live'
  * server.
  * <p>
- * Its main purpose is to store the data like a Journal would but without verifying records.
+ * Its main purpose is to store the data as a Journal would, but without verifying records.
  */
-public class ReplicatingJournal implements Journal
+public class ReplicatingJournal extends JournalBase implements Journal
 {
    private final ReentrantLock lockAppend = new ReentrantLock();
    private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
 
-   private final JournalFile file;
-   private final boolean hasCallbackSupport;
+   private final JournalFile currentFile;
 
    /**
     * @param file
     */
    public ReplicatingJournal(JournalFile file, boolean hasCallbackSupport)
    {
-      this.file = file;
-      this.hasCallbackSupport = hasCallbackSupport;
+      super(hasCallbackSupport);
+      this.currentFile = file;
    }
 
    @Override
@@ -60,31 +58,6 @@ public class ReplicatingJournal implements Journal
    }
 
    // ------------------------
-   @Override
-   public void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception
-   {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync);
-   }
-
-   @Override
-   public void appendAddRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback)
-            throws Exception
-   {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync, completionCallback);
-   }
-
-   @Override
-   public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception
-   {
-      SyncIOCompletion callback = getSyncCallback(sync);
-
-      appendAddRecord(id, recordType, record, sync, callback);
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
-   }
 
    // ------------------------
 
@@ -99,74 +72,42 @@ public class ReplicatingJournal implements Journal
    }
 
    @Override
-   public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync,
-            IOCompletion callback) throws Exception
+   public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
+            throws Exception
    {
       JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
-         if (callback != null)
-         {
-            callback.storeLineUp();
-         }
+      if (callback != null)
+      {
+         callback.storeLineUp();
+      }
 
-         lockAppend.lock();
-         try
-         {
-            JournalFile usedFile = appendRecord(addRecord, false, sync, null, callback);
-         }
-         finally
-         {
-            lockAppend.unlock();
-         }
-
+      lockAppend.lock();
+      try
+      {
+         appendRecord(addRecord, sync, callback);
+      }
+      finally
+      {
+         lockAppend.unlock();
+      }
    }
 
    /**
-    * @param addRecord
-    * @param b
-    * @param sync
-    * @param object
-    * @param callback
-    * @return
+    * Write the record to the current file.
     */
-   private JournalFile appendRecord(JournalInternalRecord addRecord, boolean b, boolean sync, Object object,
-            IOCompletion callback)
+   private void appendRecord(JournalInternalRecord encoder, boolean sync, IOCompletion callback) throws Exception
    {
-      // TODO Auto-generated method stub
-      return null;
-   }
+      encoder.setFileID(currentFile.getRecordID());
 
-   @Override
-   public void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void
-            appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback)
-                     throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync,
-            IOCompletion completionCallback) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendDeleteRecord(long id, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      if (callback != null)
+      {
+         currentFile.getFile().write(encoder, sync, callback);
+      }
+      else
+      {
+         currentFile.getFile().write(encoder, sync);
+      }
    }
 
    @Override
@@ -176,7 +117,7 @@ public class ReplicatingJournal implements Journal
    }
 
    @Override
-   public void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception
+   public void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception
    {
       throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
    }
@@ -189,7 +130,9 @@ public class ReplicatingJournal implements Journal
    }
 
    @Override
-   public void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception
+   public void
+            appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
+                     throws Exception
    {
       throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
    }
@@ -202,36 +145,6 @@ public class ReplicatingJournal implements Journal
    }
 
    @Override
-   public void appendDeleteRecordTransactional(long txID, long id, byte[] record) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendDeleteRecordTransactional(long txID, long id) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendCommitRecord(long txID, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendCommitRecord(long txID, boolean sync, IOCompletion callback) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
    public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext)
             throws Exception
    {
@@ -239,33 +152,8 @@ public class ReplicatingJournal implements Journal
    }
 
    @Override
-   public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
    public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback)
             throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion callback)
-            throws Exception
-   {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
-   }
-
-   @Override
-   public void appendRollbackRecord(long txID, boolean sync) throws Exception
    {
       throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
    }
@@ -330,18 +218,5 @@ public class ReplicatingJournal implements Journal
    public void runDirectJournalBlast() throws Exception
    {
       throw new UnsupportedOperationException();
-   }
-
-   private SyncIOCompletion getSyncCallback(final boolean sync)
-   {
-      if (hasCallbackSupport)
-      {
-         if (sync)
-         {
-            return new SimpleWaitIOCallback();
-         }
-         return DummyCallback.getInstance();
-      }
-      return null;
    }
 }

@@ -72,7 +72,7 @@ import org.hornetq.utils.DataConstants;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public class JournalImpl implements TestableJournal, JournalRecordProvider
+public class JournalImpl extends JournalBase implements TestableJournal, JournalRecordProvider
 {
 
    private enum JournalState
@@ -242,10 +242,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                       final int maxAIO,
                       final int userVersion)
    {
-      if (fileFactory == null)
-      {
-         throw new NullPointerException("fileFactory is null");
-      }
+      super(fileFactory.isSupportsCallbacks());
       if (fileSize < JournalImpl.MIN_FILE_SIZE)
       {
          throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
@@ -793,32 +790,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    // Journal implementation
    // ----------------------------------------------------------------
 
-   public void appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
-   {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync);
-   }
-
-   public void appendAddRecord(final long id,
-                               final byte recordType,
-                               final byte[] record,
-                               final boolean sync,
-                               final IOCompletion callback) throws Exception
-   {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync, callback);
-   }
-
-   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
-   {
-      SyncIOCompletion callback = getSyncCallback(sync);
-
-      appendAddRecord(id, recordType, record, sync, callback);
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
-   }
-
+   @Override
    public void appendAddRecord(final long id,
                                final byte recordType,
                                final EncodingSupport record,
@@ -865,32 +837,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
-   {
-      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync);
-   }
-
-   public void appendUpdateRecord(final long id,
-                                  final byte recordType,
-                                  final byte[] record,
-                                  final boolean sync,
-                                  final IOCompletion callback) throws Exception
-   {
-      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync, callback);
-   }
-
-   public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
-   {
-      SyncIOCompletion callback = getSyncCallback(sync);
-
-      appendUpdateRecord(id, recordType, record, sync, callback);
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
-   }
-
+   @Override
    public void appendUpdateRecord(final long id,
                                   final byte recordType,
                                   final EncodingSupport record,
@@ -956,18 +903,8 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendDeleteRecord(final long id, final boolean sync) throws Exception
-   {
-      SyncIOCompletion callback = getSyncCallback(sync);
 
-      appendDeleteRecord(id, sync, callback);
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
-   }
-
+   @Override
    public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion callback) throws Exception
    {
       checkJournalIsLoaded();
@@ -1035,12 +972,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
-   {
-      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
-
-   }
-
+   @Override
    public void appendAddRecordTransactional(final long txID,
                                             final long id,
                                             final byte recordType,
@@ -1099,14 +1031,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       state = newState;
    }
 
-   public void appendUpdateRecordTransactional(final long txID,
-                                               final long id,
-                                               final byte recordType,
-                                               final byte[] record) throws Exception
-   {
-      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
-   }
-
+   @Override
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
                                                final byte recordType,
@@ -1151,11 +1076,8 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record) throws Exception
-   {
-      appendDeleteRecordTransactional(txID, id, new ByteArrayEncoding(record));
-   }
 
+   @Override
    public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
       checkJournalIsLoaded();
@@ -1195,39 +1117,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
-   {
-      appendDeleteRecordTransactional(txID, id, NullEncoding.instance);
-   }
-
-   public void appendPrepareRecord(final long txID,
-                                   final byte[] transactionData,
-                                   final boolean sync,
-                                   final IOCompletion completion) throws Exception
-   {
-      appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync, completion);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
-    */
-   public void appendPrepareRecord(final long txID, final byte[] transactionData, final boolean sync) throws Exception
-   {
-      appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync);
-   }
-
-   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
-   {
-      SyncIOCompletion syncCompletion = getSyncCallback(sync);
-
-      appendPrepareRecord(txID, transactionData, sync, syncCompletion);
-
-      if (syncCompletion != null)
-      {
-         syncCompletion.waitCompletion();
-      }
-   }
-
    /**
     *
     * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction
@@ -1241,6 +1130,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     * @param transactionData extra user data for the prepare
     * @throws Exception
     */
+   @Override
    public void appendPrepareRecord(final long txID,
                                    final EncodingSupport transactionData,
                                    final boolean sync,
@@ -1287,29 +1177,12 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendCommitRecord(final long txID, final boolean sync) throws Exception
-   {
-      SyncIOCompletion syncCompletion = getSyncCallback(sync);
-
-      appendCommitRecord(txID, sync, syncCompletion, true);
-
-      if (syncCompletion != null)
-      {
-         syncCompletion.waitCompletion();
-      }
-   }
-
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.Journal#lineUpContex(org.hornetq.core.journal.IOCompletion)
     */
    public void lineUpContex(IOCompletion callback)
    {
       callback.storeLineUp();
-   }
-
-   public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
-   {
-      appendCommitRecord(txID, sync, callback, true);
    }
 
 
@@ -1327,9 +1200,8 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
     * <p> If for any reason there are missing pendingTransactions, that means the transaction was not completed and we should ignore the whole transaction </p>
     * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed.
     *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
-    *
     */
-
+   @Override
    public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback, boolean lineUpContext) throws Exception
    {
       checkJournalIsLoaded();
@@ -1376,19 +1248,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       }
    }
 
-   public void appendRollbackRecord(final long txID, final boolean sync) throws Exception
-   {
-      SyncIOCompletion syncCompletion = getSyncCallback(sync);
-
-      appendRollbackRecord(txID, sync, syncCompletion);
-
-      if (syncCompletion != null)
-      {
-         syncCompletion.waitCompletion();
-      }
-
-   }
-
+   @Override
    public void appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
       checkJournalIsLoaded();
@@ -1475,6 +1335,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    {
       return load(committedRecords, preparedTransactions, failureCallback, true);
    }
+
    /**
     * @see JournalImpl#load(LoaderCallback)
     */
@@ -3058,25 +2919,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       return tx;
    }
 
-   private SyncIOCompletion getSyncCallback(final boolean sync)
-   {
-      if (fileFactory.isSupportsCallbacks())
-      {
-         if (sync)
-         {
-            return new SimpleWaitIOCallback();
-         }
-         else
-         {
-            return DummyCallback.getInstance();
-         }
-      }
-      else
-      {
-         return null;
-      }
-   }
-
    /**
     * @return
     * @throws Exception
@@ -3170,26 +3012,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    // Inner classes
    // ---------------------------------------------------------------------------
-
-   private static class NullEncoding implements EncodingSupport
-   {
-
-      private static NullEncoding instance = new NullEncoding();
-
-      public void decode(final HornetQBuffer buffer)
-      {
-      }
-
-      public void encode(final HornetQBuffer buffer)
-      {
-      }
-
-      public int getEncodeSize()
-      {
-         return 0;
-      }
-
-   }
 
    // Used on Load
    private static class TransactionHolder
