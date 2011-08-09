@@ -36,7 +36,7 @@ public class ReplicatingJournal extends JournalBase implements Journal
    public ReplicatingJournal(JournalFile file, boolean hasCallbackSupport)
    {
       super(hasCallbackSupport);
-      this.currentFile = file;
+      currentFile = file;
    }
 
    @Override
@@ -77,36 +77,39 @@ public class ReplicatingJournal extends JournalBase implements Journal
    {
       JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
-      if (callback != null)
-      {
-         callback.storeLineUp();
-      }
+      writeRecord(addRecord, sync, callback);
 
-      lockAppend.lock();
-      try
-      {
-         appendRecord(addRecord, sync, callback);
-      }
-      finally
-      {
-         lockAppend.unlock();
-      }
    }
 
    /**
     * Write the record to the current file.
     */
-   private void appendRecord(JournalInternalRecord encoder, boolean sync, IOCompletion callback) throws Exception
+   private void writeRecord(JournalInternalRecord encoder, boolean sync, IOCompletion callback) throws Exception
    {
-      encoder.setFileID(currentFile.getRecordID());
 
-      if (callback != null)
+
+      lockAppend.lock();
+      try
       {
-         currentFile.getFile().write(encoder, sync, callback);
+         if (callback != null)
+         {
+            callback.storeLineUp();
+         }
+
+         encoder.setFileID(currentFile.getRecordID());
+
+         if (callback != null)
+         {
+            currentFile.getFile().write(encoder, sync, callback);
+         }
+         else
+         {
+            currentFile.getFile().write(encoder, sync);
+         }
       }
-      else
+      finally
       {
-         currentFile.getFile().write(encoder, sync);
+         lockAppend.unlock();
       }
    }
 
@@ -134,7 +137,8 @@ public class ReplicatingJournal extends JournalBase implements Journal
             appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
                      throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord updateRecord = new JournalAddRecord(false, id, recordType, record);
+      writeRecord(updateRecord, sync, callback);
    }
 
    @Override

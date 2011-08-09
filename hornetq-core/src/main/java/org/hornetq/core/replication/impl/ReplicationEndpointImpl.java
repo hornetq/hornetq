@@ -456,6 +456,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       JournalImpl journal = assertJournalImpl(journalIf);
       Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
       JournalFile current = journal.createFilesForRemoteSync(packet.getFileIds(), mapToFill);
+      current.getFile().open(1, false);
       registerJournal(packet.getJournalContentType().typeByte,
                       new ReplicatingJournal(current, storage.hasCallbackSupport()));
    }
