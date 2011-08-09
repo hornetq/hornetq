@@ -166,6 +166,7 @@
          <cluster-connection name="cluster-connection1">
              <address>queues1</address>
              <connector-ref>connector1</connector-ref>
+             <call-timeout>123</call-timeout>
              <retry-interval>3</retry-interval>
              <use-duplicate-detection>true</use-duplicate-detection>
              <forward-when-no-consumers>false</forward-when-no-consumers>
@@ -178,6 +179,7 @@
          <cluster-connection name="cluster-connection2">
              <address>queues2</address>
              <connector-ref>connector2</connector-ref>
+             <call-timeout>456</call-timeout>
              <retry-interval>4</retry-interval>
              <use-duplicate-detection>false</use-duplicate-detection>
              <forward-when-no-consumers>true</forward-when-no-consumers>
