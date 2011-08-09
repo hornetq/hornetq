@@ -725,6 +725,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    protected void scheduleRetryConnect()
    {
+      if (serverLocator.isClosed())
+      {
+         log.warn("ServerLocator was shutdown, can't retry on opening connection for bridge");
+         return;
+      }
+      
       if (reconnectAttemptsInUse >= 0 && retryCount > reconnectAttempts)
       {
          log.warn("Bridge " + this.name +
