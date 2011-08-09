@@ -24,6 +24,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -223,7 +224,8 @@ public interface StorageManager extends HornetQComponent
    long storePageCounterInc(long queueID, int add) throws Exception;
 
    /**
-    * @return
+    * @return {@code true} if the underlying {@link SequentialFileFactory} has callback support.
+    * @see SequentialFileFactory#isSupportsCallbacks()
     */
    boolean hasCallbackSupport();
 
