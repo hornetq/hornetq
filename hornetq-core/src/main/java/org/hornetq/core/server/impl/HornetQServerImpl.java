@@ -603,7 +603,7 @@ public class HornetQServerImpl implements HornetQServer
                 * XXX HORNETQ-720 Live is down, and this server was not in sync. Perhaps we should
                 * first try to wait a little longer to see if the 'live' comes back?
                 */
-               throw new RuntimeException("Backup Server was not yet in sync with live");
+               throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup Server was not yet in sync with live");
             }
 
 
