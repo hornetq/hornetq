@@ -399,7 +399,6 @@ public class Topology implements Serializable
    {
       if (executor != null)
       {
-         log.debug(this + " is running runnable without an executor");
          executor.execute(runnable);
       }
       else
