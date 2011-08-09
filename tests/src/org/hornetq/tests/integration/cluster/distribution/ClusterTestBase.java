@@ -1880,6 +1880,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
            ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
            ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
            reconnectAttempts,
+           1000,
            true,
            forwardWhenNoConsumers,
            maxHops,

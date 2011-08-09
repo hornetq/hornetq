@@ -522,8 +522,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       }
       
       assertTrue("Exception expected", ex);
-
-      //restartServer();
+       //restartServer();
       serverControl = createManagementControl();
 
       String jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
@@ -540,6 +539,63 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(redistributionDelay, info.getRedistributionDelay());
       assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
       assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
+      
+      serverControl.addAddressSettings(addressMatch,
+                                       DLA,
+                                       expiryAddress,
+                                       lastValueQueue,
+                                       deliveryAttempts,
+                                       -1,
+                                       1000,
+                                       pageMaxCacheSize,
+                                       redeliveryDelay,
+                                       redistributionDelay,
+                                       sendToDLAOnNoRoute,
+                                       addressFullMessagePolicy);
+      
+
+      jsonString = serverControl.getAddressSettingsAsJSON(exactAddress);
+      info = AddressSettingsInfo.from(jsonString);
+      
+      assertEquals(DLA, info.getDeadLetterAddress());
+      assertEquals(expiryAddress, info.getExpiryAddress());
+      assertEquals(lastValueQueue, info.isLastValueQueue());
+      assertEquals(deliveryAttempts, info.getMaxDeliveryAttempts());
+      assertEquals(-1, info.getMaxSizeBytes());
+      assertEquals(pageMaxCacheSize, info.getPageCacheMaxSize());
+      assertEquals(1000, info.getPageSizeBytes());
+      assertEquals(redeliveryDelay, info.getRedeliveryDelay());
+      assertEquals(redistributionDelay, info.getRedistributionDelay());
+      assertEquals(sendToDLAOnNoRoute, info.isSendToDLAOnNoRoute());
+      assertEquals(addressFullMessagePolicy, info.getAddressFullMessagePolicy());
+      
+      
+      ex = false;
+      try
+      {
+         serverControl.addAddressSettings(addressMatch,
+                                          DLA,
+                                          expiryAddress,
+                                          lastValueQueue,
+                                          deliveryAttempts,
+                                          -2,
+                                          1000,
+                                          pageMaxCacheSize,
+                                          redeliveryDelay,
+                                          redistributionDelay,
+                                          sendToDLAOnNoRoute,
+                                          addressFullMessagePolicy);
+      }
+      catch (Exception e)
+      {
+         ex = true;
+      }
+      
+      
+      assertTrue("Supposed to have an exception called", ex);
+
+
+
    }
 
    public void testCreateAndDestroyDivert() throws Exception

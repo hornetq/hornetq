@@ -16,6 +16,7 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 
 /**
@@ -48,6 +49,8 @@ public class ClusterConnectionConfiguration implements Serializable
    private final long maxRetryInterval;
    
    private final int reconnectAttempts;
+   
+   private final long callTimeout;
 
    private final boolean duplicateDetection;
 
@@ -83,6 +86,7 @@ public class ClusterConnectionConfiguration implements Serializable
            ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
            ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
            ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+           HornetQClient.DEFAULT_CALL_TIMEOUT,
            duplicateDetection,
            forwardWhenNoConsumers,
            maxHops,
@@ -101,6 +105,7 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final double retryIntervalMultiplier,
                                          final long maxRetryInterval,
                                          final int reconnectAttempts,
+                                         final long callTimeout,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -119,6 +124,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.reconnectAttempts = reconnectAttempts;
       this.staticConnectors = staticConnectors;
       this.duplicateDetection = duplicateDetection;
+      this.callTimeout = callTimeout;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       discoveryGroupName = null;
       this.maxHops = maxHops;
@@ -146,6 +152,7 @@ public class ClusterConnectionConfiguration implements Serializable
            ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
            ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
            ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+           HornetQClient.DEFAULT_CALL_TIMEOUT,
            duplicateDetection,
            forwardWhenNoConsumers,
            maxHops,
@@ -163,6 +170,7 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final double retryIntervalMultiplier,
                                          final long maxRetryInterval,
                                          final int reconnectAttempts,
+                                         final long callTimeout,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
@@ -178,6 +186,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.maxRetryInterval = maxRetryInterval;
       this.reconnectAttempts = reconnectAttempts;
+      this.callTimeout = callTimeout;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
@@ -235,6 +244,11 @@ public class ClusterConnectionConfiguration implements Serializable
    public int getReconnectAttempts()
    {
       return reconnectAttempts;
+   }
+   
+   public long getCallTimeout()
+   {
+      return callTimeout;
    }
    
    public String getConnectorName()

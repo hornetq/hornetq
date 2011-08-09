@@ -954,7 +954,7 @@ public class UnitTestCase extends TestCase
       
       if (failed)
       {
-         logAndSystemOut("Thread leaged on test " + this.getClass().getName() + "::" + 
+         logAndSystemOut("Thread leaked on test " + this.getClass().getName() + "::" + 
                          this.getName() + "\n" + buffer.toString());
          fail("Thread leakage");
       }
@@ -1014,6 +1014,19 @@ public class UnitTestCase extends TestCase
          fail("invm registry still had acceptors registered");
       }
 
+      long timeout = System.currentTimeMillis() + 10000;
+      
+      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
+      {
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (Exception ignored)
+         {
+         }
+      }
+      
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
          AsynchronousFileImpl.resetMaxAIO();

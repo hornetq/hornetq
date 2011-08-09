@@ -133,6 +133,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final Map<Long, ClientConsumerInternal> consumers = new LinkedHashMap<Long, ClientConsumerInternal>();
 
    private volatile boolean closed;
+   
+   private volatile boolean closing;
 
    private final boolean autoCommitAcks;
 
@@ -857,6 +859,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          log.debug("Calling close on session "  + this);
       }
 
+      synchronized (this)
+      {
+         closing = true;
+      }
+
       try
       {
          producerCreditManager.close();
@@ -905,7 +912,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       synchronized (this)
       {
-         if (closed)
+         if (closed/* || closing*/)
          {
             return;
          }
