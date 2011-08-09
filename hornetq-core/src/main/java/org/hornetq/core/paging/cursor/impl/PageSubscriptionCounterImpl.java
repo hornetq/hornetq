@@ -225,7 +225,7 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       this.persistent = persistent;
    }
 
-   /** This method sould alwas be called from a single threaded executor */
+   /** This method should always be called from a single threaded executor */
    protected void cleanup()
    {
       ArrayList<Long> deleteList;
