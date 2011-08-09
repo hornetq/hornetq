@@ -358,7 +358,6 @@ public class JournalStorageManager implements StorageManager
          throw new IllegalStateException("JournalStorageManager must be started...");
       }
       assert replicationManager != null;
-      replicator = replicationManager;
 
       if (!(messageJournal instanceof JournalImpl) || !(bindingsJournal instanceof JournalImpl))
       {
@@ -380,6 +379,7 @@ public class JournalStorageManager implements StorageManager
          storageManagerLock.writeLock().lock();
          try
          {
+            replicator = replicationManager;
 
             localMessageJournal.writeLock();
             localBindingsJournal.writeLock();
