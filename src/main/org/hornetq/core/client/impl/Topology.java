@@ -172,23 +172,32 @@ public class Topology implements Serializable
       
       if (replaced)
       {
-         ArrayList<ClusterTopologyListener> copy = copyListeners();
-         for (ClusterTopologyListener listener : copy)
-         {
-            if (Topology.log.isTraceEnabled())
-            {
-               Topology.log.trace(this + " informing " + listener + " about node up = " + nodeId);
-            }
+         final ArrayList<ClusterTopologyListener> copy = copyListeners();
+         
 
-            try
+         // Has to use a different thread otherwise we may get dead locks case the remove is coming from the channel
+         execute(new Runnable(){
+            public void run()
             {
-               listener.nodeUP(nodeId, member.getConnector(), last);
+               for (ClusterTopologyListener listener : copy)
+               {
+                  if (Topology.log.isTraceEnabled())
+                  {
+                     Topology.log.trace(this + " informing " + listener + " about node up = " + nodeId);
+                  }
+
+                  try
+                  {
+                     listener.nodeUP(nodeId, member.getConnector(), last);
+                  }
+                  catch (Throwable e)
+                  {
+                     log.warn (e.getMessage(), e);
+                  }
+               }
             }
-            catch (Throwable e)
-            {
-               log.warn (e.getMessage(), e);
-            }
-         }
+         });
+         
       }
 
       return replaced;
@@ -230,16 +239,22 @@ public class Topology implements Serializable
 
       if (member != null)
       {
-         ArrayList<ClusterTopologyListener> copy = copyListeners();
+         final ArrayList<ClusterTopologyListener> copy = copyListeners();
 
-         for (ClusterTopologyListener listener : copy)
-         {
-            if (Topology.log.isTraceEnabled())
+         // Has to use a different thread otherwise we may get dead locks case the remove is coming from the channel
+         execute(new Runnable(){
+            public void run()
             {
-               Topology.log.trace(this + " informing " + listener + " about node down = " + nodeId);
+               for (ClusterTopologyListener listener : copy)
+               {
+                  if (Topology.log.isTraceEnabled())
+                  {
+                     Topology.log.trace(this + " informing " + listener + " about node down = " + nodeId);
+                  }
+                  listener.nodeDown(nodeId);
+               }
             }
-            listener.nodeDown(nodeId);
-         }
+         });
       }
       return member != null;
    }
@@ -378,6 +393,19 @@ public class Topology implements Serializable
          }
       }
       return null;
+   }
+   
+   private void execute(Runnable runnable)
+   {
+      if (executor != null)
+      {
+         log.debug(this + " is running runnable without an executor");
+         executor.execute(runnable);
+      }
+      else
+      {
+         runnable.run();
+      }
    }
 
    /* (non-Javadoc)
