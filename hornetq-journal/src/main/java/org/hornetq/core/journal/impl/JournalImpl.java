@@ -3128,11 +3128,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          for (long id : fileIds)
          {
             maxID = Math.max(maxID, id);
-            map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id));
+            map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id, false));
          }
          maxID += 1;
          filesRepository.setNextFileID(maxID);
-         return filesRepository.createRemoteBackupSyncFile(maxID);
+         return filesRepository.createRemoteBackupSyncFile(maxID, true);
       }
       finally
       {

@@ -443,9 +443,9 @@ public class JournalFilesRepository
       return nextFile;
    }
 
-   public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
+   public JournalFile createRemoteBackupSyncFile(long fileID, boolean init) throws Exception
    {
-      return createFile(false, false, false, false, fileID);
+      return createFile(false, false, init, false, fileID);
    }
 
    // Package protected ---------------------------------------------
