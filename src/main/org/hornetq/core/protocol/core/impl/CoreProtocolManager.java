@@ -118,7 +118,7 @@ public class CoreProtocolManager implements ProtocolManager
 
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
-                  Executor executor = server.getThreadPool();
+                  Executor executor = server.getExecutorFactory().getExecutor();
 
                   public void nodeUP(final String nodeID,
                                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
