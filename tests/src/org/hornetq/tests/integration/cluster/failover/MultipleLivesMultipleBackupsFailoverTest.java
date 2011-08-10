@@ -67,11 +67,18 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       createLiveConfig(nodeManager2, 3, 0);
       createBackupConfig(nodeManager2, 3, 4, true, new int[] {3, 5}, 0, 1, 2);
       createBackupConfig(nodeManager2, 3, 5, true, new int[] {3, 4}, 0, 1, 2);
+      
+      Thread.sleep(500);
       servers.get(0).start();
+      Thread.sleep(500);
       servers.get(3).start();
+      Thread.sleep(500);
       servers.get(1).start();
+      Thread.sleep(500);
       servers.get(2).start();
+      Thread.sleep(500);
       servers.get(4).start();
+      Thread.sleep(500);
       servers.get(5).start();
       ServerLocator locator = getServerLocator(0);
 
