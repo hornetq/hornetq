@@ -132,6 +132,17 @@ public class FailoverTest extends FailoverTestBase
       return sf.createSession(xa, autoCommitSends, autoCommitAcks);
    }
 
+   @Override
+   protected void crash(ClientSession... sessions) throws Exception
+   {
+      if (backupServer != null)
+      {
+         // some tests fail the live before the backup is in sync
+         waitForBackup(sf, 3);
+      }
+      super.crash(sessions);
+   }
+
    // https://jira.jboss.org/browse/HORNETQ-522
    public void testNonTransactedWithZeroConsumerWindowSize() throws Exception
    {
