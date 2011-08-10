@@ -1,9 +1,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
@@ -19,21 +17,21 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
 /**
  * Journal used at a replicating backup server during the synchronization of data with the 'live'
- * server.
+ * server. It just wraps a single {@link JournalFile}.
  * <p>
  * Its main purpose is to store the data as a Journal would, but without verifying records.
  */
-public class ReplicatingJournal extends JournalBase implements Journal
+public class FileWrapperJournal extends JournalBase implements Journal
 {
    private final ReentrantLock lockAppend = new ReentrantLock();
-   private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
+   // private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
 
    private final JournalFile currentFile;
 
    /**
     * @param file
     */
-   public ReplicatingJournal(JournalFile file, boolean hasCallbackSupport)
+   public FileWrapperJournal(JournalFile file, boolean hasCallbackSupport)
    {
       super(hasCallbackSupport);
       currentFile = file;
@@ -48,7 +46,7 @@ public class ReplicatingJournal extends JournalBase implements Journal
    @Override
    public void stop() throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      currentFile.getFile().close();
    }
 
    @Override
@@ -61,15 +59,15 @@ public class ReplicatingJournal extends JournalBase implements Journal
 
    // ------------------------
 
-   private void readLockJournal()
-   {
-      journalLock.readLock().lock();
-   }
-
-   private void readUnlockJournal()
-   {
-      journalLock.readLock().unlock();
-   }
+//   private void readLockJournal()
+//   {
+//      journalLock.readLock().lock();
+//   }
+//
+//   private void readUnlockJournal()
+//   {
+//      journalLock.readLock().unlock();
+//   }
 
    @Override
    public void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync, IOCompletion callback)
@@ -78,7 +76,6 @@ public class ReplicatingJournal extends JournalBase implements Journal
       JournalInternalRecord addRecord = new JournalAddRecord(true, id, recordType, record);
 
       writeRecord(addRecord, sync, callback);
-
    }
 
    /**

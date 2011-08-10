@@ -26,9 +26,9 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.FileWrapperJournal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
-import org.hornetq.core.journal.impl.ReplicatingJournal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
@@ -441,7 +441,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    /**
     * Reserves files (with the given fileID) in the specified journal, and places a
-    * {@link ReplicatingJournal} in place to store messages while synchronization is going on.
+    * {@link FileWrapperJournal} in place to store messages while synchronization is going on.
     * @param packet
     * @throws Exception
     */
@@ -458,8 +458,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       JournalFile current = journal.createFilesForRemoteSync(packet.getFileIds(), mapToFill);
       current.getFile().open(1, false);
       registerJournal(packet.getJournalContentType().typeByte,
-                      new ReplicatingJournal(current, storage.hasCallbackSupport()));
-   }
+                      new FileWrapperJournal(current, storage.hasCallbackSupport()));
+     }
 
    // XXX HORNETQ-720 really need to do away with this once the method calls get stable.
    private static JournalImpl assertJournalImpl(final Journal journalIf) throws HornetQException
