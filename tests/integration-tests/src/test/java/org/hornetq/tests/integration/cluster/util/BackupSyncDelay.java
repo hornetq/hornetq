@@ -82,6 +82,7 @@ public class BackupSyncDelay implements Interceptor
       private Packet onHold;
       private Channel channel;
       public volatile boolean deliver;
+      private boolean receivedUpToDate;
       private boolean mustHold = true;
 
       public void addSubHandler(ReplicationEndpoint handler)
@@ -91,6 +92,10 @@ public class BackupSyncDelay implements Interceptor
 
       public synchronized void deliver()
       {
+         deliver = true;
+         if (!receivedUpToDate)
+            return;
+
          if (onHold == null)
          {
             throw new NullPointerException("Don't have the 'sync is done' packet to deliver");
@@ -131,8 +136,9 @@ public class BackupSyncDelay implements Interceptor
          if (packet.getType() == PacketImpl.REPLICATION_SYNC && mustHold)
          {
             ReplicationJournalFileMessage syncMsg = (ReplicationJournalFileMessage)packet;
-            if (syncMsg.isUpToDate())
+            if (syncMsg.isUpToDate() && !deliver)
             {
+               receivedUpToDate = true;
                assert onHold == null;
                onHold = packet;
                PacketImpl response = new ReplicationResponseMessage();
