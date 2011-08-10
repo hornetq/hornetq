@@ -513,7 +513,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Send messages with pre-specified body.
+    * Send durable messages with pre-specified body.
     * @param session
     * @param producer
     * @param numMessages
@@ -531,13 +531,13 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
 
-   protected final
-            void receiveMessagesAndAck(ClientConsumer consumer, int start, int msgCount) throws HornetQException
+   protected final void receiveMessagesAndAck(ClientConsumer consumer, final int start, int msgCount)
+            throws HornetQException
    {
       for (int i = start; i < msgCount; i++)
       {
          ClientMessage message = consumer.receive(1000);
-         Assert.assertNotNull(message);
+         Assert.assertNotNull("Expecting a message " + i, message);
          assertMessageBody(i, message);
          Assert.assertEquals(i, message.getIntProperty("counter").intValue());
          message.acknowledge();

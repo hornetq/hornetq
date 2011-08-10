@@ -13,6 +13,7 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
 /**
@@ -111,9 +112,10 @@ public class FileWrapperJournal extends JournalBase implements Journal
    }
 
    @Override
-   public void appendDeleteRecord(long id, boolean sync, IOCompletion completionCallback) throws Exception
+   public void appendDeleteRecord(long id, boolean sync, IOCompletion callback) throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord deleteRecord = new JournalDeleteRecord(id);
+      writeRecord(deleteRecord, sync, callback);
    }
 
    @Override
