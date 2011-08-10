@@ -2029,7 +2029,7 @@ public class HornetQServerImpl implements HornetQServer
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();
 
-      journalStorageManager.setReplicator(replicationManager);
+      journalStorageManager.startReplication(replicationManager);
    }
 
    /**

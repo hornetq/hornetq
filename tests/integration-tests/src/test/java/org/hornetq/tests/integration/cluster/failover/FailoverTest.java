@@ -137,7 +137,7 @@ public class FailoverTest extends FailoverTestBase
    {
       if (backupServer != null)
       {
-         // some tests fail the live before the backup is in sync
+         // some tests crash the liveServer before the backupServer is sync'ed
          waitForBackup(sf, 3);
       }
       super.crash(sessions);
@@ -273,6 +273,7 @@ public class FailoverTest extends FailoverTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
+         assertNotNull("Just crashed? " + (i == 6) + " " + i, message);
 
          message.acknowledge();
 
@@ -627,7 +628,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = consumer.receive(1000);
 
-         Assert.assertNotNull(message);
+         Assert.assertNotNull("expecting message " + i, message);
 
          assertMessageBody(i, message);
 
@@ -1165,7 +1166,7 @@ public class FailoverTest extends FailoverTestBase
          if (isDurable(i))
          {
             ClientMessage message = consumer.receive(1000);
-            Assert.assertNotNull(message);
+            Assert.assertNotNull("expecting durable msg " + i, message);
             assertMessageBody(i, message);
             Assert.assertEquals(i, message.getIntProperty("counter").intValue());
             message.acknowledge();

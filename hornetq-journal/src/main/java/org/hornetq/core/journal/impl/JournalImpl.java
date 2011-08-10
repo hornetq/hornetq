@@ -1027,7 +1027,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private void setJournalState(JournalState newState)
    {
-      // log.info(this + " state=" + newState);
       state = newState;
    }
 
@@ -1750,7 +1749,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions,
             final boolean replicationSync) throws Exception
    {
-      System.out.println("LOAD! " + state + " " + replicationSync);
       if (state == JournalState.STOPPED || state == JournalState.LOADED)
       {
          throw new IllegalStateException("Journal " + this + " must be in " + JournalState.STARTED + " state, was " +

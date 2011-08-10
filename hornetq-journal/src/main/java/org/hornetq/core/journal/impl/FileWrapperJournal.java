@@ -13,6 +13,8 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
+import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
@@ -128,7 +130,8 @@ public class FileWrapperJournal extends JournalBase implements Journal
    public void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record)
             throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord addRecord = new JournalAddRecordTX(true, txID, id, recordType, record);
+      writeRecord(addRecord, false, null);
    }
 
    @Override
@@ -144,21 +147,24 @@ public class FileWrapperJournal extends JournalBase implements Journal
    public void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record)
             throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord updateRecordTX = new JournalAddRecordTX(false, txID, id, recordType, record);
+      writeRecord(updateRecordTX, false, null);
    }
 
    @Override
    public void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext)
             throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord commitRecord = new JournalCompleteRecordTX(true, txID, null);
+      writeRecord(commitRecord, sync, callback);
    }
 
    @Override
    public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback)
             throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord prepareRecord = new JournalCompleteRecordTX(false, txID, transactionData);
+      writeRecord(prepareRecord, sync, callback);
    }
 
    @Override

@@ -2,10 +2,8 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientProducer;
@@ -15,16 +13,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.ChannelHandler;
-import org.hornetq.core.protocol.core.CommandConfirmationHandler;
-import org.hornetq.core.protocol.core.CoreRemotingConnection;
-import org.hornetq.core.protocol.core.Packet;
-import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
-import org.hornetq.core.replication.ReplicationEndpoint;
-import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
@@ -35,7 +24,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
    private ClientSessionFactoryInternal sessionFactory;
    private ClientSession session;
    private ClientProducer producer;
-   private ReplicationChannelHandler handler;
+   private BackupSyncDelay syncDelay;
    private static final int N_MSGS = 100;
 
    @Override
@@ -48,8 +37,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setReconnectAttempts(-1);
       sessionFactory = createSessionFactoryAndWaitForTopology(locator, 1);
-      handler = new ReplicationChannelHandler();
-      liveServer.addInterceptor(new BackupSyncDelay(handler));
+      syncDelay = new BackupSyncDelay(backupServer, liveServer);
    }
 
    public void testNodeID() throws Exception
@@ -100,9 +88,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
 
    private void finishSyncAndFailover() throws Exception
    {
-      handler.deliver = true;
-      // must send one more message to have the "SYNC is DONE" msg delivered.
-      sendMessages(session, producer, 1);
+      syncDelay.deliverUpToDateMsg();
       waitForBackup(sessionFactory, 10, true);
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
       crash(session);
@@ -127,7 +113,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
    private void startBackupCrashLive() throws Exception
    {
       assertFalse("backup is started?", backupServer.isStarted());
-      handler.setHold(false);
+      liveServer.removeInterceptor(syncDelay);
       backupServer.start();
       waitForBackup(sessionFactory, 5);
       crash(session);
@@ -218,260 +204,5 @@ public class BackupJournalSyncTest extends FailoverTestBase
       return TransportConfigurationUtils.getInVMConnector(live);
    }
 
-   private class BackupSyncDelay implements Interceptor
-   {
 
-      private final ReplicationChannelHandler handler;
-
-      public BackupSyncDelay(ReplicationChannelHandler handler)
-      {
-         this.handler = handler;
-      }
-
-      @Override
-      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
-      {
-         if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
-         {
-            try
-            {
-               ReplicationEndpoint repEnd = backupServer.getServer().getReplicationEndpoint();
-               handler.addSubHandler(repEnd);
-               Channel repChannel = repEnd.getChannel();
-               repChannel.setHandler(handler);
-               handler.setChannel(repChannel);
-               liveServer.removeInterceptor(this);
-            }
-            catch (Exception e)
-            {
-               throw new RuntimeException(e);
-            }
-         }
-         return true;
-      }
-
-   }
-
-   private static class ReplicationChannelHandler implements ChannelHandler
-   {
-
-      private ReplicationEndpoint handler;
-      private Packet onHold;
-      private Channel channel;
-      public volatile boolean deliver;
-      private boolean mustHold = true;
-
-      public void addSubHandler(ReplicationEndpoint handler)
-      {
-         this.handler = handler;
-      }
-
-      public void setChannel(Channel channel)
-      {
-         this.channel = channel;
-      }
-
-      public void setHold(boolean hold)
-      {
-         mustHold = hold;
-      }
-
-      @Override
-      public void handlePacket(Packet packet)
-      {
-
-         if (onHold != null && deliver)
-         {
-            // Use wrapper to avoid sending a response
-            ChannelWrapper wrapper = new ChannelWrapper(channel);
-            handler.setChannel(wrapper);
-            try
-            {
-               handler.handlePacket(onHold);
-            }
-            finally
-            {
-               handler.setChannel(channel);
-               onHold = null;
-            }
-         }
-
-         if (packet.getType() == PacketImpl.REPLICATION_SYNC && mustHold)
-         {
-            ReplicationJournalFileMessage syncMsg = (ReplicationJournalFileMessage)packet;
-            if (syncMsg.isUpToDate())
-            {
-               assert onHold == null;
-               onHold = packet;
-               PacketImpl response = new ReplicationResponseMessage();
-               channel.send(response);
-               return;
-            }
-         }
-
-         handler.handlePacket(packet);
-      }
-
-   }
-
-   private static class ChannelWrapper implements Channel
-   {
-
-      private final Channel channel;
-
-      /**
-       * @param connection
-       * @param id
-       * @param confWindowSize
-       */
-      public ChannelWrapper(Channel channel)
-      {
-         this.channel = channel;
-      }
-
-      @Override
-      public String toString()
-      {
-         return "ChannelWrapper(" + channel + ")";
-      }
-
-      @Override
-      public long getID()
-      {
-         return channel.getID();
-      }
-
-      @Override
-      public void send(Packet packet)
-      {
-         // no-op
-         // channel.send(packet);
-      }
-
-      @Override
-      public void sendBatched(Packet packet)
-      {
-         throw new UnsupportedOperationException();
-
-      }
-
-      @Override
-      public void sendAndFlush(Packet packet)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Packet sendBlocking(Packet packet) throws HornetQException
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setHandler(ChannelHandler handler)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void close()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void transferConnection(CoreRemotingConnection newConnection)
-      {
-         throw new UnsupportedOperationException();
-
-      }
-
-      @Override
-      public void replayCommands(int lastConfirmedCommandID)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public int getLastConfirmedCommandID()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void lock()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void unlock()
-      {
-         throw new UnsupportedOperationException();
-
-      }
-
-      @Override
-      public void returnBlocking()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public Lock getLock()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public CoreRemotingConnection getConnection()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void confirm(Packet packet)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setCommandConfirmationHandler(CommandConfirmationHandler handler)
-      {
-         throw new UnsupportedOperationException();
-
-      }
-
-      @Override
-      public void flushConfirmations()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void handlePacket(Packet packet)
-      {
-         throw new UnsupportedOperationException();
-
-      }
-
-      @Override
-      public void clearCommands()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public int getConfirmationWindowSize()
-      {
-         throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public void setTransferring(boolean transferring)
-      {
-         throw new UnsupportedOperationException();
-      }
-
-   }
 }

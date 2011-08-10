@@ -351,7 +351,7 @@ public class JournalStorageManager implements StorageManager
     * @param replicationManager
     * @throws HornetQException
     */
-   public void setReplicator(ReplicationManager replicationManager) throws Exception
+   public void startReplication(ReplicationManager replicationManager) throws Exception
    {
       if (!started)
       {
@@ -375,7 +375,6 @@ public class JournalStorageManager implements StorageManager
 
       try
       {
-         // XXX HORNETQ-720 WRITE LOCK the StorageManager.
          storageManagerLock.writeLock().lock();
          try
          {
@@ -398,7 +397,6 @@ public class JournalStorageManager implements StorageManager
          }
          finally
          {
-            // XXX HORNETQ-720 UNLOCK StorageManager...
             storageManagerLock.writeLock().unlock();
          }
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
