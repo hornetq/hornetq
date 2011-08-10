@@ -95,7 +95,7 @@ public class ClusterConnectionImpl implements ClusterConnection
    private final long connectionTTL;
 
    private final long retryInterval;
-   
+
    private final long callTimeout;
 
    private final double retryIntervalMultiplier;
@@ -107,7 +107,7 @@ public class ClusterConnectionImpl implements ClusterConnection
    private final boolean useDuplicateDetection;
 
    private final boolean routeWhenNoConsumers;
-   
+
    private final int confirmationWindowSize;
 
    private final Map<String, MessageFlowRecord> records = new ConcurrentHashMap<String, MessageFlowRecord>();
@@ -195,7 +195,7 @@ public class ClusterConnectionImpl implements ClusterConnection
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.routeWhenNoConsumers = routeWhenNoConsumers;
-      
+
       this.confirmationWindowSize = confirmationWindowSize;
 
       this.executorFactory = executorFactory;
@@ -221,7 +221,7 @@ public class ClusterConnectionImpl implements ClusterConnection
       this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
 
       this.manager = manager;
-      
+
       this.callTimeout = callTimeout;
 
       this.clusterManagerTopology = clusterManagerTopology;
@@ -293,7 +293,7 @@ public class ClusterConnectionImpl implements ClusterConnection
       this.maxRetryInterval = maxRetryInterval;
 
       this.reconnectAttempts = reconnectAttempts;
-      
+
       this.callTimeout = callTimeout;
 
       this.useDuplicateDetection = useDuplicateDetection;
@@ -353,7 +353,7 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          return;
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug(this + "::stopping ClusterConnection");
@@ -382,32 +382,32 @@ public class ClusterConnectionImpl implements ClusterConnection
             {
             }
          }
-
-         if (managementService != null)
-         {
-            TypedProperties props = new TypedProperties();
-            props.putSimpleStringProperty(new SimpleString("name"), name);
-            Notification notification = new Notification(nodeUUID.toString(),
-                                                         NotificationType.CLUSTER_CONNECTION_STOPPED,
-                                                         props);
-            managementService.sendNotification(notification);
-         }
-
-         executor.execute(new Runnable()
-         {
-            public void run()
-            {
-               if (serverLocator != null)
-               {
-                  serverLocator.close();
-                  serverLocator = null;
-               }
-
-            }
-         });
-
-         started = false;
       }
+
+      if (managementService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putSimpleStringProperty(new SimpleString("name"), name);
+         Notification notification = new Notification(nodeUUID.toString(),
+                                                      NotificationType.CLUSTER_CONNECTION_STOPPED,
+                                                      props);
+         managementService.sendNotification(notification);
+      }
+
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            if (serverLocator != null)
+            {
+               serverLocator.close();
+               serverLocator = null;
+            }
+
+         }
+      });
+
+      started = false;
    }
 
    public boolean isStarted()
@@ -636,8 +636,7 @@ public class ClusterConnectionImpl implements ClusterConnection
             {
                if (isTrace)
                {
-                  log.trace(this +
-                            " ignored nodeUp record for " +
+                  log.trace(this + " ignored nodeUp record for " +
                             connectorPair +
                             " on nodeID=" +
                             nodeID +

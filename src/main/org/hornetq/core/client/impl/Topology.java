@@ -49,8 +49,6 @@ public class Topology implements Serializable
     *  */
    private volatile Object owner;
 
-   private volatile Executor executor;
-
    public Topology(final Object owner)
    {
       this.owner = owner;
@@ -65,11 +63,6 @@ public class Topology implements Serializable
     * values are a pair of live/backup transport configurations
     */
    private final Map<String, TopologyMember> topology = new ConcurrentHashMap<String, TopologyMember>();
-
-   public void setExecutor(Executor executor)
-   {
-      this.executor = executor;
-   }
 
    public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
@@ -95,7 +88,7 @@ public class Topology implements Serializable
       }
    }
 
-   public  boolean addMember(final String nodeId, final TopologyMember member, final boolean last)
+   public boolean addMember(final String nodeId, final TopologyMember member, final boolean last)
    {
       boolean replaced = false;
 
@@ -157,8 +150,7 @@ public class Topology implements Serializable
 
          if (Topology.log.isDebugEnabled())
          {
-            Topology.log.debug(this +
-                               " Add member nodeId=" +
+            Topology.log.debug(this + " Add member nodeId=" +
                                nodeId +
                                " member = " +
                                member +
@@ -169,35 +161,28 @@ public class Topology implements Serializable
          }
 
       }
-      
+
       if (replaced)
       {
          final ArrayList<ClusterTopologyListener> copy = copyListeners();
-         
 
          // Has to use a different thread otherwise we may get dead locks case the remove is coming from the channel
-         execute(new Runnable(){
-            public void run()
+         for (ClusterTopologyListener listener : copy)
+         {
+            if (Topology.log.isTraceEnabled())
             {
-               for (ClusterTopologyListener listener : copy)
-               {
-                  if (Topology.log.isTraceEnabled())
-                  {
-                     Topology.log.trace(this + " informing " + listener + " about node up = " + nodeId);
-                  }
-
-                  try
-                  {
-                     listener.nodeUP(nodeId, member.getConnector(), last);
-                  }
-                  catch (Throwable e)
-                  {
-                     log.warn (e.getMessage(), e);
-                  }
-               }
+               Topology.log.trace(this + " informing " + listener + " about node up = " + nodeId);
             }
-         });
-         
+
+            try
+            {
+               listener.nodeUP(nodeId, member.getConnector(), last);
+            }
+            catch (Throwable e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+         }
       }
 
       return replaced;
@@ -208,7 +193,7 @@ public class Topology implements Serializable
     */
    private ArrayList<ClusterTopologyListener> copyListeners()
    {
-      ArrayList <ClusterTopologyListener> listenersCopy;
+      ArrayList<ClusterTopologyListener> listenersCopy;
       synchronized (topologyListeners)
       {
          listenersCopy = new ArrayList<ClusterTopologyListener>(topologyListeners);
@@ -219,12 +204,11 @@ public class Topology implements Serializable
    public boolean removeMember(final String nodeId)
    {
       TopologyMember member;
-      
+
       synchronized (this)
       {
          member = topology.remove(nodeId);
       }
-      
 
       if (Topology.log.isDebugEnabled())
       {
@@ -241,20 +225,14 @@ public class Topology implements Serializable
       {
          final ArrayList<ClusterTopologyListener> copy = copyListeners();
 
-         // Has to use a different thread otherwise we may get dead locks case the remove is coming from the channel
-         execute(new Runnable(){
-            public void run()
+         for (ClusterTopologyListener listener : copy)
+         {
+            if (Topology.log.isTraceEnabled())
             {
-               for (ClusterTopologyListener listener : copy)
-               {
-                  if (Topology.log.isTraceEnabled())
-                  {
-                     Topology.log.trace(this + " informing " + listener + " about node down = " + nodeId);
-                  }
-                  listener.nodeDown(nodeId);
-               }
+               Topology.log.trace(this + " informing " + listener + " about node down = " + nodeId);
             }
-         });
+            listener.nodeDown(nodeId);
+         }
       }
       return member != null;
    }
@@ -268,7 +246,7 @@ public class Topology implements Serializable
    {
       // To make sure it was updated
       addMember(nodeID, member, false);
-      
+
       ArrayList<ClusterTopologyListener> copy = copyListeners();
 
       // Now force sending it
@@ -393,18 +371,6 @@ public class Topology implements Serializable
          }
       }
       return null;
-   }
-   
-   private void execute(Runnable runnable)
-   {
-      if (executor != null)
-      {
-         executor.execute(runnable);
-      }
-      else
-      {
-         runnable.run();
-      }
    }
 
    /* (non-Javadoc)

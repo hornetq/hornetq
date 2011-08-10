@@ -378,8 +378,6 @@ public class ClusterManagerImpl implements ClusterManager
          backup = false;
 
          String nodeID = server.getNodeID().toString();
-         
-         topology.setExecutor(executor);
 
          TopologyMember member = topology.getMember(nodeID);
          //swap backup as live and send it to everybody
