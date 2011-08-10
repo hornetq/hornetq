@@ -403,6 +403,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                }
                // files should be already in place.
                filesReservedForSync.remove(jc);
+               getJournal(jc.typeByte).stop();
                registerJournal(jc.typeByte, journal);
                journal.loadInternalOnly();
                // XXX HORNETQ-720 must reload journals
@@ -456,7 +457,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       JournalImpl journal = assertJournalImpl(journalIf);
       Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
       JournalFile current = journal.createFilesForRemoteSync(packet.getFileIds(), mapToFill);
-      current.getFile().open(1, false);
       registerJournal(packet.getJournalContentType().typeByte,
                       new FileWrapperJournal(current, storage.hasCallbackSupport()));
      }

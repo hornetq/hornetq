@@ -443,9 +443,13 @@ public class JournalFilesRepository
       return nextFile;
    }
 
-   public JournalFile createRemoteBackupSyncFile(long fileID, boolean init) throws Exception
+   /**
+    * Creates files for journal synchronization of a replicated backup.
+    * @param isCurrent a current file is initialized and kept open.
+    */
+   public JournalFile createRemoteBackupSyncFile(long fileID, boolean isCurrent) throws Exception
    {
-      return createFile(false, false, init, false, fileID);
+      return createFile(isCurrent, false, isCurrent, false, fileID);
    }
 
    // Package protected ---------------------------------------------
