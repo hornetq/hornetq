@@ -1837,7 +1837,7 @@ public class QueueImpl implements Queue
             }
             reference.setScheduledDeliveryTime(timeBase + redeliveryDelay);
             
-            if (message.isDurable() && durable)
+            if (!reference.isPaged() && message.isDurable() && durable)
             {
                storageManager.updateScheduledDeliveryTime(reference);
             }
