@@ -937,7 +937,7 @@ public class UnitTestCase extends TestCase
       
       boolean failed =  true;
       
-      long timeout = System.currentTimeMillis() + 10000;
+      long timeout = System.currentTimeMillis() + 60000;
       while (failed && timeout > System.currentTimeMillis())
       {
          buffer = new StringBuffer();
