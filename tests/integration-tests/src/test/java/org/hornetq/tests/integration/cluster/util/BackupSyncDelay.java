@@ -111,6 +111,7 @@ public class BackupSyncDelay implements Interceptor
          finally
          {
             handler.setChannel(channel);
+            channel.setHandler(handler);
             onHold = null;
          }
       }

@@ -381,7 +381,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull("null message", message);
+      Assert.assertNull("message should be null! Was: " + message, message);
 
       session.close();
 

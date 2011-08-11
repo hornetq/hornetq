@@ -94,7 +94,8 @@ public class LargeMessageFailoverTest extends FailoverTest
 
       for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
       {
-         Assert.assertEquals("equal at " + j, buffer.readByte(), UnitTestCase.getSamplebyte(j));
+         Assert.assertTrue("expecting more bytes", buffer.readable());
+         Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
       }
    }
 
