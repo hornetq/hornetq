@@ -41,7 +41,8 @@ public class BackupSyncDelay implements Interceptor
 
    public void deliverUpToDateMsg()
    {
-      handler.deliver();
+      if (backup.isStarted())
+         handler.deliver();
    }
 
    public BackupSyncDelay(TestableServer backup, TestableServer live)

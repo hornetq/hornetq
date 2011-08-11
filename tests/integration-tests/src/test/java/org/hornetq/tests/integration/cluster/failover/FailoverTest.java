@@ -135,7 +135,7 @@ public class FailoverTest extends FailoverTestBase
    @Override
    protected void crash(ClientSession... sessions) throws Exception
    {
-      if (backupServer != null)
+      if (backupServer != null && backupServer.isStarted())
       {
          // some tests crash the liveServer before the backupServer is sync'ed
          waitForBackup(sf, 3);
