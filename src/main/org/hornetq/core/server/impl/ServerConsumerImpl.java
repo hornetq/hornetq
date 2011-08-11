@@ -93,8 +93,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
 
-   private boolean largeMessageInDelivery;
-
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
     */
@@ -235,7 +233,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
-         if (largeMessageInDelivery)
+         if (largeMessageDeliverer != null)
          {
             return HandleStatus.BUSY;
          }
@@ -463,21 +461,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       synchronized (lock)
       {
          this.transferring = transferring;
-
-         if (transferring)
-         {
-            // Now we must wait for any large message delivery to finish
-            while (largeMessageInDelivery)
-            {
-               try
-               {
-                  Thread.sleep(1);
-               }
-               catch (InterruptedException ignore)
-               {
-               }
-            }
-         }
       }
 
       // Outside the lock
@@ -662,25 +645,27 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void promptDelivery()
    {
-      synchronized (lock)
+      // largeMessageDeliverer is aways set inside a lock
+      // if we don't acquire a lock, we will have NPE eventually
+      if (largeMessageDeliverer != null)
       {
-         // largeMessageDeliverer is aways set inside a lock
-         // if we don't acquire a lock, we will have NPE eventually
-         if (largeMessageDeliverer != null)
-         {
-            resumeLargeMessage();
-         }
-         else
-         {
-            if (browseOnly)
-            {
-               messageQueue.getExecutor().execute(browserDeliverer);
-            }
-            else
-            {
-               messageQueue.forceDelivery();
-            }
-         }
+         resumeLargeMessage();
+      }
+      else
+      {
+         forceDelivery();
+      }
+   }
+
+   private void forceDelivery()
+   {
+      if (browseOnly)
+      {
+         messageQueue.getExecutor().execute(browserDeliverer);
+      }
+      else
+      {
+         messageQueue.deliverAsync();
       }
    }
 
@@ -691,8 +676,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void deliverLargeMessage(final MessageReference ref, final ServerMessage message) throws Exception
    {
-      largeMessageInDelivery = true;
-
       final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
 
       // it doesn't need lock because deliverLargeMesasge is already inside the lock()
@@ -714,6 +697,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
+
    // Inner classes
    // ------------------------------------------------------------------------
 
@@ -727,16 +711,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             {
                if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
                {
-                  if (browseOnly)
-                  {
-                     messageQueue.getExecutor().execute(browserDeliverer);
-                  }
-                  else
-                  {
-                     // prompt Delivery only if chunk was finished
-
-                     messageQueue.deliverAsync();
-                  }
+                  forceDelivery();
                }
             }
             catch (Exception e)
@@ -900,8 +875,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
 
             largeMessageDeliverer = null;
-
-            largeMessageInDelivery = false;
 
             largeMessage = null;
          }

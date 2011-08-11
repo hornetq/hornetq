@@ -73,7 +73,7 @@ public class ConfigurationHelper
          {
             return Integer.valueOf((String)prop);
          }
-         else if (prop instanceof Integer == false)
+         else if (prop instanceof Number == false)
          {
             ConfigurationHelper.log.warn("Property " + propName +
                                          " must be an Integer, it is " +
@@ -83,7 +83,7 @@ public class ConfigurationHelper
          }
          else
          {
-            return (Integer)prop;
+            return ((Number)prop).intValue();
          }
       }
    }
@@ -108,7 +108,7 @@ public class ConfigurationHelper
          {
             return Long.valueOf((String)prop);
          }
-         else if (prop instanceof Long == false)
+         else if (prop instanceof Number == false)
          {
             ConfigurationHelper.log.warn("Property " + propName +
                                          " must be an Long, it is " +
@@ -118,7 +118,7 @@ public class ConfigurationHelper
          }
          else
          {
-            return (Long)prop;
+            return ((Number)prop).longValue();
          }
       }
    }
