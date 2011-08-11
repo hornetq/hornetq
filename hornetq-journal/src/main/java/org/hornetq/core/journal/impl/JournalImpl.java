@@ -1186,19 +1186,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
 
    /**
-    * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
-    * <p>For example, a transaction was spread along 3 journal files with 10 pendingTransactions on each file.
-    *    (What could happen if there are too many pendingTransactions, or if an user event delayed pendingTransactions to come in time to a single file).</p>
-    * <p>The element-summary will then have</p>
-    * <p>FileID1, 10</p>
-    * <p>FileID2, 10</p>
-    * <p>FileID3, 10</p>
-    *
-    * <br>
-    * <p> During the load, the transaction needs to have 30 pendingTransactions spread across the files as originally written.</p>
-    * <p> If for any reason there are missing pendingTransactions, that means the transaction was not completed and we should ignore the whole transaction </p>
-    * <p> We can't just use a global counter as reclaiming could delete files after the transaction was successfully committed.
-    *     That also means not having a whole file on journal-reload doesn't mean we have to invalidate the transaction </p>
+    * Regarding the number of operations in a given file see {@link JournalCompleteRecordTX}.
     */
    @Override
    public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback, boolean lineUpContext) throws Exception
@@ -2596,11 +2584,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // -----------------------------------------------------------------------------
 
    /**
-    * <p> Check for holes on the transaction (a commit written but with an incomplete transaction) </p>
-    * <p>This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the COMMIT-RECORD.</p>
-    *
-    * <p>Look at the javadoc on {@link JournalImpl#appendCommitRecord(long)} about how the transaction-summary is recorded</p>
-    *
+    * <p>
+    * Checks for holes on the transaction (a commit written but with an incomplete transaction).
+    * <p>
+    * This method will validate if the transaction (PREPARE/COMMIT) is complete as stated on the
+    * COMMIT-RECORD.
+    * <p>
+    * For details see {@link JournalCompleteRecordTX} about how the transaction-summary is recorded.
     * @param journalTransaction
     * @param orderedFiles
     * @param recordedSummary
