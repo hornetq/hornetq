@@ -82,7 +82,7 @@ public class FakeQueue implements Queue
       
    }
 
-   public boolean blockOnExecutorFuture()
+   public boolean flushExecutor()
    {
       return true;
    }

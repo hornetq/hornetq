@@ -383,7 +383,7 @@ public class QueueImpl implements Queue
          {
             // We must block on the executor to ensure any async deliveries have completed or we might get out of order
             // deliveries
-            if (blockOnExecutorFuture())
+            if (flushExecutor())
             {
                // Go into direct delivery mode
                directDeliver = true;
@@ -443,7 +443,20 @@ public class QueueImpl implements Queue
          checkQueueSizeFuture.cancel(false);
       }
 
-      cancelRedistributor();
+      getExecutor().execute(new Runnable(){
+         public void run()
+         {
+            try
+            {
+               cancelRedistributor();
+            }
+            catch (Exception e)
+            {
+               // nothing that could be done anyway.. just logging
+               log.warn(e.getMessage(), e);
+            }
+         }
+      });
    }
 
    public Executor getExecutor()
@@ -464,14 +477,14 @@ public class QueueImpl implements Queue
    {
       deliverAsync();
 
-      blockOnExecutorFuture();
+      flushExecutor();
    }
 
-   public boolean blockOnExecutorFuture()
+   public boolean flushExecutor()
    {
       Future future = new Future();
 
-      executor.execute(future);
+      getExecutor().execute(future);
 
       boolean ok = future.await(10000);
 
@@ -1137,28 +1150,43 @@ public class QueueImpl implements Queue
       }
    }
 
-   public synchronized void expireReferences() throws Exception
+   public void expireReferences() throws Exception
    {
-      LinkedListIterator<MessageReference> iter = iterator();
-
-      try
-      {
-         while (iter.hasNext())
+      getExecutor().execute(new Runnable(){
+         public void run()
          {
-            MessageReference ref = iter.next();
-            if (ref.getMessage().isExpired())
+            synchronized (QueueImpl.this)
             {
-               deliveringCount.incrementAndGet();
-               expire(ref);
-               iter.remove();
-               refRemoved(ref);
+               LinkedListIterator<MessageReference> iter = iterator();
+   
+               try
+               {
+                  while (iter.hasNext())
+                  {
+                     MessageReference ref = iter.next();
+                     try
+                     {
+                        if (ref.getMessage().isExpired())
+                        {
+                           deliveringCount.incrementAndGet();
+                           expire(ref);
+                           iter.remove();
+                           refRemoved(ref);
+                        }
+                     }
+                     catch (Exception e)
+                     {
+                        log.warn("Error expiring reference " + ref, e);
+                     }
+                  }
+               }
+               finally
+               {
+                  iter.close();
+               }
             }
          }
-      }
-      finally
-      {
-         iter.close();
-      }
+      });
    }
 
    public synchronized boolean sendMessageToDeadLetterAddress(final long messageID) throws Exception

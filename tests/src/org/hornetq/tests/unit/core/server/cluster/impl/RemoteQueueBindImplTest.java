@@ -617,7 +617,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.server.Queue#blockOnExecutorFuture()
        */
-      public boolean blockOnExecutorFuture()
+      public boolean flushExecutor()
       {
          // TODO Auto-generated method stub
          return false;
