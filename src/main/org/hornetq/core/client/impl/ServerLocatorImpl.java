@@ -1137,8 +1137,18 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       super.finalize();
    }
+   
+   public void cleanup()
+   {
+      doClose(false);
+   }
 
    public void close()
+   {
+      doClose(true);
+   }
+   
+   protected void doClose(final boolean sendClose)
    {
       if (closed)
       {
@@ -1176,7 +1186,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       for (ClientSessionFactory factory : clonedFactory)
       {
-         factory.close();
+         if (sendClose)
+         {
+            factory.close();
+         }
+         else
+         {
+            factory.cleanup();
+         }
       }
 
       factories.clear();

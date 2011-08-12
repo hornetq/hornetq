@@ -39,6 +39,8 @@ public interface ServerLocatorInternal extends ServerLocator
    void setNodeID(String nodeID);
 
    String getNodeID();
+   
+   void cleanup();
 
    ClientSessionFactory connect() throws  Exception;
 
