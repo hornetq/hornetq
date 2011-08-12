@@ -51,7 +51,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
@@ -185,7 +185,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_END)
          {
-            handleLargeMessageEnd((ReplicationLargemessageEndMessage)packet);
+            handleLargeMessageEnd((ReplicationLargeMessageEndMessage)packet);
          }
          else if (type == PacketImpl.REPLICATION_COMPARE_DATA)
          {
@@ -472,7 +472,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       return (JournalImpl)journalIf;
    }
 
-   private void handleLargeMessageEnd(final ReplicationLargemessageEndMessage packet)
+   private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {
       LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), true);
 
