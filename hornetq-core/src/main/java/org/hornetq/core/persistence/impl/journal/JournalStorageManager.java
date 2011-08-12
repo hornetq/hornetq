@@ -347,7 +347,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * XXX FIXME HORNETQ-720 Method ignores the synchronization of LargeMessages and Paging.
+    * XXX FIXME HORNETQ-720 Method ignores the synchronization of Paging.
     * @param replicationManager
     * @throws HornetQException
     */
@@ -401,10 +401,12 @@ public class JournalStorageManager implements StorageManager
          }
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
          sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+
+         storageManagerLock.writeLock().lock();
          try
          {
-            storageManagerLock.writeLock().lock();
             replicator.sendSynchronizationDone();
+            // XXX HORNETQ-720 SEND a compare journals message?
          }
          finally
          {
@@ -975,6 +977,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   // FIXME Unused?
    public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
       readLock();

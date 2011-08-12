@@ -1566,8 +1566,6 @@ public class HornetQServerImpl implements HornetQServer
 
       JournalLoadInformation[] journalInfo = loadJournals();
 
-      compareJournals(journalInfo);
-
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
 
       long dumpInfoInterval = configuration.getServerDumpInterval();
@@ -1618,17 +1616,6 @@ public class HornetQServerImpl implements HornetQServer
 
       initialised = true;
 
-   }
-
-   /**
-    * @param journalInfo
-    */
-   private void compareJournals(final JournalLoadInformation[] journalInfo) throws Exception
-   {
-      if (replicationManager != null)
-      {
-         replicationManager.compareJournals(journalInfo);
-      }
    }
 
    private void deploySecurityFromConfiguration()

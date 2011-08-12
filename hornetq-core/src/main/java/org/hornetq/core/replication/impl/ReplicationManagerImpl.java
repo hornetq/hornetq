@@ -261,9 +261,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#largeMessageDelete(long)
-    */
+   /* XXX Unused? */
    public void largeMessageDelete(final long messageId)
    {
       if (enabled)
