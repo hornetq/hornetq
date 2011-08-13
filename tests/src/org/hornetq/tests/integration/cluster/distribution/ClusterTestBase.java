@@ -2031,7 +2031,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
           * we need to wait a little while between server start up to allow the server to communicate in some order.
           * This is to avoid split brain on startup
           * */
-         Thread.sleep(500);
+         Thread.sleep(1000);
       }
 
    }
@@ -2079,7 +2079,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             {
                ClusterTestBase.log.info("stopping server " + node);
                servers[node].stop();
-               Thread.sleep(500);
+               Thread.sleep(1000);
                ClusterTestBase.log.info("server " + node + " stopped");
             }
             catch (Exception e)

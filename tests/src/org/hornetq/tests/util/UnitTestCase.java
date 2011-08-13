@@ -1042,7 +1042,9 @@ public class UnitTestCase extends TestCase
       {
          log.info(threadDump(e.getMessage()));
          System.err.println(threadDump(e.getMessage()));
-         throw new RuntimeException (e.getMessage(), e);
+         
+         // There's no need to throw this exception as there's another verification for every thread that's coming later
+//         throw new RuntimeException (e.getMessage(), e);
       }
    }
 
