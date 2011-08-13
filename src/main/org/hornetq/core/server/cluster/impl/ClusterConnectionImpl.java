@@ -34,8 +34,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClusterTopologyListener;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
@@ -51,7 +49,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
@@ -662,6 +659,7 @@ public class ClusterConnectionImpl implements ClusterConnection
                                 final boolean start) throws Exception
    {
       final Topology topology = new Topology(null);
+      topology.setExecutor(executorFactory.getExecutor());
       final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, false, connector);
 
       targetLocator.setReconnectAttempts(0);
@@ -691,7 +689,8 @@ public class ClusterConnectionImpl implements ClusterConnection
       targetLocator.disableFinalizeCheck();
 
       targetLocator.connect();
-      ClusterTopologyListener listenerOnBridgeTopology = new ClusterTopologyListener()
+      
+      final ClusterTopologyListener listenerOnBridgeTopology = new ClusterTopologyListener()
       {
 
          public void nodeDown(String nodeID)
@@ -708,7 +707,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       };
 
-      ClusterTopologyListener listenerOnMainTopology = new ClusterTopologyListener()
+      final ClusterTopologyListener listenerOnMainTopology = new ClusterTopologyListener()
       {
          public void nodeDown(String nodeID)
          {
@@ -728,7 +727,6 @@ public class ClusterConnectionImpl implements ClusterConnection
       topology.addClusterTopologyListener(listenerOnBridgeTopology);
 
       clusterManagerTopology.addClusterTopologyListener(listenerOnMainTopology);
-
 
       MessageFlowRecordImpl record = new MessageFlowRecordImpl(listenerOnMainTopology, listenerOnBridgeTopology, targetLocator, targetNodeID, connector, queueName, queue);
 
@@ -775,6 +773,14 @@ public class ClusterConnectionImpl implements ClusterConnection
       if (start)
       {
          bridge.start();
+         
+         bridge.getExecutor().execute(new Runnable(){
+            public void run()
+            {
+               topology.sendTopology(listenerOnBridgeTopology);
+               clusterManagerTopology.sendTopology(listenerOnMainTopology);
+            }
+         });
       }
    }
 
