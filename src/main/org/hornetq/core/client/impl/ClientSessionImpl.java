@@ -282,6 +282,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // ClientSession implementation
    // -----------------------------------------------------------------
+   
+   public Channel getChannel()
+   {
+      return channel;
+   }
 
    public void createQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
    {

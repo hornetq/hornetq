@@ -69,7 +69,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private transient String identity;
 
-   private Set<ClientSessionFactory> factories = new HashSet<ClientSessionFactory>();
+   private Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
 
    private TransportConfiguration[] initialConnectors;
 
@@ -84,7 +84,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private boolean receivedTopology;
 
    private boolean compressLargeMessage;
-   
+
    // if the system should shutdown the pool when shutting down
    private transient boolean shutdownPool;
 
@@ -252,12 +252,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private void setThreadPools()
    {
-	  if (threadPool != null)
-	  {
-		  return;
-	  }
-	  else
-      if (useGlobalPools)
+      if (threadPool != null)
+      {
+         return;
+      }
+      else if (useGlobalPools)
       {
          threadPool = getGlobalThreadPool();
 
@@ -266,7 +265,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       else
       {
          this.shutdownPool = true;
-         
+
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-factory-threads-" + System.identityHashCode(this),
                                                           true,
                                                           getThisClassLoader());
@@ -369,19 +368,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private ServerLocatorImpl(final Topology topology,
                              final boolean useHA,
-                             final ExecutorService threadPool, 
-                             final ScheduledExecutorService scheduledExecutor, 
                              final DiscoveryGroupConfiguration discoveryGroupConfiguration,
                              final TransportConfiguration[] transportConfigs)
    {
       e.fillInStackTrace();
-      
-      this.scheduledThreadPool = scheduledExecutor;
-      
-      this.threadPool = threadPool;
-      
+
       this.topology = topology;
-      
+
       this.ha = useHA;
 
       this.discoveryGroupConfiguration = discoveryGroupConfiguration;
@@ -459,8 +452,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     */
    public ServerLocatorImpl(final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      this(new Topology(null), useHA, null, null, groupConfiguration, null);
-      topology.setOwner(this);
+      this(useHA ? new Topology(null) : null, useHA, groupConfiguration, null);
+      if (useHA)
+      {
+         // We only set the owner at where the Topology was created.
+         // For that reason we can't set it at the main constructor
+         topology.setOwner(this);
+      }
    }
 
    /**
@@ -470,8 +468,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     */
    public ServerLocatorImpl(final boolean useHA, final TransportConfiguration... transportConfigs)
    {
-      this(new Topology(null), useHA, null, null, null, transportConfigs);
-      topology.setOwner(this);
+      this(useHA ? new Topology(null) : null, useHA, null, transportConfigs);
+      if (useHA)
+      {
+         // We only set the owner at where the Topology was created.
+         // For that reason we can't set it at the main constructor
+         topology.setOwner(this);
+      }
    }
 
    /**
@@ -480,10 +483,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public ServerLocatorImpl(final Topology topology, final boolean useHA, final ExecutorService threadPool, final ScheduledExecutorService scheduledExecutor, final DiscoveryGroupConfiguration groupConfiguration)
+   public ServerLocatorImpl(final Topology topology, final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      this(topology, useHA, threadPool, scheduledExecutor, groupConfiguration, null);
-      
+      this(topology, useHA, groupConfiguration, null);
+
    }
 
    /**
@@ -491,9 +494,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     *
     * @param transportConfigs
     */
-   public ServerLocatorImpl(final Topology topology, final boolean useHA, final ExecutorService threadPool, final ScheduledExecutorService scheduledExecutor, final TransportConfiguration... transportConfigs)
+   public ServerLocatorImpl(final Topology topology,
+                            final boolean useHA,
+                            final TransportConfiguration... transportConfigs)
    {
-      this(topology, useHA, threadPool, scheduledExecutor, null, transportConfigs);
+      this(topology, useHA, null, transportConfigs);
    }
 
    private TransportConfiguration selectConnector()
@@ -565,7 +570,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       addFactory(sf);
       return sf;
    }
-   
+
    public boolean isClosed()
    {
       return closed || closing;
@@ -609,7 +614,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactory createSessionFactory() throws Exception
    {
-      if (closed)
+      if (closed || closing)
       {
          throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
       }
@@ -697,10 +702,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          if (ha || clusterConnection)
          {
             long timeout = System.currentTimeMillis() + 30000;
-            while (!ServerLocatorImpl.this.closed && !ServerLocatorImpl.this.closing && !receivedTopology && timeout > System.currentTimeMillis())
+            while (!ServerLocatorImpl.this.closed && !ServerLocatorImpl.this.closing &&
+                   !receivedTopology &&
+                   timeout > System.currentTimeMillis())
             {
                // Now wait for the topology
-               
+
                try
                {
                   wait(1000);
@@ -711,7 +718,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
             }
 
-            if (System.currentTimeMillis() > timeout && ! receivedTopology && !closed && !closing)
+            if (System.currentTimeMillis() > timeout && !receivedTopology && !closed && !closing)
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                           "Timed out waiting to receive cluster topology");
@@ -1137,7 +1144,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       super.finalize();
    }
-   
+
    public void cleanup()
    {
       doClose(false);
@@ -1147,7 +1154,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       doClose(true);
    }
-   
+
    protected void doClose(final boolean sendClose)
    {
       if (closed)
@@ -1182,7 +1189,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          staticConnector.disconnect();
       }
 
-      Set<ClientSessionFactory> clonedFactory = new HashSet<ClientSessionFactory>(factories);
+      Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
       for (ClientSessionFactory factory : clonedFactory)
       {
@@ -1239,12 +1246,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public void notifyNodeDown(final String nodeID)
    {
-      if (!clusterConnection && !ha)
+
+      if (topology == null)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug(this + "::ignoring notifyNodeDown=" + nodeID + " as isHA=false");
-         }
+         // there's no topology here
          return;
       }
 
@@ -1254,7 +1259,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
 
       topology.removeMember(nodeID);
- 
+
       if (!topology.isEmpty())
       {
          updateArraysAndPairs();
@@ -1274,25 +1279,18 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    }
 
    public void notifyNodeUp(final String nodeID,
-                                         final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                                         final boolean last)
+                            final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                            final boolean last)
    {
-      if (!clusterConnection && !ha)
+      if (topology == null)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug(this + "::Ignoring notifyNodeUp for " +
-                      nodeID +
-                      " connectorPair=" +
-                      connectorPair +
-                      ", since ha=false and clusterConnection=false");
-         }
+         // there's no topology
          return;
       }
 
       if (log.isDebugEnabled())
       {
-         log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception ("trace"));
+         log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
       topology.addMember(nodeID, new TopologyMember(connectorPair), last);
@@ -1352,7 +1350,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private synchronized void updateArraysAndPairs()
    {
       Collection<TopologyMember> membersCopy = topology.getMembers();
-      
+
       topologyArray = (Pair<TransportConfiguration, TransportConfiguration>[])Array.newInstance(Pair.class,
                                                                                                 membersCopy.size());
 
@@ -1395,12 +1393,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       factories.remove(factory);
 
-      if (!clusterConnection  && factories.isEmpty())
+      if (!clusterConnection && factories.isEmpty())
       {
          // Go back to using the broadcast or static list
 
          receivedTopology = false;
-         
+
          topologyArray = null;
       }
    }
@@ -1424,7 +1422,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       if (factory != null)
       {
-         TransportConfiguration backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+         TransportConfiguration backup = null;
+
+         if (topology != null)
+         {
+            backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+         }
+
          factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
          factories.add(factory);
       }
@@ -1476,10 +1480,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                   {
                      csf.getConnection().addFailureListener(new FailureListener()
                      {
-                        // Case the node where we were connected is gone, we need to restart the connection
+                        // Case the node where the cluster connection was connected is gone, we need to restart the
+                        // connection
                         public void connectionFailed(HornetQException exception, boolean failedOver)
                         {
-                           if (exception.getCode() == HornetQException.DISCONNECTED)
+                           if (clusterConnection && exception.getCode() == HornetQException.DISCONNECTED)
                            {
                               try
                               {
@@ -1496,7 +1501,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
                      if (log.isDebugEnabled())
                      {
-                        log.debug("XXX Returning " + csf +
+                        log.debug("Returning " + csf +
                                   " after " +
                                   retryNumber +
                                   " retries on StaticConnector " +

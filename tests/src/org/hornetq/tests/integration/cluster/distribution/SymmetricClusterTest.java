@@ -242,12 +242,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(3, "queues.testaddress", 1, 1, true);
       waitForBindings(4, "queues.testaddress", 1, 1, true);
 
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[2]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
-
       waitForBindings(0, "queues.testaddress", 4, 4, false);
       waitForBindings(1, "queues.testaddress", 4, 4, false);
       waitForBindings(2, "queues.testaddress", 4, 4, false);

@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
@@ -582,6 +583,14 @@ public class DelegatingSession implements ClientSessionInternal
    public String toString()
    {
       return "DelegatingSession [session=" + session + "]";
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.impl.ClientSessionInternal#getChannel()
+    */
+   public Channel getChannel()
+   {
+      return session.getChannel();
    }
 
 }

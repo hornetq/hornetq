@@ -980,7 +980,7 @@ public class UnitTestCase extends TestCase
          
          for (Thread aliveThread : postThreads.keySet())
          {
-            if (!aliveThread.getName().contains("SunPKCS11") && !previousThreads.containsKey(aliveThread))
+            if (!aliveThread.getName().contains("SunPKCS11") && !aliveThread.getName().contains("Attach Listener") && !previousThreads.containsKey(aliveThread))
             {
                failedThread = true;
                buffer.append("=============================================================================\n");

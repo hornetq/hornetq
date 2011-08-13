@@ -17,6 +17,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
@@ -61,6 +62,8 @@ public interface ClientSessionInternal extends ClientSession
    void handleFailover(CoreRemotingConnection backupConnection);
 
    RemotingConnection getConnection();
+   
+   Channel getChannel();
 
    void cleanUp(boolean failingOver) throws Exception;
 

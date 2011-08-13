@@ -36,7 +36,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.client.impl.TopologyMember;
@@ -53,7 +52,6 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConcurrentHashSet;
@@ -69,7 +67,7 @@ import org.hornetq.utils.UUID;
  *
  *
  */
-public class ClusterManagerImpl implements ClusterManager
+public class ClusterManagerImpl implements ClusterManagerInternal
 {
    private static final Logger log = Logger.getLogger(ClusterManagerImpl.class);
 
@@ -126,6 +124,8 @@ public class ClusterManagerImpl implements ClusterManager
       this.executorFactory = executorFactory;
 
       executor = executorFactory.getExecutor();
+      
+      topology.setExecutor(executorFactory.getExecutor());
 
       this.server = server;
 
@@ -482,9 +482,14 @@ public class ClusterManagerImpl implements ClusterManager
       }
    }
 
-   void addClusterLocator(final ServerLocatorInternal serverLocator)
+   public void addClusterLocator(final ServerLocatorInternal serverLocator)
    {
       this.clusterLocators.add(serverLocator);
+   }
+   
+   public void removeClusterLocator(final ServerLocatorInternal serverLocator)
+   {
+      this.clusterLocators.remove(serverLocator);
    }
 
    private synchronized void announceNode()

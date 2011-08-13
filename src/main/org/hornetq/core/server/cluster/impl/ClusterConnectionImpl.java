@@ -33,12 +33,15 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.client.impl.Topology;
+import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -48,6 +51,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.impl.Proposal;
@@ -136,9 +140,9 @@ public class ClusterConnectionImpl implements ClusterConnection
 
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
 
-   private final ClusterManagerImpl manager;
+   private final ClusterManagerInternal manager;
 
-   public ClusterConnectionImpl(final ClusterManagerImpl manager,
+   public ClusterConnectionImpl(final ClusterManagerInternal manager,
                                 final Topology clusterManagerTopology,
                                 final TransportConfiguration[] tcConfigs,
                                 final TransportConfiguration connector,
@@ -657,38 +661,10 @@ public class ClusterConnectionImpl implements ClusterConnection
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetNodeID, connector, queueName, queue);
-
-      Bridge bridge = createClusteredBridge(record);
-
-      if (log.isDebugEnabled())
-      {
-         log.debug("creating record between " + this.connector + " and " + connector + bridge);
-      }
-
-      record.setBridge(bridge);
-
-      records.put(targetNodeID, record);
-
-      if (start)
-      {
-         bridge.start();
-      }
-   }
-
-   /**
-    * @param record
-    * @return
-    * @throws Exception
-    */
-   protected Bridge createClusteredBridge(MessageFlowRecordImpl record) throws Exception
-   {
-
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(this.clusterManagerTopology,
+      Topology topology = new Topology(null);
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology,
                                                                         false,
-                                                                        server.getThreadPool(),
-                                                                        server.getScheduledPool(),
-                                                                        record.getConnector());
+                                                                        connector);
 
       targetLocator.setReconnectAttempts(0);
 
@@ -700,7 +676,6 @@ public class ClusterConnectionImpl implements ClusterConnection
       targetLocator.setConfirmationWindowSize(confirmationWindowSize);
       targetLocator.setBlockOnDurableSend(!useDuplicateDetection);
       targetLocator.setBlockOnNonDurableSend(!useDuplicateDetection);
-      targetLocator.setClusterConnection(true);
 
       targetLocator.setRetryInterval(retryInterval);
       targetLocator.setMaxRetryInterval(maxRetryInterval);
@@ -714,10 +689,37 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          targetLocator.setRetryInterval(retryInterval);
       }
+      
+      targetLocator.disableFinalizeCheck();
+      
+      targetLocator.connect();
+      
 
-      manager.addClusterLocator(targetLocator);
+      MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetLocator, targetNodeID, connector, queueName, queue);
+
+      topology.setOwner(record);
+      
+      // Establish a proxy to the main topology. 
+      // We are going to listen for adds and removes on the bridges as well
+      topology.addClusterTopologyListener(new ClusterTopologyListener(){
+
+         public void nodeDown(String nodeID)
+         {
+            clusterManagerTopology.removeMember(nodeID);
+         }
+
+         public void nodeUP(String nodeID,
+                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                            boolean last)
+         {
+            clusterManagerTopology.addMember(nodeID,new TopologyMember(connectorPair), last);
+         }
+         
+      });
+
 
       ClusterConnectionBridge bridge = new ClusterConnectionBridge(this,
+                                                                   manager,
                                                                    targetLocator,
                                                                    serverLocator,
                                                                    reconnectAttempts,
@@ -745,20 +747,36 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       targetLocator.setIdentity("(Cluster-connection-bridge::" + bridge.toString() + "::" + this.toString() + ")");
 
-      return bridge;
-   }
+      if (log.isDebugEnabled())
+      {
+         log.debug("creating record between " + this.connector + " and " + connector + bridge);
+      }
 
+      record.setBridge(bridge);
+
+      records.put(targetNodeID, record);
+
+      if (start)
+      {
+         bridge.start();
+      }
+   }
+   
    // Inner classes -----------------------------------------------------------------------------------
 
    private class MessageFlowRecordImpl implements MessageFlowRecord
    {
-      private Bridge bridge;
+      private BridgeImpl bridge;
 
       private final String targetNodeID;
 
       private final TransportConfiguration connector;
+      
+      private final ServerLocatorInternal targetLocator;
 
       private final SimpleString queueName;
+      
+      private boolean disconnected = false;;
 
       private final Queue queue;
 
@@ -768,11 +786,13 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       private volatile boolean firstReset = false;
 
-      public MessageFlowRecordImpl(final String targetNodeID,
+      public MessageFlowRecordImpl(final ServerLocatorInternal targetLocator,
+                                   final String targetNodeID,
                                    final TransportConfiguration connector,
                                    final SimpleString queueName,
                                    final Queue queue)
       {
+         this.targetLocator = targetLocator;
          this.queue = queue;
          this.targetNodeID = targetNodeID;
          this.connector = connector;
@@ -797,6 +817,11 @@ public class ClusterConnectionImpl implements ClusterConnection
                 ", firstReset=" +
                 firstReset +
                 "]";
+      }
+      
+      public void serverDisconnected()
+      {
+         this.disconnected = true;
       }
 
       public String getAddress()
@@ -850,8 +875,35 @@ public class ClusterConnectionImpl implements ClusterConnection
 
          isClosed = true;
          clearBindings();
+         
+         if (disconnected)
+         {
+            bridge.disconnect();
+         }
 
          bridge.stop();
+         
+         bridge.getExecutor().execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  if (disconnected)
+                  {
+                     targetLocator.cleanup();
+                  }
+                  else
+                  {
+                     targetLocator.close();
+                  }
+               }
+               catch (Exception ignored)
+               {
+                  log.debug(ignored.getMessage(), ignored);
+               }
+            }
+         });
       }
 
       public boolean isClosed()
@@ -864,7 +916,7 @@ public class ClusterConnectionImpl implements ClusterConnection
          clearBindings();
       }
 
-      public void setBridge(final Bridge bridge)
+      public void setBridge(final BridgeImpl bridge)
       {
          this.bridge = bridge;
       }
@@ -1306,8 +1358,6 @@ public class ClusterConnectionImpl implements ClusterConnection
             }
             return new ServerLocatorImpl(clusterManagerTopology,
                                          true,
-                                         server.getThreadPool(),
-                                         server.getScheduledPool(),
                                          tcConfigs);
          }
          else
@@ -1340,8 +1390,6 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          return new ServerLocatorImpl(clusterManagerTopology,
                                       true,
-                                      server.getThreadPool(),
-                                      server.getScheduledPool(),
                                       dg);
       }
    }

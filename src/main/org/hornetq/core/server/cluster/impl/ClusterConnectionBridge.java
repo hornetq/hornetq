@@ -24,15 +24,16 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -57,6 +58,8 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    private final ClusterConnection clusterConnection;
 
+   private final ClusterManagerInternal clusterManager;
+
    private final MessageFlowRecord flowRecord;
 
    private final SimpleString managementAddress;
@@ -74,7 +77,8 @@ public class ClusterConnectionBridge extends BridgeImpl
    private final ServerLocatorInternal discoveryLocator;
 
    public ClusterConnectionBridge(final ClusterConnection clusterConnection,
-                                  final ServerLocator targetLocator,
+                                  final ClusterManagerInternal clusterManager,
+                                  final ServerLocatorInternal targetLocator,
                                   final ServerLocatorInternal discoveryLocator,
                                   final int reconnectAttempts,
                                   final long retryInterval,
@@ -124,6 +128,8 @@ public class ClusterConnectionBridge extends BridgeImpl
 
       this.clusterConnection = clusterConnection;
 
+      this.clusterManager = clusterManager;
+
       this.targetNodeID = targetNodeID;
       this.managementAddress = managementAddress;
       this.managementNotificationAddress = managementNotificationAddress;
@@ -132,13 +138,32 @@ public class ClusterConnectionBridge extends BridgeImpl
 
       // we need to disable DLQ check on the clustered bridges
       queue.setInternalQueue(true);
-      
+
       if (log.isDebugEnabled())
       {
-         log.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator, new Exception ("trace"));
+         log.debug("Setting up bridge between " + clusterConnection.getConnector() + " and " + targetLocator,
+                   new Exception("trace"));
       }
    }
-   
+
+   protected ClientSessionFactoryInternal createSessionFactory() throws Exception
+   {
+      ClientSessionFactoryInternal factory = super.createSessionFactory();
+      factory.getConnection().addFailureListener(new FailureListener()
+      {
+
+         public void connectionFailed(HornetQException exception, boolean failedOver)
+         {
+            if (exception.getCode() == HornetQException.DISCONNECTED)
+            {
+               flowRecord.serverDisconnected();
+               clusterManager.removeClusterLocator(serverLocator);
+            }
+         }
+      });
+      return factory;
+   }
+
    @Override
    protected ServerMessage beforeForward(ServerMessage message)
    {
@@ -247,7 +272,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
          ClientMessage message = session.createMessage(false);
 
-         log.debug("Requesting sendQueueInfoToQueue through " + this, new Exception ("trace"));
+         log.debug("Requesting sendQueueInfoToQueue through " + this, new Exception("trace"));
          ManagementHelper.putOperationInvocation(message,
                                                  ResourceNames.CORE_SERVER,
                                                  "sendQueueInfoToQueue",
@@ -285,7 +310,6 @@ public class ClusterConnectionBridge extends BridgeImpl
          scheduleRetryConnect();
       }
    }
-
 
    protected void fail(final boolean permanently)
    {

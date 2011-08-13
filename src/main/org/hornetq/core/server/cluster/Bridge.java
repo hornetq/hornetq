@@ -53,4 +53,10 @@ public interface Bridge extends Consumer, HornetQComponent
    void pause() throws Exception;
 
    void resume() throws Exception;
+
+   /**
+    * To be called when the server sent a disconnect to the client.
+    * Basically this is for cluster bridges being disconnected
+    */
+   void disconnect();
 }

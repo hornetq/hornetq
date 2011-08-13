@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+ * Copyright 2010 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,30 +11,22 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.cluster.distribution;
+package org.hornetq.core.server.cluster.impl;
 
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.server.cluster.ClusterManager;
 
 /**
- * A NettyFileStorageSymmetricClusterTest
+ * A ClusterManagerInternal
  *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author clebert
  *
  *
  */
-public class NettyFileStorageSymmetricClusterTest extends SymmetricClusterTest
+public interface ClusterManagerInternal extends ClusterManager
 {
-   Logger log = Logger.getLogger(NettyFileStorageSymmetricClusterTest.class);
-
-   @Override
-   protected boolean isNetty()
-   {
-      return true;
-   }
-
-   protected boolean isFileStorage()
-   {
-      return true;
-   }
+   void addClusterLocator(ServerLocatorInternal locator);
+   
+   void removeClusterLocator(ServerLocatorInternal locator);
 
 }

@@ -25,14 +25,14 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
@@ -47,6 +47,7 @@ import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
@@ -77,7 +78,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private static final SimpleString JMS_TOPIC_ADDRESS_PREFIX = new SimpleString("jms.topic.");
 
-   protected final ServerLocator serverLocator;
+   protected final ServerLocatorInternal serverLocator;
 
    private final UUID nodeUUID;
 
@@ -138,7 +139,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    // Public --------------------------------------------------------
 
-   public BridgeImpl(final ServerLocator serverLocator,
+   public BridgeImpl(final ServerLocatorInternal serverLocator,
                      final int reconnectAttempts,
                      final long retryInterval,
                      final double retryMultiplier,
@@ -159,7 +160,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
 
       this.reconnectAttempts = reconnectAttempts;
-      
+
       this.reconnectAttemptsInUse = -1;
 
       this.retryInterval = retryInterval;
@@ -199,7 +200,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       this.notificationService = notificationService;
    }
-
    public synchronized void start() throws Exception
    {
       if (started)
@@ -278,6 +278,35 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
+   public void disconnect()
+   {
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            if (session != null)
+            {
+               try
+               {
+                  session.cleanUp(false);
+               }
+               catch (Exception dontcare)
+               {
+                  log.debug(dontcare.getMessage(), dontcare);
+               }
+               session = null;
+            }
+         }
+      });
+   }
+
+   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break. 
+    *  This method is intended to expose this executor to the ClusterManager */
+   public Executor getExecutor()
+   {
+      return executor;
+   }
+   
    public void stop() throws Exception
    {
       if (log.isDebugEnabled())
@@ -468,7 +497,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (log.isDebugEnabled())
             {
-            	log.debug(this + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
+               log.debug(this + "::Ignoring reference on bridge as it is set to iniactive ref=" + ref);
             }
             return HandleStatus.BUSY;
          }
@@ -521,9 +550,9 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void connectionFailed(final HornetQException me, boolean failedOver)
    {
-      
+
       log.warn(this + "::Connection failed with failedOver=" + failedOver + "-" + me, me);
-      
+
       try
       {
          csf.cleanup();
@@ -539,12 +568,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       catch (Throwable dontCare)
       {
       }
-      
+
       fail(me.getCode() == HornetQException.DISCONNECTED);
 
       tryScheduleRetryReconnect(me.getCode());
    }
-   
+
    protected void tryScheduleRetryReconnect(final int code)
    {
       scheduleRetryConnect();
@@ -552,8 +581,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    public void beforeReconnect(final HornetQException exception)
    {
-//      log.warn(name + "::Connection failed before reconnect ", exception);
-//      fail(false);
+      // log.warn(name + "::Connection failed before reconnect ", exception);
+      // fail(false);
    }
 
    // Package protected ---------------------------------------------
@@ -568,7 +597,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    @Override
    public String toString()
    {
-      return this.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + " [name=" + name + ", queue=" + queue + " targetConnector=" + this.serverLocator + "]";
+      return this.getClass().getSimpleName() + "@" +
+             Integer.toHexString(System.identityHashCode(this)) +
+             " [name=" +
+             name +
+             ", queue=" +
+             queue +
+             " targetConnector=" +
+             this.serverLocator +
+             "]";
    }
 
    protected void fail(final boolean permanently)
@@ -590,7 +627,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             log.debug(dontcare);
          }
       }
-      
+
       cancelRefs();
       if (queue != null)
       {
@@ -615,7 +652,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       ClientSessionFactoryInternal csf = (ClientSessionFactoryInternal)serverLocator.createSessionFactory();
       csf.setReconnectAttempts(0);
-      //csf.setInitialReconnectAttempts(1);
       return csf;
    }
 
@@ -625,7 +661,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       BridgeImpl.log.debug("Connecting  " + this + " to its destination [" + nodeUUID.toString() + "], csf=" + this.csf);
 
       retryCount++;
-      
+
       try
       {
          if (csf == null || csf.isClosed())
@@ -712,15 +748,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                log.debug("Bridge " + this + " is unable to connect to destination. Retrying", e);
             }
+
+            scheduleRetryConnect();
          }
       }
       catch (Exception e)
       {
          BridgeImpl.log.warn("Bridge " + this + " is unable to connect to destination. It will be disabled.", e);
       }
-
-      scheduleRetryConnect();
-
    }
 
    protected void scheduleRetryConnect()
@@ -730,7 +765,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          log.warn("ServerLocator was shutdown, can't retry on opening connection for bridge");
          return;
       }
-      
+
       if (reconnectAttemptsInUse >= 0 && retryCount > reconnectAttempts)
       {
          log.warn("Bridge " + this.name +
@@ -752,8 +787,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          timeout = maxRetryInterval;
       }
-      
-      log.debug("Bridge " + this + " retrying connection #" + retryCount + ", maxRetry=" + reconnectAttemptsInUse + ", timeout=" + timeout);
+
+      log.debug("Bridge " + this +
+                " retrying connection #" +
+                retryCount +
+                ", maxRetry=" +
+                reconnectAttemptsInUse +
+                ", timeout=" +
+                timeout);
 
       scheduleRetryConnectFixedTimeout(timeout);
    }
@@ -770,13 +811,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
          }
       }
-      
+
       if (log.isDebugEnabled())
       {
          log.debug("Scheduling retry for bridge " + this.name + " in " + milliseconds + " milliseconds");
       }
 
-      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(), milliseconds, TimeUnit.MILLISECONDS);
+      futureScheduledReconnection = scheduledExecutor.schedule(new FutureConnectRunnable(),
+                                                               milliseconds,
+                                                               TimeUnit.MILLISECONDS);
    }
 
    // Inner classes -------------------------------------------------
@@ -788,12 +831,23 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          try
          {
             log.debug("stopping bridge " + BridgeImpl.this);
-            
+
+            queue.removeConsumer(BridgeImpl.this);
+
+            internalCancelReferences();
+
             if (session != null)
             {
                log.debug("Cleaning up session " + session);
-               session.close();
                session.removeFailureListener(BridgeImpl.this);
+               try
+               {
+                  session.close();
+                  session = null;
+               }
+               catch (Exception dontcare)
+               {
+               }
             }
 
             if (csf != null)
@@ -815,10 +869,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                log.trace("Removing consumer on stopRunnable " + this + " from queue " + queue);
             }
-            queue.removeConsumer(BridgeImpl.this);
-
-            internalCancelReferences();
-
             log.info("stopped bridge " + name);
          }
          catch (Exception e)
