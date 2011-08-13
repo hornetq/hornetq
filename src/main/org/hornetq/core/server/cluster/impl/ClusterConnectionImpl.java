@@ -661,10 +661,8 @@ public class ClusterConnectionImpl implements ClusterConnection
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      Topology topology = new Topology(null);
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology,
-                                                                        false,
-                                                                        connector);
+      final Topology topology = new Topology(null);
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, false, connector);
 
       targetLocator.setReconnectAttempts(0);
 
@@ -689,19 +687,12 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          targetLocator.setRetryInterval(retryInterval);
       }
-      
+
       targetLocator.disableFinalizeCheck();
-      
+
       targetLocator.connect();
-      
-
-      MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetLocator, targetNodeID, connector, queueName, queue);
-
-      topology.setOwner(record);
-      
-      // Establish a proxy to the main topology. 
-      // We are going to listen for adds and removes on the bridges as well
-      topology.addClusterTopologyListener(new ClusterTopologyListener(){
+      ClusterTopologyListener listenerOnBridgeTopology = new ClusterTopologyListener()
+      {
 
          public void nodeDown(String nodeID)
          {
@@ -712,11 +703,36 @@ public class ClusterConnectionImpl implements ClusterConnection
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             boolean last)
          {
-            clusterManagerTopology.addMember(nodeID,new TopologyMember(connectorPair), last);
+            clusterManagerTopology.addMember(nodeID, new TopologyMember(connectorPair), last);
          }
-         
-      });
 
+      };
+
+      ClusterTopologyListener listenerOnMainTopology = new ClusterTopologyListener()
+      {
+         public void nodeDown(String nodeID)
+         {
+            topology.removeMember(nodeID);
+         }
+
+         public void nodeUP(String nodeID,
+                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                            boolean last)
+         {
+            topology.addMember(nodeID, new TopologyMember(connectorPair), last);
+         }
+
+      };
+
+      // Establish a proxy between each other topology
+      topology.addClusterTopologyListener(listenerOnBridgeTopology);
+
+      clusterManagerTopology.addClusterTopologyListener(listenerOnMainTopology);
+
+
+      MessageFlowRecordImpl record = new MessageFlowRecordImpl(listenerOnMainTopology, listenerOnBridgeTopology, targetLocator, targetNodeID, connector, queueName, queue);
+
+      topology.setOwner(record);
 
       ClusterConnectionBridge bridge = new ClusterConnectionBridge(this,
                                                                    manager,
@@ -761,7 +777,7 @@ public class ClusterConnectionImpl implements ClusterConnection
          bridge.start();
       }
    }
-   
+
    // Inner classes -----------------------------------------------------------------------------------
 
    private class MessageFlowRecordImpl implements MessageFlowRecord
@@ -771,11 +787,11 @@ public class ClusterConnectionImpl implements ClusterConnection
       private final String targetNodeID;
 
       private final TransportConfiguration connector;
-      
+
       private final ServerLocatorInternal targetLocator;
 
       private final SimpleString queueName;
-      
+
       private boolean disconnected = false;;
 
       private final Queue queue;
@@ -785,8 +801,14 @@ public class ClusterConnectionImpl implements ClusterConnection
       private volatile boolean isClosed = false;
 
       private volatile boolean firstReset = false;
+      
+      private final ClusterTopologyListener listenerOnMainTopology;
+      
+      private final ClusterTopologyListener listenerOnBridgeTopology;
 
-      public MessageFlowRecordImpl(final ServerLocatorInternal targetLocator,
+      public MessageFlowRecordImpl(final ClusterTopologyListener listenerOnMainTopology,
+                                   final ClusterTopologyListener listenerOnBridgeTopology,
+                                   final ServerLocatorInternal targetLocator,
                                    final String targetNodeID,
                                    final TransportConfiguration connector,
                                    final SimpleString queueName,
@@ -797,6 +819,8 @@ public class ClusterConnectionImpl implements ClusterConnection
          this.targetNodeID = targetNodeID;
          this.connector = connector;
          this.queueName = queueName;
+         this.listenerOnMainTopology = listenerOnMainTopology;
+         this.listenerOnBridgeTopology = listenerOnBridgeTopology;
       }
 
       /* (non-Javadoc)
@@ -818,7 +842,7 @@ public class ClusterConnectionImpl implements ClusterConnection
                 firstReset +
                 "]";
       }
-      
+
       public void serverDisconnected()
       {
          this.disconnected = true;
@@ -872,17 +896,20 @@ public class ClusterConnectionImpl implements ClusterConnection
          {
             log.trace("Stopping bridge " + bridge);
          }
+         
+         clusterManagerTopology.removeClusterTopologyListener(listenerOnMainTopology);
+         targetLocator.getTopology().removeClusterTopologyListener(listenerOnBridgeTopology);
 
          isClosed = true;
          clearBindings();
-         
+
          if (disconnected)
          {
             bridge.disconnect();
          }
 
          bridge.stop();
-         
+
          bridge.getExecutor().execute(new Runnable()
          {
             public void run()
@@ -1356,9 +1383,7 @@ public class ClusterConnectionImpl implements ClusterConnection
             {
                log.debug(ClusterConnectionImpl.this + "Creating a serverLocator for " + Arrays.toString(tcConfigs));
             }
-            return new ServerLocatorImpl(clusterManagerTopology,
-                                         true,
-                                         tcConfigs);
+            return new ServerLocatorImpl(clusterManagerTopology, true, tcConfigs);
          }
          else
          {
@@ -1388,9 +1413,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       public ServerLocatorInternal createServerLocator()
       {
-         return new ServerLocatorImpl(clusterManagerTopology,
-                                      true,
-                                      dg);
+         return new ServerLocatorImpl(clusterManagerTopology, true, dg);
       }
    }
 }
