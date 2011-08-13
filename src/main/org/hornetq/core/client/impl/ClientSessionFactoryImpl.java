@@ -1399,19 +1399,26 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                log.trace("Disconnect being called on client:" + msg + " server locator = " + serverLocator, new Exception ("trace"));
             }
 
-            conn.fail(new HornetQException(HornetQException.DISCONNECTED,
-                                           "The connection was disconnected because of server shutdown"));
-            
-            SimpleString nodeID = msg.getNodeID();
-            if (log.isTraceEnabled())
+            closeExecutor.execute(new Runnable()
             {
-               log.trace("notifyDown nodeID=" + msg.getNodeID() + " on serverLocator=" + serverLocator + " csf created at ", ClientSessionFactoryImpl.this.e);
-            }
-            if (nodeID != null)
-            {
-               serverLocator.notifyNodeDown(msg.getNodeID().toString());
-            }
+               // Must be executed on new thread since cannot block the netty thread for a long time and fail can
+               // cause reconnect loop
+               public void run()
+               {
+                  conn.fail(new HornetQException(HornetQException.DISCONNECTED,
+                                                 "The connection was disconnected because of server shutdown"));
 
+                  SimpleString nodeID = msg.getNodeID();
+                  if (log.isTraceEnabled())
+                  {
+                     log.trace("notifyDown nodeID=" + msg.getNodeID() + " on serverLocator=" + serverLocator + " csf created at ", ClientSessionFactoryImpl.this.e);
+                  }
+                  if (nodeID != null)
+                  {
+                     serverLocator.notifyNodeDown(msg.getNodeID().toString());
+                  }
+               }
+            });
          }
          else if (type == PacketImpl.CLUSTER_TOPOLOGY)
          {
