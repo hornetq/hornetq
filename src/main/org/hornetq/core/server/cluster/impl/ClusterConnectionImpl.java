@@ -658,9 +658,7 @@ public class ClusterConnectionImpl implements ClusterConnection
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      final Topology topology = new Topology(null);
-      topology.setExecutor(executorFactory.getExecutor());
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, false, connector);
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(clusterManagerTopology, false, connector);
 
       targetLocator.setReconnectAttempts(0);
 
@@ -687,54 +685,8 @@ public class ClusterConnectionImpl implements ClusterConnection
       }
 
       targetLocator.disableFinalizeCheck();
-
-      final ClusterTopologyListener listenerOnBridgeTopology = new ClusterTopologyListener()
-      {
-
-         public void nodeDown(String nodeID)
-         {
-            clusterManagerTopology.removeMember(nodeID);
-         }
-
-         public void nodeUP(String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
-         {
-            clusterManagerTopology.addMember(nodeID, new TopologyMember(connectorPair), last);
-         }
-
-      };
-
-      final ClusterTopologyListener listenerOnMainTopology = new ClusterTopologyListener()
-      {
-         public void nodeDown(String nodeID)
-         {
-            topology.removeMember(nodeID);
-         }
-
-         public void nodeUP(String nodeID,
-                            Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            boolean last)
-         {
-            topology.addMember(nodeID, new TopologyMember(connectorPair), last);
-         }
-
-      };
-
-      // Establish a proxy between each other topology
-      topology.addClusterTopologyListener(listenerOnBridgeTopology);
-
-      clusterManagerTopology.addClusterTopologyListener(listenerOnMainTopology);
-
-      MessageFlowRecordImpl record = new MessageFlowRecordImpl(listenerOnMainTopology,
-                                                               listenerOnBridgeTopology,
-                                                               targetLocator,
-                                                               targetNodeID,
-                                                               connector,
-                                                               queueName,
-                                                               queue);
-
-      topology.setOwner(record);
+      
+      MessageFlowRecordImpl record = new MessageFlowRecordImpl(targetLocator, targetNodeID, connector, queueName, queue);
 
       ClusterConnectionBridge bridge = new ClusterConnectionBridge(this,
                                                                    manager,
@@ -777,14 +729,6 @@ public class ClusterConnectionImpl implements ClusterConnection
       if (start)
       {
          bridge.start();
-         
-         bridge.getExecutor().execute(new Runnable(){
-            public void run()
-            {
-               topology.sendTopology(listenerOnBridgeTopology);
-               clusterManagerTopology.sendTopology(listenerOnMainTopology);
-            }
-         });
       }
    }
 
@@ -804,8 +748,6 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       private boolean disconnected = false;
 
-      private boolean sentInitialTopology = false;
-
       private final Queue queue;
 
       private final Map<SimpleString, RemoteQueueBinding> bindings = new HashMap<SimpleString, RemoteQueueBinding>();
@@ -814,13 +756,7 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       private volatile boolean firstReset = false;
 
-      private final ClusterTopologyListener listenerOnMainTopology;
-
-      private final ClusterTopologyListener listenerOnBridgeTopology;
-
-      public MessageFlowRecordImpl(final ClusterTopologyListener listenerOnMainTopology,
-                                   final ClusterTopologyListener listenerOnBridgeTopology,
-                                   final ServerLocatorInternal targetLocator,
+      public MessageFlowRecordImpl(final ServerLocatorInternal targetLocator,
                                    final String targetNodeID,
                                    final TransportConfiguration connector,
                                    final SimpleString queueName,
@@ -831,8 +767,6 @@ public class ClusterConnectionImpl implements ClusterConnection
          this.targetNodeID = targetNodeID;
          this.connector = connector;
          this.queueName = queueName;
-         this.listenerOnMainTopology = listenerOnMainTopology;
-         this.listenerOnBridgeTopology = listenerOnBridgeTopology;
       }
 
       /* (non-Javadoc)
@@ -908,9 +842,6 @@ public class ClusterConnectionImpl implements ClusterConnection
          {
             log.trace("Stopping bridge " + bridge);
          }
-
-         clusterManagerTopology.removeClusterTopologyListener(listenerOnMainTopology);
-         targetLocator.getTopology().removeClusterTopologyListener(listenerOnBridgeTopology);
 
          isClosed = true;
          clearBindings();

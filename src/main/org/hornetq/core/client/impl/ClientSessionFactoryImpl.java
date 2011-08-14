@@ -662,7 +662,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
             reconnectSessions(oldConnection, reconnectAttempts);
 
-            oldConnection.destroy();
+            if (oldConnection != null)
+            {
+               oldConnection.destroy();
+            }
          }
          else
          {
@@ -1342,16 +1345,28 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private void lockChannel1()
    {
-      Channel channel1 = connection.getChannel(1, -1);
-
-      channel1.getLock().lock();
+      if (connection != null)
+      {
+         Channel channel1 = connection.getChannel(1, -1);
+   
+         if (channel1 != null)
+         {
+            channel1.getLock().lock();
+         }
+      }
    }
 
    private void unlockChannel1()
    {
-      Channel channel1 = connection.getChannel(1, -1);
-
-      channel1.getLock().unlock();
+      if (connection != null)
+      {
+         Channel channel1 = connection.getChannel(1, -1);
+   
+         if (channel1 != null)
+         {
+            channel1.getLock().unlock();
+         }
+      }
    }
 
    private void forceReturnChannel1()
