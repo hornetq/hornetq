@@ -610,7 +610,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    protected void fail(final boolean permanently)
    {
-      log.debug(this + "::fail being called, permanently=" + permanently);
+      log.debug(this + "\n\t::fail being called, permanently=" + permanently);
 
       if (queue != null)
       {

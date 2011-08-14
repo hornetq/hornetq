@@ -97,6 +97,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    private TransportConfiguration backupConfig;
 
    private ConnectorFactory connectorFactory;
+   
+   private transient boolean finalizeCheck = true; 
 
    private final long callTimeout;
 
@@ -206,6 +208,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       this.interceptors = interceptors;
 
+   }
+   
+   public void disableFinalizeCheck()
+   {
+      finalizeCheck = false;
    }
 
    public void connect(int initialConnectAttempts, boolean failoverOnInitialConnection) throws HornetQException
@@ -1268,7 +1275,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
             }
          }
 
-         if (serverLocator.isHA() || serverLocator.isClusterConnection())
+         if (serverLocator.getTopology() != null)
          {
             if (isTrace)
             {
@@ -1298,7 +1305,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void finalize() throws Throwable
    {
-      if (!closed)
+      if (!closed && finalizeCheck)
       {
          log.warn("I'm closing a core ClientSessionFactory you left open. Please make sure you close all ClientSessionFactories explicitly " + "before letting them go out of scope! " +
                   System.identityHashCode(this));

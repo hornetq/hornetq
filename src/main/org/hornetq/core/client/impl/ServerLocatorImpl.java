@@ -1569,6 +1569,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                                                 threadPool,
                                                                                 scheduledThreadPool,
                                                                                 interceptors);
+            
+            factory.disableFinalizeCheck();
+            
             connectors.add(new Connector(initialConnector, factory));
          }
       }

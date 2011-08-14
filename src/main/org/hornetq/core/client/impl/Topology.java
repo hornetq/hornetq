@@ -34,11 +34,15 @@ import org.hornetq.core.logging.Logger;
 public class Topology implements Serializable
 {
 
+   private static final int BACKOF_TIMEOUT = 500;
+	
    private static final long serialVersionUID = -9037171688692471371L;
 
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
 
    private static final Logger log = Logger.getLogger(Topology.class);
+   
+   private transient HashMap<String, Long> mapBackof = new HashMap<String, Long>();
 
    private Executor executor = null;
 
@@ -88,7 +92,7 @@ public class Topology implements Serializable
    {
       if (log.isDebugEnabled())
       {
-         log.debug(this + "::PPP Removing topology listener " + listener, new Exception("Trace"));
+         log.debug(this + "::Removing topology listener " + listener, new Exception("Trace"));
       }
       synchronized (topologyListeners)
       {
@@ -102,12 +106,21 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
+         Long lastTime = mapBackof.get(nodeId);
+         
+         if (lastTime != null && System.currentTimeMillis() - lastTime.longValue() < BACKOF_TIMEOUT)
+         {
+            // The cluster may get in loop without this..
+            // Case one node is stll sending nodeDown while another member is sending nodeUp
+            log.debug("Node was considered down too fast, ignoring addMember on Topology");
+            return false;
+         }
+
          TopologyMember currentMember = topology.get(nodeId);
 
          if (Topology.log.isDebugEnabled())
          {
             Topology.log.debug(this + "::adding = " + nodeId + ":" + member.getConnector(), new Exception("trace"));
-            Topology.log.debug(describe("Before:"));
          }
 
          if (currentMember == null)
@@ -148,12 +161,6 @@ public class Topology implements Serializable
             {
                member.getConnector().b = currentMember.getConnector().b;
             }
-         }
-
-         if (Topology.log.isDebugEnabled())
-         {
-            Topology.log.debug(this + "::Topology updated=" + replaced);
-            Topology.log.debug(describe(this + "::After:"));
          }
 
          if (Topology.log.isDebugEnabled())
@@ -222,6 +229,7 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
+         mapBackof.put(nodeId, new Long(System.currentTimeMillis()));
          member = topology.remove(nodeId);
       }
 

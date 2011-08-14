@@ -688,8 +688,6 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       targetLocator.disableFinalizeCheck();
 
-      targetLocator.connect();
-      
       final ClusterTopologyListener listenerOnBridgeTopology = new ClusterTopologyListener()
       {
 
@@ -728,7 +726,13 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       clusterManagerTopology.addClusterTopologyListener(listenerOnMainTopology);
 
-      MessageFlowRecordImpl record = new MessageFlowRecordImpl(listenerOnMainTopology, listenerOnBridgeTopology, targetLocator, targetNodeID, connector, queueName, queue);
+      MessageFlowRecordImpl record = new MessageFlowRecordImpl(listenerOnMainTopology,
+                                                               listenerOnBridgeTopology,
+                                                               targetLocator,
+                                                               targetNodeID,
+                                                               connector,
+                                                               queueName,
+                                                               queue);
 
       topology.setOwner(record);
 
@@ -798,7 +802,9 @@ public class ClusterConnectionImpl implements ClusterConnection
 
       private final SimpleString queueName;
 
-      private boolean disconnected = false;;
+      private boolean disconnected = false;
+
+      private boolean sentInitialTopology = false;
 
       private final Queue queue;
 
@@ -807,9 +813,9 @@ public class ClusterConnectionImpl implements ClusterConnection
       private volatile boolean isClosed = false;
 
       private volatile boolean firstReset = false;
-      
+
       private final ClusterTopologyListener listenerOnMainTopology;
-      
+
       private final ClusterTopologyListener listenerOnBridgeTopology;
 
       public MessageFlowRecordImpl(final ClusterTopologyListener listenerOnMainTopology,
@@ -902,7 +908,7 @@ public class ClusterConnectionImpl implements ClusterConnection
          {
             log.trace("Stopping bridge " + bridge);
          }
-         
+
          clusterManagerTopology.removeClusterTopologyListener(listenerOnMainTopology);
          targetLocator.getTopology().removeClusterTopologyListener(listenerOnBridgeTopology);
 

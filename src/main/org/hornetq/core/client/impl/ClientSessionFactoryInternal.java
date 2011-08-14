@@ -31,6 +31,8 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
 
    boolean removeFailureListener(SessionFailureListener listener);
    
+   void disableFinalizeCheck();
+
    // for testing
 
    int numConnections();
