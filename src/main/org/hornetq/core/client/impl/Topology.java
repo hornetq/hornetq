@@ -112,7 +112,7 @@ public class Topology implements Serializable
          {
             // The cluster may get in loop without this..
             // Case one node is stll sending nodeDown while another member is sending nodeUp
-            log.debug("Node was considered down too fast, ignoring addMember on Topology");
+            log.warn("Node was considered down too fast, ignoring addMember on Topology", new Exception("trace"));
             return false;
          }
 

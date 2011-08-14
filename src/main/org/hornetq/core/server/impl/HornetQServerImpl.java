@@ -354,11 +354,10 @@ public class HornetQServerImpl implements HornetQServer
 
             if(nodeManager.isBackupLive())
             {
+               Thread.sleep(configuration.getFailbackDelay());
                //looks like we've failed over at some point need to inform that we are the backup so when the current live
                // goes down they failover to us
                clusterManager.announceBackup();
-               //
-               Thread.sleep(configuration.getFailbackDelay());
             }
 
             nodeManager.startLiveNode();
