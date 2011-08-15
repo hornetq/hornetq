@@ -239,7 +239,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp)
    {
-      if (live.equals(connectorConfig) && backUp != null)
+      if (live.equals(connectorConfig) && backUp != null && !backUp.equals(connectorConfig))
       {
          if (isDebug)
          {
