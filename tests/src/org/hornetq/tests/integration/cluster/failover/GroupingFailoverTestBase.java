@@ -166,6 +166,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeSessionFactory(0);
 
+         Thread.sleep(1000);
          servers[0].stop(true);
 
          waitForServerRestart(2);

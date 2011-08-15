@@ -100,6 +100,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       consumers = new ConsumerHolder[ClusterTestBase.MAX_CONSUMERS];
 
       servers = new HornetQServer[ClusterTestBase.MAX_SERVERS];
+      
+      timeStarts = new long[ClusterTestBase.MAX_SERVERS];
 
       sfs = new ClientSessionFactory[ClusterTestBase.MAX_SERVERS];
 
@@ -182,6 +184,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
    protected ConsumerHolder[] consumers;
 
    protected HornetQServer[] servers;
+   
+   protected long[] timeStarts;
 
    protected NodeManager[] nodeManagers;
 
@@ -2017,6 +2021,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (int node : nodes)
       {
          log.info("#test start node " + node);
+         if (System.currentTimeMillis() - timeStarts[node] < 1000)
+         {
+            Thread.sleep(1000);
+         }
+         timeStarts[node] = System.currentTimeMillis();
+         
          servers[node].setIdentity("server " + node);
          ClusterTestBase.log.info("starting server " + servers[node]);
          servers[node].start();
@@ -2027,11 +2037,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          waitForServer(servers[node]);
 
-         /*
-          * we need to wait a little while between server start up to allow the server to communicate in some order.
-          * This is to avoid split brain on startup
-          * */
-         Thread.sleep(500);
       }
 
    }
@@ -2077,9 +2082,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             try
             {
+               if (System.currentTimeMillis() - timeStarts[node] < 1000)
+               {
+                  // We can't stop and start a node too fast (faster than what the Topology could realize about this
+                  Thread.sleep(1000);
+               }
+               timeStarts[node] = System.currentTimeMillis();
+               
                ClusterTestBase.log.info("stopping server " + node);
                servers[node].stop();
-               Thread.sleep(500);
                ClusterTestBase.log.info("server " + node + " stopped");
             }
             catch (Exception e)
