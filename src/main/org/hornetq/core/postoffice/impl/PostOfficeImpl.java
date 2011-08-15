@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -841,16 +842,32 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     */
    protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
    {
+      LinkedList<SimpleString> valuesToRemove = null;
+
+
       for (SimpleString name : message.getPropertyNames())
       {
          // We use properties to establish routing context on clustering.
          // However if the client resends the message after receiving, it needs to be removed
          if (name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS))
          {
-            message.removeProperty(name);
+            if (valuesToRemove == null)
+            {
+               valuesToRemove = new LinkedList<SimpleString>();
+            }
+            valuesToRemove.add(name);
+         }
+      }
+
+      if (valuesToRemove != null)
+      {
+         for (SimpleString removal : valuesToRemove)
+         {
+           message.removeProperty(removal);
          }
       }
    }
+
 
 
    private void setPagingStore(final ServerMessage message) throws Exception
