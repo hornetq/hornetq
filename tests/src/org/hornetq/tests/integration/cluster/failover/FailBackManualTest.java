@@ -109,7 +109,7 @@ public class FailBackManualTest extends FailoverTestBase
 
       t.start();
 
-      waitForBackup(sf, 5);
+      waitForBackup(sf, 10);
 
       assertTrue(backupServer.isStarted());
 
