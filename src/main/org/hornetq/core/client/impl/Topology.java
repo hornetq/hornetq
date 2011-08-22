@@ -398,6 +398,9 @@ public class Topology implements Serializable
       return topology.size();
    }
 
+   /** The owner exists mainly for debug purposes.
+    *  When enabling logging and tracing, the Topology updates will include the owner, what will enable to identify
+    *  what instances are receiving the updates, what will enable better debugging.*/
    public void setOwner(final Object owner)
    {
       this.owner = owner;

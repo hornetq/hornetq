@@ -2041,9 +2041,10 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class XidEncoding implements EncodingSupport
+   /** It's public as other classes may want to unparse data on tools*/
+   public static class XidEncoding implements EncodingSupport
    {
-      final Xid xid;
+      public final Xid xid;
 
       XidEncoding(final Xid xid)
       {
@@ -2071,11 +2072,11 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class HeuristicCompletionEncoding implements EncodingSupport
+   public static class HeuristicCompletionEncoding implements EncodingSupport
    {
-      Xid xid;
+      public Xid xid;
 
-      boolean isCommit;
+      public boolean isCommit;
 
       /* (non-Javadoc)
        * @see java.lang.Object#toString()
@@ -2114,13 +2115,13 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class GroupingEncoding implements EncodingSupport, GroupingInfo
+   public static class GroupingEncoding implements EncodingSupport, GroupingInfo
    {
-      long id;
+      public long id;
 
-      SimpleString groupId;
+      public SimpleString groupId;
 
-      SimpleString clusterName;
+      public SimpleString clusterName;
 
       public GroupingEncoding(final long id, final SimpleString groupId, final SimpleString clusterName)
       {
@@ -2180,15 +2181,15 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class PersistentQueueBindingEncoding implements EncodingSupport, QueueBindingInfo
+   public static class PersistentQueueBindingEncoding implements EncodingSupport, QueueBindingInfo
    {
-      long id;
+      public long id;
 
-      SimpleString name;
+      public SimpleString name;
 
-      SimpleString address;
+      public SimpleString address;
 
-      SimpleString filterString;
+      public SimpleString filterString;
 
       public PersistentQueueBindingEncoding()
       {
@@ -2265,9 +2266,9 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class LargeMessageEncoding implements EncodingSupport
+   public static class LargeMessageEncoding implements EncodingSupport
    {
-      private final LargeServerMessage message;
+      public final LargeServerMessage message;
 
       public LargeMessageEncoding(final LargeServerMessage message)
       {
@@ -2300,11 +2301,11 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class DeliveryCountUpdateEncoding implements EncodingSupport
+   public static class DeliveryCountUpdateEncoding implements EncodingSupport
    {
-      long queueID;
+      public long queueID;
 
-      int count;
+      public int count;
 
       public DeliveryCountUpdateEncoding()
       {
@@ -2346,9 +2347,9 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class QueueEncoding implements EncodingSupport
+   public static class QueueEncoding implements EncodingSupport
    {
-      long queueID;
+      public long queueID;
 
       public QueueEncoding(final long queueID)
       {
@@ -2387,7 +2388,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class DeleteEncoding extends QueueEncoding
+   public static class DeleteEncoding extends QueueEncoding
    {
       public DeleteEncoding()
       {
@@ -2400,7 +2401,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class RefEncoding extends QueueEncoding
+   public static class RefEncoding extends QueueEncoding
    {
       public RefEncoding()
       {
@@ -2468,7 +2469,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class ScheduledDeliveryEncoding extends QueueEncoding
+   public static class ScheduledDeliveryEncoding extends QueueEncoding
    {
       long scheduledDeliveryTime;
 
@@ -2512,7 +2513,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class DuplicateIDEncoding implements EncodingSupport
+   public static class DuplicateIDEncoding implements EncodingSupport
    {
       SimpleString address;
 
@@ -2857,7 +2858,7 @@ public class JournalStorageManager implements StorageManager
 
    // Encoding functions for binding Journal
 
-   private static Object newObjectEncoding(RecordInfo info)
+   public static Object newObjectEncoding(RecordInfo info)
    {
       HornetQBuffer buffer = HornetQBuffers.wrappedBuffer(info.data);
       long id = info.id;
@@ -2999,9 +3000,9 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private static class ReferenceDescribe
+   public static class ReferenceDescribe
    {
-      RefEncoding refEncoding;
+      public RefEncoding refEncoding;
 
       public ReferenceDescribe(RefEncoding refEncoding)
       {
@@ -3015,7 +3016,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class AckDescribe
+   public static class AckDescribe
    {
       RefEncoding refEncoding;
 
@@ -3031,7 +3032,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private static class MessageDescribe
+   public static class MessageDescribe
    {
       public MessageDescribe(Message msg)
       {

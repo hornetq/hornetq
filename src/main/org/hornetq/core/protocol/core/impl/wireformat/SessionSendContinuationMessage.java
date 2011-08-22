@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -34,6 +35,9 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
 
    private boolean requiresResponse;
    
+   // Used on confirmation handling
+   private MessageInternal message;
+   
    /**
     * to be sent on the last package
     */
@@ -53,7 +57,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final byte[] body, final boolean continues, final boolean requiresResponse)
+   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues, final boolean requiresResponse)
    {
       super(PacketImpl.SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
@@ -64,9 +68,9 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final byte[] body, final boolean continues, final boolean requiresResponse, final long messageBodySize)
+   public SessionSendContinuationMessage(final MessageInternal message, final byte[] body, final boolean continues, final boolean requiresResponse, final long messageBodySize)
    {
-      this(body, continues, requiresResponse);
+      this(message, body, continues, requiresResponse);
       this.messageBodySize = messageBodySize;
    }
 
@@ -83,6 +87,15 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    public long getMessageBodySize()
    {
       return messageBodySize;
+   }
+   
+
+   /**
+    * @return the message
+    */
+   public MessageInternal getMessage()
+   {
+      return message;
    }
 
    @Override
