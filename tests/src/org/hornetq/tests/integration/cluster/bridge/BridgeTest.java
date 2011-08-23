@@ -55,6 +55,7 @@ import org.hornetq.utils.LinkedListIterator;
  * A JMSBridgeTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author Clebert Suconic
  * 
  * Created 14 Jan 2009 14:05:01
  *
@@ -192,7 +193,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             if (largeMessage)
             {
@@ -311,6 +312,9 @@ public class BridgeTest extends ServiceTestBase
 
    public void internalTestWithFilter(final boolean largeMessage, final boolean useFiles) throws Exception
    {
+
+      final int numMessages = 10;
+
       HornetQServer server0 = null;
       HornetQServer server1 = null;
       ServerLocator locator = null;
@@ -352,7 +356,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            1d,
                                                                            -1,
                                                                            false,
-                                                                           1024,
+                                                                           0,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -390,15 +394,13 @@ public class BridgeTest extends ServiceTestBase
 
          session1.start();
 
-         final int numMessages = 10;
-
          final SimpleString propKey = new SimpleString("testkey");
 
          final SimpleString selectorKey = new SimpleString("animal");
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.putIntProperty(propKey, i);
 
@@ -416,7 +418,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.putIntProperty(propKey, i);
 
@@ -435,6 +437,8 @@ public class BridgeTest extends ServiceTestBase
             ClientMessage message = consumer1.receive(200);
 
             Assert.assertNotNull(message);
+            
+            Assert.assertEquals("goat", message.getStringProperty(selectorKey));
 
             Assert.assertEquals(i, message.getObjectProperty(propKey));
 
@@ -445,6 +449,10 @@ public class BridgeTest extends ServiceTestBase
                readMessages(message);
             }
          }
+         
+         session0.commit();
+         
+         session1.commit();
 
          Assert.assertNull(consumer1.receiveImmediate());
 
@@ -481,7 +489,16 @@ public class BridgeTest extends ServiceTestBase
 
       }
       
-      assertEquals(0, loadQueues(server0).size());
+      if (useFiles)
+      {
+         Map<Long, AtomicInteger> counters = loadQueues(server0);
+         assertEquals(1, counters.size());
+         Long key = counters.keySet().iterator().next();
+         
+         AtomicInteger value = counters.get(key);
+         assertNotNull(value);
+         assertEquals(numMessages, counters.get(key).intValue());
+      }
 
 
    }
@@ -560,7 +577,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.getBodyBuffer().writeBytes(new byte[1024]);
 
@@ -720,7 +737,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.getBodyBuffer().writeBytes(new byte[1024]);
 
@@ -928,7 +945,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.putStringProperty(propKey, new SimpleString("bing"));
 
@@ -1280,7 +1297,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            1d,
                                                                            -1,
                                                                            false,
-                                                                           1024,
+                                                                           0,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -1324,7 +1341,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.putIntProperty(propKey, i);
 
@@ -1638,7 +1655,7 @@ public class BridgeTest extends ServiceTestBase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session0.createMessage(false);
+            ClientMessage message = session0.createMessage(true);
 
             message.putIntProperty(propKey, i);
 
