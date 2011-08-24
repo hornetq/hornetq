@@ -20,10 +20,12 @@ import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -36,7 +38,19 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
    private NodeManager nodeManager;
+   
+   Logger log = Logger.getLogger(SingleLiveMultipleBackupsFailoverTest.class);
 
+   public void _testLoop() throws Exception
+   {
+      for (int i = 0 ; i < 100; i++)
+      {
+         log.info("#test " + i);
+         testMultipleFailovers();
+         tearDown();
+         setUp();
+      }
+   }
    public void testMultipleFailovers() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -56,7 +70,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       servers.get(4).start();
       servers.get(5).start();
 
-      ServerLocator locator = getServerLocator(0);
+      ServerLocatorImpl locator = (ServerLocatorImpl)getServerLocator(0);
+      
+      Topology topology = locator.getTopology();
+      
+      // for logging and debugging
+      topology.setOwner("testMultipleFailovers");
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -65,36 +84,32 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       int backupNode;
       ClientSession session = sendAndConsume(sf, true);
-      System.out.println("failing node 0");
-      Thread.sleep(500);
+
+      log.info("failing node 0");
       servers.get(0).crash(session);
       
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
-      Thread.sleep(500);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
-      Thread.sleep(1000);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
-      Thread.sleep(500);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
-      Thread.sleep(500);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();

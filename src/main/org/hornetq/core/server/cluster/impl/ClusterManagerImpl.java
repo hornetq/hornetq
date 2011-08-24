@@ -380,15 +380,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       topology.addClusterTopologyListener(listener);
 
-      // We now need to send the current topology to the client
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            topology.sendTopology(listener);
-
-         }
-      });
+      // no need to use an executor here since the Topology is already using one
+      topology.sendTopology(listener);
    }
 
    public void removeClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)

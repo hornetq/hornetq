@@ -1415,10 +1415,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          if (type == PacketImpl.DISCONNECT)
          {
             final DisconnectMessage msg = (DisconnectMessage)packet;
+
+            SimpleString nodeID = msg.getNodeID();
             
             if (log.isTraceEnabled())
             {
-               log.trace("Disconnect being called on client:" + msg + " server locator = " + serverLocator, new Exception ("trace"));
+               log.trace("Disconnect being called on client:" + msg + " server locator = " + serverLocator + " notifying node " + nodeID + " as down", new Exception ("trace"));
+            }
+
+            if (nodeID != null)
+            {
+               serverLocator.notifyNodeDown(msg.getNodeID().toString());
             }
 
             closeExecutor.execute(new Runnable()
@@ -1430,15 +1437,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                   conn.fail(new HornetQException(HornetQException.DISCONNECTED,
                                                  "The connection was disconnected because of server shutdown"));
 
-                  SimpleString nodeID = msg.getNodeID();
-                  if (log.isTraceEnabled())
-                  {
-                     log.trace("notifyDown nodeID=" + msg.getNodeID() + " on serverLocator=" + serverLocator + " csf created at ", ClientSessionFactoryImpl.this.e);
-                  }
-                  if (nodeID != null)
-                  {
-                     serverLocator.notifyNodeDown(msg.getNodeID().toString());
-                  }
                }
             });
          }

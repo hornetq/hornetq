@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.logging.Logger;
@@ -35,14 +36,14 @@ public class Topology implements Serializable
 {
 
    private static final int BACKOF_TIMEOUT = 50;
-	
+
    private static final long serialVersionUID = -9037171688692471371L;
 
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
 
    private static final Logger log = Logger.getLogger(Topology.class);
-   
-   private transient HashMap<String, Long> mapBackof = new HashMap<String, Long>();
+
+   private transient HashMap<String, Pair<Long, Integer>> mapBackof = new HashMap<String, Pair<Long, Integer>>();
 
    private Executor executor = null;
 
@@ -54,7 +55,6 @@ public class Topology implements Serializable
     *  Hence I added some information to locate debugging here. 
     *  */
    private volatile Object owner;
-
 
    /**
     * topology describes the other cluster nodes that this server knows about:
@@ -80,7 +80,7 @@ public class Topology implements Serializable
    {
       if (log.isDebugEnabled())
       {
-         log.debug(this + "::PPP Adding topology listener " + listener, new Exception("Trace"));
+         log.debug(this + "::Adding topology listener " + listener, new Exception("Trace"));
       }
       synchronized (topologyListeners)
       {
@@ -106,16 +106,6 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         Long lastTime = mapBackof.get(nodeId);
-         
-         if (lastTime != null && System.currentTimeMillis() - lastTime.longValue() < BACKOF_TIMEOUT)
-         {
-            // The cluster may get in loop without this..
-            // Case one node is stll sending nodeDown while another member is sending nodeUp
-            log.warn("Node was considered down too fast, ignoring addMember on Topology", new Exception("trace"));
-            return false;
-         }
-
          TopologyMember currentMember = topology.get(nodeId);
 
          if (Topology.log.isDebugEnabled())
@@ -125,6 +115,11 @@ public class Topology implements Serializable
 
          if (currentMember == null)
          {
+            if (!testBackof(nodeId))
+            {
+               return false;
+            }
+
             replaced = true;
             if (Topology.log.isDebugEnabled())
             {
@@ -144,11 +139,21 @@ public class Topology implements Serializable
          {
             if (hasChanged(currentMember.getConnector().a, member.getConnector().a) && member.getConnector().a != null)
             {
+               if (!testBackof(nodeId))
+               {
+                  return false;
+               }
+
                currentMember.getConnector().a = member.getConnector().a;
                replaced = true;
             }
             if (hasChanged(currentMember.getConnector().b, member.getConnector().b) && member.getConnector().b != null)
             {
+               if (!testBackof(nodeId))
+               {
+                  return false;
+               }
+
                currentMember.getConnector().b = member.getConnector().b;
                replaced = true;
             }
@@ -180,9 +185,8 @@ public class Topology implements Serializable
       if (replaced)
       {
 
-         
          final ArrayList<ClusterTopologyListener> copy = copyListeners();
-         
+
          execute(new Runnable()
          {
             public void run()
@@ -211,6 +215,38 @@ public class Topology implements Serializable
    }
 
    /**
+    * @param nodeId
+    * @param backOfData
+    */
+   private boolean testBackof(final String nodeId)
+   {
+      Pair<Long, Integer> backOfData = mapBackof.get(nodeId);
+
+      if (backOfData != null)
+      {
+         backOfData.b += 1;
+         
+         long timeDiff = System.currentTimeMillis() - backOfData.a;
+
+         // To prevent a loop where nodes are being considered down and up
+         if (backOfData.b > 5 && timeDiff < BACKOF_TIMEOUT)
+         {
+            // The cluster may get in loop without this..
+            // Case one node is stll sending nodeDown while another member is sending nodeUp
+            log.warn("The topology controller identified a blast of nodeUp and down and it is ignoring a nodeUP",
+                     new Exception("this exception is just to trace location"));
+            return false;
+         }
+         else if (timeDiff >= BACKOF_TIMEOUT)
+         {
+            mapBackof.remove(nodeId);
+         }
+      }
+
+      return true;
+   }
+
+   /**
     * @return
     */
    private ArrayList<ClusterTopologyListener> copyListeners()
@@ -229,7 +265,21 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         mapBackof.put(nodeId, new Long(System.currentTimeMillis()));
+         Pair<Long, Integer> value = mapBackof.get(nodeId);
+
+         if (value == null)
+         {
+            value = new Pair<Long, Integer>(0l, 0);
+            mapBackof.put(nodeId, value);
+         }
+
+         value.a = System.currentTimeMillis();
+
+         if (System.currentTimeMillis() - value.a > BACKOF_TIMEOUT)
+         {
+            value.b = 0;
+         }
+
          member = topology.remove(nodeId);
       }
 
@@ -273,7 +323,7 @@ public class Topology implements Serializable
       }
       return member != null;
    }
-   
+
    protected void execute(final Runnable runnable)
    {
       if (executor != null)
@@ -291,43 +341,69 @@ public class Topology implements Serializable
     * @param nodeID
     * @param member
     */
-   public void sendMemberToListeners(String nodeID, TopologyMember member)
+   public void sendMemberToListeners(final String nodeID, final TopologyMember member)
    {
       // To make sure it was updated
       addMember(nodeID, member, false);
 
-      ArrayList<ClusterTopologyListener> copy = copyListeners();
+      final ArrayList<ClusterTopologyListener> copy = copyListeners();
 
-      // Now force sending it
-      for (ClusterTopologyListener listener : copy)
+      execute(new Runnable()
       {
-         if (log.isDebugEnabled())
+         public void run()
          {
-            log.debug("Informing client listener " + listener +
-                      " about itself node " +
-                      nodeID +
-                      " with connector=" +
-                      member.getConnector());
+            // Now force sending it
+            for (ClusterTopologyListener listener : copy)
+            {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("Informing client listener " + listener +
+                            " about itself node " +
+                            nodeID +
+                            " with connector=" +
+                            member.getConnector());
+               }
+               listener.nodeUP(nodeID, member.getConnector(), false);
+            }
          }
-         listener.nodeUP(nodeID, member.getConnector(), false);
-      }
+      });
    }
 
-   public void sendTopology(final ClusterTopologyListener listener)
+   public synchronized void sendTopology(final ClusterTopologyListener listener)
    {
-      int count = 0;
+      if (log.isDebugEnabled())
+      {
+         log.debug(this + " is sending topology to " + listener);
+      }
 
-      Map<String, TopologyMember> copy;
+      final Map<String, TopologyMember> copy;
 
       synchronized (this)
       {
          copy = new HashMap<String, TopologyMember>(topology);
       }
 
-      for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
+      execute(new Runnable()
       {
-         listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == copy.size());
-      }
+         public void run()
+         {
+            int count = 0;
+
+            for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
+            {
+               if (log.isDebugEnabled())
+               {
+                  log.debug(Topology.this + " sending " +
+                            entry.getKey() +
+                            " / " +
+                            entry.getValue().getConnector() +
+                            " to " +
+                            listener);
+               }
+               listener.nodeUP(entry.getKey(), entry.getValue().getConnector(), ++count == copy.size());
+            }
+         }
+      });
    }
 
    public TopologyMember getMember(final String nodeID)

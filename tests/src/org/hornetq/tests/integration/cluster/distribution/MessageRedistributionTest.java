@@ -169,7 +169,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       removeConsumer(1);
       
       // Need to wait some time as we need to handle all redistributions before we stop the servers
-      Thread.sleep(5000);
+      Thread.sleep(1000);
 
       for (int i = 0; i <= 2; i++)
       {

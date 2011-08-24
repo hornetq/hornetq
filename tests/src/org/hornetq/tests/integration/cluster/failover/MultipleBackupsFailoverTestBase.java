@@ -173,7 +173,8 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       ClientSessionFactoryInternal sf;
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
-      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+      LatchClusterTopologyListener topListener = new LatchClusterTopologyListener(countDownLatch);
+      locator.addClusterTopologyListener(topListener);
 
       sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
@@ -182,6 +183,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       {
          System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
       }
+      locator.removeClusterTopologyListener(topListener);
       assertTrue(ok);
       return sf;
    }
