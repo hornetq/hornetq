@@ -233,7 +233,7 @@ public class Topology implements Serializable
          {
             // The cluster may get in loop without this..
             // Case one node is stll sending nodeDown while another member is sending nodeUp
-            log.warn("The topology controller identified a blast of nodeUp and down and it is ignoring a nodeUP",
+            log.warn("The topology controller identified a blast events and it's interrupting the flow of the loop",
                      new Exception("this exception is just to trace location"));
             return false;
          }
