@@ -112,6 +112,7 @@ public class SameProcessHornetQServer implements TestableServer
       }
 
       ClusterManagerImpl clusterManager = (ClusterManagerImpl) server.getClusterManager();
+      clusterManager.flushExecutor();
       clusterManager.clear();
       server.stop(true);
 

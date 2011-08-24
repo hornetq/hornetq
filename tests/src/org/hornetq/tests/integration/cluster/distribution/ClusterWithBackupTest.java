@@ -97,7 +97,7 @@ public class ClusterWithBackupTest extends ClusterTestBase
       {
          e.printStackTrace();
          log.error(e.getMessage(), e);
-         throw e;
+         throw e; 
       }
    }
 

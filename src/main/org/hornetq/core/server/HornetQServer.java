@@ -181,6 +181,8 @@ public interface HornetQServer extends HornetQComponent
    void destroyBridge(String name) throws Exception;
 
    ServerSession getSessionByID(String sessionID);
+   
+   void threadDump(String reason);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 }

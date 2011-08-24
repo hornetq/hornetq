@@ -13,6 +13,8 @@
 
 package org.hornetq.spi.core.protocol;
 
+import java.util.concurrent.Executor;
+
 
 /**
  * A ConnectionEntry
@@ -28,13 +30,17 @@ public class ConnectionEntry
    public volatile long lastCheck;
 
    public volatile long ttl;
+   
+   public final Executor connectionExecutor;
 
-   public ConnectionEntry(final RemotingConnection connection, final long lastCheck, final long ttl)
+   public ConnectionEntry(final RemotingConnection connection, final Executor connectionExecutor, final long lastCheck, final long ttl)
    {
       this.connection = connection;
 
       this.lastCheck = lastCheck;
 
       this.ttl = ttl;
+      
+      this.connectionExecutor = connectionExecutor;
    }
 }

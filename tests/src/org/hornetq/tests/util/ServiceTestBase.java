@@ -165,6 +165,36 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected void waitForServer(HornetQServer server) throws InterruptedException
+   {
+      long timetowait = System.currentTimeMillis() + 5000;
+      while (!server.isStarted() && System.currentTimeMillis() < timetowait)
+      {
+         Thread.sleep(100);
+      }
+      
+      if (!server.isStarted())
+      {
+         log.info(threadDump("Server didn't start"));
+         fail("server didnt start");
+      }
+      
+      if (!server.getConfiguration().isBackup())
+      {
+         timetowait = System.currentTimeMillis() + 5000;
+         while (!server.isInitialised() && System.currentTimeMillis() < timetowait)
+         {
+            Thread.sleep(100);
+         }
+         
+         if (!server.isInitialised())
+         {
+            fail("Server didn't initialize");
+         }
+      }
+   }
+
 
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,

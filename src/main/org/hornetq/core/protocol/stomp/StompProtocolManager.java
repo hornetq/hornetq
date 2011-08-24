@@ -120,13 +120,13 @@ class StompProtocolManager implements ProtocolManager
 
       if (ttl != -1)
       {
-         return new ConnectionEntry(conn, System.currentTimeMillis(), ttl);
+         return new ConnectionEntry(conn, null, System.currentTimeMillis(), ttl);
       }
       else
       {
          // Default to 1 minute - which is same as core protocol
 
-         return new ConnectionEntry(conn, System.currentTimeMillis(), 1 * 60 * 1000);
+         return new ConnectionEntry(conn, null, System.currentTimeMillis(), 1 * 60 * 1000);
       }
    }
 

@@ -2041,23 +2041,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    }
 
-   protected void waitForServer(HornetQServer server) throws InterruptedException
-   {
-      long timetowait = System.currentTimeMillis() + 5000;
-      while (!server.isStarted())
-      {
-         Thread.sleep(100);
-         if (server.isStarted())
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > timetowait)
-         {
-            fail("server didnt start");
-         }
-      }
-   }
-
    protected void stopClusterConnections(final int... nodes) throws Exception
    {
       for (int node : nodes)

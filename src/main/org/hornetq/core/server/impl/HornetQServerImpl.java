@@ -625,7 +625,7 @@ public class HornetQServerImpl implements HornetQServer
             activation = new SharedNothingBackupActivation();
          }
 
-         backupActivationThread = new Thread(activation);
+         backupActivationThread = new Thread(activation, "Activation for server " + this);
          backupActivationThread.start();
       }
 
@@ -651,6 +651,40 @@ public class HornetQServerImpl implements HornetQServer
    {
       stopped = true;
       stop(configuration.isFailoverOnServerShutdown());
+   }
+   
+   public void threadDump(final String reason)
+   {
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+
+      Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
+
+      out.println("Generating thread dump because - " + reason);
+      out.println("*******************************************************************************");
+
+      for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
+      {
+         out.println("===============================================================================");
+         out.println("Thread " + el.getKey() +
+                     " name = " +
+                     el.getKey().getName() +
+                     " id = " +
+                     el.getKey().getId() +
+                     " group = " +
+                     el.getKey().getThreadGroup());
+         out.println();
+         for (StackTraceElement traceEl : el.getValue())
+         {
+            out.println(traceEl);
+         }
+      }
+
+      out.println("===============================================================================");
+      out.println("End Thread dump");
+      out.println("*******************************************************************************");
+
+      log.warn(str.toString());
    }
 
    public void stop(boolean failoverOnServerShutdown) throws Exception

@@ -46,8 +46,11 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       createBackupConfig(0, 3, 0, 1, 2, 4, 5);
       createBackupConfig(0, 4, 0, 1, 2, 3, 5);
       createBackupConfig(0, 5, 0, 1, 2, 3, 4);
+      
       servers.get(0).start();
+      waitForServer(servers.get(0).getServer());
       servers.get(1).start();
+      waitForServer(servers.get(1).getServer());
       servers.get(2).start();
       servers.get(3).start();
       servers.get(4).start();
@@ -63,30 +66,35 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       int backupNode;
       ClientSession session = sendAndConsume(sf, true);
       System.out.println("failing node 0");
+      Thread.sleep(500);
       servers.get(0).crash(session);
       
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
       System.out.println("failing node " + backupNode);
+      Thread.sleep(500);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
       System.out.println("failing node " + backupNode);
+      Thread.sleep(1000);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
       System.out.println("failing node " + backupNode);
+      Thread.sleep(500);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
       System.out.println("failing node " + backupNode);
+      Thread.sleep(500);
       servers.get(backupNode).crash(session);
 
       session.close();

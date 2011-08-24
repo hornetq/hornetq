@@ -99,6 +99,8 @@ public class UnitTestCase extends TestCase
 
    private static final Logger log = Logger.getLogger(UnitTestCase.class);
 
+   private static final Logger logInstance = Logger.getLogger(UnitTestCase.class);
+
    public static final String INVM_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";
 
    public static final String INVM_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
@@ -268,7 +270,7 @@ public class UnitTestCase extends TestCase
 
    public static void forceGC()
    {
-      log.info("#test forceGC");
+      logInstance.info("#test forceGC");
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
       // A loop that will wait GC, using the minimal time as possible
       while (dumbReference.get() != null)
@@ -282,7 +284,7 @@ public class UnitTestCase extends TestCase
          {
          }
       }
-      log.info("#test forceGC Done");
+      logInstance.info("#test forceGC Done");
    }
 
    public static void forceGC(Reference<?> ref, long timeout)

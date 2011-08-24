@@ -70,7 +70,10 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 
    protected abstract boolean isNetty();
 
-   protected int waitForNewLive(long seconds, boolean waitForNewBackup, Map<Integer, TestableServer> servers, int... nodes)
+   protected int waitForNewLive(long seconds,
+                                boolean waitForNewBackup,
+                                Map<Integer, TestableServer> servers,
+                                int... nodes)
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
@@ -84,11 +87,11 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
             {
                newLive = node;
             }
-            else if(newLive != -1)
+            else if (newLive != -1)
             {
-               if(waitForNewBackup)
-                  {
-                  if(node != newLive && servers.get(node).isStarted())
+               if (waitForNewBackup)
+               {
+                  if (node != newLive && servers.get(node).isStarted())
                   {
                      return newLive;
                   }
@@ -99,6 +102,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
                }
             }
          }
+         
          try
          {
             Thread.sleep(100);
@@ -146,7 +150,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive(10000);
-         
+
          assertNotNull(message2);
 
          Assert.assertEquals("aardvarks", message2.getBodyBuffer().readString());
@@ -174,10 +178,10 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
-      if (!ok) 
+      if (!ok)
       {
          System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
-      }      
+      }
       assertTrue(ok);
       return sf;
    }
@@ -191,7 +195,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       }
       return new ServerLocatorImpl(true, configs);
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -213,9 +217,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(String nodeID,
-                         Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                         boolean last)
+      public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
       {
          if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
          {

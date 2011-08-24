@@ -56,6 +56,7 @@ import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.Future;
 import org.hornetq.utils.UUID;
 
 /**
@@ -123,9 +124,9 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       this.executorFactory = executorFactory;
 
-      executor = executorFactory.getExecutor();
-      
-      topology.setExecutor(executorFactory.getExecutor());
+      executor = executorFactory.getExecutor();;
+
+      topology.setExecutor(executor);
 
       this.server = server;
 
@@ -340,6 +341,16 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
    }
 
+   public void flushExecutor()
+   {
+      Future future = new Future();
+      executor.execute(future);
+      if (!future.await(10000))
+      {
+         server.threadDump("Couldn't flush ClusterManager executor (" + this + ") in 10 seconds, verify your thread pool size");
+      }
+   }
+
    public boolean isStarted()
    {
       return started;
@@ -486,7 +497,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       this.clusterLocators.add(serverLocator);
    }
-   
+
    public void removeClusterLocator(final ServerLocatorInternal serverLocator)
    {
       this.clusterLocators.remove(serverLocator);

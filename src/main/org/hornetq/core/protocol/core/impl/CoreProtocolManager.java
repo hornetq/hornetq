@@ -37,7 +37,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -53,9 +52,9 @@ import org.hornetq.spi.core.remoting.Connection;
 public class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
-
+   
    private static final boolean isTrace = log.isTraceEnabled();
-
+   
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -70,13 +69,14 @@ public class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Connection connection)
    {
       final Configuration config = server.getConfiguration();
+      
+      Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
                                                                    interceptors,
-                                                                   config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
-                                                                                                                      .getExecutor()
+                                                                   config.isAsyncConnectionExecutionEnabled() ? connectionExecutor
                                                                                                              : null,
-                                                                   server.getNodeID());
+                                                                                                             server.getNodeID());
 
       Channel channel1 = rc.getChannel(1, -1);
 
@@ -91,7 +91,7 @@ public class CoreProtocolManager implements ProtocolManager
          ttl = config.getConnectionTTLOverride();
       }
 
-      final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
+      final ConnectionEntry entry = new ConnectionEntry(rc, connectionExecutor, System.currentTimeMillis(), ttl);
 
       final Channel channel0 = rc.getChannel(0, -1);
 
@@ -115,11 +115,9 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-
+               
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
-                  Executor executor = server.getExecutorFactory().getExecutor();
-
                   public void nodeUP(final String nodeID,
                                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                      final boolean last)
@@ -127,21 +125,21 @@ public class CoreProtocolManager implements ProtocolManager
                      // Using an executor as most of the notifications on the Topology
                      // may come from a channel itself
                      // What could cause deadlocks
-                     executor.execute(new Runnable()
+                     entry.connectionExecutor.execute(new Runnable()
                      {
                         public void run()
                         {
                            channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
                         }
                      });
-                  }
+                   }
 
                   public void nodeDown(final String nodeID)
                   {
                      // Using an executor as most of the notifications on the Topology
                      // may come from a channel itself
                      // What could cause deadlocks
-                     executor.execute(new Runnable()
+                     entry.connectionExecutor.execute(new Runnable()
                      {
                         public void run()
                         {
@@ -149,17 +147,17 @@ public class CoreProtocolManager implements ProtocolManager
                         }
                      });
                   }
-
+                  
                   public String toString()
                   {
                      return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
                   }
                };
-
+               
                final boolean isCC = msg.isClusterConnection();
-
+               
                server.getClusterManager().addClusterTopologyListener(listener, isCC);
-
+               
                rc.addCloseListener(new CloseListener()
                {
                   public void connectionClosed()
