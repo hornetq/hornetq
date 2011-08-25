@@ -35,7 +35,7 @@ import org.hornetq.core.logging.Logger;
 public class Topology implements Serializable
 {
 
-   private static final int BACKOF_TIMEOUT = 50;
+   private static final int BACKOF_TIMEOUT = 500;
 
    private static final long serialVersionUID = -9037171688692471371L;
 
