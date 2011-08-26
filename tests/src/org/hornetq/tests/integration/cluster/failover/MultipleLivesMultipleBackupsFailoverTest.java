@@ -59,6 +59,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
    
    public void testMultipleFailovers2LiveServers() throws Exception
    {
+      // TODO: remove these sleeps
       NodeManager nodeManager1 = new InVMNodeManager();
       NodeManager nodeManager2 = new InVMNodeManager();
       createLiveConfig(nodeManager1, 0, 3, 4, 5);
@@ -109,23 +110,31 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       locator2.close();
       if (liveAfter0 == 2)
       {
+         Thread.sleep(500);
          servers.get(1).stop();
+         Thread.sleep(500);
          servers.get(2).stop();
       }
       else
       {
+         Thread.sleep(500);
          servers.get(2).stop();
+         Thread.sleep(500);
          servers.get(1).stop();
       }
 
       if (liveAfter3 == 4)
       {
+         Thread.sleep(500);
          servers.get(5).stop();
+         Thread.sleep(500);
          servers.get(4).stop();
       }
       else
       {
+         Thread.sleep(500);
          servers.get(4).stop();
+         Thread.sleep(500);
          servers.get(5).stop();
       }
    }
