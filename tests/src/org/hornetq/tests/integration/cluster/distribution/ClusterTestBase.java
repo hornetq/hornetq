@@ -88,7 +88,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    private static final long WAIT_TIMEOUT = 10000;
    
-   private static final long TIMEOUT_START_SERVER = 1000;
+   private static final long TIMEOUT_START_SERVER = 500;
 
    @Override
    protected void setUp() throws Exception
@@ -2023,10 +2023,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (int node : nodes)
       {
          log.info("#test start node " + node);
-         if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
-         {
-            Thread.sleep(TIMEOUT_START_SERVER);
-         }
+//         if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
+//         {
+//            Thread.sleep(TIMEOUT_START_SERVER);
+//         }
+         Thread.sleep(TIMEOUT_START_SERVER);
          timeStarts[node] = System.currentTimeMillis();
          
          servers[node].setIdentity("server " + node);
@@ -2067,11 +2068,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             try
             {
-               if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
-               {
-                  // We can't stop and start a node too fast (faster than what the Topology could realize about this
-                  Thread.sleep(TIMEOUT_START_SERVER);
-               }
+//               if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
+//               {
+//                  // We can't stop and start a node too fast (faster than what the Topology could realize about this
+//                  Thread.sleep(TIMEOUT_START_SERVER);
+//               }
+               
+               Thread.sleep(TIMEOUT_START_SERVER);
+
                timeStarts[node] = System.currentTimeMillis();
                
                ClusterTestBase.log.info("stopping server " + node);
