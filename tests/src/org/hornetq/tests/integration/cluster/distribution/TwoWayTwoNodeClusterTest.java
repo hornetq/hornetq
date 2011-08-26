@@ -142,6 +142,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
          {
             log.info("Sleep #test " + i);
             log.info("#stop #test #" + i);
+            Thread.sleep(500);
             stopServers(1);
             waitForTopology(servers[0], 1, 2000);
             log.info("#start #test #" + i);
