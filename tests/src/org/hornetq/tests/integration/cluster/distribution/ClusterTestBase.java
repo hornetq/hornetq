@@ -87,6 +87,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 9, };
 
    private static final long WAIT_TIMEOUT = 10000;
+   
+   private static final long TIMEOUT_START_SERVER = 1000;
 
    @Override
    protected void setUp() throws Exception
@@ -2021,9 +2023,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (int node : nodes)
       {
          log.info("#test start node " + node);
-         if (System.currentTimeMillis() - timeStarts[node] < 100)
+         if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
          {
-            Thread.sleep(100);
+            Thread.sleep(TIMEOUT_START_SERVER);
          }
          timeStarts[node] = System.currentTimeMillis();
          
@@ -2065,10 +2067,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             try
             {
-               if (System.currentTimeMillis() - timeStarts[node] < 100)
+               if (System.currentTimeMillis() - timeStarts[node] < TIMEOUT_START_SERVER)
                {
                   // We can't stop and start a node too fast (faster than what the Topology could realize about this
-                  Thread.sleep(100);
+                  Thread.sleep(TIMEOUT_START_SERVER);
                }
                timeStarts[node] = System.currentTimeMillis();
                
