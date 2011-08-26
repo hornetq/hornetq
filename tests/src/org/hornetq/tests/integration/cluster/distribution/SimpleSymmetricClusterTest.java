@@ -112,7 +112,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 3, 4);
 
 
-      // startServers(3, 4, 5, 0, 1, 2);
       startServers(0, 1, 2, 3, 4, 5);
 
       log.info("");
@@ -122,11 +121,7 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
          log.info(debugBindings(servers[i], servers[i].getConfiguration().getManagementNotificationAddress().toString()));
       }
       log.info("");
-      
-      //stopServers(3);
-      
-      Thread.sleep(1000);
-
+ 
       log.info("");
       for (int i = 0; i <= 5; i++)
       {
@@ -168,21 +163,13 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
 
-      // Thread.sleep(1500);
-
       createQueue(0, "queues.testaddress", "queue0", null, false);
-      // Thread.sleep(1500);
       createQueue(1, "queues.testaddress", "queue0", null, false);
-      // Thread.sleep(1500);
       createQueue(2, "queues.testaddress", "queue0", null, false);
-      // Thread.sleep(1500);
 
       addConsumer(0, 0, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(1, 1, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(2, 2, "queue0", null);
-      // Thread.sleep(1500);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
@@ -291,21 +278,14 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       // Need to wait some time so the bridges and 
       // connectors had time to connect properly between the nodes
-      Thread.sleep(1000);
 
       createQueue(0, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
       createQueue(1, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
       createQueue(2, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
 
       addConsumer(0, 0, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(1, 1, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(2, 2, "queue0", null);
-      // Thread.sleep(1500);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
@@ -375,21 +355,13 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
 
-      // Thread.sleep(1500);
-
       createQueue(0, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
       createQueue(1, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
       createQueue(2, "queues.testaddress", "queue0", null, true);
-      // Thread.sleep(1500);
 
       addConsumer(0, 0, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(1, 1, "queue0", null);
-      // Thread.sleep(1500);
       addConsumer(2, 2, "queue0", null);
-      // Thread.sleep(1500);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 1, true);
@@ -402,16 +374,8 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       send(0, "queues.testaddress", 33, true, null);
 
       verifyReceiveRoundRobin(33, 0, 1, 2);
-
-      Thread.sleep(1000);
       
-      // TODO: need to make sure the shutdown won't be send, what will affect the test
       stopServers(2);
-//      
-//      Thread.sleep(5000);
-//
-//      waitForBindings(0, "queues.testaddress", 2, 2, false);
-//      waitForBindings(1, "queues.testaddress", 2, 2, false);
 
 
       send(0, "queues.testaddress", 100, true, null);

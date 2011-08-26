@@ -32,6 +32,11 @@ public class TopologyMember implements Serializable
       this.connector = connector;
    }
 
+   public TopologyMember(TransportConfiguration a, TransportConfiguration b)
+   {
+      this(new Pair<TransportConfiguration, TransportConfiguration>(a, b));
+   }
+
    public Pair<TransportConfiguration, TransportConfiguration> getConnector()
    {
       return connector;

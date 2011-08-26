@@ -2021,9 +2021,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
       for (int node : nodes)
       {
          log.info("#test start node " + node);
-         if (System.currentTimeMillis() - timeStarts[node] < 1000)
+         if (System.currentTimeMillis() - timeStarts[node] < 100)
          {
-            Thread.sleep(1000);
+            Thread.sleep(100);
          }
          timeStarts[node] = System.currentTimeMillis();
          
@@ -2065,10 +2065,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             try
             {
-               if (System.currentTimeMillis() - timeStarts[node] < 1000)
+               if (System.currentTimeMillis() - timeStarts[node] < 100)
                {
                   // We can't stop and start a node too fast (faster than what the Topology could realize about this
-                  Thread.sleep(1000);
+                  Thread.sleep(100);
                }
                timeStarts[node] = System.currentTimeMillis();
                

@@ -1839,7 +1839,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void doCleanup(boolean failingOver)
    {
-      remotingConnection.removeFailureListener(this);
+      if (remotingConnection == null)
+      {
+         remotingConnection.removeFailureListener(this);
+      }
       
       if (log.isDebugEnabled())
       {

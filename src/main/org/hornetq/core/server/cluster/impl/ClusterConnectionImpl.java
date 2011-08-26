@@ -564,6 +564,10 @@ public class ClusterConnectionImpl implements ClusterConnection
       {
          if (connectorPair.b != null)
          {
+        	if (log.isTraceEnabled())
+        	{
+        	   log.trace(this + "::informing about backup to itself, nodeUUID=" + nodeUUID + ", connectorPair=" + connectorPair + " this = " + this);
+        	}
             server.getClusterManager().notifyNodeUp(nodeID, connectorPair, last, false);
          }
          return;
