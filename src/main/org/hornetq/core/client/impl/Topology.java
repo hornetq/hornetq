@@ -36,8 +36,7 @@ import org.hornetq.core.logging.Logger;
 public class Topology implements Serializable
 {
 
-   // TODO: remove the backof from this class. It's probably not needed any longer
-  // private static final int BACKOF_TIMEOUT = 500;
+   private static final int BACKOF_TIMEOUT = 500;
 
    private static final long serialVersionUID = -9037171688692471371L;
 
@@ -45,7 +44,7 @@ public class Topology implements Serializable
 
    private static final Logger log = Logger.getLogger(Topology.class);
 
-  // private transient HashMap<String, Pair<Long, Integer>> mapBackof = new HashMap<String, Pair<Long, Integer>>();
+   private transient HashMap<String, Pair<Long, Integer>> mapBackof = new HashMap<String, Pair<Long, Integer>>();
 
    private Executor executor = null;
 
@@ -113,10 +112,10 @@ public class Topology implements Serializable
 
          if (currentMember == null)
          {
-            /*if (!testBackof(nodeId))
+            if (!testBackof(nodeId))
             {
                return false;
-            } */
+            }
 
             if (Topology.log.isDebugEnabled())
             {
@@ -144,20 +143,20 @@ public class Topology implements Serializable
 
             if (hasChanged("a", memberToSend.getConnector().a, memberInput.getConnector().a))
             {
-               /*if (!replaced && !testBackof(nodeId))
+               if (!replaced && !testBackof(nodeId))
                {
                   return false;
-               }*/
+               }
                memberToSend = new TopologyMember(memberInput.getConnector().a, memberToSend.getConnector().b);
                replaced = true;
             }
 
             if (hasChanged("b", memberToSend.getConnector().b, memberInput.getConnector().b))
             {
-               /*if (!replaced && !testBackof(nodeId))
+               if (!replaced && !testBackof(nodeId))
                {
                   return false;
-               }*/
+               }
                memberToSend = new TopologyMember(memberToSend.getConnector().a, memberInput.getConnector().b);
                replaced = true;
             }
@@ -228,7 +227,7 @@ public class Topology implements Serializable
     * @param nodeId
     * @param backOfData
     */
-   /*private boolean testBackof(final String nodeId)
+   private boolean testBackof(final String nodeId)
    {
       Pair<Long, Integer> backOfData = mapBackof.get(nodeId);
 
@@ -262,7 +261,7 @@ public class Topology implements Serializable
       }
 
       return true;
-   } */
+   }
 
    /**
     * @return
@@ -283,20 +282,20 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-//         Pair<Long, Integer> value = mapBackof.get(nodeId);
-//
-//         if (value == null)
-//         {
-//            value = new Pair<Long, Integer>(0l, 0);
-//            mapBackof.put(nodeId, value);
-//         }
-//
-//         value.a = System.currentTimeMillis();
-//
-//         if (System.currentTimeMillis() - value.a > BACKOF_TIMEOUT)
-//         {
-//            value.b = 0;
-//         }
+         Pair<Long, Integer> value = mapBackof.get(nodeId);
+
+         if (value == null)
+         {
+            value = new Pair<Long, Integer>(0l, 0);
+            mapBackof.put(nodeId, value);
+         }
+
+         value.a = System.currentTimeMillis();
+
+         if (System.currentTimeMillis() - value.a > BACKOF_TIMEOUT)
+         {
+            value.b = 0;
+         }
 
          member = mapTopology.remove(nodeId);
       }
