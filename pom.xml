@@ -425,7 +425,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-jar-plugin</artifactId>
-               <version>2.3.1</version>
+               <version>2.3.2</version>
             </plugin>
             <plugin>
                <groupId>net.sf.maven-sar</groupId>
@@ -435,7 +435,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-site-plugin</artifactId>
-               <version>3.0-beta-3</version>
+               <version>3.0</version>
             </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
@@ -450,7 +450,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-deploy-plugin</artifactId>
-               <version>2.6</version>
+               <version>2.7</version>
             </plugin>
 
             <plugin>
@@ -606,7 +606,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-checkstyle-plugin</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
             <configuration>
                <configLocation>checkstyle.xml</configLocation>
             </configuration>
