@@ -159,6 +159,10 @@ public interface Stomp
          String CLIENT_ID = "client-id";
 
          String REQUEST_ID = "request-id";
+         
+         //1.1
+         String ACCEPT_VERSION = "accept-version";
+         String HOST = "host";
       }
 
       public interface Error

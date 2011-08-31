@@ -577,6 +577,9 @@ class StompProtocolManager implements ProtocolManager
       String passcode = (String)headers.get(Stomp.Headers.Connect.PASSCODE);
       String clientID = (String)headers.get(Stomp.Headers.Connect.CLIENT_ID);
       String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
+      //since 1.1
+      String acceptVersion = (String)headers.get(Stomp.Headers.Connect.ACCEPT_VERSION);
+      String host = (String)headers.get(Stomp.Headers.Connect.HOST);
 
       HornetQSecurityManager sm = server.getSecurityManager();
       
@@ -586,6 +589,8 @@ class StompProtocolManager implements ProtocolManager
          sm.validateUser(login, passcode);
       }
 
+      connection.negotiateVersion(acceptVersion);
+      connection.setHost(host);
       connection.setLogin(login);
       connection.setPasscode(passcode);
       connection.setClientID(clientID);
@@ -665,5 +670,16 @@ class StompProtocolManager implements ProtocolManager
          }
       });
    }
+
+   public String getSupportedVersionsAsString()
+   {
+      return "v1.0 v1.1";
+   }
+
+   public String getVirtualHostName()
+   {
+      return "hornetq";
+   }
+
    // Inner classes -------------------------------------------------
 }

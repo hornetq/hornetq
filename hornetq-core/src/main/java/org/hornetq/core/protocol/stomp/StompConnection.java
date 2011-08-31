@@ -15,7 +15,10 @@ package org.hornetq.core.protocol.stomp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -64,6 +67,8 @@ public class StompConnection implements RemotingConnection
    private final Object failLock = new Object();
    
    private volatile boolean dataReceived;
+   
+   private StompVersions version = StompVersions.V1_0;
 
    public StompDecoder getDecoder()
    {
@@ -349,4 +354,61 @@ public class StompConnection implements RemotingConnection
       }
    }
 
+   /*
+    * accept-version value takes form of "v1,v2,v3..."
+    * we need to return the highest supported version
+    */
+   public void negotiateVersion(String acceptVersion) throws HornetQStompException
+   {
+      if (acceptVersion == null)
+      {
+         this.version = StompVersions.V1_0;
+      }
+      else
+      {
+         Set<String> requestVersions = new HashSet<String>();
+         StringTokenizer tokenizer = new StringTokenizer(acceptVersion, ",");
+         while (tokenizer.hasMoreTokens())
+         {
+            requestVersions.add(tokenizer.nextToken());
+         }
+         
+         if (requestVersions.contains("1.1"))
+         {
+            this.version = StompVersions.V1_1;
+         }
+         else if (requestVersions.contains("1.0"))
+         {
+            this.version = StompVersions.V1_0;
+         }
+         else
+         {
+            //not a supported version!
+            HornetQStompException error = new HornetQStompException("Stomp versions not supported: " + acceptVersion);
+            error.addHeader("version", acceptVersion);
+            error.addHeader("content-type", "text/plain");
+            error.setBody("Supported protocol version are " + manager.getSupportedVersionsAsString());
+            throw error;
+         }
+      }
+   }
+
+   //reject if the host doesn't match
+   public void setHost(String host) throws HornetQStompException
+   {
+      if (host == null)
+      {
+         HornetQStompException error = new HornetQStompException("Header host is null");
+         error.setBody("Cannot accept null as host");
+         throw error;
+      }
+      
+      String localHost = manager.getVirtualHostName();
+      if (!host.equals(localHost))
+      {
+         HornetQStompException error = new HornetQStompException("Header host doesn't match server host");
+         error.setBody("host " + host + " doesn't match server host name");
+         throw error;
+      }
+   }
 }
