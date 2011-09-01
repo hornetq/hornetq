@@ -13,8 +13,8 @@ import org.hornetq.core.protocol.core.CommandConfirmationHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
@@ -27,7 +27,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  * <p>
  * We need to hijack the replication channel handler, because we need to
  * <ol>
- * <li>send an early answer to the {@link PacketImpl#REPLICATION_SYNC} packet that signals being
+ * <li>send an early answer to the {@link PacketImpl#REPLICATION_SYNC_FILE} packet that signals being
  * up-to-date
  * <li>not send an answer to it, when we deliver the packet later.
  * </ol>
@@ -135,10 +135,10 @@ public class BackupSyncDelay implements Interceptor
             deliver();
          }
 
-         if (packet.getType() == PacketImpl.REPLICATION_SYNC && mustHold)
+         if (packet.getType() == PacketImpl.REPLICATION_START_STOP_SYNC && mustHold)
          {
-            ReplicationJournalFileMessage syncMsg = (ReplicationJournalFileMessage)packet;
-            if (syncMsg.isUpToDate() && !deliver)
+            ReplicationStartSyncMessage syncMsg = (ReplicationStartSyncMessage)packet;
+            if (syncMsg.isSynchronizationFinished() && !deliver)
             {
                receivedUpToDate = true;
                assert onHold == null;

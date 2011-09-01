@@ -104,15 +104,15 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
@@ -526,14 +526,14 @@ public final class PacketDecoder
             packet = new HaBackupRegistrationMessage();
             break;
          }
-         case PacketImpl.REPLICATION_START_SYNC:
+         case PacketImpl.REPLICATION_START_STOP_SYNC:
          {
             packet = new ReplicationStartSyncMessage();
             break;
          }
-         case PacketImpl.REPLICATION_SYNC:
+         case PacketImpl.REPLICATION_SYNC_FILE:
          {
-            packet = new ReplicationJournalFileMessage();
+            packet = new ReplicationSyncFileMessage();
             break;
          }
          default:

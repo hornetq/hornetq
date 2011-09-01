@@ -25,7 +25,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    private ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;
-   private static final int N_MSGS = 100;
+   private static final int N_MSGS = 10;
 
    @Override
    protected void setUp() throws Exception
@@ -115,7 +115,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertFalse("backup is started?", backupServer.isStarted());
       liveServer.removeInterceptor(syncDelay);
       backupServer.start();
-      waitForBackup(sessionFactory, 5);
+      waitForBackup(sessionFactory, 20);
       crash(session);
       waitForServerInitialization(backupServer, 5);
    }

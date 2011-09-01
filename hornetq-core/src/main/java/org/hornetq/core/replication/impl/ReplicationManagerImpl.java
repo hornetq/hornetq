@@ -44,7 +44,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
@@ -52,6 +51,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ExecutorFactory;
 
@@ -504,26 +504,58 @@ public class ReplicationManagerImpl implements ReplicationManager
    }
 
    @Override
-   public void sendJournalFile(JournalFile jf, JournalContent content) throws Exception
+   public void syncJournalFile(JournalFile jf, JournalContent content) throws Exception
    {
       SequentialFile file = jf.getFile().copy();
       log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
+      sendLargeFile(content, jf.getFileID(), file, Long.MAX_VALUE);
+   }
+
+   @Override
+   public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
+   {
+      sendLargeFile(null, id, file, size);
+   }
+
+   /**
+    * Sends large files in reasonably sized chunks to the backup during replication synchronization.
+    * @param content journal type or {@code null} for large-messages
+    * @param id journal file id or (large) message id
+    * @param file
+    * @param maxBytesToSend maximum number of bytes to read and send from the file
+    * @throws Exception
+    */
+   private void sendLargeFile(JournalContent content, final long id, SequentialFile file, long maxBytesToSend)
+            throws Exception
+   {
       if (!file.isOpen())
       {
          file.open(1, false);
       }
-      final long id = jf.getFileID();
       final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
       while (true)
       {
+         buffer.rewind();
          int bytesRead = file.read(buffer);
+         int toSend = bytesRead;
          if (bytesRead > 0)
-            buffer.limit(bytesRead);
+         {
+            if (bytesRead >= maxBytesToSend)
+            {
+               toSend = (int)maxBytesToSend;
+               maxBytesToSend = 0;
+            }
+            else
+            {
+               maxBytesToSend = maxBytesToSend - bytesRead;
+            }
+            buffer.limit(toSend);
+         }
          buffer.rewind();
 
          // sending -1 or 0 bytes will close the file at the backup
-         sendReplicatePacket(new ReplicationJournalFileMessage(bytesRead, buffer, content, id));
-         if (bytesRead == -1 || bytesRead == 0)
+         sendReplicatePacket(new ReplicationSyncFileMessage(content, id, bytesRead, buffer));
+         if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
             break;
       }
    }
@@ -537,7 +569,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    @Override
    public void sendSynchronizationDone()
    {
-      sendReplicatePacket(new ReplicationJournalFileMessage(-1, null, null, -1));
+      ReplicationStartSyncMessage msg = new ReplicationStartSyncMessage(null, null);
+      sendReplicatePacket(msg);
    }
-
 }

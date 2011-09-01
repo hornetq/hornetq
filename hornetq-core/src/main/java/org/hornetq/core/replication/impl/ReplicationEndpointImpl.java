@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -48,15 +49,15 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationJournalFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
@@ -86,9 +87,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
    private final Map<JournalContent, Map<Long, JournalFile>> filesReservedForSync =
             new HashMap<JournalContent, Map<Long, JournalFile>>();
+   private Map<Long, LargeServerMessage> largeMessagesOnSync = new HashMap<Long, LargeServerMessage>();
 
-   /** Used to hold the real Journals before the backup is synchronized. */
-   private final Map<JournalContent, Journal> journalsHolder = new HashMap<JournalContent, Journal>();
+   /**
+    * Used to hold the real Journals before the backup is synchronized. This field should be
+    * {@code null} on an up-to-date server.
+    */
+   private Map<JournalContent, Journal> journalsHolder = new HashMap<JournalContent, Journal>();
 
    private StorageManager storage;
 
@@ -192,13 +197,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
-         else if (type == PacketImpl.REPLICATION_START_SYNC)
+         else if (type == PacketImpl.REPLICATION_START_STOP_SYNC)
          {
             handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
          }
-         else if (type == PacketImpl.REPLICATION_SYNC)
+         else if (type == PacketImpl.REPLICATION_SYNC_FILE)
          {
-            handleReplicationSynchronization((ReplicationJournalFileMessage)packet);
+            handleReplicationSynchronization((ReplicationSyncFileMessage)packet);
          }
          else
          {
@@ -306,7 +311,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       pageManager.stop();
 
-       started = false;
+      started = false;
    }
 
    /* (non-Javadoc)
@@ -387,57 +392,109 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Private -------------------------------------------------------
 
-   private void handleReplicationSynchronization(ReplicationJournalFileMessage msg) throws Exception
+   private void finishSynchronization() throws Exception
    {
-      if (msg.isUpToDate())
+      for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
-         for (JournalContent jc : EnumSet.allOf(JournalContent.class))
+         JournalImpl journal = (JournalImpl)journalsHolder.remove(jc);
+         journal.writeLock();
+         try
          {
-            JournalImpl journal = (JournalImpl)journalsHolder.remove(jc);
-            journal.writeLock();
-            try
+            if (journal.getDataFiles().length != 0)
             {
-               if (journal.getDataFiles().length != 0)
-               {
-                  throw new IllegalStateException("Journal should not have any data files at this point");
-               }
-               // files should be already in place.
-               filesReservedForSync.remove(jc);
-               getJournal(jc.typeByte).stop();
-               registerJournal(jc.typeByte, journal);
-               journal.loadInternalOnly();
-               // XXX HORNETQ-720 must reload journals
-               // XXX HORNETQ-720 must start using real journals
-
+               throw new IllegalStateException("Journal should not have any data files at this point");
             }
-            finally
-            {
-               journal.writeUnlock();
-            }
-
+            // files should be already in place.
+            filesReservedForSync.remove(jc);
+            getJournal(jc.typeByte).stop();
+            registerJournal(jc.typeByte, journal);
+            journal.loadInternalOnly();
          }
-         server.setRemoteBackupUpToDate();
-         log.info("Backup server " + server + " is synchronized with live-server.");
-         return;
+         finally
+         {
+            journal.writeUnlock();
+         }
       }
-
-      long id = msg.getFileId();
-      JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(Long.valueOf(id));
-
-      byte[] data = msg.getData();
-      if (data == null)
+      synchronized (largeMessagesOnSync)
       {
-         journalFile.getFile().close();
+         synchronized (largeMessages)
+         {
+            ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
+            for (Entry<Long, LargeServerMessage> entry : largeMessages.entrySet())
+            {
+               Long id = entry.getKey();
+               LargeServerMessage lm = entry.getValue();
+               if (largeMessagesOnSync.containsKey(id))
+               {
+                  SequentialFile sq = lm.getFile();
+                  LargeServerMessage mainLM = largeMessagesOnSync.get(id);
+                  SequentialFile mainSeqFile = mainLM.getFile();
+                  System.out.println(mainSeqFile);
+                  for (;;)
+                  {
+                     buffer.rewind();
+                     int size = sq.read(buffer);
+                     mainSeqFile.writeInternal(buffer);
+                     if (size < buffer.capacity())
+                     {
+                        break;
+                     }
+                  }
+               }
+               else
+               {
+                  // these are large-messages created after sync started
+                  largeMessagesOnSync.put(id, lm);
+               }
+            }
+            largeMessages.clear();
+            largeMessages.putAll(largeMessagesOnSync);
+         }
+      }
+      largeMessagesOnSync = null;
+      journalsHolder = null;
+      server.setRemoteBackupUpToDate();
+      log.info("Backup server " + server + " is synchronized with live-server.");
+      return;
+   }
+
+   private void handleReplicationSynchronization(ReplicationSyncFileMessage msg) throws Exception
+   {
+      Long id = Long.valueOf(msg.getId());
+      byte[] data = msg.getData();
+      SequentialFile sf;
+      if (msg.isLargeMessage())
+      {
+         synchronized (largeMessagesOnSync)
+         {
+            LargeServerMessage largeMessage = largeMessagesOnSync.get(id);
+            if (largeMessage == null)
+            {
+               largeMessage = storage.createLargeMessage();
+               largeMessage.setDurable(true);
+               largeMessage.setMessageID(id);
+               largeMessagesOnSync.put(id, largeMessage);
+            }
+            sf = largeMessage.getFile();
+         }
       }
       else
       {
-         SequentialFile sf = journalFile.getFile();
-         if (!sf.isOpen())
-         {
-            sf.open(1, false);
-         }
-         sf.writeDirect(ByteBuffer.wrap(data), true);
+         JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(id);
+         sf = journalFile.getFile();
+
       }
+      if (data == null)
+      {
+         sf.close();
+         return;
+      }
+
+      if (!sf.isOpen())
+      {
+         sf.open(1, false);
+      }
+      sf.writeDirect(ByteBuffer.wrap(data), true);
    }
 
    /**
@@ -452,6 +509,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "RemoteBackup can not be up-to-date!");
       }
+
+      if (packet.isSynchronizationFinished())
+      {
+         finishSynchronization();
+         return;
+      }
+
       final Journal journalIf = journalsHolder.get(packet.getJournalContentType());
 
       JournalImpl journal = assertJournalImpl(journalIf);
@@ -520,6 +584,18 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       else
       {
          message = largeMessages.get(messageId);
+         if (message == null)
+         {
+            synchronized (largeMessages)
+            {
+               if (!server.isRemoteBackupUpToDate())
+               {
+                  // in case we need to append data to a file while still sync'ing the backup
+                  createLargeMessage(messageId, true);
+                  message = largeMessages.get(messageId);
+               }
+            }
+         }
       }
 
       if (message == null)
@@ -537,11 +613,18 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    private void handleLargeMessageBegin(final ReplicationLargeMessageBeingMessage packet)
    {
-      LargeServerMessage largeMessage = storage.createLargeMessage();
-      largeMessage.setDurable(true);
-      largeMessage.setMessageID(packet.getMessageId());
-      log.trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
-      largeMessages.put(largeMessage.getMessageID(), largeMessage);
+      final long id = packet.getMessageId();
+      createLargeMessage(id, false);
+      log.trace("Receiving Large Message " + id + " on backup");
+   }
+
+   private void createLargeMessage(final long id, boolean sync)
+   {
+      LargeServerMessage msg = storage.createLargeMessage();
+      msg.setDurable(true);
+      msg.setMessageID(id);
+      msg.setReplicationSync(sync);
+      largeMessages.put(id, msg);
    }
 
    /**

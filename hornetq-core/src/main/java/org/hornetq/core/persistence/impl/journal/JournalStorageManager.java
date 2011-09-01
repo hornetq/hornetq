@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -372,7 +373,7 @@ public class JournalStorageManager implements StorageManager
 
       final boolean messageJournalAutoReclaim = localMessageJournal.getAutoReclaim();
       final boolean bindingsJournalAutoReclaim = localBindingsJournal.getAutoReclaim();
-
+      Map<String, Long> largeMessageFilesToSync;
       try
       {
          storageManagerLock.writeLock().lock();
@@ -386,6 +387,7 @@ public class JournalStorageManager implements StorageManager
             {
                messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
                bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+               largeMessageFilesToSync = getLargeMessageInformation();
             }
             finally
             {
@@ -399,8 +401,10 @@ public class JournalStorageManager implements StorageManager
          {
             storageManagerLock.writeLock().unlock();
          }
+
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
          sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+         sendLargeMessageFiles(largeMessageFilesToSync);
 
          storageManagerLock.writeLock().lock();
          try
@@ -420,6 +424,42 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
+   private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
+   {
+      for (Entry<String, Long> entry : largeMessageFilesToSync.entrySet())
+      {
+         String fileName = entry.getKey();
+         long size = entry.getValue();
+         SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
+         if (!seqFile.exists())
+            continue;
+         replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
+      }
+   }
+
+   private long getLargeMessageIdFromFilename(String filename)
+   {
+      return Long.parseLong(filename.split("\\.")[0]);
+   }
+
+   /**
+    * Assumes the
+    * @return
+    * @throws Exception
+    */
+   private Map<String, Long> getLargeMessageInformation() throws Exception
+   {
+      Map<String, Long> largeMessages = new HashMap<String, Long>();
+      List<String> filenames = largeMessagesFactory.listFiles("msg");
+      for (String filename : filenames)
+      {
+         SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
+         long size = seqFile.size();
+         largeMessages.put(filename, size);
+      }
+      return largeMessages;
+   }
+
    /**
     * Send an entire journal file to a replicating server (a backup server that is).
     * @param jf
@@ -431,7 +471,7 @@ public class JournalStorageManager implements StorageManager
    {
       for (JournalFile jf : journalFiles)
       {
-         replicator.sendJournalFile(jf, type);
+         replicator.syncJournalFile(jf, type);
          jf.setCanReclaim(true);
       }
    }
@@ -563,30 +603,44 @@ public class JournalStorageManager implements StorageManager
 
    public void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes) throws Exception
    {
-      file.position(file.size());
-
-      file.writeDirect(ByteBuffer.wrap(bytes), false);
-
-      if (isReplicated())
+      readLock();
+      try
       {
-         replicator.largeMessageWrite(messageId, bytes);
+         file.position(file.size());
+
+         file.writeDirect(ByteBuffer.wrap(bytes), false);
+
+         if (isReplicated())
+         {
+            replicator.largeMessageWrite(messageId, bytes);
+         }
+      }
+      finally
+      {
+         readUnLock();
       }
    }
 
    public LargeServerMessage createLargeMessage(final long id, final MessageInternal message)
    {
-      if (isReplicated())
+      readLock();
+      try
       {
-         replicator.largeMessageBegin(id);
+         if (isReplicated())
+         {
+            replicator.largeMessageBegin(id);
+         }
+
+         LargeServerMessageImpl largeMessage = (LargeServerMessageImpl)createLargeMessage();
+         largeMessage.copyHeadersAndProperties(message);
+         largeMessage.setMessageID(id);
+
+         return largeMessage;
       }
-
-      LargeServerMessageImpl largeMessage = (LargeServerMessageImpl)createLargeMessage();
-
-      largeMessage.copyHeadersAndProperties(message);
-
-      largeMessage.setMessageID(id);
-
-      return largeMessage;
+      finally
+      {
+         readUnLock();
+      }
    }
 
    // Non transactional operations
@@ -604,6 +658,7 @@ public class JournalStorageManager implements StorageManager
       {
       // Note that we don't sync, the add reference that comes immediately after will sync if appropriate
 
+         // XXX HORNETQ-720
       if (message.isLargeMessage())
       {
          messageJournal.appendAddRecord(message.getMessageID(),
@@ -2049,16 +2104,9 @@ public class JournalStorageManager implements StorageManager
     * @param messageID
     * @return
     */
-   SequentialFile createFileForLargeMessage(final long messageID, final boolean durable)
+   SequentialFile createFileForLargeMessage(final long messageID, String extension)
    {
-      if (durable)
-      {
-         return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);
-      }
-      else
-      {
-         return largeMessagesFactory.createSequentialFile(messageID + ".tmp", -1);
-      }
+      return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
    }
 
    // Private ----------------------------------------------------------------------------------
@@ -2379,14 +2427,11 @@ public class JournalStorageManager implements StorageManager
     */
    private void cleanupIncompleteFiles() throws Exception
    {
-      if (largeMessagesFactory != null)
+      List<String> tmpFiles = largeMessagesFactory.listFiles("tmp");
+      for (String tmpFile : tmpFiles)
       {
-         List<String> tmpFiles = largeMessagesFactory.listFiles("tmp");
-         for (String tmpFile : tmpFiles)
-         {
-            SequentialFile file = largeMessagesFactory.createSequentialFile(tmpFile, -1);
-            file.delete();
-         }
+         SequentialFile file = largeMessagesFactory.createSequentialFile(tmpFile, -1);
+         file.delete();
       }
    }
 

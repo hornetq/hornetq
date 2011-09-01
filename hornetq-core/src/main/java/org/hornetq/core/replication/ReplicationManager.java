@@ -19,6 +19,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
@@ -91,7 +92,7 @@ public interface ReplicationManager extends HornetQComponent
     * @throws HornetQException
     * @throws Exception
     */
-   void sendJournalFile(JournalFile jf, JournalContent type) throws Exception;
+   void syncJournalFile(JournalFile jf, JournalContent type) throws Exception;
 
    /**
     * Reserve the following fileIDs in the backup server.
@@ -108,4 +109,9 @@ public interface ReplicationManager extends HornetQComponent
     */
    void sendSynchronizationDone();
 
+   /**
+    * @param seqFile
+    * @throws Exception
+    */
+   void syncLargeMessageFile(SequentialFile seqFile, long size, long id) throws Exception;
 }

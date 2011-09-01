@@ -31,7 +31,7 @@ import org.hornetq.utils.DataConstants;
  * A LargeServerMessageImpl
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created 30-Sep-08 12:02:45 PM
  *
  *
@@ -49,9 +49,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    private final JournalStorageManager storageManager;
 
    private LargeServerMessage linkMessage;
-   
-   private boolean paged;
 
+   private boolean paged;
+   private boolean replicationSync;
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
 
@@ -89,7 +89,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       paged = true;
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#addBytes(byte[])
     */
@@ -231,7 +231,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    public boolean isFileExists() throws Exception
    {
-      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), durable);
+      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), getExtension());
       return localfile.exists();
    }
 
@@ -243,7 +243,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       if (memoryEstimate == -1)
       {
-         // The body won't be on memory (aways on-file), so we don't consider this for paging
+         // The body won't be on memory (always on-file), so we don't consider this for paging
          memoryEstimate = getHeadersAndPropertiesEncodeSize() + DataConstants.SIZE_INT +
                           getEncodeSize() +
                           (16 + 4) *
@@ -268,17 +268,18 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          }
       }
    }
-   
 
+
+   @Override
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
       super.setOriginalHeaders(other, expiry);
-      
+
       LargeServerMessageImpl otherLM = (LargeServerMessageImpl)other;
       this.paged = otherLM.paged;
       if (this.paged)
       {
-         this.removeProperty(Message.HDR_ORIG_MESSAGE_ID); 
+         this.removeProperty(Message.HDR_ORIG_MESSAGE_ID);
       }
    }
 
@@ -289,16 +290,16 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       if (!paged)
       {
          incrementDelayDeletionCount();
-   
+
          long idToUse = messageID;
-   
+
          if (linkMessage != null)
          {
             idToUse = linkMessage.getMessageID();
          }
-   
-         SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
-   
+
+         SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, getExtension());
+
          ServerMessage newMessage = new LargeServerMessageImpl(linkMessage == null ? this
                                                                                   : (LargeServerMessageImpl)linkMessage,
                                                                newfile,
@@ -310,19 +311,19 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          try
          {
             validateFile();
-            
+
             SequentialFile file = this.file;
-            
-            SequentialFile newFile = storageManager.createFileForLargeMessage(newID, durable);
-            
+
+            SequentialFile newFile = storageManager.createFileForLargeMessage(newID, getExtension());
+
             file.copyTo(newFile);
-            
+
             LargeServerMessageImpl newMessage = new LargeServerMessageImpl(this, newFile, newID);
-            
+
             newMessage.linkMessage = null;
-            
+
             newMessage.setPaged();
-            
+
             return newMessage;
          }
          catch (Exception e)
@@ -333,8 +334,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       }
    }
 
-   public SequentialFile getFile()
+   public SequentialFile getFile() throws HornetQException
    {
+      validateFile();
       return file;
    }
 
@@ -369,10 +371,10 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
                throw new RuntimeException("MessageID not set on LargeMessage");
             }
 
-            file = storageManager.createFileForLargeMessage(getMessageID(), durable);
+            file = storageManager.createFileForLargeMessage(getMessageID(), getExtension());
 
             file.open();
-            
+
             bodySize = file.size();
          }
       }
@@ -381,6 +383,13 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          // TODO: There is an IO_ERROR on trunk now, this should be used here instead
          throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
       }
+   }
+
+   private String getExtension()
+   {
+      if (replicationSync)
+         return ".sync";
+      return durable ? ".msg" : ".tmp";
    }
 
    /* (non-Javadoc)
@@ -396,7 +405,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
       linkMessage = message;
 
-      file = storageManager.createFileForLargeMessage(message.getMessageID(), durable);
+      file = storageManager.createFileForLargeMessage(message.getMessageID(), getExtension());
       try
       {
          file.open();
@@ -476,5 +485,11 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       {
          return bodySize;
       }
+   }
+
+   @Override
+   public void setReplicationSync(boolean sync)
+   {
+      replicationSync = sync;
    }
 }
