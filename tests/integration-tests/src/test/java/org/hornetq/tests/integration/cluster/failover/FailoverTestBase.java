@@ -24,10 +24,12 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
@@ -47,6 +49,7 @@ import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A FailoverTestBase
@@ -59,6 +62,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
+   /*
+    * Used only by tests of large messages.
+    */
+   protected static final int MIN_LARGE_MESSAGE = 1024;
+   private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
 
    // Attributes ----------------------------------------------------
 
@@ -119,6 +127,40 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected TestableServer createBackupServer()
    {
       return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
+   }
+
+   /**
+    * Large message version of {@link #setBody(int, ClientMessage)}.
+    * @param i
+    * @param message
+    * @param size
+    */
+   protected static void setLargeMessageBody(final int i, final ClientMessage message)
+   {
+      try
+      {
+         message.setBodyInputStream(UnitTestCase.createFakeLargeStream(LARGE_MESSAGE_SIZE));
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e);
+      }
+   }
+
+   /**
+    * Large message version of {@link #assertMessageBody(int, ClientMessage)}.
+    * @param i
+    * @param message
+    */
+   protected static void assertLargeMessageBody(final int i, final ClientMessage message)
+   {
+      HornetQBuffer buffer = message.getBodyBuffer();
+
+      for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
+      {
+         Assert.assertTrue("expecting " + LARGE_MESSAGE_SIZE + " bytes, got " + j, buffer.readable());
+         Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
+      }
    }
 
    protected void createConfigs() throws Exception

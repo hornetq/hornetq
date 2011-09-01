@@ -17,7 +17,7 @@ import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.TransportConfigurationUtils;
 
-public class BackupJournalSyncTest extends FailoverTestBase
+public class BackupSyncJournalTest extends FailoverTestBase
 {
 
    private ServerLocatorInternal locator;
@@ -158,6 +158,7 @@ public class BackupJournalSyncTest extends FailoverTestBase
          }
       }
    }
+
    private Set<Long> getFileIds(JournalImpl journal)
    {
       Set<Long> results = new HashSet<Long>();
