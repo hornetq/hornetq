@@ -604,7 +604,8 @@ public class JournalStorageManager implements StorageManager
       return new LargeServerMessageImpl(this);
    }
 
-   public void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes) throws Exception
+   protected void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
+            throws Exception
    {
       readLock();
       try
