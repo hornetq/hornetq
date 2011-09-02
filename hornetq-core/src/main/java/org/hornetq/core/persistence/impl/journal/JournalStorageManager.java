@@ -443,7 +443,10 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * Assumes the
+    * Collects a list of existing large messages and their current size.
+    * <p>
+    * So we know how much of a given message to sync with the backup. Further data appends to the
+    * messages will be replicated normally.
     * @return
     * @throws Exception
     */

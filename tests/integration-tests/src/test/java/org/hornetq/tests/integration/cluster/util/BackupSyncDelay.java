@@ -43,6 +43,7 @@ public class BackupSyncDelay implements Interceptor
    {
       if (backup.isStarted())
          handler.deliver();
+      live.removeInterceptor(this);
    }
 
    public BackupSyncDelay(TestableServer backup, TestableServer live)

@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
@@ -20,12 +21,13 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
 public class BackupSyncJournalTest extends FailoverTestBase
 {
 
+   private static final int BACKUP_WAIT_TIME = 20;
    private ServerLocatorInternal locator;
    private ClientSessionFactoryInternal sessionFactory;
    private ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;
-   private static final int N_MSGS = 10;
+   protected static final int N_MSGS = 10;
 
    @Override
    protected void setUp() throws Exception
@@ -51,9 +53,10 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    public void testReserveFileIdValuesOnBackup() throws Exception
    {
+      final int totalRounds = 5;
       createProducerSendSomeMessages();
       JournalImpl messageJournal = getMessageJournalFromServer(liveServer);
-      for (int i = 0; i < 5; i++)
+      for (int i = 0; i < totalRounds; i++)
       {
          messageJournal.forceMoveNextFile();
          sendMessages(session, producer, N_MSGS);
@@ -61,7 +64,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
       backupServer.start();
 
-      waitForBackup(sessionFactory, 10, false);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
 
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, N_MSGS);
@@ -72,24 +75,53 @@ public class BackupSyncJournalTest extends FailoverTestBase
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
       Set<Long> backupIds = getFileIds(backupMsgJournal);
       assertEquals("File IDs must match!", liveIds, backupIds);
+
+      // "+ 2": there two other calls that send N_MSGS.
+      for (int i = 0; i < totalRounds + 2; i++)
+      {
+         receiveMsgsInRange(0, N_MSGS);
+      }
+      assertNoMoreMessages();
+   }
+
+   private void assertNoMoreMessages() throws HornetQException
+   {
+      session.start();
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      ClientMessage msg = consumer.receive(200);
+      assertNull("there should be no more messages to receive! " + msg, msg);
+      consumer.close();
+      session.commit();
+
+   }
+
+   protected void startBackupFinishSyncing() throws Exception
+   {
+      backupServer.start();
+      syncDelay.deliverUpToDateMsg();
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
    }
 
    public void testReplicationDuringSync() throws Exception
    {
       createProducerSendSomeMessages();
       backupServer.start();
-      waitForBackup(sessionFactory, 10, false);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
 
       sendMessages(session, producer, N_MSGS);
       session.commit();
-      receiveMsgs(0, N_MSGS);
+      receiveMsgsInRange(0, N_MSGS);
+
       finishSyncAndFailover();
+
+      receiveMsgsInRange(0, N_MSGS);
+      assertNoMoreMessages();
    }
 
    private void finishSyncAndFailover() throws Exception
    {
       syncDelay.deliverUpToDateMsg();
-      waitForBackup(sessionFactory, 10, true);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
       crash(session);
       waitForServerInitialization(backupServer, 5);
@@ -99,15 +131,17 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       createProducerSendSomeMessages();
       startBackupCrashLive();
-      receiveMsgs(0, N_MSGS);
+      receiveMsgsInRange(0, N_MSGS);
+      assertNoMoreMessages();
    }
 
    public void testMessageSync() throws Exception
    {
       createProducerSendSomeMessages();
-      receiveMsgs(0, N_MSGS / 2);
+      receiveMsgsInRange(0, N_MSGS / 2);
       startBackupCrashLive();
-      receiveMsgs(N_MSGS / 2, N_MSGS);
+      receiveMsgsInRange(N_MSGS / 2, N_MSGS);
+      assertNoMoreMessages();
    }
 
    private void startBackupCrashLive() throws Exception
@@ -115,12 +149,12 @@ public class BackupSyncJournalTest extends FailoverTestBase
       assertFalse("backup is started?", backupServer.isStarted());
       liveServer.removeInterceptor(syncDelay);
       backupServer.start();
-      waitForBackup(sessionFactory, 20);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME);
       crash(session);
       waitForServerInitialization(backupServer, 5);
    }
 
-   private void createProducerSendSomeMessages() throws HornetQException, Exception
+   protected void createProducerSendSomeMessages() throws HornetQException, Exception
    {
       session = sessionFactory.createSession(true, true);
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
@@ -129,7 +163,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       session.commit();
    }
 
-   private void receiveMsgs(int start, int end) throws HornetQException
+   protected void receiveMsgsInRange(int start, int end) throws HornetQException
    {
       session.start();
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
