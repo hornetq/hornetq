@@ -168,6 +168,8 @@ public interface Stomp
          //1.1
          String ACCEPT_VERSION = "accept-version";
          String HOST = "host";
+
+         Object HEART_BEAT = "heart-beat";
       }
 
       public interface Error
@@ -189,6 +191,8 @@ public interface Stomp
          String VERSION = "version";
 
          String SERVER = "server";
+
+         String HEART_BEAT = "heart-beat";
       }
 
       public interface Ack

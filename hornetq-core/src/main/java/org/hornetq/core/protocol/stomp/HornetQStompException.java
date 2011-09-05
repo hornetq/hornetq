@@ -15,6 +15,10 @@ package org.hornetq.core.protocol.stomp;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
+ */
 public class HornetQStompException extends Exception {
 
    private static final long serialVersionUID = -274452327574950068L;

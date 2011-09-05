@@ -76,6 +76,8 @@ public class StompConnection implements RemotingConnection
    private VersionedStompFrameHandler frameHandler;
    
    private boolean initialized;
+   
+   private FrameEventListener stompListener;
 
    public StompDecoder getDecoder()
    {
@@ -444,6 +446,10 @@ public class StompConnection implements RemotingConnection
       if (reply != null)
       {
          sendFrame(reply);
+         if (stompListener != null)
+         {
+            stompListener.replySent(reply);
+         }
       }
    }
 
@@ -662,8 +668,13 @@ public class StompConnection implements RemotingConnection
    }
 
    public StompFrame createStompMessage(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount)
+         StompSubscription subscription, int deliveryCount) throws Exception
    {
       return frameHandler.createMessageFrame(serverMessage, subscription, deliveryCount);
+   }
+
+   public void addStompEventListener(FrameEventListener listener)
+   {
+      this.stompListener = listener;
    }
 }

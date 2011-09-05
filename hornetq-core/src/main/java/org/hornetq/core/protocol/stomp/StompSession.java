@@ -105,7 +105,7 @@ public class StompSession implements SessionCallback
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         log.error("Error delivering stomp messages", e);
          return 0;
       }
 

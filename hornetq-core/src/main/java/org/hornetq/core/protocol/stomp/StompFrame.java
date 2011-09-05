@@ -56,10 +56,18 @@ public class StompFrame
 
    private int size;
    
+   private boolean disconnect;
+   
    public StompFrame(String command)
+   {
+      this(command, false);
+   }
+
+   public StompFrame(String command, boolean disconnect)
    {
       this.command = command;
       this.headers = new LinkedHashMap<String, String>();
+      this.disconnect = disconnect;
    }
 
    public String getCommand()
@@ -178,5 +186,10 @@ public class StompFrame
          return body.getBytes("UTF-8");
       }
       return new byte[0];
+   }
+
+   public boolean needsDisconnect()
+   {
+      return disconnect;
    }
 }
