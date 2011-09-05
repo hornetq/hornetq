@@ -12,7 +12,6 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +38,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-class StompSession implements SessionCallback
+public class StompSession implements SessionCallback
 {
    private static final Logger log = Logger.getLogger(StompSession.class);
 
@@ -84,41 +83,9 @@ class StompSession implements SessionCallback
       try
       {
          StompSubscription subscription = subscriptions.get(consumerID);
-
-         Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
-         if (subscription.getID() != null)
-         {
-            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
-         }
-         HornetQBuffer buffer = serverMessage.getBodyBuffer();
-
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                 : serverMessage.getEndOfBodyPosition();
-         int size = bodyPos - buffer.readerIndex();
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-         byte[] data = new byte[size];
-         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
-         {
-            headers.put(Headers.CONTENT_LENGTH, data.length);
-            buffer.readBytes(data);
-         }
-         else
-         {
-            SimpleString text = buffer.readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-            else
-            {
-               data = new byte[0];
-            }
-         }
-         serverMessage.getBodyBuffer().resetReaderIndex();
-         StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
-         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
-
+         
+         StompFrame frame = connection.createStompMessage(serverMessage, subscription, deliveryCount);
+         
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
@@ -168,10 +135,19 @@ class StompSession implements SessionCallback
       connection.getTransportConnection().removeReadyListener(listener);
    }
 
-   public void acknowledge(String messageID) throws Exception
+   public void acknowledge(String messageID, String subscriptionID) throws Exception
    {
       long id = Long.parseLong(messageID);
       long consumerID = messagesToAck.remove(id);
+      StompSubscription sub = subscriptions.get(consumerID);
+
+      if (subscriptionID != null)
+      {
+         if (!sub.getID().equals(subscriptionID))
+         {
+            throw new HornetQStompException("subscription id " + subscriptionID + " does not match " + sub.getID());
+         }
+      }
       session.acknowledge(consumerID, id);
       session.commit();
    }

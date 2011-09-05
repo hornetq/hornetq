@@ -17,6 +17,10 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -31,7 +35,7 @@ import org.hornetq.core.logging.Logger;
  * @author Tim Fox
  * 
  */
-class StompFrame
+public class StompFrame
 {
    private static final Logger log = Logger.getLogger(StompFrame.class);
 
@@ -39,43 +43,28 @@ class StompFrame
 
    private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-   private final String command;
+   private String command;
 
-   private final Map<String, Object> headers;
+   private Map<String, String> headers;
+   
+   //stomp 1.1 talks about repetitive headers.
+   private List<Header> allHeaders = new ArrayList<Header>();
 
-   private final byte[] content;
+   private String body;
 
    private HornetQBuffer buffer = null;
 
    private int size;
    
-   public StompFrame(String command, Map<String, Object> headers, byte[] data)
+   public StompFrame(String command)
    {
       this.command = command;
-      this.headers = headers;
-      this.content = data;
-   }
-
-   public StompFrame(String command, Map<String, Object> headers)
-   {
-      this.command = command;
-      this.headers = headers;
-      this.content = NO_DATA;
+      this.headers = new LinkedHashMap<String, String>();
    }
 
    public String getCommand()
    {
       return command;
-   }
-
-   public byte[] getContent()
-   {
-      return content;
-   }
-   
-   public Map<String, Object> getHeaders()
-   {
-      return headers;
    }
 
    public int getEncodedSize() throws Exception
@@ -90,18 +79,18 @@ class StompFrame
    @Override
    public String toString()
    {
-      return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
+      return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=";
    }
 
    public String asString()
    {
       String out = command + '\n';
-      for (Entry<String, Object> header : headers.entrySet())
+      for (Entry<String, String> header : headers.entrySet())
       {
          out += header.getKey() + ": " + header.getValue() + '\n';
       }
       out += '\n';
-      out += new String(content);
+      out += body;
       return out;
    }
 
@@ -116,7 +105,7 @@ class StompFrame
          head.append(command);
          head.append(Stomp.NEWLINE);
          // Output the headers.
-         for (Map.Entry<String, Object> header : headers.entrySet())
+         for (Map.Entry<String, String> header : headers.entrySet())
          {
             head.append(header.getKey());
             head.append(Stomp.Headers.SEPARATOR);
@@ -133,5 +122,61 @@ class StompFrame
          size = buffer.writerIndex();
       }
       return buffer;
+   }
+
+   public String getHeader(String key)
+   {
+      return headers.get(key);
+   }
+
+   public void addHeader(String key, String val)
+   {
+      if (!headers.containsKey(key))
+      {
+         headers.put(key, val);
+      }
+      allHeaders.add(new Header(key, val));
+   }
+   
+   public Map<String, String> getHeadersMap()
+   {
+      return headers;
+   }
+   
+   private class Header
+   {
+      public String key;
+      public String val;
+      
+      public Header(String key, String val)
+      {
+         this.key = key;
+         this.val = val;
+      }
+   }
+
+   public void setBody(String body)
+   {
+      this.body = body;
+   }
+
+   public boolean hasHeader(String key)
+   {
+      return headers.containsKey(key);
+   }
+
+   public String getBody()
+   {
+      return body;
+   }
+   
+   //Since 1.1, there is a content-type header that needs to take care of
+   public byte[] getBodyAsBytes() throws UnsupportedEncodingException
+   {
+      if (body != null)
+      {
+         return body.getBytes("UTF-8");
+      }
+      return new byte[0];
    }
 }

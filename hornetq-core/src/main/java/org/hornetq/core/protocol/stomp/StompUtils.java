@@ -32,7 +32,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  *
  *
  */
-class StompUtils
+public class StompUtils
 {
    // Constants -----------------------------------------------------
    private static final String DEFAULT_MESSAGE_PRIORITY= "4";
@@ -46,8 +46,6 @@ class StompUtils
 
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
-      Map<String, Object> headers = new HashMap<String, Object>(frame.getHeaders());
-
       String priority = (String)headers.remove(Stomp.Headers.Send.PRIORITY);
       if (priority != null)
       {
@@ -93,27 +91,26 @@ class StompUtils
 
    public static void copyStandardHeadersFromMessageToFrame(MessageInternal message, StompFrame command, int deliveryCount) throws Exception
    {
-      final Map<String, Object> headers = command.getHeaders();
-      headers.put(Stomp.Headers.Message.DESTINATION, message.getAddress().toString());
-      headers.put(Stomp.Headers.Message.MESSAGE_ID, message.getMessageID());
+      command.addHeader(Stomp.Headers.Message.MESSAGE_ID, String.valueOf(message.getMessageID()));
+      command.addHeader(Stomp.Headers.Message.DESTINATION, message.getAddress().toString());
 
       if (message.getObjectProperty("JMSCorrelationID") != null)
       {
-         headers.put(Stomp.Headers.Message.CORRELATION_ID, message.getObjectProperty("JMSCorrelationID"));
+         command.addHeader(Stomp.Headers.Message.CORRELATION_ID, message.getObjectProperty("JMSCorrelationID").toString());
       }
-      headers.put(Stomp.Headers.Message.EXPIRATION_TIME, "" + message.getExpiration());
-      headers.put(Stomp.Headers.Message.REDELIVERED, deliveryCount > 1);
-      headers.put(Stomp.Headers.Message.PRORITY, "" + message.getPriority());
+      command.addHeader(Stomp.Headers.Message.EXPIRATION_TIME, "" + message.getExpiration());
+      command.addHeader(Stomp.Headers.Message.REDELIVERED, String.valueOf(deliveryCount > 1));
+      command.addHeader(Stomp.Headers.Message.PRORITY, "" + message.getPriority());
       if (message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME) != null)
       {
-         headers.put(Stomp.Headers.Message.REPLY_TO,
+         command.addHeader(Stomp.Headers.Message.REPLY_TO,
                      message.getStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME));
       }
-      headers.put(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
+      command.addHeader(Stomp.Headers.Message.TIMESTAMP, "" + message.getTimestamp());
 
       if (message.getObjectProperty("JMSType") != null)
       {
-         headers.put(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType"));
+         command.addHeader(Stomp.Headers.Message.TYPE, message.getObjectProperty("JMSType").toString());
       }
 
       // now lets add all the message headers
@@ -127,7 +124,7 @@ class StompUtils
             continue;
          }
 
-         headers.put(name.toString(), message.getObjectProperty(name));
+         command.addHeader(name.toString(), message.getObjectProperty(name).toString());
       }
    }
    // Constructors --------------------------------------------------
