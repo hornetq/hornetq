@@ -14,8 +14,8 @@
 package org.hornetq.core.paging;
 
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.paging.cursor.PagePosition;
+import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.transaction.Transaction;
 
@@ -26,10 +26,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public interface PageTransactionInfo extends EncodingSupport
 {
-   boolean isCommit();
-
-   boolean isRollback();
-   
    void setCommitted(boolean committed);
 
    void commit();
@@ -48,13 +44,9 @@ public interface PageTransactionInfo extends EncodingSupport
    
    void reloadUpdate(final StorageManager storageManager, final PagingManager pagingManager, final Transaction tx, final int increment) throws Exception;
    
-   void storeUpdate(StorageManager storageManager, PagingManager pagingManager) throws Exception;
-
    // To be used after the update was stored or reload
    void onUpdate(int update, StorageManager storageManager, PagingManager pagingManager);
 
-   void increment();
-   
    void increment(int size);
 
    int getNumberOfMessages();
