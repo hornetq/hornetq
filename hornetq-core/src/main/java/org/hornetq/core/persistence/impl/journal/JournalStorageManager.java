@@ -14,7 +14,6 @@
 package org.hornetq.core.persistence.impl.journal;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
@@ -350,9 +349,10 @@ public class JournalStorageManager implements StorageManager
    /**
     * XXX FIXME HORNETQ-720 Method ignores the synchronization of Paging.
     * @param replicationManager
+    * @param pagingManager
     * @throws HornetQException
     */
-   public void startReplication(ReplicationManager replicationManager) throws Exception
+   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
    {
       if (!started)
       {
@@ -374,6 +374,7 @@ public class JournalStorageManager implements StorageManager
       final boolean messageJournalAutoReclaim = localMessageJournal.getAutoReclaim();
       final boolean bindingsJournalAutoReclaim = localBindingsJournal.getAutoReclaim();
       Map<String, Long> largeMessageFilesToSync;
+      Map<SimpleString, Collection<Integer>> pageFilesToSync;
       try
       {
          storageManagerLock.writeLock().lock();
@@ -385,9 +386,18 @@ public class JournalStorageManager implements StorageManager
             localBindingsJournal.writeLock();
             try
             {
-               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
-               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
-               largeMessageFilesToSync = getLargeMessageInformation();
+               pagingManager.lockAll();
+               try
+               {
+                  messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
+                  bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+                  pageFilesToSync = getPageInformationForSync(pagingManager);
+                  largeMessageFilesToSync = getLargeMessageInformation();
+               }
+               finally
+               {
+                  pagingManager.unlockAll();
+               }
             }
             finally
             {
@@ -405,6 +415,7 @@ public class JournalStorageManager implements StorageManager
          sendJournalFile(messageFiles, JournalContent.MESSAGES);
          sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
          sendLargeMessageFiles(largeMessageFilesToSync);
+         sendPagesToBackup(pageFilesToSync, pagingManager);
 
          storageManagerLock.writeLock().lock();
          try
@@ -422,6 +433,42 @@ public class JournalStorageManager implements StorageManager
          localMessageJournal.setAutoReclaim(messageJournalAutoReclaim);
          localBindingsJournal.setAutoReclaim(bindingsJournalAutoReclaim);
       }
+   }
+
+   /**
+    * @param pageFilesToSync
+    * @throws Exception
+    */
+   private void sendPagesToBackup(Map<SimpleString, Collection<Integer>> pageFilesToSync, PagingManager manager)
+            throws Exception
+   {
+      for (Entry<SimpleString, Collection<Integer>> entry : pageFilesToSync.entrySet())
+      {
+         PagingStore store = manager.getPageStore(entry.getKey());
+         store.sendPages(replicator, entry.getValue());
+      }
+
+   }
+
+   /**
+    * @param pagingManager
+    * @return
+    * @throws Exception
+    */
+   private Map<SimpleString, Collection<Integer>> getPageInformationForSync(PagingManager pagingManager)
+            throws Exception
+   {
+      Map<SimpleString, Collection<Integer>> info = new HashMap<SimpleString, Collection<Integer>>();
+      for (SimpleString storeName : pagingManager.getStoreNames())
+      {
+         PagingStore store = pagingManager.getPageStore(storeName);
+         List<Integer> ids = new ArrayList<Integer>();
+         info.put(storeName, store.getCurrentIds());
+         // XXX perhaps before? unnecessary?
+         store.forceAnotherPage();
+      }
+      replicator.sendPagingInfo(info);
+      return info;
    }
 
    private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
@@ -464,11 +511,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * Send an entire journal file to a replicating server (a backup server that is).
-    * @param jf
-    * @param replicator2
-    * @throws IOException
-    * @throws HornetQException
+    * Send an entire journal file to a replicating backup server.
     */
    private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws Exception
    {
@@ -809,7 +852,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext(syncNonTransactional));
+         messageJournal.appendDeleteRecord(recordID, syncNonTransactional, getContext(syncNonTransactional));
       }
       finally
       {
@@ -855,9 +898,9 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      pageTransaction.setRecordID(generateUniqueID());
+         pageTransaction.setRecordID(generateUniqueID());
 
-      messageJournal.appendAddRecordTransactional(txID,
+         messageJournal.appendAddRecordTransactional(txID,
                                                   pageTransaction.getRecordID(),
                                                   JournalStorageManager.PAGE_TRANSACTION,
                                                   pageTransaction);
@@ -873,11 +916,10 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendUpdateRecordTransactional(txID,
-                                                     pageTransaction.getRecordID(),
-                                                     JournalStorageManager.PAGE_TRANSACTION,
-                                                     new PageUpdateTXEncoding(pageTransaction.getTransactionID(),
-                                                                              depages));
+         messageJournal.appendUpdateRecordTransactional(txID, pageTransaction.getRecordID(),
+                                                        JournalStorageManager.PAGE_TRANSACTION,
+                                                        new PageUpdateTXEncoding(pageTransaction.getTransactionID(),
+                                                                                 depages));
       }
       finally
       {
@@ -890,7 +932,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendUpdateRecord(pageTransaction.getRecordID(),
+         messageJournal.appendUpdateRecord(pageTransaction.getRecordID(),
                                         JournalStorageManager.PAGE_TRANSACTION,
                                         new PageUpdateTXEncoding(pageTransaction.getTransactionID(), depages),
                                         syncNonTransactional,
@@ -907,7 +949,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendUpdateRecordTransactional(txID,
+         messageJournal.appendUpdateRecordTransactional(txID,
                                                      messageID,
                                                      JournalStorageManager.ADD_REF,
                                                      new RefEncoding(queueID));
@@ -923,7 +965,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendUpdateRecordTransactional(txID,
+         messageJournal.appendUpdateRecordTransactional(txID,
                                                      messageID,
                                                      JournalStorageManager.ACKNOWLEDGE_REF,
                                                      new RefEncoding(queueID));
@@ -1042,7 +1084,7 @@ public class JournalStorageManager implements StorageManager
       readLock();
       try
       {
-      messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
+         messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
       }
       finally
       {

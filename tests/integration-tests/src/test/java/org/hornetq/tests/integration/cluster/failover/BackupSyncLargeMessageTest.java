@@ -40,8 +40,8 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
       File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
       System.out.println("Dir " + dir.getAbsolutePath() + " " + dir.exists());
       // Set<Long> idsOnBkp = getAllMessageFileIds(dir);
-      receiveMsgsInRange(0, N_MSGS / 2);
-      assertEquals("we really ought to delete these after delivery", N_MSGS / 2, getAllMessageFileIds(dir).size());
+      receiveMsgsInRange(0, n_msgs / 2);
+      assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
    }
 
    private Set<Long> getAllMessageFileIds(File dir)

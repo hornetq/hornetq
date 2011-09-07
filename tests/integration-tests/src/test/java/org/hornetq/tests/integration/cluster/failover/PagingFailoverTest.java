@@ -46,11 +46,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    // Constants -----------------------------------------------------
 
-   private static final int PAGE_MAX = 100 * 1024;
-
-   private static final int PAGE_SIZE = 10 * 1024;
-
-   static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
+   private static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    // Attributes ----------------------------------------------------
    private ServerLocator locator;
@@ -91,7 +87,7 @@ public class PagingFailoverTest extends FailoverTestBase
       internalTestPage(true, false);
    }
 
-   public void testPageTransactionedFailBeforeconsume() throws Exception
+   public void testPageTransactionedFailBeforeConsume() throws Exception
    {
       internalTestPage(true, true);
    }
@@ -130,7 +126,10 @@ public class PagingFailoverTest extends FailoverTestBase
          if (failBeforeConsume)
          {
             crash(session);
+            waitForBackup(sf, 60);
          }
+
+
 
 
          session.close();
@@ -217,11 +216,7 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createInVMFailoverServer(true,
-                                      configuration,
-                                      PagingFailoverTest.PAGE_SIZE,
-                                      PagingFailoverTest.PAGE_MAX,
-                                      new HashMap<String, AddressSettings>(),
+      return createInVMFailoverServer(true, configuration, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>(),
                                       nodeManager);
    }
 

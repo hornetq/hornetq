@@ -14,7 +14,9 @@
 package org.hornetq.core.replication.impl;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -42,6 +44,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCurrentPagesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -508,24 +511,32 @@ public class ReplicationManagerImpl implements ReplicationManager
    {
       SequentialFile file = jf.getFile().copy();
       log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
-      sendLargeFile(content, jf.getFileID(), file, Long.MAX_VALUE);
+      sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
    }
 
    @Override
    public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
    {
-      sendLargeFile(null, id, file, size);
+      sendLargeFile(null, null, id, file, size);
+   }
+
+   @Override
+   public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
+   {
+      sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
    }
 
    /**
     * Sends large files in reasonably sized chunks to the backup during replication synchronization.
-    * @param content journal type or {@code null} for large-messages
+    * @param content journal type or {@code null} for large-messages and pages
+    * @param pageStore page store name for pages, or {@code null} otherwise
     * @param id journal file id or (large) message id
     * @param file
     * @param maxBytesToSend maximum number of bytes to read and send from the file
     * @throws Exception
     */
-   private void sendLargeFile(JournalContent content, final long id, SequentialFile file, long maxBytesToSend)
+   private void sendLargeFile(JournalContent content, SimpleString pageStore, final long id, SequentialFile file,
+            long maxBytesToSend)
             throws Exception
    {
       if (!file.isOpen())
@@ -554,7 +565,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          buffer.rewind();
 
          // sending -1 or 0 bytes will close the file at the backup
-         sendReplicatePacket(new ReplicationSyncFileMessage(content, id, bytesRead, buffer));
+         sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, bytesRead, buffer));
          if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
             break;
       }
@@ -571,5 +582,11 @@ public class ReplicationManagerImpl implements ReplicationManager
    {
       ReplicationStartSyncMessage msg = new ReplicationStartSyncMessage(null, null);
       sendReplicatePacket(msg);
+   }
+
+   @Override
+   public void sendPagingInfo(Map<SimpleString, Collection<Integer>> info)
+   {
+      sendReplicatePacket(new ReplicationCurrentPagesMessage(info));
    }
 }

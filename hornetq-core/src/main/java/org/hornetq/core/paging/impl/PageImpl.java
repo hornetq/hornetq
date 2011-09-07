@@ -32,7 +32,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.utils.DataConstants;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -59,7 +59,7 @@ public class PageImpl implements Page, Comparable<Page>
    private final SequentialFile file;
 
    private final SequentialFileFactory fileFactory;
-   
+
    /**
     * The page cache that will be filled with data as we write more data
     */
@@ -96,7 +96,7 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return pageId;
    }
-   
+
    public void setLiveCache(LivePageCache pageCache)
    {
       this.pageCache = pageCache;
@@ -109,7 +109,7 @@ public class PageImpl implements Page, Comparable<Page>
       size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
       ByteBuffer buffer2 = ByteBuffer.allocateDirect(size.get());
-      
+
       file.position(0);
       file.read(buffer2);
 
@@ -181,7 +181,7 @@ public class PageImpl implements Page, Comparable<Page>
       buffer.rewind();
 
       file.writeDirect(buffer, false);
-      
+
       if (pageCache != null)
       {
          pageCache.addLiveMessage(message);
@@ -234,7 +234,7 @@ public class PageImpl implements Page, Comparable<Page>
             if (msg.getMessage().isLargeMessage())
             {
                LargeServerMessage lmsg = (LargeServerMessage)msg.getMessage();
-               
+
                // Remember, cannot call delete directly here
                // Because the large-message may be linked to another message
                // or it may still being delivered even though it has been acked already
@@ -257,7 +257,7 @@ public class PageImpl implements Page, Comparable<Page>
          {
             file.delete();
          }
-         
+
          return true;
       }
       catch (Exception e)
@@ -276,12 +276,13 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return size.intValue();
    }
-   
+
+   @Override
    public String toString()
    {
       return "PageImpl::pageID="  + this.pageId + ", file=" + this.file;
    }
-   
+
 
    /* (non-Javadoc)
     * @see java.lang.Comparable#compareTo(java.lang.Object)
@@ -337,6 +338,12 @@ public class PageImpl implements Page, Comparable<Page>
    {
       PageImpl.log.warn("Page file had incomplete records at position " + position + " at record number " + msgNumber);
       suspiciousRecords = true;
+   }
+
+   @Override
+   public SequentialFile getFile()
+   {
+      return file;
    }
 
    // Inner classes -------------------------------------------------

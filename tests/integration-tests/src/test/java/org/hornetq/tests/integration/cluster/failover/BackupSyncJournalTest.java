@@ -13,6 +13,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.tests.integration.cluster.util.BackupSyncDelay;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
@@ -27,7 +28,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    private ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;
-   protected static final int N_MSGS = 10;
+   protected int n_msgs = 10;
 
    @Override
    protected void setUp() throws Exception
@@ -59,17 +60,22 @@ public class BackupSyncJournalTest extends FailoverTestBase
       for (int i = 0; i < totalRounds; i++)
       {
          messageJournal.forceMoveNextFile();
-         sendMessages(session, producer, N_MSGS);
+         sendMessages(session, producer, n_msgs);
       }
 
       backupServer.start();
-
+      syncDelay.deliverUpToDateMsg();
       waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
 
       // SEND more messages, now with the backup replicating
-      sendMessages(session, producer, N_MSGS);
+      sendMessages(session, producer, n_msgs);
       Set<Long> liveIds = getFileIds(messageJournal);
-
+      PagingStore ps = liveServer.getServer().getPagingManager().getPageStore(ADDRESS);
+      if (ps.getPageSizeBytes() == PAGE_SIZE)
+      {
+         assertTrue("isStarted", ps.isStarted());
+         assertFalse("start paging should return false, because we expect paging to be running", ps.startPaging());
+      }
       finishSyncAndFailover();
 
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
@@ -79,7 +85,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       // "+ 2": there two other calls that send N_MSGS.
       for (int i = 0; i < totalRounds + 2; i++)
       {
-         receiveMsgsInRange(0, N_MSGS);
+         receiveMsgsInRange(0, n_msgs);
       }
       assertNoMoreMessages();
    }
@@ -108,13 +114,13 @@ public class BackupSyncJournalTest extends FailoverTestBase
       backupServer.start();
       waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
 
-      sendMessages(session, producer, N_MSGS);
+      sendMessages(session, producer, n_msgs);
       session.commit();
-      receiveMsgsInRange(0, N_MSGS);
+      receiveMsgsInRange(0, n_msgs);
 
       finishSyncAndFailover();
 
-      receiveMsgsInRange(0, N_MSGS);
+      receiveMsgsInRange(0, n_msgs);
       assertNoMoreMessages();
    }
 
@@ -131,16 +137,16 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       createProducerSendSomeMessages();
       startBackupCrashLive();
-      receiveMsgsInRange(0, N_MSGS);
+      receiveMsgsInRange(0, n_msgs);
       assertNoMoreMessages();
    }
 
    public void testMessageSync() throws Exception
    {
       createProducerSendSomeMessages();
-      receiveMsgsInRange(0, N_MSGS / 2);
+      receiveMsgsInRange(0, n_msgs / 2);
       startBackupCrashLive();
-      receiveMsgsInRange(N_MSGS / 2, N_MSGS);
+      receiveMsgsInRange(n_msgs / 2, n_msgs);
       assertNoMoreMessages();
    }
 
@@ -159,7 +165,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       session = sessionFactory.createSession(true, true);
       session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       producer = session.createProducer(FailoverTestBase.ADDRESS);
-      sendMessages(session, producer, N_MSGS);
+      sendMessages(session, producer, n_msgs);
       session.commit();
    }
 

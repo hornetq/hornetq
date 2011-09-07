@@ -58,7 +58,6 @@ import org.hornetq.core.deployers.impl.QueueDeployer;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
@@ -1564,7 +1563,7 @@ public class HornetQServerImpl implements HornetQServer
 
       pagingManager.reloadStores();
 
-      JournalLoadInformation[] journalInfo = loadJournals();
+      loadJournals();
 
       final ServerInfo dumper = new ServerInfo(this, pagingManager);
 
@@ -1646,15 +1645,13 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private JournalLoadInformation[] loadJournals() throws Exception
+   private void loadJournals() throws Exception
    {
-      JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
-
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
 
-      journalInfo[0] = storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
+      storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
 
       recoverStoredConfigs();
 
@@ -1685,8 +1682,6 @@ public class HornetQServerImpl implements HornetQServer
 
          managementService.registerAddress(queueBindingInfo.getAddress());
          managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
-
-
       }
 
       for (GroupingInfo groupingInfo : groupingInfos)
@@ -1701,7 +1696,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-      journalInfo[1] = storageManager.loadMessageJournal(postOffice,
+      storageManager.loadMessageJournal(postOffice,
                                                          pagingManager,
                                                          resourceManager,
                                                          queues,
@@ -1720,7 +1715,6 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
-      return journalInfo;
    }
 
    /**
@@ -2012,11 +2006,10 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
-
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       replicationManager.start();
 
-      journalStorageManager.startReplication(replicationManager);
+      journalStorageManager.startReplication(replicationManager, pagingManager);
    }
 
    /**

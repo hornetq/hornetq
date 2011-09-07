@@ -13,8 +13,9 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,10 +43,8 @@ import org.hornetq.core.paging.cursor.LivePageCache;
 import org.hornetq.core.paging.cursor.PageCursorProvider;
 import org.hornetq.core.paging.cursor.impl.LivePageCacheImpl;
 import org.hornetq.core.paging.cursor.impl.PageCursorProviderImpl;
-import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.RouteContextList;
@@ -56,15 +55,13 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
-import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Future;
 
 /**
- * 
+ *
  * @see PagingStore
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
@@ -210,7 +207,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       pageSize = addressSettings.getPageSizeBytes();
 
       addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
-      
+
       if (cursorProvider != null)
       {
          cursorProvider.setCacheMaxSize(addressSettings.getPageCacheMaxSize());
@@ -219,6 +216,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "PagingStoreImpl(" + this.address + ")";
@@ -375,20 +373,27 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public synchronized void stop() throws Exception
    {
-      if (running)
+      lock();
+      try
       {
-
-         cursorProvider.stop();
-
-         running = false;
-
-         flushExecutors();
-
-         if (currentPage != null)
+         if (running)
          {
-            currentPage.close();
-            currentPage = null;
+            cursorProvider.stop();
+
+            running = false;
+
+            flushExecutors();
+
+            if (currentPage != null)
+            {
+               currentPage.close();
+               currentPage = null;
+            }
          }
+      }
+      finally
+      {
+         unlock();
       }
    }
 
@@ -556,8 +561,8 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return currentPage;
    }
-   
-   public boolean checkPage(final int pageNumber)
+
+   public boolean checkPageFileExists(final int pageNumber)
    {
       String fileName = createFileName(pageNumber);
       SequentialFile file = fileFactory.createSequentialFile(fileName, 1);
@@ -566,7 +571,10 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public Page createPage(final int pageNumber) throws Exception
    {
-      String fileName = createFileName(pageNumber);
+      lock();
+      try
+      {
+         String fileName = createFileName(pageNumber);
 
       if (fileFactory == null)
       {
@@ -585,6 +593,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       file.close();
 
       return page;
+      }
+
+      finally
+      {
+         unlock();
+      }
    }
 
    public void forceAnotherPage() throws Exception
@@ -592,13 +606,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       openNewPage();
    }
 
-   /** 
-    *  It returns a Page out of the Page System without reading it. 
+   /**
+    *  It returns a Page out of the Page System without reading it.
     *  The method calling this method will remove the page and will start reading it outside of any locks.
     *  This method could also replace the current file by a new file, and that process is done through acquiring a writeLock on currentPageLock
-    *   
-    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests, 
-    *               and that's why this method is part of the Testable Interface 
+    *
+    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests,
+    *               and that's why this method is part of the Testable Interface
     * */
    public Page depage() throws Exception
    {
@@ -681,7 +695,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     * @return
     * @throws Exception
     */
-   private Queue<OurRunnable> onMemoryFreedRunnables = new ConcurrentLinkedQueue<OurRunnable>();
+   private final Queue<OurRunnable> onMemoryFreedRunnables = new ConcurrentLinkedQueue<OurRunnable>();
 
    private class MemoryFreedRunnablesExecutor implements Runnable
    {
@@ -866,7 +880,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
 
          PagedMessage pagedMessage = new PagedMessageImpl(message, routeQueues(tx, listCtx), tx == null ? -1 : tx.getID());
-         
+
          if (message.isLargeMessage())
          {
             ((LargeServerMessage)message).setPaged();
@@ -880,9 +894,9 @@ public class PagingStoreImpl implements TestSupportPageStore
             openNewPage();
             currentPageSize.addAndGet(bytesToWrite);
          }
- 
+
          currentPage.write(pagedMessage);
-         
+
          if (tx != null)
          {
             installPageTransaction(tx, listCtx);
@@ -945,15 +959,15 @@ public class PagingStoreImpl implements TestSupportPageStore
    private static class FinishPageMessageOperation implements TransactionOperation
    {
       public final PageTransactionInfo pageTransaction;
-      
+
       private final StorageManager storageManager;
-      
+
       private final PagingManager pagingManager;
-      
+
       private final Set<PagingStore> usedStores = new HashSet<PagingStore>();
 
       private boolean stored = false;
-      
+
       public void addStore(PagingStore store)
       {
          this.usedStores.add(store);
@@ -1078,9 +1092,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    /**
-    * 
+    *
     * Note: Decimalformat is not thread safe, Use synchronization before calling this method
-    * 
+    *
     * @param pageID
     * @return
     */
@@ -1098,6 +1112,42 @@ public class PagingStoreImpl implements TestSupportPageStore
    private boolean isFull()
    {
       return maxSize > 0 && getAddressSize() > maxSize;
+   }
+
+   @Override
+   public Collection<Integer> getCurrentIds() throws Exception
+   {
+      List<Integer> ids = new ArrayList<Integer>();
+      if (fileFactory != null)
+      {
+         for (String fileName : fileFactory.listFiles("page"))
+         {
+            ids.add(getPageIdFromFileName(fileName));
+         }
+      }
+      return ids;
+   }
+
+   @Override
+   public void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception
+   {
+      lock();
+      try
+      {
+         for (Integer id : pageIds)
+         {
+            SequentialFile sFile = fileFactory.createSequentialFile(createFileName(id), 1);
+            if (!sFile.exists())
+            {
+               continue;
+            }
+            replicator.syncPages(sFile, id, getAddress());
+         }
+      }
+      finally
+      {
+         unlock();
+      }
    }
 
    // Inner classes -------------------------------------------------

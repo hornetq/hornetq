@@ -19,6 +19,7 @@ import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalCompleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecord;
+import org.hornetq.core.journal.impl.dataformat.JournalDeleteRecordTX;
 import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 
 /**
@@ -118,7 +119,8 @@ public class FileWrapperJournal extends JournalBase implements Journal
    @Override
    public void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      JournalInternalRecord deleteRecordTX = new JournalDeleteRecordTX(txID, id, record);
+      writeRecord(deleteRecordTX, false, null);
    }
 
    @Override

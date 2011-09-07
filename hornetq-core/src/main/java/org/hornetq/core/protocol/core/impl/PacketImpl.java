@@ -196,6 +196,7 @@ public class PacketImpl implements Packet
    public static final byte HA_BACKUP_REGISTRATION = 113;
 
    public static final byte REPLICATION_START_STOP_SYNC = 120;
+   public static final byte REPLICATION_CURRENT_PAGES_INFO = 121;
 
    // Static --------------------------------------------------------
 

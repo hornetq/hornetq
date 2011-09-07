@@ -150,7 +150,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
-               if (!pagingStore.checkPage((int)pageId))
+               if (!pagingStore.checkPageFileExists((int)pageId))
                {
                   return null;
                }

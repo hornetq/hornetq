@@ -102,6 +102,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCurrentPagesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -534,6 +535,11 @@ public final class PacketDecoder
          case PacketImpl.REPLICATION_SYNC_FILE:
          {
             packet = new ReplicationSyncFileMessage();
+            break;
+         }
+         case PacketImpl.REPLICATION_CURRENT_PAGES_INFO:
+         {
+            packet = new ReplicationCurrentPagesMessage();
             break;
          }
          default:

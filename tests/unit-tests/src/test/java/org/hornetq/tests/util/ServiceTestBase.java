@@ -509,7 +509,7 @@ public abstract class ServiceTestBase extends UnitTestCase
     */
    protected void assertMessageBody(final int i, final ClientMessage message)
    {
-      Assert.assertEquals("message" + i, message.getBodyBuffer().readString());
+      Assert.assertEquals(message.toString(), "message" + i, message.getBodyBuffer().readString());
    }
 
    /**

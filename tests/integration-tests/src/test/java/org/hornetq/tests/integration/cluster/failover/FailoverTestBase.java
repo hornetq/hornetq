@@ -68,6 +68,9 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected static final int MIN_LARGE_MESSAGE = 1024;
    private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
 
+   protected static final int PAGE_MAX = 2 * 1024;
+   protected static final int PAGE_SIZE = 1024;
+
    // Attributes ----------------------------------------------------
 
    protected TestableServer liveServer;

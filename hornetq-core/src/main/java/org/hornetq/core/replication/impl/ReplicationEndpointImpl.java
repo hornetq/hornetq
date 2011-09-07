@@ -14,6 +14,7 @@
 package org.hornetq.core.replication.impl;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCurrentPagesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -205,6 +207,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          {
             handleReplicationSynchronization((ReplicationSyncFileMessage)packet);
          }
+         else if (type == PacketImpl.REPLICATION_CURRENT_PAGES_INFO)
+         {
+            handleCurrentPagesInfo((ReplicationCurrentPagesMessage)packet);
+         }
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
@@ -224,17 +230,22 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       channel.send(response);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#isStarted()
+   /**
+    * @param packet
     */
+   private void handleCurrentPagesInfo(ReplicationCurrentPagesMessage packet)
+   {
+      for (Entry<SimpleString, Collection<Integer>> entry : packet.getInfo().entrySet())
+      {
+         // ignore the actual file list for the moment...
+      }
+   }
+
    public boolean isStarted()
    {
       return started;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#start()
-    */
    public void start() throws Exception
    {
       Configuration config = server.getConfiguration();
@@ -429,7 +440,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                   SequentialFile sq = lm.getFile();
                   LargeServerMessage mainLM = largeMessagesOnSync.get(id);
                   SequentialFile mainSeqFile = mainLM.getFile();
-                  System.out.println(mainSeqFile);
                   for (;;)
                   {
                      buffer.rewind();
@@ -463,27 +473,41 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       Long id = Long.valueOf(msg.getId());
       byte[] data = msg.getData();
       SequentialFile sf;
-      if (msg.isLargeMessage())
+      switch (msg.getFileType())
       {
-         synchronized (largeMessagesOnSync)
+         case LARGE_MESSAGE:
          {
-            LargeServerMessage largeMessage = largeMessagesOnSync.get(id);
-            if (largeMessage == null)
+            synchronized (largeMessagesOnSync)
             {
-               largeMessage = storage.createLargeMessage();
-               largeMessage.setDurable(true);
-               largeMessage.setMessageID(id);
-               largeMessagesOnSync.put(id, largeMessage);
+               LargeServerMessage largeMessage = largeMessagesOnSync.get(id);
+               if (largeMessage == null)
+               {
+                  largeMessage = storage.createLargeMessage();
+                  largeMessage.setDurable(true);
+                  largeMessage.setMessageID(id);
+                  largeMessagesOnSync.put(id, largeMessage);
+               }
+               sf = largeMessage.getFile();
             }
-            sf = largeMessage.getFile();
+            break;
          }
-      }
-      else
-      {
-         JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(id);
-         sf = journalFile.getFile();
+         case JOURNAL:
+         {
+            JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(id);
+            sf = journalFile.getFile();
+            break;
+         }
+         case PAGE:
+         {
+            Page page = getPage(msg.getPageStore(), (int)msg.getId());
 
+            sf = page.getFile();
+            break;
+         }
+         default:
+            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Unhandled file type " + msg.getFileType());
       }
+
       if (data == null)
       {
          sf.close();
@@ -751,7 +775,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             page.close();
          }
       }
-
    }
 
    /**

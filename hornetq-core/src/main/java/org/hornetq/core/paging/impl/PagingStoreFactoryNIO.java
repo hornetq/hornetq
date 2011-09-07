@@ -40,7 +40,7 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * Integration point between Paging and NIO
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -62,9 +62,9 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    protected final boolean syncNonTransactional;
 
    private PagingManager pagingManager;
-   
+
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private final long syncTimeout;
 
    private StorageManager storageManager;
@@ -86,9 +86,9 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.executorFactory = executorFactory;
 
       this.syncNonTransactional = syncNonTransactional;
-      
+
       this.scheduledExecutor = scheduledExecutor;
-      
+
       this.syncTimeout = syncTimeout;
    }
 
@@ -155,6 +155,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    public void setPostOffice(final PostOffice postOffice)
    {
+      assert this.postOffice == null;
       this.postOffice = postOffice;
    }
 
@@ -233,22 +234,22 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
       return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false);
    }
-   
+
    protected PagingManager getPagingManager()
    {
       return pagingManager;
    }
-   
+
    protected StorageManager getStorageManager()
    {
       return storageManager;
    }
-   
+
    protected PostOffice getPostOffice()
    {
       return postOffice;
    }
-   
+
    protected ExecutorFactory getExecutorFactory()
    {
       return executorFactory;
