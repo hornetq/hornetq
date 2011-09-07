@@ -26,4 +26,6 @@ public interface FrameEventListener
 
    void replySent(StompFrame reply);
 
+   void requestAccepted(StompFrame request);
+
 }

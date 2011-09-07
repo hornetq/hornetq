@@ -157,8 +157,7 @@ class StompProtocolManager implements ProtocolManager
 
          try
          {
-            HornetQBuffer buffer = frame.toHornetQBuffer();
-            connection.getTransportConnection().write(buffer, false, false);
+            connection.physicalSend(frame);
          }
          catch (Exception e)
          {

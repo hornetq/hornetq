@@ -425,6 +425,12 @@ public class StompConnection implements RemotingConnection
    public void handleFrame(StompFrame request)
    {
       StompFrame reply = null;
+      
+      if (stompListener != null)
+      {
+         stompListener.requestAccepted(request);
+      }
+
       try
       {
          if (!initialized)
@@ -446,10 +452,6 @@ public class StompConnection implements RemotingConnection
       if (reply != null)
       {
          sendFrame(reply);
-         if (stompListener != null)
-         {
-            stompListener.replySent(reply);
-         }
       }
    }
 
@@ -676,5 +678,23 @@ public class StompConnection implements RemotingConnection
    public void addStompEventListener(FrameEventListener listener)
    {
       this.stompListener = listener;
+   }
+
+   //send a ping stomp frame
+   public void ping(StompFrame pingFrame)
+   {
+      manager.sendReply(this, pingFrame);
+   }
+
+   public void physicalSend(StompFrame frame) throws Exception
+   {
+      HornetQBuffer buffer = frame.toHornetQBuffer();
+      getTransportConnection().write(buffer, false, false);
+
+      if (stompListener != null)
+      {
+         stompListener.replySent(frame);
+      }
+
    }
 }

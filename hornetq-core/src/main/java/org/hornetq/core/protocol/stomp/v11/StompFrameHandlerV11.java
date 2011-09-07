@@ -13,6 +13,7 @@
 package org.hornetq.core.protocol.stomp.v11;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
@@ -409,9 +410,18 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          //kick off the pinger
          startHeartBeat();
       }
+      
       if (reply.needsDisconnect())
       {
          connection.destroy();
+      }
+      else
+      {
+         //update ping
+         if (heartBeater != null)
+         {
+            heartBeater.pinged();
+         }
       }
    }
    
@@ -421,6 +431,13 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       {
          heartBeater.start();
       }
+   }
+   
+   public StompFrame createPingFrame()
+   {
+      StompFrame frame = new StompFrame(Stomp.Commands.STOMP);
+      frame.setBody("\n");
+      return frame;
    }
    
    //server heart beat (20,100) (hard coded)
@@ -433,10 +450,10 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    {
       long serverPing = 0;
       long serverAcceptPing = 0;
-      long waitingTime = 0;
       volatile boolean shutdown = false;
-      volatile long pings = 0;
-      volatile long accepts = 0;
+      AtomicLong lastPingTime = new AtomicLong(0);
+      AtomicLong lastAccepted = new AtomicLong(0);
+      StompFrame pingFrame;
 
       public HeartBeater(long clientPing, long clientAcceptPing)
       {
@@ -448,21 +465,18 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          if (clientAcceptPing != 0)
          {
             serverPing = clientAcceptPing > 20 ? clientAcceptPing : 20;
-            if (serverAcceptPing != 0)
-            {
-               waitingTime = serverPing > serverAcceptPing ? serverAcceptPing : serverPing;
-            }
-            else
-            {
-               waitingTime = serverPing;
-            }
          }
       }
       
+      public void pinged()
+      {
+         lastPingTime.set(System.currentTimeMillis());
+      }
+
       public void run()
       {
-         long lastPing = 0;
-         long lastAccepted = System.currentTimeMillis();
+         lastAccepted.set(System.currentTimeMillis());
+         pingFrame = createPingFrame();
          
          synchronized (this)
          {
@@ -473,44 +487,28 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                
                if (serverPing != 0)
                {
-                  if (pings == 0)
+                  dur1 = System.currentTimeMillis() - lastPingTime.get();
+                  if (dur1 >= serverPing)
                   {
-                     dur1 = System.currentTimeMillis() - lastPing;
-                     if (dur1 >= serverPing)
-                     {
-                        lastPing = System.currentTimeMillis();
-                        connection.ping();
-                        dur1 = 0;
-                     }
-                  }
-                  else
-                  {
-                     dur1 = 5;
-                     pings = 0;
+                     lastPingTime.set(System.currentTimeMillis());
+                     connection.ping(pingFrame);
+                     dur1 = 0;
                   }
                }
 
                if (serverAcceptPing != 0)
                {
-                  if (accepts == 0)
+                  dur2 = System.currentTimeMillis() - lastAccepted.get();
+                  if (dur2 > (2 * serverAcceptPing))
                   {
-                     dur2 = System.currentTimeMillis() - lastAccepted;
-                     if (dur2 > (2 * serverAcceptPing))
-                     {
-                        connection.setValid(false);
-                        shutdown = true;
-                        break;
-                     }
-                  }
-                  else
-                  {
-                     lastAccepted = System.currentTimeMillis();
-                     accepts = 0;
+                     connection.disconnect();
+                     shutdown = true;
+                     break;
                   }
                }
                
                long waitTime1 = serverPing - dur1;
-               long waitTime2 = serverAcceptPing*2 - dur2;
+               long waitTime2 = serverAcceptPing * 2 - dur2;
 
                long waitTime = waitTime1 < waitTime2 ? waitTime1 : waitTime2;
                
@@ -523,6 +521,20 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                }
             }
          }
+      }
+
+      public void pingAccepted()
+      {
+         this.lastAccepted.set(System.currentTimeMillis());
+      }
+   }
+
+   @Override
+   public void requestAccepted(StompFrame request)
+   {
+      if (heartBeater != null)
+      {
+         heartBeater.pingAccepted();
       }
    }
 
