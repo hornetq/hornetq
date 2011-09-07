@@ -14,7 +14,6 @@
 package org.hornetq.core.replication.impl;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +47,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCurrentPagesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -207,10 +205,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          {
             handleReplicationSynchronization((ReplicationSyncFileMessage)packet);
          }
-         else if (type == PacketImpl.REPLICATION_CURRENT_PAGES_INFO)
-         {
-            handleCurrentPagesInfo((ReplicationCurrentPagesMessage)packet);
-         }
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
@@ -228,17 +222,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
 
       channel.send(response);
-   }
-
-   /**
-    * @param packet
-    */
-   private void handleCurrentPagesInfo(ReplicationCurrentPagesMessage packet)
-   {
-      for (Entry<SimpleString, Collection<Integer>> entry : packet.getInfo().entrySet())
-      {
-         // ignore the actual file list for the moment...
-      }
    }
 
    public boolean isStarted()

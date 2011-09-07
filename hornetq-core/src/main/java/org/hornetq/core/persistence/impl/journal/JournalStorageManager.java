@@ -467,7 +467,6 @@ public class JournalStorageManager implements StorageManager
          // HORNETQ-720 XXX perhaps before? unnecessary?
          store.forceAnotherPage();
       }
-      replicator.sendPagingInfo(info);
       return info;
    }
 

@@ -13,8 +13,6 @@
 
 package org.hornetq.core.replication;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
@@ -116,8 +114,6 @@ public interface ReplicationManager extends HornetQComponent
     * @throws Exception
     */
    void syncLargeMessageFile(SequentialFile seqFile, long size, long id) throws Exception;
-
-   void sendPagingInfo(Map<SimpleString, Collection<Integer>> info);
 
    /**
     * @param file

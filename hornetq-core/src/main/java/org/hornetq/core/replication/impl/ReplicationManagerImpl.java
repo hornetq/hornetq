@@ -14,9 +14,7 @@
 package org.hornetq.core.replication.impl;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -44,7 +42,6 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCurrentPagesMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -582,11 +579,5 @@ public class ReplicationManagerImpl implements ReplicationManager
    {
       ReplicationStartSyncMessage msg = new ReplicationStartSyncMessage(null, null);
       sendReplicatePacket(msg);
-   }
-
-   @Override
-   public void sendPagingInfo(Map<SimpleString, Collection<Integer>> info)
-   {
-      sendReplicatePacket(new ReplicationCurrentPagesMessage(info));
    }
 }
