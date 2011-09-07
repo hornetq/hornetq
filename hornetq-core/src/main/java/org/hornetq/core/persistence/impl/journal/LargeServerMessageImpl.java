@@ -226,7 +226,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       validateFile();
       releaseResources();
-      storageManager.deleteFile(file);
+      storageManager.deleteLargeMessageFile(this);
    }
 
    public boolean isFileExists() throws Exception

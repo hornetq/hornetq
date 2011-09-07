@@ -464,7 +464,7 @@ public class JournalStorageManager implements StorageManager
          PagingStore store = pagingManager.getPageStore(storeName);
          List<Integer> ids = new ArrayList<Integer>();
          info.put(storeName, store.getCurrentIds());
-         // XXX perhaps before? unnecessary?
+         // HORNETQ-720 XXX perhaps before? unnecessary?
          store.forceAnotherPage();
       }
       replicator.sendPagingInfo(info);
@@ -2118,15 +2118,30 @@ public class JournalStorageManager implements StorageManager
    // Package protected ---------------------------------------------
 
    // This should be accessed from this package only
-   void deleteFile(final SequentialFile file)
+   void deleteLargeMessageFile(final LargeServerMessage largeServerMessageImpl) throws HornetQException
    {
+      final SequentialFile file = largeServerMessageImpl.getFile();
+      if (file == null)
+         return;
       Runnable deleteAction = new Runnable()
       {
          public void run()
          {
             try
             {
-               file.delete();
+               readLock();
+               try
+               {
+                  if (replicator != null)
+                  {
+                     replicator.largeMessageDelete(largeServerMessageImpl.getMessageID());
+                  }
+                  file.delete();
+               }
+               finally
+               {
+                  readUnLock();
+               }
             }
             catch (Exception e)
             {
