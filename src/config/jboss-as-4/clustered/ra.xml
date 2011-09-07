@@ -76,18 +76,11 @@ Copyright 2009 Red Hat, Inc.
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value>getTm</config-property-value>
       </config-property>
-           <!--
-      <config-property>
+           <!--<config-property>
         <description>Does we support HA</description>
         <config-property-name>HA</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
         <config-property-value>false</config-property-value>
-      </config-property>
-      <config-property>
-        <description>The method to use for locating the transactionmanager</description>
-        <config-property-name>TransactionManagerLocatorMethod</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value>getTm</config-property-value>
       </config-property>
       <config-property>
         <description>Use A local Transaction instead of XA?</description>
@@ -106,6 +99,12 @@ Copyright 2009 Red Hat, Inc.
         <config-property-name>Password</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+        <description>The jndi params to use to look up the jms resources if local jndi is not to be used</description>
+        <config-property-name>JndiParams</config-property-name>
+        <config-property-type>java.lang.String</config-property-type>
+        <config-property-value>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory;java.naming.provider.url=jnp://localhost:1199;java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</config-property-value>
       </config-property>
       <config-property>
         <description>The discovery group address</description>
@@ -132,10 +131,16 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The load balancing policy class name</description>
-        <config-property-name>LoadBalancingPolicyClassName</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value></config-property-value>
+         <description>The class to use for load balancing connections</description>
+         <config-property-name>ConnectionLoadBalancingPolicyClassName</config-property-name>
+         <config-property-type>java.lang.String</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>number of reconnect attempts for connections after failover occurs</description>
+         <config-property-name>ReconnectAttempts</config-property-name>
+         <config-property-type>java.lang.Integer</config-property-type>
+         <config-property-value></config-property-value>
       </config-property>
       <config-property>
         <description>The client failure check period</description>
@@ -222,11 +227,6 @@ Copyright 2009 Red Hat, Inc.
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The max connections</description>
-        <config-property-type>java.lang.Integer</config-property-type>
-        <config-property-value></config-property-value>
-      </config-property>
-      <config-property>
         <description>The pre acknowledge</description>
         <config-property-name>PreAcknowledge</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
@@ -249,6 +249,42 @@ Copyright 2009 Red Hat, Inc.
         <config-property-name>ClientID</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>use global pools for client</description>
+         <config-property-name>UseGlobalPools</config-property-name>
+         <config-property-type>java.lang.Boolean</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>max number of threads for scheduled threrad pool</description>
+         <config-property-name>ScheduledThreadPoolMaxSize</config-property-name>
+         <config-property-type>java.lang.Integer</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>max number of threads in pool</description>
+         <config-property-name>ThreadPoolMaxSize</config-property-name>
+         <config-property-type>java.lang.Integer</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>whether to use jndi for looking up destinations etc</description>
+         <config-property-name>UseJNDI</config-property-name>
+         <config-property-type>boolean</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>how long in milliseconds to wait before retry on failed MDB setup</description>
+         <config-property-name>SetupInterval</config-property-name>
+         <config-property-type>long</config-property-type>
+         <config-property-value></config-property-value>
+      </config-property>
+      <config-property>
+         <description>How many attempts should be made when connecting the MDB</description>
+         <config-property-name>SetupAttempts</config-property-name>
+         <config-property-type>int</config-property-type>
+         <config-property-value></config-property-value>
       </config-property>-->
 
       <outbound-resourceadapter>
