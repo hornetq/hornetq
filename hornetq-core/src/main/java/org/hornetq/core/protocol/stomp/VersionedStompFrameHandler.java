@@ -14,6 +14,7 @@ package org.hornetq.core.protocol.stomp;
 
 import java.io.UnsupportedEncodingException;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v11.StompFrameHandlerV11;
 import org.hornetq.core.server.ServerMessage;
@@ -121,11 +122,23 @@ public abstract class VersionedStompFrameHandler
    public StompFrame handleReceipt(String receiptID)
    {
       StompFrame receipt = new StompFrame(Stomp.Responses.RECEIPT);
-      receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
+      try
+      {
+         receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
+      }
+      catch (HornetQStompException e)
+      {
+         return e.getFrame();
+      }
       
       return receipt;
    }
 
    public abstract StompFrame createMessageFrame(ServerMessage serverMessage,
          StompSubscription subscription, int deliveryCount) throws Exception;
+
+   public abstract StompFrame createStompFrame(String command);
+
+   public abstract StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException;
+
 }

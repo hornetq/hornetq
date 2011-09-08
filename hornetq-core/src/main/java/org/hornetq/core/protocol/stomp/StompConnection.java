@@ -61,7 +61,7 @@ public class StompConnection implements RemotingConnection
    
    private final long creationTime;
 
-   private StompDecoder decoder = new StompDecoder();
+   private StompDecoder decoder;
 
    private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
 
@@ -89,6 +89,8 @@ public class StompConnection implements RemotingConnection
       this.transportConnection = transportConnection;
 
       this.manager = manager;
+      
+      this.decoder = new StompDecoder(this);
       
       this.creationTime = System.currentTimeMillis();
    }
@@ -696,5 +698,10 @@ public class StompConnection implements RemotingConnection
          stompListener.replySent(frame);
       }
 
+   }
+
+   public VersionedStompFrameHandler getFrameHandler()
+   {
+      return this.frameHandler;
    }
 }

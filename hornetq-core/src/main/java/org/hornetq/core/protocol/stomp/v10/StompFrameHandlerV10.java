@@ -13,6 +13,7 @@
 package org.hornetq.core.protocol.stomp.v10;
 
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -23,7 +24,9 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
+import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
+import org.hornetq.core.protocol.stomp.StompFrame.Header;
 import org.hornetq.core.protocol.stomp.StompSubscription;
 import org.hornetq.core.protocol.stomp.StompUtils;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
@@ -343,6 +346,17 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
       
       return frame;
 
+   }
+
+   @Override
+   public StompFrame createStompFrame(String command)
+   {
+      return new StompFrameV10(command);
+   }
+
+   public StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException
+   {
+      return decoder.defaultDecode(buffer);
    }
 
 }

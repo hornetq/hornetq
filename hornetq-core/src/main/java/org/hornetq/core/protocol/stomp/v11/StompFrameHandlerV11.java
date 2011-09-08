@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp.v11;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -24,6 +25,7 @@ import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
+import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
 import org.hornetq.core.protocol.stomp.StompSubscription;
 import org.hornetq.core.protocol.stomp.StompUtils;
@@ -39,6 +41,8 @@ import org.hornetq.utils.DataConstants;
 public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements FrameEventListener
 {
    private static final Logger log = Logger.getLogger(StompFrameHandlerV11.class);
+   
+   private static final char ESC_CHAR = '\\';
    
    private HeartBeater heartBeater;
 
@@ -538,4 +542,436 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
    }
 
+   @Override
+   public StompFrame createStompFrame(String command)
+   {
+      return new StompFrameV11(command);
+   }
+   
+   //all frame except CONNECT are decoded here.
+   public StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException
+   {
+      int readable = buffer.readableBytes();
+
+      if (decoder.data + readable >= decoder.workingBuffer.length)
+      {
+         decoder.resizeWorking(decoder.data + readable);
+      }
+
+      buffer.readBytes(decoder.workingBuffer, decoder.data, readable);
+
+      decoder.data += readable;
+
+      if (decoder.command == null)
+      {
+         if (decoder.data < 4)
+         {
+            // Need at least four bytes to identify the command
+            // - up to 3 bytes for the command name + potentially another byte for a leading \n
+
+            return null;
+         }
+
+         int offset;
+
+         if (decoder.workingBuffer[0] == StompDecoder.NEW_LINE)
+         {
+            // Yuck, some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
+            // STOMP
+            // frame this can manifest as an extra \n at the beginning when the next STOMP frame is read - we need to
+            // deal
+            // with this
+            offset = 1;
+         }
+         else
+         {
+            offset = 0;
+         }
+
+         byte b = decoder.workingBuffer[offset];
+
+         switch (b)
+         {
+            case StompDecoder.A:
+            {
+               if (decoder.workingBuffer[offset + 1] == StompDecoder.B)
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_ABORT_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // ABORT
+                  decoder.command = StompDecoder.COMMAND_ABORT;
+               }
+               else
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_ACK_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // ACK
+                  decoder.command = StompDecoder.COMMAND_ACK;
+               }
+               break;
+            }
+            case StompDecoder.B:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_BEGIN_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // BEGIN
+               decoder.command = StompDecoder.COMMAND_BEGIN;
+
+               break;
+            }
+            case StompDecoder.C:
+            {
+               if (decoder.workingBuffer[offset + 2] == StompDecoder.M)
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_COMMIT_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // COMMIT
+                  decoder.command = StompDecoder.COMMAND_COMMIT;
+               }
+               /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+               else if (decoder.workingBuffer[offset+7] == StompDecoder.E) 
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_CONNECTED_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // CONNECTED
+                  decoder.command = StompDecoder.COMMAND_CONNECTED;                  
+               }
+               /**** end ****/
+               else
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_CONNECT_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // CONNECT
+                  decoder.command = StompDecoder.COMMAND_CONNECT;
+               }
+               break;
+            }
+            case StompDecoder.D:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_DISCONNECT_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // DISCONNECT
+               decoder.command = StompDecoder.COMMAND_DISCONNECT;
+
+               break;
+            }
+            case StompDecoder.R:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_RECEIPT_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // RECEIPT
+               decoder.command = StompDecoder.COMMAND_RECEIPT;
+
+               break;
+            }
+            /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
+            case StompDecoder.E:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_ERROR_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // ERROR
+               decoder.command = StompDecoder.COMMAND_ERROR;
+
+               break;
+            }
+            case StompDecoder.M:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_MESSAGE_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // MESSAGE
+               decoder.command = StompDecoder.COMMAND_MESSAGE;
+
+               break;
+            }
+            /**** end ****/
+            case StompDecoder.S:
+            {
+               if (decoder.workingBuffer[offset + 1] == StompDecoder.E)
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_SEND_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // SEND
+                  decoder.command = StompDecoder.COMMAND_SEND;
+               }
+               else if (decoder.workingBuffer[offset + 1] == StompDecoder.U)
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_SUBSCRIBE_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // SUBSCRIBE
+                  decoder.command = StompDecoder.COMMAND_SUBSCRIBE;
+               }
+               else
+               {
+                  if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_STOMP_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // SUBSCRIBE
+                  decoder.command = StompDecoder.COMMAND_STOMP;
+               }
+               break;
+            }
+            case StompDecoder.U:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_UNSUBSCRIBE_LENGTH + 1))
+               {
+                  return null;
+               }
+
+               // UNSUBSCRIBE
+               decoder.command = StompDecoder.COMMAND_UNSUBSCRIBE;
+
+               break;
+            }
+            case StompDecoder.N:
+            {
+               if (!decoder.tryIncrement(offset + StompDecoder.COMMAND_NACK_LENGTH + 1))
+               {
+                  return null;
+               }
+               //NACK
+               decoder.command = StompDecoder.COMMAND_NACK;
+               break;
+            }
+            default:
+            {
+               decoder.throwInvalid();
+            }
+         }
+
+         // Sanity check
+
+         if (decoder.workingBuffer[decoder.pos - 1] != StompDecoder.NEW_LINE)
+         {
+            decoder.throwInvalid();
+         }
+      }
+
+      if (decoder.readingHeaders)
+      {
+         if (decoder.headerBytesCopyStart == -1)
+         {
+            decoder.headerBytesCopyStart = decoder.pos;
+         }
+
+         // Now the headers
+
+         boolean isEscaping = false;
+         SimpleBytes holder = new SimpleBytes(1024);         
+         
+         outer: while (true)
+         {
+            byte b = decoder.workingBuffer[decoder.pos++];
+
+            switch (b)
+            {
+               //escaping
+               case ESC_CHAR:
+               {
+                  if (isEscaping)
+                  {
+                     //this is a backslash
+                     holder.append(b);
+                     isEscaping = false;
+                  }
+                  else
+                  {
+                     //begin escaping
+                     isEscaping = true;
+                  }
+                  break;
+               }
+               case StompDecoder.HEADER_SEPARATOR:
+               {
+                  if (isEscaping)
+                  {
+                     //a colon
+                     holder.append(b);
+                     isEscaping = false;
+                  }
+                  else
+                  {
+                     if (decoder.inHeaderName)
+                     {
+                        try
+                        {
+                           decoder.headerName = holder.getString();
+                        }
+                        catch (UnsupportedEncodingException e)
+                        {
+                           throw new HornetQStompException("Encoding exception", e);
+                        }
+                        
+                        holder.reset();
+
+                        decoder.inHeaderName = false;
+
+                        decoder.headerBytesCopyStart = decoder.pos;
+
+                        decoder.headerValueWhitespace = true;
+                     }
+                  }
+
+                  decoder.whiteSpaceOnly = false;
+
+                  break;
+               }
+               case StompDecoder.NEW_LINE:
+               {
+                  if (decoder.whiteSpaceOnly)
+                  {
+                     // Headers are terminated by a blank line
+                     decoder.readingHeaders = false;
+
+                     break outer;
+                  }
+
+                  String headerValue;
+                  try
+                  {
+                     headerValue = holder.getString();
+                  }
+                  catch (UnsupportedEncodingException e)
+                  {
+                     throw new HornetQStompException("Encoding exception.", e);
+                  }
+                  holder.reset();
+                  
+                  decoder.headers.put(decoder.headerName, headerValue);
+
+                  if (decoder.headerName.equals(StompDecoder.CONTENT_LENGTH_HEADER_NAME))
+                  {
+                     decoder.contentLength = Integer.parseInt(headerValue);
+                  }
+
+                  decoder.whiteSpaceOnly = true;
+
+                  decoder.headerBytesCopyStart = decoder.pos;
+
+                  decoder.inHeaderName = true;
+
+                  decoder.headerValueWhitespace = false;
+
+                  break;
+               }
+               default:
+               {
+                  decoder.whiteSpaceOnly = false;
+
+                  decoder.headerValueWhitespace = false;
+               }
+            }
+            if (decoder.pos == decoder.data)
+            {
+               // Run out of data
+
+               return null;
+            }
+         }
+      }
+
+      // Now the body
+
+      byte[] content = null;
+
+      if (decoder.contentLength != -1)
+      {
+         if (decoder.pos + decoder.contentLength + 1 > decoder.data)
+         {
+            // Need more bytes
+         }
+         else
+         {
+            content = new byte[decoder.contentLength];
+
+            System.arraycopy(decoder.workingBuffer, decoder.pos, content, 0, decoder.contentLength);
+
+            decoder.pos += decoder.contentLength + 1;
+         }
+      }
+      else
+      {
+         // Need to scan for terminating NUL
+
+         if (decoder.bodyStart == -1)
+         {
+            decoder.bodyStart = decoder.pos;
+         }
+
+         while (decoder.pos < decoder.data)
+         {
+            if (decoder.workingBuffer[decoder.pos++] == 0)
+            {
+               content = new byte[decoder.pos - decoder.bodyStart - 1];
+
+               System.arraycopy(decoder.workingBuffer, decoder.bodyStart, content, 0, content.length);
+
+               break;
+            }
+         }
+      }
+      
+      if (content != null)
+      {
+         if (decoder.data > decoder.pos)
+         {
+            if (decoder.workingBuffer[decoder.pos] == StompDecoder.NEW_LINE) decoder.pos++;
+
+            if (decoder.data > decoder.pos)
+              // More data still in the buffer from the next packet
+              System.arraycopy(decoder.workingBuffer, decoder.pos, decoder.workingBuffer, 0, decoder.data - decoder.pos);
+         }
+
+         decoder.data = decoder.data - decoder.pos;
+
+         // reset
+
+         StompFrame ret = new StompFrameV11(decoder.command, decoder.headers, content);
+
+         decoder.init();
+
+         return ret;
+      }
+      else
+      {
+         return null;
+      }
+   }
 }

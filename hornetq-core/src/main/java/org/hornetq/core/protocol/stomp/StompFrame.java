@@ -51,6 +51,8 @@ public class StompFrame
    private List<Header> allHeaders = new ArrayList<Header>();
 
    private String body;
+   
+   private byte[] bytesBody;
 
    private HornetQBuffer buffer = null;
 
@@ -68,6 +70,14 @@ public class StompFrame
       this.command = command;
       this.headers = new LinkedHashMap<String, String>();
       this.disconnect = disconnect;
+   }
+
+   public StompFrame(String command, Map<String, String> headers,
+         byte[] content)
+   {
+      this.command = command;
+      this.headers = headers;
+      this.bytesBody = content;
    }
 
    public String getCommand()
@@ -107,7 +117,7 @@ public class StompFrame
    {
       if (buffer == null)
       {
-         buffer = HornetQBuffers.dynamicBuffer(content.length + 512);
+         buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
 
          StringBuffer head = new StringBuffer();
          head.append(command);
@@ -124,7 +134,7 @@ public class StompFrame
          head.append(Stomp.NEWLINE);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
-         buffer.writeBytes(content);
+         buffer.writeBytes(bytesBody);
          buffer.writeBytes(END_OF_FRAME);
 
          size = buffer.writerIndex();
@@ -151,7 +161,7 @@ public class StompFrame
       return headers;
    }
    
-   private class Header
+   public static class Header
    {
       public String key;
       public String val;
@@ -191,5 +201,15 @@ public class StompFrame
    public boolean needsDisconnect()
    {
       return disconnect;
+   }
+
+   public List<Header> getHeaders()
+   {
+      return this.allHeaders;
+   }
+
+   public void setByteBody(byte[] content)
+   {
+      this.bytesBody = content;
    }
 }
