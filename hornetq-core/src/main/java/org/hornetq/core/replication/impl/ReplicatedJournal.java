@@ -14,6 +14,7 @@
 package org.hornetq.core.replication.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
@@ -23,6 +24,7 @@ import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
@@ -574,6 +576,12 @@ public class ReplicatedJournal implements Journal
    public JournalLoadInformation loadSyncOnly() throws Exception
    {
       return localJournal.loadSyncOnly();
+   }
+
+   @Override
+   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
+   {
+      throw new UnsupportedOperationException("This method should only be called at a replicating backup");
    }
 
    // Package protected ---------------------------------------------

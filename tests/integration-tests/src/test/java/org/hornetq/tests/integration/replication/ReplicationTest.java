@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.replication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,6 +52,7 @@ import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -594,7 +596,7 @@ public class ReplicationTest extends ServiceTestBase
 
    };
 
-   static class FakeJournal implements Journal
+   static final class FakeJournal implements Journal
    {
 
       public
@@ -846,12 +848,15 @@ public class ReplicationTest extends ServiceTestBase
 
       }
 
-      /*
-       * (non-Javadoc)
-       * @see org.hornetq.core.journal.Journal#loadSyncOnly()
-       */
       @Override
       public JournalLoadInformation loadSyncOnly() throws Exception
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      @Override
+      public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
       {
          // TODO Auto-generated method stub
          return null;

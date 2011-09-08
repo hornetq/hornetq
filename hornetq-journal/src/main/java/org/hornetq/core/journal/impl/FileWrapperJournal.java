@@ -1,6 +1,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -254,6 +255,12 @@ public class FileWrapperJournal extends JournalBase implements Journal
 
    @Override
    public JournalLoadInformation loadSyncOnly() throws Exception
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
    {
       throw new UnsupportedOperationException();
    }
