@@ -563,7 +563,7 @@ public class HornetQServerImpl implements HornetQServer
 
                         if (liveServerSessionFactory == null)
                         {
-                        // XXX HORNETQ-720
+                        // XXX HORNETQ-768
                            throw new RuntimeException("Need to retry...");
                         }
                         CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
@@ -597,7 +597,7 @@ public class HornetQServerImpl implements HornetQServer
             if (!isRemoteBackupUpToDate())
             {
                /*
-                * XXX HORNETQ-720 Live is down, and this server was not in sync. Perhaps we should
+                * XXX HORNETQ-768 Live is down, and this server was not in sync. Perhaps we should
                 * first try to wait a little longer to see if the 'live' comes back?
                 */
                throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup Server was not yet in sync with live");
