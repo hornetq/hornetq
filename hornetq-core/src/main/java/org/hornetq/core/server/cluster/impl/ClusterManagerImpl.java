@@ -45,7 +45,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.protocol.core.Channel;
-import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -480,7 +480,7 @@ public class ClusterManagerImpl implements ClusterManager
                      "'. backup cannot be announced.");
             return;
          }
-         liveChannel.send(new HaBackupRegistrationMessage(nodeUUID.toString(), connector));
+         liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector));
       }
       else
       {

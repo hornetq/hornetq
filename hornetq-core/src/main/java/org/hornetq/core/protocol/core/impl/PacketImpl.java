@@ -192,8 +192,7 @@ public class PacketImpl implements Packet
 
    public static final byte SUBSCRIBE_TOPOLOGY = 112;
 
-   /** XXX HORNETQ-720 "HA" is not really used anywhere else. Better name? */
-   public static final byte HA_BACKUP_REGISTRATION = 113;
+   public static final byte BACKUP_REGISTRATION = 113;
 
    public static final byte REPLICATION_START_STOP_SYNC = 120;
 

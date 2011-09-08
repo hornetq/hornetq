@@ -76,7 +76,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private final StaticConnector staticConnector = new StaticConnector();
 
-   private Topology topology = new Topology();
+   private final Topology topology = new Topology();
 
    private Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
@@ -1267,21 +1267,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          {
             e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
          }
-      }
-   }
-
-   public synchronized void factoryClosed(final ClientSessionFactory factory)
-   {
-      factories.remove(factory);
-
-      if (factories.isEmpty())
-      {
-         // Go back to using the broadcast or static list
-
-         receivedTopology = false;
-
-         topology = null;
-
       }
    }
 

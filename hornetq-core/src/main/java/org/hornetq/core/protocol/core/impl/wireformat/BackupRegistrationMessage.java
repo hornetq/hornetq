@@ -13,23 +13,23 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * After registration the live server will initiate synchronization of its state with the new backup
  * node.
  */
-public class HaBackupRegistrationMessage extends PacketImpl
+public class BackupRegistrationMessage extends PacketImpl
 {
 
    private TransportConfiguration connector;
 
    private String nodeID;
 
-   public HaBackupRegistrationMessage(String nodeId, TransportConfiguration tc)
+   public BackupRegistrationMessage(String nodeId, TransportConfiguration tc)
    {
       this();
       connector = tc;
       nodeID = nodeId;
    }
 
-   public HaBackupRegistrationMessage()
+   public BackupRegistrationMessage()
    {
-      super(HA_BACKUP_REGISTRATION);
+      super(BACKUP_REGISTRATION);
    }
 
    public String getNodeID()

@@ -347,7 +347,6 @@ public class JournalStorageManager implements StorageManager
    }
 
    /**
-    * XXX FIXME HORNETQ-720 Method ignores the synchronization of Paging.
     * @param replicationManager
     * @param pagingManager
     * @throws HornetQException
@@ -703,8 +702,6 @@ public class JournalStorageManager implements StorageManager
       try
       {
       // Note that we don't sync, the add reference that comes immediately after will sync if appropriate
-
-         // XXX HORNETQ-720
       if (message.isLargeMessage())
       {
          messageJournal.appendAddRecord(message.getMessageID(),

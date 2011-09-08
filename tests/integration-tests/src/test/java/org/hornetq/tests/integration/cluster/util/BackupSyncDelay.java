@@ -58,7 +58,7 @@ public class BackupSyncDelay implements Interceptor
    @Override
    public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
    {
-      if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
+      if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
       {
          try
          {

@@ -3106,7 +3106,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * @return
     * @throws Exception
     */
-   public JournalFile createFilesForRemoteSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
+   @Override
+   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
    {
       writeLock();
       try

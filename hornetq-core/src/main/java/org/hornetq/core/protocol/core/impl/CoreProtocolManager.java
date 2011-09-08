@@ -31,7 +31,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
@@ -146,9 +146,9 @@ public class CoreProtocolManager implements ProtocolManager
                server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), backup), backup,
                                                        true);
             }
-            else if (packet.getType() == PacketImpl.HA_BACKUP_REGISTRATION)
+            else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
-               HaBackupRegistrationMessage msg = (HaBackupRegistrationMessage)packet;
+               BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
                try
                {
                   server.addHaBackup(rc);

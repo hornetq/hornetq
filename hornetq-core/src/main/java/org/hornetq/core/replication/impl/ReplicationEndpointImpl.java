@@ -523,25 +523,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          return;
       }
 
-      final Journal journalIf = journalsHolder.get(packet.getJournalContentType());
+      final Journal journal = journalsHolder.get(packet.getJournalContentType());
 
-      JournalImpl journal = assertJournalImpl(journalIf);
       Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
-      JournalFile current = journal.createFilesForRemoteSync(packet.getFileIds(), mapToFill);
+      JournalFile current = journal.createFilesForBackupSync(packet.getFileIds(), mapToFill);
       registerJournal(packet.getJournalContentType().typeByte,
                       new FileWrapperJournal(current, storage.hasCallbackSupport()));
      }
-
-   // XXX HORNETQ-720 really need to do away with this once the method calls get stable.
-   private static JournalImpl assertJournalImpl(final Journal journalIf) throws HornetQException
-   {
-      if (!(journalIf instanceof JournalImpl))
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR,
-                                    "Journals of backup server are expected to be JournalImpl");
-      }
-      return (JournalImpl)journalIf;
-   }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {

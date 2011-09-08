@@ -90,7 +90,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.HaBackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NullResponseMessage;
@@ -521,9 +521,9 @@ public final class PacketDecoder
             packet = new SessionAddMetaDataMessageV2();
             break;
          }
-         case PacketImpl.HA_BACKUP_REGISTRATION:
+         case PacketImpl.BACKUP_REGISTRATION:
          {
-            packet = new HaBackupRegistrationMessage();
+            packet = new BackupRegistrationMessage();
             break;
          }
          case PacketImpl.REPLICATION_START_STOP_SYNC:

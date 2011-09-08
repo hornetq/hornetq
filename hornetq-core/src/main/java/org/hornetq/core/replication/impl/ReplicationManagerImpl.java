@@ -577,7 +577,6 @@ public class ReplicationManagerImpl implements ReplicationManager
    @Override
    public void sendSynchronizationDone()
    {
-      ReplicationStartSyncMessage msg = new ReplicationStartSyncMessage(null, null);
-      sendReplicatePacket(msg);
+      sendReplicatePacket(new ReplicationStartSyncMessage(null, null));
    }
 }

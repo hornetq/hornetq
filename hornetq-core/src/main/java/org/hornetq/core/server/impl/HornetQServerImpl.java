@@ -570,7 +570,6 @@ public class HornetQServerImpl implements HornetQServer
                         Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
                         Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
 
-                        replicationChannel.setHandler(replicationEndpoint);
                         connectToReplicationEndpoint(replicationChannel);
                         replicationEndpoint.start();
 
@@ -1064,10 +1063,6 @@ public class HornetQServerImpl implements HornetQServer
       return session;
    }
 
-   /**
-    * XXX FIXME to be made private, and method removed from Server interface once HORNETQ-720 is
-    * finished.
-    */
    private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
@@ -1076,8 +1071,7 @@ public class HornetQServerImpl implements HornetQServer
                   getIdentity());
       }
 
-      if (replicationEndpoint == null)
-         System.err.println("endpoint is null!");
+      channel.setHandler(replicationEndpoint);
 
       if (replicationEndpoint.getChannel() != null)
       {
