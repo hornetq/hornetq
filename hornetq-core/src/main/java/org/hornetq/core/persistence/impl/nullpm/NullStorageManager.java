@@ -588,4 +588,10 @@ public class NullStorageManager implements StorageManager
       return null;
    }
 
+   @Override
+   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
+   {
+      // no-op
+   }
+
 }

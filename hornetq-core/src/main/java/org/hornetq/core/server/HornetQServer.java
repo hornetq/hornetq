@@ -172,5 +172,9 @@ public interface HornetQServer extends HornetQComponent
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
-   void addHaBackup(CoreRemotingConnection rc) throws Exception;
+   /**
+    * @param rc
+    * @return {@code true} if replication started successfully, {@code false} otherwise
+    */
+   boolean startReplication(CoreRemotingConnection rc);
 }

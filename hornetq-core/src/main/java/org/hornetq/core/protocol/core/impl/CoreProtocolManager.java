@@ -30,8 +30,8 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
-import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
@@ -149,17 +149,11 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
                BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-               try
+               if (server.startReplication(rc))
                {
-                  server.addHaBackup(rc);
+                  server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), true), true,
+                                                          true);
                }
-               catch (Exception e)
-               {
-                  // XXX HORNETQ-720 This is not what we want
-                  e.printStackTrace();
-                  throw new RuntimeException(e);
-               }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), true), true, true);
             }
          }
 

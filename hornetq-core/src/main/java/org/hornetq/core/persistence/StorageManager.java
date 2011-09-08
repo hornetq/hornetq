@@ -34,6 +34,7 @@ import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -238,5 +239,12 @@ public interface StorageManager extends HornetQComponent
     * @return the message journal
     */
    Journal getMessageJournal();
+
+   /**
+    * @param replicationManager
+    * @param pagingManager
+    * @throws Exception
+    */
+   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception;
 
 }

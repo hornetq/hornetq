@@ -351,6 +351,7 @@ public class JournalStorageManager implements StorageManager
     * @param pagingManager
     * @throws HornetQException
     */
+   @Override
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
    {
       if (!started)

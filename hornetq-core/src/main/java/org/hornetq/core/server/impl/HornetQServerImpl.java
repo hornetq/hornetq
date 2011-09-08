@@ -1992,18 +1992,27 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    @Override
-   public void addHaBackup(CoreRemotingConnection rc) throws Exception
+   public boolean startReplication(CoreRemotingConnection rc)
    {
-      if (!(storageManager instanceof JournalStorageManager))
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "unknown implementation of JournalStorageManager!");
-      }
-
-      JournalStorageManager journalStorageManager = (JournalStorageManager)storageManager;
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
-      replicationManager.start();
-
-      journalStorageManager.startReplication(replicationManager, pagingManager);
+      try
+      {
+         replicationManager.start();
+         storageManager.startReplication(replicationManager, pagingManager);
+         return true;
+      }
+      catch (Exception e)
+      {
+         /*
+          * The reasoning here is that the exception was either caused by (1) the (interaction with)
+          * the backup, or (2) by an IO Error at the storage. If (1), we can swallow the exception
+          * and ignore the replication request. If (2) the live will crash shortly.
+          */
+         // HORNETQ-720 Need to verify whether swallowing the exception here is acceptable
+         log.warn("Exception when trying to start replication", e);
+         replicationManager = null;
+         return false;
+      }
    }
 
    /**
