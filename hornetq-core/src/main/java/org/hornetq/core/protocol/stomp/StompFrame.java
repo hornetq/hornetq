@@ -37,28 +37,25 @@ import org.hornetq.core.logging.Logger;
  */
 public class StompFrame
 {
-   private static final Logger log = Logger.getLogger(StompFrame.class);
+   protected static final Logger log = Logger.getLogger(StompFrame.class);
 
-   public static final byte[] NO_DATA = new byte[] {};
+   protected static final byte[] NO_DATA = new byte[] {};
 
-   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
+   protected static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-   private String command;
+   protected String command;
 
-   private Map<String, String> headers;
+   protected Map<String, String> headers;
+
+   protected String body;
    
-   //stomp 1.1 talks about repetitive headers.
-   private List<Header> allHeaders = new ArrayList<Header>();
+   protected byte[] bytesBody;
 
-   private String body;
+   protected HornetQBuffer buffer = null;
+
+   protected int size;
    
-   private byte[] bytesBody;
-
-   private HornetQBuffer buffer = null;
-
-   private int size;
-   
-   private boolean disconnect;
+   protected boolean disconnect;
    
    public StompFrame(String command)
    {
@@ -111,7 +108,6 @@ public class StompFrame
       out += body;
       return out;
    }
-
  
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
@@ -149,11 +145,7 @@ public class StompFrame
 
    public void addHeader(String key, String val)
    {
-      if (!headers.containsKey(key))
-      {
-         headers.put(key, val);
-      }
-      allHeaders.add(new Header(key, val));
+      headers.put(key, val);
    }
    
    public Map<String, String> getHeadersMap()
@@ -171,11 +163,31 @@ public class StompFrame
          this.key = key;
          this.val = val;
       }
+
+      public String getEscapedKey()
+      {
+         return escape(key);
+      }
+
+      public String getEscapedValue()
+      {
+         return escape(val);
+      }
+      
+      private String escape(String str)
+      {
+         str = str.replaceAll("\n", "\\n");
+         str = str.replaceAll("\\", "\\\\");
+         str = str.replaceAll(":", "\\:");
+         
+         return str;
+      }
    }
 
-   public void setBody(String body)
+   public void setBody(String body) throws UnsupportedEncodingException
    {
       this.body = body;
+      this.bytesBody = body.getBytes("UTF-8");
    }
 
    public boolean hasHeader(String key)
@@ -191,21 +203,12 @@ public class StompFrame
    //Since 1.1, there is a content-type header that needs to take care of
    public byte[] getBodyAsBytes() throws UnsupportedEncodingException
    {
-      if (body != null)
-      {
-         return body.getBytes("UTF-8");
-      }
-      return new byte[0];
+      return bytesBody;
    }
 
    public boolean needsDisconnect()
    {
       return disconnect;
-   }
-
-   public List<Header> getHeaders()
-   {
-      return this.allHeaders;
    }
 
    public void setByteBody(byte[] content)

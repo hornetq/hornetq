@@ -122,6 +122,8 @@ public class StompDecoder
 
    public static final byte TAB = (byte)'\t';
 
+   public static final String CONTENT_TYPE_HEADER_NAME = "content-type";
+
    public static String CONTENT_LENGTH_HEADER_NAME = "content-length";
 
    public byte[] workingBuffer = new byte[1024];
@@ -147,6 +149,8 @@ public class StompDecoder
    public boolean whiteSpaceOnly;
 
    public int contentLength;
+   
+   public String contentType;
 
    public int bodyStart;
    
@@ -599,6 +603,8 @@ public class StompDecoder
 
       contentLength = -1;
 
+      contentType = null;
+      
       bodyStart = -1;
    }
 

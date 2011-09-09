@@ -75,9 +75,17 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
       else
       {
          //not valid
-         response = new StompFrame(Stomp.Responses.ERROR);
+         response = new StompFrameV10(Stomp.Responses.ERROR);
          response.addHeader(Stomp.Headers.Error.MESSAGE, "Failed to connect");
-         response.setBody("The login account is not valid.");
+         try
+         {
+            response.setBody("The login account is not valid.");
+         }
+         catch (UnsupportedEncodingException e)
+         {
+            log.error("Encoding problem", e);
+            //then we will send a null body message.
+         }
          
          connection.sendFrame(response);
          connection.destroy();

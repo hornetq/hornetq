@@ -122,14 +122,7 @@ public abstract class VersionedStompFrameHandler
    public StompFrame handleReceipt(String receiptID)
    {
       StompFrame receipt = new StompFrame(Stomp.Responses.RECEIPT);
-      try
-      {
-         receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
-      }
-      catch (HornetQStompException e)
-      {
-         return e.getFrame();
-      }
+      receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
       
       return receipt;
    }

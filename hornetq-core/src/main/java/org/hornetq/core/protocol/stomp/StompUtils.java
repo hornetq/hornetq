@@ -46,6 +46,8 @@ public class StompUtils
 
    public static void copyStandardHeadersFromFrameToMessage(StompFrame frame, ServerMessageImpl msg) throws Exception
    {
+      Map<String, String> headers = new HashMap<String, String>(frame.getHeadersMap());
+      
       String priority = (String)headers.remove(Stomp.Headers.Send.PRIORITY);
       if (priority != null)
       {
@@ -80,10 +82,10 @@ public class StompUtils
       }
       
       // now the general headers
-      for (Iterator<Map.Entry<String, Object>> iter = headers.entrySet().iterator(); iter.hasNext();)
+      for (Iterator<Map.Entry<String, String>> iter = headers.entrySet().iterator(); iter.hasNext();)
       {
-         Map.Entry<String, Object> entry = iter.next();
-         String name = (String)entry.getKey();
+         Map.Entry<String, String> entry = iter.next();
+         String name = entry.getKey();
          Object value = entry.getValue();
          msg.putObjectProperty(name, value);
       }

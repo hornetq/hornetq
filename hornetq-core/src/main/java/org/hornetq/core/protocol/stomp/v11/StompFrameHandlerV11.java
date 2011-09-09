@@ -17,12 +17,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
+import org.hornetq.core.protocol.stomp.SimpleBytes;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
@@ -69,7 +71,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
             connection.setClientID(clientID);
             connection.setValid(true);
 
-            response = new StompFrame(Stomp.Responses.CONNECTED);
+            response = new StompFrameV11(Stomp.Responses.CONNECTED);
 
             // version
             response.addHeader(Stomp.Headers.Connected.VERSION,
@@ -112,6 +114,10 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       catch (HornetQStompException e)
       {
          response = e.getFrame();
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         response = new HornetQStompException("Encoding error.", e).getFrame();
       }
       return response;
    }
@@ -437,7 +443,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
    }
    
-   public StompFrame createPingFrame()
+   public StompFrame createPingFrame() throws UnsupportedEncodingException
    {
       StompFrame frame = new StompFrame(Stomp.Commands.STOMP);
       frame.setBody("\n");
@@ -480,7 +486,14 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       public void run()
       {
          lastAccepted.set(System.currentTimeMillis());
-         pingFrame = createPingFrame();
+         try
+         {
+            pingFrame = createPingFrame();
+         }
+         catch (UnsupportedEncodingException e1)
+         {
+            log.error("Cannot create ping frame due to encoding problem.", e1);
+         }
          
          synchronized (this)
          {
@@ -880,6 +893,11 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   {
                      decoder.contentLength = Integer.parseInt(headerValue);
                   }
+                  
+                  if (decoder.headerName.equals(StompDecoder.CONTENT_TYPE_HEADER_NAME))
+                  {
+                     decoder.contentType = headerValue;
+                  }
 
                   decoder.whiteSpaceOnly = true;
 
@@ -974,4 +992,5 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          return null;
       }
    }
+   
 }
