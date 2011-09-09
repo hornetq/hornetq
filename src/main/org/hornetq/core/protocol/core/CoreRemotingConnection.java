@@ -25,6 +25,15 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  */
 public interface CoreRemotingConnection extends RemotingConnection
 {  
+
+   /** The client protocol used  on the communication.
+    *  This will determine if the client has support for certain packet types */
+   int getClientVersion();
+   
+   /** The client protocol used  on the communication.
+    *  This will determine if the client has support for certain packet types */
+   void setClientVersion(int clientVersion);
+   
    /**
     * return the channel with the channel id specified.
     * <p/>

@@ -15,12 +15,9 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.persistence.OperationContext;

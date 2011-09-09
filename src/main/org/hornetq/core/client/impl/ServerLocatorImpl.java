@@ -165,6 +165,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private Executor startExecutor;
 
    private static ScheduledExecutorService globalScheduledThreadPool;
+   
+   private AfterConnectInternalListener afterConnectListener;
 
    private String groupID;
 
@@ -483,7 +485,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     * @param discoveryAddress
     * @param discoveryPort
     */
-   public ServerLocatorImpl(final Topology topology, final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
+   public ServerLocatorImpl(final Topology topology,
+                            final boolean useHA,
+                            final DiscoveryGroupConfiguration groupConfiguration)
    {
       this(topology, useHA, groupConfiguration, null);
 
@@ -545,6 +549,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
       });
    }
+   
+   public Executor getExecutor()
+   {
+      return startExecutor;
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.api.core.client.ServerLocator#disableFinalizeCheck()
@@ -554,7 +563,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       finalizeCheck = false;
    }
 
-   public ClientSessionFactory connect() throws Exception
+   public ClientSessionFactoryInternal connect() throws Exception
    {
       ClientSessionFactoryInternal sf;
       // static list of initial connectors
@@ -571,6 +580,19 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return sf;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.impl.ServerLocatorInternal#setAfterConnectionInternalListener(org.hornetq.core.client.impl.AfterConnectInternalListener)
+    */
+   public void setAfterConnectionInternalListener(AfterConnectInternalListener listener)
+   {
+      this.afterConnectListener = listener;
+   }
+
+   public AfterConnectInternalListener getAfterConnectInternalListener()
+   {
+      return afterConnectListener;
+   }
+   
    public boolean isClosed()
    {
       return closed || closing;
@@ -1244,7 +1266,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       closed = true;
    }
 
-   public void notifyNodeDown(final String nodeID)
+   /** This is directly called when the connection to the node is gone,
+    *  or when the node sends a disconnection.
+    *  Look for callers of this method! */
+   public void notifyNodeDown(final long eventTime, final String nodeID)
    {
 
       if (topology == null)
@@ -1258,27 +1283,31 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          log.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
 
-      topology.removeMember(nodeID);
-
-      if (!topology.isEmpty())
+      if (topology.removeMember(eventTime, nodeID))
       {
-         updateArraysAndPairs();
-
-         if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+         if (topology.isEmpty())
          {
+            // Resetting the topology to its original condition as it was brand new
+            topologyArray = null;
+
             receivedTopology = false;
          }
-      }
-      else
-      {
-         topologyArray = null;
+         else
+         {
+            updateArraysAndPairs();
 
-         receivedTopology = false;
+            if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+            {
+               // Resetting the topology to its original condition as it was brand new
+               receivedTopology = false;
+            }
+         }
       }
 
    }
 
-   public void notifyNodeUp(final String nodeID,
+   public void notifyNodeUp(long uniqueEventID,
+                            final String nodeID,
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
@@ -1293,33 +1322,33 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
-      topology.addMember(nodeID, new TopologyMember(connectorPair), last);
+      TopologyMember member = new TopologyMember(connectorPair.a, connectorPair.b);
 
-      TopologyMember actMember = topology.getMember(nodeID);
-
-      if (actMember != null && actMember.getConnector().a != null && actMember.getConnector().b != null)
+      if (topology.updateMember(uniqueEventID, nodeID, member))
       {
-         for (ClientSessionFactory factory : factories)
+
+         TopologyMember actMember = topology.getMember(nodeID);
+
+         if (actMember != null && actMember.getConnector().a != null && actMember.getConnector().b != null)
          {
-            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().a,
-                                                                       actMember.getConnector().b);
+            for (ClientSessionFactory factory : factories)
+            {
+               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().a,
+                                                                          actMember.getConnector().b);
+            }
          }
-      }
 
-      if (connectorPair.a != null)
-      {
          updateArraysAndPairs();
       }
 
-      synchronized (this)
+      if (last)
       {
-         if (last)
+         synchronized (this)
          {
             receivedTopology = true;
+            // Notify if waiting on getting topology
+            notifyAll();
          }
-
-         // Notify if waiting on getting topology
-         notifyAll();
       }
    }
 
@@ -1569,9 +1598,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                                                 threadPool,
                                                                                 scheduledThreadPool,
                                                                                 interceptors);
-            
+
             factory.disableFinalizeCheck();
-            
+
             connectors.add(new Connector(initialConnector, factory));
          }
       }

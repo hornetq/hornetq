@@ -2,6 +2,7 @@ package org.hornetq.tests.integration.spring;
 
 import junit.framework.Assert;
 
+import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.embedded.EmbeddedJMS;
 import org.hornetq.tests.util.UnitTestCase;
@@ -15,6 +16,16 @@ import org.springframework.jms.listener.DefaultMessageListenerContainer;
  */
 public class SpringIntegrationTest extends UnitTestCase
 {
+   Logger log = Logger.getLogger(SpringIntegrationTest.class);
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      // Need to force GC as the connection on the spring needs to be cleared
+      // otherwise the sprint thread may leak here
+      forceGC();
+   }
+   
    public void testSpring() throws Exception
    {
       System.out.println("Creating bean factory...");

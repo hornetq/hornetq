@@ -71,6 +71,8 @@ public class ClusterConnectionBridge extends BridgeImpl
    private final SimpleString idsHeaderName;
 
    private final String targetNodeID;
+   
+   private final long targetNodeEventUID;
 
    private final TransportConfiguration connector;
 
@@ -85,6 +87,7 @@ public class ClusterConnectionBridge extends BridgeImpl
                                   final double retryMultiplier,
                                   final long maxRetryInterval,
                                   final UUID nodeUUID,
+                                  final long targetNodeEventUID,
                                   final String targetNodeID,
                                   final SimpleString name,
                                   final Queue queue,
@@ -130,6 +133,7 @@ public class ClusterConnectionBridge extends BridgeImpl
 
       this.clusterManager = clusterManager;
 
+      this.targetNodeEventUID = targetNodeEventUID;
       this.targetNodeID = targetNodeID;
       this.managementAddress = managementAddress;
       this.managementNotificationAddress = managementNotificationAddress;
@@ -319,7 +323,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (permanently)
       {
          log.debug("cluster node for bridge " + this.getName() + " is permanently down");
-         discoveryLocator.notifyNodeDown(targetNodeID);
+         discoveryLocator.notifyNodeDown(targetNodeEventUID+1, targetNodeID);
       }
 
    }

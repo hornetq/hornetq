@@ -168,6 +168,16 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       return "ClusterManagerImpl[server=" + server + "]@" + System.identityHashCode(this);
    }
+   
+   public TopologyMember getLocalMember()
+   {
+      return topology.getMember(nodeUUID.toString());
+   }
+   
+   public String getNodeId()
+   {
+      return nodeUUID.toString();
+   }
 
    public synchronized void start() throws Exception
    {
@@ -183,9 +193,34 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             deployBroadcastGroup(config);
          }
 
+         String connectorName = null;
+
          for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
          {
-            deployClusterConnection(config);
+            if (connectorName == null)
+            {
+               connectorName = config.getConnectorName();
+               break;
+            }
+          }
+
+         if (connectorName != null)
+         {
+            TransportConfiguration nodeConnector = configuration.getConnectorConfigurations().get(connectorName);
+            if (nodeConnector == null)
+            {
+               log.warn("No connecor with name '" + connectorName +
+                        "'. The cluster connection will not be deployed.");
+               return;
+            }
+   
+            // Now announce presence
+            announceNode(nodeConnector);
+   
+            for (ClusterConnectionConfiguration config : configuration.getClusterConfigurations())
+            {
+               deployClusterConnection(config);
+            }
          }
 
       }
@@ -193,13 +228,6 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
          deployBridge(config);
-      }
-
-      // Now announce presence
-
-      if (clusterConnections.size() > 0)
-      {
-         announceNode();
       }
 
       started = true;
@@ -264,80 +292,25 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       clusterConnections.clear();
    }
 
-   public void notifyNodeDown(String nodeID)
-   {
-      if (nodeID.equals(nodeUUID.toString()))
-      {
-         return;
-      }
-
-      log.debug(this + "::removing nodeID=" + nodeID, new Exception("trace"));
-
-      topology.removeMember(nodeID);
-
-   }
-
-   public void notifyNodeUp(final String nodeID,
-                            final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            final boolean last,
-                            final boolean nodeAnnounce)
+   public void nodeAnnounced(final long uniqueEventID,
+                             final String nodeID,
+                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                             final boolean backup)
    {
       if (log.isDebugEnabled())
       {
-         log.debug(this + "::NodeUp " + nodeID + connectorPair + ", nodeAnnounce=" + nodeAnnounce);
+         log.debug(this + "::NodeAnnounced, backup=" + backup + nodeID + connectorPair);
       }
 
-      TopologyMember member = new TopologyMember(connectorPair);
-      boolean updated = topology.addMember(nodeID, member, last);
-
-      if (!updated)
+      TopologyMember newMember = new TopologyMember(connectorPair.a, connectorPair.b);
+      newMember.setUniqueEventID(uniqueEventID);
+      if (backup)
       {
-         if (log.isDebugEnabled())
-         {
-            log.debug(this + " ignored notifyNodeUp on nodeID=" +
-                      nodeID +
-                      " pair=" +
-                      connectorPair +
-                      " as the topology already knew about it");
-         }
-         return;
+         topology.updateBackup(nodeID, new TopologyMember(connectorPair.a, connectorPair.b));
       }
-
-      if (log.isDebugEnabled())
+      else
       {
-         log.debug(this + " received notifyNodeUp nodeID=" +
-                   nodeID +
-                   " connectorPair=" +
-                   connectorPair +
-                   ", nodeAnnounce=" +
-                   nodeAnnounce +
-                   ", last=" +
-                   last);
-      }
-
-      // if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster
-      // connections.
-      if (nodeAnnounce)
-      {
-         if (log.isDebugEnabled())
-         {
-            log.debug("Informing " + nodeID + " to " + clusterConnections.toString());
-         }
-         for (ClusterConnection clusterConnection : clusterConnections.values())
-         {
-            if (log.isTraceEnabled())
-            {
-               log.trace(this + " information clusterConnection=" +
-                         clusterConnection +
-                         " nodeID=" +
-                         nodeID +
-                         " connectorPair=" +
-                         connectorPair +
-                         " last=" +
-                         last);
-            }
-            clusterConnection.nodeUP(nodeID, connectorPair, last);
-         }
+         topology.updateMember(uniqueEventID, nodeID, newMember);
       }
    }
 
@@ -347,7 +320,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       executor.execute(future);
       if (!future.await(10000))
       {
-         server.threadDump("Couldn't flush ClusterManager executor (" + this + ") in 10 seconds, verify your thread pool size");
+         server.threadDump("Couldn't flush ClusterManager executor (" + this +
+                           ") in 10 seconds, verify your thread pool size");
       }
    }
 
@@ -405,9 +379,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          TopologyMember member = topology.getMember(nodeID);
          // swap backup as live and send it to everybody
-         member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(member.getConnector().b,
-                                                                                              null));
-         topology.addMember(nodeID, member, false);
+         member = new TopologyMember(member.getConnector().b, null);
+         topology.updateAsLive(nodeID, member);
 
          if (backupServerLocator != null)
          {
@@ -460,7 +433,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             }
          }
 
-         topology.sendMemberToListeners(nodeID, member);
+         topology.sendMember(nodeID);
       }
    }
 
@@ -496,43 +469,21 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       this.clusterLocators.remove(serverLocator);
    }
 
-   private synchronized void announceNode()
+   private synchronized void announceNode(final TransportConfiguration nodeConnector)
    {
-      // TODO does this really work with more than one cluster connection? I think not
-
-      // Just take the first one for now
-      ClusterConnection cc = clusterConnections.values().iterator().next();
-
       String nodeID = server.getNodeID().toString();
-
-      TopologyMember member = topology.getMember(nodeID);
-
-      if (member == null)
+      
+      TopologyMember localMember;
+      if (backup)
       {
-         if (backup)
-         {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(null,
-                                                                                                 cc.getConnector()));
-         }
-         else
-         {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(cc.getConnector(),
-                                                                                                 null));
-         }
-
-         topology.addMember(nodeID, member, false);
+         localMember = new TopologyMember(null, nodeConnector);
       }
       else
       {
-         if (backup)
-         {
-            // pair.b = cc.getConnector();
-         }
-         else
-         {
-            // pair.a = cc.getConnector();
-         }
+         localMember = new TopologyMember(nodeConnector, null);
       }
+
+      topology.updateAsLive(nodeID, localMember);
    }
 
    private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
@@ -957,7 +908,11 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                {
                   backupSessionFactory.getConnection()
                                       .getChannel(0, -1)
-                                      .send(new NodeAnnounceMessage(nodeUUID.toString(), true, connector));
+                                      .send(new NodeAnnounceMessage(System.currentTimeMillis(),
+                                                                    nodeUUID.toString(),
+                                                                    true,
+                                                                    connector,
+                                                                    null));
                   log.info("backup announced");
                }
             }

@@ -54,6 +54,11 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupCluster();
 
       startServers(0, 1, 2, 3, 4);
+      
+      for (int i = 0 ; i < 5; i++)
+      {
+         waitForTopology(servers[i], 5);
+      }
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -97,6 +102,11 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupCluster();
 
       startServers(0, 1, 2, 3, 4);
+      
+      for (int i = 0 ; i < 5; i++)
+      {
+         waitForTopology(servers[i], 5);
+      }
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());

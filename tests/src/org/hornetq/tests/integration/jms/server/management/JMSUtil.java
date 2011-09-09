@@ -296,7 +296,7 @@ public class JMSUtil
          this.latch = latch;
       }
 
-      public void nodeUP(String nodeID,
+      public void nodeUP(final long uniqueEventID, String nodeID,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {
@@ -312,7 +312,7 @@ public class JMSUtil
          }
       }
 
-      public void nodeDown(String nodeID)
+      public void nodeDown(final long uniqueEventID, String nodeID)
       {
          // To change body of implemented methods use File | Settings | File Templates.
       }

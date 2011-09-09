@@ -31,7 +31,13 @@ public interface ServerLocatorInternal extends ServerLocator
 {
    void start(Executor executor) throws Exception;
    
+   Executor getExecutor();
+   
    void factoryClosed(final ClientSessionFactory factory);
+   
+   AfterConnectInternalListener getAfterConnectInternalListener();
+   
+   void setAfterConnectionInternalListener(AfterConnectInternalListener listener);
    
    /** Used to better identify Cluster Connection Locators on logs while debugging logs */
    void setIdentity(String identity);
@@ -42,11 +48,16 @@ public interface ServerLocatorInternal extends ServerLocator
    
    void cleanup();
 
-   ClientSessionFactory connect() throws  Exception;
+   ClientSessionFactoryInternal connect() throws  Exception;
 
-   void notifyNodeUp(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   void notifyNodeUp(long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
-   void notifyNodeDown(String nodeID);
+   /**
+    * 
+    * @param uniqueEventID 0 means get the previous ID +1
+    * @param nodeID
+    */
+   void notifyNodeDown(long uniqueEventID, String nodeID);
 
    void setClusterConnection(boolean clusterConnection);
 

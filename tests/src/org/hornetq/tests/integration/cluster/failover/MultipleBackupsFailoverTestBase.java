@@ -20,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -34,6 +33,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -47,6 +48,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 {
+   Logger log = Logger.getLogger(this.getClass());
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -102,7 +104,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
                }
             }
          }
-         
+
          try
          {
             Thread.sleep(100);
@@ -170,6 +172,13 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
    protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator,
                                                                                  int topologyMembers) throws Exception
    {
+      return createSessionFactoryAndWaitForTopology(locator, topologyMembers, null);
+   }
+
+   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator,
+                                                                                 int topologyMembers,
+                                                                                 HornetQServer server) throws Exception
+   {
       ClientSessionFactoryInternal sf;
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
@@ -179,12 +188,15 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
+      locator.removeClusterTopologyListener(topListener);
       if (!ok)
       {
-         System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
+         if (server != null)
+         {
+            log.info("failed topology, Topology on server = " + server.getClusterManager().getTopology().describe());
+         }
       }
-      locator.removeClusterTopologyListener(topListener);
-      assertTrue(ok);
+      assertTrue("expected " + topologyMembers + " members", ok);
       return sf;
    }
 
@@ -219,7 +231,10 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(final long uniqueEventID,
+                         String nodeID,
+                         Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                         boolean last)
       {
          if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
          {
@@ -233,7 +248,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          }
       }
 
-      public void nodeDown(String nodeID)
+      public void nodeDown(final long uniqueEventID, String nodeID)
       {
       }
    }

@@ -122,6 +122,7 @@ public class JMSTestBase extends ServiceTestBase
 
       Configuration conf = createDefaultConfig(false);
 
+      conf.getAcceptorConfigurations().clear();
       conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
@@ -179,9 +180,6 @@ public class JMSTestBase extends ServiceTestBase
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
 
       mbeanServer = null;
-
-      super.tearDown();
-
 
       super.tearDown();
    }

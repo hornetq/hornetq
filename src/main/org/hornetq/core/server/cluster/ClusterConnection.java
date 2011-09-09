@@ -46,6 +46,8 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    void activate() throws Exception;
    
    TransportConfiguration getConnector();
+   
+   void flushExecutor();
 
    // for debug
    String describe();

@@ -444,6 +444,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          // Now we will simulate a failure of the bridge connection between server0 and server1
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
+         assertNotNull(bridge);
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;

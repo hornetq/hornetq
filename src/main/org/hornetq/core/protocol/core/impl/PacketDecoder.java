@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl;
 
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
@@ -83,11 +84,13 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
@@ -152,6 +155,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutMessage
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 
 /**
  * A PacketDecoder
@@ -504,6 +508,11 @@ public class PacketDecoder
             packet = new ClusterTopologyChangeMessage();
             break;
          }
+         case CLUSTER_TOPOLOGY_V2:
+         {
+            packet = new ClusterTopologyChangeMessage_V2();
+            break;
+         }
          case NODE_ANNOUNCE:
          {
             packet = new NodeAnnounceMessage();
@@ -512,6 +521,11 @@ public class PacketDecoder
          case SUBSCRIBE_TOPOLOGY:
          {
             packet = new SubscribeClusterTopologyUpdatesMessage();
+            break;
+         }
+         case SUBSCRIBE_TOPOLOGY_V2:
+         {
+            packet = new SubscribeClusterTopologyUpdatesMessageV2();
             break;
          }
          case SESS_ADD_METADATA:

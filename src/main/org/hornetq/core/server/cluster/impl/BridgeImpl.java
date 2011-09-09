@@ -101,7 +101,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final Transformer transformer;
 
-   private volatile ClientSessionFactory csf;
+   private volatile ClientSessionFactoryInternal csf;
 
    protected volatile ClientSessionInternal session;
 
@@ -200,6 +200,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       this.notificationService = notificationService;
    }
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -651,6 +652,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          futureScheduledReconnection = null;
       }
    }
+
+   /**
+    * @return
+    */
+   protected ClientSessionFactoryInternal getCurrentFactory()
+   {
+      return csf;
+   }
+
 
    /* Hook for creating session factory */
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception

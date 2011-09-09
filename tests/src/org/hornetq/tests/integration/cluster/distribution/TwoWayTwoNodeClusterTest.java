@@ -128,7 +128,7 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       stopServers(0, 1);
    }
 
-   public void testRestartTest() throws Throwable
+   public void testRestartServers() throws Throwable
    {
       String name = Thread.currentThread().getName();
       try
@@ -136,14 +136,19 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
          Thread.currentThread().setName("ThreadOnTestRestartTest");
          startServers(0, 1);
          waitForTopology(servers[0], 2);
+
+         System.out.println(servers[0].getClusterManager().getTopology().describe());
+         System.out.println(servers[1].getClusterManager().getTopology().describe());
          waitForTopology(servers[1], 2);
 
-         for (int i = 0; i < 5; i++)
+         for (int i = 0; i < 10; i++)
          {
+            Thread.sleep(10);
             log.info("Sleep #test " + i);
             log.info("#stop #test #" + i);
-            Thread.sleep(500);
             stopServers(1);
+
+            System.out.println(servers[0].getClusterManager().getTopology().describe());
             waitForTopology(servers[0], 1, 2000);
             log.info("#start #test #" + i);
             startServers(1);
@@ -182,17 +187,17 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       verifyNotReceive(0, 1);
 
       removeConsumer(1);
-      
+
       closeSessionFactory(1);
-      
+
       stopServers(1);
-      
+
       Thread.sleep(12000);
 
       System.out.println(clusterDescription(servers[0]));
 
       startServers(1);
-      
+
       Thread.sleep(3000);
 
       System.out.println(clusterDescription(servers[0]));

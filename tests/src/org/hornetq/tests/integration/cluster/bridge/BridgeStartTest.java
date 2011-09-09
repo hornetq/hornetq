@@ -20,10 +20,15 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -132,7 +137,10 @@ public class BridgeStartTest extends ServiceTestBase
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
          server1.start();
+         waitForServer(server1);
+         
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -303,6 +311,7 @@ public class BridgeStartTest extends ServiceTestBase
          // Don't start server 1 yet
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -330,6 +339,8 @@ public class BridgeStartTest extends ServiceTestBase
          Thread.sleep(1000);
 
          server1.start();
+         waitForServer(server1);
+         
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -395,6 +406,7 @@ public class BridgeStartTest extends ServiceTestBase
          BridgeStartTest.log.info("sent some more messages");
 
          server1.start();
+         waitForServer(server1);
 
          BridgeStartTest.log.info("started server1");
 
@@ -514,6 +526,7 @@ public class BridgeStartTest extends ServiceTestBase
          // Don't start server 1 yet
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -542,6 +555,8 @@ public class BridgeStartTest extends ServiceTestBase
          // JMSBridge should be stopped since retries = 0
 
          server1.start();
+         waitForServer(server1);
+         
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -665,8 +680,10 @@ public class BridgeStartTest extends ServiceTestBase
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
          server1.start();
+         waitForServer(server1);
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);

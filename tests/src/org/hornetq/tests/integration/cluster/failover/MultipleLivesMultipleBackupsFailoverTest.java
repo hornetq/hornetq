@@ -25,7 +25,6 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -42,7 +41,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
    {
       for (TestableServer testableServer : servers.values())
       {
-         if(testableServer != null)
+         if (testableServer != null)
          {
             try
             {
@@ -56,42 +55,50 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       }
       super.tearDown();
    }
-   
+
    public void testMultipleFailovers2LiveServers() throws Exception
    {
-      // TODO: remove these sleeps
       NodeManager nodeManager1 = new InVMNodeManager();
       NodeManager nodeManager2 = new InVMNodeManager();
       createLiveConfig(nodeManager1, 0, 3, 4, 5);
-      createBackupConfig(nodeManager1, 0, 1, true, new int[] {0, 2}, 3, 4, 5);
-      createBackupConfig(nodeManager1, 0, 2, true, new int[] {0, 1}, 3, 4, 5);
+      createBackupConfig(nodeManager1, 0, 1, true, new int[] { 0, 2 }, 3, 4, 5);
+      createBackupConfig(nodeManager1, 0, 2, true, new int[] { 0, 1 }, 3, 4, 5);
       createLiveConfig(nodeManager2, 3, 0);
-      createBackupConfig(nodeManager2, 3, 4, true, new int[] {3, 5}, 0, 1, 2);
-      createBackupConfig(nodeManager2, 3, 5, true, new int[] {3, 4}, 0, 1, 2);
-      
-      Thread.sleep(500);
+      createBackupConfig(nodeManager2, 3, 4, true, new int[] { 3, 5 }, 0, 1, 2);
+      createBackupConfig(nodeManager2, 3, 5, true, new int[] { 3, 4 }, 0, 1, 2);
+
       servers.get(0).start();
-      Thread.sleep(500);
+      waitForServer(servers.get(0).getServer());
+
       servers.get(3).start();
-      Thread.sleep(500);
+      waitForServer(servers.get(3).getServer());
+      
       servers.get(1).start();
-      Thread.sleep(500);
+      waitForServer(servers.get(1).getServer());
+
       servers.get(2).start();
-      Thread.sleep(500);
+      
       servers.get(4).start();
-      Thread.sleep(500);
+      waitForServer(servers.get(4).getServer());
+      
       servers.get(5).start();
+
+      waitForServer(servers.get(4).getServer());
+
       ServerLocator locator = getServerLocator(0);
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 4);
+      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 4, servers.get(0).getServer());
       ClientSession session = sendAndConsume(sf, true);
 
       System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
+      Thread.sleep(500);
       servers.get(0).crash(session);
+
+      System.out.println("server3 " + servers.get(3).getServer().getClusterManager().getTopology().describe());
 
       int liveAfter0 = waitForNewLive(10000, true, servers, 1, 2);
 
@@ -139,11 +146,18 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       }
    }
 
-   protected void createBackupConfig(NodeManager nodeManager, int liveNode, int nodeid, boolean createClusterConnections, int[] otherBackupNodes, int... otherClusterNodes)
+   protected void createBackupConfig(NodeManager nodeManager,
+                                     int liveNode,
+                                     int nodeid,
+                                     boolean createClusterConnections,
+                                     int[] otherBackupNodes,
+                                     int... otherClusterNodes)
    {
       Configuration config1 = super.createDefaultConfig();
       config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true, generateParams(nodeid, isNetty())));
+      config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(),
+                                                                           true,
+                                                                           generateParams(nodeid, isNetty())));
       config1.setSecurityEnabled(false);
       config1.setSharedStore(true);
       config1.setBackup(true);
@@ -152,21 +166,36 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       List<String> staticConnectors = new ArrayList<String>();
       for (int node : otherBackupNodes)
       {
-         TransportConfiguration liveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+         TransportConfiguration liveConnector = createTransportConfiguration(isNetty(),
+                                                                             false,
+                                                                             generateParams(node, isNetty()));
          config1.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
          staticConnectors.add(liveConnector.getName());
       }
-      TransportConfiguration backupConnector = createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
+      TransportConfiguration backupConnector = createTransportConfiguration(isNetty(),
+                                                                            false,
+                                                                            generateParams(nodeid, isNetty()));
       config1.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
 
       List<String> clusterNodes = new ArrayList<String>();
       for (int node : otherClusterNodes)
       {
-         TransportConfiguration connector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+         TransportConfiguration connector = createTransportConfiguration(isNetty(),
+                                                                         false,
+                                                                         generateParams(node, isNetty()));
          config1.getConnectorConfigurations().put(connector.getName(), connector);
          clusterNodes.add(connector.getName());
       }
-      ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1, clusterNodes, false);
+      ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1",
+                                                                               "jms",
+                                                                               backupConnector.getName(),
+                                                                               -1,
+                                                                               false,
+                                                                               false,
+                                                                               1,
+                                                                               1,
+                                                                               clusterNodes,
+                                                                               false);
       config1.getClusterConfigurations().add(ccc1);
 
       config1.setBindingsDirectory(config1.getBindingsDirectory() + "_" + liveNode);
@@ -177,25 +206,39 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, liveNode)));
    }
 
-   protected void createLiveConfig(NodeManager nodeManager, int liveNode, int ... otherLiveNodes)
+   protected void createLiveConfig(NodeManager nodeManager, int liveNode, int... otherLiveNodes)
    {
-      TransportConfiguration liveConnector = createTransportConfiguration(isNetty(), false, generateParams(liveNode, isNetty()));
+      TransportConfiguration liveConnector = createTransportConfiguration(isNetty(),
+                                                                          false,
+                                                                          generateParams(liveNode, isNetty()));
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true, generateParams(liveNode, isNetty())));
+      config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(),
+                                                                           true,
+                                                                           generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
       config0.setClustered(true);
       List<String> pairs = new ArrayList<String>();
       for (int node : otherLiveNodes)
       {
-         TransportConfiguration otherLiveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+         TransportConfiguration otherLiveConnector = createTransportConfiguration(isNetty(),
+                                                                                  false,
+                                                                                  generateParams(node, isNetty()));
          config0.getConnectorConfigurations().put(otherLiveConnector.getName(), otherLiveConnector);
-         pairs.add(otherLiveConnector.getName());  
+         pairs.add(otherLiveConnector.getName());
 
       }
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-            pairs, false);
+      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1",
+                                                                               "jms",
+                                                                               liveConnector.getName(),
+                                                                               -1,
+                                                                               false,
+                                                                               false,
+                                                                               1,
+                                                                               1,
+                                                                               pairs,
+                                                                               false);
       config0.getClusterConfigurations().add(ccc0);
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 
@@ -204,7 +247,8 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       config0.setPagingDirectory(config0.getPagingDirectory() + "_" + liveNode);
       config0.setLargeMessagesDirectory(config0.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
+      servers.put(liveNode,
+                  new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
    protected boolean isNetty()

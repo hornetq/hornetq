@@ -148,17 +148,22 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
 
       startServers(0, 1, 2);
+      
+      waitForTopology(servers[0], 3);
+      waitForTopology(servers[1], 3);
+      waitForTopology(servers[2], 3);
+      
+      for (int i = 0 ; i < 3; i++)
+      {
+         System.out.println("top[" + i + "]=" + servers[i].getClusterManager().getTopology().describe());
+      }
 
-      for (int i = 0; i < 10; i++)
-         log.info("****************************");
       for (int i = 0; i <= 2; i++)
       {
          log.info("*************************************\n " + servers[i] +
                   " topology:\n" +
                   servers[i].getClusterManager().getTopology().describe());
       }
-      for (int i = 0; i < 10; i++)
-         log.info("****************************");
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -180,19 +185,52 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 2, 2, false);
 
    }
+   
+   public void testSimple_TwoNodes() throws Exception
+   {
+      setupServer(0, false, isNetty());
+      setupServer(1, false, isNetty());
+
+      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
+
+      startServers(0, 1);
+
+      for (int i = 0; i <= 1; i++)
+      {
+         log.info("*************************************\n " + servers[i] +
+                  " topology:\n" +
+                  servers[i].getClusterManager().getTopology().describe());
+      }
+      setupSessionFactory(0, isNetty());
+      setupSessionFactory(1, isNetty());
+
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+
+      waitForBindings(0, "queues.testaddress", 1, 1, false);
+      waitForBindings(1, "queues.testaddress", 1, 1, false);
+      
+      closeAllConsumers();
+
+   }
+
    static int loopNumber;
    public void _testLoop() throws Throwable
    {
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0 ; i < 10; i++)
       {
          loopNumber = i;
          log.info("#test " + i);
-         testSimple2();
-         if (i + 1  < 1000)
-         {
-            tearDown();
-            setUp();
-         }
+         testSimple();
+         tearDown();
+         setUp();
       }
    }
 

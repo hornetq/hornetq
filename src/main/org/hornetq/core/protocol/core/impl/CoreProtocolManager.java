@@ -32,9 +32,11 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -112,13 +114,19 @@ public class CoreProtocolManager implements ProtocolManager
                // Just send a ping back
                channel0.send(packet);
             }
-            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY)
+            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
                
+               if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
+               {
+                  channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
+               }
+               
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
-                  public void nodeUP(final String nodeID,
+                  public void nodeUP(final long uniqueEventID,
+                                     final String nodeID,
                                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                                      final boolean last)
                   {
@@ -129,12 +137,19 @@ public class CoreProtocolManager implements ProtocolManager
                      {
                         public void run()
                         {
-                           channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                           }
                         }
                      });
                    }
 
-                  public void nodeDown(final String nodeID)
+                  public void nodeDown(final long uniqueEventID, final String nodeID)
                   {
                      // Using an executor as most of the notifications on the Topology
                      // may come from a channel itself
@@ -143,7 +158,14 @@ public class CoreProtocolManager implements ProtocolManager
                      {
                         public void run()
                         {
-                           channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                           }
                         }
                      });
                   }
@@ -177,13 +199,13 @@ public class CoreProtocolManager implements ProtocolManager
                }
                else
                {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
                }
                if (isTrace)
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
+               server.getClusterManager().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
             }
          }
       });

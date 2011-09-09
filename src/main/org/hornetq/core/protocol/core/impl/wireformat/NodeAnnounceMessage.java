@@ -34,21 +34,29 @@ public class NodeAnnounceMessage extends PacketImpl
    
    private boolean backup;
    
+   private long currentEventID;
+   
    private TransportConfiguration connector;
+
+   private TransportConfiguration backupConnector;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public NodeAnnounceMessage(final String nodeID, final boolean backup, final TransportConfiguration tc)
+   public NodeAnnounceMessage(final long currentEventID, final String nodeID, final boolean backup, final TransportConfiguration tc, final TransportConfiguration backupConnector)
    {
       super(PacketImpl.NODE_ANNOUNCE);
 
+      this.currentEventID = currentEventID;
+      
       this.nodeID = nodeID;
       
       this.backup = backup;
       
       this.connector = tc;
+      
+      this.backupConnector = backupConnector;
    }
    
    public NodeAnnounceMessage()
@@ -74,13 +82,43 @@ public class NodeAnnounceMessage extends PacketImpl
       return connector;
    }
    
+   public TransportConfiguration getBackupConnector()
+   {
+      return backupConnector;
+   }
+
+   /**
+    * @return the currentEventID
+    */
+   public long getCurrentEventID()
+   {
+      return currentEventID;
+   }
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeString(nodeID);
       buffer.writeBoolean(backup);
-      connector.encode(buffer);
+      buffer.writeLong(currentEventID);
+      if (connector != null)
+      {
+         buffer.writeBoolean(true);
+         connector.encode(buffer);
+      }
+      else
+      {
+         buffer.writeBoolean(false);
+      }
+      if (backupConnector != null)
+      {
+         buffer.writeBoolean(true);
+         backupConnector.encode(buffer);
+      }
+      else
+      {
+         buffer.writeBoolean(false);
+      }
    }
 
    @Override
@@ -88,8 +126,17 @@ public class NodeAnnounceMessage extends PacketImpl
    {
       this.nodeID = buffer.readString();
       this.backup = buffer.readBoolean();
-      connector = new TransportConfiguration();
-      connector.decode(buffer);
+      this.currentEventID = buffer.readLong();
+      if (buffer.readBoolean())
+      {
+         connector = new TransportConfiguration();
+         connector.decode(buffer);
+      }
+      if (buffer.readBoolean())
+      {
+         backupConnector = new TransportConfiguration();
+         backupConnector.decode(buffer);
+      }
    }
 
    /* (non-Javadoc)

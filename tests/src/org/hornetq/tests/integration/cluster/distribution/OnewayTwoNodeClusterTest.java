@@ -72,7 +72,7 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       startServers(0);
 
       // Give it a little time for the bridge to try to start
-      Thread.sleep(2000);
+      Thread.sleep(500);
 
       stopServers(0);
    }
@@ -102,6 +102,10 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    public void testStartSourceServerBeforeTargetServer() throws Exception
    {
       startServers(0, 1);
+      
+      waitForTopology(servers[0], 2);
+      waitForTopology(servers[1], 2);
+
 
       setupSessionFactory(0,  isNetty(), true);
       setupSessionFactory(1,  isNetty(), true);
@@ -124,6 +128,13 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
    public void testStopAndStartTarget() throws Exception
    {
       startServers(0, 1);
+      
+      waitForTopology(servers[0], 2);
+      waitForTopology(servers[1], 2);
+      
+      System.out.println(servers[0].getClusterManager().getTopology().describe());
+      
+      System.out.println(servers[1].getClusterManager().getTopology().describe());
 
       setupSessionFactory(0,  isNetty(), true);
       setupSessionFactory(1,  isNetty(), true);
@@ -150,12 +161,14 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       OnewayTwoNodeClusterTest.log.info("stopping server 1");
 
       stopServers(1);
+      
+      waitForTopology(servers[0], 1);
 
       OnewayTwoNodeClusterTest.log.info("restarting server 1(" + servers[1].getIdentity() + ")");
 
       startServers(1);
       
-      //Thread.sleep(1000);
+      waitForTopology(servers[0], 2);
       
       log.info("Server 1 id="  + servers[1].getNodeID());
       

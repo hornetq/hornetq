@@ -14,80 +14,60 @@
 package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
+public class SubscribeClusterTopologyUpdatesMessageV2 extends SubscribeClusterTopologyUpdatesMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(SubscribeClusterTopologyUpdatesMessage.class);
-
    // Attributes ----------------------------------------------------
-
-   private boolean clusterConnection;
+   
+   private int clientVersion;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SubscribeClusterTopologyUpdatesMessage(final boolean clusterConnection)
+   public SubscribeClusterTopologyUpdatesMessageV2(final boolean clusterConnection, int clientVersion)
    {
-      super(PacketImpl.SUBSCRIBE_TOPOLOGY);
+      super(PacketImpl.SUBSCRIBE_TOPOLOGY_V2, clusterConnection);
 
-      this.clusterConnection = clusterConnection;
+      this.clientVersion = clientVersion;
    }
 
-   protected SubscribeClusterTopologyUpdatesMessage(byte packetType, final boolean clusterConnection)
+   public SubscribeClusterTopologyUpdatesMessageV2()
    {
-      super(packetType);
-
-      this.clusterConnection = clusterConnection;
-   }
-
-   public SubscribeClusterTopologyUpdatesMessage()
-   {
-      super(PacketImpl.SUBSCRIBE_TOPOLOGY);
-   }
-
-   protected SubscribeClusterTopologyUpdatesMessage(byte packetType)
-   {
-      super(packetType);
+      super(PacketImpl.SUBSCRIBE_TOPOLOGY_V2);
    }
 
    // Public --------------------------------------------------------
 
-   public boolean isClusterConnection()
-   {
-      return clusterConnection;
-   }
+   
    
    @Override
    public void encodeRest(final HornetQBuffer buffer)
    {
-      buffer.writeBoolean(clusterConnection);      
+      super.encodeRest(buffer);
+      buffer.writeInt(clientVersion);
+   }
+
+   /**
+    * @return the clientVersion
+    */
+   public int getClientVersion()
+   {
+      return clientVersion;
    }
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
    {
-      clusterConnection = buffer.readBoolean();
-   }
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
-   @Override
-   public String toString()
-   {
-      return "SubscribeClusterTopologyUpdatesMessage [clusterConnection=" + clusterConnection +
-             ", toString()=" +
-             super.toString() +
-             "]";
+      super.decodeRest(buffer);
+      clientVersion = buffer.readInt();
    }
 
    // Package protected ---------------------------------------------

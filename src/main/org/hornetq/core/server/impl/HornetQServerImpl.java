@@ -354,7 +354,6 @@ public class HornetQServerImpl implements HornetQServer
 
             if(nodeManager.isBackupLive())
             {
-               Thread.sleep(configuration.getFailbackDelay());
                //looks like we've failed over at some point need to inform that we are the backup so when the current live
                // goes down they failover to us
                clusterManager.announceBackup();
@@ -514,7 +513,7 @@ public class HornetQServerImpl implements HornetQServer
 
             if (System.currentTimeMillis() - start >= timeout)
             {
-               log.warn("Timed out waiting for backup activation to exit");
+               threadDump("Timed out waiting for backup activation to exit");
             }
 
             nodeManager.stopBackup();
@@ -862,6 +861,10 @@ public class HornetQServerImpl implements HornetQServer
          nodeManager.stop();
 
          nodeManager = null;
+         
+         addressSettingsRepository.clearListeners();
+         
+         addressSettingsRepository.clearCache();
 
          HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " [" + tempNodeID + "] stopped");
 
@@ -2004,7 +2007,14 @@ public class HornetQServerImpl implements HornetQServer
    
    public String toString()
    {
-      return "HornetQServerImpl::" + (identity == null ? "" : (identity + ", ")) + (nodeManager != null ? ("serverUUID=" + nodeManager.getUUID()) : "");
+      if (identity != null)
+      {
+      	return "HornetQServerImpl::" + identity;
+      }
+      else
+      {
+      	return "HornetQServerImpl::" + (nodeManager != null ? "serverUUID=" + nodeManager.getUUID() : "");
+      }
    }
 
    // Inner classes

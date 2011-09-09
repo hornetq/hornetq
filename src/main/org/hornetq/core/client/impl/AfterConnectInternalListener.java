@@ -11,22 +11,18 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.api.core.client;
-
-import org.hornetq.api.core.Pair;
-import org.hornetq.api.core.TransportConfiguration;
-
+package org.hornetq.core.client.impl;
 
 /**
- * A ClusterTopologyListener
+ * To be called right after the ConnectionFactory created a connection.
+ * This listener is not part of the API and shouldn't be used by users.
+ * (if you do so we can't guarantee any API compatibility on this class) 
  *
- * @author tim
+ * @author clebertsuconic
  *
  *
  */
-public interface ClusterTopologyListener
+public interface AfterConnectInternalListener
 {
-   void nodeUP(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
-   
-   void nodeDown(long eventUID, String nodeID);
+   void onConnection(ClientSessionFactoryInternal sf);
 }

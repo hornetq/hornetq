@@ -88,13 +88,6 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       
-      Thread.sleep(2000);
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[2]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
-      
       waitForBindings(0, "queues.testaddress", 1, 1, false);
 
       send(0, "queues.testaddress", 10, false, null);
@@ -323,8 +316,9 @@ public class OneWayChainClusterTest extends ClusterTestBase
 
       stopServers(2);
 
-      Thread.sleep(2000);
+      waitForTopology(servers[1], 4);
 
+      Thread.sleep(1000);
       log.info("============================================ after stop");
       log.info(clusterDescription(servers[0]));
       log.info(clusterDescription(servers[1]));
@@ -332,8 +326,11 @@ public class OneWayChainClusterTest extends ClusterTestBase
       log.info(clusterDescription(servers[4]));
 
       startServers(2);
+      
 
-      Thread.sleep(2000);
+      Thread.sleep(1000);
+
+      waitForTopology(servers[1], 5);
 
       log.info("============================================ after start");
       log.info(clusterDescription(servers[0]));
@@ -358,7 +355,6 @@ public class OneWayChainClusterTest extends ClusterTestBase
       setupClusterConnection("cluster4-X", 4, -1, "queues", false, 4, isNetty(), true);
 
       startServers(0, 1, 2, 3, 4);
-      Thread.sleep(2000);
       Set<ClusterConnection> connectionSet = getServer(0).getClusterManager().getClusterConnections();
       assertNotNull(connectionSet);
       assertEquals(1, connectionSet.size());

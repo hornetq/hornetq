@@ -94,6 +94,19 @@ public class ChannelImpl implements Channel
          resendCache = null;
       }
    }
+   
+   public boolean supports(final byte packetType)
+   {
+      int version = connection.getClientVersion();
+      
+      switch (packetType)
+      {
+         case PacketImpl.CLUSTER_TOPOLOGY_V2:
+            return version >= 122;
+         default:
+            return true;
+      }
+   }
 
    public long getID()
    {

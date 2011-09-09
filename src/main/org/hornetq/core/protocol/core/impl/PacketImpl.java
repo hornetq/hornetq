@@ -193,6 +193,12 @@ public class PacketImpl implements Packet
    public static final byte NODE_ANNOUNCE = 111;
 
    public static final byte SUBSCRIBE_TOPOLOGY = 112;
+   
+   // For newer versions
+
+   public static final byte SUBSCRIBE_TOPOLOGY_V2 = 113;
+
+   public static final byte CLUSTER_TOPOLOGY_V2 = 114;
 
    // Static --------------------------------------------------------
 

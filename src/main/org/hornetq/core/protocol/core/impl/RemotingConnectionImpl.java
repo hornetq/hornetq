@@ -72,6 +72,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
    private volatile boolean destroyed;
 
    private final boolean client;
+   
+   private int clientVersion;
 
    // Channels 0-9 are reserved for the system
    // 0 is for pinging
@@ -182,6 +184,22 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       failureListeners.clear();
 
       failureListeners.addAll(listeners);
+   }
+   
+   /**
+    * @return the clientVersion
+    */
+   public int getClientVersion()
+   {
+      return clientVersion;
+   }
+
+   /**
+    * @param clientVersion the clientVersion to set
+    */
+   public void setClientVersion(int clientVersion)
+   {
+      this.clientVersion = clientVersion;
    }
 
    public Object getID()
