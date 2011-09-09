@@ -74,6 +74,16 @@ import org.hornetq.tests.util.UnitTestCase;
 public abstract class ClusterTestBase extends ServiceTestBase
 {
    private final Logger log = Logger.getLogger(this.getClass());
+   public ClusterTestBase()
+   {
+      super();
+   }
+
+   public ClusterTestBase(String name)
+   {
+      super(name);
+   }
+
 
    private static final int[] PORTS = { TransportConstants.DEFAULT_PORT,
                                        TransportConstants.DEFAULT_PORT + 1,
@@ -87,7 +97,18 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 9, };
 
    private static final long WAIT_TIMEOUT = 10000;
+  
+   protected int getLargeMessageSize()
+   {
+      return 500;
+   }
    
+   protected boolean isLargeMessage()
+   {
+      return false;
+   }
+   
+
    private static final long TIMEOUT_START_SERVER = 10;
 
    @Override
@@ -635,6 +656,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
 
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
+            
+            if (isLargeMessage())
+            {
+               message.setBodyInputStream(createFakeLargeStream(getLargeMessageSize()));
+            }
 
             producer.send(message);
 
@@ -686,9 +712,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
          for (int i = msgStart; i < msgEnd; i++)
          {
             ClientMessage message = session.createMessage(durable);
+            
+            if (isLargeMessage())
+            {
+               message.setBodyInputStream(createFakeLargeStream(getLargeMessageSize()));
+            }
 
             message.putStringProperty(key, val);
             message.putIntProperty(ClusterTestBase.COUNT_PROP, i);
+            
             producer.send(message);
          }
       }
@@ -880,6 +912,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
 
             log.info("msg on ClusterTestBase = " + message);
+
+            
+            if (isLargeMessage())
+            {
+               checkMessageBody(message);
+            }
 
             if (ack)
             {
@@ -1180,6 +1218,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
             if (message != null)
             {
                int count = (Integer)message.getObjectProperty(ClusterTestBase.COUNT_PROP);
+               
+               checkMessageBody(message);
+
 
                // log.info("consumer " + consumerIDs[i] + " received message " + count);
 
@@ -1241,6 +1282,20 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    }
 
+   /**
+    * @param message
+    */
+   private void checkMessageBody(ClientMessage message)
+   {
+      if (isLargeMessage())
+      {
+         for (int posMsg = 0 ; posMsg < getLargeMessageSize(); posMsg++)
+         {
+            assertEquals(getSamplebyte(posMsg), message.getBodyBuffer().readByte());
+         }
+      }
+   }
+
    protected void verifyReceiveRoundRobinInSomeOrderNoAck(final int numMessages, final int... consumerIDs) throws Exception
    {
       if (numMessages < consumerIDs.length)
@@ -1274,6 +1329,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
          message = consumer.consumer.receive(500);
          if (message != null)
          {
+            
+            if (isLargeMessage())
+            {
+               checkMessageBody(message);
+            }
+            
             if (ack)
             {
                message.acknowledge();

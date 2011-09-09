@@ -61,6 +61,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    {
       super(PacketImpl.SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
+      this.message = message;
    }
 
    /**

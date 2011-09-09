@@ -169,34 +169,50 @@ public class ClusterConnectionBridge extends BridgeImpl
    }
 
    @Override
-   protected ServerMessage beforeForward(ServerMessage message)
+   protected ServerMessage beforeForward(final ServerMessage message)
    {
       // We make a copy of the message, then we strip out the unwanted routing id headers and leave
       // only
       // the one pertinent for the address node - this is important since different queues on different
       // nodes could have same queue ids
       // Note we must copy since same message may get routed to other nodes which require different headers
-      message = message.copy();
+      ServerMessage messageCopy = message.copy();
+      
+      if (log.isTraceEnabled())
+      {
+         log.trace("Clustered bridge  copied message " + message + " as " + messageCopy + " before delivery");
+      }
 
       // TODO - we can optimise this
 
-      Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
+      Set<SimpleString> propNames = new HashSet<SimpleString>(messageCopy.getPropertyNames());
 
       byte[] queueIds = message.getBytesProperty(idsHeaderName);
+      
+      if (queueIds == null)
+      {
+         // Sanity check only
+         log.warn("no queue IDs defined!,  originalMessage  = " + message +
+                  ", copiedMessage = " +
+                  messageCopy +
+                  ", props=" +
+                  idsHeaderName);
+         throw new IllegalStateException("no queueIDs defined");
+      }
 
       for (SimpleString propName : propNames)
       {
          if (propName.startsWith(MessageImpl.HDR_ROUTE_TO_IDS))
          {
-            message.removeProperty(propName);
+            messageCopy.removeProperty(propName);
          }
       }
 
-      message.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
+      messageCopy.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
 
-      message = super.beforeForward(message);
-
-      return message;
+      messageCopy = super.beforeForward(messageCopy);
+ 
+      return messageCopy;
    }
 
    private void setupNotificationConsumer() throws Exception

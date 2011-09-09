@@ -1073,6 +1073,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       LargeServerMessage largeMsg = storageManager.createLargeMessage(id, message);
 
+      if (log.isTraceEnabled())
+      {
+         log.trace("sendLarge::" + largeMsg);
+      }
+      
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());

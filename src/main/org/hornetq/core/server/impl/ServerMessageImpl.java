@@ -25,6 +25,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.MemorySize;
+import org.hornetq.utils.TypedProperties;
 
 /**
  * 
@@ -87,6 +88,14 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    protected ServerMessageImpl(final ServerMessageImpl other)
    {
       super(other);
+   }
+
+   /*
+    * Copy constructor
+    */
+   protected ServerMessageImpl(final ServerMessageImpl other, TypedProperties properties)
+   {
+      super(other, properties);
    }
 
    public boolean isServerMessage()
@@ -193,6 +202,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public ServerMessage copy()
    {
+      // This is a simple copy, used only to avoid changing original properties
       return new ServerMessageImpl(this);
    }
 
@@ -275,7 +285,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return "ServerMessage[messageID=" + messageID + ",priority=" + this.getPriority() + 
           ",expiration=" + (this.getExpiration() != 0 ? new java.util.Date(this.getExpiration()) : 0) + 
-          ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
+          ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]@" + System.identityHashCode(this);
    }
 
    // FIXME - this is stuff that is only used in large messages
