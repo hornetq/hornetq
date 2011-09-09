@@ -13,6 +13,8 @@
 
 package org.hornetq.core.server.impl;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,7 +77,7 @@ import org.hornetq.utils.PriorityLinkedListImpl;
 public class QueueImpl implements Queue
 {
    private static final Logger log = Logger.getLogger(QueueImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
@@ -107,15 +109,20 @@ public class QueueImpl implements Queue
 
    private final LinkedListIterator<PagedReference> pageIterator;
 
-   private final ConcurrentLinkedQueue<MessageReference> concurrentQueue = new ConcurrentLinkedQueue<MessageReference>();
+   // Messages will first enter intermediateMessageReferences
+   // Before they are added to messageReferences
+   // This is to avoid locking the queue on the producer
+   private final ConcurrentLinkedQueue<MessageReference> intermediateMessageReferences = new ConcurrentLinkedQueue<MessageReference>();
 
+   // This is where messages are stored
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(QueueImpl.NUM_PRIORITIES);
 
-   // The quantity of pagedReferences on messageREferences priority list
+   // The quantity of pagedReferences on messageReferences priority list
    private final AtomicInteger pagedReferences = new AtomicInteger(0);
 
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
+   private final AtomicInteger queueInstances = new AtomicInteger(0);
 
    private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
 
@@ -170,6 +177,48 @@ public class QueueImpl implements Queue
    private volatile boolean checkDirect;
 
    private volatile boolean directDeliver = true;
+   
+   public String debug()
+   {
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+      
+      out.println("queueMemorySize=" + queueMemorySize);
+      
+      for (ConsumerHolder holder : consumerList)
+      {
+         out.println("consumer: " + holder.consumer.debug());
+      }
+      
+      for (MessageReference reference : intermediateMessageReferences)
+      {
+         out.print("Intermediate reference:" + reference);
+      }
+      
+      if (intermediateMessageReferences.isEmpty())
+      {
+         out.println("No intermediate references");
+      }
+      
+      boolean foundRef = false;
+      Iterator<MessageReference> iter = messageReferences.iterator();
+      while (iter.hasNext())
+      {
+         foundRef = true;
+         out.println("reference = " + iter.next());
+      }
+      
+      if (!foundRef)
+      {
+         out.println("No permanent references on queue");
+      }
+      
+      
+      
+      System.out.println(str.toString());
+      
+      return str.toString();
+   }
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -342,7 +391,7 @@ public class QueueImpl implements Queue
 
    public synchronized void reload(final MessageReference ref)
    {
-      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
+      queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
       if (!scheduledDeliveryHandler.checkAndSchedule(ref, true))
       {
          internalAddTail(ref);
@@ -376,7 +425,7 @@ public class QueueImpl implements Queue
       if (checkDirect)
       {
          if (direct && !directDeliver &&
-             concurrentQueue.isEmpty() &&
+             intermediateMessageReferences.isEmpty() &&
              messageReferences.isEmpty() &&
              !pageIterator.hasNext() &&
              !pageSubscription.isPaging())
@@ -397,9 +446,10 @@ public class QueueImpl implements Queue
          return;
       }
       
-      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
+      // We only add queueMemorySize if not being delivered directly
+      queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
 
-      concurrentQueue.add(ref);
+      intermediateMessageReferences.add(ref);
 
       directDeliver = false;
 
@@ -498,6 +548,11 @@ public class QueueImpl implements Queue
 
    public synchronized void addConsumer(final Consumer consumer) throws Exception
    {
+      if (log.isDebugEnabled())
+      {
+         log.debug(this + " adding consumer " + consumer);
+      }
+      
       cancelRedistributor();
 
       if (consumer.getFilter() != null)
@@ -1534,14 +1589,14 @@ public class QueueImpl implements Queue
     */
    private void internalAddHead(final MessageReference ref)
    {
-      queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
+      queueMemorySize.addAndGet(ref.getMessageMemoryEstimate());
       refAdded(ref);
       messageReferences.addHead(ref, ref.getMessage().getPriority());
    }
 
    private synchronized void doPoll()
    {
-      MessageReference ref = concurrentQueue.poll();
+      MessageReference ref = intermediateMessageReferences.poll();
 
       if (ref != null)
       {
@@ -1563,6 +1618,11 @@ public class QueueImpl implements Queue
       if (paused || consumerList.isEmpty())
       {
          return;
+      }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug(this + " doing deliver. messageReferences=" + messageReferences.size());
       }
 
       int busyCount = 0;
@@ -1698,6 +1758,10 @@ public class QueueImpl implements Queue
 
             if (nullRefCount + busyCount == size)
             {
+               if (log.isDebugEnabled())
+               {
+                   log.debug(this + "::All the consumers were busy, giving up now");
+               }
                break;
             }
 
@@ -1723,7 +1787,7 @@ public class QueueImpl implements Queue
     */
    private void refRemoved(MessageReference ref)
    {
-      queueMemorySize.addAndGet(-ref.getMessage().getMemoryEstimate());
+      queueMemorySize.addAndGet(-ref.getMessageMemoryEstimate());
       if (ref.isPaged())
       {
          pagedReferences.decrementAndGet();
@@ -1773,6 +1837,8 @@ public class QueueImpl implements Queue
          log.trace("QueueMemorySize before depage on queue=" + this.getName() + " is " + queueMemorySize.get());
       }
       
+      this.directDeliver = false;
+      
       int depaged = 0;
       while (timeout > System.currentTimeMillis() && queueMemorySize.get() < maxSize && pageIterator.hasNext())
       {
@@ -1786,14 +1852,26 @@ public class QueueImpl implements Queue
          pageIterator.remove();
       }
       
-      if (isTrace)
+      if (log.isDebugEnabled())
       {
          if (depaged == 0 && queueMemorySize.get() >= maxSize)
          {
-            log.trace("Couldn't depage any message as the maxSize on the queue was achieved. There are too many pending messages to be acked in reference to the page configuration");
+            log.debug("Couldn't depage any message as the maxSize on the queue was achieved. " + "There are too many pending messages to be acked in reference to the page configuration");
          }
-         
-         log.trace("Queue Memory Size after depage on queue="+this.getName() + " is " + queueMemorySize.get() + " with maxSize = " + maxSize + ". Depaged " + depaged + " messages");
+          
+         if (log.isDebugEnabled())
+         {
+            log.debug("Queue Memory Size after depage on queue=" + this.getName() +
+                      " is " +
+                      queueMemorySize.get() +
+                      " with maxSize = " +
+                      maxSize +
+                      ". Depaged " +
+                      depaged +
+                      " messages, pendingDelivery=" +  messageReferences.size() + ", intermediateMessageReferences= " + intermediateMessageReferences.size() + 
+                      ", queueDelivering=" + deliveringCount.get());
+            
+         }
       }
       
       deliverAsync();

@@ -222,6 +222,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          notificationService.sendNotification(notification);
       }
    }
+   
+   public String debug()
+   {
+      return toString();
+   }
 
    private void cancelRefs()
    {

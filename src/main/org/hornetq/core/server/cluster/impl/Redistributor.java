@@ -76,6 +76,11 @@ public class Redistributor implements Consumer
    {
       return null;
    }
+   
+   public String debug()
+   {
+      return toString();
+   }
 
    public synchronized void start()
    {

@@ -47,6 +47,8 @@ public class PagedReferenceImpl implements PagedReference
    private Long deliveryTime = null;
 
    private int persistedCount;
+   
+   private int messageEstimate;
 
    private AtomicInteger deliveryCount = new AtomicInteger(0);
 
@@ -84,6 +86,7 @@ public class PagedReferenceImpl implements PagedReference
                              final PageSubscription subscription)
    {
       this.position = position;
+      this.messageEstimate = message.getMessage().getMemoryEstimate();
       this.message = new WeakReference<PagedMessage>(message);
       this.subscription = subscription;
    }
@@ -102,6 +105,16 @@ public class PagedReferenceImpl implements PagedReference
    {
       return persistedCount;
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
+    */
+   public int getMessageMemoryEstimate()
+   {
+      return messageEstimate;
+   }
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.MessageReference#copy(org.hornetq.core.server.Queue)
