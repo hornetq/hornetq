@@ -368,8 +368,8 @@ public class JournalStorageManager implements StorageManager
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
-      final JournalImpl localMessageJournal = (JournalImpl)messageJournal;
-      final JournalImpl localBindingsJournal = (JournalImpl)bindingsJournal;
+      final Journal localMessageJournal = messageJournal;
+      final Journal localBindingsJournal = bindingsJournal;
 
       final boolean messageJournalAutoReclaim = localMessageJournal.getAutoReclaim();
       final boolean bindingsJournalAutoReclaim = localBindingsJournal.getAutoReclaim();
@@ -462,9 +462,7 @@ public class JournalStorageManager implements StorageManager
       for (SimpleString storeName : pagingManager.getStoreNames())
       {
          PagingStore store = pagingManager.getPageStore(storeName);
-         List<Integer> ids = new ArrayList<Integer>();
          info.put(storeName, store.getCurrentIds());
-         // HORNETQ-720 XXX perhaps before? unnecessary?
          store.forceAnotherPage();
       }
       return info;
@@ -521,7 +519,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private JournalFile[] prepareJournalForCopy(JournalImpl journal, JournalContent contentType) throws Exception
+   private JournalFile[] prepareJournalForCopy(Journal journal, JournalContent contentType) throws Exception
    {
       journal.setAutoReclaim(false);
       /*

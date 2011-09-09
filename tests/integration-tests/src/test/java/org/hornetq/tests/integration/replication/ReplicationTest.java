@@ -838,27 +838,59 @@ public class ReplicationTest extends ServiceTestBase
                void
                appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void lineUpContex(IOCompletion callback)
       {
-         // TODO Auto-generated method stub
 
       }
 
       @Override
       public JournalLoadInformation loadSyncOnly() throws Exception
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       @Override
       public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
       {
-         // TODO Auto-generated method stub
+         return null;
+      }
+
+      @Override
+      public boolean getAutoReclaim()
+      {
+         return false;
+      }
+
+      @Override
+      public void writeLock()
+      {
+
+      }
+
+      @Override
+      public void writeUnlock()
+      {
+
+      }
+
+      @Override
+      public void setAutoReclaim(boolean autoReclaim)
+      {
+
+      }
+
+      @Override
+      public void forceMoveNextFile() throws Exception
+      {
+
+      }
+
+      @Override
+      public JournalFile[] getDataFiles()
+      {
          return null;
       }
 

@@ -156,4 +156,38 @@ public interface Journal extends HornetQComponent
     */
    JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception;
 
+   /**
+    * @return whether automatic reclaiming of Journal files is enabled
+    */
+   boolean getAutoReclaim();
+
+   /**
+    * Write lock the Journal. Necessary only during replication for backup synchronization.
+    */
+   void writeLock();
+
+   /**
+    * Write-unlock the Journal.
+    * @see Journal#writeLock()
+    */
+   void writeUnlock();
+
+   /**
+    * Sets whether the journal should auto-reclaim its internal files.
+    * @param autoReclaim
+    */
+   void setAutoReclaim(boolean autoReclaim);
+
+   /**
+    * Force the usage of a new {@link JournalFile}.
+    * @throws Exception
+    */
+   void forceMoveNextFile() throws Exception;
+
+   /**
+    * Returns the {@link JournalFile}s in use.
+    * @return
+    */
+   JournalFile[] getDataFiles();
+
 }

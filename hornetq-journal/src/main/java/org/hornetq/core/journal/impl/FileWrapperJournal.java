@@ -264,4 +264,40 @@ public class FileWrapperJournal extends JournalBase implements Journal
    {
       throw new UnsupportedOperationException();
    }
+
+   @Override
+   public boolean getAutoReclaim()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void writeLock()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void writeUnlock()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void setAutoReclaim(boolean autoReclaim)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void forceMoveNextFile()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public JournalFile[] getDataFiles()
+   {
+      throw new UnsupportedOperationException();
+   }
 }
