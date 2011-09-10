@@ -263,6 +263,8 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
+         
+         waitForServer(server);
 
          queue = server.locateQueue(ADDRESS);
 

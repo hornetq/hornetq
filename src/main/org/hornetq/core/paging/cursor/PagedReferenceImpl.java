@@ -86,7 +86,15 @@ public class PagedReferenceImpl implements PagedReference
                              final PageSubscription subscription)
    {
       this.position = position;
-      this.messageEstimate = message.getMessage().getMemoryEstimate();
+
+      if (message == null)
+      {
+         this.messageEstimate = -1;
+      }
+      else
+      {
+         this.messageEstimate = message.getMessage().getMemoryEstimate();
+      }
       this.message = new WeakReference<PagedMessage>(message);
       this.subscription = subscription;
    }
@@ -112,6 +120,10 @@ public class PagedReferenceImpl implements PagedReference
     */
    public int getMessageMemoryEstimate()
    {
+      if (messageEstimate < 0)
+      {
+         messageEstimate = getMessage().getMemoryEstimate();
+      }
       return messageEstimate;
    }
 
