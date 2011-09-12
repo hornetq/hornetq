@@ -23,9 +23,9 @@ import org.hornetq.core.logging.Logger;
  *
  * @author <a href="david.lloyd@jboss.com">David Lloyd</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
- * 
+ *
  */
 public final class OrderedExecutorFactory implements ExecutorFactory
 {
@@ -124,6 +124,11 @@ public final class OrderedExecutorFactory implements ExecutorFactory
                parent.execute(runner);
             }
          }
+      }
+
+      public String toString()
+      {
+         return "OrderedExecutor(running=" + running + ", tasks=" + tasks + ")";
       }
    }
 }

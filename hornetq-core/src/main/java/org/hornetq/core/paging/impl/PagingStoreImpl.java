@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -224,9 +225,21 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // PagingStore implementation ------------------------------------
 
-   public void lock()
+   public boolean lock(long timeout)
    {
-      lock.writeLock().lock();
+      if (timeout == -1)
+      {
+         lock.writeLock().lock();
+         return true;
+      }
+      try
+      {
+         return lock.writeLock().tryLock(timeout, TimeUnit.MILLISECONDS);
+      }
+      catch (InterruptedException e)
+      {
+         return false;
+      }
    }
 
    public void unlock()
@@ -373,7 +386,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public synchronized void stop() throws Exception
    {
-      lock();
+      lock(-1);
       try
       {
          if (running)
@@ -397,6 +410,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
+   /** Wait any pending runnable to finish its execution. */
    public void flushExecutors()
    {
       cursorProvider.flushExecutors();
@@ -571,7 +585,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public Page createPage(final int pageNumber) throws Exception
    {
-      lock();
+      lock(-1);
       try
       {
          String fileName = createFileName(pageNumber);
@@ -1131,7 +1145,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    @Override
    public void sendPages(ReplicationManager replicator, Collection<Integer> pageIds) throws Exception
    {
-      lock();
+      lock(-1);
       try
       {
          for (Integer id : pageIds)

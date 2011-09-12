@@ -95,11 +95,9 @@ public interface PagingStore extends HornetQComponent
     */
    Page depage() throws Exception;
 
-
    void forceAnotherPage() throws Exception;
 
    Page getCurrentPage();
-
 
    /** @return true if paging was started, or false if paging was already started before this call */
    boolean startPaging() throws Exception;
@@ -110,19 +108,18 @@ public interface PagingStore extends HornetQComponent
 
    void executeRunnableWhenMemoryAvailable(Runnable runnable);
 
-   /** This method will hold and producer, but it wait operations to finish before locking (write lock) */
-   void lock();
+   /**
+    * Write lock the PagingStore.
+    * @param timeout milliseconds to wait for the lock. If value is {@literal -1} then wait
+    *           indefinitely.
+    * @return {@code true} if the lock was obtained, {@code false} otherwise
+    */
+   boolean lock(long timeout);
 
    /**
-    *
-    * Call this method using the same thread used by the last call of {@link PagingStore#lock()}
-    *
+    * Call this method using the same thread used by the last call of {@link PagingStore#lock()}.
     */
     void unlock();
-
-    /** This is used mostly by tests.
-     *  We will wait any pending runnable to finish its execution */
-    void flushExecutors();
 
    /**
     * Files to synchronize with backup.

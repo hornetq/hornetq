@@ -302,7 +302,7 @@ public class PagingManagerImpl implements PagingManager
       syncLock.writeLock().lock();
       for (PagingStore store : stores.values())
       {
-         store.lock();
+         store.lock(-1);
       }
    }
 

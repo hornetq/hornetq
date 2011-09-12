@@ -36,7 +36,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 /**
  * A PageProviderIMpl
- * 
+ *
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
  *       However I want to keep this isolated as much as possible during development
  *
@@ -302,6 +302,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
                storageManager.clearContext();
             }
          }
+
+         @Override
+         public String toString()
+         {
+            return "PageCursorProvider:scheduleCleanup()";
+         }
       });
    }
 
@@ -309,8 +315,15 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       ArrayList<Page> depagedPages = new ArrayList<Page>();
 
-      pagingStore.lock();
-
+      while (true)
+      {
+         if (pagingStore.lock(100))
+         {
+            break;
+         }
+         if (!pagingStore.isStarted())
+            return;
+      }
       synchronized (this)
       {
          try
@@ -342,7 +355,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      break;
                   }
                }
-
                if (complete)
                {
 
@@ -378,6 +390,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             if (pagingStore.getNumberOfPages() == 0 || pagingStore.getNumberOfPages() == 1 &&
                 pagingStore.getCurrentPage().getNumberOfMessages() == 0)
             {
+
                pagingStore.stopPaging();
             }
             else
