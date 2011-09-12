@@ -80,7 +80,7 @@ public interface PagingStore extends HornetQComponent
 
    PagingManager getPagingManager();
 
-   PageCursorProvider getCursorProvier();
+   PageCursorProvider getCursorProvider();
 
    void processReload() throws Exception;
 

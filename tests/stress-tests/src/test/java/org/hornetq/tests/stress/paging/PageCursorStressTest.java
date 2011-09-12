@@ -119,7 +119,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       final int NUM_MESSAGES = 100;
 
-      PageSubscription cursor = lookupPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      PageSubscription cursor = lookupPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
       
       Iterator<PagedReference> iterEmpty = cursor.iterator();
 
@@ -278,7 +278,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
 
       PageCache firstPage = cursorProvider.getPageCache(new PagePositionImpl(server.getPagingManager()
@@ -319,7 +319,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       server.start();
 
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
 
       iterator = cursor.iterator();
 
@@ -359,12 +359,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       System.out.println("Number of pages = " + numberOfPages);
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
@@ -387,7 +387,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       server.start();
 
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
       iterator = cursor.iterator();
 
       for (int i = 10; i <= 20; i++)
@@ -419,12 +419,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       System.out.println("Number of pages = " + numberOfPages);
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
@@ -451,7 +451,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       server.start();
 
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
 
       tx = new TransactionImpl(server.getStorageManager(), 60 * 1000);
       iterator = cursor.iterator();
@@ -489,12 +489,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       final int messageSize = 1024 * 1024;
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
@@ -532,7 +532,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       pageStore = lookupPageStore(ADDRESS);
 
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
       iterator = cursor.iterator();
 
       for (int i = 0; i < NUM_MESSAGES * 2; i++)
@@ -564,7 +564,7 @@ public class PageCursorStressTest extends ServiceTestBase
 
       pageStore = lookupPageStore(ADDRESS);
 
-      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier().getSubscription(queue.getID());
+      cursor = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider().getSubscription(queue.getID());
       iterator = cursor.iterator();
 
       for (int i = 0; i < NUM_MESSAGES * 3; i++)
@@ -632,12 +632,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       final int messageSize = 1024;
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
 
       System.out.println("Cursor: " + cursor);
@@ -773,12 +773,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       final int messageSize = 100 * 1024;
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
       LinkedListIterator<PagedReference> iterator = cursor.iterator();
 
@@ -857,12 +857,12 @@ public class PageCursorStressTest extends ServiceTestBase
 
       final int messageSize = 100 * 1024;
 
-      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvier();
+      PageCursorProvider cursorProvider = this.server.getPagingManager().getPageStore(ADDRESS).getCursorProvider();
       System.out.println("cursorProvider = " + cursorProvider);
 
       PageSubscription cursor = this.server.getPagingManager()
                                            .getPageStore(ADDRESS)
-                                           .getCursorProvier()
+                                           .getCursorProvider()
                                            .getSubscription(queue.getID());
       LinkedListIterator<PagedReference> iterator = cursor.iterator();
 
@@ -1188,7 +1188,7 @@ public class PageCursorStressTest extends ServiceTestBase
     */
    private PageCursorProvider lookupCursorProvider() throws Exception
    {
-      return lookupPageStore(ADDRESS).getCursorProvier();
+      return lookupPageStore(ADDRESS).getCursorProvider();
    }
 
    /**

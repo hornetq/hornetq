@@ -1658,7 +1658,7 @@ public class HornetQServerImpl implements HornetQServer
 
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
-         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvier().createSubscription(queueBindingInfo.getId(), filter, true);
+         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvider().createSubscription(queueBindingInfo.getId(), filter, true);
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
                                                 queueBindingInfo.getAddress(),
@@ -1772,7 +1772,7 @@ public class HornetQServerImpl implements HornetQServer
       }
       else
       {
-         pageSubscription = pagingManager.getPageStore(address).getCursorProvier().createSubscription(queueID, filter, durable);
+         pageSubscription = pagingManager.getPageStore(address).getCursorProvider().createSubscription(queueID, filter, durable);
       }
 
       final Queue queue = queueFactory.createQueue(queueID,

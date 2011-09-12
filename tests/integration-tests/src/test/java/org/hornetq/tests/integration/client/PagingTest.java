@@ -787,7 +787,7 @@ public class PagingTest extends ServiceTestBase
          session.commit();
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -3381,7 +3381,7 @@ public class PagingTest extends ServiceTestBase
          }
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -3499,7 +3499,7 @@ public class PagingTest extends ServiceTestBase
          }
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -3507,7 +3507,7 @@ public class PagingTest extends ServiceTestBase
             Thread.sleep(100);
          }
 
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          Thread.sleep(1000);
 
@@ -3711,9 +3711,9 @@ public class PagingTest extends ServiceTestBase
          
          pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
          
-         pgStoreAddress.getCursorProvier().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
+         pgStoreAddress.getCursorProvider().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
          
-         pgStoreAddress.getCursorProvier().cleanup();
+         pgStoreAddress.getCursorProvider().cleanup();
          
          while (timeout > System.currentTimeMillis() && pgStoreAddress.isPaging())
          {

@@ -1747,7 +1747,7 @@ public class JournalStorageManager implements StorageManager
          {
             SimpleString address = queueInfo.getAddress();
             PagingStore store = pagingManager.getPageStore(address);
-            subs = store.getCursorProvier().getSubscription(queueID);
+            subs = store.getCursorProvider().getSubscription(queueID);
             pageSubscriptions.put(queueID, subs);
          }
       }
