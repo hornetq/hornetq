@@ -15,7 +15,14 @@ package org.hornetq.core.server.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -137,7 +144,7 @@ public class ManagementServiceImpl implements ManagementService
       managementAddress = configuration.getManagementAddress();
       managementNotificationAddress = configuration.getManagementNotificationAddress();
 
-      registry = new HashMap<String, Object>();
+      registry = new ConcurrentHashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
       objectNameBuilder = ObjectNameBuilder.create(configuration.getJMXDomain());
