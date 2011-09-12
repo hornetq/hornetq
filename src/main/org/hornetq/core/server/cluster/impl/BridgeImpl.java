@@ -863,10 +863,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             log.debug("stopping bridge " + BridgeImpl.this);
 
-            queue.removeConsumer(BridgeImpl.this);
-
-            internalCancelReferences();
-
             if (session != null)
             {
                log.debug("Cleaning up session " + session);
@@ -885,6 +881,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
             {
                csf.cleanup();
             }
+
+            queue.removeConsumer(BridgeImpl.this);
+
+            internalCancelReferences();
 
             synchronized (BridgeImpl.this)
             {
