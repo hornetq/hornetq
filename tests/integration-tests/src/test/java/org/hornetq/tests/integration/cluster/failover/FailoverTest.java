@@ -84,13 +84,6 @@ public class FailoverTest extends FailoverTestBase
    {
    }
 
-   abstract class BaseListener implements SessionFailureListener
-   {
-      public void beforeReconnect(final HornetQException me)
-      {
-      }
-   }
-
    @Override
    protected void setUp() throws Exception
    {
