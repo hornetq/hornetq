@@ -577,6 +577,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
       try
       {
+         if (producer != null)
+         {
+            producer.close();
+         }
+         
          csf.cleanup();
       }
       catch (Throwable dontCare)

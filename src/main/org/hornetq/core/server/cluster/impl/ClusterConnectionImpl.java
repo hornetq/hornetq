@@ -415,10 +415,13 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       {
          public void run()
          {
-            if (serverLocator != null)
+            synchronized (ClusterConnectionImpl.this)
             {
-               serverLocator.close();
-               serverLocator = null;
+               if (serverLocator != null)
+               {
+                  serverLocator.close();
+                  serverLocator = null;
+               }
             }
 
          }
@@ -707,6 +710,23 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final boolean start) throws Exception
    {
       final ServerLocatorInternal targetLocator = new ServerLocatorImpl(clusterManagerTopology, false, connector);
+      
+      String nodeId;
+      
+      synchronized (this)
+      {
+         if (!started)
+         {
+            return;
+         }
+         
+         if (serverLocator == null)
+         {
+            return;
+         }
+         
+         nodeId = serverLocator.getNodeID();
+      }
 
       targetLocator.setReconnectAttempts(0);
 
@@ -725,7 +745,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       targetLocator.setAfterConnectionInternalListener(this);
 
-      targetLocator.setNodeID(serverLocator.getNodeID());
+      targetLocator.setNodeID(nodeId);
 
       targetLocator.setClusterTransportConfiguration(serverLocator.getClusterTransportConfiguration());
 

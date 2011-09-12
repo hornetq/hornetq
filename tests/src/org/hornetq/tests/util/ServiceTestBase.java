@@ -31,6 +31,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -60,6 +61,9 @@ public abstract class ServiceTestBase extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
+   
+   protected static final long WAIT_TIMEOUT = 10000;
+   
 
    // Attributes ----------------------------------------------------
 
@@ -97,6 +101,43 @@ public abstract class ServiceTestBase extends UnitTestCase
          fail("InVMREgistry size > 0");
       }
    }
+
+   protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
+   {
+      waitForTopology(server, nodes, WAIT_TIMEOUT);
+   }
+
+   protected void waitForTopology(final HornetQServer server, final int nodes, final long timeout) throws Exception
+   {
+      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+
+      long start = System.currentTimeMillis();
+
+      Topology topology = server.getClusterManager().getTopology();
+
+      do
+      {
+         if (nodes == topology.getMembers().size())
+         {
+            return;
+         }
+
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < timeout);
+
+      String msg = "Timed out waiting for cluster topology of " + nodes +
+                   " (received " +
+                   topology.getMembers().size() +
+                   ") topology = " +
+                   topology +
+                   ")";
+
+      log.error(msg);
+
+      throw new Exception(msg);
+   }
+
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)
    {

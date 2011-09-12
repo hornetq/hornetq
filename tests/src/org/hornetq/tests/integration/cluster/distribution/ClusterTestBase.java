@@ -38,7 +38,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -96,8 +95,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 8,
                                        TransportConstants.DEFAULT_PORT + 9, };
 
-   private static final long WAIT_TIMEOUT = 10000;
-  
    protected int getLargeMessageSize()
    {
       return 500;
@@ -270,42 +267,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       log.error(msg);
 
       throw new IllegalStateException(msg);
-   }
-
-   protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
-   {
-      waitForTopology(server, nodes, WAIT_TIMEOUT);
-   }
-
-   protected void waitForTopology(final HornetQServer server, final int nodes, final long timeout) throws Exception
-   {
-      log.debug("waiting for " + nodes + " on the topology for server = " + server);
-
-      long start = System.currentTimeMillis();
-
-      Topology topology = server.getClusterManager().getTopology();
-
-      do
-      {
-         if (nodes == topology.getMembers().size())
-         {
-            return;
-         }
-
-         Thread.sleep(10);
-      }
-      while (System.currentTimeMillis() - start < timeout);
-
-      String msg = "Timed out waiting for cluster topology of " + nodes +
-                   " (received " +
-                   topology.getMembers().size() +
-                   ") topology = " +
-                   topology +
-                   ")";
-
-      log.error(msg);
-
-      throw new Exception(msg);
    }
 
    protected void waitForBindings(final int node,
