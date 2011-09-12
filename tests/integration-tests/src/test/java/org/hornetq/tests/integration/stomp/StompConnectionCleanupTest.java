@@ -39,6 +39,8 @@ public class StompConnectionCleanupTest extends StompTestBase
       frame = receiveFrame(10000);
       
       //We send and consumer a message to ensure a STOMP connection and server session is created
+      
+      System.out.println("Received frame: " + frame);
 
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 

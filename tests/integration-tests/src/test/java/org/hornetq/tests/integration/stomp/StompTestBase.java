@@ -39,7 +39,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -80,6 +79,10 @@ public abstract class StompTestBase extends UnitTestCase
 
    protected JMSServerManager server;
    
+   protected String defUser = "brianm";
+   
+   protected String defPass = "wombats";
+   
    
 
    // Implementation methods
@@ -118,7 +121,7 @@ public abstract class StompTestBase extends UnitTestCase
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer hornetQServer = HornetQServers.newHornetQServer(config);
+      HornetQServer hornetQServer = HornetQServers.newHornetQServer(config, defUser, defPass);
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()

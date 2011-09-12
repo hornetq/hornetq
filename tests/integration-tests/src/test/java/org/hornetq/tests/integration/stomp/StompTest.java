@@ -370,12 +370,13 @@ public class StompTest extends StompTestBase
       frame = receiveFrame(100000);
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 
-      frame = "SUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n" + "ack:auto\n\n" + Stomp.NULL;
+      frame = "SUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n" + "ack:auto\n\nfff" + Stomp.NULL;
       sendFrame(frame);
 
       sendMessage(getName());
 
       frame = receiveFrame(10000);
+      System.out.println("-------- frame received: " + frame);
       Assert.assertTrue(frame.startsWith("MESSAGE"));
       Assert.assertTrue(frame.indexOf("destination:") > 0);
       Assert.assertTrue(frame.indexOf(getName()) > 0);

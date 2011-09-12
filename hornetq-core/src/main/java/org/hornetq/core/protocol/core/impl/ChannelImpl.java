@@ -220,6 +220,7 @@ public class ChannelImpl implements Channel
 
          // The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
          // buffer is full, preventing any incoming buffers being handled and blocking failover
+         log.error("------------------------ write buffer " + connection);
          connection.getTransportConnection().write(buffer, flush, batch);
       }
    }

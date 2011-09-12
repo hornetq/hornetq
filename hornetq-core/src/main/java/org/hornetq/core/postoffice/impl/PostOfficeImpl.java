@@ -591,8 +591,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          cleanupInternalPropertiesBeforeRouting(message);
       }
 
+      log.error("----------get address: " + address + " addressManager: " + addressManager);
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
+      
+      log.error("-------------------Bindings: " + bindings);
 
       if (bindings != null)
       {
@@ -631,6 +634,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
+         log.error("----------processing route: " + context + " direct " + direct);
          processRoute(message, context, direct);
       }
 
@@ -967,6 +971,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             message.incrementRefCount();
          }
       }
+      
+      log.error("In processing, tx: " + tx);
 
       if (tx != null)
       {

@@ -55,6 +55,7 @@ public class StompConnection implements RemotingConnection
 
    private String clientID;
 
+   //this means login is valid. (stomp connection ok)
    private boolean valid;
 
    private boolean destroyed = false;
@@ -75,6 +76,7 @@ public class StompConnection implements RemotingConnection
    
    private VersionedStompFrameHandler frameHandler;
    
+   //this means the version negotiation done.
    private boolean initialized;
    
    private FrameEventListener stompListener;
@@ -459,6 +461,7 @@ public class StompConnection implements RemotingConnection
 
    public void sendFrame(StompFrame frame)
    {
+      log.error("--------------- sending reply: " + frame);
       manager.sendReply(this, frame);
    }
 
@@ -518,7 +521,9 @@ public class StompConnection implements RemotingConnection
       }
       try
       {
+         log.error("--------------------- sending mesage: " + message);
          stompSession.getSession().send(message, true);
+         log.error("----------------------sent by " + stompSession.getSession());
       }
       catch (Exception e)
       {

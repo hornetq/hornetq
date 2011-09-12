@@ -94,7 +94,7 @@ public class StompFrame
    @Override
    public String toString()
    {
-      return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=";
+      return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " + this.bytesBody;
    }
 
    public String asString()
@@ -113,7 +113,14 @@ public class StompFrame
    {
       if (buffer == null)
       {
-         buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
+         if (bytesBody != null)
+         {
+            buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
+         }
+         else
+         {
+            buffer = HornetQBuffers.dynamicBuffer(512);
+         }
 
          StringBuffer head = new StringBuffer();
          head.append(command);
@@ -130,7 +137,10 @@ public class StompFrame
          head.append(Stomp.NEWLINE);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
-         buffer.writeBytes(bytesBody);
+         if (bytesBody != null)
+         {
+            buffer.writeBytes(bytesBody);
+         }
          buffer.writeBytes(END_OF_FRAME);
 
          size = buffer.writerIndex();
@@ -195,8 +205,15 @@ public class StompFrame
       return headers.containsKey(key);
    }
 
-   public String getBody()
+   public String getBody() throws UnsupportedEncodingException
    {
+      if (body == null)
+      {
+         if (bytesBody != null)
+         {
+            body = new String(bytesBody, "UTF-8");
+         }
+      }
       return body;
    }
    

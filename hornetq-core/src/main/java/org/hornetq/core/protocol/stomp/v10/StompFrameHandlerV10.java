@@ -21,6 +21,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
@@ -39,18 +40,20 @@ import org.hornetq.utils.DataConstants;
 *
 * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
 */
-public class StompFrameHandlerV10 extends VersionedStompFrameHandler
+public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements FrameEventListener
 {
    private static final Logger log = Logger.getLogger(StompFrameHandlerV10.class);
    
    public StompFrameHandlerV10(StompConnection connection)
    {
       this.connection = connection;
+      connection.addStompEventListener(this);
    }
 
    @Override
    public StompFrame onConnect(StompFrame frame)
    {
+      log.error("-----------------onConnection ()");
       StompFrame response = null;
       Map<String, String> headers = frame.getHeadersMap();
       String login = (String)headers.get(Stomp.Headers.Connect.LOGIN);
@@ -58,12 +61,14 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
       String clientID = (String)headers.get(Stomp.Headers.Connect.CLIENT_ID);
       String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
 
+      log.error("------------ validating user: " + login + " code " + passcode);
       if (connection.validateUser(login, passcode))
       {
+         log.error("-------user OK!!!");
          connection.setClientID(clientID);
          connection.setValid(true);
          
-         response = new StompFrame(Stomp.Responses.CONNECTED);
+         response = new StompFrameV10(Stomp.Responses.CONNECTED);
          
          response.addHeader(Stomp.Headers.Connected.SESSION, connection.getID().toString());
          
@@ -74,6 +79,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
       }
       else
       {
+         log.error("--------user NOT ok!!");
          //not valid
          response = new StompFrameV10(Stomp.Responses.ERROR);
          response.addHeader(Stomp.Headers.Error.MESSAGE, "Failed to connect");
@@ -86,11 +92,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
             log.error("Encoding problem", e);
             //then we will send a null body message.
          }
-         
-         connection.sendFrame(response);
-         connection.destroy();
-         
-         return null;
       }
       return response;
    }
@@ -105,10 +106,12 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
    @Override
    public StompFrame onSend(StompFrame frame)
    {
+      log.error("-------------on Send: " + frame);
       StompFrame response = null;
       try
       {
          connection.validate();
+         log.error("-----------connection is valid");
          String destination = frame.getHeader(Stomp.Headers.Send.DESTINATION);
          String txID = frame.getHeader(Stomp.Headers.TRANSACTION);
 
@@ -120,11 +123,13 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
          StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
          if (frame.hasHeader(Stomp.Headers.CONTENT_LENGTH))
          {
+            log.error("--------------------------------it's a bryte type");
             message.setType(Message.BYTES_TYPE);
             message.getBodyBuffer().writeBytes(frame.getBodyAsBytes());
          }
          else
          {
+            log.error("------------------ it's a text type");
             message.setType(Message.TEXT_TYPE);
             String text = frame.getBody();
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(text));
@@ -365,6 +370,23 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler
    public StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException
    {
       return decoder.defaultDecode(buffer);
+   }
+
+   @Override
+   public void replySent(StompFrame reply)
+   {
+      log.error("-----------------------need destroy? " + reply.needsDisconnect());
+      if (reply.needsDisconnect())
+      {
+         connection.destroy();
+      }
+   }
+
+   @Override
+   public void requestAccepted(StompFrame request)
+   {
+      // TODO Auto-generated method stub
+      
    }
 
 }

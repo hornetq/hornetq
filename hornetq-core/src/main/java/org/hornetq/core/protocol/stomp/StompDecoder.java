@@ -565,6 +565,8 @@ public class StompDecoder
          data = data - pos;
 
          // reset
+         
+         log.error("-------new Frame decoded: " + command + " headers " + headers + " content " + content);
 
          StompFrame ret = new StompFrame(command, headers, content);
 
@@ -588,6 +590,8 @@ public class StompDecoder
       pos = 0;
 
       command = null;
+      
+      headers = new HashMap<String, String>();
 
       this.headerBytesCopyStart = -1;
 

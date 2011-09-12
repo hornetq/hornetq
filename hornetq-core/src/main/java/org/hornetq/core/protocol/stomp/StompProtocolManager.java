@@ -149,7 +149,7 @@ class StompProtocolManager implements ProtocolManager
       }
       synchronized (connection)
       {
-         if (connection.isDestroyed() || !connection.isValid())
+         if (connection.isDestroyed())
          {
             log.warn("Connection closed " + connection);
             return;
