@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.core.logging.Logger;
@@ -246,33 +245,36 @@ public class Topology implements Serializable
          log.trace(this + "::prepare to send " + nodeId + " to " + copy.size() + " elements");
       }
 
-      execute(new Runnable()
+      if (copy.size() > 0)
       {
-         public void run()
+         execute(new Runnable()
          {
-            for (ClusterTopologyListener listener : copy)
+            public void run()
             {
-               if (Topology.log.isTraceEnabled())
+               for (ClusterTopologyListener listener : copy)
                {
-                  Topology.log.trace(Topology.this + " informing " +
-                                     listener +
-                                     " about node up = " +
-                                     nodeId +
-                                     " connector = " +
-                                     memberToSend.getConnector());
-               }
-
-               try
-               {
-                  listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
-               }
-               catch (Throwable e)
-               {
-                  log.warn(e.getMessage(), e);
+                  if (Topology.log.isTraceEnabled())
+                  {
+                     Topology.log.trace(Topology.this + " informing " +
+                                        listener +
+                                        " about node up = " +
+                                        nodeId +
+                                        " connector = " +
+                                        memberToSend.getConnector());
+                  }
+   
+                  try
+                  {
+                     listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
+                  }
+                  catch (Throwable e)
+                  {
+                     log.warn(e.getMessage(), e);
+                  }
                }
             }
-         }
-      });
+         });
+      }
    }
 
    /**

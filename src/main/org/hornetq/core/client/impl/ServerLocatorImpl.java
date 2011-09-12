@@ -1401,6 +1401,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       for (DiscoveryEntry entry : newConnectors)
       {
          this.initialConnectors[count++] = entry.getConnector();
+         
+         if (topology != null && topology.getMember(entry.getNodeID()) == null)
+         {
+            TopologyMember member = new TopologyMember(entry.getConnector(), null);
+            // on this case we set it as zero as any update coming from server should be accepted
+            topology.updateMember(0, entry.getNodeID(), member);
+         }
       }
 
       if (clusterConnection && !receivedTopology && initialConnectors.length > 0)
