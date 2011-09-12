@@ -1657,7 +1657,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                              -1,
                                                                              groupAddress,
                                                                              port,
-                                                                             1000,
+                                                                             200,
                                                                              connectorPairs);
 
       configuration.getBroadcastGroupConfigurations().add(bcConfig);

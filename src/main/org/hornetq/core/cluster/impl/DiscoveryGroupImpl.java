@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -66,7 +67,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final Object waitLock = new Object();
 
-   private final Map<String, DiscoveryEntry> connectors = new HashMap<String, DiscoveryEntry>();
+   private final Map<String, DiscoveryEntry> connectors = new ConcurrentHashMap<String, DiscoveryEntry>();
 
    private final long timeout;
 
