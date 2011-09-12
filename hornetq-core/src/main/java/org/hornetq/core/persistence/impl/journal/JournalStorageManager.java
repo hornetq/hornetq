@@ -117,43 +117,43 @@ public class JournalStorageManager implements StorageManager
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
    // grouping journal record type
-   public static final byte GROUP_RECORD = 20;
+   private static final byte GROUP_RECORD = 20;
 
    // Bindings journal record type
 
-   public static final byte QUEUE_BINDING_RECORD = 21;
+   private static final byte QUEUE_BINDING_RECORD = 21;
 
    public static final byte ID_COUNTER_RECORD = 24;
 
-   public static final byte ADDRESS_SETTING_RECORD = 25;
+   private static final byte ADDRESS_SETTING_RECORD = 25;
 
-   public static final byte SECURITY_RECORD = 26;
+   private static final byte SECURITY_RECORD = 26;
 
    // Message journal record types
 
-   public static final byte ADD_LARGE_MESSAGE = 30;
+   private static final byte ADD_LARGE_MESSAGE = 30;
 
-   public static final byte ADD_MESSAGE = 31;
+   private static final byte ADD_MESSAGE = 31;
 
-   public static final byte ADD_REF = 32;
+   private static final byte ADD_REF = 32;
 
-   public static final byte ACKNOWLEDGE_REF = 33;
+   private static final byte ACKNOWLEDGE_REF = 33;
 
    public static final byte UPDATE_DELIVERY_COUNT = 34;
 
    public static final byte PAGE_TRANSACTION = 35;
 
-   public static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
+   private static final byte SET_SCHEDULED_DELIVERY_TIME = 36;
 
-   public static final byte DUPLICATE_ID = 37;
+   private static final byte DUPLICATE_ID = 37;
 
-   public static final byte HEURISTIC_COMPLETION = 38;
+   private static final byte HEURISTIC_COMPLETION = 38;
 
    public static final byte ACKNOWLEDGE_CURSOR = 39;
 
-   public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
+   private static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
-   public static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   private static final byte PAGE_CURSOR_COUNTER_INC = 41;
 
    private final BatchingIDGenerator idGenerator;
    private final ReentrantReadWriteLock storageManagerLock = new ReentrantReadWriteLock(true);
@@ -604,11 +604,6 @@ public class JournalStorageManager implements StorageManager
       OperationContextImpl.setContext(context);
    }
 
-   public Executor getSingleThreadExecutor()
-   {
-      return singleThreadExecutor;
-   }
-
    public OperationContext newSingleThreadContext()
    {
       return newContext(singleThreadExecutor);
@@ -644,7 +639,7 @@ public class JournalStorageManager implements StorageManager
       return new LargeServerMessageImpl(this);
    }
 
-   protected void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
+   protected final void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
             throws Exception
    {
       readLock();
@@ -1922,7 +1917,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public static void describeBindingJournal(final String bindingsDir) throws Exception
+   static void describeBindingJournal(final String bindingsDir) throws Exception
    {
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
@@ -1932,7 +1927,7 @@ public class JournalStorageManager implements StorageManager
       describeJournal(bindingsFF, bindings);
    }
 
-   public static void describeMessagesJournal(final String messagesDir) throws Exception
+   static void describeMessagesJournal(final String messagesDir) throws Exception
    {
 
       SequentialFileFactory messagesFF = new NIOSequentialFileFactory(messagesDir);
@@ -2079,9 +2074,6 @@ public class JournalStorageManager implements StorageManager
       return started;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
-    */
    public JournalLoadInformation[] loadInternalOnly() throws Exception
    {
       readLock();
@@ -2517,7 +2509,7 @@ public class JournalStorageManager implements StorageManager
    // Inner Classes
    // ----------------------------------------------------------------------------
 
-   static class DummyOperationContext implements OperationContext
+   private final static class DummyOperationContext implements OperationContext
    {
 
       private static DummyOperationContext instance = new DummyOperationContext();
@@ -2525,13 +2517,6 @@ public class JournalStorageManager implements StorageManager
       public static OperationContext getInstance()
       {
          return DummyOperationContext.instance;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.persistence.OperationContext#complete()
-       */
-      public void complete()
-      {
       }
 
       /* (non-Javadoc)
@@ -3670,7 +3655,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
+   private static GroupingEncoding newGroupEncoding(long id, HornetQBuffer buffer)
    {
       GroupingEncoding encoding = new GroupingEncoding();
       encoding.decode(buffer);
@@ -3683,7 +3668,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
+   private static PersistentQueueBindingEncoding newBindingEncoding(long id, HornetQBuffer buffer)
    {
       PersistentQueueBindingEncoding bindingEncoding = new PersistentQueueBindingEncoding();
 

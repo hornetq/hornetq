@@ -159,13 +159,10 @@ public interface StorageManager extends HornetQComponent
 
    void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
+   /** FIXME Unused */
    void updatePageTransaction(PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
    void deletePageTransactional(long recordID) throws Exception;
-
-   /** This method is only useful at the backup side. We only load internal structures making the journals ready for
-    *  append mode on the backup side. */
-   JournalLoadInformation[] loadInternalOnly() throws Exception;
 
    JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                              final PagingManager pagingManager,
@@ -186,7 +183,7 @@ public interface StorageManager extends HornetQComponent
 
    JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
 
-   // grouping relateed operations
+   // grouping related operations
    void addGrouping(GroupBinding groupBinding) throws Exception;
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;

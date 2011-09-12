@@ -174,12 +174,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          else if (type == PacketImpl.REPLICATION_PAGE_WRITE)
          {
-            System.out.println("PAGE_WRITE");
             handlePageWrite((ReplicationPageWriteMessage)packet);
          }
          else if (type == PacketImpl.REPLICATION_PAGE_EVENT)
          {
-            System.out.println("PAGE_EVENT");
             handlePageEvent((ReplicationPageEventMessage)packet);
          }
          else if (type == PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN)
