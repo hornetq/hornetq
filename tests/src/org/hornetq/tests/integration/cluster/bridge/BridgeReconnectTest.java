@@ -572,6 +572,9 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          server1.start();
          server0.start();
+         
+         waitForServerStart(server0);
+         waitForServerStart(server1);
 
          locator = HornetQClient.createServerLocatorWithHA(server0tc, server1tc);
          ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
