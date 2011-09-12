@@ -469,7 +469,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       return server;
    }
 
-   public synchronized Map<String, String> getNodes()
+   public Map<String, String> getNodes()
    {
       synchronized (records)
       {
