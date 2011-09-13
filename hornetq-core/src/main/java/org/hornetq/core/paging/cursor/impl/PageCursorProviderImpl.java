@@ -238,6 +238,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       for (PageSubscription cursor : activeCursors.values())
       {
+         cursor.disableAutoCleanup();
+      }
+
+      for (PageSubscription cursor : activeCursors.values())
+      {
          cursor.stop();
       }
 
@@ -247,7 +252,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       while (!future.await(10000))
       {
-         log.warn("Waiting cursor provider " + this + " to finish executors");
+         log.warn("Waiting cursor provider " + this + " to finish executors" + executor);
       }
 
    }
@@ -265,7 +270,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       while (!future.await(10000))
       {
-         log.warn("Waiting cursor provider " + this + " to finish executors");
+         log.warn("Waiting cursor provider " + this + " to finish executors " + executor);
       }
 
    }
@@ -463,7 +468,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     * @param currentPage
     * @throws Exception
     */
-   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   private void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
    {
       try
       {
@@ -500,8 +505,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    // Protected -----------------------------------------------------
 
-   /* Protected as we may let test cases to instrument the test */
-   protected PageCacheImpl createPageCache(final long pageId) throws Exception
+   private PageCacheImpl createPageCache(final long pageId) throws Exception
    {
       return new PageCacheImpl(pagingStore.createPage((int)pageId));
    }

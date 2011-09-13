@@ -59,8 +59,6 @@ import org.hornetq.utils.LinkedListIterator;
  *
  * A page cursor will always store its
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
- *
  */
 class PageSubscriptionImpl implements PageSubscription
 {
@@ -161,11 +159,6 @@ class PageSubscriptionImpl implements PageSubscription
       autoCleanup = true;
    }
 
-   public PageCursorProvider getProvider()
-   {
-      return cursorProvider;
-   }
-
    public void bookmark(PagePosition position) throws Exception
    {
       PageCursorInfo cursorInfo = getPageInfo(position);
@@ -206,6 +199,12 @@ class PageSubscriptionImpl implements PageSubscription
                   PageSubscriptionImpl.log.warn("Error on cleaning up cursor pages", e);
                }
             }
+
+            @Override
+            public String toString()
+            {
+               return "PageSubscription.scheduleCleanupCheck()";
+            }
          });
       }
    }
@@ -215,6 +214,8 @@ class PageSubscriptionImpl implements PageSubscription
     * */
    public void cleanupEntries() throws Exception
    {
+      if (!autoCleanup)
+         return;
       Transaction tx = new TransactionImpl(store);
 
       boolean persist = false;
@@ -664,7 +665,7 @@ class PageSubscriptionImpl implements PageSubscription
       executor.execute(future);
       while (!future.await(1000))
       {
-         PageSubscriptionImpl.log.warn("Waiting page cursor to finish executors - " + this);
+         PageSubscriptionImpl.log.warn("Waiting page cursor to finish executors - " + this + "\n" + executor);
       }
    }
 
