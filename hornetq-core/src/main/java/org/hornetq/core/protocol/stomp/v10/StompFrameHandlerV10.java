@@ -336,13 +336,16 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       int size = bodyPos - buffer.readerIndex();
       buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
       byte[] data = new byte[size];
+      
       if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
       {
+         log.error("------------------- server message is  byte");
          frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
          buffer.readBytes(data);
       }
       else
       {
+         log.error("------------------- server message is  text");
          SimpleString text = buffer.readNullableSimpleString();
          if (text != null)
          {
@@ -353,6 +356,8 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
             data = new byte[0];
          }
       }
+      frame.setByteBody(data);
+
       serverMessage.getBodyBuffer().resetReaderIndex();
 
       StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);

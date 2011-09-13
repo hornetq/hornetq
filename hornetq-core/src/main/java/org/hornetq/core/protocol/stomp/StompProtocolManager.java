@@ -386,9 +386,11 @@ class StompProtocolManager implements ProtocolManager
 
    public void beginTransaction(StompConnection connection, String txID) throws Exception
    {
+      log.error("-------------------------------begin tx: " + txID);
       if (transactedSessions.containsKey(txID))
       {
-         throw new HornetQStompException("Transaction already started: " + txID);
+         log.error("------------------------------Error, tx already exist!");
+         throw new HornetQStompException(connection, "Transaction already started: " + txID);
       }
       // create the transacted session
       getTransactedSession(connection, txID);

@@ -559,10 +559,6 @@ public class StompConnection implements RemotingConnection
       {
          manager.commitTransaction(this, txID);
       }
-      catch (HornetQStompException e)
-      {
-         throw e;
-      }
       catch (Exception e)
       {
          throw new HornetQStompException("Error committing " + txID, e);

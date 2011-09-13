@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,13 @@ public class HornetQStompException extends Exception {
    
    private List<Header> headers = new ArrayList<Header>(10);
    private String body;
+   private VersionedStompFrameHandler handler;
    
+   public HornetQStompException(StompConnection connection, String msg)
+   {
+      super(msg);
+      handler = connection.getFrameHandler();
+   }
    public HornetQStompException(String msg)
    {
       super(msg);
@@ -53,7 +60,32 @@ public class HornetQStompException extends Exception {
 
    public StompFrame getFrame()
    {
-      return null;
+      StompFrame frame = null;
+      if (handler == null)
+      {
+         frame = new StompFrame("ERROR");
+         frame.addHeader("message", this.getMessage());
+         if (body != null)
+         {
+            try
+            {
+               frame.setByteBody(body.getBytes("UTF-8"));
+            }
+            catch (UnsupportedEncodingException e)
+            {
+            }
+         }
+         else
+         {
+            frame.setByteBody(new byte[0]);
+         }
+      }
+      else
+      {
+         frame = handler.createStompFrame("ERROR");
+         frame.addHeader("message", this.getMessage());
+      }
+      return frame;
    }
 
    private class Header
