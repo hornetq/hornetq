@@ -27,22 +27,16 @@ public class StompTestV11 extends StompTestBase2
 {
    private static final transient Logger log = Logger.getLogger(StompTestV11.class);
    
-   private StompClientConnection connV10;
    private StompClientConnection connV11;
    
    protected void setUp() throws Exception
    {
       super.setUp();
-      connV10 = StompClientConnectionFactory.createClientConnection("1.0", hostname, port);
       connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
    }
    
    protected void tearDown() throws Exception
    {
-      if (connV10.isConnected())
-      {
-         connV10.disconnect();
-      }
       if (connV11.isConnected())
       {
          connV11.disconnect();
@@ -73,10 +67,18 @@ public class StompTestV11 extends StompTestBase2
       connection.disconnect();
    }
    
+   /*
+    * test case:
+    * 1 accept-version absent. It is a 1.0 connect
+    * 2 accept-version=1.0, result: 1.0
+    * 3 accept-version=1.0,1.1,1.2, result 1.1
+    * 4 accept-version="1.2,1.3", result error
+    */
    public void testNegotiation() throws Exception
    {
+      // case 1
       ClientStompFrame frame = connV11.createFrame("CONNECT");
-      frame.addHeader("accept-version", "1.0,1.1");
+      //frame.addHeader("accept-version", "1.0,1.1,1.2");
       frame.addHeader("host", "127.0.0.1");
       frame.addHeader("login", this.defUser);
       frame.addHeader("passcode", this.defPass);
@@ -86,19 +88,7 @@ public class StompTestV11 extends StompTestBase2
       assertEquals("CONNECTED", reply.getCommand());
       
       //reply headers: version, session, server
-      assertEquals("1.1", reply.getHeader("version"));
-      
-      String sessionId = reply.getHeader("session");
-      
-      log.info("session id: " + sessionId);
-
-      assertNotNull(sessionId);
-      
-      String server = reply.getHeader("server");
-      
-      log.info("server: " + server);
-      
-      assertNotNull(server);
+      assertEquals(null, reply.getHeader("version"));
       
       connV11.disconnect();
       

@@ -70,6 +70,11 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          
          response = new StompFrameV10(Stomp.Responses.CONNECTED);
          
+         if (frame.hasHeader(Stomp.Headers.ACCEPT_VERSION))
+         {
+            response.addHeader(Stomp.Headers.Connected.VERSION, "1.0");
+         }
+         
          response.addHeader(Stomp.Headers.Connected.SESSION, connection.getID().toString());
          
          if (requestID != null)

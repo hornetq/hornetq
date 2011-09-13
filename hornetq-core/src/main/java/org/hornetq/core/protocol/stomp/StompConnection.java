@@ -371,6 +371,8 @@ public class StompConnection implements RemotingConnection
    {
       String acceptVersion = frame.getHeader(Stomp.Headers.ACCEPT_VERSION);
       
+      log.error("----------------- acceptVersion: " + acceptVersion);
+      
       if (acceptVersion == null)
       {
          this.version = StompVersions.V1_0;
@@ -401,6 +403,7 @@ public class StompConnection implements RemotingConnection
             error.setBody("Supported protocol version are " + manager.getSupportedVersionsAsString());
             throw error;
          }
+         log.error("------------------ negotiated version is " + this.version);
       }
       
       this.frameHandler = VersionedStompFrameHandler.getHandler(this, this.version);
