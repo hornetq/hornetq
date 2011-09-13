@@ -64,10 +64,15 @@ public class AbstractClientStompFrame implements ClientStompFrame
          sb.append(headers.get(i).key + ":" + headers.get(i).val + "\n");
       }
       sb.append("\n");
-      sb.append(body);
+      if (body != null)
+      {
+         sb.append(body);
+      }
       sb.append((char)0);
       
       String data = new String(sb.toString());
+      
+      System.out.println("---------------------------full frame is : " + data);
       byte[] byteValue = data.getBytes("UTF-8");
       
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);

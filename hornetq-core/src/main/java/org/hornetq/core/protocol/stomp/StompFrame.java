@@ -20,6 +20,7 @@ package org.hornetq.core.protocol.stomp;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -184,13 +185,41 @@ public class StompFrame
          return escape(val);
       }
       
-      private String escape(String str)
+      public static String escape(String str)
       {
-         str = str.replaceAll("\n", "\\n");
-         str = str.replaceAll("\\", "\\\\");
-         str = str.replaceAll(":", "\\:");
+         int len = str.length();
          
-         return str;
+         char[] buffer = new char[2*len];
+         int iBuffer = 0;
+         for (int i = 0; i < len; i++)
+         {
+            char c = str.charAt(i);
+            if (c == '\n')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = 'n';
+            }
+            else if (c == '\\')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = '\\';
+            }
+            else if (c == ':')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = ':';
+            }
+            else
+            {
+               buffer[iBuffer] = c;
+            }
+            iBuffer++;
+         }
+         
+         char[] total = new char[iBuffer];
+         System.arraycopy(buffer, 0, total, 0, iBuffer);
+         
+         return new String(total);
       }
    }
 
@@ -231,5 +260,10 @@ public class StompFrame
    public void setByteBody(byte[] content)
    {
       this.bytesBody = content;
+   }
+
+   public void setNeedsDisconnect(boolean b)
+   {
+      disconnect = b;
    }
 }

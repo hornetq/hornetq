@@ -49,7 +49,14 @@ public class StompFrameV11 extends StompFrame
    {
       if (buffer == null)
       {
-         buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
+         if (bytesBody != null)
+         {
+            buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
+         }
+         else
+         {
+            buffer = HornetQBuffers.dynamicBuffer(512);
+         }
 
          StringBuffer head = new StringBuffer();
          head.append(command);
@@ -66,7 +73,11 @@ public class StompFrameV11 extends StompFrame
          head.append(Stomp.NEWLINE);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
-         buffer.writeBytes(bytesBody);
+         if (bytesBody != null)
+         {
+            buffer.writeBytes(bytesBody);
+         }
+
          buffer.writeBytes(END_OF_FRAME);
 
          size = buffer.writerIndex();

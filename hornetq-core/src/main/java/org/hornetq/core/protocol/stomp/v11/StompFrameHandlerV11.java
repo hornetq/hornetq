@@ -146,8 +146,24 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onDisconnect(StompFrame frame)
    {
-      connection.destroy();
+      log.error("----------------- frame: " + frame);
+      
       return null;
+   }
+   
+   @Override
+   public StompFrame postprocess(StompFrame request)
+   {
+      StompFrame response = null;
+      if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED))
+      {
+         response = handleReceipt(request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
+         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
+         {
+            response.setNeedsDisconnect(true);
+         }
+      }
+      return response;
    }
 
    @Override
@@ -415,6 +431,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    @Override
    public void replySent(StompFrame reply)
    {
+      log.error("----------------------- reply sent notified: " + reply);
+      
       if (reply.getCommand().equals(Stomp.Responses.CONNECTED))
       {
          //kick off the pinger
@@ -807,7 +825,9 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          // Now the headers
 
          boolean isEscaping = false;
-         SimpleBytes holder = new SimpleBytes(1024);         
+         SimpleBytes holder = new SimpleBytes(1024);      
+         
+         log.error("--------------------------------- Decoding command: " + decoder.command);
          
          outer: while (true)
          {
@@ -887,6 +907,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   }
                   holder.reset();
                   
+                  log.error("---------- A new header decoded: " + decoder.headerName + " : " + headerValue);
+                  
                   decoder.headers.put(decoder.headerName, headerValue);
 
                   if (decoder.headerName.equals(StompDecoder.CONTENT_LENGTH_HEADER_NAME))
@@ -914,6 +936,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   decoder.whiteSpaceOnly = false;
 
                   decoder.headerValueWhitespace = false;
+                  
+                  holder.append(b);
                }
             }
             if (decoder.pos == decoder.data)

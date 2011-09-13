@@ -36,6 +36,8 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       
       ClientStompFrame response = this.sendFrame(frame);
       System.out.println("Got response : " + response);
+      
+      connected = true;
    }
 
    @Override
@@ -45,5 +47,15 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       this.sendFrame(frame);
       
       close();
+      
+      connected = false;
+   }
+
+   @Override
+   public ClientStompFrame createFrame(
+         String command)
+   {
+      // TODO Auto-generated method stub
+      return null;
    }
 }

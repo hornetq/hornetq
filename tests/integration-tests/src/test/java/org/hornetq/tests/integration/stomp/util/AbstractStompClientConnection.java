@@ -129,7 +129,6 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
          }
          else
          {
-            System.out.println("Added to list: " + b);
             receiveList.add(b);
          }
       }
@@ -180,11 +179,22 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    public void connect() throws Exception
    {
       connect(null, null);
+      connected = true;
    }
    
    public void connect(String username, String password) throws Exception
    {
       throw new RuntimeException("connect method not implemented!");
+   }
+   
+   public boolean isConnected()
+   {
+      return connected;
+   }
+   
+   public String getVersion()
+   {
+      return version;
    }
 
 }

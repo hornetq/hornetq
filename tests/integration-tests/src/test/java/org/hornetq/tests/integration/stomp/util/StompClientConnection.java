@@ -29,6 +29,14 @@ public interface StompClientConnection
    void connect() throws Exception;
 
    void disconnect() throws IOException, InterruptedException;
+
+   void connect(String defUser, String defPass) throws Exception;
+
+   boolean isConnected();
+
+   String getVersion();
+
+   ClientStompFrame createFrame(String command);
    
 }
 

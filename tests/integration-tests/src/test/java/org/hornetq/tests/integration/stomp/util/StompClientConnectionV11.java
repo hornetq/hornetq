@@ -55,6 +55,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          this.passcode = passcode;
          this.connected = true;
       }
+      connected = true;
    }
 
    public void connect1(String username, String passcode) throws IOException, InterruptedException
@@ -85,11 +86,18 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public void disconnect() throws IOException, InterruptedException
    {
       ClientStompFrame frame = factory.newFrame(DISCONNECT_COMMAND);
-      frame.addHeader(RECEIPT_HEADER, "77");
       
-      this.sendFrame(frame);
+      ClientStompFrame result = this.sendFrame(frame);
       
       close();
+      
+      connected = false;
+   }
+
+   @Override
+   public ClientStompFrame createFrame(String command)
+   {
+      return new ClientStompFrameV11(command);
    }
 
 }

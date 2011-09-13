@@ -15,6 +15,7 @@ package org.hornetq.core.protocol.stomp;
 import java.io.UnsupportedEncodingException;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v11.StompFrameHandlerV11;
 import org.hornetq.core.server.ServerMessage;
@@ -24,7 +25,9 @@ import org.hornetq.core.server.ServerMessage;
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public abstract class VersionedStompFrameHandler
-{   
+{
+   private static final Logger log = Logger.getLogger(VersionedStompFrameHandler.class);
+
    protected StompConnection connection;
    
    public static VersionedStompFrameHandler getHandler(StompConnection connection, StompVersions version)
@@ -93,9 +96,13 @@ public abstract class VersionedStompFrameHandler
          response = onUnknown(request.getCommand());
       }
       
-      if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED) && (response == null))
+      log.error("-------------------- handled " + request);
+
+      if (response == null)
       {
-         response = handleReceipt(request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
+         response = postprocess(request);
+         
+         log.error("---------------postprocessed response: " + response);
       }
       
       return response;
@@ -125,6 +132,11 @@ public abstract class VersionedStompFrameHandler
       receipt.addHeader(Stomp.Headers.Response.RECEIPT_ID, receiptID);
       
       return receipt;
+   }
+   
+   public StompFrame postprocess(StompFrame request)
+   {
+      return null;
    }
 
    public abstract StompFrame createMessageFrame(ServerMessage serverMessage,
