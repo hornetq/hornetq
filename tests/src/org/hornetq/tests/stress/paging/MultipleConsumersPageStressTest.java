@@ -105,7 +105,6 @@ public class MultipleConsumersPageStressTest extends ServiceTestBase
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      // messagingService = createServer(true, config, 10024, 20024, settings);
       messagingService = createServer(true, config, 10024, 200024, settings);
       messagingService.start();
 
