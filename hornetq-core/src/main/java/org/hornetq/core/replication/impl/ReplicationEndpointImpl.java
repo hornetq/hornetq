@@ -104,9 +104,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final ConcurrentMap<Long, LargeServerMessage> largeMessages =
             new ConcurrentHashMap<Long, LargeServerMessage>();
 
-   // Used on tests, to simulate failures on delete pages
-   private boolean deletePages = true;
-
    private boolean started;
 
     // Constructors --------------------------------------------------
@@ -347,12 +344,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
       }
 
-   }
-
-   /** Used on tests only. To simulate missing page deletes*/
-   public void setDeletePages(final boolean deletePages)
-   {
-      this.deletePages = deletePages;
    }
 
    /**
@@ -736,10 +727,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          if (packet.isDelete())
          {
-            if (deletePages)
-            {
-               page.delete(null);
-            }
+            page.delete(null);
          }
          else
          {

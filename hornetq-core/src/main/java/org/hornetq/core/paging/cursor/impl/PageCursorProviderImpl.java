@@ -80,11 +80,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    // Public --------------------------------------------------------
 
-   public PagingStore getAssociatedStore()
-   {
-      return pagingStore;
-   }
-
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
       PageSubscription activeCursor = activeCursors.get(cursorID);

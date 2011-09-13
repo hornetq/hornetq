@@ -15,7 +15,6 @@ package org.hornetq.core.paging.cursor;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.paging.PagedMessage;
-import org.hornetq.core.paging.PagingStore;
 
 /**
  * The provider of Cursor for a given Address
@@ -42,8 +41,6 @@ public interface PageCursorProvider
    PagedReference newReference(final PagePosition pos, final PagedMessage msg, PageSubscription sub);
    
    void addPageCache(PageCache cache);
-
-   PagingStore getAssociatedStore();
 
    /**
     * 
