@@ -391,9 +391,9 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          if (running)
          {
-            cursorProvider.stop();
-
             running = false;
+
+            cursorProvider.stop();
 
             flushExecutors();
 

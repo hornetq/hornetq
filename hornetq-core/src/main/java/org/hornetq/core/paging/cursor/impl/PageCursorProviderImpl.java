@@ -350,6 +350,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
                      break;
                   }
                }
+
+               if (!pagingStore.isStarted())
+               {
+                  return;
+               }
+
                if (complete)
                {
 

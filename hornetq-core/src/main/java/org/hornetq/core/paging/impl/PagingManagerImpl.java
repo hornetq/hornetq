@@ -227,17 +227,17 @@ public class PagingManagerImpl implements PagingManager
       }
    }
 
-   public void stop() throws Exception
+   public synchronized void stop() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      started = false;
+
       lock();
       try
       {
-         if (!started)
-         {
-            return;
-         }
-
-         started = false;
 
          for (PagingStore store : stores.values())
          {
