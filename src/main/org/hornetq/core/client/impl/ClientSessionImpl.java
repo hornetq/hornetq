@@ -798,7 +798,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addConsumer(final ClientConsumerInternal consumer)
    {
-      consumers.put(consumer.getID(), consumer);
+      synchronized (consumers)
+      {
+         consumers.put(consumer.getID(), consumer);
+      }
    }
 
    public void addProducer(final ClientProducerInternal producer)
@@ -808,7 +811,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
-      consumers.remove(consumer.getID());
+      synchronized (consumers)
+      {
+         consumers.remove(consumer.getID());
+      }
    }
 
    public void removeProducer(final ClientProducerInternal producer)
@@ -1899,9 +1905,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void flushAcks() throws HornetQException
    {
-      for (ClientConsumerInternal consumer : consumers.values())
+      synchronized (consumers)
       {
-         consumer.flushAcks();
+         for (ClientConsumerInternal consumer : consumers.values())
+         {
+            consumer.flushAcks();
+         }
       }
    }
 
