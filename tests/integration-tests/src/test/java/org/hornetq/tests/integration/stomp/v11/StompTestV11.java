@@ -86,7 +86,6 @@ public class StompTestV11 extends StompTestBase2
    {
       // case 1 accept-version absent. It is a 1.0 connect
       ClientStompFrame frame = connV11.createFrame("CONNECT");
-      //frame.addHeader("accept-version", "1.0,1.1,1.2");
       frame.addHeader("host", "127.0.0.1");
       frame.addHeader("login", this.defUser);
       frame.addHeader("passcode", this.defPass);
@@ -167,4 +166,69 @@ public class StompTestV11 extends StompTestBase2
       
       connV11.disconnect();
    }
+   
+   public void testSendAndReceive() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "text/plain");
+      frame.setBody("Hello World 1!");
+      
+      ClientStompFrame response = connV11.sendFrame(frame);
+      
+      assertNull(response);
+      
+      frame.addHeader("receipt", "1234");
+      frame.setBody("Hello World 2!");
+      
+      response = connV11.sendFrame(frame);
+      
+      assertNotNull(response);
+      
+      assertEquals("RECEIPT", response.getCommand());
+      
+      assertEquals("1234", response.getHeader("receipt-id"));
+      
+      //subscribe
+      StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      newConn.connect(defUser, defPass);
+      
+      ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+      subFrame.addHeader("id", "a-sub");
+      subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+      subFrame.addHeader("ack", "auto");
+      
+      newConn.sendFrame(subFrame);
+      
+      frame = newConn.receiveFrame();
+      
+      System.out.println("received " + frame);
+      
+      assertEquals("MESSAGE", frame.getCommand());
+      
+      assertEquals("a-sub", frame.getHeader("subscription"));
+      
+      assertNotNull(frame.getHeader("message-id"));
+      
+      assertEquals(getQueuePrefix() + getQueueName(), frame.getHeader("destination"));
+      
+      assertEquals("Hello World 1!", frame.getBody());
+      
+      frame = newConn.receiveFrame();
+      
+      System.out.println("received " + frame);      
+      
+      //unsub
+      ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+      unsubFrame.addHeader("id", "a-sub");
+      
+      newConn.disconnect();
+      
+   }
 }
+
+
+
+
+

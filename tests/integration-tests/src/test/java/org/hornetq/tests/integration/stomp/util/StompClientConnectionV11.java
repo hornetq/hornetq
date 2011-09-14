@@ -36,7 +36,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public void connect(String username, String passcode) throws IOException, InterruptedException
    {
       ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
-      frame.addHeader(ACCEPT_HEADER, "1.0,1.1");
+      frame.addHeader(ACCEPT_HEADER, "1.1");
       frame.addHeader(HOST_HEADER, "localhost");
       if (username != null)
       {

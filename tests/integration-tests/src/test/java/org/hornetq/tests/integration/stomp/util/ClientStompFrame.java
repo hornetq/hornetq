@@ -37,5 +37,7 @@ public interface ClientStompFrame
    public String getCommand();
 
    public String getHeader(String header);
+
+   public String getBody();
    
 }

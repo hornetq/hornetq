@@ -111,6 +111,12 @@ public class AbstractClientStompFrame implements ClientStompFrame
       this.body = body;
    }
    
+   @Override
+   public String getBody()
+   {
+      return body;
+   }
+   
    private class Header
    {
       public String key;
