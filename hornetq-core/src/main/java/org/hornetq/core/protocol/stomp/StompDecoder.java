@@ -104,6 +104,8 @@ public class StompDecoder
 
    public static final byte E = (byte)'E';
 
+   public static final byte T = (byte)'T';
+
    public static final byte M = (byte)'M';
 
    public static final byte S = (byte)'S';
@@ -366,6 +368,16 @@ public class StompDecoder
 
                   // SEND
                   command = COMMAND_SEND;
+               }
+               else if (workingBuffer[offset + 1] == T)
+               {
+                  if (!tryIncrement(offset + COMMAND_STOMP_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // SEND
+                  command = COMMAND_STOMP;                  
                }
                else
                {

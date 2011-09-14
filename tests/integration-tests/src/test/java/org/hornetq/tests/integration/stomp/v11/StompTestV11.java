@@ -21,6 +21,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
+import org.hornetq.tests.integration.stomp.util.StompClientConnectionV11;
 
 
 public class StompTestV11 extends StompTestBase2
@@ -65,18 +66,25 @@ public class StompTestV11 extends StompTestBase2
       assertEquals("1.1", connection.getVersion());
       
       connection.disconnect();
+      
+      connection = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      
+      connection.connect();
+      
+      assertFalse(connection.isConnected());
+      
+      //new way of connection
+      StompClientConnectionV11 conn = (StompClientConnectionV11) StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      conn.connect1(defUser, defPass);
+      
+      assertTrue(conn.isConnected());
+      
+      conn.disconnect();
    }
    
-   /*
-    * test case:
-    * 1 accept-version absent. It is a 1.0 connect
-    * 2 accept-version=1.0, result: 1.0
-    * 3 accept-version=1.0,1.1,1.2, result 1.1
-    * 4 accept-version="1.2,1.3", result error
-    */
    public void testNegotiation() throws Exception
    {
-      // case 1
+      // case 1 accept-version absent. It is a 1.0 connect
       ClientStompFrame frame = connV11.createFrame("CONNECT");
       //frame.addHeader("accept-version", "1.0,1.1,1.2");
       frame.addHeader("host", "127.0.0.1");
@@ -91,6 +99,72 @@ public class StompTestV11 extends StompTestBase2
       assertEquals(null, reply.getHeader("version"));
       
       connV11.disconnect();
+
+      // case 2 accept-version=1.0, result: 1.0
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("accept-version", "1.0");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
       
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      //reply headers: version, session, server
+      assertEquals("1.0", reply.getHeader("version"));
+      
+      connV11.disconnect();
+
+      // case 3 accept-version=1.1, result: 1.1
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("accept-version", "1.1");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      //reply headers: version, session, server
+      assertEquals("1.1", reply.getHeader("version"));
+      
+      connV11.disconnect();
+
+      // case 4 accept-version=1.0,1.1,1.2, result 1.1
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("accept-version", "1.0,1.1,1.2");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      //reply headers: version, session, server
+      assertEquals("1.1", reply.getHeader("version"));
+      
+      connV11.disconnect();
+
+      // case 5 accept-version=1.2, result error
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("accept-version", "1.2");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("ERROR", reply.getCommand());
+      
+      System.out.println("Got error frame " + reply);
+      
+      connV11.disconnect();
    }
 }

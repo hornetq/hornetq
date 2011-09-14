@@ -179,7 +179,6 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    public void connect() throws Exception
    {
       connect(null, null);
-      connected = true;
    }
    
    public void connect(String username, String password) throws Exception

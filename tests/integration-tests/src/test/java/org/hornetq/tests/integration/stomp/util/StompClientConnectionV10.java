@@ -35,9 +35,16 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       frame.addHeader(PASSCODE_HEADER, passcode);
       
       ClientStompFrame response = this.sendFrame(frame);
-      System.out.println("Got response : " + response);
       
-      connected = true;
+      if (response.getCommand().equals(CONNECTED_COMMAND))
+      {
+         connected = true;
+      }
+      else
+      {
+         System.out.println("Connection failed with: " + response);
+         connected = false;
+      }
    }
 
    @Override

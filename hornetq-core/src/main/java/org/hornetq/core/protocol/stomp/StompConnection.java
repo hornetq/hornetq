@@ -442,7 +442,8 @@ public class StompConnection implements RemotingConnection
       {
          if (!initialized)
          {
-            if (!Stomp.Commands.CONNECT.equals(request.getCommand()))
+            String cmd = request.getCommand();
+            if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
             {
                throw new HornetQStompException("Connection hasn't been established.");
             }
