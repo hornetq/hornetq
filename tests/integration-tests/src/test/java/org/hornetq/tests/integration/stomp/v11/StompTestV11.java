@@ -224,8 +224,85 @@ public class StompTestV11 extends StompTestBase2
       unsubFrame.addHeader("id", "a-sub");
       
       newConn.disconnect();
-      
    }
+
+   public void testHeaderContentType() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "application/xml");
+      frame.setBody("Hello World 1!");
+      
+      connV11.sendFrame(frame);
+      
+      //subscribe
+      StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      newConn.connect(defUser, defPass);
+      
+      ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+      subFrame.addHeader("id", "a-sub");
+      subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+      subFrame.addHeader("ack", "auto");
+      
+      newConn.sendFrame(subFrame);
+      
+      frame = newConn.receiveFrame();
+      
+      System.out.println("received " + frame);
+      
+      assertEquals("MESSAGE", frame.getCommand());
+      
+      assertEquals("application/xml", frame.getHeader("content-type"));
+      
+      //unsub
+      ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+      unsubFrame.addHeader("id", "a-sub");
+      
+      newConn.disconnect();
+   }
+
+   public void testHeaderContentLength() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      
+      String body = "Hello World 1!";
+      String cLen = String.valueOf(body.getBytes("UTF-8").length);
+      
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "application/xml");
+      frame.addHeader("content-length", cLen);
+      frame.setBody(body + "extra");
+      
+      connV11.sendFrame(frame);
+      
+      //subscribe
+      StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      newConn.connect(defUser, defPass);
+      
+      ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+      subFrame.addHeader("id", "a-sub");
+      subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+      subFrame.addHeader("ack", "auto");
+      
+      newConn.sendFrame(subFrame);
+      
+      frame = newConn.receiveFrame();
+      
+      System.out.println("received " + frame);
+      
+      assertEquals("MESSAGE", frame.getCommand());
+      
+      assertEquals(cLen, frame.getHeader("content-length"));
+      
+      //unsub
+      ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+      unsubFrame.addHeader("id", "a-sub");
+      
+      newConn.disconnect();
+   }
+
 }
 
 

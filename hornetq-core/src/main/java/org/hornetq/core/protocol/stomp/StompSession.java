@@ -86,6 +86,8 @@ public class StompSession implements SessionCallback
          
          StompFrame frame = connection.createStompMessage(serverMessage, subscription, deliveryCount);
          
+         log.error("--------------lllll- Sending frame: " + frame);
+         
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());

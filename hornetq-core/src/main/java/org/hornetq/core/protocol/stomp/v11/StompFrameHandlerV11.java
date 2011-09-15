@@ -417,8 +417,10 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          {
             data = new byte[0];
          }
+         frame.addHeader(Stomp.Headers.CONTENT_TYPE, "text/plain");
       }
-      frame.addHeader(Stomp.Headers.CONTENT_TYPE, "text/plain");
+      
+      frame.setByteBody(data);
       
       serverMessage.getBodyBuffer().resetReaderIndex();
 
@@ -961,11 +963,27 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
          else
          {
-            content = new byte[decoder.contentLength];
+            content = new byte[decoder.contentLength + 1];
 
             System.arraycopy(decoder.workingBuffer, decoder.pos, content, 0, decoder.contentLength);
 
             decoder.pos += decoder.contentLength + 1;
+            
+            content[decoder.contentLength] = 0;
+            
+            //drain all the rest
+            if (decoder.bodyStart == -1)
+            {
+               decoder.bodyStart = decoder.pos;
+            }
+
+            while (decoder.pos < decoder.data)
+            {
+               if (decoder.workingBuffer[decoder.pos++] == 0)
+               {
+                  break;
+               }
+            }
          }
       }
       else
