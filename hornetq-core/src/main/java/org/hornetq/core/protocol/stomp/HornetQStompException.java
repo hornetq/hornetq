@@ -27,6 +27,7 @@ public class HornetQStompException extends Exception {
    private List<Header> headers = new ArrayList<Header>(10);
    private String body;
    private VersionedStompFrameHandler handler;
+   private boolean disconnect;
    
    public HornetQStompException(StompConnection connection, String msg)
    {
@@ -85,6 +86,7 @@ public class HornetQStompException extends Exception {
          frame = handler.createStompFrame("ERROR");
          frame.addHeader("message", this.getMessage());
       }
+      frame.setNeedsDisconnect(disconnect);
       return frame;
    }
 
@@ -98,5 +100,10 @@ public class HornetQStompException extends Exception {
          this.key = key;
          this.val = val;
       }
+   }
+
+   public void setDisconnect(boolean b)
+   {
+      disconnect = b;
    }
 }

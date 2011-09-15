@@ -371,8 +371,6 @@ public class StompConnection implements RemotingConnection
    {
       String acceptVersion = frame.getHeader(Stomp.Headers.ACCEPT_VERSION);
       
-      log.error("----------------- acceptVersion: " + acceptVersion);
-      
       if (acceptVersion == null)
       {
          this.version = StompVersions.V1_0;
@@ -401,6 +399,7 @@ public class StompConnection implements RemotingConnection
             error.addHeader("version", acceptVersion);
             error.addHeader("content-type", "text/plain");
             error.setBody("Supported protocol version are " + manager.getSupportedVersionsAsString());
+            error.setDisconnect(true);
             throw error;
          }
          log.error("------------------ negotiated version is " + this.version);
@@ -438,11 +437,11 @@ public class StompConnection implements RemotingConnection
          stompListener.requestAccepted(request);
       }
 
+      String cmd = request.getCommand();
       try
       {
          if (!initialized)
          {
-            String cmd = request.getCommand();
             if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
             {
                throw new HornetQStompException("Connection hasn't been established.");
@@ -460,6 +459,11 @@ public class StompConnection implements RemotingConnection
       if (reply != null)
       {
          sendFrame(reply);
+      }
+      
+      if (Stomp.Commands.DISCONNECT.equals(cmd))
+      {
+         this.disconnect();
       }
    }
 

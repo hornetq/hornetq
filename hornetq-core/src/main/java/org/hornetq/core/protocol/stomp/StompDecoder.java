@@ -115,6 +115,8 @@ public class StompDecoder
    public static final byte U = (byte)'U';
 
    public static final byte N = (byte)'N';
+   
+   public static final byte LN = (byte)'n';
 
    public static final byte HEADER_SEPARATOR = (byte)':';
 

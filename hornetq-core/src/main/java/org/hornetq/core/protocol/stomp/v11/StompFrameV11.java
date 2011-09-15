@@ -71,6 +71,8 @@ public class StompFrameV11 extends StompFrame
          }
          // Add a newline to separate the headers from the content.
          head.append(Stomp.NEWLINE);
+         
+         log.error("------------------------_______now head: " + head);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
          if (bytesBody != null)
@@ -91,8 +93,12 @@ public class StompFrameV11 extends StompFrame
       if (!headers.containsKey(key))
       {
          headers.put(key, val);
+         allHeaders.add(new Header(key, val));
       }
-      allHeaders.add(new Header(key, val));
+      else if (!key.equals(Stomp.Headers.CONTENT_LENGTH))
+      {
+         allHeaders.add(new Header(key, val));
+      }
    }
 
 

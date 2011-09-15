@@ -104,7 +104,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onDisconnect(StompFrame frame)
    {
-      connection.destroy();
       return null;
    }
 
@@ -397,6 +396,21 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    {
       // TODO Auto-generated method stub
       
+   }
+   
+   @Override
+   public StompFrame postprocess(StompFrame request)
+   {
+      StompFrame response = null;
+      if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED))
+      {
+         response = handleReceipt(request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
+         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
+         {
+            response.setNeedsDisconnect(true);
+         }
+      }
+      return response;
    }
 
 }

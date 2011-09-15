@@ -96,7 +96,7 @@ public class StompTestV11 extends StompTestBase2
       
       //reply headers: version, session, server
       assertEquals(null, reply.getHeader("version"));
-      
+
       connV11.disconnect();
 
       // case 2 accept-version=1.0, result: 1.0
@@ -164,7 +164,6 @@ public class StompTestV11 extends StompTestBase2
       
       System.out.println("Got error frame " + reply);
       
-      connV11.disconnect();
    }
    
    public void testSendAndReceive() throws Exception
@@ -303,6 +302,54 @@ public class StompTestV11 extends StompTestBase2
       newConn.disconnect();
    }
 
+   public void testHeaderEncoding() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      
+      String body = "Hello World 1!";
+      String cLen = String.valueOf(body.getBytes("UTF-8").length);
+      
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "application/xml");
+      frame.addHeader("content-length", cLen);
+      String hKey = "special-header\\\\\\n\\:";
+      String hVal = "\\:\\\\\\ngood";
+      frame.addHeader(hKey, hVal);
+      
+      System.out.println("key: |" + hKey + "| val: |" + hVal);
+      
+      frame.setBody(body);
+      
+      connV11.sendFrame(frame);
+      
+      //subscribe
+      StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      newConn.connect(defUser, defPass);
+      
+      ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+      subFrame.addHeader("id", "a-sub");
+      subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+      subFrame.addHeader("ack", "auto");
+      
+      newConn.sendFrame(subFrame);
+      
+      frame = newConn.receiveFrame();
+      
+      System.out.println("received " + frame);
+      
+      assertEquals("MESSAGE", frame.getCommand());
+      
+      String value = frame.getHeader("special-header" + "\\" + "\n" + ":");
+      
+      assertEquals(":" + "\\" + "\n" + "good", value);
+      
+      //unsub
+      ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+      unsubFrame.addHeader("id", "a-sub");
+      
+      newConn.disconnect();
+   }
 }
 
 

@@ -134,10 +134,7 @@ public abstract class VersionedStompFrameHandler
       return receipt;
    }
    
-   public StompFrame postprocess(StompFrame request)
-   {
-      return null;
-   }
+   public abstract StompFrame postprocess(StompFrame request);
 
    public abstract StompFrame createMessageFrame(ServerMessage serverMessage,
          StompSubscription subscription, int deliveryCount) throws Exception;

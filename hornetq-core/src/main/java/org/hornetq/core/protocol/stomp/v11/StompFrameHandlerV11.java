@@ -387,7 +387,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          StompSubscription subscription, int deliveryCount)
          throws Exception
    {
-      StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE);
+      StompFrame frame = new StompFrameV11(Stomp.Responses.MESSAGE);
       
       if (subscription.getID() != null)
       {
@@ -403,7 +403,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       byte[] data = new byte[size];
       if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
       {
-         frame.addHeader(Stomp.Headers.CONTENT_LENGTH, String.valueOf(data.length));
+         frame.addHeader(Stomp.Headers.CONTENT_LENGTH, String.valueOf(data.length > 0 ? (data.length - 1) : data.length));
          buffer.readBytes(data);
       }
       else
@@ -417,7 +417,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          {
             data = new byte[0];
          }
-         frame.addHeader(Stomp.Headers.CONTENT_TYPE, "text/plain");
       }
       
       frame.setByteBody(data);
@@ -425,6 +424,8 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       serverMessage.getBodyBuffer().resetReaderIndex();
 
       StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+      
+      log.error("-------------------- frame created: " + frame);
       
       return frame;
 
@@ -886,6 +887,19 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
                   decoder.whiteSpaceOnly = false;
 
+                  break;
+               }
+               case StompDecoder.LN:
+               {
+                  if (isEscaping)
+                  {
+                     holder.append(StompDecoder.NEW_LINE);
+                     isEscaping = false;
+                  }
+                  else
+                  {
+                     holder.append(b);
+                  }
                   break;
                }
                case StompDecoder.NEW_LINE:

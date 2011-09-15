@@ -12,7 +12,11 @@
  */
 package org.hornetq.tests.integration.stomp.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.StringTokenizer;
+
+import org.hornetq.core.protocol.stomp.HornetQStompException;
+import org.hornetq.core.protocol.stomp.StompDecoder;
 
 /**
  * 
@@ -40,11 +44,17 @@ public class StompFrameFactoryV11 implements StompFrameFactory
 
    @Override
 
-   public ClientStompFrame createFrame(String data)
+   public ClientStompFrame createFrame(final String data)
    {
+      System.out.println("Data: |" + data + "|");
       //split the string at "\n\n"
       String[] dataFields = data.split("\n\n");
       
+      System.out.println("DataFields[0] |" + dataFields[0]);
+      if (dataFields.length > 1)
+      {
+         System.out.println("DataFields[1] |" + dataFields[1]);
+      }
       StringTokenizer tokenizer = new StringTokenizer(dataFields[0], "\n");
       
       String command = tokenizer.nextToken();
@@ -53,7 +63,8 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       while (tokenizer.hasMoreTokens())
       {
          String header = tokenizer.nextToken();
-         String[] fields = header.split(":");
+         System.out.println("header is: " + header);
+         String[] fields = splitHeader(header);
          frame.addHeader(fields[0], fields[1]);
       }
       
@@ -63,6 +74,110 @@ public class StompFrameFactoryV11 implements StompFrameFactory
          frame.setBody(dataFields[1]);      
       }
       return frame;
+   }
+   
+   //find true :
+   private String[] splitHeader(String header)
+   {
+      StringBuffer sbKey = new StringBuffer();
+      StringBuffer sbVal = new StringBuffer();
+      boolean isEsc = false;
+      boolean isKey = true;
+      
+      for (int i = 0; i < header.length(); i++)
+      {
+         char b = header.charAt(i);
+
+         switch (b)
+         {
+            //escaping
+            case '\\':
+            {
+               if (isEsc)
+               {
+                  //this is a backslash
+                  if (isKey)
+                  {
+                     sbKey.append(b);
+                  }
+                  else
+                  {
+                     sbVal.append(b);
+                  }
+                  isEsc = false;
+               }
+               else
+               {
+                  //begin escaping
+                  isEsc = true;
+               }
+               break;
+            }
+            case ':':
+            {
+               if (isEsc)
+               {
+                  if (isKey)
+                  {
+                     sbKey.append(b);
+                  }
+                  else
+                  {
+                     sbVal.append(b);
+                  }
+                  isEsc = false;
+               }
+               else
+               {
+                  isKey = false;
+               }
+               break;
+            }
+            case 'n':
+            {
+               if (isEsc)
+               {
+                  if (isKey)
+                  {
+                     sbKey.append('\n');
+                  }
+                  else
+                  {
+                     sbVal.append('\n');
+                  }
+                  isEsc = false;
+               }
+               else
+               {
+                  if (isKey)
+                  {
+                     sbKey.append(b);
+                  }
+                  else
+                  {
+                     sbVal.append(b);
+                  }
+               }
+               break;
+            }
+            default:
+            {
+               if (isKey)
+               {
+                  sbKey.append(b);
+               }
+               else
+               {
+                  sbVal.append(b);
+               }
+            }
+         }
+      }
+      String[] result = new String[2];
+      result[0] = sbKey.toString();
+      result[1] = sbVal.toString();
+      
+      return result;
    }
 
    @Override

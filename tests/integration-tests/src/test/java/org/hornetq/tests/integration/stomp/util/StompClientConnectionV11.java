@@ -94,8 +94,14 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public void disconnect() throws IOException, InterruptedException
    {
       ClientStompFrame frame = factory.newFrame(DISCONNECT_COMMAND);
+      frame.addHeader("receipt", "1");
       
       ClientStompFrame result = this.sendFrame(frame);
+      
+      if (result == null || (!"RECEIPT".equals(result.getCommand())) || (!"1".equals(result.getHeader("receipt-id"))))
+      {
+         throw new IOException("Disconnect failed! " + result);
+      }
       
       close();
       
