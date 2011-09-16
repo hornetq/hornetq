@@ -94,6 +94,19 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       if (frame.needsReply())
       {
          response = receiveFrame();
+         
+         //filter out server ping
+         while (response != null)
+         {
+            if (response.getCommand().equals("STOMP"))
+            {
+               response = receiveFrame();
+            }
+            else
+            {
+               break;
+            }
+         }
       }
       return response;
    }

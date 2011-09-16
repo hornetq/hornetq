@@ -493,7 +493,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       return frame;
    }
    
-   //server heart beat (20,100) (hard coded)
+   //server heart beat 
    //algorithm: 
    //(a) server ping: if server hasn't sent any frame within serverPing 
    //interval, send a ping. 
@@ -501,7 +501,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    // 2*serverAcceptPing, disconnect!
    private class HeartBeater extends Thread
    {
-      final int MIN_SERVER_PING = 200;
+      final int MIN_SERVER_PING = 500;
       final int MIN_CLIENT_PING = 500;
       
       long serverPing = 0;

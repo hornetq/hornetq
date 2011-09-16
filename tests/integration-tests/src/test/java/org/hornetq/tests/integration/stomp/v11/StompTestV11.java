@@ -462,6 +462,69 @@ public class StompTestV11 extends StompTestBase2
 
    }
    
+   //server ping
+   public void testHeartBeat2() throws Exception
+   {
+      //heart-beat (1,1)
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      ClientStompFrame frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      frame.addHeader("heart-beat", "1,1");
+      frame.addHeader("accept-version", "1.0,1.1");
+      
+      ClientStompFrame reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      assertEquals("500,500", reply.getHeader("heart-beat"));
+      
+      connV11.disconnect();
+      
+      //heart-beat (500,1000)
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      frame.addHeader("heart-beat", "500,1000");
+      frame.addHeader("accept-version", "1.0,1.1");
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      assertEquals("1000,500", reply.getHeader("heart-beat"));
+      
+      System.out.println("========== start pinger!");
+      
+      connV11.startPinger(500);
+      
+      Thread.sleep(10000);
+      
+      //now check the frame size
+      int size = connV11.getFrameQueueSize();
+      
+      System.out.println("ping received: " + size);
+      
+      assertTrue(size > 5);
+      
+      //now server side should be disconnected because we didn't send ping for 2 sec
+      frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "text/plain");
+      frame.setBody("Hello World");
+
+      //send will be ok
+      connV11.sendFrame(frame);
+      
+      connV11.stopPinger();
+      
+      connV11.disconnect();
+
+   }
+
 }
 
 
