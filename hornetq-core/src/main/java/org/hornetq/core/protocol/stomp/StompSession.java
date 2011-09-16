@@ -140,7 +140,12 @@ public class StompSession implements SessionCallback
    public void acknowledge(String messageID, String subscriptionID) throws Exception
    {
       long id = Long.parseLong(messageID);
-      long consumerID = messagesToAck.remove(id);
+      Long consumerID = messagesToAck.remove(id);
+      
+      if (consumerID == null)
+      {
+         throw new HornetQStompException("failed to ack because no message with id: " + id);
+      }
       StompSubscription sub = subscriptions.get(consumerID);
 
       if (subscriptionID != null)

@@ -42,6 +42,7 @@ public class HornetQStompException extends Exception {
    public HornetQStompException(String msg, Throwable t)
    {
       super(msg, t);
+      this.body = t.getMessage();
    }
    
    public HornetQStompException(Throwable t)

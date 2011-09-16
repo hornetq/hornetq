@@ -104,6 +104,13 @@ public abstract class VersionedStompFrameHandler
          
          log.error("---------------postprocessed response: " + response);
       }
+      else
+      {
+         if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED))
+         {
+            response.addHeader(Stomp.Headers.Response.RECEIPT_ID, request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
+         }
+      }
       
       return response;
    }

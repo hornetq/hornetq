@@ -690,6 +690,77 @@ public class StompTestV11 extends StompTestBase2
       Assert.assertNotNull(message);
    }
    
+   public void testErrorWithReceipt() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+
+      sendMessage(getName());
+
+      ClientStompFrame frame = connV11.receiveFrame();
+
+      String messageID = frame.getHeader("message-id");
+      
+      System.out.println("Received message with id " + messageID);
+      
+      ClientStompFrame ackFrame = connV11.createFrame("ACK");
+      //give it a wrong sub id
+      ackFrame.addHeader("subscription", "sub2");
+      ackFrame.addHeader("message-id", messageID);
+      ackFrame.addHeader("receipt", "answer-me");
+      
+      ClientStompFrame error = connV11.sendFrame(ackFrame);
+      
+      System.out.println("Receiver error: " + error);
+      
+      assertEquals("ERROR", error.getCommand());
+      
+      assertEquals("answer-me", error.getHeader("receipt-id"));
+      
+      connV11.disconnect();
+
+      //message should still there
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNotNull(message);      
+   }
+   
+   public void testErrorWithReceipt2() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+
+      sendMessage(getName());
+
+      ClientStompFrame frame = connV11.receiveFrame();
+
+      String messageID = frame.getHeader("message-id");
+      
+      System.out.println("Received message with id " + messageID);
+      
+      ClientStompFrame ackFrame = connV11.createFrame("ACK");
+      //give it a wrong sub id
+      ackFrame.addHeader("subscription", "sub1");
+      ackFrame.addHeader("message-id", String.valueOf(Long.valueOf(messageID) + 1));
+      ackFrame.addHeader("receipt", "answer-me");
+      
+      ClientStompFrame error = connV11.sendFrame(ackFrame);
+      
+      System.out.println("Receiver error: " + error);
+      
+      assertEquals("ERROR", error.getCommand());
+      
+      assertEquals("answer-me", error.getHeader("receipt-id"));
+      
+      connV11.disconnect();
+
+      //message should still there
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNotNull(message);      
+   }
 
    private void ack(StompClientConnection conn, String subId, String mid) throws IOException, InterruptedException
    {
