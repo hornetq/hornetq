@@ -37,6 +37,13 @@ public interface StompClientConnection
    String getVersion();
 
    ClientStompFrame createFrame(String command);
+
+   //number of frames at the queue
+   int getFrameQueueSize();
+
+   void startPinger(long interval);
+
+   void stopPinger();
    
 }
 

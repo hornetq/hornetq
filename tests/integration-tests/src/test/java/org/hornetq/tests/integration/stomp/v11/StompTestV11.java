@@ -17,6 +17,8 @@
  */
 package org.hornetq.tests.integration.stomp.v11;
 
+import java.io.IOException;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.integration.stomp.util.ClientStompFrame;
 import org.hornetq.tests.integration.stomp.util.StompClientConnection;
@@ -350,6 +352,116 @@ public class StompTestV11 extends StompTestBase2
       
       newConn.disconnect();
    }
+   
+   public void testHeartBeat() throws Exception
+   {
+      //no heart beat at all if heat-beat absent
+      ClientStompFrame frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      
+      ClientStompFrame reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      Thread.sleep(5000);
+      
+      assertEquals(0, connV11.getFrameQueueSize());
+      
+      connV11.disconnect();
+      
+      //no heart beat for (0,0)
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      frame.addHeader("heart-beat", "0,0");
+      frame.addHeader("accept-version", "1.0,1.1");
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      assertEquals("0,0", reply.getHeader("heart-beat"));
+      
+      Thread.sleep(5000);
+      
+      assertEquals(0, connV11.getFrameQueueSize());
+      
+      connV11.disconnect();
+
+      //heart-beat (1,0), should receive a min client ping accepted by server
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      frame.addHeader("heart-beat", "1,0");
+      frame.addHeader("accept-version", "1.0,1.1");
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      assertEquals("0,500", reply.getHeader("heart-beat"));
+      
+      Thread.sleep(2000);
+      
+      //now server side should be disconnected because we didn't send ping for 2 sec
+      frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "text/plain");
+      frame.setBody("Hello World");
+
+      //send will fail
+      try
+      {
+         connV11.sendFrame(frame);
+         fail("connection should have been destroyed by now");
+      }
+      catch (IOException e)
+      {
+         //ignore
+      }
+      
+      //heart-beat (1,0), start a ping, then send a message, should be ok.
+      connV11 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      frame = connV11.createFrame("CONNECT");
+      frame.addHeader("host", "127.0.0.1");
+      frame.addHeader("login", this.defUser);
+      frame.addHeader("passcode", this.defPass);
+      frame.addHeader("heart-beat", "1,0");
+      frame.addHeader("accept-version", "1.0,1.1");
+      
+      reply = connV11.sendFrame(frame);
+      
+      assertEquals("CONNECTED", reply.getCommand());
+      
+      assertEquals("0,500", reply.getHeader("heart-beat"));
+      
+      System.out.println("========== start pinger!");
+      
+      connV11.startPinger(500);
+      
+      Thread.sleep(2000);
+      
+      //now server side should be disconnected because we didn't send ping for 2 sec
+      frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "text/plain");
+      frame.setBody("Hello World");
+
+      //send will be ok
+      connV11.sendFrame(frame);
+      
+      connV11.stopPinger();
+      
+      connV11.disconnect();
+
+   }
+   
 }
 
 

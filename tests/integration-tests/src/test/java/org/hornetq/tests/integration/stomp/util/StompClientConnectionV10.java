@@ -65,4 +65,18 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       // TODO Auto-generated method stub
       return null;
    }
+
+   @Override
+   public void startPinger(long interval)
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   @Override
+   public void stopPinger()
+   {
+      // TODO Auto-generated method stub
+      
+   }
 }

@@ -195,5 +195,10 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    {
       return version;
    }
+   
+   public int getFrameQueueSize()
+   {
+      return this.frameQueue.size();
+   }
 
 }

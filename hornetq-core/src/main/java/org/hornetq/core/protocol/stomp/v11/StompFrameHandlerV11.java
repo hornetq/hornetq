@@ -99,7 +99,14 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
             if (heartBeat != null)
             {
                handleHeartBeat(heartBeat);
-               response.addHeader(Stomp.Headers.Connected.HEART_BEAT, "20,100");
+               if (heartBeater == null)
+               {
+                  response.addHeader(Stomp.Headers.Connected.HEART_BEAT, "0,0");
+               }
+               else
+               {
+                  response.addHeader(Stomp.Headers.Connected.HEART_BEAT, heartBeater.getServerHeartBeatValue());
+               }
             }
          }
          else
@@ -147,7 +154,18 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    public StompFrame onDisconnect(StompFrame frame)
    {
       log.error("----------------- frame: " + frame);
-      
+      if (this.heartBeater != null)
+      {
+         heartBeater.shutdown();
+         try
+         {
+            heartBeater.join();
+         }
+         catch (InterruptedException e)
+         {
+            log.warn("Interrupted while waiting for heart beater to die", e);
+         }
+      }
       return null;
    }
    
@@ -371,7 +389,11 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onStomp(StompFrame request)
    {
-      return onConnect(request);
+      if (!connection.isValid())
+      {
+         return onConnect(request);
+      }
+      return null;
    }
 
    @Override
@@ -479,6 +501,9 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    // 2*serverAcceptPing, disconnect!
    private class HeartBeater extends Thread
    {
+      final int MIN_SERVER_PING = 200;
+      final int MIN_CLIENT_PING = 500;
+      
       long serverPing = 0;
       long serverAcceptPing = 0;
       volatile boolean shutdown = false;
@@ -490,15 +515,26 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       {
          if (clientPing != 0)
          {
-            serverAcceptPing = clientPing > 100 ? clientPing : 100;
+            serverAcceptPing = clientPing > MIN_CLIENT_PING ? clientPing : MIN_CLIENT_PING;
          }
          
          if (clientAcceptPing != 0)
          {
-            serverPing = clientAcceptPing > 20 ? clientAcceptPing : 20;
+            serverPing = clientAcceptPing > MIN_SERVER_PING ? clientAcceptPing : MIN_SERVER_PING;
          }
       }
       
+      public synchronized void shutdown()
+      {
+         shutdown = true;
+         this.notify();
+      }
+
+      public String getServerHeartBeatValue()
+      {
+         return String.valueOf(serverPing) + "," + String.valueOf(serverAcceptPing);
+      }
+
       public void pinged()
       {
          lastPingTime.set(System.currentTimeMillis());
@@ -537,6 +573,9 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                if (serverAcceptPing != 0)
                {
                   dur2 = System.currentTimeMillis() - lastAccepted.get();
+                  
+                  log.error("-------------------------- dur2 is " + dur2);
+                  
                   if (dur2 > (2 * serverAcceptPing))
                   {
                      connection.disconnect();
@@ -545,24 +584,51 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                   }
                }
                
-               long waitTime1 = serverPing - dur1;
-               long waitTime2 = serverAcceptPing * 2 - dur2;
-
-               long waitTime = waitTime1 < waitTime2 ? waitTime1 : waitTime2;
+               long waitTime1 = 0;
+               long waitTime2 = 0;
+               
+               if (serverPing > 0)
+               {
+                  waitTime1 = serverPing - dur1;
+               }
+               
+               if (serverAcceptPing > 0)
+               {
+                  waitTime2 = serverAcceptPing * 2 - dur2;
+               }
+               
+               long waitTime = 10l;
+               
+               if ((waitTime1 > 0) && (waitTime1 > 0))
+               {
+                  waitTime = waitTime1 < waitTime2 ? waitTime1 : waitTime2;
+               }
+               else if (waitTime1 > 0)
+               {
+                  waitTime = waitTime1;
+               }
+               else if (waitTime2 > 0)
+               {
+                  waitTime = waitTime2;
+               }
                
                try
                {
+                  log.error("-------------------waiting for " + waitTime);
                   this.wait(waitTime);
+                  log.error("--------------------wake up " );
                }
                catch (InterruptedException e)
                {
                }
             }
+            log.error("-------------------------HeartBeat thread shut down!");
          }
       }
 
       public void pingAccepted()
       {
+         log.error("------------------------Ping accepted!");
          this.lastAccepted.set(System.currentTimeMillis());
       }
    }
@@ -572,6 +638,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    {
       if (heartBeater != null)
       {
+         log.error("----------------------PING accepted: " + request);
          heartBeater.pingAccepted();
       }
    }

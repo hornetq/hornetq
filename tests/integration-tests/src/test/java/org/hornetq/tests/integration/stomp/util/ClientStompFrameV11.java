@@ -20,14 +20,23 @@ package org.hornetq.tests.integration.stomp.util;
  */
 public class ClientStompFrameV11 extends AbstractClientStompFrame
 {
+   boolean forceOneway = false;
+   
    public ClientStompFrameV11(String command)
    {
       super(command);
+   }
+   
+   public void setForceOneway()
+   {
+      forceOneway = true;
    }
 
    @Override
    public boolean needsReply()
    {
+      if (forceOneway) return false;
+      
       if ("CONNECT".equals(command) || "STOMP".equals(command) || headerKeys.contains(HEADER_RECEIPT))
       {
          return true;
