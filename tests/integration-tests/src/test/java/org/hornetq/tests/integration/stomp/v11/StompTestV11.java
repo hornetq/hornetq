@@ -608,6 +608,97 @@ public class StompTestV11 extends StompTestBase2
       Message message = consumer.receive(1000);
       Assert.assertNotNull(message);
    }
+   
+   
+   public void testAck() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+
+      sendMessage(getName());
+
+      ClientStompFrame frame = connV11.receiveFrame();
+
+      String messageID = frame.getHeader("message-id");
+      
+      System.out.println("Received message with id " + messageID);
+      
+      ack(connV11, "sub1", messageID);
+      
+      connV11.disconnect();
+
+      //Nack makes the message be dropped.
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNull(message);
+   }
+
+   public void testAckWithWrongSubId() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+
+      sendMessage(getName());
+
+      ClientStompFrame frame = connV11.receiveFrame();
+
+      String messageID = frame.getHeader("message-id");
+      
+      System.out.println("Received message with id " + messageID);
+      
+      ack(connV11, "sub2", messageID);
+      
+      ClientStompFrame error = connV11.receiveFrame();
+      
+      System.out.println("Receiver error: " + error);
+      
+      connV11.disconnect();
+
+      //message should be still there
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNotNull(message);
+   }
+
+   public void testAckWithWrongMessageId() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+
+      sendMessage(getName());
+
+      ClientStompFrame frame = connV11.receiveFrame();
+
+      String messageID = frame.getHeader("message-id");
+      
+      System.out.println("Received message with id " + messageID);
+      
+      ack(connV11, "sub2", "someother");
+      
+      ClientStompFrame error = connV11.receiveFrame();
+      
+      System.out.println("Receiver error: " + error);
+      
+      connV11.disconnect();
+
+      //message should still there
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNotNull(message);
+   }
+   
+
+   private void ack(StompClientConnection conn, String subId, String mid) throws IOException, InterruptedException
+   {
+      ClientStompFrame ackFrame = conn.createFrame("ACK");
+      ackFrame.addHeader("subscription", subId);
+      ackFrame.addHeader("message-id", mid);
+      
+      conn.sendFrame(ackFrame);
+   }
 
    private void nack(StompClientConnection conn, String subId, String mid) throws IOException, InterruptedException
    {
