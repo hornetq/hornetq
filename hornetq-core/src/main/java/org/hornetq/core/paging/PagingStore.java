@@ -129,7 +129,7 @@ public interface PagingStore extends HornetQComponent
    Collection<Integer> getCurrentIds() throws Exception;
 
    /**
-    * Sends the pages with given ids to the replicator.
+    * Sends the pages with given IDs to the {@link ReplicationManager}.
     * <p>
     * Sending is done here to avoid exposing the internal {@link SequentialFile}s.
     * @param replicator
