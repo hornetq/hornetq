@@ -43,6 +43,8 @@ import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
@@ -592,6 +594,16 @@ public class NullStorageManager implements StorageManager
    public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
    {
       // no-op
+   }
+
+   @Override
+   public boolean addToPage(PagingManager manager,
+      SimpleString address,
+      ServerMessage message,
+      RoutingContext ctx,
+      RouteContextList listCtx) throws Exception
+   {
+      return false;
    }
 
 }

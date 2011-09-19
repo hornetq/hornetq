@@ -86,6 +86,8 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -162,7 +164,7 @@ public class JournalStorageManager implements StorageManager
 
    public enum JournalContent
    {
-      BINDINGS((byte)0),      MESSAGES((byte)1);
+      BINDINGS((byte)0), MESSAGES((byte)1);
 
       public final byte typeByte;
 
@@ -219,11 +221,6 @@ public class JournalStorageManager implements StorageManager
    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings = new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
    private final boolean hasCallbackSupport;
-
-   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory)
-   {
-      this(config, executorFactory, null);
-   }
 
    public JournalStorageManager(final Configuration config,
                                 final ExecutorFactory executorFactory,
@@ -3295,7 +3292,7 @@ public class JournalStorageManager implements StorageManager
 
    public static final class CursorAckRecordEncoding implements EncodingSupport
    {
-      public CursorAckRecordEncoding(final long queueID, final PagePosition position)
+      private CursorAckRecordEncoding(final long queueID, final PagePosition position)
       {
          this.queueID = queueID;
          this.position = position;
@@ -3629,7 +3626,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
+   private static PersistedRoles newSecurityRecord(long id, HornetQBuffer buffer)
    {
       PersistedRoles roles = new PersistedRoles();
       roles.decode(buffer);
@@ -3642,7 +3639,7 @@ public class JournalStorageManager implements StorageManager
     * @param buffer
     * @return
     */
-   protected static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
+   private static PersistedAddressSetting newAddressEncoding(long id, HornetQBuffer buffer)
    {
       PersistedAddressSetting setting = new PersistedAddressSetting();
       setting.decode(buffer);
@@ -3688,7 +3685,7 @@ public class JournalStorageManager implements StorageManager
     * @param journal
     * @throws Exception
     */
-   protected static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
+   private static void describeJournal(SequentialFileFactory fileFactory, JournalImpl journal) throws Exception
    {
       List<JournalFile> files = journal.orderFiles();
 
@@ -3896,4 +3893,22 @@ public class JournalStorageManager implements StorageManager
       return hasCallbackSupport;
    }
 
+   @Override
+   public boolean addToPage(PagingManager pagingManager,
+      SimpleString address,
+      ServerMessage message,
+      RoutingContext ctx,
+      RouteContextList listCtx) throws Exception
+   {
+      readLock();
+      try
+      {
+         PagingStore store = pagingManager.getPageStore(address);
+         return store.page(message, ctx, listCtx);
+      }
+      finally
+      {
+         readUnLock();
+      }
+   }
 }

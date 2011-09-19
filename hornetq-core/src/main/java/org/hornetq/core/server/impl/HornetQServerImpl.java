@@ -1304,10 +1304,7 @@ public class HornetQServerImpl implements HornetQServer
                                    addressSettingsRepository);
    }
 
-   /**
-    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance)
-    */
-   protected StorageManager createStorageManager()
+   private StorageManager createStorageManager()
    {
       if (configuration.isPersistenceEnabled())
       {

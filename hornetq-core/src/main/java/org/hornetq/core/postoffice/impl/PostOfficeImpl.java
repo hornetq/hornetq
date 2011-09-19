@@ -583,7 +583,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          return;
       }
 
-      
+
       if (message.hasInternalProperties())
       {
          // We need to perform some cleanup on internal properties,
@@ -679,7 +679,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       // arrived the target node
       // as described on https://issues.jboss.org/browse/JBPAPP-6130
       ServerMessage copyRedistribute = message.copy(storageManager.generateUniqueID());
-      
+
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getAddress());
 
       boolean res = false;
@@ -810,7 +810,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    /**
     * @param message
     */
-   protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
+   private void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
    {
       for (SimpleString name : message.getPropertyNames())
       {
@@ -845,13 +845,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private class PageDelivery extends TransactionOperationAbstract
    {
-      private Set<Queue> queues = new HashSet<Queue>();
+      private final Set<Queue> queues = new HashSet<Queue>();
 
       public void addQueues(List<Queue> queueList)
       {
          queues.addAll(queueList);
       }
 
+      @Override
       public void afterCommit(Transaction tx)
       {
          // We need to try delivering async after paging, or nothing may start a delivery after paging since nothing is
@@ -866,6 +867,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       /* (non-Javadoc)
        * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
        */
+      @Override
       public List<MessageReference> getRelatedMessageReferences()
       {
          return Collections.emptyList();
@@ -881,11 +883,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       for (Map.Entry<SimpleString, RouteContextList> entry : context.getContexListing().entrySet())
       {
-         PagingStore store = pagingManager.getPageStore(entry.getKey());
-
-         if (store.page(message, context, entry.getValue()))
+         if (storageManager.addToPage(pagingManager, entry.getKey(), message, context, entry.getValue()))
          {
-
             // We need to kick delivery so the Queues may check for the cursors case they are empty
             schedulePageDelivery(tx, entry);
             continue;
@@ -1064,7 +1063,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             warnMessage.append("Duplicate message detected through the bridge - message will not be routed. Message information:\n");
             warnMessage.append(message.toString());
             PostOfficeImpl.log.warn(warnMessage.toString());
-            
+
             if (context.getTransaction() != null)
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));

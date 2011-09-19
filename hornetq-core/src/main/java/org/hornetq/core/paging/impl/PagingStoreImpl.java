@@ -386,27 +386,19 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public synchronized void stop() throws Exception
    {
-      lock(-1);
-      try
+      if (running)
       {
-         if (running)
+         running = false;
+
+         cursorProvider.stop();
+
+         flushExecutors();
+
+         if (currentPage != null)
          {
-            running = false;
-
-            cursorProvider.stop();
-
-            flushExecutors();
-
-            if (currentPage != null)
-            {
-               currentPage.close();
-               currentPage = null;
-            }
+            currentPage.close();
+            currentPage = null;
          }
-      }
-      finally
-      {
-         unlock();
       }
    }
 

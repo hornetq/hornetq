@@ -39,6 +39,8 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
@@ -244,4 +246,13 @@ public interface StorageManager extends HornetQComponent
     */
    void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception;
 
+   /**
+    * Adds message to page if we are paging.
+    * @return whether we added the message to a page or not.
+    */
+   boolean addToPage(PagingManager pagingManager,
+      SimpleString address,
+      ServerMessage message,
+      RoutingContext ctx,
+      RouteContextList listCtx) throws Exception;
 }
