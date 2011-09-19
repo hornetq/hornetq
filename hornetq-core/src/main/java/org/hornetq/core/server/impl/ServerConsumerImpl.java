@@ -286,7 +286,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          }
          else
          {
-            log.error("--------------------- deliver standard");
             deliverStandardMessage(ref, message);
          }
 
@@ -696,7 +695,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
     */
    private void deliverStandardMessage(final MessageReference ref, final ServerMessage message)
    {
-      log.error("------------------ calling callback " + callback + " to send message");
       int packetSize = callback.sendMessage(message, id, ref.getDeliveryCount());
 
       if (availableCredits != null)

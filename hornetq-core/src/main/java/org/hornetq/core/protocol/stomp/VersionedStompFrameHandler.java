@@ -95,14 +95,10 @@ public abstract class VersionedStompFrameHandler
       {
          response = onUnknown(request.getCommand());
       }
-      
-      log.error("-------------------- handled " + request);
 
       if (response == null)
       {
          response = postprocess(request);
-         
-         log.error("---------------postprocessed response: " + response);
       }
       else
       {

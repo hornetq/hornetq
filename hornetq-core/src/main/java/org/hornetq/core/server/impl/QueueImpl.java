@@ -279,7 +279,6 @@ public class QueueImpl implements Queue
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      log.error("-------------------in queue route, context: " + context);
       context.addQueue(address, this);
    }
 
@@ -363,7 +362,6 @@ public class QueueImpl implements Queue
          return;
       }
 
-      log.error("----------------checkingDirect " + checkDirect);
       // The checkDirect flag is periodically set to true, if the delivery is specified as direct then this causes the
       // directDeliver flag to be re-computed resulting in direct delivery if the queue is empty
       // We don't recompute it on every delivery since executing isEmpty is expensive for a ConcurrentQueue
@@ -386,13 +384,10 @@ public class QueueImpl implements Queue
          checkDirect = false;
       }
 
-      log.error("-----now direct " + direct + " directDeliver " + directDeliver );
       if (direct && directDeliver && deliverDirect(ref))
       {
          return;
       }
-      
-      log.error("------- ok, adding ref to the queue");
 
       queueMemorySize.addAndGet(ref.getMessage().getMemoryEstimate());
 
@@ -401,8 +396,6 @@ public class QueueImpl implements Queue
       directDeliver = false;
 
       executor.execute(concurrentPoller);
-      
-      log.error("-----------executing : " + concurrentPoller);
    }
 
    public void deliverAsync()
@@ -1953,10 +1946,7 @@ public class QueueImpl implements Queue
       HandleStatus status;
       try
       {
-         log.error("-------------------Now let consumer " + consumer + " handle " + reference);
          status = consumer.handle(reference);
-         
-         log.error("-------------- returned status: " + status);
       }
       catch (Throwable t)
       {

@@ -153,7 +153,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onDisconnect(StompFrame frame)
    {
-      log.error("----------------- frame: " + frame);
       if (this.heartBeater != null)
       {
          heartBeater.shutdown();
@@ -447,8 +446,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
       StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
       
-      log.error("-------------------- frame created: " + frame);
-      
       return frame;
 
    }
@@ -456,8 +453,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    @Override
    public void replySent(StompFrame reply)
    {
-      log.error("----------------------- reply sent notified: " + reply);
-      
       if (reply.getCommand().equals(Stomp.Responses.CONNECTED))
       {
          //kick off the pinger
@@ -574,8 +569,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                {
                   dur2 = System.currentTimeMillis() - lastAccepted.get();
                   
-                  log.error("-------------------------- dur2 is " + dur2);
-                  
                   if (dur2 > (2 * serverAcceptPing))
                   {
                      connection.disconnect();
@@ -614,21 +607,17 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                
                try
                {
-                  log.error("-------------------waiting for " + waitTime);
                   this.wait(waitTime);
-                  log.error("--------------------wake up " );
                }
                catch (InterruptedException e)
                {
                }
             }
-            log.error("-------------------------HeartBeat thread shut down!");
          }
       }
 
       public void pingAccepted()
       {
-         log.error("------------------------Ping accepted!");
          this.lastAccepted.set(System.currentTimeMillis());
       }
    }
@@ -638,7 +627,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    {
       if (heartBeater != null)
       {
-         log.error("----------------------PING accepted: " + request);
          heartBeater.pingAccepted();
       }
    }
@@ -897,8 +885,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          boolean isEscaping = false;
          SimpleBytes holder = new SimpleBytes(1024);      
          
-         log.error("--------------------------------- Decoding command: " + decoder.command);
-         
          outer: while (true)
          {
             byte b = decoder.workingBuffer[decoder.pos++];
@@ -989,8 +975,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
                      throw new HornetQStompException("Encoding exception.", e);
                   }
                   holder.reset();
-                  
-                  log.error("---------- A new header decoded: " + decoder.headerName + " : " + headerValue);
                   
                   decoder.headers.put(decoder.headerName, headerValue);
 

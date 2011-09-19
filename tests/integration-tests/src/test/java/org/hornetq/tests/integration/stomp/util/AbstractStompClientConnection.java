@@ -164,7 +164,6 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
             
             while (n >= 0)
             {
-               System.out.println("read " + n);
                if (n > 0)
                {
                   receiveBytes(n);

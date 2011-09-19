@@ -46,15 +46,9 @@ public class StompFrameFactoryV11 implements StompFrameFactory
 
    public ClientStompFrame createFrame(final String data)
    {
-      System.out.println("Data: |" + data + "|");
       //split the string at "\n\n"
       String[] dataFields = data.split("\n\n");
       
-      System.out.println("DataFields[0] |" + dataFields[0]);
-      if (dataFields.length > 1)
-      {
-         System.out.println("DataFields[1] |" + dataFields[1]);
-      }
       StringTokenizer tokenizer = new StringTokenizer(dataFields[0], "\n");
       
       String command = tokenizer.nextToken();
@@ -63,7 +57,6 @@ public class StompFrameFactoryV11 implements StompFrameFactory
       while (tokenizer.hasMoreTokens())
       {
          String header = tokenizer.nextToken();
-         System.out.println("header is: " + header);
          String[] fields = splitHeader(header);
          frame.addHeader(fields[0], fields[1]);
       }

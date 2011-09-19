@@ -177,15 +177,11 @@ public class StompFrame
 
       public String getEscapedKey()
       {
-         log.error("----------------key is : |" + key + "|");
-         log.error("----------------esc'd: |" + escape(key) + "|");
          return escape(key);
       }
 
       public String getEscapedValue()
       {
-         log.error("----------------val is : |" + val + "|");
-         log.error("----------------esc'd v: |" + escape(val) + "|");
          return escape(val);
       }
       

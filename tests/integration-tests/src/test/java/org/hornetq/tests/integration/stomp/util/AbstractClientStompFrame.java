@@ -72,7 +72,6 @@ public class AbstractClientStompFrame implements ClientStompFrame
       
       String data = new String(sb.toString());
       
-      System.out.println("---------------------------full frame is : " + data);
       byte[] byteValue = data.getBytes("UTF-8");
       
       ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);

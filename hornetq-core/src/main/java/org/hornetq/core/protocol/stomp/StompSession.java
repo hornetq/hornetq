@@ -156,6 +156,7 @@ public class StompSession implements SessionCallback
       
       if (sub.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.CLIENT_INDIVIDUAL))
       {
+         log.error("---------------------client-individual ack: " + id);
          session.individualAcknowledge(consumerID, id);
       }
       else

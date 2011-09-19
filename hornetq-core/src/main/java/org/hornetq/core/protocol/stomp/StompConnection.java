@@ -469,7 +469,6 @@ public class StompConnection implements RemotingConnection
 
    public void sendFrame(StompFrame frame)
    {
-      log.error("--------------- sending reply: " + frame);
       manager.sendReply(this, frame);
    }
 
@@ -529,9 +528,7 @@ public class StompConnection implements RemotingConnection
       }
       try
       {
-         log.error("--------------------- sending mesage: " + message);
          stompSession.getSession().send(message, true);
-         log.error("----------------------sent by " + stompSession.getSession());
       }
       catch (Exception e)
       {

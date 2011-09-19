@@ -238,15 +238,12 @@ public class BindingsImpl implements Bindings
          {
             if (binding.getFilter() == null || binding.getFilter().match(message))
             {
-               log.error("---------------------- route to binding: " + binding);
                binding.getBindable().route(message, context);
 
                routed = true;
             }
          }
       }
-      
-      log.error("-------- now routed is: " + routed);
 
       if (!routed)
       {
@@ -279,7 +276,6 @@ public class BindingsImpl implements Bindings
 
                if (theBinding != null)
                {
-                  log.error("------------------- route theBinding: " + theBinding + " mesage: " + message);
                   theBinding.route(message, context);
                }
             }

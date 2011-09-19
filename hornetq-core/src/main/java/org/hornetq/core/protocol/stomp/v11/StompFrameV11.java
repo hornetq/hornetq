@@ -71,8 +71,6 @@ public class StompFrameV11 extends StompFrame
          }
          // Add a newline to separate the headers from the content.
          head.append(Stomp.NEWLINE);
-         
-         log.error("------------------------_______now head: " + head);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
          if (bytesBody != null)

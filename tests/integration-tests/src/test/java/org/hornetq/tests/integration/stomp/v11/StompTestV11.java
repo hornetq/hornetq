@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
@@ -545,6 +546,8 @@ public class StompTestV11 extends StompTestBase2
       
       nack(connV11, "sub1", messageID);
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
 
       //Nack makes the message be dropped.
@@ -572,6 +575,8 @@ public class StompTestV11 extends StompTestBase2
       ClientStompFrame error = connV11.receiveFrame();
       
       System.out.println("Receiver error: " + error);
+      
+      unsubscribe(connV11, "sub1");
       
       connV11.disconnect();
 
@@ -601,6 +606,8 @@ public class StompTestV11 extends StompTestBase2
       
       System.out.println("Receiver error: " + error);
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
 
       //message should still there
@@ -625,6 +632,8 @@ public class StompTestV11 extends StompTestBase2
       System.out.println("Received message with id " + messageID);
       
       ack(connV11, "sub1", messageID);
+      
+      unsubscribe(connV11, "sub1");
       
       connV11.disconnect();
 
@@ -654,6 +663,8 @@ public class StompTestV11 extends StompTestBase2
       
       System.out.println("Receiver error: " + error);
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
 
       //message should be still there
@@ -681,6 +692,8 @@ public class StompTestV11 extends StompTestBase2
       ClientStompFrame error = connV11.receiveFrame();
       
       System.out.println("Receiver error: " + error);
+      
+      unsubscribe(connV11, "sub1");
       
       connV11.disconnect();
 
@@ -718,6 +731,8 @@ public class StompTestV11 extends StompTestBase2
       
       assertEquals("answer-me", error.getHeader("receipt-id"));
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
 
       //message should still there
@@ -754,6 +769,8 @@ public class StompTestV11 extends StompTestBase2
       
       assertEquals("answer-me", error.getHeader("receipt-id"));
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
 
       //message should still there
@@ -785,6 +802,8 @@ public class StompTestV11 extends StompTestBase2
       
       //ack the last
       this.ack(connV11, "sub1", frame);
+      
+      unsubscribe(connV11, "sub1");
       
       connV11.disconnect();
       
@@ -821,6 +840,8 @@ public class StompTestV11 extends StompTestBase2
          }
       }
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
       
       //no messages can be received.
@@ -852,6 +873,8 @@ public class StompTestV11 extends StompTestBase2
          assertNotNull(frame);
       }
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
       
       //no messages can be received.
@@ -880,6 +903,7 @@ public class StompTestV11 extends StompTestBase2
          frame = connV11.receiveFrame();
          assertNotNull(frame);
          
+         System.out.println(i + " == received: " + frame);
          //ack on even numbers
          if (i%2 == 0)
          {
@@ -887,18 +911,23 @@ public class StompTestV11 extends StompTestBase2
          }
       }
       
+      unsubscribe(connV11, "sub1");
+      
       connV11.disconnect();
       
       //no messages can be received.
       MessageConsumer consumer = session.createConsumer(queue);
       
-      Message message = null;
+      TextMessage message = null;
       for (int i = 0; i < num/2; i++)
       {
-         message = consumer.receive(1000);
+         message = (TextMessage) consumer.receive(1000);
          Assert.assertNotNull(message);
+         System.out.println("Legal: " + message.getText());
       }
-      message = consumer.receive(1000);
+      
+      message = (TextMessage) consumer.receive(1000);
+      
       Assert.assertNull(message);
    }
 
@@ -908,12 +937,15 @@ public class StompTestV11 extends StompTestBase2
       String messageID = frame.getHeader("message-id");
       
       ClientStompFrame ackFrame = connV11.createFrame("ACK");
-      //give it a wrong sub id
+
       ackFrame.addHeader("subscription", subId);
       ackFrame.addHeader("message-id", messageID);
-      ackFrame.addHeader("receipt", "answer-me");
       
-      connV11.sendFrame(ackFrame);
+      ClientStompFrame response = connV11.sendFrame(ackFrame);
+      if (response != null)
+      {
+         throw new IOException("failed to ack " + response);
+      }
    }
 
    private void ack(StompClientConnection conn, String subId, String mid) throws IOException, InterruptedException
@@ -940,6 +972,14 @@ public class StompTestV11 extends StompTestBase2
       subFrame.addHeader("id", subId);
       subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
       subFrame.addHeader("ack", ack);
+      
+      conn.sendFrame(subFrame);
+   }
+
+   private void unsubscribe(StompClientConnection conn, String subId) throws IOException, InterruptedException
+   {
+      ClientStompFrame subFrame = conn.createFrame("UNSUBSCRIBE");
+      subFrame.addHeader("id", subId);
       
       conn.sendFrame(subFrame);
    }

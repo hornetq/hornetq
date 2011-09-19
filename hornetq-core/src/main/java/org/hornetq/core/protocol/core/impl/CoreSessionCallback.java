@@ -72,8 +72,6 @@ public final class CoreSessionCallback implements SessionCallback
    public int sendMessage(ServerMessage message, long consumerID, int deliveryCount)
    {
       Packet packet = new SessionReceiveMessage(consumerID, message, deliveryCount);
-
-      log.error("------------------channel sent " + channel);
       
       channel.sendBatched(packet);
 

@@ -579,8 +579,6 @@ public class StompDecoder
          data = data - pos;
 
          // reset
-         
-         log.error("-------new Frame decoded: " + command + " headers " + headers + " content " + content);
 
          StompFrame ret = new StompFrame(command, headers, content);
 
