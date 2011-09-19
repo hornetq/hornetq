@@ -95,7 +95,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
 
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
@@ -120,7 +120,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          journal.stop();
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
@@ -149,7 +149,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          mapDups.clear();
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
