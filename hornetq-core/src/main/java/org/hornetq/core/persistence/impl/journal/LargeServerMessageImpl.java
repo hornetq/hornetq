@@ -107,29 +107,6 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       bodySize += bytes.length;
    }
 
-   public void encodeBody(final HornetQBuffer bufferOut, final BodyEncoder context, final int size)
-   {
-      try
-      {
-         // This could maybe be optimized (maybe reading directly into bufferOut)
-         ByteBuffer bufferRead = ByteBuffer.allocate(size);
-
-         int bytesRead = context.encode(bufferRead);
-
-         bufferRead.flip();
-
-         if (bytesRead > 0)
-         {
-            bufferOut.writeBytes(bufferRead.array(), 0, bytesRead);
-         }
-
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e.getMessage(), e);
-      }
-   }
-
    @Override
    public synchronized int getEncodeSize()
    {
