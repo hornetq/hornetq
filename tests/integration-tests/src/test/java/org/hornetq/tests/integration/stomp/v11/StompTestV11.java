@@ -761,6 +761,160 @@ public class StompTestV11 extends StompTestBase2
       Message message = consumer.receive(1000);
       Assert.assertNotNull(message);      
    }
+   
+   public void testAckModeClient() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+      
+      int num = 50;
+      //send a bunch of messages
+      for (int i = 0; i < num; i++)
+      {
+         this.sendMessage("client-ack" + i);
+      }
+      
+      ClientStompFrame frame = null;
+      
+      for (int i = 0; i < num; i++)
+      {
+         frame = connV11.receiveFrame();
+         assertNotNull(frame);
+      }
+      
+      //ack the last
+      this.ack(connV11, "sub1", frame);
+      
+      connV11.disconnect();
+      
+      //no messages can be received.
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNull(message);
+   }
+   
+   public void testAckModeClient2() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client");
+      
+      int num = 50;
+      //send a bunch of messages
+      for (int i = 0; i < num; i++)
+      {
+         this.sendMessage("client-ack" + i);
+      }
+      
+      ClientStompFrame frame = null;
+      
+      for (int i = 0; i < num; i++)
+      {
+         frame = connV11.receiveFrame();
+         assertNotNull(frame);
+
+         //ack the 49th
+         if (i == num - 2)
+         {
+            this.ack(connV11, "sub1", frame);
+         }
+      }
+      
+      connV11.disconnect();
+      
+      //no messages can be received.
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNotNull(message);
+      message = consumer.receive(1000);
+      Assert.assertNull(message);
+   }
+   
+   public void testAckModeAuto() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "auto");
+      
+      int num = 50;
+      //send a bunch of messages
+      for (int i = 0; i < num; i++)
+      {
+         this.sendMessage("auto-ack" + i);
+      }
+      
+      ClientStompFrame frame = null;
+      
+      for (int i = 0; i < num; i++)
+      {
+         frame = connV11.receiveFrame();
+         assertNotNull(frame);
+      }
+      
+      connV11.disconnect();
+      
+      //no messages can be received.
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(1000);
+      Assert.assertNull(message);
+   }
+   
+   public void testAckModeClientIndividual() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+
+      subscribe(connV11, "sub1", "client-individual");
+      
+      int num = 50;
+      //send a bunch of messages
+      for (int i = 0; i < num; i++)
+      {
+         this.sendMessage("client-individual-ack" + i);
+      }
+      
+      ClientStompFrame frame = null;
+      
+      for (int i = 0; i < num; i++)
+      {
+         frame = connV11.receiveFrame();
+         assertNotNull(frame);
+         
+         //ack on even numbers
+         if (i%2 == 0)
+         {
+            this.ack(connV11, "sub1", frame);
+         }
+      }
+      
+      connV11.disconnect();
+      
+      //no messages can be received.
+      MessageConsumer consumer = session.createConsumer(queue);
+      
+      Message message = null;
+      for (int i = 0; i < num/2; i++)
+      {
+         message = consumer.receive(1000);
+         Assert.assertNotNull(message);
+      }
+      message = consumer.receive(1000);
+      Assert.assertNull(message);
+   }
+
+   private void ack(StompClientConnection connV112, String subId,
+         ClientStompFrame frame) throws IOException, InterruptedException
+   {
+      String messageID = frame.getHeader("message-id");
+      
+      ClientStompFrame ackFrame = connV11.createFrame("ACK");
+      //give it a wrong sub id
+      ackFrame.addHeader("subscription", subId);
+      ackFrame.addHeader("message-id", messageID);
+      ackFrame.addHeader("receipt", "answer-me");
+      
+      connV11.sendFrame(ackFrame);
+   }
 
    private void ack(StompClientConnection conn, String subId, String mid) throws IOException, InterruptedException
    {

@@ -86,8 +86,6 @@ public class StompSession implements SessionCallback
          
          StompFrame frame = connection.createStompMessage(serverMessage, subscription, deliveryCount);
          
-         log.error("--------------lllll- Sending frame: " + frame);
-         
          if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
@@ -155,7 +153,15 @@ public class StompSession implements SessionCallback
             throw new HornetQStompException("subscription id " + subscriptionID + " does not match " + sub.getID());
          }
       }
-      session.acknowledge(consumerID, id);
+      
+      if (sub.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.CLIENT_INDIVIDUAL))
+      {
+         session.individualAcknowledge(consumerID, id);
+      }
+      else
+      {
+         session.acknowledge(consumerID, id);
+      }
       session.commit();
    }
 
