@@ -569,6 +569,12 @@ public interface ClientSession extends XAResource
    void addMetaData(String key, String data) throws HornetQException;
 
    /**
+    * Attach any metadata to the session. Throws an exception if there's already a metadata available
+    * @throws HornetQException 
+    */
+   void addUniqueMetaData(String key, String data) throws HornetQException;
+
+   /**
     * Attach any metadata to the session.
     * Sends a Metadata using the older version
     * @deprecated Use {@link ClientSession#addMetaData(String, String)}

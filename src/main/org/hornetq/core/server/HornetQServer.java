@@ -132,6 +132,9 @@ public interface HornetQServer extends HornetQComponent
 
    List<ServerSession> getSessions(String connectionID);
 
+   /** will return true if there is any session wth this key */
+   boolean lookupSession(String metakey, String metavalue);
+
    ClusterManager getClusterManager();
 
    SimpleString getNodeID();

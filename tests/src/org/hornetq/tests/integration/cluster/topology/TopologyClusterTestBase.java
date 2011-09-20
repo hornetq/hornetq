@@ -420,7 +420,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       
       locator.close();
    }
-
+   
    public void testMultipleClientSessionFactories() throws Throwable
    {
       startServers(0, 1, 2, 3, 4);

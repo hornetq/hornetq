@@ -797,6 +797,23 @@ public class HornetQServerImpl implements HornetQServer
       sessions.remove(name);
    }
 
+   public boolean lookupSession(String key, String value)
+   {
+      // getSessions is called here in a try to minimize locking the Server while this check is being done
+      Set<ServerSession> allSessions = getSessions();
+      
+      for (ServerSession session : allSessions)
+      {
+         String metaValue = session.getMetaData(key);
+         if (metaValue != null && metaValue.equals(value))
+         {
+            return true;
+         }
+      }
+      
+      return false;
+   }
+   
    public synchronized List<ServerSession> getSessions(final String connectionID)
    {
       Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();

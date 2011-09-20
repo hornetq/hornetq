@@ -1194,6 +1194,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       metaData.put(key, data);
    }
 
+
+   public boolean addUniqueMetaData(String key, String data)
+   {
+      if (server.lookupSession(key, data))
+      {
+         // There is a duplication of this property
+         return false;
+      }
+      else
+      {
+         addMetaData(key, data);
+         return true;
+      }
+   }
+
    public String getMetaData(String key)
    {
       String data = null;

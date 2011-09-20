@@ -1666,8 +1666,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                                                              null,
                                                                              groupAddress,
                                                                              port,
-                                                                             5000,
-                                                                             5000);
+                                                                             1000,
+                                                                             1000);
 
       configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 

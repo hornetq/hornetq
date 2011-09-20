@@ -65,6 +65,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -1145,6 +1146,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          metadata.put(key, data);
       }
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
+   }
+   
+   public void addUniqueMetaData(String key, String data) throws HornetQException
+   {
+      channel.sendBlocking(new SessionUniqueAddMetaDataMessage(key, data));
    }
 
    public ClientSessionFactoryInternal getSessionFactory()

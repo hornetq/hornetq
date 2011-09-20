@@ -181,13 +181,17 @@ public class PacketImpl implements Packet
    public static final byte REPLICATION_COMPARE_DATA = 102;
 
    public static final byte REPLICATION_SYNC = 103;
-
-   // HA
    
    public static final byte SESS_ADD_METADATA = 104;
    
    public static final byte SESS_ADD_METADATA2 = 105;
    
+   public static final byte SESS_UNIQUE_ADD_METADATA = 106;
+   
+   
+
+   // HA
+
    public static final byte CLUSTER_TOPOLOGY = 110;
 
    public static final byte NODE_ANNOUNCE = 111;
@@ -200,6 +204,7 @@ public class PacketImpl implements Packet
 
    public static final byte CLUSTER_TOPOLOGY_V2 = 114;
 
+ 
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

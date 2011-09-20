@@ -65,7 +65,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    public static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
@@ -95,7 +95,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final ScheduledExecutorService scheduledThreadPool;
 
    private FailureCheckAndFlushThread failureCheckAndFlushThread;
-   
+
    private final ClusterManager clusterManager;
 
    private Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
@@ -113,7 +113,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       transportConfigs = config.getAcceptorConfigurations();
 
       this.server = server;
-      
+
       this.clusterManager = clusterManager;
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -136,13 +136,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.scheduledThreadPool = scheduledThreadPool;
 
-      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server,
-                                                                                                     interceptors));
+      this.protocolMap.put(ProtocolType.CORE,
+                           new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
       // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
-      this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server,
-                                                                                                       interceptors));
-      this.protocolMap.put(ProtocolType.STOMP_WS, new StompProtocolManagerFactory().createProtocolManager(server,
-                                                                                                          interceptors));
+      this.protocolMap.put(ProtocolType.STOMP,
+                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.STOMP_WS,
+                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -168,9 +168,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // This needs to be a different thread pool to the main thread pool especially for OIO where we may need
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads-" + server.toString() + "-" + System.identityHashCode(this),
-                                                        false,
-                                                        tccl);
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads-" + server.toString() +
+                                                        "-" +
+                                                        System.identityHashCode(this), false, tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 
@@ -275,7 +275,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       failureCheckAndFlushThread.close();
-      
 
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
@@ -297,7 +296,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       for (ConnectionEntry entry : connections.values())
       {
          RemotingConnection conn = entry.connection;
-         
+
          if (log.isTraceEnabled())
          {
             log.trace("Sending connection.disconnection packet to " + conn);
@@ -398,23 +397,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          log.trace("Connection created " + connection);
       }
-      
+
       connections.put(connection.getID(), entry);
 
       if (config.isBackup())
       {
          serverSideReplicatingConnection = entry.connection;
-      }      
+      }
    }
-   
+
    public void connectionDestroyed(final Object connectionID)
    {
 
-	  if (isTrace)
-	  {
-	     log.trace("Connection removed " + connectionID + " from server " + this.server, new Exception ("trace"));
-	  }
-      
+      if (isTrace)
+      {
+         log.trace("Connection removed " + connectionID + " from server " + this.server, new Exception("trace"));
+      }
+
       ConnectionEntry conn = connections.get(connectionID);
 
       if (conn != null)
@@ -459,7 +458,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       // Connections should only fail when TTL is exceeded
    }
-   
+
    public void connectionReadyForWrites(final Object connectionID, final boolean ready)
    {
    }
@@ -496,10 +495,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
          else
          {
-        	if (log.isTraceEnabled())
-        	{
-        	   log.trace("ConnectionID = "  + connectionID + " was already closed, so ignoring packet");
-        	}
+            if (log.isTraceEnabled())
+            {
+               log.trace("ConnectionID = " + connectionID + " was already closed, so ignoring packet");
+            }
          }
       }
    }
@@ -540,75 +539,84 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          while (!closed)
          {
-            long now = System.currentTimeMillis();
-
-            Set<Object> idsToRemove = new HashSet<Object>();
-
-            for (ConnectionEntry entry : connections.values())
+            try
             {
-               RemotingConnection conn = entry.connection;
+               long now = System.currentTimeMillis();
 
-               boolean flush = true;
+               Set<Object> idsToRemove = new HashSet<Object>();
 
-               if (entry.ttl != -1)
+               for (ConnectionEntry entry : connections.values())
                {
-                  if (now >= entry.lastCheck + entry.ttl)
-                  {
-                     if (!conn.checkDataReceived())
-                     {
-                        idsToRemove.add(conn.getID());
+                  RemotingConnection conn = entry.connection;
 
-                        flush = false;
-                     }
-                     else
+                  boolean flush = true;
+
+                  if (entry.ttl != -1)
+                  {
+                     if (now >= entry.lastCheck + entry.ttl)
                      {
-                        entry.lastCheck = now;
+                        if (!conn.checkDataReceived())
+                        {
+                           idsToRemove.add(conn.getID());
+
+                           flush = false;
+                        }
+                        else
+                        {
+                           entry.lastCheck = now;
+                        }
                      }
+                  }
+
+                  if (flush)
+                  {
+                     conn.flush();
                   }
                }
 
-               if (flush)
+               for (Object id : idsToRemove)
                {
-                  conn.flush();
+                  RemotingConnection conn = removeConnection(id);
+                  if (conn != null)
+                  {
+                     HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
+                                                                "Did not receive data from " + conn.getRemoteAddress() +
+                                                                         ". It is likely the client has exited or crashed without " +
+                                                                         "closing its connection, or the network between the server and client has failed. " +
+                                                                         "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
+                                                                         "Please check user manual for more information." +
+                                                                         " The connection will now be closed.");
+                     conn.fail(me);
+                  }
+               }
+
+               synchronized (this)
+               {
+                  long toWait = pauseInterval;
+
+                  long start = System.currentTimeMillis();
+
+                  while (!closed && toWait > 0)
+                  {
+                     try
+                     {
+                        wait(toWait);
+                     }
+                     catch (InterruptedException e)
+                     {
+                     }
+
+                     now = System.currentTimeMillis();
+
+                     toWait -= now - start;
+
+                     start = now;
+                  }
                }
             }
-
-            for (Object id : idsToRemove)
+            catch (Throwable e)
             {
-               RemotingConnection conn = removeConnection(id);
-
-               HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                          "Did not receive data from " + conn.getRemoteAddress() +
-                                                                   ". It is likely the client has exited or crashed without " +
-                                                                   "closing its connection, or the network between the server and client has failed. " +
-                                                                   "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
-                                                                   "Please check user manual for more information." +
-                                                                   " The connection will now be closed.");
-               conn.fail(me);
-            }
-
-            synchronized (this)
-            {
-               long toWait = pauseInterval;
-
-               long start = System.currentTimeMillis();
-
-               while (!closed && toWait > 0)
-               {
-                  try
-                  {
-                     wait(toWait);
-                  }
-                  catch (InterruptedException e)
-                  {
-                  }
-
-                  now = System.currentTimeMillis();
-
-                  toWait -= now - start;
-
-                  start = now;
-               }
+               log.warn(e.getMessage(), e);
             }
          }
       }
