@@ -137,8 +137,6 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
          startServers(0, 1);
          waitForTopology(servers[0], 2);
 
-         System.out.println(servers[0].getClusterManager().getTopology().describe());
-         System.out.println(servers[1].getClusterManager().getTopology().describe());
          waitForTopology(servers[1], 2);
 
          for (int i = 0; i < 10; i++)
@@ -148,7 +146,6 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
             log.info("#stop #test #" + i);
             stopServers(1);
 
-            System.out.println(servers[0].getClusterManager().getTopology().describe());
             waitForTopology(servers[0], 1, 2000);
             log.info("#start #test #" + i);
             startServers(1);

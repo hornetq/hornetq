@@ -53,6 +53,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.version.Version;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -367,7 +368,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
-   public void connectionCreated(final Connection connection, final ProtocolType protocol)
+   public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
    {
    }
 

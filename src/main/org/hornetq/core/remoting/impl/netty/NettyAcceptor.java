@@ -37,6 +37,7 @@ import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.WebSocketServerHandler;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -87,6 +88,8 @@ public class NettyAcceptor implements Acceptor
 {
    static final Logger log = Logger.getLogger(NettyAcceptor.class);
 
+   private ClusterConnection clusterConnection;
+   
    private ChannelFactory channelFactory;
 
    private volatile ChannelGroup serverChannelGroup;
@@ -158,6 +161,7 @@ public class NettyAcceptor implements Acceptor
    private final long batchDelay;
 
    private final boolean directDeliver;
+   
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -166,6 +170,21 @@ public class NettyAcceptor implements Acceptor
                         final Executor threadPool,
                         final ScheduledExecutorService scheduledThreadPool)
    {
+      this(null, configuration, handler, decoder, listener, threadPool, scheduledThreadPool);
+   }
+
+
+   public NettyAcceptor(final ClusterConnection clusterConnection,
+                        final Map<String, Object> configuration,
+                        final BufferHandler handler,
+                        final BufferDecoder decoder,
+                        final ConnectionLifeCycleListener listener,
+                        final Executor threadPool,
+                        final ScheduledExecutorService scheduledThreadPool)
+   {
+      
+      this.clusterConnection = clusterConnection;
+      
       this.handler = handler;
 
       this.decoder = decoder;
@@ -618,6 +637,14 @@ public class NettyAcceptor implements Acceptor
    {
       this.notificationService = notificationService;
    }
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.spi.core.remoting.Acceptor#getClusterConnection()
+    */
+   public ClusterConnection getClusterConnection()
+   {
+      return clusterConnection;
+   }
 
    // Inner classes -----------------------------------------------------------------------------
 
@@ -633,7 +660,7 @@ public class NettyAcceptor implements Acceptor
       @Override
       public void channelConnected(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         new NettyConnection(e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0, directDeliver);
+         new NettyConnection(NettyAcceptor.this, e.getChannel(), new Listener(), !httpEnabled && batchDelay > 0, directDeliver);
 
          SslHandler sslHandler = ctx.getPipeline().get(SslHandler.class);
          if (sslHandler != null)
@@ -662,14 +689,14 @@ public class NettyAcceptor implements Acceptor
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), (NettyConnection)connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection, NettyAcceptor.this.protocol);
+         listener.connectionCreated(acceptor, connection, NettyAcceptor.this.protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

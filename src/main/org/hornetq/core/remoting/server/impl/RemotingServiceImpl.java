@@ -39,6 +39,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -94,6 +95,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    private final ScheduledExecutorService scheduledThreadPool;
 
    private FailureCheckAndFlushThread failureCheckAndFlushThread;
+   
+   private final ClusterManager clusterManager;
 
    private Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
 
@@ -101,7 +104,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Constructors --------------------------------------------------
 
-   public RemotingServiceImpl(final Configuration config,
+   public RemotingServiceImpl(final ClusterManager clusterManager,
+                              final Configuration config,
                               final HornetQServer server,
                               final ManagementService managementService,
                               final ScheduledExecutorService scheduledThreadPool)
@@ -109,6 +113,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       transportConfigs = config.getAcceptorConfigurations();
 
       this.server = server;
+      
+      this.clusterManager = clusterManager;
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
@@ -202,7 +208,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             ProtocolManager manager = protocolMap.get(protocol);
 
-            Acceptor acceptor = factory.createAcceptor(info.getParams(),
+            // TODO: parameterize the cluster connection
+            Acceptor acceptor = factory.createAcceptor(clusterManager.getDefaultConnection(),
+                                                       info.getParams(),
                                                        new DelegatingBufferHandler(),
                                                        manager,
                                                        this,
@@ -370,7 +378,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return protocolMap.get(protocol);
    }
 
-   public void connectionCreated(final Connection connection, final ProtocolType protocol)
+   public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
    {
       if (server == null)
       {
@@ -384,7 +392,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalArgumentException("Unknown protocol " + protocol);
       }
 
-      ConnectionEntry entry = pmgr.createConnectionEntry(connection);
+      ConnectionEntry entry = pmgr.createConnectionEntry(acceptor, connection);
 
       if (isTrace)
       {

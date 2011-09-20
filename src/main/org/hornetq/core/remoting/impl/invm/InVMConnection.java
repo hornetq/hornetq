@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -57,15 +58,17 @@ public class InVMConnection implements Connection
    
    private volatile boolean closing;
 
-   public InVMConnection(final int serverID,
+   public InVMConnection(final Acceptor acceptor, 
+                         final int serverID,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
                          final Executor executor)
    {
-      this(serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
+      this(acceptor, serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
    }
 
-   public InVMConnection(final int serverID,
+   public InVMConnection(final Acceptor acceptor, 
+                         final int serverID,
                          final String id,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
@@ -81,7 +84,7 @@ public class InVMConnection implements Connection
 
       this.executor = executor;
 
-      listener.connectionCreated(this, ProtocolType.CORE);
+      listener.connectionCreated(acceptor, this, ProtocolType.CORE);
    }
 
    public void close()

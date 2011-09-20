@@ -131,10 +131,6 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       waitForTopology(servers[0], 2);
       waitForTopology(servers[1], 2);
-      
-      System.out.println(servers[0].getClusterManager().getTopology().describe());
-      
-      System.out.println(servers[1].getClusterManager().getTopology().describe());
 
       setupSessionFactory(0,  isNetty(), true);
       setupSessionFactory(1,  isNetty(), true);

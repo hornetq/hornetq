@@ -42,6 +42,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 
 /**
@@ -68,7 +69,7 @@ public class CoreProtocolManager implements ProtocolManager
       this.interceptors = interceptors;
    }
 
-   public ConnectionEntry createConnectionEntry(final Connection connection)
+   public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
       
@@ -177,16 +178,18 @@ public class CoreProtocolManager implements ProtocolManager
                };
                
                final boolean isCC = msg.isClusterConnection();
-               
-               server.getClusterManager().addClusterTopologyListener(listener, isCC);
-               
-               rc.addCloseListener(new CloseListener()
+               if (acceptorUsed.getClusterConnection() != null)
                {
-                  public void connectionClosed()
+                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener, isCC);
+                  
+                  rc.addCloseListener(new CloseListener()
                   {
-                     server.getClusterManager().removeClusterTopologyListener(listener, isCC);
-                  }
-               });
+                     public void connectionClosed()
+                     {
+                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener, isCC);
+                     }
+                  });
+               }
             }
             else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
             {
@@ -205,7 +208,8 @@ public class CoreProtocolManager implements ProtocolManager
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-               server.getClusterManager().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+
+               acceptorUsed.getClusterConnection().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
             }
          }
       });

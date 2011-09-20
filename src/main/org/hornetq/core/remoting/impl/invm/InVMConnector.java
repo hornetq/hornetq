@@ -172,19 +172,20 @@ public class InVMConnector implements Connector
                                                  final ConnectionLifeCycleListener listener,
                                                  final Executor serverExecutor)
    {
-      return new InVMConnection(id, handler, listener, serverExecutor);
+      // No acceptor on a client connection
+      return new InVMConnection(null, id, handler, listener, serverExecutor);
    }
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection, protocol);
+         listener.connectionCreated(acceptor, connection, protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)

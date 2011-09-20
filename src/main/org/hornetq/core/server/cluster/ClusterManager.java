@@ -16,11 +16,7 @@ package org.hornetq.core.server.cluster;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClusterTopologyListener;
-import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 
@@ -37,26 +33,26 @@ public interface ClusterManager extends HornetQComponent
    Map<String, Bridge> getBridges();
 
    Set<ClusterConnection> getClusterConnections();
+   
+   /**
+    * Return the default ClusterConnection to be used case it's not defined by the acceptor
+    * @return
+    */
+   ClusterConnection getDefaultConnection();
 
    ClusterConnection getClusterConnection(SimpleString name);
 
    Set<BroadcastGroup> getBroadcastGroups();
-
-   void addClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
-   
-   void removeClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
    
    void activate();
 
-   void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
-
-   Topology getTopology();
-   
    void flushExecutor();
 
    void announceBackup() throws Exception;
+   
+   void deploy() throws Exception;
 
-   void deployBridge(BridgeConfiguration config) throws Exception;
+   void deployBridge(BridgeConfiguration config, boolean start) throws Exception;
 
    void destroyBridge(String name) throws Exception;
 

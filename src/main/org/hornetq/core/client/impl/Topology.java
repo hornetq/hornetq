@@ -108,7 +108,7 @@ public class Topology implements Serializable
       {
          if (log.isDebugEnabled())
          {
-            log.info(this + "::Live node " + nodeId + "=" + memberInput);
+            log.debug(this + "::node " + nodeId + "=" + memberInput);
          }
          memberInput.setUniqueEventID(System.currentTimeMillis());
          mapTopology.remove(nodeId);
@@ -212,7 +212,7 @@ public class Topology implements Serializable
                             currentMember +
                             ", memberInput=" +
                             memberInput +
-                            "newMember=" + newMember);
+                            "newMember=" + newMember, new Exception ("trace"));
                }
 
 
@@ -301,7 +301,7 @@ public class Topology implements Serializable
          {
             if (member.getUniqueEventID() > uniqueEventID)
             {
-               log.info("The removeMember was issued before the node " + nodeId + " was started, ignoring call");
+               log.debug("The removeMember was issued before the node " + nodeId + " was started, ignoring call");
                member = null;
             }
             else
@@ -482,22 +482,17 @@ public class Topology implements Serializable
    public synchronized String describe(final String text)
    {
 
-      String desc = text + "\n";
+      String desc = text + "topology on " + this + ":\n";
       for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(mapTopology).entrySet())
       {
          desc += "\t" + entry.getKey() + " => " + entry.getValue() + "\n";
       }
       desc += "\t" + "nodes=" + nodes() + "\t" + "members=" + members();
-      return desc;
-   }
-
-   public void clear()
-   {
-      if (Topology.log.isDebugEnabled())
+      if (mapTopology.isEmpty())
       {
-         Topology.log.debug(this + "::clear", new Exception("trace"));
+         desc += "\tEmpty";
       }
-      mapTopology.clear();
+      return desc;
    }
 
    public int members()

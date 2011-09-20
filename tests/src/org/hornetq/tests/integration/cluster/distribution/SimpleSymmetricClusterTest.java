@@ -153,17 +153,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       waitForTopology(servers[1], 3);
       waitForTopology(servers[2], 3);
       
-      for (int i = 0 ; i < 3; i++)
-      {
-         System.out.println("top[" + i + "]=" + servers[i].getClusterManager().getTopology().describe());
-      }
-
-      for (int i = 0; i <= 2; i++)
-      {
-         log.info("*************************************\n " + servers[i] +
-                  " topology:\n" +
-                  servers[i].getClusterManager().getTopology().describe());
-      }
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -196,12 +185,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
 
       startServers(0, 1);
 
-      for (int i = 0; i <= 1; i++)
-      {
-         log.info("*************************************\n " + servers[i] +
-                  " topology:\n" +
-                  servers[i].getClusterManager().getTopology().describe());
-      }
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
 
@@ -264,13 +247,6 @@ public class SimpleSymmetricClusterTest extends ClusterTestBase
       
       log.info("All the servers have been started already!");
 
-      for (int i = 0; i <= 4; i++)
-      {
-         log.info("*************************************\n " + servers[i] +
-                  " topology:\n" +
-                  servers[i].getClusterManager().getTopology().describe());
-      }
-      
       for (int i = 0; i <= 4; i++)
       {
          setupSessionFactory(i, isNetty());

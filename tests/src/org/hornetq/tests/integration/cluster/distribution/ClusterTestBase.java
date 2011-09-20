@@ -940,10 +940,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          for (ClusterConnection cc : clusterManager.getClusterConnections())
          {
             out += cc.describe() + "\n";
+            out += cc.getTopology().describe();
          }
       }
       out += "\n\nfull topology:";
-      out += clusterManager.getTopology().describe();
       return out + br;
    }
 

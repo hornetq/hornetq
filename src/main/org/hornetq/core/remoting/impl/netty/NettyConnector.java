@@ -35,6 +35,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -495,7 +496,8 @@ public class NettyConnector implements Connector
             ch.getPipeline().get(HornetQChannelHandler.class).active = true;
          }
 
-         NettyConnection conn = new NettyConnection(ch, new Listener(), !httpEnabled && batchDelay > 0, false);
+         // No acceptor on a client connection
+         NettyConnection conn = new NettyConnection(null, ch, new Listener(), !httpEnabled && batchDelay > 0, false);
 
          return conn;
       }
@@ -689,7 +691,7 @@ public class NettyConnector implements Connector
 
    private class Listener implements ConnectionLifeCycleListener
    {
-      public void connectionCreated(final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent(connection.getID(), connection) != null)
          {

@@ -39,8 +39,12 @@ public interface ServerLocatorInternal extends ServerLocator
    
    void setAfterConnectionInternalListener(AfterConnectInternalListener listener);
    
-   /** Used to better identify Cluster Connection Locators on logs while debugging logs */
+   /** Used to better identify Cluster Connection Locators on logs. To facilitate eventual debugging.
+    * 
+    *  This method used to be on tests interface, but I'm now making it part of the public interface since*/
    void setIdentity(String identity);
+   
+   String getIdentity();
 
    void setNodeID(String nodeID);
 

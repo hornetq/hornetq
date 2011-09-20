@@ -12,16 +12,9 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
 /**
@@ -167,6 +160,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          closeSessionFactory(0);
 
          Thread.sleep(1000);
+         
          servers[0].stop(true);
 
          waitForServerRestart(2);
@@ -212,17 +206,5 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
    }
 
    abstract boolean isSharedServer();
-
-   private void fail(final RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
-   {
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      Assert.assertTrue(ok);
-   }
 
 }

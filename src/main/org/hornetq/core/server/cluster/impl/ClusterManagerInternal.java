@@ -14,7 +14,6 @@
 package org.hornetq.core.server.cluster.impl;
 
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.server.cluster.ClusterManager;
 
 /**
@@ -29,8 +28,6 @@ public interface ClusterManagerInternal extends ClusterManager
    void addClusterLocator(ServerLocatorInternal locator);
    
    void removeClusterLocator(ServerLocatorInternal locator);
-   
-   TopologyMember getLocalMember();
    
    String getNodeId();
 

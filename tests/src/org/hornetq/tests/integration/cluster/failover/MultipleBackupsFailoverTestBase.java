@@ -193,7 +193,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       {
          if (server != null)
          {
-            log.info("failed topology, Topology on server = " + server.getClusterManager().getTopology().describe());
+            log.info("failed topology, Topology on server = " + server.getClusterManager().describe());
          }
       }
       assertTrue("expected " + topologyMembers + " members", ok);

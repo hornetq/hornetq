@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
@@ -76,18 +77,28 @@ public class FailBackAutoTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
+      ((ServerLocatorInternal)locator).setIdentity("testAutoFailback");
+       
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
+      
+      System.out.println(locator.getTopology().describe());
 
       MyListener listener = new MyListener(latch);
 
       session.addFailureListener(listener);
+      
+      System.out.println(locator.getTopology().describe());
 
       liveServer.crash();
-
+      
       assertTrue(latch.await(5, TimeUnit.SECONDS));
+      
+      log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection().getTopology().describe());
+      
+      log.info("Server Crash!!!");
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -96,6 +107,11 @@ public class FailBackAutoTest extends FailoverTestBase
       setBody(0, message);
 
       producer.send(message);
+
+      verifyMessageOnServer(1, 1);
+
+      System.out.println(locator.getTopology().describe());
+      
 
       session.removeFailureListener(listener);
 
@@ -107,6 +123,10 @@ public class FailBackAutoTest extends FailoverTestBase
 
       log.info("******* starting live server back");
       liveServer.start();
+      
+      Thread.sleep(1000);
+      
+      System.out.println("After failback: " + locator.getTopology().describe());
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
 
@@ -118,11 +138,36 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.close();
 
+      verifyMessageOnServer(0, 1);
+
       sf.close();
 
       Assert.assertEquals(0, sf.numSessions());
 
       Assert.assertEquals(0, sf.numConnections());
+   }
+
+   /**
+    * @throws Exception
+    * @throws HornetQException
+    */
+   private void verifyMessageOnServer(final int server, final int numberOfMessages) throws Exception, HornetQException
+   {
+      ServerLocator backupLocator = createInVMLocator(server);
+      ClientSessionFactory factorybkp = backupLocator.createSessionFactory();
+      ClientSession sessionbkp = factorybkp.createSession(false, false);
+      sessionbkp.start();
+      ClientConsumer consumerbkp = sessionbkp.createConsumer(ADDRESS);
+      for (int i = 0 ; i < numberOfMessages; i++)
+      {
+         ClientMessage msg = consumerbkp.receive(1000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         sessionbkp.commit();
+      }
+      sessionbkp.close();
+      factorybkp.close();
+      backupLocator.close();
    }
 
    public void testAutoFailbackThenFailover() throws Exception
@@ -253,7 +298,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       if (createQueue)
       {
-         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -288,6 +333,8 @@ public class FailBackAutoTest extends FailoverTestBase
       }
 
       ClientMessage message3 = consumer.receiveImmediate();
+      
+      consumer.close();
 
       Assert.assertNull(message3);
 
@@ -315,6 +362,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       public void connectionFailed(final HornetQException me, boolean failedOver)
       {
+         System.out.println("Failed, me");
          latch.countDown();
       }
 

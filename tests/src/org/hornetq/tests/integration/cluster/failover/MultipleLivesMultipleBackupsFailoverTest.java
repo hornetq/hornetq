@@ -98,8 +98,6 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
       Thread.sleep(500);
       servers.get(0).crash(session);
 
-      System.out.println("server3 " + servers.get(3).getServer().getClusterManager().getTopology().describe());
-
       int liveAfter0 = waitForNewLive(10000, true, servers, 1, 2);
 
       ServerLocator locator2 = getServerLocator(3);

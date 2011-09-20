@@ -15,9 +15,11 @@ package org.hornetq.core.server.cluster;
 
 import java.util.Map;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 
@@ -37,7 +39,13 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    String getNodeID();
    
    HornetQServer getServer();
+   
+   void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
 
+   void addClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   
+   void removeClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   
    /**
     * @return a Map of node ID and addresses
     */
@@ -47,8 +55,14 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    
    TransportConfiguration getConnector();
    
+   Topology getTopology();
+   
    void flushExecutor();
 
    // for debug
    String describe();
+
+   void informTopology();
+   
+   void announceBackup();
 }
