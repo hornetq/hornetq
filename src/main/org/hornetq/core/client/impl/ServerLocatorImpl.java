@@ -1288,7 +1288,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          log.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
       
-      if (!(isClusterConnection() && nodeID.equals(this.getNodeID())) && topology.removeMember(eventTime, nodeID))
+      if (topology.removeMember(eventTime, nodeID))
       {
          if (topology.isEmpty())
          {
