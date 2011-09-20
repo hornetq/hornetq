@@ -40,7 +40,6 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
-import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -153,7 +152,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                            null,
                                                            100,
                                                            createMockManager(),
@@ -218,7 +218,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      PagingStoreImpl storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                            null,
                                                            100,
                                                            createMockManager(),
@@ -294,7 +295,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                            null,
                                                            100,
                                                            createMockManager(),
@@ -442,7 +444,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      final PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                                  null,
                                                                  100,
                                                                  createMockManager(),
@@ -606,7 +609,8 @@ public class PagingStoreImplTest extends UnitTestCase
          fileTmp.close();
       }
 
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      PagingStore storeImpl2 =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                             null,
                                                             100,
                                                             createMockManager(),
@@ -692,7 +696,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      final PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                                  null,
                                                                  100,
                                                                  createMockManager(),
@@ -735,7 +740,8 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
+      final PagingStore storeImpl =
+               new PagingStoreImpl(PagingStoreImplTest.destinationTestName,
                                                                  null,
                                                                  100,
                                                                  createMockManager(),

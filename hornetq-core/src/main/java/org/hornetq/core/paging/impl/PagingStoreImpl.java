@@ -67,7 +67,7 @@ import org.hornetq.utils.Future;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class PagingStoreImpl implements TestSupportPageStore
+public class PagingStoreImpl implements PagingStore
 {
    // Constants -----------------------------------------------------
 

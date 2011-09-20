@@ -55,7 +55,6 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
-import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -70,7 +69,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A PagingTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Dec 5, 2008 8:25:58 PM
  *
  *
@@ -967,6 +966,7 @@ public class PagingTest extends ServiceTestBase
 
             threads[start - 1] = new Thread()
             {
+               @Override
                public void run()
                {
                   try
@@ -1214,7 +1214,7 @@ public class PagingTest extends ServiceTestBase
     * - Consume the entire destination (not in page mode any more)
     * - Add stuff to a transaction again
     * - Check order
-    * 
+    *
     */
    public void testDepageDuringTransaction() throws Exception
    {
@@ -1355,9 +1355,9 @@ public class PagingTest extends ServiceTestBase
     * - Consume the entire destination (not in page mode any more)
     * - Add stuff to a transaction again
     * - Check order
-    * 
+    *
     *  Test under discussion at : http://community.jboss.org/thread/154061?tstart=0
-    * 
+    *
     */
    public void testDepageDuringTransaction2() throws Exception
    {
@@ -1680,6 +1680,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread producerThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -1808,6 +1809,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread producerThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -1962,7 +1964,7 @@ public class PagingTest extends ServiceTestBase
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
 
-            TestSupportPageStore store = (TestSupportPageStore)server.getPostOffice()
+            PagingStore store = server.getPostOffice()
                                                                      .getPagingManager()
                                                                      .getPageStore(PagingTest.ADDRESS);
 
@@ -2806,7 +2808,7 @@ public class PagingTest extends ServiceTestBase
          catch (Throwable ignored)
          {
          }
-         
+
          OperationContextImpl.clearContext();
       }
 
@@ -3181,6 +3183,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread consumeThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionConsumer = null;
@@ -3584,7 +3587,7 @@ public class PagingTest extends ServiceTestBase
             message.setBodyInputStream(createFakeLargeStream(messageSize));
 
             producer.send(message);
-            
+
             if ((i + 1) % 2 == 0)
             {
                session.commit();
@@ -3598,27 +3601,27 @@ public class PagingTest extends ServiceTestBase
          ClientConsumer cons = session.createConsumer(ADDRESS);
 
          ClientMessage msg = null;
-         
+
          for (int msgNr = 0 ; msgNr < 2; msgNr++)
          {
             for (int i = 0 ; i < 5; i++)
             {
                msg = cons.receive(5000);
-      
+
                assertNotNull(msg);
-      
+
                msg.acknowledge();
-      
+
                assertEquals("str" + msgNr, msg.getStringProperty("id"));
-   
+
                for (int j = 0; j < messageSize; j++)
                {
                   assertEquals(getSamplebyte(j), msg.getBodyBuffer().readByte());
                }
-   
+
                session.rollback();
             }
-            
+
             pgStoreDLA.startPaging();
          }
 
@@ -3639,27 +3642,27 @@ public class PagingTest extends ServiceTestBase
             });
 
          }
-         
+
          assertNull(cons.receiveImmediate());
 
          cons.close();
-         
+
          sf.close();
-         
+
          locator.close();
-         
+
          server.stop();
-         
+
          server.start();
-         
+
          locator = createInVMNonHALocator();
-         
+
          sf = locator.createSessionFactory();
-         
+
          session = sf.createSession(false, false);
-         
+
          session.start();
-         
+
          cons = session.createConsumer(ADDRESS);
 
          for (int i = 2; i < 100; i++)
@@ -3678,9 +3681,9 @@ public class PagingTest extends ServiceTestBase
                }
             });
          }
-         
+
          cons.close();
-         
+
          cons = session.createConsumer("DLA");
 
          for (int msgNr = 0 ; msgNr < 2; msgNr++)
@@ -3688,38 +3691,38 @@ public class PagingTest extends ServiceTestBase
             msg = cons.receive(5000);
 
             assertNotNull(msg);
-            
+
             assertEquals("str" + msgNr, msg.getStringProperty("id"));
 
             for (int i = 0; i < messageSize; i++)
             {
                assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
             }
-   
+
             msg.acknowledge();
          }
-         
+
          cons.close();
-         
+
          cons = session.createConsumer(ADDRESS);
-         
+
          session.commit();
-         
+
          assertNull(cons.receiveImmediate());
-         
+
          long timeout = System.currentTimeMillis() + 5000;
-         
+
          pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
-         
+
          pgStoreAddress.getCursorProvider().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
-         
+
          pgStoreAddress.getCursorProvider().cleanup();
-         
+
          while (timeout > System.currentTimeMillis() && pgStoreAddress.isPaging())
          {
             Thread.sleep(50);
          }
-         
+
          assertFalse(pgStoreAddress.isPaging());
 
          session.commit();
@@ -3791,7 +3794,7 @@ public class PagingTest extends ServiceTestBase
             message = session.createMessage(true);
 
             message.putStringProperty("id", "str" + i);
-            
+
             message.setExpiration(System.currentTimeMillis() + 2000);
 
             if (i % 2 == 0)
@@ -3809,7 +3812,7 @@ public class PagingTest extends ServiceTestBase
             }
 
             producer.send(message);
-            
+
             if ((i + 1) % 2 == 0)
             {
                session.commit();
@@ -3821,30 +3824,30 @@ public class PagingTest extends ServiceTestBase
          }
 
          session.commit();
-         
+
          sf.close();
-         
+
          locator.close();
-         
+
          server.stop();
-         
+
          Thread.sleep(3000);
-         
+
          server.start();
-         
+
          locator = createInVMNonHALocator();
-         
+
          sf = locator.createSessionFactory();
-         
+
          session = sf.createSession(false, false);
-         
+
          session.start();
-         
+
          ClientConsumer consAddr = session.createConsumer(ADDRESS);
-         
+
          assertNull(consAddr.receive(1000));
-         
-         
+
+
          ClientConsumer cons = session.createConsumer("DLA");
 
          for (int i = 0; i < 500; i++)
@@ -3863,22 +3866,22 @@ public class PagingTest extends ServiceTestBase
                }
             });
          }
-         
+
          assertNull(cons.receiveImmediate());
-         
+
          session.commit();
-         
+
          cons.close();
-         
+
          long timeout = System.currentTimeMillis() + 5000;
-         
+
          pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
-         
+
          while (timeout > System.currentTimeMillis() && pgStoreAddress.isPaging())
          {
             Thread.sleep(50);
          }
-         
+
          assertFalse(pgStoreAddress.isPaging());
 
          session.close();
