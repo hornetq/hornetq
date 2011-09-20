@@ -47,6 +47,26 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
       }
    }
 
+   public void connect(String username, String passcode, String clientID) throws IOException, InterruptedException
+   {
+      ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
+      frame.addHeader(LOGIN_HEADER, username);
+      frame.addHeader(PASSCODE_HEADER, passcode);
+      frame.addHeader(CLIENT_ID_HEADER, clientID);
+      
+      ClientStompFrame response = this.sendFrame(frame);
+      
+      if (response.getCommand().equals(CONNECTED_COMMAND))
+      {
+         connected = true;
+      }
+      else
+      {
+         System.out.println("Connection failed with: " + response);
+         connected = false;
+      }
+   }
+
    @Override
    public void disconnect() throws IOException, InterruptedException
    {

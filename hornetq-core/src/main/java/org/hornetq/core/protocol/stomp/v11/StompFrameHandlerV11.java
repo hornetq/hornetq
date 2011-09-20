@@ -180,6 +180,14 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
             response.setNeedsDisconnect(true);
          }
       }
+      else
+      {
+         //request null, disconnect if so.
+         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
+         {
+            this.connection.disconnect();
+         }         
+      }
       return response;
    }
 
@@ -461,7 +469,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       
       if (reply.needsDisconnect())
       {
-         connection.destroy();
+         connection.disconnect();
       }
       else
       {

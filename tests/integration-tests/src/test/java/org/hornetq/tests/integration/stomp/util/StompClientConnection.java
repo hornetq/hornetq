@@ -32,6 +32,8 @@ public interface StompClientConnection
 
    void connect(String defUser, String defPass) throws Exception;
 
+   void connect(String defUser, String defPass, String clientId) throws Exception;
+
    boolean isConnected();
 
    String getVersion();
@@ -44,6 +46,8 @@ public interface StompClientConnection
    void startPinger(long interval);
 
    void stopPinger();
+
+   void destroy();
    
 }
 

@@ -62,6 +62,36 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          connected = false;
       }
    }
+   
+   public void connect(String username, String passcode, String clientID) throws IOException, InterruptedException
+   {
+      ClientStompFrame frame = factory.newFrame(CONNECT_COMMAND);
+      frame.addHeader(ACCEPT_HEADER, "1.1");
+      frame.addHeader(HOST_HEADER, "localhost");
+      frame.addHeader(CLIENT_ID_HEADER, clientID);
+      
+      if (username != null)
+      {
+         frame.addHeader(LOGIN_HEADER, username);
+         frame.addHeader(PASSCODE_HEADER, passcode);
+      }
+
+      ClientStompFrame response = this.sendFrame(frame);
+      
+      if (response.getCommand().equals(CONNECTED_COMMAND))
+      {
+         String version = response.getHeader(VERSION_HEADER);
+         assert(version.equals("1.1"));
+         
+         this.username = username;
+         this.passcode = passcode;
+         this.connected = true;
+      }
+      else
+      {
+         connected = false;
+      }
+   }
 
    public void connect1(String username, String passcode) throws IOException, InterruptedException
    {

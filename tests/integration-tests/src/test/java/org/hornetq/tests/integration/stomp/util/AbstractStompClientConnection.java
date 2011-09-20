@@ -37,6 +37,9 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    protected static final String LOGIN_HEADER = "login";
    protected static final String PASSCODE_HEADER = "passcode";
    
+   //ext
+   protected static final String CLIENT_ID_HEADER = "client-id";
+   
    
    protected String version;
    protected String host;
@@ -191,6 +194,21 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    public void connect() throws Exception
    {
       connect(null, null);
+   }
+   
+   public void destroy()
+   {
+      try
+      {
+         close();
+      }
+      catch (IOException e)
+      {
+      }
+      finally
+      {
+         this.connected = false;
+      }
    }
    
    public void connect(String username, String password) throws Exception
