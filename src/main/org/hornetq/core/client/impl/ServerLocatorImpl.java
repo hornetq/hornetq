@@ -165,7 +165,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private Executor startExecutor;
 
    private static ScheduledExecutorService globalScheduledThreadPool;
-   
+
    private AfterConnectInternalListener afterConnectListener;
 
    private String groupID;
@@ -549,7 +549,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
       });
    }
-   
+
    public Executor getExecutor()
    {
       return startExecutor;
@@ -592,7 +592,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       return afterConnectListener;
    }
-   
+
    public boolean isClosed()
    {
       return closed || closing;
@@ -1115,7 +1115,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       return identity;
    }
-   
+
    public void setIdentity(String identity)
    {
       this.identity = identity;
@@ -1287,15 +1287,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          log.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
-      
+
       if (topology.removeMember(eventTime, nodeID))
       {
          if (topology.isEmpty())
          {
             // Resetting the topology to its original condition as it was brand new
-            topologyArray = null;
-
-            receivedTopology = false;
+            synchronized (this)
+            {
+               topologyArray = null;
+               receivedTopology = false;
+            }
          }
          else
          {
@@ -1406,7 +1408,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       for (DiscoveryEntry entry : newConnectors)
       {
          this.initialConnectors[count++] = entry.getConnector();
-         
+
          if (topology != null && topology.getMember(entry.getNodeID()) == null)
          {
             TopologyMember member = new TopologyMember(entry.getConnector(), null);
