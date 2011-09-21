@@ -72,6 +72,11 @@ public interface PagingStore extends HornetQComponent
 
    boolean page(ServerMessage message, RoutingContext ctx) throws Exception;
 
+   /**
+    * Write message to page if we are paging.
+    * @return {@code true} if we are paging and have handled the data, {@code false} if the data
+    *         needs to be sent to the journal
+    */
    boolean page(ServerMessage message, RoutingContext ctx, RouteContextList listCtx) throws Exception;
 
    Page createPage(final int page) throws Exception;
