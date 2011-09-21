@@ -171,12 +171,19 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       synchronized (waitLock)
       {
-         waitLock.notify();
+         waitLock.notifyAll();
       }
 
-      socket.close();
-
-      socket = null;
+      try
+      {
+         socket.close();
+   
+         socket = null;
+      }
+      catch (Throwable ignored)
+      {
+         log.warn(ignored.toString(), ignored);
+      }
 
       try
       {
@@ -393,7 +400,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             {
                received = true;
 
-               waitLock.notify();
+               waitLock.notifyAll();
             }
          }
       }
