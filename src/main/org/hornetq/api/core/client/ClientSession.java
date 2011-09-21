@@ -569,7 +569,10 @@ public interface ClientSession extends XAResource
    void addMetaData(String key, String data) throws HornetQException;
 
    /**
-    * Attach any metadata to the session. Throws an exception if there's already a metadata available
+    * Attach any metadata to the session. Throws an exception if there's already a metadata available.
+    * You can use this metadata to ensure that there is no other session with the same meta-data you are passing as an argument.
+    * This is useful to simulate unique client-ids, where you may want to avoid multiple instances of your client application connected.
+    * 
     * @throws HornetQException 
     */
    void addUniqueMetaData(String key, String data) throws HornetQException;
