@@ -577,10 +577,7 @@ public class PagingStoreImpl implements PagingStore
 
    public Page createPage(final int pageNumber) throws Exception
    {
-      lock(-1);
-      try
-      {
-         String fileName = createFileName(pageNumber);
+      String fileName = createFileName(pageNumber);
 
       if (fileFactory == null)
       {
@@ -599,12 +596,6 @@ public class PagingStoreImpl implements PagingStore
       file.close();
 
       return page;
-      }
-
-      finally
-      {
-         unlock();
-      }
    }
 
    public void forceAnotherPage() throws Exception
@@ -613,13 +604,15 @@ public class PagingStoreImpl implements PagingStore
    }
 
    /**
-    *  It returns a Page out of the Page System without reading it.
-    *  The method calling this method will remove the page and will start reading it outside of any locks.
-    *  This method could also replace the current file by a new file, and that process is done through acquiring a writeLock on currentPageLock
-    *
-    *  Observation: This method is used internally as part of the regular depage process, but externally is used only on tests,
-    *               and that's why this method is part of the Testable Interface
-    * */
+    * Returns a Page out of the Page System without reading it.
+    * <p>
+    * The method calling this method will remove the page and will start reading it outside of any
+    * locks. This method could also replace the current file by a new file, and that process is done
+    * through acquiring a writeLock on currentPageLock.
+    * <p>
+    * Observation: This method is used internally as part of the regular depage process, but
+    * externally is used only on tests, and that's why this method is part of the Testable Interface
+    */
    public Page depage() throws Exception
    {
       lock.writeLock().lock(); // Make sure no checks are done on currentPage while we are depaging
