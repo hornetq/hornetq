@@ -19,9 +19,12 @@ package org.hornetq.tests.integration.stomp.v11;
 
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
 import junit.framework.Assert;
@@ -1158,23 +1161,17 @@ public class StompTestV11 extends StompTestBase2
 
    public void testRedeliveryWithClientAck() throws Exception
    {
+      connV11.connect(defUser, defPass);
 
-      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
-      sendFrame(frame);
-
-      frame = receiveFrame(10000);
-      Assert.assertTrue(frame.startsWith("CONNECTED"));
-
-      frame = "SUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n" + "ack:client\n\n" + Stomp.NULL;
-
-      sendFrame(frame);
+      this.subscribe(connV11, "subId", "client");
 
       sendMessage(getName());
-      frame = receiveFrame(10000);
-      Assert.assertTrue(frame.startsWith("MESSAGE"));
 
-      frame = "DISCONNECT\n" + "\n\n" + Stomp.NULL;
-      sendFrame(frame);
+      ClientStompFrame frame = connV11.receiveFrame();
+      
+      assertTrue(frame.getCommand().equals("MESSAGE"));
+
+      connV11.disconnect();
 
       // message should be received since message was not acknowledged
       MessageConsumer consumer = session.createConsumer(queue);
@@ -1182,6 +1179,37 @@ public class StompTestV11 extends StompTestBase2
       Assert.assertNotNull(message);
       Assert.assertTrue(message.getJMSRedelivered());
    }
+
+   public void testSendManyMessages() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      connV11.connect(defUser, defPass);
+
+      int count = 1000;
+      final CountDownLatch latch = new CountDownLatch(count);
+      consumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message arg0)
+         {
+            latch.countDown();
+         }
+      });
+
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.setBody("Hello World");
+
+      for (int i = 1; i <= count; i++)
+      {
+         connV11.sendFrame(frame);
+      }
+
+      assertTrue(latch.await(60, TimeUnit.SECONDS));
+      
+      connV11.disconnect();
+   }
+
 
    //-----------------private help methods
    
