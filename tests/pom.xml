@@ -12,10 +12,6 @@
    <artifactId>hornetq-tests-pom</artifactId>
    <packaging>pom</packaging>
 
-   <properties>
-      <skipUnitTests>true</skipUnitTests>
-   </properties>
-
    <build>
       <plugins>
          <plugin>
