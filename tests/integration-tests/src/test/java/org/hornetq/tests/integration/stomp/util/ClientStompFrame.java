@@ -39,5 +39,7 @@ public interface ClientStompFrame
    public String getHeader(String header);
 
    public String getBody();
+
+   public ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
    
 }

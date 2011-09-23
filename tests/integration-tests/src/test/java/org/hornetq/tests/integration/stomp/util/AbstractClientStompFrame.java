@@ -70,7 +70,36 @@ public class AbstractClientStompFrame implements ClientStompFrame
       }
       sb.append((char)0);
       
-      String data = new String(sb.toString());
+      String data = sb.toString();
+      
+      byte[] byteValue = data.getBytes("UTF-8");
+      
+      ByteBuffer buffer = ByteBuffer.allocateDirect(byteValue.length);
+      buffer.put(byteValue);
+      
+      buffer.rewind();
+      return buffer;
+   }
+
+   @Override
+   public ByteBuffer toByteBufferWithExtra(String str) throws UnsupportedEncodingException
+   {
+      StringBuffer sb = new StringBuffer();
+      sb.append(command + "\n");
+      int n = headers.size();
+      for (int i = 0; i < n; i++)
+      {
+         sb.append(headers.get(i).key + ":" + headers.get(i).val + "\n");
+      }
+      sb.append("\n");
+      if (body != null)
+      {
+         sb.append(body);
+      }
+      sb.append((char)0);
+      sb.append(str);
+      
+      String data = sb.toString();
       
       byte[] byteValue = data.getBytes("UTF-8");
       

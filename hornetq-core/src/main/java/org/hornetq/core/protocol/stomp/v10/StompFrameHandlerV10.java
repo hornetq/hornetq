@@ -13,7 +13,6 @@
 package org.hornetq.core.protocol.stomp.v10;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -27,7 +26,6 @@ import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
-import org.hornetq.core.protocol.stomp.StompFrame.Header;
 import org.hornetq.core.protocol.stomp.StompSubscription;
 import org.hornetq.core.protocol.stomp.StompUtils;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
@@ -53,7 +51,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onConnect(StompFrame frame)
    {
-      log.error("-----------------onConnection ()");
       StompFrame response = null;
       Map<String, String> headers = frame.getHeadersMap();
       String login = (String)headers.get(Stomp.Headers.Connect.LOGIN);
@@ -61,10 +58,8 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       String clientID = (String)headers.get(Stomp.Headers.Connect.CLIENT_ID);
       String requestID = (String)headers.get(Stomp.Headers.Connect.REQUEST_ID);
 
-      log.error("------------ validating user: " + login + " code " + passcode);
       if (connection.validateUser(login, passcode))
       {
-         log.error("-------user OK!!!");
          connection.setClientID(clientID);
          connection.setValid(true);
          
@@ -84,7 +79,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       }
       else
       {
-         log.error("--------user NOT ok!!");
          //not valid
          response = new StompFrameV10(Stomp.Responses.ERROR);
          response.addHeader(Stomp.Headers.Error.MESSAGE, "Failed to connect");
@@ -95,7 +89,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          catch (UnsupportedEncodingException e)
          {
             log.error("Encoding problem", e);
-            //then we will send a null body message.
          }
       }
       return response;

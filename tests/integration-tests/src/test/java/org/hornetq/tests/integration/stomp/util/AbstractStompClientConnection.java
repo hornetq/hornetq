@@ -113,7 +113,38 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       }
       return response;
    }
-   
+
+   public ClientStompFrame sendWickedFrame(ClientStompFrame frame) throws IOException, InterruptedException
+   {
+      ClientStompFrame response = null;
+      ByteBuffer buffer = frame.toByteBufferWithExtra("\n");
+      
+      while (buffer.remaining() > 0)
+      {
+         socketChannel.write(buffer);
+      }
+      
+      //now response
+      if (frame.needsReply())
+      {
+         response = receiveFrame();
+         
+         //filter out server ping
+         while (response != null)
+         {
+            if (response.getCommand().equals("STOMP"))
+            {
+               response = receiveFrame();
+            }
+            else
+            {
+               break;
+            }
+         }
+      }
+      return response;
+   }
+
    public ClientStompFrame receiveFrame() throws InterruptedException
    {
       return frameQueue.poll(10, TimeUnit.SECONDS);
@@ -138,9 +169,16 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
                   frameBytes[j] = receiveList.get(j);
                }
                ClientStompFrame frame = factory.createFrame(new String(frameBytes, "UTF-8"));
-               frameQueue.offer(frame);
                
-               receiveList.clear();
+               if (validateFrame(frame))
+               {
+                 frameQueue.offer(frame);
+                 receiveList.clear();
+               }
+               else
+               {
+                  receiveList.add(b);
+               }
             }
          }
          else
@@ -150,6 +188,20 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
       }
       //clear readbuffer
       readBuffer.rewind();
+   }
+   
+   private boolean validateFrame(ClientStompFrame f) throws UnsupportedEncodingException
+   {
+      String h = f.getHeader("content-length");
+      if (h != null)
+      {
+         int len = Integer.valueOf(h);
+         if (f.getBody().getBytes("UTF-8").length < len)
+         {
+            return false;
+         }
+      }
+      return true;
    }
    
    protected void close() throws IOException

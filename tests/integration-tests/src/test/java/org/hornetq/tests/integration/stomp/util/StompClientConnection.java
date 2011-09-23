@@ -48,6 +48,8 @@ public interface StompClientConnection
    void stopPinger();
 
    void destroy();
+
+   ClientStompFrame sendWickedFrame(ClientStompFrame frame) throws IOException, InterruptedException;
    
 }
 

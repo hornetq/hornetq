@@ -22,6 +22,7 @@ import java.nio.channels.ClosedChannelException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.BytesMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
@@ -1210,6 +1211,103 @@ public class StompTestV11 extends StompTestBase2
       connV11.disconnect();
    }
 
+   public void testSendMessage() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      connV11.connect(defUser, defPass);
+
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.setBody("Hello World");
+      
+      connV11.sendFrame(frame);
+
+      TextMessage message = (TextMessage)consumer.receive(1000);
+      Assert.assertNotNull(message);
+      Assert.assertEquals("Hello World", message.getText());
+      // Assert default priority 4 is used when priority header is not set
+      Assert.assertEquals("getJMSPriority", 4, message.getJMSPriority());
+
+      // Make sure that the timestamp is valid - should
+      // be very close to the current time.
+      long tnow = System.currentTimeMillis();
+      long tmsg = message.getJMSTimestamp();
+      Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
+   }
+
+   public void testSendMessageWithContentLength() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      connV11.connect(defUser, defPass);
+
+      byte[] data = new byte[] { 1, 0, 0, 4 };
+      
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.setBody(new String(data, "UTF-8"));
+      
+      frame.addHeader("content-length", String.valueOf(data.length));
+
+      connV11.sendFrame(frame);
+      
+      BytesMessage message = (BytesMessage)consumer.receive(10000);
+      Assert.assertNotNull(message);
+      //there is one extra null byte
+      assertEquals(data.length + 1, message.getBodyLength());
+      assertEquals(data[0], message.readByte());
+      assertEquals(data[1], message.readByte());
+      assertEquals(data[2], message.readByte());
+      assertEquals(data[3], message.readByte());
+   }
+
+   public void testSendMessageWithCustomHeadersAndSelector() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue, "foo = 'abc'");
+
+      connV11.connect(defUser, defPass);
+
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("foo", "abc");
+      frame.addHeader("bar", "123");
+      
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.setBody("Hello World");
+      
+      connV11.sendFrame(frame);
+
+      TextMessage message = (TextMessage)consumer.receive(1000);
+      Assert.assertNotNull(message);
+      Assert.assertEquals("Hello World", message.getText());
+      Assert.assertEquals("foo", "abc", message.getStringProperty("foo"));
+      Assert.assertEquals("bar", "123", message.getStringProperty("bar"));
+   }
+   
+   public void testSendMessageWithLeadingNewLine() throws Exception
+   {
+      MessageConsumer consumer = session.createConsumer(queue);
+
+      connV11.connect(defUser, defPass);
+      
+      ClientStompFrame frame = connV11.createFrame("SEND");
+
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.setBody("Hello World");
+
+      connV11.sendWickedFrame(frame);
+
+      TextMessage message = (TextMessage)consumer.receive(1000);
+      Assert.assertNotNull(message);
+      Assert.assertEquals("Hello World", message.getText());
+
+      // Make sure that the timestamp is valid - should
+      // be very close to the current time.
+      long tnow = System.currentTimeMillis();
+      long tmsg = message.getJMSTimestamp();
+      Assert.assertTrue(Math.abs(tnow - tmsg) < 1000);
+   }
 
    //-----------------private help methods
    
