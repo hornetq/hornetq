@@ -149,10 +149,10 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
    class  TestHandler implements MessageHandler
    {
-      private CountDownLatch latch;
+      private final CountDownLatch latch;
       int count = 0;
 
-      private ClientSession clientSession;
+      private final ClientSession clientSession;
 
       public TestHandler(CountDownLatch latch, ClientSession clientSession)
       {
@@ -251,10 +251,12 @@ public class DeadLetterAddressTest extends ServiceTestBase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      final ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      final ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
-      ClientProducer producer = sendSession.createProducer(qName);
+      try
+      {
+         ClientProducer producer = sendSession.createProducer(qName);
       Map<String, Long> origIds = new HashMap<String, Long>();
 
       for (int i = 0; i < NUM_MESSAGES; i++)
@@ -320,7 +322,10 @@ public class DeadLetterAddressTest extends ServiceTestBase
       }
 
       sendSession.close();
-
+      } finally {
+         sessionFactory.close();
+         locator.close();
+      }
    }
 
    public void testDeadlLetterAddressWithDefaultAddressSettings() throws Exception
