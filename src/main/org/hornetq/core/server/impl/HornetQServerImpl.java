@@ -92,6 +92,7 @@ import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
@@ -1545,13 +1546,16 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
+      
+      HashSet<Pair<Long, Long>> pendingLargeMessages = new HashSet<Pair<Long, Long>>();
 
       journalInfo[1] = storageManager.loadMessageJournal(postOffice,
                                                          pagingManager,
                                                          resourceManager,
                                                          queues,
                                                          queueBindingInfosMap,
-                                                         duplicateIDMap);
+                                                         duplicateIDMap,
+                                                         pendingLargeMessages);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
@@ -1563,6 +1567,16 @@ public class HornetQServerImpl implements HornetQServer
          {
             cache.load(entry.getValue());
          }
+      }
+      
+      for (Pair<Long, Long> msgToDelete : pendingLargeMessages)
+      {
+         log.info("Deleting pending large message as it wasn't completed:" + msgToDelete);
+         LargeServerMessage msg = storageManager.createLargeMessage();
+         msg.setMessageID(msgToDelete.b);
+         msg.setPendingRecordID(msgToDelete.a);
+         msg.setDurable(true);
+         msg.deleteFile();
       }
 
       return journalInfo;

@@ -16,6 +16,7 @@ package org.hornetq.core.persistence.impl.nullpm;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -45,6 +46,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * 
@@ -296,7 +298,8 @@ public class NullStorageManager implements StorageManager
                                                     final ResourceManager resourceManager,
                                                     final Map<Long, Queue> queues,
                                                     Map<Long, QueueBindingInfo> queueInfos,
-                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                    Set<Pair<Long, Long>> pendingLM) throws Exception
    {
       return new JournalLoadInformation();
    }
@@ -569,4 +572,18 @@ public class NullStorageManager implements StorageManager
       
    }
 
-}
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessageTX(org.hornetq.core.transaction.Transaction, long, long)
+    */
+   public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
+    */
+   public void confirmPendingLargeMessage(long recordID) throws Exception
+   {
+   }
+
+ }

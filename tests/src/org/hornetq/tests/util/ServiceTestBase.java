@@ -306,9 +306,12 @@ public abstract class ServiceTestBase extends UnitTestCase
          server = HornetQServers.newHornetQServer(configuration, false);
       }
 
-      for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+      if (settings != null)
       {
-         server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
+         {
+            server.getAddressSettingsRepository().addMatch(setting.getKey(), setting.getValue());
+         }
       }
 
       AddressSettings defaultSetting = new AddressSettings();

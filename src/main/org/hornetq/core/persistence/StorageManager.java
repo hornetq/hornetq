@@ -15,6 +15,7 @@ package org.hornetq.core.persistence;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
@@ -39,6 +40,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
 
 /**
  * 
@@ -95,6 +97,12 @@ public interface StorageManager extends HornetQComponent
 
    long getCurrentUniqueID();
 
+   // Confirms that a large message was finished
+   void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception;
+   
+   // Confirms that a large message was finished
+   void confirmPendingLargeMessage(long recordID) throws Exception;
+
    void storeMessage(ServerMessage message) throws Exception;
 
    void storeReference(long queueID, long messageID, boolean last) throws Exception;
@@ -125,8 +133,6 @@ public interface StorageManager extends HornetQComponent
 
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
 
-   void deleteMessageTransactional(long txID, long queueID, long messageID) throws Exception;
-
    void storeDuplicateIDTransactional(long txID, SimpleString address, byte[] duplID, long recordID) throws Exception;
 
    void updateDuplicateIDTransactional(long txID, SimpleString address, byte[] duplID, long recordID) throws Exception;
@@ -141,8 +147,9 @@ public interface StorageManager extends HornetQComponent
     * @param message This is a temporary message that holds the parsed properties. 
     *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
     * @return
+    * @throws Exception 
     */
-   LargeServerMessage createLargeMessage(long id, MessageInternal message);
+   LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
 
    void prepare(long txID, Xid xid) throws Exception;
 
@@ -169,7 +176,8 @@ public interface StorageManager extends HornetQComponent
                                              final ResourceManager resourceManager,
                                              final Map<Long, Queue> queues,
                                              Map<Long, QueueBindingInfo> queueInfos,
-                                             final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
+                                             final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                             final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception;
 
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
 

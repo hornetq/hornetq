@@ -47,6 +47,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
@@ -931,6 +932,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (store.page(message, context, entry.getValue()))
          {
+            if (message.isLargeMessage())
+            {
+               confirmLargeMessageSend(tx, message);
+            }
 
             // We need to kick delivery so the Queues may check for the cursors case they are empty
             schedulePageDelivery(tx, entry);
@@ -984,6 +989,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   {
                      storageManager.storeMessage(message);
                   }
+
+                  if (message.isLargeMessage())
+                  {
+                     confirmLargeMessageSend(tx, message);
+                  }
                }
 
                if (tx != null)
@@ -1036,6 +1046,31 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                addReferences(refs, direct);
             }
          });
+      }
+   }
+
+   /**
+    * @param tx
+    * @param message
+    * @throws Exception
+    */
+   private void confirmLargeMessageSend(Transaction tx, final ServerMessage message) throws Exception
+   {
+      LargeServerMessage largeServerMessage = (LargeServerMessage)message;
+      if (largeServerMessage.getPendingRecordID() >= 0)
+      {
+         if (tx == null)
+         {
+            storageManager.confirmPendingLargeMessage(largeServerMessage.getPendingRecordID());
+         }
+         else
+         {
+  
+            storageManager.confirmPendingLargeMessageTX(tx,
+                                                        largeServerMessage.getMessageID(),
+                                                        largeServerMessage.getPendingRecordID());
+         }
+         largeServerMessage.setPendingRecordID(-1);
       }
    }
 

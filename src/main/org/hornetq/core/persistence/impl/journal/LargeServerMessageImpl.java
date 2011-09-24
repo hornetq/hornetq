@@ -51,6 +51,8 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    private LargeServerMessage linkMessage;
    
+   private long pendingRecordID = -1;
+   
    private boolean paged;
 
    // We should only use the NIO implementation on the Journal
@@ -86,6 +88,19 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    }
 
    // Public --------------------------------------------------------
+
+   /**
+    * @param pendingRecordID
+    */
+   public void setPendingRecordID(long pendingRecordID)
+   {
+      this.pendingRecordID = pendingRecordID;
+   }
+   
+   public long getPendingRecordID()
+   {
+      return this.pendingRecordID;
+   }
 
    public void setPaged()
    {
@@ -228,7 +243,12 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    {
       validateFile();
       releaseResources();
-      storageManager.deleteFile(file);
+      storageManager.deleteLargeMessage(file);
+      if (pendingRecordID >= 0)
+      {
+         storageManager.confirmPendingLargeMessage(pendingRecordID);
+         pendingRecordID = -1;
+      }
    }
 
    public boolean isFileExists() throws Exception

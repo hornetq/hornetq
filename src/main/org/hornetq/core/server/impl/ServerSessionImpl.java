@@ -1292,6 +1292,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Public
    // ----------------------------------------------------------------------------
+   
+   public void clearLargeMessage()
+   {
+      currentLargeMessage = null;
+   }
 
    // Private
    // ----------------------------------------------------------------------------

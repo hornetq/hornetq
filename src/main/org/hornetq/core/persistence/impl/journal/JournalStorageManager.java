@@ -53,7 +53,6 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
-import org.hornetq.core.journal.impl.ExportJournal;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.JournalReaderCallback;
@@ -98,7 +97,6 @@ import org.hornetq.utils.Base64;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
-import org.hornetq.utils.UUID;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
@@ -130,6 +128,10 @@ public class JournalStorageManager implements StorageManager
    public static final byte SECURITY_RECORD = 26;
 
    // Message journal record types
+   
+   // This is used when a large message is created but not yet stored on the system.
+   // We use this to avoid temporary files missing
+   public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
    public static final byte ADD_LARGE_MESSAGE = 30;
 
@@ -154,8 +156,6 @@ public class JournalStorageManager implements StorageManager
    public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
    public static final byte PAGE_CURSOR_COUNTER_INC = 41;
-
-   private UUID persistentID;
 
    private final BatchingIDGenerator idGenerator;
 
@@ -453,7 +453,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   public LargeServerMessage createLargeMessage(final long id, final MessageInternal message)
+   public LargeServerMessage createLargeMessage(final long id, final MessageInternal message) throws Exception
    {
       if (isReplicated())
       {
@@ -466,11 +466,45 @@ public class JournalStorageManager implements StorageManager
 
       largeMessage.setMessageID(id);
 
+      if (largeMessage.isDurable())
+      {
+         // We store a marker on the journal that the large file is pending
+         long pendingRecordID = storePendingLargeMessage(id);
+         
+         largeMessage.setPendingRecordID(pendingRecordID);
+      }
+
       return largeMessage;
    }
 
    // Non transactional operations
-
+   
+   public long storePendingLargeMessage(final long messageID) throws Exception
+   {
+      long recordID = generateUniqueID();
+       
+      messageJournal.appendAddRecord(recordID,
+                                     ADD_LARGE_MESSAGE_PENDING,
+                                     new PendingLargeMessageEncoding(messageID),
+                                     true,
+                                     getContext(true));
+      
+      return recordID;
+   }
+   
+   public void confirmPendingLargeMessageTX(final Transaction tx, long messageID, long recordID) throws Exception
+   {
+      installLargeMessageConfirmationOnTX(tx, recordID);
+      messageJournal.appendDeleteRecordTransactional(tx.getID(), recordID, new DeleteEncoding(ADD_LARGE_MESSAGE_PENDING, messageID));
+   }
+   
+   
+   /** We don't need messageID now but we are likely to need it we ever decide to support a database */
+   public void confirmPendingLargeMessage(long recordID) throws Exception
+   {
+      messageJournal.appendDeleteRecord(recordID, true, getContext());
+   }
+   
    public void storeMessage(final ServerMessage message) throws Exception
    {
       if (message.getMessageID() <= 0)
@@ -690,11 +724,6 @@ public class JournalStorageManager implements StorageManager
                                                      encoding);
    }
 
-   public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
-   {
-      messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
-   }
-
    public void prepare(final long txID, final Xid xid) throws Exception
    {
       messageJournal.appendPrepareRecord(txID, new XidEncoding(xid), syncTransactional, getContext(syncTransactional));
@@ -830,7 +859,8 @@ public class JournalStorageManager implements StorageManager
                                                     final ResourceManager resourceManager,
                                                     final Map<Long, Queue> queues,
                                                     Map<Long, QueueBindingInfo> queueInfos,
-                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                    final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -869,6 +899,19 @@ public class JournalStorageManager implements StorageManager
 
          switch (recordType)
          {
+            case ADD_LARGE_MESSAGE_PENDING:
+            {
+               PendingLargeMessageEncoding pending = new PendingLargeMessageEncoding();
+               
+               pending.decode(buff);
+               
+               if (pendingLargeMessages != null)
+               {
+                  // it could be null on tests, and we don't need anything on that case
+                  pendingLargeMessages.add(new Pair<Long, Long>(record.id, pending.largeMessageID));
+               }
+               break;
+            }
             case ADD_LARGE_MESSAGE:
             {
                LargeServerMessage largeMessage = parseLargeMessage(messages, buff);
@@ -1188,7 +1231,8 @@ public class JournalStorageManager implements StorageManager
                                queueInfos,
                                preparedTransactions,
                                duplicateIDMap,
-                               pageSubscriptions);
+                               pageSubscriptions,
+                               pendingLargeMessages);
 
       for (PageSubscription sub : pageSubscriptions.values())
       {
@@ -1547,7 +1591,7 @@ public class JournalStorageManager implements StorageManager
    // Package protected ---------------------------------------------
 
    // This should be accessed from this package only
-   void deleteFile(final SequentialFile file)
+   void deleteLargeMessage(final SequentialFile file)
    {
       Runnable deleteAction = new Runnable()
       {
@@ -1656,7 +1700,8 @@ public class JournalStorageManager implements StorageManager
                                          final Map<Long, QueueBindingInfo> queueInfos,
                                          final List<PreparedTransactionInfo> preparedTransactions,
                                          final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
-                                         final Map<Long, PageSubscription> pageSubscriptions) throws Exception
+                                         final Map<Long, PageSubscription> pageSubscriptions,
+                                         final Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
    {
       // recover prepared transactions
       for (PreparedTransactionInfo preparedTransaction : preparedTransactions)
@@ -1746,7 +1791,6 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
                   }
 
-                  // TODO - this involves a scan - we should find a quicker way of doing it
                   MessageReference removed = queue.removeReferenceWithID(messageID);
                   
                   if (removed == null)
@@ -1867,32 +1911,29 @@ public class JournalStorageManager implements StorageManager
             }
          }
 
-         for (RecordInfo record : preparedTransaction.recordsToDelete)
+         for (RecordInfo recordDeleted : preparedTransaction.recordsToDelete)
          {
-            byte[] data = record.data;
-
-            HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
-
-            long messageID = record.id;
-
-            DeleteEncoding encoding = new DeleteEncoding();
-
-            encoding.decode(buff);
-
-            Queue queue = queues.get(encoding.queueID);
-
-            if (queue == null)
+            byte[] data = recordDeleted.data;
+            
+            if (data.length > 0)
             {
-               throw new IllegalStateException("Cannot find queue with id " + encoding.queueID);
+               HornetQBuffer buff = HornetQBuffers.wrappedBuffer(data);
+               byte b = buff.readByte();
+               
+               switch (b)
+               {
+                  case ADD_LARGE_MESSAGE_PENDING:
+                  {
+                     long messageID = buff.readLong();
+                     pendingLargeMessages.remove(new Pair<Long, Long>(recordDeleted.id, messageID));
+                     installLargeMessageConfirmationOnTX(tx, recordDeleted.id);
+                     break;
+                  }
+                  default:
+                     log.warn("can't locate recordType=" + b + " on loadPreparedTransaction//deleteRecords");
+               }
             }
-
-            MessageReference removed = queue.removeReferenceWithID(messageID);
-
-            if (removed != null)
-            {
-               referencesToAck.add(removed);
-            }
-
+            
          }
 
          for (MessageReference ack : referencesToAck)
@@ -2301,6 +2342,50 @@ public class JournalStorageManager implements StorageManager
 
    }
 
+   public static class PendingLargeMessageEncoding implements EncodingSupport
+   {
+      public long largeMessageID;
+
+      public PendingLargeMessageEncoding(final long pendingLargeMessageID)
+      {
+         this.largeMessageID = pendingLargeMessageID;
+      }
+
+      public PendingLargeMessageEncoding()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void decode(final HornetQBuffer buffer)
+      {
+         largeMessageID = buffer.readLong();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.spi.core.remoting.HornetQBuffer)
+       */
+      public void encode(final HornetQBuffer buffer)
+      {
+         buffer.writeLong(largeMessageID);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_LONG;
+      }
+      
+      public String toString()
+      {
+         return "PendingLargeMessageEncoding::MessageID=" + largeMessageID;
+      }
+
+   }
+
    public static class DeliveryCountUpdateEncoding implements EncodingSupport
    {
       public long queueID;
@@ -2388,16 +2473,47 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   public static class DeleteEncoding extends QueueEncoding
+   public static class DeleteEncoding implements EncodingSupport
    {
+      public byte recordType;
+      
+      public long id;
+      
       public DeleteEncoding()
       {
          super();
       }
 
-      public DeleteEncoding(final long queueID)
+      public DeleteEncoding(final byte recordType, final long id)
       {
-         super(queueID);
+         this.recordType = recordType;
+         this.id = id;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
+       */
+      public int getEncodeSize()
+      {
+         return DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void encode(HornetQBuffer buffer)
+      {
+         buffer.writeByte(recordType);
+         buffer.writeLong(id);
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
+       */
+      public void decode(HornetQBuffer buffer)
+      {
+         recordType = buffer.readByte();
+         id = buffer.readLong();
       }
    }
 
@@ -2866,7 +2982,15 @@ public class JournalStorageManager implements StorageManager
 
       switch (rec)
       {
+         case ADD_LARGE_MESSAGE_PENDING:
+         {
+            PendingLargeMessageEncoding lmEncoding = new PendingLargeMessageEncoding();
+            lmEncoding.decode(buffer);
+            
+            return lmEncoding;
+         }
          case ADD_LARGE_MESSAGE:
+         {
 
             LargeServerMessage largeMessage = new LargeServerMessageImpl(null);
 
@@ -2875,19 +2999,20 @@ public class JournalStorageManager implements StorageManager
             messageEncoding.decode(buffer);
 
             return new MessageDescribe(largeMessage);
-
+         }
          case ADD_MESSAGE:
+         {
             ServerMessage message = new ServerMessageImpl(rec, 50);
 
             message.decode(buffer);
 
             return new MessageDescribe(message);
-
+         }
          case ADD_REF:
          {
             final RefEncoding encoding = new RefEncoding();
             encoding.decode(buffer);
-            return new ReferenceDescribe(encoding);
+            return encoding;
          }
 
          case ACKNOWLEDGE_REF:
@@ -3341,5 +3466,90 @@ public class JournalStorageManager implements StorageManager
 
       journal.stop();
    }
+   
+   private void installLargeMessageConfirmationOnTX(Transaction tx, long recordID)
+   {
+      TXLargeMessageConfirmationOperation txoper = (TXLargeMessageConfirmationOperation)tx.getProperty(TransactionPropertyIndexes.LARGE_MESSAGE_CONFIRMATIONS);
+      if (txoper == null)
+      {
+         txoper = new TXLargeMessageConfirmationOperation();
+         tx.putProperty(TransactionPropertyIndexes.LARGE_MESSAGE_CONFIRMATIONS, txoper);
+      }
+      txoper.confirmedMessages.add(recordID);
+   }
+   
+   
+   
+   class TXLargeMessageConfirmationOperation implements TransactionOperation
+   {
+      
+      public List<Long> confirmedMessages = new LinkedList<Long>(); 
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforePrepare(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforePrepare(Transaction tx) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#afterPrepare(org.hornetq.core.transaction.Transaction)
+       */
+      public void afterPrepare(Transaction tx)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforeCommit(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforeCommit(Transaction tx) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#afterCommit(org.hornetq.core.transaction.Transaction)
+       */
+      public void afterCommit(Transaction tx)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#beforeRollback(org.hornetq.core.transaction.Transaction)
+       */
+      public void beforeRollback(Transaction tx) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#afterRollback(org.hornetq.core.transaction.Transaction)
+       */
+      public void afterRollback(Transaction tx)
+      {
+         for (Long msg : confirmedMessages)
+         {
+            try
+            {
+               JournalStorageManager.this.confirmPendingLargeMessage(msg);
+            }
+            catch (Throwable e)
+            {
+               log.warn("Error while confirming large message completion on rollback for recordID=" + msg +
+                                 "->" +
+                                 e.getMessage(),
+                        e);
+            }
+         }
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
+       */
+      public List<MessageReference> getRelatedMessageReferences()
+      {
+         return null;
+      }
+      
+   }
+
 
 }
