@@ -432,7 +432,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       byte[] data = new byte[size];
       if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
       {
-         frame.addHeader(Stomp.Headers.CONTENT_LENGTH, String.valueOf(data.length > 0 ? (data.length - 1) : data.length));
+         frame.addHeader(Stomp.Headers.CONTENT_LENGTH, String.valueOf(data.length));
          buffer.readBytes(data);
       }
       else
@@ -1036,13 +1036,11 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          }
          else
          {
-            content = new byte[decoder.contentLength + 1];
+            content = new byte[decoder.contentLength];
 
             System.arraycopy(decoder.workingBuffer, decoder.pos, content, 0, decoder.contentLength);
 
             decoder.pos += decoder.contentLength + 1;
-            
-            content[decoder.contentLength] = 0;
             
             //drain all the rest
             if (decoder.bodyStart == -1)

@@ -119,9 +119,11 @@ public class StompUtils
       Set<SimpleString> names = message.getPropertyNames();
       for (SimpleString name : names)
       {
+         String value = name.toString();
          if (name.equals(ClientMessageImpl.REPLYTO_HEADER_NAME) ||
-                  name.toString().equals("JMSType") ||
-                  name.toString().equals("JMSCorrelationID"))
+                  value.equals("JMSType") ||
+                  value.equals("JMSCorrelationID") ||
+                  value.equals(Stomp.Headers.Message.DESTINATION))
          {
             continue;
          }

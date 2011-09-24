@@ -26,6 +26,8 @@ public interface StompClientConnection
    
    ClientStompFrame receiveFrame() throws InterruptedException;
 
+   ClientStompFrame receiveFrame(long timeout) throws InterruptedException;;
+
    void connect() throws Exception;
 
    void disconnect() throws IOException, InterruptedException;

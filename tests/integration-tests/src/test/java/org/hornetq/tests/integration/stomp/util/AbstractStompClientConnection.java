@@ -149,6 +149,11 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
    {
       return frameQueue.poll(10, TimeUnit.SECONDS);
    }
+
+   public ClientStompFrame receiveFrame(long timeout) throws InterruptedException
+   {
+      return frameQueue.poll(timeout, TimeUnit.MILLISECONDS);
+   }
    
    //put bytes to byte array.
    private void receiveBytes(int n) throws UnsupportedEncodingException

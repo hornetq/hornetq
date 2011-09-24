@@ -601,6 +601,7 @@ public class StompConnection implements RemotingConnection
             selector += " AND " + noLocalFilter;
          }
       }
+
       if (ack == null)
       {
          ack = Stomp.Headers.Subscribe.AckModeValues.AUTO;
