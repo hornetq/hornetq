@@ -38,7 +38,9 @@ import org.hornetq.tests.integration.stomp.util.StompClientConnection;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionFactory;
 import org.hornetq.tests.integration.stomp.util.StompClientConnectionV11;
 
-
+/*
+ * 
+ */
 public class StompTestV11 extends StompTestBase2
 {
    private static final transient Logger log = Logger.getLogger(StompTestV11.class);
