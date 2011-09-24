@@ -3012,7 +3012,7 @@ public class JournalStorageManager implements StorageManager
          {
             final RefEncoding encoding = new RefEncoding();
             encoding.decode(buffer);
-            return encoding;
+            return new ReferenceDescribe(encoding);
          }
 
          case ACKNOWLEDGE_REF:
