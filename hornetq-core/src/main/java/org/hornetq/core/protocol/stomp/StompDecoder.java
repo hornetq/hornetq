@@ -166,6 +166,11 @@ public class StompDecoder
       init();
    }
 
+   public StompDecoder()
+   {
+      init();
+   }
+
    public boolean hasBytes()
    {
       return data > pos;
@@ -184,7 +189,7 @@ public class StompDecoder
     */
    public synchronized StompFrame decode(final HornetQBuffer buffer) throws Exception
    {
-      if (connection.isValid())
+      if (connection != null && connection.isValid())
       {
          VersionedStompFrameHandler handler = connection.getFrameHandler();
          return handler.decode(this, buffer);
