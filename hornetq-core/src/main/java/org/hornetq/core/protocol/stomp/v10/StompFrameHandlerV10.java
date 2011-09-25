@@ -103,12 +103,10 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    @Override
    public StompFrame onSend(StompFrame frame)
    {
-      log.error("-------------on Send: " + frame);
       StompFrame response = null;
       try
       {
          connection.validate();
-         log.error("-----------connection is valid");
          String destination = frame.getHeader(Stomp.Headers.Send.DESTINATION);
          String txID = frame.getHeader(Stomp.Headers.TRANSACTION);
 
@@ -120,13 +118,11 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
          StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
          if (frame.hasHeader(Stomp.Headers.CONTENT_LENGTH))
          {
-            log.error("--------------------------------it's a bryte type");
             message.setType(Message.BYTES_TYPE);
             message.getBodyBuffer().writeBytes(frame.getBodyAsBytes());
          }
          else
          {
-            log.error("------------------ it's a text type");
             message.setType(Message.TEXT_TYPE);
             String text = frame.getBody();
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(text));
@@ -336,13 +332,11 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       
       if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
       {
-         log.error("------------------- server message is  byte");
          frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
          buffer.readBytes(data);
       }
       else
       {
-         log.error("------------------- server message is  text");
          SimpleString text = buffer.readNullableSimpleString();
          if (text != null)
          {
@@ -377,7 +371,6 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
    @Override
    public void replySent(StompFrame reply)
    {
-      log.error("-----------------------need destroy? " + reply.needsDisconnect());
       if (reply.needsDisconnect())
       {
          connection.destroy();
