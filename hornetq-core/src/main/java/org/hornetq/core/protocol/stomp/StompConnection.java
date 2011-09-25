@@ -80,6 +80,8 @@ public class StompConnection implements RemotingConnection
    private boolean initialized;
    
    private FrameEventListener stompListener;
+   
+   private final Object sendLock = new Object();
 
    public StompDecoder getDecoder()
    {
@@ -202,7 +204,10 @@ public class StompConnection implements RemotingConnection
 
       internalClose();
 
-      callClosingListeners();
+      synchronized(sendLock)
+      {
+         callClosingListeners();
+      }
    }
 
    private void internalClose()
@@ -698,7 +703,11 @@ public class StompConnection implements RemotingConnection
    public void physicalSend(StompFrame frame) throws Exception
    {
       HornetQBuffer buffer = frame.toHornetQBuffer();
-      getTransportConnection().write(buffer, false, false);
+      
+      synchronized (sendLock)
+      {
+         getTransportConnection().write(buffer, false, false);
+      }
 
       if (stompListener != null)
       {
