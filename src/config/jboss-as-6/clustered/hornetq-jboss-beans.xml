@@ -59,4 +59,12 @@
       <depends>HornetQServer</depends>
    </bean>
 
+   <bean name="AS5RecoveryRegistry" class="org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry">
+      <constructor>
+         <parameter>
+            <inject bean="TransactionManager"/>
+         </parameter>
+      </constructor>
+   </bean>
+
 </deployment>

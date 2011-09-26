@@ -41,8 +41,11 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.recovery.RecoveryRegistry;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.ra.recovery.RecoveryManager;
 
 /**
  * The resource adapter for HornetQ
@@ -106,6 +109,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private String unparsedJndiParams;
 
+   RecoveryManager recoveryManager;
+
    /**
     * Constructor
     */
@@ -119,6 +124,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties = new HornetQRAProperties();
       configured = new AtomicBoolean(false);
       activations = new ConcurrentHashMap<ActivationSpec, HornetQActivation>();
+      recoveryManager = new RecoveryManager();
    }
 
    public TransactionManager getTM()
@@ -209,6 +215,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       locateTM();
 
+      recoveryManager.start();
+
       this.ctx = ctx;
 
       HornetQResourceAdapter.log.info("HornetQ resource adaptor started");
@@ -241,7 +249,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (defaultHornetQConnectionFactory != null)
       {
          defaultHornetQConnectionFactory.close();
+
+         XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
       }
+
+      recoveryManager.stop();
 
       HornetQResourceAdapter.log.info("HornetQ resource adapter stopped");
    }
@@ -1317,6 +1329,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    }
 
+
+
+   public RecoveryManager getRecoveryManager()
+   {
+      return recoveryManager;
+   }
+
    /**
     * Get the resource adapter properties
     *
@@ -1338,6 +1357,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    protected void setup() throws HornetQException
    {
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
+      recoveryManager.register(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
    }
 
    public Map<ActivationSpec, HornetQActivation> getActivations()
@@ -1375,7 +1395,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
-      
+
       if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];

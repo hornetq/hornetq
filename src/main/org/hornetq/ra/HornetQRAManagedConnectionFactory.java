@@ -30,6 +30,7 @@ import javax.security.auth.Subject;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 
 /**
  * HornetQ ManagedConectionFactory
@@ -75,6 +76,11 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     * Connection Factory used if properties are set
     */
    private HornetQConnectionFactory connectionFactory;
+
+   /*
+   * The resource recovery if there is one
+   * */
+   private HornetQResourceRecovery resourceRecovery;
 
    /**
     * Constructor
@@ -747,6 +753,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       if (connectionFactory == null)
       {
          connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
+         resourceRecovery = ra.getRecoveryManager().register(connectionFactory, null, null);
       }
       return connectionFactory;
    }
@@ -789,6 +796,14 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
          // Fill the one with any defaults
          info.setDefaults(ra.getProperties());
          return info;
+      }
+   }
+
+   public void stop()
+   {
+      if(resourceRecovery != null)
+      {
+         ra.getRecoveryManager().unRegister(resourceRecovery);
       }
    }
 }
