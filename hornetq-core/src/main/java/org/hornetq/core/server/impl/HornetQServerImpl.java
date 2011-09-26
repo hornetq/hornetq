@@ -612,7 +612,11 @@ public class HornetQServerImpl implements HornetQServer
          }
          catch (Exception e)
          {
+            if (e instanceof InterruptedException && !started)
+               // do not log errors if the server is being stopped.
+               return;
             log.error("Failure in initialisation", e);
+            e.printStackTrace();
          }
       }
 
@@ -752,7 +756,9 @@ public class HornetQServerImpl implements HornetQServer
          }
 
          connectorsService.stop();
-         //we stop the groupinghandler before we stop te cluster manager so binding mappings aren't removed in case of failover
+
+         // we stop the groupingHandler before we stop the cluster manager so binding mappings
+         // aren't removed in case of failover
          if (groupingHandler != null)
          {
             managementService.removeNotificationListener(groupingHandler);
