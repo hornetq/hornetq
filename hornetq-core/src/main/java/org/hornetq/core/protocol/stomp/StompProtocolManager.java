@@ -18,11 +18,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
@@ -74,7 +76,7 @@ class StompProtocolManager implements ProtocolManager
    {
       StompConnection conn = new StompConnection(connection, this);
 
-      // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
+      // Note that STOMP 1.0 has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
 
       long ttl = server.getConfiguration().getConnectionTTLOverride();
