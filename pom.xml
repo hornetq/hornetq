@@ -475,6 +475,8 @@
                   <testFailureIgnore>true</testFailureIgnore>
                   <runOrder>alphabetical</runOrder>
                   <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                  <forkMode>always</forkMode>
+                  <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
                </configuration>
             </plugin>
             <plugin>
