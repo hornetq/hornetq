@@ -1549,7 +1549,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 50; i++)
          {
-            System.out.println("Sending " + i);
+            // System.out.println("Sending " + i);
             ClientMessage message = sessionNonTX.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
@@ -1559,7 +1559,7 @@ public class PagingTest extends ServiceTestBase
 
             if (i % 2 == 0)
             {
-               System.out.println("Sending 20 msgs to make it page");
+               // System.out.println("Sending 20 msgs to make it page");
                for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
@@ -1571,7 +1571,7 @@ public class PagingTest extends ServiceTestBase
             }
             else
             {
-               System.out.println("Consuming 20 msgs to make it page");
+               // System.out.println("Consuming 20 msgs to make it page");
                ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
                for (int j = 0; j < 20; j++)
                {
@@ -1611,11 +1611,8 @@ public class PagingTest extends ServiceTestBase
 
             Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
-            // System.out.println(messageID);
-            Assert.assertNotNull(messageID);
-            Assert.assertEquals("message received out of order", i, messageID.intValue());
-
-            System.out.println("MessageID = " + messageID);
+            Assert.assertNotNull("MessageID", messageID);
+            Assert.assertEquals("message received out of order " + messageID, i, messageID.intValue());
 
             message.acknowledge();
          }
@@ -1877,8 +1874,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);
-            assertNotNull(msg);
-            System.out.println("Received " + i);
+            assertNotNull(String.valueOf(i), msg);
             assertEquals(i, msg.getIntProperty("count").intValue());
             msg.acknowledge();
          }
@@ -2197,13 +2193,12 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 0; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             if (i == 55)
             {
                System.out.println("i = 55");
             }
             ClientMessage msg = consumer.receive(5000);
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
@@ -2296,10 +2291,9 @@ public class PagingTest extends ServiceTestBase
          // 347 = I just picked any odd number, not rounded, to make sure it's not at the beggining of any page
          for (int i = 0; i < 347; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
@@ -2329,10 +2323,9 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 347; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
