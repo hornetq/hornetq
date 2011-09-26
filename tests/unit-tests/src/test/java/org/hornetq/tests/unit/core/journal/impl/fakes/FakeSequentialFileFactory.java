@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.journal.impl.fakes;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -474,7 +475,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       }
 
-      public void sync() throws Exception
+      public void sync() throws IOException
       {
          if (supportsCallback)
          {

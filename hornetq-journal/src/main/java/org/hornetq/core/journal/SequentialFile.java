@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -87,7 +88,7 @@ public interface SequentialFile
 
    void waitForClose() throws Exception;
 
-   void sync() throws Exception;
+   void sync() throws IOException;
 
    long size() throws Exception;
 

@@ -29,9 +29,9 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A NIOSequentialFile
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -205,7 +205,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    }
 
-   public void sync() throws Exception
+   public void sync() throws IOException
    {
       if (channel != null)
       {

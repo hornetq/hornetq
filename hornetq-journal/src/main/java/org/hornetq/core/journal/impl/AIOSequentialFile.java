@@ -14,6 +14,7 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
@@ -230,7 +231,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
       return bytesRead;
    }
 
-   public void sync() throws Exception
+   public void sync()
    {
       throw new UnsupportedOperationException("This method is not supported on AIO");
    }
