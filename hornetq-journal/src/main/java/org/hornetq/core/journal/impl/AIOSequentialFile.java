@@ -14,10 +14,10 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -286,7 +286,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
 
-   public void writeInternal(final ByteBuffer bytes) throws Exception
+   public void writeInternal(final ByteBuffer bytes) throws HornetQException
    {
       final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
 

@@ -20,12 +20,10 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.impl.TimedBuffer;
 
 /**
- *
  * A SequentialFile
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public interface SequentialFile
 {
@@ -65,19 +63,50 @@ public interface SequentialFile
 
    void write(EncodingSupport bytes, boolean sync) throws Exception;
 
-   /** Write directly to the file without using any buffer */
+   /**
+    * Write directly to the file without using any buffer
+    * @param bytes the ByteBuffer must be compatible with the SequentialFile implementation (AIO or
+    *           NIO). To be safe, use a buffer from the corresponding
+    *           {@link SequentialFileFactory#newBuffer(int)}.
+    */
    void writeDirect(ByteBuffer bytes, boolean sync, IOAsyncTask callback);
 
-   /** Write directly to the file without using any buffer */
+   /**
+    * Write directly to the file without using any buffer
+    * @param bytes the ByteBuffer must be compatible with the SequentialFile implementation (AIO or
+    *           NIO). To be safe, use a buffer from the corresponding
+    *           {@link SequentialFileFactory#newBuffer(int)}.
+    */
    void writeDirect(ByteBuffer bytes, boolean sync) throws Exception;
 
-   /** Write directly to the file.
-    *  This is used by compacting and other places where we write a big buffer in a single shot.
-    *  writeInternal should always block until the entire write is sync on disk */
+   /**
+    * Write directly to the file. This is used by compacting and other places where we write a big
+    * buffer in a single shot. writeInternal should always block until the entire write is sync on
+    * disk.
+    * @param bytes the ByteBuffer must be compatible with the SequentialFile implementation (AIO or
+    *           NIO). To be safe, use a buffer from the corresponding
+    *           {@link SequentialFileFactory#newBuffer(int)}.
+    */
    void writeInternal(ByteBuffer bytes) throws Exception;
 
+   /**
+    * Wraps the bytes using a buffer from the internal {@link SequentialFileFactory} and writes it
+    * directly.
+    */
+   void writeDirect(byte[] bytes) throws Exception;
+
+   /**
+    * @param bytes the ByteBuffer must be compatible with the SequentialFile implementation (AIO or
+    *           NIO). To be safe, use a buffer from the corresponding
+    *           {@link SequentialFileFactory#newBuffer(int)}.
+    */
    int read(ByteBuffer bytes, IOAsyncTask callback) throws Exception;
 
+   /**
+    * @param bytes the ByteBuffer must be compatible with the SequentialFile implementation (AIO or
+    *           NIO). To be safe, use a buffer from the corresponding
+    *           {@link SequentialFileFactory#newBuffer(int)}.
+    */
    int read(ByteBuffer bytes) throws Exception;
 
    void position(long pos) throws Exception;

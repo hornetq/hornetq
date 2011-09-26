@@ -32,6 +32,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -224,10 +225,11 @@ public interface StorageManager extends HornetQComponent
    long storePageCounterInc(long queueID, int add) throws Exception;
 
    /**
+    * @param journalContent
     * @return {@code true} if the underlying {@link SequentialFileFactory} has callback support.
     * @see SequentialFileFactory#isSupportsCallbacks()
     */
-   boolean hasCallbackSupport();
+   boolean hasCallbackSupport(JournalContent journalContent);
 
    /**
     * @return the bindings journal

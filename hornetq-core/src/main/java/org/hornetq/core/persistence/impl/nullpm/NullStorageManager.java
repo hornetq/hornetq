@@ -37,6 +37,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.replication.ReplicationManager;
@@ -573,7 +574,7 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public boolean hasCallbackSupport()
+   public boolean hasCallbackSupport(JournalContent content)
    {
       return false;
    }

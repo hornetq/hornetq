@@ -234,6 +234,20 @@ abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
+   @Override
+   public void writeDirect(byte[] data) throws Exception
+   {
+      ByteBuffer buffer = factory.wrapBuffer(data);
+      try
+      {
+         writeDirect(buffer, true);
+      }
+      finally
+      {
+         factory.releaseBuffer(buffer);
+      }
+   }
+
    public void write(final EncodingSupport bytes, final boolean sync, final IOAsyncTask callback) throws Exception
    {
       if (timedBuffer != null)

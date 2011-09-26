@@ -183,9 +183,9 @@ public class JournalStorageManager implements StorageManager
    }
 
    private Journal messageJournal;
-
+   private final SequentialFileFactory messageJournalFileFactory;
    private Journal bindingsJournal;
-
+   private final SequentialFileFactory bindingsJournalFileFactory;
    private final SequentialFileFactory largeMessagesFactory;
 
    private volatile boolean started;
@@ -220,8 +220,6 @@ public class JournalStorageManager implements StorageManager
 
    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings = new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
-   private final boolean hasCallbackSupport;
-
    public JournalStorageManager(final Configuration config,
                                 final ExecutorFactory executorFactory,
                                 final ReplicationManager replicator)
@@ -248,13 +246,13 @@ public class JournalStorageManager implements StorageManager
 
       journalDir = config.getJournalDirectory();
 
-      SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
+      bindingsJournalFileFactory = new NIOSequentialFileFactory(bindingsDir);
 
       Journal localBindings = new JournalImpl(1024 * 1024,
                                               2,
                                               config.getJournalCompactMinFiles(),
                                               config.getJournalCompactPercentage(),
-                                              bindingsFF,
+ bindingsJournalFileFactory,
                                               "hornetq-bindings",
                                               "bindings",
                                               1);
@@ -279,13 +277,12 @@ public class JournalStorageManager implements StorageManager
 
       syncTransactional = config.isJournalSyncTransactional();
 
-      SequentialFileFactory journalFF = null;
-
       if (config.getJournalType() == JournalType.ASYNCIO)
       {
          JournalStorageManager.log.info("Using AIO Journal");
 
-         journalFF = new AIOSequentialFileFactory(journalDir,
+         messageJournalFileFactory =
+                  new AIOSequentialFileFactory(journalDir,
                                                   config.getJournalBufferSize_AIO(),
                                                   config.getJournalBufferTimeout_AIO(),
                                                   config.isLogJournalWriteRate());
@@ -293,7 +290,8 @@ public class JournalStorageManager implements StorageManager
       else if (config.getJournalType() == JournalType.NIO)
       {
          JournalStorageManager.log.info("Using NIO Journal");
-         journalFF = new NIOSequentialFileFactory(journalDir,
+         messageJournalFileFactory =
+                  new NIOSequentialFileFactory(journalDir,
                                                   true,
                                                   config.getJournalBufferSize_NIO(),
                                                   config.getJournalBufferTimeout_NIO(),
@@ -303,7 +301,6 @@ public class JournalStorageManager implements StorageManager
       {
          throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
-      hasCallbackSupport = journalFF.isSupportsCallbacks();
 
       idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
 
@@ -311,7 +308,7 @@ public class JournalStorageManager implements StorageManager
                                              config.getJournalMinFiles(),
                                              config.getJournalCompactMinFiles(),
                                              config.getJournalCompactPercentage(),
-                                             journalFF,
+                               messageJournalFileFactory,
                                              "hornetq-data",
                                              "hq",
                                              config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
@@ -409,8 +406,8 @@ public class JournalStorageManager implements StorageManager
             storageManagerLock.writeLock().unlock();
          }
 
-         sendJournalFile(messageFiles, JournalContent.MESSAGES);
-         sendJournalFile(bindingsFiles, JournalContent.BINDINGS);
+         sendJournalFile(messageJournalFileFactory, messageFiles, JournalContent.MESSAGES);
+         sendJournalFile(bindingsJournalFileFactory, bindingsFiles, JournalContent.BINDINGS);
          sendLargeMessageFiles(largeMessageFilesToSync);
          sendPagesToBackup(pageFilesToSync, pagingManager);
 
@@ -474,7 +471,7 @@ public class JournalStorageManager implements StorageManager
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
          if (!seqFile.exists())
             continue;
-         replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
+         replicator.syncLargeMessageFile(largeMessagesFactory, seqFile, size, getLargeMessageIdFromFilename(fileName));
       }
    }
 
@@ -507,11 +504,12 @@ public class JournalStorageManager implements StorageManager
    /**
     * Send an entire journal file to a replicating backup server.
     */
-   private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws Exception
+   private void
+      sendJournalFile(SequentialFileFactory factory, JournalFile[] journalFiles, JournalContent type) throws Exception
    {
       for (JournalFile jf : journalFiles)
       {
-         replicator.syncJournalFile(jf, type);
+         replicator.syncJournalFile(factory, jf, type);
          jf.setCanReclaim(true);
       }
    }
@@ -3890,9 +3888,11 @@ public class JournalStorageManager implements StorageManager
       journal.stop();
    }
 
-   public boolean hasCallbackSupport()
+   public boolean hasCallbackSupport(JournalContent journalContent)
    {
-      return hasCallbackSupport;
+      if (journalContent == JournalContent.MESSAGES)
+      return messageJournalFileFactory.isSupportsCallbacks();
+      return bindingsJournalFileFactory.isSupportsCallbacks();
    }
 
    @Override

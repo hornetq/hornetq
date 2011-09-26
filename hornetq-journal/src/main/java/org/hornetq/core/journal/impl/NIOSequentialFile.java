@@ -338,7 +338,9 @@ public class NIOSequentialFile extends AbstractSequentialFile
     * @throws IOException
     * @throws Exception
     */
-   private void doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   private
+            void
+            doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws IOException
    {
       channel.write(bytes);
 

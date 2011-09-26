@@ -492,7 +492,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          sf.open(1, false);
       }
-      sf.writeDirect(ByteBuffer.wrap(data), true);
+      sf.writeDirect(data);
    }
 
    /**
@@ -519,7 +519,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
       JournalFile current = journal.createFilesForBackupSync(packet.getFileIds(), mapToFill);
       registerJournal(packet.getJournalContentType().typeByte,
-                      new FileWrapperJournal(current, storage.hasCallbackSupport()));
+                      new FileWrapperJournal(current, storage.hasCallbackSupport(packet.getJournalContentType())));
      }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
