@@ -24,6 +24,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A SecurityManagementTest
@@ -58,9 +59,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
     */
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
-                              true);
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER, UnitTestCase.CLUSTER_PASSWORD, true);
    }
 
    public void testSendManagementMessageWithAdminRole() throws Exception
