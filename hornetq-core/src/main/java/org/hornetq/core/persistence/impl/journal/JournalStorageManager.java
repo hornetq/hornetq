@@ -2055,8 +2055,10 @@ public class JournalStorageManager implements StorageManager
          idGenerator.close();
       }
 
-      bindingsJournal.stop();
+      if (replicator != null)
+         replicator.stop();
 
+      bindingsJournal.stop();
       messageJournal.stop();
 
       singleThreadExecutor.shutdown();
