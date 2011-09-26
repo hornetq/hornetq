@@ -39,8 +39,6 @@ public class StompFrameFactoryV10 implements StompFrameFactory
 
    public ClientStompFrame createFrame(String data)
    {
-      System.out.println("Raw data is: " + data + "|");
-      
       //split the string at "\n\n"
       String[] dataFields = data.split("\n\n");
       

@@ -978,8 +978,33 @@ public class StompTestV11 extends StompTestBase2
       connV11.disconnect();
       newConn.disconnect();
    }
+   
+   public void testSendAndReceiveOnDifferentConnections() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      
+      ClientStompFrame sendFrame = connV11.createFrame("SEND");
+      sendFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+      sendFrame.setBody("Hello World");
 
-   //tests below are adapted from StompTest
+      connV11.sendFrame(sendFrame);
+      
+      StompClientConnection connV11_2 = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      connV11_2.connect(defUser, defPass);
+      
+      this.subscribe(connV11_2, "sub1", "auto");
+      
+      ClientStompFrame frame = connV11_2.receiveFrame(2000);
+      
+      assertEquals("MESSAGE", frame.getCommand());
+      assertEquals("Hello World", frame.getBody());
+      
+      connV11.disconnect();
+      connV11_2.disconnect();
+   }
+
+   //----------------Note: tests below are adapted from StompTest
+   
    public void testBeginSameTransactionTwice() throws Exception
    {
       connV11.connect(defUser, defPass);

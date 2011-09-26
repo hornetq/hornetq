@@ -82,8 +82,7 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
    public ClientStompFrame createFrame(
          String command)
    {
-      // TODO Auto-generated method stub
-      return null;
+      return new ClientStompFrameV10(command);
    }
 
    @Override
