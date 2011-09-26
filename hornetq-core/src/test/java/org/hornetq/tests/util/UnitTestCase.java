@@ -99,7 +99,7 @@ public abstract class UnitTestCase extends TestCase
 
    public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   protected static final String CLUSTER_PASSWORD = "HornetQ";
+   protected static final String CLUSTER_PASSWORD = "UnitTestsClusterPassword";
 
    // Attributes ----------------------------------------------------
 
