@@ -19,7 +19,7 @@ import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.ClassloadingUtil;
+import org.hornetq.jms.server.recovery.RecoveryRegistry;
 
 /**
  * Various utility functions
@@ -257,18 +257,6 @@ public class Util
    {
       try
       {
-         ClassLoader loader = HornetQResourceAdapter.class.getClassLoader();
-         Class<?> aClass = loader.loadClass(locatorClass);
-         Object o = aClass.newInstance();
-         Method m = aClass.getMethod(locatorMethod);
-         return (TransactionManager)m.invoke(o);
-      }
-      catch (Throwable e)
-      {
-         log.debug(e.getMessage(), e);
-      }
-      try
-      {
          ClassLoader loader = Thread.currentThread().getContextClassLoader();
          Class<?> aClass = loader.loadClass(locatorClass);
          Object o = aClass.newInstance();
@@ -282,5 +270,19 @@ public class Util
       }
    }
 
-   
+   public static RecoveryRegistry locateRecoveryRegistry(final String locatorClass)
+   {
+      try
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class<?> aClass = loader.loadClass(locatorClass);
+         Object o = aClass.newInstance();
+         return (RecoveryRegistry)o;
+      }
+      catch (Throwable e)
+      {
+         log.debug(e.getMessage(), e);
+         return null;
+      }
+   }
 }
