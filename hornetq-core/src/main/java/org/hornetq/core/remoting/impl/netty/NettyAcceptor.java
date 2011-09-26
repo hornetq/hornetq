@@ -346,7 +346,7 @@ public class NettyAcceptor implements Acceptor
             if (httpEnabled)
             {
                handlers.put("http-decoder", new HttpRequestDecoder());
-               
+
                handlers.put("http-aggregator", new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.put("http-encoder", new HttpResponseEncoder());
@@ -425,7 +425,7 @@ public class NettyAcceptor implements Acceptor
 
       paused = false;
 
-      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()) && false)
       {
          NettyAcceptor.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
                                                                                          .getNettyVersion() +
@@ -625,7 +625,7 @@ public class NettyAcceptor implements Acceptor
          return new String[0];
       }
       String[] hosts = commaSeparatedHosts.split(",");
-   
+
       for (int i = 0; i < hosts.length; i++)
       {
          hosts[i] = hosts[i].trim();
@@ -709,12 +709,12 @@ public class NettyAcceptor implements Acceptor
       public void connectionReadyForWrites(final Object connectionID, boolean ready)
       {
          NettyConnection conn = connections.get(connectionID);
-         
+
          if (conn != null)
          {
             conn.fireReady(ready);
-         }         
-      }            
+         }
+      }
    }
 
    private class BatchFlusher implements Runnable
