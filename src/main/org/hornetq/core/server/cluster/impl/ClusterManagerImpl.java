@@ -57,6 +57,7 @@ import org.hornetq.utils.UUID;
  * A ClusterManagerImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author Clebert Suconic
  * 
  * Created 18 Nov 2008 09:23:49
  *
@@ -302,9 +303,9 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       return new HashSet<BroadcastGroup>(broadcastGroups.values());
    }
 
-   public ClusterConnection getClusterConnection(final SimpleString name)
+   public ClusterConnection getClusterConnection(final String name)
    {
-      return clusterConnections.get(name.toString());
+      return clusterConnections.get(name);
    }
 
    // backup node becomes live

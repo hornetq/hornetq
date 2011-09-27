@@ -34,12 +34,13 @@ public class TransportConstants
    {
       Set<String> allowableAcceptorKeys = new HashSet<String>();
       allowableAcceptorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
+      allowableAcceptorKeys.add(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
 
-      ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
-
+      ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
+      
       Set<String> allowableConnectorKeys = new HashSet<String>();
       allowableConnectorKeys.add(TransportConstants.SERVER_ID_PROP_NAME);
 
-      ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
+      ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
    }
 }

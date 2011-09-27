@@ -74,6 +74,8 @@ public class TransportConstants
    
    public static final String DIRECT_DELIVER = "direct-deliver";
    
+   public static final String CLUSTER_CONNECTION = "cluster-connection";
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO_SERVER = false;
@@ -151,6 +153,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.NIO_REMOTING_THREADS_PROPNAME);
       allowableAcceptorKeys.add(TransportConstants.BATCH_DELAY);
       allowableAcceptorKeys.add(TransportConstants.DIRECT_DELIVER);
+      allowableAcceptorKeys.add(TransportConstants.CLUSTER_CONNECTION);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 

@@ -40,7 +40,7 @@ public interface ClusterManager extends HornetQComponent
     */
    ClusterConnection getDefaultConnection();
 
-   ClusterConnection getClusterConnection(SimpleString name);
+   ClusterConnection getClusterConnection(String name);
 
    Set<BroadcastGroup> getBroadcastGroups();
    

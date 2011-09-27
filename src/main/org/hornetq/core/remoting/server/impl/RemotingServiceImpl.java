@@ -39,6 +39,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
@@ -207,9 +208,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
 
             ProtocolManager manager = protocolMap.get(protocol);
-
-            // TODO: parameterize the cluster connection
-            Acceptor acceptor = factory.createAcceptor(clusterManager.getDefaultConnection(),
+            
+            ClusterConnection clusterConnection = lookupClusterConnection(info);
+            
+            Acceptor acceptor = factory.createAcceptor(clusterConnection,
                                                        info.getParams(),
                                                        new DelegatingBufferHandler(),
                                                        manager,
@@ -480,6 +482,24 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private ClusterConnection lookupClusterConnection(TransportConfiguration config)
+   {
+      String clusterConnectionName = (String)config.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
+      
+      ClusterConnection clusterConnection = null;
+      if (clusterConnectionName != null)
+      {
+         clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
+      }
+      
+      if (clusterConnection == null)
+      {
+         clusterConnection = clusterManager.getDefaultConnection();
+      }
+      
+      return clusterConnection;
+   }
 
    // Inner classes -------------------------------------------------
 

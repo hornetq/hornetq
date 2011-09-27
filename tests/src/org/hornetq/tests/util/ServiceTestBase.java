@@ -52,6 +52,7 @@ import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * 
@@ -124,6 +125,41 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
 
       Topology topology = ccs.iterator().next().getTopology();
+
+      do
+      {
+         if (nodes == topology.getMembers().size())
+         {
+            return;
+         }
+
+         Thread.sleep(10);
+      }
+      while (System.currentTimeMillis() - start < timeout);
+
+      String msg = "Timed out waiting for cluster topology of " + nodes +
+                   " (received " +
+                   topology.getMembers().size() +
+                   ") topology = " +
+                   topology +
+                   ")";
+
+      log.error(msg);
+
+      throw new Exception(msg);
+   }
+
+
+   protected void waitForTopology(final HornetQServer server, String clusterConnectionName, final int nodes, final long timeout) throws Exception
+   {
+      log.debug("waiting for " + nodes + " on the topology for server = " + server);
+
+      long start = System.currentTimeMillis();
+      
+      ClusterConnection clusterConnection = server.getClusterManager().getClusterConnection(clusterConnectionName);
+
+      
+      Topology topology = clusterConnection.getTopology();
 
       do
       {
@@ -537,6 +573,17 @@ public abstract class ServiceTestBase extends UnitTestCase
    
    protected ServerLocator createInVMLocator(final int serverID)
    {
+      TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
+      
+      return HornetQClient.createServerLocatorWithHA(tnspConfig);
+   }
+
+   /**
+    * @param serverID
+    * @return
+    */
+   protected TransportConfiguration createInVMTransportConnectorConfig(final int serverID, String name)
+   {
       Map<String, Object> server1Params = new HashMap<String, Object>();
 
       if (serverID != 0)
@@ -544,7 +591,8 @@ public abstract class ServiceTestBase extends UnitTestCase
          server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, serverID);
       }
 
-      return HornetQClient.createServerLocatorWithHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params));
+      TransportConfiguration tnspConfig = new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params, name);
+      return tnspConfig;
    }
  
    protected ClientSessionFactoryImpl createFactory(final String connectorClass) throws Exception
