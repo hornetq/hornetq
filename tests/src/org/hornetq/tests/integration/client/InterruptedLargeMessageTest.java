@@ -285,6 +285,8 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             producer.send(clientFile);
          }
          session.commit();
+         
+         validateNoFilesOnLargeDir(10);
 
          for (int h = 0; h < 5; h++)
          {
@@ -307,8 +309,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             for (int i = 0; i < 10; i++)
             {
                ClientMessage clientMessage = cons.receive(5000);
-               
-               System.out.println("msg " + clientMessage);
                assertNotNull(clientMessage);
                for (int countByte = 0; countByte < messageSize; countByte++)
                {
@@ -324,8 +324,11 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             {
                session.rollback();
             }
+            
+            session.close();
+            sf.close();
          }
-
+         
          server.stop(false);
          server.start();
 

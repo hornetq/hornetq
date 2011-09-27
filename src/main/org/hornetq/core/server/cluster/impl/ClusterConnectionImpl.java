@@ -69,6 +69,7 @@ import org.hornetq.utils.UUID;
  * A ClusterConnectionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author Clebert Suconic
  * 
  * Created 21 Jan 2009 14:43:05
  *

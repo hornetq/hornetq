@@ -459,6 +459,11 @@ public class PagingStoreImpl implements TestSupportPageStore
                   for (PagedMessage msg : messages)
                   {
                      pageCache.addLiveMessage(msg);
+                     if (msg.getMessage().isLargeMessage())
+                     {
+                        // We have to do this since addLIveMessage will increment an extra one
+                        ((LargeServerMessage)msg.getMessage()).decrementDelayDeletionCount();
+                     }
                   }
 
                   currentPage.setLiveCache(pageCache);
