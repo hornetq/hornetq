@@ -54,7 +54,7 @@ public class RecoveryManager
 
    public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
    {
-      if(!isRegistered(factory))
+      if(!isRegistered(factory) && registry != null)
       {
          XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);
          HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);

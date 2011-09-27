@@ -41,7 +41,6 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -1378,6 +1377,42 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          }
       }
       return defaultHornetQConnectionFactory;
+   }
+
+   /**
+    * @param transactionManagerLocatorClass
+    * @see org.hornetq.ra.HornetQRAProperties#setTransactionManagerLocatorClass(java.lang.String)
+    */
+   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   {
+      raProperties.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getTransactionManagerLocatorClass()
+    */
+   public String getTransactionManagerLocatorClass()
+   {
+      return raProperties.getTransactionManagerLocatorClass();
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getTransactionManagerLocatorMethod()
+    */
+   public String getTransactionManagerLocatorMethod()
+   {
+      return raProperties.getTransactionManagerLocatorMethod();
+   }
+
+   /**
+    * @param transactionManagerLocatorMethod
+    * @see org.hornetq.ra.HornetQRAProperties#setTransactionManagerLocatorMethod(java.lang.String)
+    */
+   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   {
+      raProperties.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
    }
 
    public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
