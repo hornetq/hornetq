@@ -866,7 +866,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
       waitForBindings(0, "queues.testaddress", 1, 0, false);
       
-      getServer(0).getPagingManager().getPageStore(new SimpleString("queue.testaddress")).startPaging();
+      getServer(0).getPagingManager().getPageStore(new SimpleString("queues.testaddress")).startPaging();
       
       ClientSession session0 = sfs[0].createSession(true, true, 0);
       ClientProducer producer0 = session0.createProducer("queues.testaddress");
