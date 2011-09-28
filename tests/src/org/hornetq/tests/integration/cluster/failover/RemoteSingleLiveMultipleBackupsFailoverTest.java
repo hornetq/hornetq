@@ -157,7 +157,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
 
    // Inner classes -------------------------------------------------
 
-   public static class SharedLiveServerConfiguration extends RemoteServerConfiguration
+   public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -209,7 +209,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration0 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration0 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -218,7 +218,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration1 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration1 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -227,7 +227,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration2 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration2 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -236,7 +236,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration3 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration3 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -245,7 +245,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration4 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration4 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -254,7 +254,7 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   public static class SharedBackupServerConfiguration5 extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration5 extends RemoteServerConfiguration
    {
       @Override
       public Configuration getConfiguration()
@@ -263,10 +263,10 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
       }
    }
 
-   protected static Configuration createBackupConfiguration(int liveNode,
-                                                            int nodeid,
-                                                            boolean createClusterConnections,
-                                                            int... nodes)
+   protected Configuration createBackupConfiguration(int liveNode,
+                                                     int nodeid,
+                                                     boolean createClusterConnections,
+                                                     int... nodes)
    {
       Configuration config1 = createBasicConfig();
       config1.getAcceptorConfigurations().add(createTransportConfiguration(true, true, generateParams(nodeid, true)));

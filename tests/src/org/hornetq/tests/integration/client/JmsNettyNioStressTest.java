@@ -39,7 +39,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * -- https://issues.jboss.org/browse/HORNETQ-746
@@ -91,7 +90,7 @@ public class JmsNettyNioStressTest extends ServiceTestBase
       // minimize threads to maximize possibility for deadlock
       params.put(TransportConstants.NIO_REMOTING_THREADS_PROPNAME, 1);
       params.put(TransportConstants.BATCH_DELAY, 50);
-      Configuration config = UnitTestCase.createDefaultConfig(params, ServiceTestBase.NETTY_ACCEPTOR_FACTORY);
+      Configuration config = createDefaultConfig(params, ServiceTestBase.NETTY_ACCEPTOR_FACTORY);
       HornetQServer server = createServer(true, config);
       server.getConfiguration().setThreadPoolMaxSize(2);
       server.start();

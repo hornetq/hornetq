@@ -144,7 +144,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       // Server1 with two acceptors, each acceptor on a different cluster connection
       // talking to a different connector.
       // i.e. two cluster connections isolated on the same node
-      Configuration config1 = UnitTestCase.createBasicConfig(0);
+      Configuration config1 = createBasicConfig(0);
 
       config1.setClustered(true);
 
@@ -212,7 +212,7 @@ public class IsolatedTopologyTest extends ServiceTestBase
       // Server1 with two acceptors, each acceptor on a different cluster connection
       // talking to a different connector.
       // i.e. two cluster connections isolated on the same node
-      Configuration config1 = UnitTestCase.createBasicConfig(3);
+      Configuration config1 = createBasicConfig(3);
 
       config1.setClustered(true);
 
