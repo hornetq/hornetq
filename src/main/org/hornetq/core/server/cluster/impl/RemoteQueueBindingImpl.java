@@ -182,13 +182,13 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    {
       addRouteContextToMessage(message);
 
-      List<Queue> durableQueuesOnContext = context.getDurableQueues(address);
+      List<Queue> durableQueuesOnContext = context.getDurableQueues(storeAndForwardQueue.getAddress());
 
       if (!durableQueuesOnContext.contains(storeAndForwardQueue))
       {
          // There can be many remote bindings for the same node, we only want to add the message once to
          // the s & f queue for that node
-         context.addQueue(address, storeAndForwardQueue);
+         context.addQueue(storeAndForwardQueue.getAddress(), storeAndForwardQueue);
       }
    }
 
