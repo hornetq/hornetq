@@ -891,7 +891,7 @@ public class MessageRedistributionTest extends ClusterTestBase
          msg = consumer0.receive(5000);
          assertNotNull(msg);
          assertEquals(i, msg.getIntProperty("i").intValue());
-         // msg.acknowledge(); // -- do not ack message on consumer0, to make sure the message will be routed
+         // msg.acknowledge(); // -- do not ack message on consumer0, to make sure the messages will be paged
          
          msg = consumer1.receive(5000);
          assertNotNull(msg);
