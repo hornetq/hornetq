@@ -50,6 +50,8 @@ public interface AddressControl
     * Returns the number of pages used by this address.
     */
    int getNumberOfPages() throws Exception;
+   
+   boolean isPaging() throws Exception;
 
    /**
     * Returns the number of bytes used by each page for this address.
