@@ -538,8 +538,9 @@ public class SecurityTest extends ServiceTestBase
          
          roles.add(role);
          
-         securityRepository.addMatch(SecurityTest.addressA, roles);
          
+         // This was added to validate https://issues.jboss.org/browse/SOA-3363
+         securityRepository.addMatch(SecurityTest.addressA, roles);
          boolean failed = false;
          try
          {
@@ -549,6 +550,7 @@ public class SecurityTest extends ServiceTestBase
          {
             failed = true;
          }
+         // This was added to validate https://issues.jboss.org/browse/SOA-3363 ^^^^^
          
          assertTrue("Failure expected on send after removing the match", failed);
          
