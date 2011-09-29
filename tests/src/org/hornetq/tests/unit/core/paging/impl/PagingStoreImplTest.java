@@ -1697,6 +1697,15 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
+       */
+      public void stop(boolean ioCriticalError) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
     }
 
    class FakeStoreFactory implements PagingStoreFactory

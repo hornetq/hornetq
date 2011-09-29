@@ -115,6 +115,13 @@ public class UnitTestCase extends TestCase
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
+   
+   private boolean checkThread = true;
+   
+   protected void disableCheckThread()
+   {
+      checkThread = false;
+   }
 
    // Static --------------------------------------------------------
 
@@ -941,36 +948,46 @@ public class UnitTestCase extends TestCase
          }
       }
 
-      StringBuffer buffer = null;
-
-      boolean failed = true;
-
-      long timeout = System.currentTimeMillis() + 60000;
-      while (failed && timeout > System.currentTimeMillis())
+       if (checkThread)
       {
-         buffer = new StringBuffer();
+          StringBuffer buffer = null;
 
-         failed = checkThread(buffer);
+          boolean failed = true;
+          
+
+         long timeout = System.currentTimeMillis() + 60000;
+         while (failed && timeout > System.currentTimeMillis())
+         {
+            buffer = new StringBuffer();
+   
+            failed = checkThread(buffer);
+   
+            if (failed)
+            {
+               forceGC();
+               Thread.sleep(500);
+               log.info("There are still threads running, trying again");
+            }
+         }
 
          if (failed)
          {
-            forceGC();
-            Thread.sleep(500);
-            log.info("There are still threads running, trying again");
+            logAndSystemOut("Thread leaked on test " + this.getClass().getName() +
+                            "::" +
+                            this.getName() +
+                            "\n" +
+                            buffer.toString());
+            logAndSystemOut("Thread leakage");
+
+            fail("Thread leaked");
          }
-      }
 
-      if (failed)
+      }
+      else
       {
-         logAndSystemOut("Thread leaked on test " + this.getClass().getName() +
-                         "::" +
-                         this.getName() +
-                         "\n" +
-                         buffer.toString());
-         logAndSystemOut("Thread leakage");
-
-         fail("Thread leaked");
+         checkThread = true;
       }
+      
 
       super.tearDown();
    }
