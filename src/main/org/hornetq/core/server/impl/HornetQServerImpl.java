@@ -493,7 +493,10 @@ public class HornetQServerImpl implements HornetQServer
       for (ServerSession session : sessions.values())
       {
          session.close(true);
-         session.waitContextCompletion();
+         if (!criticalIOError)
+         {
+            session.waitContextCompletion();
+         }
       }
 
       remotingService.stop();
@@ -601,7 +604,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             // Ignore
          }
-
+         
+         securityStore.stop();
+ 
          threadPool = null;
 
          scheduledPool = null;
