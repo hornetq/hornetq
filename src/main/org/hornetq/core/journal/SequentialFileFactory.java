@@ -31,6 +31,9 @@ public interface SequentialFileFactory
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();
+   
+   /** The SequentialFile will call this method when a disk IO Error happens during the live phase. */
+   void onIOError(int errorCode, String message, SequentialFile file);
 
    /**
     * Note: You need to release the buffer if is used for reading operations.

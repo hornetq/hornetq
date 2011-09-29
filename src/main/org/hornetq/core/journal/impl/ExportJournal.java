@@ -92,7 +92,7 @@ public class ExportJournal
                                     final int fileSize,
                                     final PrintStream out) throws Exception
    {
-      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
+      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory, null);
 
       JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
 

@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -52,8 +53,10 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    protected final TimedBuffer timedBuffer;
 
    protected final int bufferSize;
-
+   
    protected final long bufferTimeout;
+   
+   private final IOCriticalErrorListener critialErrorListener;  
 
    /** 
     * Asynchronous writes need to be done at another executor.
@@ -66,7 +69,8 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
                                         final boolean buffered,
                                         final int bufferSize,
                                         final int bufferTimeout,
-                                        final boolean logRates)
+                                        final boolean logRates,
+                                        final IOCriticalErrorListener criticalErrorListener)
    {
       this.journalDir = journalDir;
 
@@ -80,6 +84,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       }
       this.bufferSize = bufferSize;
       this.bufferTimeout = bufferTimeout;
+      this.critialErrorListener = criticalErrorListener;
    }
 
    public void stop()
@@ -121,6 +126,19 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
                                                                                     AbstractSequentialFileFactory.getThisClassLoader()));
       }
 
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
+    */
+   public void onIOError(int errorCode, String message, SequentialFile file)
+   {
+      if (critialErrorListener != null)
+      {
+         critialErrorListener.onIOException(errorCode, message, file);
+      }
+      // TODO Auto-generated method stub
+      
    }
 
    /* (non-Javadoc)

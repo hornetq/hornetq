@@ -16,6 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -34,20 +35,34 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
 
    public NIOSequentialFileFactory(final String journalDir)
    {
+      this(journalDir, null);
+   }
+
+   public NIOSequentialFileFactory(final String journalDir, final IOCriticalErrorListener listener)
+   {
       this(journalDir,
            false,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
-           false);
+           false,
+           listener);
    }
 
    public NIOSequentialFileFactory(final String journalDir, final boolean buffered)
+   {
+      this(journalDir, buffered, null);
+   }
+
+   public NIOSequentialFileFactory(final String journalDir,
+                                   final boolean buffered,
+                                   final IOCriticalErrorListener listener)
    {
       this(journalDir,
            buffered,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO,
-           false);
+           false,
+           listener);
    }
 
    public NIOSequentialFileFactory(final String journalDir,
@@ -56,7 +71,17 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
                                    final int bufferTimeout,
                                    final boolean logRates)
    {
-      super(journalDir, buffered, bufferSize, bufferTimeout, logRates);
+      this(journalDir, buffered, bufferSize, bufferTimeout, logRates, null);
+   }
+
+   public NIOSequentialFileFactory(final String journalDir,
+                                   final boolean buffered,
+                                   final int bufferSize,
+                                   final int bufferTimeout,
+                                   final boolean logRates,
+                                   final IOCriticalErrorListener listener)
+   {
+      super(journalDir, buffered, bufferSize, bufferTimeout, logRates, listener);
    }
 
    public SequentialFile createSequentialFile(final String fileName, int maxIO)

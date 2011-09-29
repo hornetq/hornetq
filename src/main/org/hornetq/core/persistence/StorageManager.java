@@ -66,6 +66,12 @@ public interface StorageManager extends HornetQComponent
 
    /** Set the context back to the thread */
    void setContext(OperationContext context);
+   
+   /**
+    * 
+    * @param ioCriticalError is the server being stopped due to an IO critical error
+    */
+   void stop(boolean ioCriticalError) throws Exception;
 
    // Message related operations
 

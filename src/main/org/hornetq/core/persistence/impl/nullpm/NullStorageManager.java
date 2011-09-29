@@ -568,8 +568,6 @@ public class NullStorageManager implements StorageManager
     */
    public void lineUpContext()
    {
-      // TODO Auto-generated method stub
-      
    }
 
    /* (non-Javadoc)
@@ -583,6 +581,13 @@ public class NullStorageManager implements StorageManager
     * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
     */
    public void confirmPendingLargeMessage(long recordID) throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
+    */
+   public void stop(boolean ioCriticalError) throws Exception
    {
    }
 

@@ -56,7 +56,9 @@ import org.hornetq.core.deployers.impl.QueueDeployer;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
@@ -235,6 +237,8 @@ public class HornetQServerImpl implements HornetQServer
    private Thread backupActivationThread;
 
    private Activation activation;
+   
+   private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -454,6 +458,11 @@ public class HornetQServerImpl implements HornetQServer
 
    public void stop(boolean failoverOnServerShutdown) throws Exception
    {
+      stop(failoverOnServerShutdown, false);
+   }
+   
+   protected void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
+   {
       synchronized (this)
       {
          if (!started)
@@ -520,7 +529,7 @@ public class HornetQServerImpl implements HornetQServer
             pagingManager.stop();
          }
 
-         if (storageManager != null)
+         if (!criticalIOError && storageManager != null)
          {
             storageManager.stop();
          }
@@ -744,6 +753,11 @@ public class HornetQServerImpl implements HornetQServer
    public boolean isStarted()
    {
       return started;
+   }
+   
+   public boolean isStopped()
+   {
+      return stopped;
    }
 
    public ClusterManager getClusterManager()
@@ -1189,7 +1203,8 @@ public class HornetQServerImpl implements HornetQServer
                                                              (long)configuration.getJournalBufferSize_NIO(),
                                                              scheduledPool,
                                                              executorFactory,
-                                                             configuration.isJournalSyncNonTransactional()),
+                                                             configuration.isJournalSyncNonTransactional(),
+                                                             shutdownOnCriticalIO),
                                    storageManager,
                                    addressSettingsRepository);
    }
@@ -1201,7 +1216,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (configuration.isPersistenceEnabled())
       {
-         return new JournalStorageManager(configuration, executorFactory, replicationManager);
+         return new JournalStorageManager(configuration, executorFactory, replicationManager, shutdownOnCriticalIO);
       }
       else
       {
@@ -1997,6 +2012,36 @@ public class HornetQServerImpl implements HornetQServer
             {
                nodeManager.pauseLiveServer();
             }
+         }
+      }
+   }
+   
+   private class ShutdownOnCriticalErrorListener implements IOCriticalErrorListener
+   {
+      boolean failedAlready = false;
+      
+      public synchronized void onIOException(int code, String message, SequentialFile file)
+      {
+         if (!failedAlready)
+         {
+            failedAlready = true;
+            
+            log.warn("Critical IO Error, shutting down the server. code=" + code + ", message=" + message);
+            
+            new Thread()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     HornetQServerImpl.this.stop(true, true);
+                  }
+                  catch (Exception e)
+                  {
+                     log.warn(e.getMessage(), e);
+                  }
+               }
+            }.run();
          }
       }
    }

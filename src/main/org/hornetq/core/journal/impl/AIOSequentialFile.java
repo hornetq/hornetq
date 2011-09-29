@@ -17,8 +17,10 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
+import org.hornetq.core.asyncio.IOExceptionListener;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
@@ -32,7 +34,7 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class AIOSequentialFile extends AbstractSequentialFile
+public class AIOSequentialFile extends AbstractSequentialFile implements IOExceptionListener
 {
    private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
 
@@ -185,9 +187,17 @@ public class AIOSequentialFile extends AbstractSequentialFile
    {
       opened = true;
 
-      aioFile = new AsynchronousFileImpl(useExecutor ? writerExecutor : null, pollerExecutor);
+      aioFile = new AsynchronousFileImpl(useExecutor ? writerExecutor : null, pollerExecutor, this);
 
-      aioFile.open(getFile().getAbsolutePath(), maxIO);
+      try
+      {
+         aioFile.open(getFile().getAbsolutePath(), maxIO);
+      }
+      catch (HornetQException e)
+      {
+         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         throw e;
+      }
 
       position.set(0);
 
@@ -251,6 +261,15 @@ public class AIOSequentialFile extends AbstractSequentialFile
    // Public methods
    // -----------------------------------------------------------------------------------------------------
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.asyncio.IOExceptionListener#onException(int, java.lang.String)
+    */
+   public void onIOException(int code, String message)
+   {
+      factory.onIOError(code, message, this);
+   }
+   
+
    public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
    {
       if (sync)
@@ -313,4 +332,5 @@ public class AIOSequentialFile extends AbstractSequentialFile
          throw new IllegalStateException("File not opened");
       }
    }
+   
 }
