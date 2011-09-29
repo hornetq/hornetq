@@ -143,6 +143,8 @@ public class NettyAcceptor implements Acceptor
    private HttpAcceptorHandler httpHandler = null;
 
    private final ConcurrentMap<Object, NettyConnection> connections = new ConcurrentHashMap<Object, NettyConnection>();
+   
+   private final Map<String, Object> configuration;
 
    private final Executor threadPool;
 
@@ -184,6 +186,8 @@ public class NettyAcceptor implements Acceptor
    {
       
       this.clusterConnection = clusterConnection;
+      
+      this.configuration = configuration;
       
       this.handler = handler;
 
@@ -504,6 +508,11 @@ public class NettyAcceptor implements Acceptor
          Channel serverChannel = bootstrap.bind(address);
          serverChannelGroup.add(serverChannel);
       }
+   }
+   
+   public Map<String, Object> getConfiguration()
+   {
+      return this.configuration;
    }
 
    public synchronized void stop()

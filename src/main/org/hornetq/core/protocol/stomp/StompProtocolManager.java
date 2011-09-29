@@ -112,7 +112,7 @@ class StompProtocolManager implements ProtocolManager
 
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
-      StompConnection conn = new StompConnection(connection, this);
+      StompConnection conn = new StompConnection(acceptorUsed, connection, this);
 
       // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!

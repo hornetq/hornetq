@@ -20,17 +20,21 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.protocol.stomp.Stomp.Headers;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
+import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -54,15 +58,20 @@ class StompSession implements SessionCallback
    private final Map<Long, StompSubscription> subscriptions = new ConcurrentHashMap<Long, StompSubscription>();
 
    // key = message ID, value = consumer ID
-   private final Map<Long, Long> messagesToAck = new ConcurrentHashMap<Long, Long>();
+   private final Map<Long, Pair<Long, Integer>> messagesToAck = new ConcurrentHashMap<Long, Pair<Long, Integer>>();
 
    private volatile boolean noLocal = false;
+
+   private final int consumerCredits;
 
    StompSession(final StompConnection connection, final StompProtocolManager manager, OperationContext sessionContext)
    {
       this.connection = connection;
       this.manager = manager;
       this.sessionContext = sessionContext;
+      this.consumerCredits = ConfigurationHelper.getIntProperty(TransportConstants.STOMP_CONSUMERS_CREDIT,
+                                                               TransportConstants.STOMP_DEFAULT_CONSUMERS_CREDIT,
+                                                               connection.getAcceptorUsed().getConfiguration());
    }
 
    void setServerSession(ServerSession session)
@@ -119,19 +128,20 @@ class StompSession implements SessionCallback
          StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
 
-         if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
+         int length = frame.getEncodedSize();
+
+         if (subscription.isAutoACK())
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
             session.commit();
          }
          else
          {
-            messagesToAck.put(serverMessage.getMessageID(), consumerID);
+            messagesToAck.put(serverMessage.getMessageID(), new Pair<Long, Integer>(consumerID, length));
          }
 
          // Must send AFTER adding to messagesToAck - or could get acked from client BEFORE it's been added!
          manager.send(connection, frame);
-         int length = frame.getEncodedSize();
 
          return length;
 
@@ -157,10 +167,10 @@ class StompSession implements SessionCallback
    public void closed()
    {
    }
-   
+
    public void addReadyListener(final ReadyListener listener)
    {
-      connection.getTransportConnection().addReadyListener(listener);      
+      connection.getTransportConnection().addReadyListener(listener);
    }
 
    public void removeReadyListener(final ReadyListener listener)
@@ -171,9 +181,21 @@ class StompSession implements SessionCallback
    public void acknowledge(String messageID) throws Exception
    {
       long id = Long.parseLong(messageID);
-      long consumerID = messagesToAck.remove(id);
-      session.acknowledge(consumerID, id);
-      session.commit();
+      Pair<Long, Integer> pair = messagesToAck.remove(id);
+
+      if (pair != null)
+      {
+         long consumerID = pair.a;
+         int credits = pair.b;
+   
+         if (this.consumerCredits != -1)
+         {
+            session.receiveConsumerCredits(consumerID, credits);
+         }
+         
+         session.acknowledge(consumerID, id);
+         session.commit();
+      }
    }
 
    public void addSubscription(long consumerID,
@@ -200,14 +222,6 @@ class StompSession implements SessionCallback
             {
                session.createQueue(SimpleString.toSimpleString(destination), queue, null, false, true);
             }
-            else
-            {
-               // Already exists
-               if (query.getConsumerCount() > 0)
-               {
-                  throw new IllegalStateException("Cannot create a subscriber on the durable subscription since it already has a subscriber: " + queue);
-               }
-            }
          }
          else
          {
@@ -216,11 +230,19 @@ class StompSession implements SessionCallback
          }
       }
       session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
-      session.receiveConsumerCredits(consumerID, -1);
-      StompSubscription subscription = new StompSubscription(subscriptionID, ack);
+
+      StompSubscription subscription = new StompSubscription(subscriptionID, ack.equals(Stomp.Headers.Subscribe.AckModeValues.AUTO));
       subscriptions.put(consumerID, subscription);
-      // FIXME not very smart: since we can't start the consumer, we start the session
-      // every time to start the new consumer (and all previous consumers...)
+      
+      if (subscription.isAutoACK())
+      {
+         session.receiveConsumerCredits(consumerID, -1);
+      }
+      else
+      {
+         session.receiveConsumerCredits(consumerID, consumerCredits);
+      }
+
       session.start();
    }
 

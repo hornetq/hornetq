@@ -27,24 +27,24 @@ public class StompSubscription
    // Attributes ----------------------------------------------------
 
    private final String subID;
-
-   private final String ack;
+   
+   private final boolean autoACK;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public StompSubscription(String subID, String ack)
+   public StompSubscription(String subID, boolean ack)
    {
       this.subID = subID;
-      this.ack = ack;
+      this.autoACK = ack;
    }
 
    // Public --------------------------------------------------------
 
-   public String getAck()
+   public boolean isAutoACK()
    {
-      return ack;
+      return autoACK;
    }
 
    public String getID()
@@ -55,7 +55,7 @@ public class StompSubscription
    @Override
    public String toString()
    {
-      return "StompSubscription[id=" + subID + ", ack=" + ack + "]";
+      return "StompSubscription[id=" + subID + ", autoACK=" + autoACK + "]";
    }
    
    // Package protected ---------------------------------------------

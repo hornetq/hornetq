@@ -13,6 +13,8 @@
 
 package org.hornetq.spi.core.remoting;
 
+import java.util.Map;
+
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.NotificationService;
@@ -35,6 +37,8 @@ public interface Acceptor extends HornetQComponent
     * @return the cluster connection associated with this Acceptor
     */
    ClusterConnection getClusterConnection();
+   
+   Map<String, Object> getConfiguration();
 
    /**
     * Set the notification service for this acceptor to use.

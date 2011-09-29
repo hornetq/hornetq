@@ -76,6 +76,10 @@ public class TransportConstants
    
    public static final String CLUSTER_CONNECTION = "cluster-connection";
    
+   public static final String STOMP_CONSUMERS_CREDIT = "stomp-consumer-credits";
+   
+   public static final int STOMP_DEFAULT_CONSUMERS_CREDIT = 10 * 1024; // 10K
+   
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
    public static final boolean DEFAULT_USE_NIO_SERVER = false;
@@ -154,6 +158,7 @@ public class TransportConstants
       allowableAcceptorKeys.add(TransportConstants.BATCH_DELAY);
       allowableAcceptorKeys.add(TransportConstants.DIRECT_DELIVER);
       allowableAcceptorKeys.add(TransportConstants.CLUSTER_CONNECTION);
+      allowableAcceptorKeys.add(TransportConstants.STOMP_CONSUMERS_CREDIT);
 
       ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
 

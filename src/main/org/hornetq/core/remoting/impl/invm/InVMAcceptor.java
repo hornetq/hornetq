@@ -61,6 +61,8 @@ public class InVMAcceptor implements Acceptor
    private boolean paused;
 
    private NotificationService notificationService;
+   
+   private final Map<String, Object> configuration;
 
    public InVMAcceptor(final ClusterConnection clusterConnection,
                        final Map<String, Object> configuration,
@@ -70,6 +72,8 @@ public class InVMAcceptor implements Acceptor
    {
       this.clusterConnection = clusterConnection;
       
+      this.configuration = configuration;
+      
       this.handler = handler;
       
       this.listener = listener;
@@ -77,6 +81,11 @@ public class InVMAcceptor implements Acceptor
       id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
 
       executorFactory = new OrderedExecutorFactory(threadPool);
+   }
+   
+   public Map<String, Object> getConfiguration()
+   {
+      return configuration;
    }
 
    public ClusterConnection getClusterConnection()
