@@ -743,7 +743,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             if (System.currentTimeMillis() > timeout && !receivedTopology && !closed && !closing)
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                          "Timed out waiting to receive cluster topology");
+                                          "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
             }
 
          }

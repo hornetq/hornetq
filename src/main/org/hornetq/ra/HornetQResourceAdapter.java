@@ -1431,6 +1431,52 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          ha = HornetQClient.DEFAULT_IS_HA;
       }
 
+      if (discoveryAddress != null)
+      {
+         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                              : getDiscoveryPort();
+         
+         if(discoveryPort == null)
+         {
+            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+         }
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Connection Factory on the resource adapter for discovery=" + groupConfiguration + " with ha=" + ha);
+         }
+
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
+
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
+
+         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
+
+         groupConfiguration.setRefreshTimeout(refreshTimeout);
+
+         if (ha)
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+      }
+      else
       if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
@@ -1461,6 +1507,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             transportConfigurations[i] = tc;
          }
          
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Connection Factory on the resource adapter for transport=" + transportConfigurations + " with ha=" + ha);
+         }
+         
          if (ha)
          {
             cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -1468,46 +1520,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          else
          {
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
-         }
-      }
-      else if (discoveryAddress != null)
-      {
-         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                              : getDiscoveryPort();
-
-         if(discoveryPort == null)
-         {
-            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
-         }
-
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
-
-         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-                                                                    : raProperties.getDiscoveryRefreshTimeout();
-         if (refreshTimeout == null)
-         {
-            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
-         }
-
-         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
-
-         if(initialTimeout == null)
-         {
-            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
-         }
-
-         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
-
-         groupConfiguration.setRefreshTimeout(refreshTimeout);
-
-         if (ha)
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
-         }
-         else
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
       }
       else
