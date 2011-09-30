@@ -165,7 +165,7 @@
        <exec executable="mvn" dir="./build">
         <arg value="install:install-file"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
-        <arg value="-Dmaven.repo.local=/work/eap-51/maven-repository"/>
+        <!-- <arg value="-Dmaven.repo.local=/work/eap-51/maven-repository"/> -->
         <arg value="-DgroupId=org.hornetq"/>
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
