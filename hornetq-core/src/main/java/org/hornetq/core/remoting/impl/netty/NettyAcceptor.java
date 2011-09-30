@@ -425,6 +425,7 @@ public class NettyAcceptor implements Acceptor
 
       paused = false;
 
+      // HORNETQ-720
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()) && false)
       {
          NettyAcceptor.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()

@@ -378,6 +378,7 @@ public class NettyConnector implements Connector
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
+      // HORNETQ-720
       if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()) && false)
       {
          NettyConnector.log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion()
