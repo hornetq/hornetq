@@ -235,6 +235,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       if (now - lastCheck > invalidationInterval)
       {
          invalidateCache();
+
+         lastCheck = now;
       }
       else
       {
@@ -244,8 +246,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
             granted = act.contains(dest);
          }
       }
-
-      lastCheck = now;
 
       return granted;
    }
