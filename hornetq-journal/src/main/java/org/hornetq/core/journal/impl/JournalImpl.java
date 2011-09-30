@@ -2795,11 +2795,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          }
       }
 
-      if (currentFile == null)
-      {
-         throw new NullPointerException("Current file = null");
-      }
-
       if (tx != null)
       {
          // The callback of a transaction has to be taken inside the lock,
