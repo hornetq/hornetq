@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.journal.impl.fakes;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -28,7 +29,6 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.TimedBuffer;
-import org.hornetq.core.logging.Logger;
 
 /**
  *
@@ -40,8 +40,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class FakeSequentialFileFactory implements SequentialFileFactory
 {
-   private static final Logger log = Logger.getLogger(FakeSequentialFileFactory.class);
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -283,11 +281,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
                callback.onError(-1, e.getMessage());
             }
          }
-      }
-
-      public boolean isSendError()
-      {
-         return sendError;
       }
 
       public void setSendError(final boolean sendError)
@@ -687,6 +680,12 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          ByteBuffer buffer = newBuffer(bytes.length);
          HornetQBuffer outbuffer = HornetQBuffers.wrappedBuffer(buffer);
          write(outbuffer, true);
+      }
+
+      @Override
+      public File getJavaFile()
+      {
+         throw new UnsupportedOperationException();
       }
    }
 

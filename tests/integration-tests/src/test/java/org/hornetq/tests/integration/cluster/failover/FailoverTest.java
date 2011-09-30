@@ -1571,7 +1571,7 @@ public class FailoverTest extends FailoverTestBase
 
       ClientMessage message = consumer.receiveImmediate();
 
-      Assert.assertNull("Null message", message);
+      Assert.assertNull("expecting null message", message);
 
       session2.close();
 
@@ -1610,7 +1610,7 @@ public class FailoverTest extends FailoverTestBase
 
       backupServer.start();
 
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertTrue("session failure listener", latch.await(5, TimeUnit.SECONDS));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -1772,7 +1772,7 @@ public class FailoverTest extends FailoverTestBase
 
       backupServer.start();
 
-      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertTrue("session failure listener", latch.await(5, TimeUnit.SECONDS));
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 

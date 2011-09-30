@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -128,4 +129,9 @@ public interface SequentialFile
    void copyTo(SequentialFile newFileName) throws Exception;
 
    void setTimedBuffer(TimedBuffer buffer);
+
+   /**
+    * Returns a native File of the file underlying this sequential file.
+    */
+   File getJavaFile();
 }

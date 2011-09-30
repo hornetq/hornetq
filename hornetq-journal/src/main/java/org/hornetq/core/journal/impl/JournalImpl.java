@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -171,17 +172,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    private final int userVersion;
 
-   private final int fileSize;
-
    private final int minFiles;
 
    private final float compactPercentage;
 
    private final int compactMinFiles;
-
-   private final SequentialFileFactory fileFactory;
-
-   private final JournalFilesRepository filesRepository;
 
    // Compacting may replace this structure
    private final ConcurrentMap<Long, JournalRecord> records = new ConcurrentHashMap<Long, JournalRecord>();
@@ -212,8 +207,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     */
    private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
 
-   private volatile JournalFile currentFile;
-
    private volatile JournalState state = JournalState.STOPPED;
 
    private final Reclaimer reclaimer = new Reclaimer();
@@ -229,47 +222,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                       final String fileExtension,
                       final int maxAIO)
    {
-      this(fileSize, minFiles, compactMinFiles, compactPercentage, fileFactory, filePrefix, fileExtension, maxAIO, 0);
-   }
-
-   public JournalImpl(final int fileSize,
-                      final int minFiles,
-                      final int compactMinFiles,
-                      final int compactPercentage,
-                      final SequentialFileFactory fileFactory,
-                      final String filePrefix,
-                      final String fileExtension,
-                      final int maxAIO,
-                      final int userVersion)
-   {
-      super(fileFactory.isSupportsCallbacks());
-      if (fileSize < JournalImpl.MIN_FILE_SIZE)
-      {
-         throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
-      }
-      if (fileSize % fileFactory.getAlignment() != 0)
-      {
-         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize +
-                                            ", It should be multiple of " +
-                                            fileFactory.getAlignment());
-      }
+      super(fileFactory, new JournalFilesRepository(fileFactory, filePrefix, fileExtension, 0, maxAIO, fileSize,
+                                                    minFiles), fileSize);
       if (minFiles < 2)
       {
          throw new IllegalArgumentException("minFiles cannot be less than 2");
       }
-      if (filePrefix == null)
-      {
-         throw new NullPointerException("filePrefix is null");
-      }
-      if (fileExtension == null)
-      {
-         throw new NullPointerException("fileExtension is null");
-      }
-      if (maxAIO <= 0)
-      {
-         throw new IllegalStateException("maxAIO should aways be a positive number");
-      }
-
       if (compactPercentage < 0 || compactPercentage > 100)
       {
          throw new IllegalArgumentException("Compact Percentage out of range");
@@ -285,28 +243,14 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
 
       this.compactMinFiles = compactMinFiles;
-
-      this.fileSize = fileSize;
-
       this.minFiles = minFiles;
-
-      this.fileFactory = fileFactory;
-
-      filesRepository = new JournalFilesRepository(fileFactory,
-                                                   filePrefix,
-                                                   fileExtension,
-                                                   userVersion,
-                                                   maxAIO,
-                                                   fileSize,
-                                                   minFiles);
-
-      this.userVersion = userVersion;
+      this.userVersion = 0;
    }
 
    @Override
    public String toString()
    {
-      return super.toString() + " " + state;
+      return "JournalImpl(state=" + state + ", currentFile=[" + currentFile + "], hash=" + super.toString() + ")";
    }
 
    public void runDirectJournalBlast() throws Exception
@@ -2041,30 +1985,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          return new JournalLoadInformation(0, -1);
       }
 
-      // Create any more files we need
-
-      filesRepository.ensureMinFiles();
-
-      // The current file is the last one that has data
-
-      currentFile = filesRepository.pollLastDataFile();
-
-      if (currentFile != null)
-      {
-         currentFile.getFile().open();
-
-         currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
-      }
-      else
-      {
-         currentFile = filesRepository.getFreeFile();
-
-         filesRepository.openFile(currentFile, true);
-      }
-
-      fileFactory.activateBuffer(currentFile.getFile());
-
-      filesRepository.pushOpenedFile();
+      setUpCurrentFile(lastDataPos);
 
       setJournalState(JournalState.LOADED);
 
@@ -2162,7 +2083,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          totalLiveSize += file.getLiveSize();
       }
 
-      long totalBytes = (long)dataFiles.length * (long)fileSize;
+      long totalBytes = dataFiles.length * (long)fileSize;
 
       long compactMargin = (long)(totalBytes * compactPercentage);
 
@@ -2224,7 +2145,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // TestableJournal implementation
    // --------------------------------------------------------------
 
-   public void setAutoReclaim(final boolean autoReclaim)
+   public synchronized void setAutoReclaim(final boolean autoReclaim)
    {
       this.autoReclaim = autoReclaim;
    }
@@ -2329,6 +2250,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return records.size();
    }
 
+   @Override
    public int getFileSize()
    {
       return fileSize;
@@ -2775,25 +2697,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       final IOAsyncTask callback;
 
-      int size = encoder.getEncodeSize();
+      final int size = encoder.getEncodeSize();
 
-      // We take into account the fileID used on the Header
-      if (size > fileSize - currentFile.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER))
-      {
-         throw new IllegalArgumentException("Record is too large to store " + size);
-      }
-
-      if (!currentFile.getFile().fits(size))
-      {
-         moveNextFile(true);
-
-         // The same check needs to be done at the new file also
-         if (!currentFile.getFile().fits(size))
-         {
-            // Sanity check, this should never happen
-            throw new IllegalStateException("Invalid logic on buffer allocation");
-         }
-      }
+      switchFileIfNecessary(size);
 
       if (tx != null)
       {
@@ -2842,27 +2748,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return currentFile;
    }
 
-   // You need to guarantee lock.acquire() before calling this method
-   private void moveNextFile(final boolean scheduleReclaim) throws Exception
-   {
-      filesRepository.closeFile(currentFile);
-
-      currentFile = filesRepository.openFile();
-
-      if (scheduleReclaim)
-      {
-         scheduleReclaim();
-      }
-
-      if (JournalImpl.trace)
-      {
-         JournalImpl.trace("moveNextFile: " + currentFile);
-      }
-
-      fileFactory.activateBuffer(currentFile.getFile());
-   }
-
-   private void scheduleReclaim()
+   @Override
+   void scheduleReclaim()
    {
       if (state != JournalState.LOADED)
       {
@@ -3102,21 +2989,21 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * @throws Exception
     */
    @Override
-   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> map) throws Exception
+   public synchronized Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception
    {
       writeLock();
       try
       {
+         Map<Long, JournalFile> map = new HashMap<Long, JournalFile>();
          log.info("Reserving fileIDs before synchronization: " + Arrays.toString(fileIds));
          long maxID = -1;
          for (long id : fileIds)
          {
             maxID = Math.max(maxID, id);
-            map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id, false));
+            map.put(Long.valueOf(id), filesRepository.createRemoteBackupSyncFile(id));
          }
-         maxID += 1;
          filesRepository.setNextFileID(maxID);
-         return filesRepository.createRemoteBackupSyncFile(maxID, true);
+         return map;
       }
       finally
       {
@@ -3127,5 +3014,17 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    public boolean getAutoReclaim()
    {
       return autoReclaim;
+   }
+
+   @Override
+   public SequentialFileFactory getFileFactory()
+   {
+      return fileFactory;
+   }
+
+   @Override
+   public JournalFilesRepository getFilesRepository()
+   {
+      return filesRepository;
    }
 }

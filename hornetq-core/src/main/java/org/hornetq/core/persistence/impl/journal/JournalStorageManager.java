@@ -441,7 +441,6 @@ public class JournalStorageManager implements StorageManager
          PagingStore store = manager.getPageStore(entry.getKey());
          store.sendPages(replicator, entry.getValue());
       }
-
    }
 
    /**
@@ -471,7 +470,7 @@ public class JournalStorageManager implements StorageManager
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
          if (!seqFile.exists())
             continue;
-         replicator.syncLargeMessageFile(largeMessagesFactory, seqFile, size, getLargeMessageIdFromFilename(fileName));
+         replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
       }
    }
 
@@ -509,7 +508,7 @@ public class JournalStorageManager implements StorageManager
    {
       for (JournalFile jf : journalFiles)
       {
-         replicator.syncJournalFile(factory, jf, type);
+         replicator.syncJournalFile(jf, type);
          jf.setCanReclaim(true);
       }
    }
@@ -3886,13 +3885,6 @@ public class JournalStorageManager implements StorageManager
       }
 
       journal.stop();
-   }
-
-   public boolean hasCallbackSupport(JournalContent journalContent)
-   {
-      if (journalContent == JournalContent.MESSAGES)
-      return messageJournalFileFactory.isSupportsCallbacks();
-      return bindingsJournalFileFactory.isSupportsCallbacks();
    }
 
    @Override

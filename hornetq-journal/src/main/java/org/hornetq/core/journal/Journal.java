@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hornetq.core.journal.impl.JournalFile;
+import org.hornetq.core.journal.impl.JournalFilesRepository;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
@@ -148,13 +149,11 @@ public interface Journal extends HornetQComponent
     * During the synchronization between a live server and backup, we reserve in the backup the
     * journal file IDs used in the live server. This call also makes sure the files are created
     * empty without any kind of headers added.
-    * @param fileIds ids to reserve for synchronization
-    * @param mapToFill map to be filled with id and journal file pairs for <b>synchronization</b>.
-    * @return a new {@link JournalFile} to be used for regular <b>replication</b> during
-    *         synchronization
+    * @param fileIds IDs to reserve for synchronization
+    * @return map to be filled with id and journal file pairs for <b>synchronization</b>.
     * @throws Exception
     */
-   JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception;
+   Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception;
 
    /**
     * @return whether automatic reclaiming of Journal files is enabled
@@ -190,4 +189,9 @@ public interface Journal extends HornetQComponent
     */
    JournalFile[] getDataFiles();
 
+   SequentialFileFactory getFileFactory();
+
+   JournalFilesRepository getFilesRepository();
+
+   int getFileSize();
 }

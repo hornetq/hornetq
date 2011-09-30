@@ -28,7 +28,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    private ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;
-   protected int n_msgs = 10;
+   protected int n_msgs = 20;
 
    @Override
    protected void setUp() throws Exception
@@ -64,12 +64,19 @@ public class BackupSyncJournalTest extends FailoverTestBase
       }
 
       backupServer.start();
-      syncDelay.deliverUpToDateMsg();
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
 
+      // Deliver messages with Backup in-sync
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
+      sendMessages(session, producer, n_msgs);
+
+      // Deliver messages with Backup up-to-date
+      syncDelay.deliverUpToDateMsg();
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, n_msgs);
+
       Set<Long> liveIds = getFileIds(messageJournal);
+      int size = messageJournal.getFileSize();
       PagingStore ps = liveServer.getServer().getPagingManager().getPageStore(ADDRESS);
       if (ps.getPageSizeBytes() == PAGE_SIZE)
       {
@@ -79,11 +86,14 @@ public class BackupSyncJournalTest extends FailoverTestBase
       finishSyncAndFailover();
 
       JournalImpl backupMsgJournal = getMessageJournalFromServer(backupServer);
+      System.out.println("backup journal " + backupMsgJournal);
+      System.out.println("live journal " + messageJournal);
+      assertEquals("file sizes must be the same", size, backupMsgJournal.getFileSize());
       Set<Long> backupIds = getFileIds(backupMsgJournal);
       assertEquals("File IDs must match!", liveIds, backupIds);
 
       // "+ 2": there two other calls that send N_MSGS.
-      for (int i = 0; i < totalRounds + 2; i++)
+      for (int i = 0; i < totalRounds + 3; i++)
       {
          receiveMsgsInRange(0, n_msgs);
       }

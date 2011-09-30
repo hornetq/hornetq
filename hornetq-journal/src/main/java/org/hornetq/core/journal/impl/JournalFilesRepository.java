@@ -33,8 +33,6 @@ import org.hornetq.core.logging.Logger;
  * Guaranteeing that they will be delivered in order to the Journal
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalFilesRepository
 {
@@ -91,6 +89,18 @@ public class JournalFilesRepository
                                  final int fileSize,
                                  final int minFiles)
    {
+      if (filePrefix == null)
+      {
+         throw new IllegalArgumentException("filePrefix cannot be null");
+      }
+      if (fileExtension == null)
+      {
+         throw new IllegalArgumentException("fileExtension cannot be null");
+      }
+      if (maxAIO <= 0)
+      {
+         throw new IllegalArgumentException("maxAIO must be a positive number");
+      }
       this.fileFactory = fileFactory;
       this.maxAIO = maxAIO;
       this.filePrefix = filePrefix;
@@ -447,9 +457,9 @@ public class JournalFilesRepository
     * Creates files for journal synchronization of a replicated backup.
     * @param isCurrent a current file is initialized and kept open.
     */
-   public JournalFile createRemoteBackupSyncFile(long fileID, boolean isCurrent) throws Exception
+   public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
    {
-      return createFile(isCurrent, false, isCurrent, false, fileID);
+      return createFile(false, false, true, false, fileID);
    }
 
    // Package protected ---------------------------------------------
@@ -575,5 +585,12 @@ public class JournalFilesRepository
       sf.close();
 
       return jf;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "JournalFilesRepository(dataFiles=" + dataFiles + ", freeFiles=" + freeFiles + ", openedFiles=" +
+               openedFiles + ")";
    }
 }

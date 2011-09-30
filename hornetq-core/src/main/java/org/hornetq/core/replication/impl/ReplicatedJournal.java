@@ -23,8 +23,10 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
+import org.hornetq.core.journal.impl.JournalFilesRepository;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
@@ -579,7 +581,7 @@ public class ReplicatedJournal implements Journal
    }
 
    @Override
-   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
+   public Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception
    {
       throw new UnsupportedOperationException("This method should only be called at a replicating backup");
    }
@@ -616,6 +618,18 @@ public class ReplicatedJournal implements Journal
 
    @Override
    public JournalFile[] getDataFiles()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public SequentialFileFactory getFileFactory()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public JournalFilesRepository getFilesRepository()
    {
       throw new UnsupportedOperationException();
    }

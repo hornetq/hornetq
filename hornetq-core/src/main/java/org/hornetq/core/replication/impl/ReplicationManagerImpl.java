@@ -13,7 +13,9 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.io.FileInputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -26,7 +28,6 @@ import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
@@ -463,28 +464,26 @@ public class ReplicationManagerImpl implements ReplicationManager
    }
 
    @Override
-   public void syncJournalFile(SequentialFileFactory factory, JournalFile jf, JournalContent content) throws Exception
+   public void syncJournalFile(JournalFile jf, JournalContent content) throws Exception
    {
       if (enabled)
       {
          SequentialFile file = jf.getFile().copy();
          log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
-         sendLargeFile(content, null, jf.getFileID(), file, factory, Long.MAX_VALUE);
+         sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
       }
    }
 
    @Override
-   public void
-      syncLargeMessageFile(SequentialFileFactory factory, SequentialFile file, long size, long id) throws Exception
+   public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
    {
-      sendLargeFile(null, null, id, file, factory, size);
+      sendLargeFile(null, null, id, file, size);
    }
 
    @Override
-   public void
-      syncPages(SequentialFileFactory factory, SequentialFile file, long id, SimpleString queueName) throws Exception
+   public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
    {
-      sendLargeFile(null, queueName, id, file, factory, Long.MAX_VALUE);
+      sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
    }
 
    /**
@@ -500,9 +499,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       SimpleString pageStore,
       final long id,
       SequentialFile file,
-      SequentialFileFactory factory,
-            long maxBytesToSend)
-            throws Exception
+      long maxBytesToSend) throws Exception
    {
       if (!enabled)
          return;
@@ -510,16 +507,17 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          file.open();
       }
-      final ByteBuffer buffer = factory.newBuffer(1 << 17);
+      final FileChannel channel = (new FileInputStream(file.getJavaFile())).getChannel();
       try
       {
+         final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
          while (true)
-      {
-         buffer.rewind();
-         int bytesRead = file.read(buffer);
-         int toSend = bytesRead;
-         if (bytesRead > 0)
          {
+            buffer.clear();
+            int bytesRead = channel.read(buffer);
+            int toSend = bytesRead;
+            if (bytesRead > 0)
+            {
             if (bytesRead >= maxBytesToSend)
             {
                toSend = (int)maxBytesToSend;
@@ -541,7 +539,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
       finally
       {
-         factory.releaseBuffer(buffer);
+         channel.close();
       }
    }
 

@@ -13,7 +13,11 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -85,8 +89,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private final JournalLoadInformation[] journalLoadInformation = new JournalLoadInformation[2];
 
    /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
-   private final Map<JournalContent, Map<Long, JournalFile>> filesReservedForSync =
-            new HashMap<JournalContent, Map<Long, JournalFile>>();
+   private final Map<JournalContent, Map<Long, JournalSyncFile>> filesReservedForSync =
+            new HashMap<JournalContent, Map<Long, JournalSyncFile>>();
    private Map<Long, LargeServerMessage> largeMessagesOnSync = new HashMap<Long, LargeServerMessage>();
 
    /**
@@ -240,7 +244,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
-         filesReservedForSync.put(jc, new HashMap<Long, JournalFile>());
+         filesReservedForSync.put(jc, new HashMap<Long, JournalSyncFile>());
          // We only need to load internal structures on the backup...
          journalLoadInformation[jc.typeByte] = journalsHolder.get(jc).loadSyncOnly();
       }
@@ -446,7 +450,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       Long id = Long.valueOf(msg.getId());
       byte[] data = msg.getData();
-      SequentialFile sf;
+      SequentialFile channel;
       switch (msg.getFileType())
       {
          case LARGE_MESSAGE:
@@ -461,22 +465,28 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                   largeMessage.setMessageID(id);
                   largeMessagesOnSync.put(id, largeMessage);
                }
-               sf = largeMessage.getFile();
+               channel = largeMessage.getFile();
             }
-            break;
-         }
-         case JOURNAL:
-         {
-            JournalFile journalFile = filesReservedForSync.get(msg.getJournalContent()).get(id);
-            sf = journalFile.getFile();
             break;
          }
          case PAGE:
          {
             Page page = getPage(msg.getPageStore(), (int)msg.getId());
 
-            sf = page.getFile();
+            channel = page.getFile();
             break;
+         }
+         case JOURNAL:
+         {
+            JournalSyncFile journalSyncFile = filesReservedForSync.get(msg.getJournalContent()).get(id);
+            FileChannel channel2 = journalSyncFile.getChannel();
+            if (data == null)
+            {
+               channel2.close();
+               return;
+            }
+            channel2.write(ByteBuffer.wrap(data));
+            return;
          }
          default:
             throw new HornetQException(HornetQException.INTERNAL_ERROR, "Unhandled file type " + msg.getFileType());
@@ -484,15 +494,15 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (data == null)
       {
-         sf.close();
+         channel.close();
          return;
       }
 
-      if (!sf.isOpen())
+      if (!channel.isOpen())
       {
-         sf.open(1, false);
+         channel.open(1, false);
       }
-      sf.writeDirect(data);
+      channel.writeDirect(ByteBuffer.wrap(data), true);
    }
 
    /**
@@ -516,10 +526,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       final Journal journal = journalsHolder.get(packet.getJournalContentType());
 
-      Map<Long, JournalFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
-      JournalFile current = journal.createFilesForBackupSync(packet.getFileIds(), mapToFill);
-      registerJournal(packet.getJournalContentType().typeByte,
-                      new FileWrapperJournal(current, storage.hasCallbackSupport(packet.getJournalContentType())));
+      Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
+      for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
+      {
+         mapToFill.put(entry.getKey(), new JournalSyncFile(entry.getValue()));
+      }
+      registerJournal(packet.getJournalContentType().typeByte, new FileWrapperJournal(journal));
      }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
@@ -807,5 +819,39 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private Journal getJournal(final byte journalID)
    {
       return journals[journalID];
+   }
+
+   public static class JournalSyncFile
+   {
+
+      private FileChannel channel;
+      private final File file;
+
+      public JournalSyncFile(JournalFile jFile) throws Exception
+      {
+         SequentialFile seqFile = jFile.getFile();
+         file = seqFile.getJavaFile();
+         seqFile.close();
+      }
+
+      FileChannel getChannel() throws Exception
+      {
+         if (channel == null)
+         {
+            channel = new FileOutputStream(file).getChannel();
+         }
+         return channel;
+      }
+
+      void close() throws IOException
+      {
+         channel.close();
+      }
+
+      @Override
+      public String toString()
+      {
+         return "JournalSyncFile(file=" + file.getAbsolutePath() + ")";
+      }
    }
 }

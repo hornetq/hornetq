@@ -84,6 +84,7 @@ public class BackupSyncDelay implements Interceptor
       private Packet onHold;
       private Channel channel;
       public volatile boolean deliver;
+      private volatile boolean delivered;
       private boolean receivedUpToDate;
       private boolean mustHold = true;
 
@@ -97,6 +98,8 @@ public class BackupSyncDelay implements Interceptor
          deliver = true;
          if (!receivedUpToDate)
             return;
+         if (delivered)
+            return;
 
          if (onHold == null)
          {
@@ -108,6 +111,7 @@ public class BackupSyncDelay implements Interceptor
          try
          {
             handler.handlePacket(onHold);
+            delivered = true;
          }
          finally
          {

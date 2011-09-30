@@ -389,4 +389,9 @@ abstract class AbstractSequentialFile implements SequentialFile
 
    }
 
+   @Override
+   public File getJavaFile()
+   {
+      return getFile().getAbsoluteFile();
+   }
 }

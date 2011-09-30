@@ -1140,7 +1140,7 @@ public class PagingStoreImpl implements PagingStore
             {
                continue;
             }
-            replicator.syncPages(fileFactory, sFile, id, getAddress());
+            replicator.syncPages(sFile, id, getAddress());
          }
       }
       finally

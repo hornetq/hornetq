@@ -20,7 +20,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
-import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
@@ -89,13 +88,6 @@ public interface ReplicationManager extends HornetQComponent
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
 
    /**
-    * Sends the whole content of the file to be duplicated.
-    * @throws HornetQException
-    * @throws Exception
-    */
-   void syncJournalFile(SequentialFileFactory factory, JournalFile jf, JournalContent type) throws Exception;
-
-   /**
     * Reserve the following fileIDs in the backup server.
     * @param datafiles
     * @param contentType
@@ -111,11 +103,17 @@ public interface ReplicationManager extends HornetQComponent
    void sendSynchronizationDone();
 
    /**
+    * Sends the whole content of the file to be duplicated.
+    * @throws HornetQException
+    * @throws Exception
+    */
+   void syncJournalFile(JournalFile jf, JournalContent type) throws Exception;
+
+   /**
     * @param seqFile
     * @throws Exception
     */
-   void syncLargeMessageFile(SequentialFileFactory fctr, SequentialFile seqFile, long size, long id)
-                                                                                                       throws Exception;
+   void syncLargeMessageFile(SequentialFile seqFile, long size, long id) throws Exception;
 
    /**
     * @param file
@@ -123,5 +121,5 @@ public interface ReplicationManager extends HornetQComponent
     * @param pageStore
     * @throws Exception
     */
-   void syncPages(SequentialFileFactory factory, SequentialFile file, long id, SimpleString pageStore) throws Exception;
+   void syncPages(SequentialFile file, long id, SimpleString pageStore) throws Exception;
 }

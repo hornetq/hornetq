@@ -3,16 +3,35 @@ package org.hornetq.core.journal.impl;
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
+import org.hornetq.core.logging.Logger;
 
 abstract class JournalBase
 {
 
-   private final boolean hasCallbackSupport;
+   protected final JournalFilesRepository filesRepository;
+   protected final SequentialFileFactory fileFactory;
+   protected volatile JournalFile currentFile;
+   protected final int fileSize;
 
-   public JournalBase(boolean hasCallbackSupport)
+   private static final Logger log = Logger.getLogger(JournalBase.class);
+   private static final boolean trace = log.isTraceEnabled();
+
+   public JournalBase(SequentialFileFactory fileFactory, JournalFilesRepository journalFilesRepository, int fileSize)
    {
-      this.hasCallbackSupport = hasCallbackSupport;
+      if (fileSize < JournalImpl.MIN_FILE_SIZE)
+      {
+         throw new IllegalArgumentException("File size cannot be less than " + JournalImpl.MIN_FILE_SIZE + " bytes");
+      }
+      if (fileSize % fileFactory.getAlignment() != 0)
+      {
+         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize + ", It should be multiple of " +
+                  fileFactory.getAlignment());
+      }
+      this.fileFactory = fileFactory;
+      this.filesRepository = journalFilesRepository;
+      this.fileSize = fileSize;
    }
 
    abstract public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record,
@@ -179,9 +198,56 @@ abstract class JournalBase
       }
    }
 
+   /**
+    * @param size
+    * @throws Exception
+    */
+   protected void switchFileIfNecessary(int size) throws Exception
+   {
+      // We take into account the fileID used on the Header
+      if (size > fileSize - currentFile.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER))
+      {
+         throw new IllegalArgumentException("Record is too large to store " + size);
+      }
+
+      if (!currentFile.getFile().fits(size))
+      {
+         moveNextFile(true);
+
+         // The same check needs to be done at the new file also
+         if (!currentFile.getFile().fits(size))
+         {
+            // Sanity check, this should never happen
+            throw new IllegalStateException("Invalid logic on buffer allocation");
+         }
+      }
+   }
+
+   abstract void scheduleReclaim();
+
+   // You need to guarantee lock.acquire() before calling this method
+   protected void moveNextFile(final boolean scheduleReclaim) throws Exception
+   {
+      filesRepository.closeFile(currentFile);
+
+      currentFile = filesRepository.openFile();
+
+      if (scheduleReclaim)
+      {
+         scheduleReclaim();
+      }
+
+      if (trace)
+      {
+         log.info("moveNextFile: " + currentFile);
+      }
+
+      fileFactory.activateBuffer(currentFile.getFile());
+   }
+
    protected SyncIOCompletion getSyncCallback(final boolean sync)
    {
-      if (hasCallbackSupport)
+      if (fileFactory.isSupportsCallbacks())
       {
          if (sync)
          {
@@ -213,4 +279,40 @@ abstract class JournalBase
       }
    }
 
+   /**
+    * @param lastDataPos
+    * @throws Exception
+    */
+   protected void setUpCurrentFile(int lastDataPos) throws Exception
+   {
+      // Create any more files we need
+
+      filesRepository.ensureMinFiles();
+
+      // The current file is the last one that has data
+
+      currentFile = filesRepository.pollLastDataFile();
+
+      if (currentFile != null)
+      {
+         currentFile.getFile().open();
+
+         currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
+      }
+      else
+      {
+         currentFile = filesRepository.getFreeFile();
+
+         filesRepository.openFile(currentFile, true);
+      }
+
+      fileFactory.activateBuffer(currentFile.getFile());
+
+      filesRepository.pushOpenedFile();
+   }
+
+   public int getFileSize()
+   {
+      return fileSize;
+   }
 }

@@ -15,6 +15,8 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecordTX;
@@ -36,15 +38,14 @@ public class FileWrapperJournal extends JournalBase implements Journal
 
    private final ConcurrentMap<Long, AtomicInteger> transactions = new ConcurrentHashMap<Long, AtomicInteger>();
 
-   private final JournalFile currentFile;
-
    /**
-    * @param file
+    * @param journal
+    * @throws Exception
     */
-   public FileWrapperJournal(JournalFile file, boolean hasCallbackSupport)
+   public FileWrapperJournal(Journal journal) throws Exception
    {
-      super(hasCallbackSupport);
-      currentFile = file;
+      super(journal.getFileFactory(), journal.getFilesRepository(), journal.getFileSize());
+      setUpCurrentFile(JournalImpl.SIZE_HEADER);
    }
 
    @Override
@@ -56,7 +57,11 @@ public class FileWrapperJournal extends JournalBase implements Journal
    @Override
    public void stop() throws Exception
    {
-      currentFile.getFile().close();
+      SequentialFile seqFile = currentFile.getFile();
+      long pos = seqFile.position();
+      seqFile.close();
+      seqFile.open();
+      seqFile.position(pos);
    }
 
    @Override
@@ -92,7 +97,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
          {
             callback.storeLineUp();
          }
-
+         switchFileIfNecessary(encoder.getEncodeSize());
          encoder.setFileID(currentFile.getRecordID());
 
          if (callback != null)
@@ -189,6 +194,12 @@ public class FileWrapperJournal extends JournalBase implements Journal
       return defaultValue.get();
    }
 
+   @Override
+   public String toString()
+   {
+      return FileWrapperJournal.class.getName() + "(currentFile=[" + currentFile + "], hash=" + super.toString() + ")";
+   }
+
    // UNSUPPORTED STUFF
 
    @Override
@@ -260,7 +271,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    }
 
    @Override
-   public JournalFile createFilesForBackupSync(long[] fileIds, Map<Long, JournalFile> mapToFill) throws Exception
+   public Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception
    {
       throw new UnsupportedOperationException();
    }
@@ -297,6 +308,24 @@ public class FileWrapperJournal extends JournalBase implements Journal
 
    @Override
    public JournalFile[] getDataFiles()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   void scheduleReclaim()
+   {
+      // no-op
+   }
+
+   @Override
+   public SequentialFileFactory getFileFactory()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public JournalFilesRepository getFilesRepository()
    {
       throw new UnsupportedOperationException();
    }

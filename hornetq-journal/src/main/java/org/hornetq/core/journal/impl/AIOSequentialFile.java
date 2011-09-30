@@ -24,7 +24,6 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 
 /**
  *
@@ -35,8 +34,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class AIOSequentialFile extends AbstractSequentialFile
 {
-   private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
-
    private boolean opened = false;
 
    private final int maxIO;
