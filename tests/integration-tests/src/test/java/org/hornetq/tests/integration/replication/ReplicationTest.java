@@ -908,5 +908,11 @@ public class ReplicationTest extends ServiceTestBase
          return null;
       }
 
+      @Override
+      public int getFileSize()
+      {
+         return 0;
+      }
+
    }
 }

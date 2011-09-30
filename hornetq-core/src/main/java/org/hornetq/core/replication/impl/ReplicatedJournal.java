@@ -634,6 +634,12 @@ public class ReplicatedJournal implements Journal
       throw new UnsupportedOperationException();
    }
 
+   @Override
+   public int getFileSize()
+   {
+      return localJournal.getFileSize();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
