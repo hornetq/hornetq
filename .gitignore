@@ -10,6 +10,8 @@ org.eclipse.m2e.core.prefs
 org.maven.ide.eclipse.prefs
 .classpath
 /bin
+tests/*-tests/hs_err_pid*.log
+tests/**/server.lock
 
 # /
 /build
