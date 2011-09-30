@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -94,39 +95,7 @@ class StompSession implements SessionCallback
       {
          StompSubscription subscription = subscriptions.get(consumerID);
 
-         Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
-         if (subscription.getID() != null)
-         {
-            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
-         }
-         HornetQBuffer buffer = serverMessage.getBodyBuffer();
-
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                 : serverMessage.getEndOfBodyPosition();
-         int size = bodyPos - buffer.readerIndex();
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-         byte[] data = new byte[size];
-         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
-         {
-            headers.put(Headers.CONTENT_LENGTH, data.length);
-            buffer.readBytes(data);
-         }
-         else
-         {
-            SimpleString text = buffer.readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-            else
-            {
-               data = new byte[0];
-            }
-         }
-         serverMessage.getBodyBuffer().resetReaderIndex();
-         StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
-         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+         StompFrame frame = createFrame(serverMessage, deliveryCount, subscription);
 
          int length = frame.getEncodedSize();
 
@@ -152,6 +121,57 @@ class StompSession implements SessionCallback
          return 0;
       }
 
+   }
+
+   /**
+    * @param serverMessage
+    * @param deliveryCount
+    * @param subscription
+    * @return
+    * @throws UnsupportedEncodingException
+    * @throws Exception
+    */
+   private StompFrame createFrame(ServerMessage serverMessage, int deliveryCount, StompSubscription subscription) throws UnsupportedEncodingException,
+                                                                                                                 Exception
+   {
+      synchronized (serverMessage)
+      {
+         Map<String, Object> headers = new HashMap<String, Object>();
+         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
+         if (subscription.getID() != null)
+         {
+            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
+         }
+         
+         HornetQBuffer buffer = serverMessage.getBodyBuffer();
+   
+         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
+                                                                 : serverMessage.getEndOfBodyPosition();
+         int size = bodyPos - buffer.readerIndex();
+         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+         byte[] data = new byte[size];
+         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
+         {
+            headers.put(Headers.CONTENT_LENGTH, data.length);
+            buffer.readBytes(data);
+         }
+         else
+         {
+            SimpleString text = buffer.readNullableSimpleString();
+            if (text != null)
+            {
+               data = text.toString().getBytes("UTF-8");
+            }
+            else
+            {
+               data = new byte[0];
+            }
+         }
+         serverMessage.getBodyBuffer().resetReaderIndex();
+         StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
+         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+         return frame;
+      }
    }
 
    public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
