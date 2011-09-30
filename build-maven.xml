@@ -13,7 +13,7 @@
   -->
 
 <project default="upload" name="HornetQ">
-   <property name="hornetq.version" value="2.2.8.CR1"/>
+   <property name="hornetq.version" value="2.2.8.EAP.CR2"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
@@ -165,7 +165,7 @@
        <exec executable="mvn" dir="./build">
         <arg value="install:install-file"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
-        <!-- arg value="-Dmaven.repo.local=/work/eap/maven-repository"/ -->
+        <arg value="-Dmaven.repo.local=/work/eap-51/maven-repository"/>
         <arg value="-DgroupId=org.hornetq"/>
         <arg value="-DartifactId=${artifact.id}"/>
         <arg value="-Dversion=${hornetq.version}"/>
