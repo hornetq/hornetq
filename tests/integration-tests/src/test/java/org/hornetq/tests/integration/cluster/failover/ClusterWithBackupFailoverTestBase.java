@@ -41,13 +41,11 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  * Created 9 Mar 2009 16:31:21
- *
- *
  */
 public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 {
-   private static final String QUEUE_NAME = "queue0";
-   private static final String QUEUES_TESTADDRESS = "queues.testaddress";
+   protected static final String QUEUE_NAME = "queue0";
+   protected static final String QUEUES_TESTADDRESS = "queues.testaddress";
    private static final Logger log = Logger.getLogger(ClusterWithBackupFailoverTestBase.class);
 
    protected abstract void setupCluster(final boolean forwardWhenNoConsumers) throws Exception;
@@ -250,8 +248,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
 
       send(2, QUEUES_TESTADDRESS, 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(true, 10, 0, 1, 2);
-
-
 
       removeConsumer(0);
       removeConsumer(1);

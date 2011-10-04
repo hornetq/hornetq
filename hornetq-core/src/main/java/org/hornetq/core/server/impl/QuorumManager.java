@@ -67,10 +67,7 @@ final class QuorumManager implements ClusterTopologyListener
          // decide to wake backup
          clusterManager.removeClusterTopologyListener(this, true);
       }
-      else
-      {
-         nodes.remove(nodeID);
-      }
+      nodes.remove(nodeID);
    }
 
    public boolean isNodeDown()
