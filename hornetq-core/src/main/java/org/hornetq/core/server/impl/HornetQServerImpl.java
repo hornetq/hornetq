@@ -549,8 +549,7 @@ public class HornetQServerImpl implements HornetQServer
             clusterManager.start();
 
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
-            serverLocator =
-                     (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(config);
+            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
 
             serverLocator.setReconnectAttempts(-1);
 
