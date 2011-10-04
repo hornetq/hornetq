@@ -548,7 +548,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          
          if (log.isTraceEnabled())
          {
-            log.trace("XXX going to send message " + message);
+            log.trace("going to send message " + message);
          }
          
          try
