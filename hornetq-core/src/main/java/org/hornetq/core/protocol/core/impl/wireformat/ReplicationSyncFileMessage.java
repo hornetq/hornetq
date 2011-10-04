@@ -2,6 +2,7 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import java.nio.ByteBuffer;
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
@@ -30,12 +31,12 @@ public final class ReplicationSyncFileMessage extends PacketImpl
    private byte[] byteArray;
    private SimpleString pageStoreName;
    private FileType fileType;
-
    public enum FileType
    {
       JOURNAL(0), PAGE(1), LARGE_MESSAGE(2);
 
       private byte code;
+      private static final Set<FileType> ALL_OF = EnumSet.allOf(FileType.class);
 
       private FileType(int code)
       {
@@ -48,7 +49,7 @@ public final class ReplicationSyncFileMessage extends PacketImpl
        */
       public static FileType getFileType(byte readByte)
       {
-         for (FileType type : EnumSet.allOf(FileType.class))
+         for (FileType type : ALL_OF)
          {
             if (type.code == readByte)
                return type;
