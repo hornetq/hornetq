@@ -28,9 +28,9 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.SimpleEncoding;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A JournalImplTestBase
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -38,17 +38,18 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class JournalImplTestUnit extends JournalImplTestBase
 {
    private static final Logger log = Logger.getLogger(JournalImplTestUnit.class);
-   
+
+   @Override
    protected void tearDown() throws Exception
    {
       List<String> files = fileFactory.listFiles(fileExtension);
-      
+
       for (String file : files)
       {
          SequentialFile seqFile = fileFactory.createSequentialFile(file, 1);
          assertEquals(fileSize, seqFile.size());
       }
-      
+
       super.tearDown();
    }
 
@@ -175,7 +176,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
          // Ok
       }
@@ -186,7 +187,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
          // Ok
       }
@@ -197,54 +198,54 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
          Assert.fail("Should throw exception");
       }
-      catch (NullPointerException e)
+      catch (IllegalArgumentException e)
       {
          // Ok
       }
 
    }
-   
-   
+
+
    public void testVersionCheck() throws Exception
    {
       setup(10, 10 * 1024, true);
       createJournal();
       startJournal();
       load();
-      
+
       stopJournal();
-      
+
       fileFactory.start();
 
       List<String> files = fileFactory.listFiles(fileExtension);
-      
+
       for (String fileStr : files)
       {
-         
+
          SequentialFile file = fileFactory.createSequentialFile(fileStr, 1);
-         
+
          ByteBuffer buffer = fileFactory.newBuffer(JournalImpl.SIZE_HEADER);
-         
+
          for (int i = 0 ; i < JournalImpl.SIZE_HEADER; i++)
          {
             buffer.put(Byte.MAX_VALUE);
          }
-         
+
          buffer.rewind();
-         
+
          file.open();
-         
+
          file.position(0);
-         
+
          file.writeDirect(buffer, sync);
-         
+
          file.close();
       }
-      
+
       fileFactory.stop();
 
       startJournal();
-      
+
       boolean exceptionHappened = false;
       try
       {
@@ -255,11 +256,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          exceptionHappened = true;
          assertEquals(HornetQException.IO_ERROR, e.getCode());
       }
-      
+
       assertTrue("Exception was expected", exceptionHappened);
       stopJournal();
-      
-      
+
+
    }
 
    // Validates the if the journal will work when the IDs are over MaxInt
@@ -269,44 +270,44 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       createJournal();
       startJournal();
       load();
-      
+
       stopJournal();
-      
+
       fileFactory.start();
 
       List<String> files = fileFactory.listFiles(fileExtension);
-      
+
       long fileID = Integer.MAX_VALUE;
       for (String fileStr : files)
       {
          SequentialFile file = fileFactory.createSequentialFile(fileStr, 1);
-         
+
          file.open();
-         
+
          JournalImpl.initFileHeader(fileFactory, file, journal.getUserVersion(), fileID++);
 
          file.close();
       }
-      
+
       fileFactory.stop();
 
       startJournal();
-      
+
       load();
-      
+
       for (long i = 0 ; i < 100; i++)
       {
          add(i);
 
          stopJournal();
-         
+
          startJournal();
 
          loadAndCheck();
       }
-      
+
       stopJournal();
-      
+
    }
 
 
@@ -496,8 +497,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       return (fileSize - headerSize) / recordSize;
    }
 
-   /** 
-    * 
+   /**
+    *
     * Use: calculateNumberOfFiles (fileSize, numberOfRecords, recordSize,  numberOfRecords2, recordSize2, , ...., numberOfRecordsN, recordSizeN);
     * */
    private int calculateNumberOfFiles(final int fileSize, final int alignment, final int... record) throws Exception
@@ -668,7 +669,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       int addRecordsPerFile = calculateRecordsPerFile(10 * 1024,
                                                       journal.getAlignment(),
                                                       JournalImpl.SIZE_ADD_RECORD + 1 + recordLength);
-      
+
       System.out.println(JournalImpl.SIZE_ADD_RECORD + 1 + recordLength);
 
       // Fills exactly 10 files
@@ -2296,7 +2297,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         byte[] record = generateRecord(RandomUtil.randomInterval(1500, 10000)); 
+         byte[] record = generateRecord(RandomUtil.randomInterval(1500, 10000));
 
          journal.appendAddRecord(i, (byte)0, record, false);
 
