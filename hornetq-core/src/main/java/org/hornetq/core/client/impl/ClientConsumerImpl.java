@@ -50,9 +50,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private static final boolean trace = ClientConsumerImpl.log.isTraceEnabled();
 
-   public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
+   private static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
-   public static final int NUM_PRIORITIES = 10;
+   private static final int NUM_PRIORITIES = 10;
 
    public static final SimpleString FORCED_DELIVERY_MESSAGE = new SimpleString("_hornetq.forced.delivery.seq");
 
@@ -642,11 +642,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   /** 
-    * 
+   /**
+    *
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
-    * 
+    *
     * @param discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
@@ -707,7 +707,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // ---------------------------------------------------------------------------------------
 
-   /** 
+   /**
     * Sending a initial credit for slow consumers
     * */
    private void startSlowConsumer()
@@ -741,7 +741,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          ClientConsumerImpl.log.trace("Adding Runner on Executor for delivery");
       }
-      
+
       sessionExecutor.execute(runner);
    }
 
@@ -824,7 +824,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                //Ignore, this could be a relic from a previous receiveImmediate();
                return;
             }
-            
+
             boolean expired = message.isExpired();
 
             flowControlBeforeConsumption(message);

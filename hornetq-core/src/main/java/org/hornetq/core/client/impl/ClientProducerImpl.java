@@ -36,13 +36,13 @@ import org.hornetq.utils.UUIDGenerator;
 
 /**
  * The client-side Producer connectionFactory class.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
  * @version <tt>$Revision$</tt> $Id$
  */
-public class ClientProducerImpl implements ClientProducerInternal
+class ClientProducerImpl implements ClientProducerInternal
 {
    // Constants ------------------------------------------------------------------------------------
 

@@ -40,7 +40,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  *
  */
-public class CompressedLargeMessageControllerImpl implements LargeMessageController
+class CompressedLargeMessageControllerImpl implements LargeMessageController
 {
 
    // Constants -----------------------------------------------------
@@ -51,13 +51,13 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
 
    // Attributes ----------------------------------------------------
 
-   final LargeMessageController bufferDelegate;
-   
+   private final LargeMessageController bufferDelegate;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
+   CompressedLargeMessageControllerImpl(final LargeMessageController bufferDelegate)
    {
       this.bufferDelegate = bufferDelegate;
    }
@@ -66,7 +66,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    // Public --------------------------------------------------------
 
    /**
-    * 
+    *
     */
    public void discardUnusedPackets()
    {
@@ -104,7 +104,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    }
 
    /**
-    * 
+    *
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
@@ -130,9 +130,9 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    {
       return -1;
    }
-   
+
    DataInputStream dataInput = null;
-   
+
    private DataInputStream getStream()
    {
       if (dataInput == null)
@@ -140,18 +140,18 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
          try
          {
             InputStream input = new HornetQBufferInputStream(bufferDelegate);
-            
+
             dataInput = new DataInputStream(new InflaterReader(input));
          }
          catch (Exception e)
          {
             throw new RuntimeException (e.getMessage(), e);
          }
-         
+
       }
       return dataInput;
    }
-   
+
    private void positioningNotSupported()
    {
       throw new IllegalStateException("Position not supported over compressed large messages");
@@ -300,8 +300,8 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
       positioningNotSupported();
       return 0;
    }
-   
-   
+
+
 
    public int getUnsignedMedium(final long index)
    {
@@ -579,7 +579,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    {
       try
       {
-         return (short)getStream().readShort();
+         return getStream().readShort();
       }
       catch (Exception e)
       {
@@ -591,7 +591,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    {
       try
       {
-         return (int)getStream().readUnsignedShort();
+         return getStream().readUnsignedShort();
       }
       catch (Exception e)
       {
@@ -609,7 +609,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
       return value;
    }
 
-   
+
    public int readUnsignedMedium()
    {
       return (readByte() & 0xff) << 16 | (readByte() & 0xff) << 8 | (readByte() & 0xff) << 0;
@@ -708,7 +708,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
 
    public void skipBytes(final int length)
    {
-    
+
       try
       {
          for (int i = 0 ; i < length; i++)
@@ -827,7 +827,7 @@ public class CompressedLargeMessageControllerImpl implements LargeMessageControl
    {
       return (char)readShort();
    }
-   
+
    public char getChar(final int index)
    {
       return (char)getShort(index);

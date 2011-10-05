@@ -25,7 +25,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public class ClientProducerCreditsImpl implements ClientProducerCredits
+class ClientProducerCreditsImpl implements ClientProducerCredits
 {
    private static final Logger log = Logger.getLogger(ClientProducerCreditsImpl.class);
 
@@ -38,10 +38,10 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final ClientSessionInternal session;
 
    private int arriving;
-   
+
    private int refCount;
-   
-   public ClientProducerCreditsImpl(final ClientSessionInternal session,
+
+   ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
                                     final int windowSize)
    {
@@ -73,7 +73,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       {
          arriving -= credits;
       }
-      
+
       semaphore.release(credits);
    }
 
@@ -84,7 +84,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       semaphore.drainPermits();
 
       int beforeFailure = arriving;
-      
+
       arriving = 0;
 
       // If we are waiting for more credits than what's configured, then we need to use what we tried before
@@ -98,22 +98,22 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       semaphore.release(Integer.MAX_VALUE / 2);
    }
-    
+
    public synchronized void incrementRefCount()
    {
       refCount++;
    }
-   
+
    public synchronized int decrementRefCount()
    {
       return --refCount;
    }
-   
+
    public synchronized void releaseOutstanding()
    {
       semaphore.drainPermits();
    }
-   
+
    private void checkCredits(final int credits)
    {
       int needed = Math.max(credits, windowSize);
