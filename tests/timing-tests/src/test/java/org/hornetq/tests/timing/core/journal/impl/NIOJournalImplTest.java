@@ -20,9 +20,9 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A RealJournalImplTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -31,7 +31,7 @@ public class NIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
 
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
