@@ -73,15 +73,6 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       // nothing to be done here.. we don really have a file on this Storage
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#complete()
-    */
-   public void complete() throws Exception
-   {
-      // nothing to be done here.. we don really have a file on this Storage
-
-   }
-
    @Override
    public boolean isLargeMessage()
    {
