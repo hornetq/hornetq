@@ -13,17 +13,12 @@
 
 package org.hornetq.core.paging.cursor.impl;
 
-import java.lang.ref.WeakReference;
-
-import org.hornetq.core.paging.cursor.PageCache;
 import org.hornetq.core.paging.cursor.PagePosition;
 
 /**
  * A PagePosition
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class PagePositionImpl implements PagePosition
 {
@@ -171,7 +166,5 @@ public class PagePositionImpl implements PagePosition
    {
       return "PagePositionImpl [pageNr=" + pageNr + ", messageNr=" + messageNr + ", recordID=" + recordID + "]";
    }
-
-
    
 }

@@ -16,7 +16,6 @@ package org.hornetq.core.server;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.transaction.Transaction;
 

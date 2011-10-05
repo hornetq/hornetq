@@ -17,7 +17,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +44,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    
    private final Object lockDelivery = new Object();
    
-   private LinkedList<MessageReference> scheduledReferences = new LinkedList<MessageReference>();
+   private final LinkedList<MessageReference> scheduledReferences = new LinkedList<MessageReference>();
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
    {
