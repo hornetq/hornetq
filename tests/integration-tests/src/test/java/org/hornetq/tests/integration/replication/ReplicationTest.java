@@ -861,25 +861,13 @@ public class ReplicationTest extends ServiceTestBase
       }
 
       @Override
-      public boolean getAutoReclaim()
-      {
-         return false;
-      }
-
-      @Override
-      public void writeLock()
+      public void synchronizationLock()
       {
 
       }
 
       @Override
-      public void writeUnlock()
-      {
-
-      }
-
-      @Override
-      public void setAutoReclaim(boolean autoReclaim)
+      public void synchronizationUnlock()
       {
 
       }

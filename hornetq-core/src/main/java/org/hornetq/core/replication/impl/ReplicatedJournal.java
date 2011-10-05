@@ -587,25 +587,13 @@ public class ReplicatedJournal implements Journal
    }
 
    @Override
-   public boolean getAutoReclaim()
+   public void synchronizationLock()
    {
       throw new UnsupportedOperationException();
    }
 
    @Override
-   public void writeLock()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public void writeUnlock()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
-   public void setAutoReclaim(boolean autoReclaim)
+   public void synchronizationUnlock()
    {
       throw new UnsupportedOperationException();
    }

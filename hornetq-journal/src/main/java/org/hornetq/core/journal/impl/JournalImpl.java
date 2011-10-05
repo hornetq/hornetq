@@ -206,6 +206,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
     * However we need to lock it while taking and updating snapshots
     */
    private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
+   private final ReadWriteLock compactorLock = new ReentrantReadWriteLock();
 
    private volatile JournalState state = JournalState.STOPPED;
 
@@ -1427,6 +1428,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
          throw new IllegalStateException("There is pending compacting operation");
       }
 
+      compactorLock.writeLock().lock();
+      try
+      {
       ArrayList<JournalFile> dataFilesToProcess = new ArrayList<JournalFile>(filesRepository.getDataFilesCount());
 
       boolean previousReclaimValue = autoReclaim;
@@ -1455,7 +1459,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                return;
             }
 
-            onCompactLock();
+            onCompactLockingTheJournal();
 
             setAutoReclaim(false);
 
@@ -1534,7 +1538,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             // Need to clear the compactor here, or the replay commands will send commands back (infinite loop)
             compactor = null;
 
-            onCompactLock();
+            onCompactLockingTheJournal();
 
             newDatafiles = localCompactor.getNewDataFiles();
 
@@ -1626,8 +1630,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             compactor = null;
          }
          setAutoReclaim(previousReclaimValue);
+         }
       }
-
+      finally
+      {
+         compactorLock.writeLock().unlock();
+      }
    }
 
    /**
@@ -2145,9 +2153,16 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    // TestableJournal implementation
    // --------------------------------------------------------------
 
+   @Override
    public synchronized void setAutoReclaim(final boolean autoReclaim)
    {
       this.autoReclaim = autoReclaim;
+   }
+
+   @Override
+   public boolean getAutoReclaim()
+   {
+      return autoReclaim;
    }
 
    public String debug() throws Exception
@@ -2493,7 +2508,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    /** This is an interception point for testcases, when the compacted files are written, to be called
     *  as soon as the compactor gets a writeLock */
-   protected void onCompactLock() throws Exception
+   protected void onCompactLockingTheJournal() throws Exception
    {
    }
 
@@ -2973,14 +2988,22 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   public void writeLock()
+   public void synchronizationLock()
    {
+      compactorLock.writeLock().lock();
       journalLock.writeLock().lock();
    }
 
-   public void writeUnlock()
+   public void synchronizationUnlock()
    {
-      journalLock.writeLock().unlock();
+      try
+      {
+         compactorLock.writeLock().unlock();
+      }
+      finally
+      {
+         journalLock.writeLock().unlock();
+      }
    }
 
    /**
@@ -2991,7 +3014,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    @Override
    public synchronized Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception
    {
-      writeLock();
+      synchronizationLock();
       try
       {
          Map<Long, JournalFile> map = new HashMap<Long, JournalFile>();
@@ -3007,13 +3030,8 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
       finally
       {
-         writeUnlock();
+         synchronizationUnlock();
       }
-   }
-
-   public boolean getAutoReclaim()
-   {
-      return autoReclaim;
    }
 
    @Override

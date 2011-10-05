@@ -386,7 +386,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
          JournalImpl journal = (JournalImpl)journalsHolder.remove(jc);
-         journal.writeLock();
+         journal.synchronizationLock();
          try
          {
             if (journal.getDataFiles().length != 0)
@@ -401,7 +401,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
          finally
          {
-            journal.writeUnlock();
+            journal.synchronizationUnlock();
          }
       }
       synchronized (largeMessagesOnSync)

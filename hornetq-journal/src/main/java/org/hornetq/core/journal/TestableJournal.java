@@ -52,4 +52,15 @@ public interface TestableJournal extends Journal
    /** This method is called automatically when a new file is opened.
     * @return true if it needs to re-check due to cleanup or other factors  */
    boolean checkReclaimStatus() throws Exception;
+
+   /**
+    * @return whether automatic reclaiming of Journal files is enabled
+    */
+   boolean getAutoReclaim();
+
+   /**
+    * Sets whether the journal should auto-reclaim its internal files.
+    * @param autoReclaim
+    */
+   void setAutoReclaim(boolean autoReclaim);
 }

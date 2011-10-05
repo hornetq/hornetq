@@ -365,38 +365,33 @@ public class JournalStorageManager implements StorageManager
       final Journal localMessageJournal = messageJournal;
       final Journal localBindingsJournal = bindingsJournal;
 
-      final boolean messageJournalAutoReclaim = localMessageJournal.getAutoReclaim();
-      final boolean bindingsJournalAutoReclaim = localBindingsJournal.getAutoReclaim();
       Map<String, Long> largeMessageFilesToSync;
       Map<SimpleString, Collection<Integer>> pageFilesToSync;
+      storageManagerLock.writeLock().lock();
       try
       {
-         storageManagerLock.writeLock().lock();
+         replicator = replicationManager;
+         localMessageJournal.synchronizationLock();
+         localBindingsJournal.synchronizationLock();
          try
          {
-            replicator = replicationManager;
-
-            localMessageJournal.writeLock();
-            localBindingsJournal.writeLock();
+            pagingManager.lockAll();
             try
             {
-               pagingManager.lockAll();
-               try
-               {
-                  messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
-                  bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
-                  pageFilesToSync = getPageInformationForSync(pagingManager);
-                  largeMessageFilesToSync = getLargeMessageInformation();
-               }
-               finally
-               {
-                  pagingManager.unlockAll();
-               }
+               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
+               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+               pageFilesToSync = getPageInformationForSync(pagingManager);
+               largeMessageFilesToSync = getLargeMessageInformation();
             }
             finally
             {
-               localMessageJournal.writeUnlock();
-               localBindingsJournal.writeUnlock();
+               pagingManager.unlockAll();
+            }
+         }
+            finally
+            {
+               localMessageJournal.synchronizationUnlock();
+               localBindingsJournal.synchronizationUnlock();
             }
             bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
             messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
@@ -421,13 +416,8 @@ public class JournalStorageManager implements StorageManager
          {
             storageManagerLock.writeLock().unlock();
          }
-      }
-      finally
-      {
-         localMessageJournal.setAutoReclaim(messageJournalAutoReclaim);
-         localBindingsJournal.setAutoReclaim(bindingsJournalAutoReclaim);
-      }
    }
+
 
    /**
     * @param pageFilesToSync

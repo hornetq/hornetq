@@ -117,7 +117,7 @@ public class JournalCleanupCompactSoakTest extends ServiceTestBase
                                 "hq",
                                 maxAIO)
       {
-         protected void onCompactLock() throws Exception
+         protected void onCompactLockingTheJournal() throws Exception
          {
          }
 
