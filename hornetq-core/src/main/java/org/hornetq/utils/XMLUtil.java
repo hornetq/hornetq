@@ -331,8 +331,8 @@ public class XMLUtil
          NodeList nl2 = node2.getChildNodes();
 
          short[] toFilter = new short[] { Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE };
-         List nodes = XMLUtil.filter(nl, toFilter);
-         List nodes2 = XMLUtil.filter(nl2, toFilter);
+         List<Node> nodes = XMLUtil.filter(nl, toFilter);
+         List<Node> nodes2 = XMLUtil.filter(nl2, toFilter);
 
          int length = nodes.size();
 
@@ -343,8 +343,8 @@ public class XMLUtil
 
          for (int i = 0; i < length; i++)
          {
-            Node n = (Node)nodes.get(i);
-            Node n2 = (Node)nodes2.get(i);
+            Node n = nodes.get(i);
+            Node n2 = nodes2.get(i);
             XMLUtil.assertEquivalent(n, n2);
          }
       }
@@ -509,9 +509,9 @@ public class XMLUtil
 
    // Private --------------------------------------------------------------------------------------
 
-   private static List filter(final NodeList nl, final short[] typesToFilter)
+   private static List<Node> filter(final NodeList nl, final short[] typesToFilter)
    {
-      List nodes = new ArrayList();
+      List<Node> nodes = new ArrayList<Node>();
 
       outer: for (int i = 0; i < nl.getLength(); i++)
       {

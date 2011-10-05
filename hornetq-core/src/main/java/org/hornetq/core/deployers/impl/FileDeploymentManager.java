@@ -227,7 +227,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                }
             }
          }
-         List<Pair> toRemove = new ArrayList<Pair>();
+         List<Pair<URL, Deployer>> toRemove = new ArrayList<Pair<URL, Deployer>>();
          for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
             Pair<URL, Deployer> pair = entry.getKey();
@@ -246,7 +246,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                }
             }
          }
-         for (Pair pair : toRemove)
+         for (Pair<URL, Deployer> pair : toRemove)
          {
             deployed.remove(pair);
          }
@@ -271,7 +271,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * Checks if the URL is among the current thread context class loader's resources.
-    * 
+    *
     * We do not check that the corresponding file exists using File.exists() directly as it would fail
     * in the case the resource is loaded from inside an EAR file (see https://jira.jboss.org/jira/browse/HORNETQ-122)
     */
