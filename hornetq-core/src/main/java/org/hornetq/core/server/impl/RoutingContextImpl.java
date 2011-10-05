@@ -15,11 +15,9 @@ package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
@@ -37,7 +35,7 @@ public class RoutingContextImpl implements RoutingContext
 {
    
    // The pair here is Durable and NonDurable
-   private Map<SimpleString, RouteContextList> map = new HashMap<SimpleString, RouteContextList>();
+   private final Map<SimpleString, RouteContextList> map = new HashMap<SimpleString, RouteContextList>();
 
    private Transaction transaction;
 
@@ -121,9 +119,9 @@ public class RoutingContextImpl implements RoutingContext
    
    private class ContextListing implements RouteContextList
    {
-      private List<Queue> durableQueue = new ArrayList<Queue>(1);
+      private final List<Queue> durableQueue = new ArrayList<Queue>(1);
       
-      private List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
+      private final List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
       
       public int getNumberOfQueues()
       {

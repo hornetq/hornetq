@@ -15,7 +15,6 @@ package org.hornetq.core.management.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -406,14 +405,14 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
          {
             while (iterator.hasNext())
             {
-               MessageReference ref = (MessageReference)iterator.next();
+               MessageReference ref = iterator.next();
                if (filter == null || filter.match(ref.getMessage()))
                {
                   Message message = ref.getMessage();
                   messages.add(message.toMap());
                }
             }
-            return (Map<String, Object>[])messages.toArray(new Map[messages.size()]);
+            return messages.toArray(new Map[messages.size()]);
          }
          finally
          {
@@ -465,7 +464,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
                int count = 0;
                while (iterator.hasNext())
                {
-                  MessageReference ref = (MessageReference)iterator.next();
+                  MessageReference ref = iterator.next();
                   if (filter.match(ref.getMessage()))
                   {
                      count++;

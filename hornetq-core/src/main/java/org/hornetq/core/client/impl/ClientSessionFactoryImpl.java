@@ -145,7 +145,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private volatile boolean closed;
 
-   public final Exception e = new Exception();
+   private final Exception e = new Exception();
 
    private final Object waitLock = new Object();
 
@@ -155,7 +155,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+   ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
                                    final long clientFailureCheckPeriod,

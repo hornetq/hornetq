@@ -109,11 +109,6 @@ public class NullStorageManager implements StorageManager
       }
    };
 
-   public void sync()
-   {
-      // NO OP
-   }
-
    public void addQueueBinding(final Binding queueBinding) throws Exception
    {
    }
@@ -152,19 +147,11 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void storeMessageReferenceScheduled(final long queueID, final long messageID, final long scheduledDeliveryTime) throws Exception
-   {
-   }
-
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageiD) throws Exception
    {
    }
 
    public void deleteMessage(final long messageID) throws Exception
-   {
-   }
-
-   public void deletePageTransactional(final long txID, final long messageID) throws Exception
    {
    }
 
@@ -188,10 +175,6 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void updatePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
-   {
-   }
-
    public void updateDeliveryCount(final MessageReference ref) throws Exception
    {
    }
@@ -204,10 +187,6 @@ public class NullStorageManager implements StorageManager
                                              final SimpleString address,
                                              final byte[] duplID,
                                              final long recordID) throws Exception
-   {
-   }
-
-   public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
    }
 
@@ -326,13 +305,6 @@ public class NullStorageManager implements StorageManager
    public boolean isReplicated()
    {
       return false;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#completeReplication()
-    */
-   public void completeOperations()
-   {
    }
 
    /* (non-Javadoc)

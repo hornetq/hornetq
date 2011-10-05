@@ -19,7 +19,6 @@ import javax.management.MBeanOperationInfo;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.AcceptorControl;
-import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.spi.core.remoting.Acceptor;
 

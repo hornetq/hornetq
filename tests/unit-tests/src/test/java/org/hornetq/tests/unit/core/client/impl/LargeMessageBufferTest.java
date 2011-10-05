@@ -36,7 +36,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.LargeMessageControllerImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
@@ -49,8 +48,6 @@ import org.hornetq.utils.HornetQBufferInputStream;
  * A LargeMessageBufferUnitTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class LargeMessageBufferTest extends UnitTestCase
 {
@@ -67,6 +64,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -77,6 +75,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       tmp.mkdirs();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
@@ -839,12 +838,6 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       }
 
-      public void stop() throws HornetQException
-      {
-         // TODO Auto-generated method stub
-
-      }
-
       public void stop(boolean waitForOnMessage) throws HornetQException
       {
          // To change body of implemented methods use File | Settings | File Templates.
@@ -855,16 +848,5 @@ public class LargeMessageBufferTest extends UnitTestCase
          // TODO Auto-generated method stub
          return null;
       }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.client.impl.ClientConsumerInternal#getSession()
-       */
-      public ClientSessionInternal getSession()
-      {
-         // TODO Auto-generated method stub
-         return null;
-      }
-
    }
-
 }
