@@ -55,6 +55,11 @@ public class FakeConsumer implements Consumer
       return filter;
    }
 
+   public String debug()
+   {
+      return toString();
+   }
+
    public synchronized MessageReference waitForNextReference(long timeout)
    {
       while (references.isEmpty() && timeout > 0)

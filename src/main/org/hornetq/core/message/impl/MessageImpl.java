@@ -143,6 +143,14 @@ public abstract class MessageImpl implements MessageInternal
     */
    protected MessageImpl(final MessageImpl other)
    {
+      this(other, other.getProperties());
+   }
+
+   /*
+    * Copy constructor
+    */
+   protected MessageImpl(final MessageImpl other, TypedProperties properties)
+   {
       messageID = other.getMessageID();
       userID = other.getUserID();
       address = other.getAddress();
@@ -151,7 +159,7 @@ public abstract class MessageImpl implements MessageInternal
       expiration = other.getExpiration();
       timestamp = other.getTimestamp();
       priority = other.getPriority();
-      properties = new TypedProperties(other.getProperties());
+      this.properties = new TypedProperties(properties);
 
       // This MUST be synchronized using the monitor on the other message to prevent it running concurrently
       // with getEncodedBuffer(), otherwise can introduce race condition when delivering concurrently to
@@ -571,9 +579,7 @@ public abstract class MessageImpl implements MessageInternal
    {
       if (value == null)
       {
-         // This is ok - when we try to read the same key it will return null too
-
-         properties.removeProperty(key);
+         properties.putNullValue(key);
       }
       else if (value instanceof Boolean)
       {
@@ -684,7 +690,7 @@ public abstract class MessageImpl implements MessageInternal
 
    public void putStringProperty(final String key, final String value)
    {
-      properties.putSimpleStringProperty(new SimpleString(key), new SimpleString(value));
+      properties.putSimpleStringProperty(new SimpleString(key), SimpleString.toSimpleString(value));
 
       bufferValid = false;
    }

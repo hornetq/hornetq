@@ -16,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
 %BOOK_ENTITIES;
@@ -294,6 +293,22 @@ etc
                         of threads by specifying this parameter. The default value for this
                         parameter is <literal>-1</literal> which means use the value from <literal
                             >Runtime.getRuntime().availableProcessors()</literal> * 3.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>cluster-connection</literal>. If you define more than one cluster
+                        connection, you may define what cluster connection will be used to notify
+                        topologies. This will be very useful when you are playing with multiple
+                        network interface cards (NIC) and need to isolate the cluster
+                        definitions.</para>
+                    <para>The default value is the first cluster connection defined at the main
+                        configuration.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>stomp-consumer-credits</literal>. When consuming messages in stomp, the server will flow control the channel
+                        as messages are acknowledged. The default value is 10K. The server won't send more messages than 10K bytes until you ack more messages.
+                    </para>
+                    <para>Notice that if you use auto-ack subscriptions on stomp, you have to consume as fast as you can on your client,
+                    or you may flood the channels on Netty what will lead to OutOfMemory errors.</para>
                 </listitem>
             </itemizedlist>
         </section>

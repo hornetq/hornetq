@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
@@ -67,6 +68,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    // Attributes ----------------------------------------------------
 
    private static final boolean trace = ReplicationEndpointImpl.log.isTraceEnabled();
+   
+   private final IOCriticalErrorListener criticalErrorListener;
 
    private static void trace(final String msg)
    {
@@ -93,9 +96,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private boolean deletePages = true;
 
    // Constructors --------------------------------------------------
-   public ReplicationEndpointImpl(final HornetQServer server)
+   public ReplicationEndpointImpl(final HornetQServer server, IOCriticalErrorListener criticalErrorListener)
    {
       this.server = server;
+      this.criticalErrorListener = criticalErrorListener;
    }
 
    // Public --------------------------------------------------------
@@ -207,7 +211,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       Configuration config = server.getConfiguration();
 
-      storage = new JournalStorageManager(config, server.getExecutorFactory());
+      storage = new JournalStorageManager(config, server.getExecutorFactory(), criticalErrorListener);
       storage.start();
 
       server.getManagementService().setStorageManager(storage);
@@ -222,7 +226,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                                                                     config.getJournalBufferSize_NIO(),
                                                                     server.getScheduledPool(),
                                                                     server.getExecutorFactory(),
-                                                                    config.isJournalSyncNonTransactional()),
+                                                                    config.isJournalSyncNonTransactional(), criticalErrorListener),
                                           storage,
                                           server.getAddressSettingsRepository());
 

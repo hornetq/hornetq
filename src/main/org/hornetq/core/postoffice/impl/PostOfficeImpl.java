@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
@@ -77,6 +79,8 @@ import org.hornetq.utils.UUIDGenerator;
 public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
@@ -209,6 +213,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public void onNotification(final Notification notification)
    {
+      if (isTrace)
+      {
+         log.trace("Receiving notification : " + notification + " on server " + this.server);
+      }
       synchronized (notificationLock)
       {
          NotificationType type = notification.getType();
@@ -464,6 +472,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
+      
+      if (isTrace)
+      {
+         log.trace("Sending notification for addBinding " + binding + " from server " + server);
+      }
 
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
    }
@@ -741,6 +754,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Cannot find queue " + queueName);
       }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("PostOffice.sendQueueInfoToQueue on server=" + this.server + ", queueName=" + queueName + " and address=" + address);
+      }
 
       Queue queue = (Queue)binding.getBindable();
 
@@ -757,6 +775,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          for (QueueInfo info : queueInfos.values())
          {
+            if (log.isTraceEnabled())
+            {
+               log.trace("QueueInfo on sendQueueInfoToQueue = " + info);
+            }
             if (info.getAddress().startsWith(address))
             {
                message = createQueueInfoMessage(NotificationType.BINDING_ADDED, queueName);
@@ -777,7 +799,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   message = createQueueInfoMessage(NotificationType.CONSUMER_CREATED, queueName);
 
                   message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
-                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
+                  message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());   
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
@@ -805,6 +827,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "PostOfficeImpl [server=" + server + "]";
+   }
+
    // Private -----------------------------------------------------------------
 
    /**
@@ -812,16 +843,32 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
     */
    protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
    {
+      LinkedList<SimpleString> valuesToRemove = null;
+
+
       for (SimpleString name : message.getPropertyNames())
       {
          // We use properties to establish routing context on clustering.
          // However if the client resends the message after receiving, it needs to be removed
          if (name.startsWith(MessageImpl.HDR_ROUTE_TO_IDS) && !name.equals(MessageImpl.HDR_ROUTE_TO_IDS))
          {
-            message.removeProperty(name);
+            if (valuesToRemove == null)
+            {
+               valuesToRemove = new LinkedList<SimpleString>();
+            }
+            valuesToRemove.add(name);
+         }
+      }
+
+      if (valuesToRemove != null)
+      {
+         for (SimpleString removal : valuesToRemove)
+         {
+           message.removeProperty(removal);
          }
       }
    }
+
 
 
    private void setPagingStore(final ServerMessage message) throws Exception
@@ -885,6 +932,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (store.page(message, context, entry.getValue()))
          {
+            if (message.isLargeMessage())
+            {
+               confirmLargeMessageSend(tx, message);
+            }
 
             // We need to kick delivery so the Queues may check for the cursors case they are empty
             schedulePageDelivery(tx, entry);
@@ -938,6 +989,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   {
                      storageManager.storeMessage(message);
                   }
+
+                  if (message.isLargeMessage())
+                  {
+                     confirmLargeMessageSend(tx, message);
+                  }
                }
 
                if (tx != null)
@@ -990,6 +1046,31 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                addReferences(refs, direct);
             }
          });
+      }
+   }
+
+   /**
+    * @param tx
+    * @param message
+    * @throws Exception
+    */
+   private void confirmLargeMessageSend(Transaction tx, final ServerMessage message) throws Exception
+   {
+      LargeServerMessage largeServerMessage = (LargeServerMessage)message;
+      if (largeServerMessage.getPendingRecordID() >= 0)
+      {
+         if (tx == null)
+         {
+            storageManager.confirmPendingLargeMessage(largeServerMessage.getPendingRecordID());
+         }
+         else
+         {
+  
+            storageManager.confirmPendingLargeMessageTX(tx,
+                                                        largeServerMessage.getMessageID(),
+                                                        largeServerMessage.getPendingRecordID());
+         }
+         largeServerMessage.setPendingRecordID(-1);
       }
    }
 
@@ -1100,14 +1181,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          if (rejectDuplicates && isDuplicate)
          {
-            StringBuffer warnMessage = new StringBuffer();
-            warnMessage.append("Duplicate message detected - message will not be routed. Message information:\n");
-            warnMessage.append(message.toString());
-            PostOfficeImpl.log.warn(warnMessage.toString());
+            String warnMessage = "Duplicate message detected - message will not be routed. Message information:" + message.toString();
+            PostOfficeImpl.log.warn(warnMessage);
 
             if (context.getTransaction() != null)
             {
-               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
+               context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
             }
 
             return false;
@@ -1306,6 +1385,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    public Bindings createBindings(final SimpleString address) throws Exception
    {
-      return new BindingsImpl(server.getGroupingHandler(), pagingManager.getPageStore(address));
+      return new BindingsImpl(address, server.getGroupingHandler(), pagingManager.getPageStore(address));
    }
 }

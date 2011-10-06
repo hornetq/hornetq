@@ -757,4 +757,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
+    */
+   public void onIOError(int errorCode, String message, SequentialFile file)
+   {
+   }
+
 }

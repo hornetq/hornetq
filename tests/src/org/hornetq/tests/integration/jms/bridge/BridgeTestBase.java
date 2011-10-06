@@ -33,6 +33,8 @@ import javax.transaction.TransactionManager;
 
 import junit.framework.Assert;
 
+import com.arjuna.ats.arjuna.coordinator.TransactionReaper;
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.hornetq.api.core.TransportConfiguration;
@@ -42,7 +44,6 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -209,6 +210,11 @@ public abstract class BridgeTestBase extends UnitTestCase
       context0 = null;
 
       context1 = null;
+      
+      // Shutting down Arjuna threads
+      TxControl.disable(true);
+      
+      TransactionReaper.terminate(false);
 
       super.tearDown();
    }

@@ -66,13 +66,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    // Static ---------------------------------------------------------------------------------------
 
-   private static final boolean trace = ServerConsumerImpl.log.isTraceEnabled();
-
-   private static void trace(final String message)
-   {
-      ServerConsumerImpl.log.trace(message);
-   }
-
    // Attributes -----------------------------------------------------------------------------------
 
    private final long id;
@@ -92,8 +85,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private boolean started;
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
-
-   private boolean largeMessageInDelivery;
+   
+   public String debug()
+   {
+      return toString() + "::Delivering " + this.deliveringRefs.size();
+   }
 
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
@@ -214,6 +210,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       if (availableCredits != null && availableCredits.get() <= 0)
       {
+         if (log.isDebugEnabled() )
+         {
+            log.debug(this  + " is busy for the lack of credits!!!");
+         }
+         
          return HandleStatus.BUSY;
       }
       
@@ -232,12 +233,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             return HandleStatus.BUSY;
          }
-
+         
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
-         if (largeMessageInDelivery)
+         if (largeMessageDeliverer != null)
          {
             return HandleStatus.BUSY;
+         }
+
+         if (log.isTraceEnabled())
+         {
+            log.trace("Handling reference " + ref);
          }
 
          final ServerMessage message = ref.getMessage();
@@ -262,7 +268,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             // the updateDeliveryCount would still be updated after c
             if (strictUpdateDeliveryCount && !ref.isPaged())
             {
-               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue())
+               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue() && !ref.isPaged())
                {
                   storageManager.updateDeliveryCount(ref);
                }
@@ -458,21 +464,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       synchronized (lock)
       {
          this.transferring = transferring;
-
-         if (transferring)
-         {
-            // Now we must wait for any large message delivery to finish
-            while (largeMessageInDelivery)
-            {
-               try
-               {
-                  Thread.sleep(1);
-               }
-               catch (InterruptedException ignore)
-               {
-               }
-            }
-         }
       }
 
       // Outside the lock
@@ -519,9 +510,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          int previous = availableCredits.getAndAdd(credits);
 
-         if (ServerConsumerImpl.trace)
+         if (log.isDebugEnabled())
          {
-            ServerConsumerImpl.trace("Received " + credits +
+            log.debug(this + "::Received " + credits +
                                      " credits, previous value = " +
                                      previous +
                                      " currentValue = " +
@@ -530,6 +521,10 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          if (previous <= 0 && previous + credits > 0)
          {
+            if (log.isTraceEnabled() )
+            {
+               log.trace(this + "::calling promptDelivery from receiving credits");
+            }
             promptDelivery();
          }
       }
@@ -657,25 +652,27 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void promptDelivery()
    {
-      synchronized (lock)
+      // largeMessageDeliverer is aways set inside a lock
+      // if we don't acquire a lock, we will have NPE eventually
+      if (largeMessageDeliverer != null)
       {
-         // largeMessageDeliverer is aways set inside a lock
-         // if we don't acquire a lock, we will have NPE eventually
-         if (largeMessageDeliverer != null)
-         {
-            resumeLargeMessage();
-         }
-         else
-         {
-            if (browseOnly)
-            {
-               messageQueue.getExecutor().execute(browserDeliverer);
-            }
-            else
-            {
-               messageQueue.forceDelivery();
-            }
-         }
+         resumeLargeMessage();
+      }
+      else
+      {
+         forceDelivery();
+      }
+   }
+
+   private void forceDelivery()
+   {
+      if (browseOnly)
+      {
+         messageQueue.getExecutor().execute(browserDeliverer);
+      }
+      else
+      {
+         messageQueue.deliverAsync();
       }
    }
 
@@ -686,8 +683,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void deliverLargeMessage(final MessageReference ref, final ServerMessage message) throws Exception
    {
-      largeMessageInDelivery = true;
-
       final LargeMessageDeliverer localDeliverer = new LargeMessageDeliverer((LargeServerMessage)message, ref);
 
       // it doesn't need lock because deliverLargeMesasge is already inside the lock()
@@ -709,6 +704,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
+
    // Inner classes
    // ------------------------------------------------------------------------
 
@@ -722,16 +718,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             {
                if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
                {
-                  if (browseOnly)
-                  {
-                     messageQueue.getExecutor().execute(browserDeliverer);
-                  }
-                  else
-                  {
-                     // prompt Delivery only if chunk was finished
-
-                     messageQueue.deliverAsync();
-                  }
+                  forceDelivery();
                }
             }
             catch (Exception e)
@@ -813,9 +800,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             {
                if (availableCredits != null && availableCredits.get() <= 0)
                {
-                  if (ServerConsumerImpl.trace)
+                  if (ServerConsumerImpl.isTrace)
                   {
-                     ServerConsumerImpl.trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits");
+                     log.trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits");
                   }
 
                   return false;
@@ -838,9 +825,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
                int chunkLen = body.length;
 
-               if (ServerConsumerImpl.trace)
+               if (ServerConsumerImpl.isTrace)
                {
-                  ServerConsumerImpl.trace("deliverLargeMessage: Sending " + packetSize +
+                  log.trace("deliverLargeMessage: Sending " + packetSize +
                                            " availableCredits now is " +
                                            availableCredits);
                }
@@ -860,9 +847,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                }
             }
 
-            if (ServerConsumerImpl.trace)
+            if (ServerConsumerImpl.isTrace)
             {
-               ServerConsumerImpl.trace("Finished deliverLargeMessage");
+               log.trace("Finished deliverLargeMessage");
             }
 
             finish();
@@ -895,8 +882,6 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             }
 
             largeMessageDeliverer = null;
-
-            largeMessageInDelivery = false;
 
             largeMessage = null;
          }

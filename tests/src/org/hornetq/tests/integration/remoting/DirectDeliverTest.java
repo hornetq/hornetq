@@ -134,7 +134,7 @@ public class DirectDeliverTest extends ServiceTestBase
          prod.send(msg);
       }
       
-      queue.blockOnExecutorFuture();
+      queue.flushExecutor();
       
       //Consumer is not started so should go queued
       assertFalse(queue.isDirectDeliver());
@@ -157,7 +157,7 @@ public class DirectDeliverTest extends ServiceTestBase
 
       prod.send(msg);
       
-      queue.blockOnExecutorFuture();
+      queue.flushExecutor();
             
       assertTrue(queue.isDirectDeliver());
       

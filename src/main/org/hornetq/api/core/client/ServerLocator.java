@@ -26,6 +26,12 @@ import org.hornetq.api.core.client.loadbalance.ConnectionLoadBalancingPolicy;
  */
 public interface ServerLocator
 {
+   
+   /**
+    * Returns true if close was already called
+    * @return
+    */
+   boolean isClosed();
 
 	/**
 	 * This method will disable any checks when a GarbageCollection happens

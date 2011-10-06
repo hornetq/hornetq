@@ -80,7 +80,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
       fdm.start();
       try
       {
-         Assert.assertEquals(file.toURI().toURL(), deployer.deployedUrl);
+         URL expected = file.toURI().toURL();
+         URL deployedUrl = deployer.deployedUrl;
+         Assert.assertTrue(expected.toString().equalsIgnoreCase(deployedUrl.toString()));
          deployer.deployedUrl = null;
          fdm.start();
          Assert.assertNull(deployer.deployedUrl);
@@ -112,7 +114,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
       try
       {
          fdm.registerDeployer(deployer);
-         Assert.assertEquals(file.toURI().toURL(), deployer.deployedUrl);
+         URL expected = file.toURI().toURL();
+         URL deployedUrl = deployer.deployedUrl;
+         Assert.assertTrue(expected.toString().equalsIgnoreCase(deployedUrl.toString()));
          deployer.deployedUrl = null;
          fdm.start();
          Assert.assertNull(deployer.deployedUrl);
@@ -254,7 +258,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
          Assert.assertEquals(1, fdm.getDeployers().size());
          Assert.assertTrue(fdm.getDeployers().contains(deployer));
          Assert.assertEquals(1, fdm.getDeployed().size());
-         Assert.assertEquals(file.toURI().toURL(), deployer.reDeployedUrl);
+         URL expected = file.toURI().toURL();
+         URL deployedUrl = deployer.deployedUrl;
+         Assert.assertTrue(expected.toString().equalsIgnoreCase(deployedUrl.toString()));
          Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
          Assert.assertEquals(oldLastModified + 1000, fdm.getDeployed().get(pair).lastModified);
          deployer.reDeployedUrl = null;

@@ -79,8 +79,8 @@
 
    <broadcast-groups>
       <broadcast-group name="bg-group1">
-         <group-address>231.7.7.7</group-address>
-         <group-port>9876</group-port>
+         <group-address>${hornetq.broadcast.bg-group1.address:231.7.7.7}</group-address>
+         <group-port>${hornetq.broadcast.bg-group1.port:9876}</group-port>
          <broadcast-period>5000</broadcast-period>
          <connector-ref>netty</connector-ref>
       </broadcast-group>
@@ -88,8 +88,8 @@
 
    <discovery-groups>
       <discovery-group name="dg-group1">
-         <group-address>231.7.7.7</group-address>
-         <group-port>9876</group-port>
+         <group-address>${hornetq.discovery.dg-group1.address:231.7.7.7}</group-address>
+         <group-port>${hornetq.discovery.dg-group1.port:9876}</group-port>
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
    </discovery-groups>
@@ -116,7 +116,7 @@
       <address-setting match="#">
          <dead-letter-address>jms.queue.DLQ</dead-letter-address>
          <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-         <redelivery-delay>0</redelivery-delay>
+         <redelivery-delay>60000</redelivery-delay>
          <max-size-bytes>10485760</max-size-bytes>       
          <message-counter-history-day-limit>10</message-counter-history-day-limit>
          <address-full-policy>BLOCK</address-full-policy>

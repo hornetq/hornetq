@@ -29,6 +29,7 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -544,7 +545,7 @@ public class NettyHttpTest extends UnitTestCase
          latch = connCreatedLatch;
       }
 
-      public void connectionCreated(final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
       {
          this.connection = connection;
          if (latch != null)

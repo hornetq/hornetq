@@ -792,19 +792,13 @@ public class HornetQMessage implements javax.jms.Message
    {
       checkProperty(name, value);
 
-      if (value == null)
-      {
-         // This is ok - when we try to read the same key it will return null too
-         return;
-      }
-
       if (HornetQMessage.JMSXGROUPID.equals(name))
       {
-         message.putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, new SimpleString(value));
+         message.putStringProperty(org.hornetq.api.core.Message.HDR_GROUP_ID, SimpleString.toSimpleString(value));
       }
       else
       {
-         message.putStringProperty(new SimpleString(name), new SimpleString(value));
+         message.putStringProperty(new SimpleString(name),  SimpleString.toSimpleString(value));
       }
    }
 

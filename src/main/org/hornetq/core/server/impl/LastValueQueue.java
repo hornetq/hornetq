@@ -260,5 +260,13 @@ public class LastValueQueue extends QueueImpl
       {
          ref.getQueue().acknowledge(tx, this);
       }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
+       */
+      public int getMessageMemoryEstimate()
+      {
+         return ref.getMessage().getMemoryEstimate();
+      }
    }
 }

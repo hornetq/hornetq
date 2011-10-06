@@ -181,6 +181,18 @@ public class HornetQConnection implements Connection, TopicConnection, QueueConn
       {
          throw new IllegalStateException("setClientID can only be called directly after the connection is created");
       }
+      
+      try
+      {
+         initialSession.addUniqueMetaData("jms-client-id", clientID);
+      }
+      catch (HornetQException e)
+      {
+         if (e.getCode() == HornetQException.DUPLICATE_METADATA)
+         {
+            throw new IllegalStateException("clientID=" + clientID + " was already set into another connection");
+         }
+      }
 
       this.clientID = clientID;
       try

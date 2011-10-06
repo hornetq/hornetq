@@ -16,6 +16,7 @@ package org.hornetq.core.protocol.core.impl;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Interceptor;
@@ -24,20 +25,24 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.Ping;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 
 /**
@@ -49,6 +54,10 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class CoreProtocolManager implements ProtocolManager
 {
+   private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
+   
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -60,14 +69,15 @@ public class CoreProtocolManager implements ProtocolManager
       this.interceptors = interceptors;
    }
 
-   public ConnectionEntry createConnectionEntry(final Connection connection)
+   public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
+      
+      Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
                                                                    interceptors,
-                                                                   config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
-                                                                                                                      .getExecutor()
+                                                                   config.isAsyncConnectionExecutionEnabled() ? connectionExecutor
                                                                                                              : null,
                                                                                                              server.getNodeID());
 
@@ -84,7 +94,7 @@ public class CoreProtocolManager implements ProtocolManager
          ttl = config.getConnectionTTLOverride();
       }
 
-      final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
+      final ConnectionEntry entry = new ConnectionEntry(rc, connectionExecutor, System.currentTimeMillis(), ttl);
 
       final Channel channel0 = rc.getChannel(0, -1);
 
@@ -105,34 +115,81 @@ public class CoreProtocolManager implements ProtocolManager
                // Just send a ping back
                channel0.send(packet);
             }
-            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY)
+            else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
                
+               if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
+               {
+                  channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
+               }
+               
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
-                  public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+                  public void nodeUP(final long uniqueEventID,
+                                     final String nodeID,
+                                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
+                                     final boolean last)
                   {
-                     channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                     // Using an executor as most of the notifications on the Topology
+                     // may come from a channel itself
+                     // What could cause deadlocks
+                     entry.connectionExecutor.execute(new Runnable()
+                     {
+                        public void run()
+                        {
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID, connectorPair, last));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID, connectorPair, last));
+                           }
+                        }
+                     });
+                   }
+
+                  public void nodeDown(final long uniqueEventID, final String nodeID)
+                  {
+                     // Using an executor as most of the notifications on the Topology
+                     // may come from a channel itself
+                     // What could cause deadlocks
+                     entry.connectionExecutor.execute(new Runnable()
+                     {
+                        public void run()
+                        {
+                           if (channel0.supports(PacketImpl.CLUSTER_TOPOLOGY_V2))
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage_V2(uniqueEventID, nodeID));
+                           }
+                           else
+                           {
+                              channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                           }
+                        }
+                     });
                   }
                   
-                  public void nodeDown(String nodeID)
+                  public String toString()
                   {
-                     channel0.send(new ClusterTopologyChangeMessage(nodeID));
+                     return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
                   }
                };
                
                final boolean isCC = msg.isClusterConnection();
-               
-               server.getClusterManager().addClusterTopologyListener(listener, isCC);
-               
-               rc.addCloseListener(new CloseListener()
+               if (acceptorUsed.getClusterConnection() != null)
                {
-                  public void connectionClosed()
+                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener, isCC);
+                  
+                  rc.addCloseListener(new CloseListener()
                   {
-                     server.getClusterManager().removeClusterTopologyListener(listener, isCC);
-                  }
-               });
+                     public void connectionClosed()
+                     {
+                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener, isCC);
+                     }
+                  });
+               }
             }
             else if (packet.getType() == PacketImpl.NODE_ANNOUNCE)
             {
@@ -145,14 +202,17 @@ public class CoreProtocolManager implements ProtocolManager
                }
                else
                {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), null);
+                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
                }
-               server.getClusterManager().notifyNodeUp(msg.getNodeID(), pair, false, true);
+               if (isTrace)
+               {
+                  log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
+               }
+
+               acceptorUsed.getClusterConnection().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
             }
          }
       });
-      
-      
 
       return entry;
    }

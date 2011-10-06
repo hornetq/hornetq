@@ -15,7 +15,13 @@ package org.hornetq.core.server.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -84,6 +90,8 @@ public class ManagementServiceImpl implements ManagementService
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private final MBeanServer mbeanServer;
 
@@ -135,7 +143,7 @@ public class ManagementServiceImpl implements ManagementService
       managementAddress = configuration.getManagementAddress();
       managementNotificationAddress = configuration.getManagementNotificationAddress();
 
-      registry = new HashMap<String, Object>();
+      registry = new ConcurrentHashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
       objectNameBuilder = ObjectNameBuilder.create(configuration.getJMXDomain());
@@ -302,11 +310,14 @@ public class ManagementServiceImpl implements ManagementService
    public void unregisterAcceptors()
    {
       List<String> acceptors = new ArrayList<String>();
-      for (String resourceName : registry.keySet())
+      synchronized (this)
       {
-         if (resourceName.startsWith(ResourceNames.CORE_ACCEPTOR))
+         for (String resourceName : registry.keySet())
          {
-            acceptors.add(resourceName);
+            if (resourceName.startsWith(ResourceNames.CORE_ACCEPTOR))
+            {
+               acceptors.add(resourceName);
+            }
          }
       }
 
@@ -506,7 +517,7 @@ public class ManagementServiceImpl implements ManagementService
       registry.put(resourceName, managedResource);
    }
 
-   public void unregisterFromRegistry(final String resourceName)
+   public synchronized void unregisterFromRegistry(final String resourceName)
    {
       registry.remove(resourceName);
    }
@@ -616,6 +627,28 @@ public class ManagementServiceImpl implements ManagementService
 
          messageCounterManager.clear();
       }
+      
+      listeners.clear();
+      
+      registry.clear();
+
+      messagingServer = null;
+
+      securityRepository = null;
+
+      addressSettingsRepository = null;
+
+      messagingServerControl = null;
+
+      messageCounterManager = null;
+
+      postOffice = null;
+      
+      pagingManager = null;
+      
+      storageManager = null;
+      
+      messagingServer = null;
 
       registeredNames.clear();
 
@@ -635,6 +668,12 @@ public class ManagementServiceImpl implements ManagementService
 
    public void sendNotification(final Notification notification) throws Exception
    {
+      if (isTrace)
+      {
+         log.trace("Sending Notification = "  + notification + 
+                   ", notificationEnabled=" + notificationsEnabled + 
+                   " messagingServerControl=" + messagingServerControl);
+      }
       if (messagingServerControl != null && notificationsEnabled)
       {
          // This needs to be synchronized since we need to ensure notifications are processed in strict sequence
@@ -665,6 +704,10 @@ public class ManagementServiceImpl implements ManagementService
                // https://jira.jboss.org/jira/browse/HORNETQ-317
                if (messagingServer == null || !messagingServer.isInitialised())
                {
+            	  if (log.isDebugEnabled())
+            	  {
+            	     log.debug("ignoring message " + notification + " as the server is not initialized");
+            	  }
                   return;
                }
 

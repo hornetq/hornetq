@@ -20,10 +20,15 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -104,12 +109,14 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            forwardAddress,
                                                                            null,
                                                                            null,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                            1000,
+                                                                           HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                            1d,
                                                                            0,
                                                                            true,
                                                                            1024,
-                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -130,7 +137,10 @@ public class BridgeStartTest extends ServiceTestBase
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
          server1.start();
+         waitForServer(server1);
+         
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -176,6 +186,8 @@ public class BridgeStartTest extends ServiceTestBase
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
          bridge.stop();
+         
+         bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -267,12 +279,14 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         500,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         1d,
                                                                         -1,
                                                                         true,
                                                                         1024,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -297,6 +311,7 @@ public class BridgeStartTest extends ServiceTestBase
          // Don't start server 1 yet
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -324,6 +339,8 @@ public class BridgeStartTest extends ServiceTestBase
          Thread.sleep(1000);
 
          server1.start();
+         waitForServer(server1);
+         
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -389,6 +406,7 @@ public class BridgeStartTest extends ServiceTestBase
          BridgeStartTest.log.info("sent some more messages");
 
          server1.start();
+         waitForServer(server1);
 
          BridgeStartTest.log.info("started server1");
 
@@ -478,12 +496,14 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            forwardAddress,
                                                                            null,
                                                                            null,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                            1000,
+                                                                           HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                            1d,
                                                                            0,
                                                                            false,
                                                                            1024,
-                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -506,6 +526,7 @@ public class BridgeStartTest extends ServiceTestBase
          // Don't start server 1 yet
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -534,6 +555,8 @@ public class BridgeStartTest extends ServiceTestBase
          // JMSBridge should be stopped since retries = 0
 
          server1.start();
+         waitForServer(server1);
+         
          ClientSessionFactory sf1 = locator.createSessionFactory(server1tc);
 
          ClientSession session1 = sf1.createSession(false, true, true);
@@ -629,12 +652,14 @@ public class BridgeStartTest extends ServiceTestBase
                                                                            forwardAddress,
                                                                            null,
                                                                            null,
+                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                           HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                            1000,
+                                                                           HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                            1d,
                                                                            1,
                                                                            true,
                                                                            1024,
-                                                                           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            staticConnectors,
                                                                            false,
                                                                            ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -655,8 +680,10 @@ public class BridgeStartTest extends ServiceTestBase
          server1.getConfiguration().setQueueConfigurations(queueConfigs1);
 
          server1.start();
+         waitForServer(server1);
 
          server0.start();
+         waitForServer(server0);
 
          locator = HornetQClient.createServerLocatorWithoutHA(server0tc, server1tc);
          ClientSessionFactory sf0 = locator.createSessionFactory(server0tc);
@@ -706,6 +733,8 @@ public class BridgeStartTest extends ServiceTestBase
          BridgeStartTest.log.info("stopping bridge manually");
 
          bridge.stop();
+         
+         bridge.flushExecutor();
 
          for (int i = numMessages; i < numMessages * 2; i++)
          {
@@ -739,6 +768,8 @@ public class BridgeStartTest extends ServiceTestBase
          Assert.assertNull(consumer1.receiveImmediate());
 
          bridge.stop();
+         
+         bridge.flushExecutor();
 
          for (int i = 0; i < numMessages; i++)
          {

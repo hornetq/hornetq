@@ -23,6 +23,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -194,13 +195,35 @@ public class AddressControlImpl extends AbstractControl implements AddressContro
          blockOnIO();
       }
    }
+   
+   public boolean isPaging() throws Exception
+   {
+      clearIO();
+      try
+      {
+         return pagingManager.getPageStore(address).isPaging();
+      }
+      finally
+      {
+         blockOnIO();
+      }
+   }
 
    public int getNumberOfPages() throws Exception
    {
       clearIO();
       try
       {
-         return pagingManager.getPageStore(address).getNumberOfPages();
+         PagingStore pageStore = pagingManager.getPageStore(address);
+         
+         if (!pageStore.isPaging())
+         {
+            return 0;
+         }
+         else
+         {
+            return pagingManager.getPageStore(address).getNumberOfPages();
+         }
       }
       finally
       {

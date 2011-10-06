@@ -167,7 +167,7 @@ public interface Queue extends Bindable
    
    void resetAllIterators();
 
-   boolean blockOnExecutorFuture();
+   boolean flushExecutor();
    
    void close() throws Exception;
    

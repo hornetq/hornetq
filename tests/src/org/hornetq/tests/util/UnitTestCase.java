@@ -34,10 +34,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.naming.Context;
 import javax.transaction.xa.XAException;
@@ -57,9 +59,16 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.PreparedTransactionInfo;
+import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.ReferenceDescribe;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -90,6 +99,8 @@ public class UnitTestCase extends TestCase
 
    private static final Logger log = Logger.getLogger(UnitTestCase.class);
 
+   private static final Logger logInstance = Logger.getLogger(UnitTestCase.class);
+
    public static final String INVM_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";
 
    public static final String INVM_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
@@ -104,6 +115,13 @@ public class UnitTestCase extends TestCase
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
+   
+   private boolean checkThread = true;
+   
+   protected void disableCheckThread()
+   {
+      checkThread = false;
+   }
 
    // Static --------------------------------------------------------
 
@@ -124,7 +142,7 @@ public class UnitTestCase extends TestCase
       }
    }
 
-   protected static Configuration createClusteredDefaultConfig(final int index,
+   protected Configuration createClusteredDefaultConfig(final int index,
                                                                final Map<String, Object> params,
                                                                final String... acceptors)
    {
@@ -135,9 +153,9 @@ public class UnitTestCase extends TestCase
       return config;
    }
 
-   protected static Configuration createDefaultConfig(final int index,
-                                                      final Map<String, Object> params,
-                                                      final String... acceptors)
+   protected Configuration createDefaultConfig(final int index,
+                                               final Map<String, Object> params,
+                                               final String... acceptors)
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -152,7 +170,7 @@ public class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected static ConfigurationImpl createBasicConfig()
+   protected ConfigurationImpl createBasicConfig()
    {
       return createBasicConfig(0);
    }
@@ -161,7 +179,7 @@ public class UnitTestCase extends TestCase
     * @param serverID
     * @return
     */
-   protected static ConfigurationImpl createBasicConfig(final int serverID)
+   protected ConfigurationImpl createBasicConfig(final int serverID)
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -177,7 +195,7 @@ public class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   protected Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -206,12 +224,12 @@ public class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected static String getUDPDiscoveryAddress()
+   protected String getUDPDiscoveryAddress()
    {
       return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
    }
 
-   protected static String getUDPDiscoveryAddress(int variant)
+   protected String getUDPDiscoveryAddress(int variant)
    {
       String value = getUDPDiscoveryAddress();
 
@@ -222,12 +240,12 @@ public class UnitTestCase extends TestCase
       return value.substring(0, posPoint + 1) + (last + variant);
    }
 
-   public static int getUDPDiscoveryPort()
+   public int getUDPDiscoveryPort()
    {
       return Integer.parseInt(System.getProperty("TEST-UDP-PORT", "6750"));
    }
 
-   public static int getUDPDiscoveryPort(final int variant)
+   public int getUDPDiscoveryPort(final int variant)
    {
       return getUDPDiscoveryPort() + variant;
    }
@@ -259,6 +277,7 @@ public class UnitTestCase extends TestCase
 
    public static void forceGC()
    {
+      logInstance.info("#test forceGC");
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
       // A loop that will wait GC, using the minimal time as possible
       while (dumbReference.get() != null)
@@ -266,12 +285,13 @@ public class UnitTestCase extends TestCase
          System.gc();
          try
          {
-            Thread.sleep(500);
+            Thread.sleep(100);
          }
          catch (InterruptedException e)
          {
          }
       }
+      logInstance.info("#test forceGC Done");
    }
 
    public static void forceGC(Reference<?> ref, long timeout)
@@ -362,6 +382,23 @@ public class UnitTestCase extends TestCase
       out.println("*******************************************************************************");
 
       return str.toString();
+   }
+
+   /** Sends the message to both logger and System.out (for unit report) */
+   public void logAndSystemOut(String message, Exception e)
+   {
+      Logger log = Logger.getLogger(this.getClass());
+      log.info(message, e);
+      System.out.println(message);
+      e.printStackTrace(System.out);
+   }
+
+   /** Sends the message to both logger and System.out (for unit report) */
+   public void logAndSystemOut(String message)
+   {
+      Logger log = Logger.getLogger(this.getClass());
+      log.info(message);
+      System.out.println(this.getClass().getName() + "::" + message);
    }
 
    protected static TestSuite createAIOTestSuite(final Class<?> clazz)
@@ -541,7 +578,7 @@ public class UnitTestCase extends TestCase
          }
          catch (Exception e)
          {
-            throw new IllegalStateException("port " + port + " is already bound");
+            throw new IllegalStateException("port " + port + " is bound");
          }
          finally
          {
@@ -597,19 +634,19 @@ public class UnitTestCase extends TestCase
    /**
     * @return the journalDir
     */
-   public static String getJournalDir()
+   public String getJournalDir()
    {
-      return getJournalDir(testDir);
+      return getJournalDir(getTestDir());
    }
 
-   protected static String getJournalDir(final String testDir)
+   protected String getJournalDir(final String testDir)
    {
       return testDir + "/journal";
    }
 
-   protected static String getJournalDir(final int index, final boolean backup)
+   protected String getJournalDir(final int index, final boolean backup)
    {
-      String dir = getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
+      String dir = getJournalDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
 
       return dir;
    }
@@ -617,15 +654,15 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir()
+   protected String getBindingsDir()
    {
-      return getBindingsDir(testDir);
+      return getBindingsDir(getTestDir());
    }
 
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir(final String testDir)
+   protected String getBindingsDir(final String testDir)
    {
       return testDir + "/bindings";
    }
@@ -633,51 +670,51 @@ public class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected static String getBindingsDir(final int index, final boolean backup)
+   protected String getBindingsDir(final int index, final boolean backup)
    {
-      return getBindingsDir(testDir) + index + "-" + (backup ? "B" : "L");
+      return getBindingsDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
     * @return the pageDir
     */
-   protected static String getPageDir()
+   protected String getPageDir()
    {
-      return getPageDir(testDir);
+      return getPageDir(getTestDir());
    }
 
    /**
     * @return the pageDir
     */
-   protected static String getPageDir(final String testDir)
+   protected String getPageDir(final String testDir)
    {
       return testDir + "/page";
    }
 
-   protected static String getPageDir(final int index, final boolean backup)
+   protected String getPageDir(final int index, final boolean backup)
    {
-      return getPageDir(testDir) + index + "-" + (backup ? "B" : "L");
+      return getPageDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
     * @return the largeMessagesDir
     */
-   protected static String getLargeMessagesDir()
+   protected String getLargeMessagesDir()
    {
-      return getLargeMessagesDir(testDir);
+      return getLargeMessagesDir(getTestDir());
    }
 
    /**
     * @return the largeMessagesDir
     */
-   protected static String getLargeMessagesDir(final String testDir)
+   protected String getLargeMessagesDir(final String testDir)
    {
       return testDir + "/large-msg";
    }
 
-   protected static String getLargeMessagesDir(final int index, final boolean backup)
+   protected String getLargeMessagesDir(final int index, final boolean backup)
    {
-      return getLargeMessagesDir(testDir) + index + "-" + (backup ? "B" : "L");
+      return getLargeMessagesDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }
 
    /**
@@ -685,7 +722,7 @@ public class UnitTestCase extends TestCase
     */
    protected String getClientLargeMessagesDir()
    {
-      return getClientLargeMessagesDir(testDir);
+      return getClientLargeMessagesDir(getTestDir());
    }
 
    /**
@@ -701,7 +738,7 @@ public class UnitTestCase extends TestCase
     */
    protected String getTemporaryDir()
    {
-      return getTemporaryDir(testDir);
+      return getTemporaryDir(getTestDir());
    }
 
    /**
@@ -859,7 +896,7 @@ public class UnitTestCase extends TestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       OperationContextImpl.clearContext();
 
       deleteDirectory(new File(getTestDir()));
@@ -870,7 +907,7 @@ public class UnitTestCase extends TestCase
 
       previousThreads = Thread.getAllStackTraces();
 
-      UnitTestCase.log.info("###### starting test " + this.getClass().getName() + "." + getName());
+      logAndSystemOut("#test " + getName());
    }
 
    @Override
@@ -895,7 +932,6 @@ public class UnitTestCase extends TestCase
                                              this.getName() +
                                              " on this following dump"));
                fail("test left serverlocator running, this could effect other tests");
-               // System.exit(0);
             }
             else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
             {
@@ -908,25 +944,74 @@ public class UnitTestCase extends TestCase
                                              this.getName() +
                                              " on this following dump"));
                fail("test left broadcastgroupimpl running, this could effect other tests");
-               // System.exit(0);
             }
          }
       }
 
+       if (checkThread)
+      {
+          StringBuffer buffer = null;
+
+          boolean failed = true;
+          
+
+         long timeout = System.currentTimeMillis() + 60000;
+         while (failed && timeout > System.currentTimeMillis())
+         {
+            buffer = new StringBuffer();
+   
+            failed = checkThread(buffer);
+   
+            if (failed)
+            {
+               forceGC();
+               Thread.sleep(500);
+               log.info("There are still threads running, trying again");
+            }
+         }
+
+         if (failed)
+         {
+            logAndSystemOut("Thread leaked on test " + this.getClass().getName() +
+                            "::" +
+                            this.getName() +
+                            "\n" +
+                            buffer.toString());
+            logAndSystemOut("Thread leakage");
+
+            fail("Thread leaked");
+         }
+
+      }
+      else
+      {
+         checkThread = true;
+      }
+      
+
+      super.tearDown();
+   }
+
+   /**
+    * @param buffer
+    * @return
+    */
+   private boolean checkThread(StringBuffer buffer)
+   {
+      boolean failedThread = false;
+
       Map<Thread, StackTraceElement[]> postThreads = Thread.getAllStackTraces();
 
-      boolean failedThread = false;
       if (postThreads.size() > previousThreads.size())
       {
-         StringBuffer buffer = new StringBuffer();
 
-         
          buffer.append("*********************************************************************************\n");
          buffer.append("LEAKING THREADS\n");
-         
+
          for (Thread aliveThread : postThreads.keySet())
          {
-            if (!aliveThread.getName().contains("SunPKCS11") && !previousThreads.containsKey(aliveThread))
+            if (!aliveThread.getName().contains("SunPKCS11") && !aliveThread.getName().contains("Attach Listener") &&
+                !previousThreads.containsKey(aliveThread))
             {
                failedThread = true;
                buffer.append("=============================================================================\n");
@@ -941,13 +1026,8 @@ public class UnitTestCase extends TestCase
          }
          buffer.append("*********************************************************************************\n");
 
-         System.out.println(buffer.toString());
-
       }
-      
-      //assertFalse("Thread Failed", failedThread);
-
-      super.tearDown();
+      return failedThread;
    }
 
    /**
@@ -961,7 +1041,21 @@ public class UnitTestCase extends TestCase
       if (invmSize > 0)
       {
          InVMRegistry.instance.clear();
+         log.info(threadDump("Thread dump"));
          fail("invm registry still had acceptors registered");
+      }
+
+      long timeout = System.currentTimeMillis() + 15000;
+
+      while (AsynchronousFileImpl.getTotalMaxIO() != 0 && System.currentTimeMillis() > timeout)
+      {
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (Exception ignored)
+         {
+         }
       }
 
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
@@ -969,9 +1063,17 @@ public class UnitTestCase extends TestCase
          AsynchronousFileImpl.resetMaxAIO();
          Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
-      
+
       // We shutdown the global pools to give a better isolation between tests
-      ServerLocatorImpl.clearThreadPools();
+      try
+      {
+         ServerLocatorImpl.clearThreadPools();
+      }
+      catch (Throwable e)
+      {
+         log.info(threadDump(e.getMessage()));
+         System.err.println(threadDump(e.getMessage()));
+      }
    }
 
    protected byte[] autoEncode(final Object... args)
@@ -1230,6 +1332,60 @@ public class UnitTestCase extends TestCase
          }
       }
       return bindingsFound;
+   }
+
+   /**
+    * It will inspect the journal directly and determine if there are queues on this journal,
+    * @return a Map containing the reference counts per queue
+    * @param serverToInvestigate
+    * @throws Exception
+    */
+   protected Map<Long, AtomicInteger> loadQueues(HornetQServer serverToInvestigate) throws Exception
+   {
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(serverToInvestigate.getConfiguration()
+                                                                                         .getJournalDirectory());
+
+      JournalImpl messagesJournal = new JournalImpl(serverToInvestigate.getConfiguration().getJournalFileSize(),
+                                                    serverToInvestigate.getConfiguration().getJournalMinFiles(),
+                                                    0,
+                                                    0,
+                                                    messagesFF,
+                                                    "hornetq-data",
+                                                    "hq",
+                                                    1);
+      List<RecordInfo> records = new LinkedList<RecordInfo>();
+
+      List<PreparedTransactionInfo> preparedTransactions = new LinkedList<PreparedTransactionInfo>();
+
+      messagesJournal.start();
+      messagesJournal.load(records, preparedTransactions, null);
+
+      // These are more immutable integers
+      Map<Long, AtomicInteger> messageRefCounts = new HashMap<Long, AtomicInteger>();
+
+      for (RecordInfo info : records)
+      {
+         Object o = JournalStorageManager.newObjectEncoding(info);
+         if (info.getUserRecordType() == JournalStorageManager.ADD_REF)
+         {
+            ReferenceDescribe ref = (ReferenceDescribe)o;
+            AtomicInteger count = messageRefCounts.get(ref.refEncoding.queueID);
+            if (count == null)
+            {
+               count = new AtomicInteger(1);
+               messageRefCounts.put(ref.refEncoding.queueID, count);
+            }
+            else
+            {
+               count.incrementAndGet();
+            }
+         }
+      }
+
+      messagesJournal.stop();
+
+      return messageRefCounts;
+
    }
 
    // Private -------------------------------------------------------

@@ -89,7 +89,7 @@ public class MockConnector extends InVMConnector
        */
       public MockConnection(final int serverID, final BufferHandler handler, final ConnectionLifeCycleListener listener)
       {
-         super(serverID, handler, listener, Executors.newSingleThreadExecutor());
+         super(null, serverID, handler, listener, Executors.newSingleThreadExecutor());
       }
 
       @Override

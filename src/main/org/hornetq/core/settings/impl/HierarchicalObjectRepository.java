@@ -221,6 +221,11 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
       matches.clear();
    }
    
+   public void clearListeners()
+   {
+      listeners.clear();
+   }
+   
    public void clearCache()
    {
       cache.clear();

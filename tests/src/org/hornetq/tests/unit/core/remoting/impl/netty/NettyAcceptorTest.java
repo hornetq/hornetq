@@ -28,6 +28,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -80,7 +81,7 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
          {
          }
          

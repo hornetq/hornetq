@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.core.server.cluster.ClusterConnection;
+
 /**
  * A factory for creating acceptors.
  * <p/>
@@ -40,7 +42,8 @@ public interface AcceptorFactory
     * @param scheduledThreadPool a scheduled thread pool
     * @return an acceptor
     */
-   Acceptor createAcceptor(final Map<String, Object> configuration,
+   Acceptor createAcceptor(ClusterConnection clusterConnection,
+                           final Map<String, Object> configuration,
                            BufferHandler handler,
                            BufferDecoder decoder,
                            ConnectionLifeCycleListener listener,

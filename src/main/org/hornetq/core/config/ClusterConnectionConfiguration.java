@@ -16,6 +16,9 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+
 /**
  * A ClusterConnectionConfiguration
  *
@@ -35,7 +38,19 @@ public class ClusterConnectionConfiguration implements Serializable
    
    private final String connectorName;
 
+   private final long clientFailureCheckPeriod;
+   
+   private final long connectionTTL;
+   
    private final long retryInterval;
+   
+   private final double retryIntervalMultiplier;
+   
+   private final long maxRetryInterval;
+   
+   private final int reconnectAttempts;
+   
+   private final long callTimeout;
 
    private final boolean duplicateDetection;
 
@@ -50,7 +65,7 @@ public class ClusterConnectionConfiguration implements Serializable
    private final int confirmationWindowSize;
 
    private final boolean allowDirectConnectionsOnly;
-
+   
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -62,12 +77,54 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final List<String> staticConnectors,
                                          final boolean allowDirectConnectionsOnly)
    {
+      this(name,
+           address,
+           connectorName,
+           ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+           ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+           retryInterval,
+           ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+           ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+           ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+           HornetQClient.DEFAULT_CALL_TIMEOUT,
+           duplicateDetection,
+           forwardWhenNoConsumers,
+           maxHops,
+           confirmationWindowSize,
+           staticConnectors,
+           allowDirectConnectionsOnly);
+   }
+
+
+   public ClusterConnectionConfiguration(final String name,
+                                         final String address,
+                                         final String connectorName,
+                                         final long clientFailureCheckPeriod,
+                                         final long connectionTTL,
+                                         final long retryInterval,
+                                         final double retryIntervalMultiplier,
+                                         final long maxRetryInterval,
+                                         final int reconnectAttempts,
+                                         final long callTimeout,
+                                         final boolean duplicateDetection,
+                                         final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
+                                         final int confirmationWindowSize,
+                                         final List<String> staticConnectors,
+                                         final boolean allowDirectConnectionsOnly)
+   {
       this.name = name;
       this.address = address;
       this.connectorName = connectorName;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+      this.connectionTTL = connectionTTL;
       this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetryInterval = maxRetryInterval;
+      this.reconnectAttempts = reconnectAttempts;
       this.staticConnectors = staticConnectors;
       this.duplicateDetection = duplicateDetection;
+      this.callTimeout = callTimeout;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       discoveryGroupName = null;
       this.maxHops = maxHops;
@@ -75,6 +132,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
    }
 
+   
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final String connectorName,
@@ -85,10 +143,50 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final int confirmationWindowSize,
                                          final String discoveryGroupName)
    {
+      this(name,
+           address,
+           connectorName,
+           ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
+           ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
+           retryInterval,
+           ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER,
+           ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL,
+           ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS,
+           HornetQClient.DEFAULT_CALL_TIMEOUT,
+           duplicateDetection,
+           forwardWhenNoConsumers,
+           maxHops,
+           confirmationWindowSize,
+           discoveryGroupName);
+   }
+
+
+   public ClusterConnectionConfiguration(final String name,
+                                         final String address,
+                                         final String connectorName,
+                                         final long clientFailureCheckPeriod,
+                                         final long connectionTTL,
+                                         final long retryInterval,
+                                         final double retryIntervalMultiplier,
+                                         final long maxRetryInterval,
+                                         final int reconnectAttempts,
+                                         final long callTimeout,
+                                         final boolean duplicateDetection,
+                                         final boolean forwardWhenNoConsumers,
+                                         final int maxHops,
+                                         final int confirmationWindowSize,
+                                         final String discoveryGroupName)
+   {
       this.name = name;
       this.address = address;
       this.connectorName = connectorName;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
+      this.connectionTTL = connectionTTL;
       this.retryInterval = retryInterval;
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+      this.maxRetryInterval = maxRetryInterval;
+      this.reconnectAttempts = reconnectAttempts;
+      this.callTimeout = callTimeout;
       this.duplicateDetection = duplicateDetection;
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = discoveryGroupName;
@@ -106,6 +204,51 @@ public class ClusterConnectionConfiguration implements Serializable
    public String getAddress()
    {
       return address;
+   }
+   
+   /**
+    * @return the clientFailureCheckPeriod
+    */
+   public long getClientFailureCheckPeriod()
+   {
+      return clientFailureCheckPeriod;
+   }
+
+   /**
+    * @return the connectionTTL
+    */
+   public long getConnectionTTL()
+   {
+      return connectionTTL;
+   }
+
+   /**
+    * @return the retryIntervalMultiplier
+    */
+   public double getRetryIntervalMultiplier()
+   {
+      return retryIntervalMultiplier;
+   }
+
+   /**
+    * @return the maxRetryInterval
+    */
+   public long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
+   }
+
+   /**
+    * @return the reconnectAttempts
+    */
+   public int getReconnectAttempts()
+   {
+      return reconnectAttempts;
+   }
+   
+   public long getCallTimeout()
+   {
+      return callTimeout;
    }
    
    public String getConnectorName()

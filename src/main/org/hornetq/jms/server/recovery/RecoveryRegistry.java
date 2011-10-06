@@ -21,8 +21,6 @@
 */
 package org.hornetq.jms.server.recovery;
 
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.ra.HornetQRAConnectionFactory;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -32,5 +30,5 @@ public interface RecoveryRegistry
 {
    void register(HornetQResourceRecovery resourceRecovery);
 
-   void unRegister(HornetQResourceRecovery resourceRecovery);
+   void unRegister(HornetQResourceRecovery xaRecoveryConfig);
 }

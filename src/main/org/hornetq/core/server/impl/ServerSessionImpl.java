@@ -83,11 +83,13 @@ import org.hornetq.utils.json.JSONObject;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
-public class ServerSessionImpl implements ServerSession , FailureListener
+public class ServerSessionImpl implements ServerSession, FailureListener
 {
    // Constants -----------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
+
+   private static final boolean isTrace = log.isTraceEnabled();
 
    // Static -------------------------------------------------------------------------------
 
@@ -145,14 +147,14 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    private volatile SimpleString defaultAddress;
 
    private volatile int timeoutSeconds;
-   
+
    private Map<String, String> metaData;
-   
+
    private OperationContext sessionContext;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
-   private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString,  Pair<UUID, AtomicLong>>();
-   
+   private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
+
    private long creationTime = System.currentTimeMillis();
 
    // Constructors ---------------------------------------------------------------------------------
@@ -242,7 +244,6 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       this.sessionContext = sessionContext;
    }
 
-
    public String getUsername()
    {
       return username;
@@ -267,8 +268,9 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    {
       return remotingConnection.getID();
    }
-   
-   public Set<ServerConsumer> getServerConsumers() {
+
+   public Set<ServerConsumer> getServerConsumers()
+   {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
       return Collections.unmodifiableSet(consumersClone);
    }
@@ -314,7 +316,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
 
       remotingConnection.removeFailureListener(this);
-      
+
       callback.closed();
    }
 
@@ -400,7 +402,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          // dies. It does not mean it will get deleted automatically when the
          // session is closed.
          // It is up to the user to delete the queue when finished with it
-        
+
          TempQueueCleanerUpper cleaner = new TempQueueCleanerUpper(postOffice, name, queue);
 
          remotingConnection.addCloseListener(cleaner);
@@ -409,8 +411,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          tempQueueCleannerUppers.put(name, cleaner);
       }
    }
-   
-   
+
    /**
     * For test cases only
     * @return
@@ -425,7 +426,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       private final PostOffice postOffice;
 
       private final SimpleString bindingName;
-      
+
       private final Queue queue;
 
       TempQueueCleanerUpper(final PostOffice postOffice, final SimpleString bindingName, final Queue queue)
@@ -433,7 +434,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          this.postOffice = postOffice;
 
          this.bindingName = bindingName;
-         
+
          this.queue = queue;
       }
 
@@ -441,11 +442,15 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       {
          try
          {
+            if (log.isDebugEnabled())
+            {
+               log.debug("deleting temporary queue " + bindingName);
+            }
             if (postOffice.getBinding(bindingName) != null)
             {
                postOffice.removeBinding(bindingName);
             }
-            
+
             queue.deleteAllReferences();
          }
          catch (Exception e)
@@ -463,7 +468,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       {
          run();
       }
-      
+
       public String toString()
       {
          return "Temporary Cleaner for queue " + bindingName;
@@ -483,11 +488,11 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       server.destroyQueue(name, this);
 
       TempQueueCleanerUpper cleaner = this.tempQueueCleannerUppers.remove(name);
-      
+
       if (cleaner != null)
       {
          remotingConnection.removeCloseListener(cleaner);
-         
+
          remotingConnection.removeFailureListener(cleaner);
       }
    }
@@ -570,8 +575,8 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
-      
-       consumer.acknowledge(autoCommitAcks, tx, messageID);
+
+      consumer.acknowledge(autoCommitAcks, tx, messageID);
    }
 
    public void individualAcknowledge(final long consumerID, final long messageID) throws Exception
@@ -598,6 +603,10 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
    public void commit() throws Exception
    {
+      if (isTrace)
+      {
+         log.trace("Calling commit");
+      }
       try
       {
          tx.commit();
@@ -925,7 +934,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
                throw new HornetQXAException(XAException.XAER_PROTO,
                                             "Cannot prepare transaction, it is suspended " + xid);
             }
-            else if(theTx.getState() == Transaction.State.PREPARED)
+            else if (theTx.getState() == Transaction.State.PREPARED)
             {
                log.info("ignoring prepare on xid as already called :" + xid);
             }
@@ -956,7 +965,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public void xaSetTimeout(final int timeout)
    {
       timeoutSeconds = timeout;
-      if(tx != null)
+      if (tx != null)
       {
          tx.setTimeout(timeout);
       }
@@ -971,18 +980,18 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    {
       setStarted(false);
    }
-   
+
    public void waitContextCompletion()
    {
       OperationContext formerCtx = storageManager.getContext();
-      
+
       try
       {
          try
          {
             if (!storageManager.waitOnOperations(10000))
             {
-               log.warn("Couldn't finish context execution in 10 seconds", new Exception ("warning"));
+               log.warn("Couldn't finish context execution in 10 seconds", new Exception("warning"));
             }
          }
          catch (Exception e)
@@ -999,7 +1008,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public void close(final boolean failed)
    {
       OperationContext formerCtx = storageManager.getContext();
-      
+
       try
       {
          storageManager.setContext(sessionContext);
@@ -1009,7 +1018,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
             public void onError(int errorCode, String errorMessage)
             {
             }
-   
+
             public void done()
             {
                try
@@ -1053,7 +1062,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
          return;
       }
-
+      
       consumer.receiveCredits(credits);
    }
 
@@ -1061,9 +1070,14 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    {
       // need to create the LargeMessage before continue
       long id = storageManager.generateUniqueID();
-      
+
       LargeServerMessage largeMsg = storageManager.createLargeMessage(id, message);
- 
+
+      if (log.isTraceEnabled())
+      {
+         log.trace("sendLarge::" + largeMsg);
+      }
+      
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
@@ -1096,6 +1110,11 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          }
       }
 
+      if (isTrace)
+      {
+         log.trace("send(message=" + message + ", direct=" + direct + ") being called");
+      }
+
       if (message.getAddress().equals(managementAddress))
       {
          // It's a management message
@@ -1113,7 +1132,10 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
    }
 
-   public void sendContinuations(final int packetSize, final long messageBodySize, final byte[] body, final boolean continues) throws Exception
+   public void sendContinuations(final int packetSize,
+                                 final long messageBodySize,
+                                 final byte[] body,
+                                 final boolean continues) throws Exception
    {
       if (currentLargeMessage == null)
       {
@@ -1128,7 +1150,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       if (!continues)
       {
          currentLargeMessage.releaseResources();
-         
+
          if (messageBodySize >= 0)
          {
             currentLargeMessage.putLongProperty(Message.HDR_LARGE_BODY_SIZE, messageBodySize);
@@ -1162,7 +1184,6 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          consumer.setTransferring(transferring);
       }
    }
-   
 
    public void addMetaData(String key, String data)
    {
@@ -1171,6 +1192,21 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          metaData = new HashMap<String, String>();
       }
       metaData.put(key, data);
+   }
+
+
+   public boolean addUniqueMetaData(String key, String data)
+   {
+      if (server.lookupSession(key, data))
+      {
+         // There is a duplication of this property
+         return false;
+      }
+      else
+      {
+         addMetaData(key, data);
+         return true;
+      }
    }
 
    public String getMetaData(String key)
@@ -1182,7 +1218,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
       return data;
    }
-   
+
    public String[] getTargetAddresses()
    {
       Map<SimpleString, Pair<UUID, AtomicLong>> copy = cloneTargetAddresses();
@@ -1222,7 +1258,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
    public void describeProducersInfo(JSONArray array) throws Exception
    {
       Map<SimpleString, Pair<UUID, AtomicLong>> targetCopy = cloneTargetAddresses();
-      
+
       for (Map.Entry<SimpleString, Pair<UUID, AtomicLong>> entry : targetCopy.entrySet())
       {
          JSONObject producerInfo = new JSONObject();
@@ -1234,7 +1270,6 @@ public class ServerSessionImpl implements ServerSession , FailureListener
          array.put(producerInfo);
       }
    }
-
 
    // FailureListener implementation
    // --------------------------------------------------------------------
@@ -1255,9 +1290,13 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
    }
 
-
    // Public
    // ----------------------------------------------------------------------------
+   
+   public void clearLargeMessage()
+   {
+      currentLargeMessage = null;
+   }
 
    // Private
    // ----------------------------------------------------------------------------
@@ -1321,7 +1360,7 @@ public class ServerSessionImpl implements ServerSession , FailureListener
 
          toCancel.addAll(consumer.cancelRefs(false, lastMessageAsDelived, theTx));
       }
-      
+
       for (MessageReference ref : toCancel)
       {
          ref.getQueue().cancel(theTx, ref);
@@ -1363,12 +1402,12 @@ public class ServerSessionImpl implements ServerSession , FailureListener
       }
 
       postOffice.route(msg, routingContext, direct);
-      
+
       Pair<UUID, AtomicLong> value = targetAddressInfos.get(msg.getAddress());
-      
+
       if (value == null)
       {
-         targetAddressInfos.put(msg.getAddress(), new Pair<UUID,AtomicLong>(msg.getUserID(), new AtomicLong(1)));
+         targetAddressInfos.put(msg.getAddress(), new Pair<UUID, AtomicLong>(msg.getUserID(), new AtomicLong(1)));
       }
       else
       {

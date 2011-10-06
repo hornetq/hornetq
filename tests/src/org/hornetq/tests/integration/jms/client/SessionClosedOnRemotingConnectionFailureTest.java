@@ -27,13 +27,11 @@ import javax.jms.Session;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.util.JMSTestBase;
@@ -63,7 +61,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
    public void testSessionClosedOnRemotingConnectionFailure() throws Exception
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
-      connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      connectorConfigs.add(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
 
       jmsServer.createConnectionFactory("cffoo",

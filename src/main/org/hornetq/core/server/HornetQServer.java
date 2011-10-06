@@ -15,6 +15,7 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -56,9 +57,14 @@ import org.hornetq.utils.ExecutorFactory;
 public interface HornetQServer extends HornetQComponent
 {
    
+   /** This method was created mainly for testing but it may be used in scenarios where 
+    *  you need to have more than one Server inside the same VM.
+    *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
    void setIdentity(String identity);
    
    String getIdentity();
+   
+   String describe();
    
    Configuration getConfiguration();
 
@@ -111,6 +117,8 @@ public interface HornetQServer extends HornetQComponent
    Set<ServerSession> getSessions();
 
    boolean isStarted();
+   
+   boolean isStopped();
 
    HierarchicalRepository<Set<Role>> getSecurityRepository();
 
@@ -125,6 +133,9 @@ public interface HornetQServer extends HornetQComponent
    ResourceManager getResourceManager();
 
    List<ServerSession> getSessions(String connectionID);
+
+   /** will return true if there is any session wth this key */
+   boolean lookupSession(String metakey, String metavalue);
 
    ClusterManager getClusterManager();
 
@@ -150,6 +161,8 @@ public interface HornetQServer extends HornetQComponent
 
    ScheduledExecutorService getScheduledPool();
    
+   ExecutorService getThreadPool();
+   
    ExecutorFactory getExecutorFactory();
 
    void setGroupingHandler(GroupingHandler groupingHandler);
@@ -173,6 +186,8 @@ public interface HornetQServer extends HornetQComponent
    void destroyBridge(String name) throws Exception;
 
    ServerSession getSessionByID(String sessionID);
+   
+   void threadDump(String reason);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 }

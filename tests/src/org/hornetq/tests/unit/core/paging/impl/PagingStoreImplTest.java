@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -72,6 +73,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
+import org.hornetq.core.transaction.Transaction;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
@@ -1231,7 +1233,8 @@ public class PagingStoreImplTest extends UnitTestCase
                                                        final ResourceManager resourceManager,
                                                        final Map<Long, Queue> queues,
                                                        Map<Long, QueueBindingInfo> queueInfos,
-                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+                                                       final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap,
+                                                       Set<Pair<Long, Long>> pendingLargeMessages) throws Exception
       {
          return new JournalLoadInformation();
       }
@@ -1680,7 +1683,30 @@ public class PagingStoreImplTest extends UnitTestCase
          
       }
 
-   }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessageTX(org.hornetq.core.transaction.Transaction, long, long)
+       */
+      public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
+       */
+      public void confirmPendingLargeMessage(long recordID) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
+       */
+      public void stop(boolean ioCriticalError) throws Exception
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+    }
 
    class FakeStoreFactory implements PagingStoreFactory
    {

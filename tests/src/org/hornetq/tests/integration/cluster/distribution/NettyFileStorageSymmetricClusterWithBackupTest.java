@@ -36,5 +36,11 @@ public class NettyFileStorageSymmetricClusterWithBackupTest extends SymmetricClu
    {
       return true;
    }
+   
+   protected boolean isFileStorage()
+   {
+      return true;
+   }
+
 
 }

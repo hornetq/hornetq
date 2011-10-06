@@ -164,6 +164,21 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#setPendingRecordID(long)
+    */
+   public void setPendingRecordID(long pendingRecordID)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#getPendingRecordID()
+    */
+   public long getPendingRecordID()
+   {
+      return -1;
+   }
+
 
    // Package protected ---------------------------------------------
 

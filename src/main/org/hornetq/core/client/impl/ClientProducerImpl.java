@@ -409,7 +409,8 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             lastChunk = pos >= bodySize;
 
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.toByteBuffer()
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(msgI, 
+                                                                                            bodyBuffer.toByteBuffer()
                                                                                                       .array(),
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
@@ -529,11 +530,11 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             buff = buff2;
 
-            chunk = new SessionSendContinuationMessage(buff, false, sendBlocking, messageSize.get());
+            chunk = new SessionSendContinuationMessage(msgI, buff, false, sendBlocking, messageSize.get());
          }
          else
          {
-            chunk = new SessionSendContinuationMessage(buff, true, false);
+            chunk = new SessionSendContinuationMessage(msgI, buff, true, false);
          }
 
          if (sendBlocking && lastPacket)

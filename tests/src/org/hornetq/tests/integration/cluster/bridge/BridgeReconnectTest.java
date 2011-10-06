@@ -21,10 +21,15 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -52,6 +57,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeReconnectTest.class);
 
+   private final int NUM_MESSAGES = 100;
    protected boolean isNetty()
    {
       return false;
@@ -118,12 +124,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -174,7 +182,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session2.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -260,12 +268,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -309,7 +319,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session2.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -386,12 +396,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -432,6 +444,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          // Now we will simulate a failure of the bridge connection between server0 and server1
          Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
+         assertNotNull(bridge);
          RemotingConnection forwardingConnection = getForwardingConnection(bridge);
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
@@ -440,7 +453,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          forwardingConnection = getForwardingConnection(bridge);
          forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -527,12 +540,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        clientFailureCheckPeriod,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
-                                                                        clientFailureCheckPeriod,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -557,6 +572,9 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          server1.start();
          server0.start();
+         
+         waitForServerStart(server0);
+         waitForServerStart(server1);
 
          locator = HornetQClient.createServerLocatorWithHA(server0tc, server1tc);
          ClientSessionFactory csf0 = locator.createSessionFactory(server0tc);
@@ -583,7 +601,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          session1.start();
 
-         final int numMessages = 10;
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -624,7 +642,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       Assert.assertEquals(0, server0.getRemotingService().getConnections().size());
       Assert.assertEquals(0, server1.getRemotingService().getConnections().size());
    }
-
+   
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
@@ -661,12 +679,14 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
+                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                        HornetQClient.DEFAULT_CONNECTION_TTL,
                                                                         retryInterval,
+                                                                        HornetQClient.DEFAULT_MAX_RETRY_INTERVAL,
                                                                         retryIntervalMultiplier,
                                                                         reconnectAttempts,
-                                                                        false,
+                                                                        true,
                                                                         confirmationWindowSize,
-                                                                        HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         staticConnectors,
                                                                         false,
                                                                         ConfigurationImpl.DEFAULT_CLUSTER_USER,
@@ -710,8 +730,8 @@ public class BridgeReconnectTest extends BridgeTestBase
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
          forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-         final int numMessages = 10;
+         
+         final int numMessages = NUM_MESSAGES;
 
          SimpleString propKey = new SimpleString("propkey");
 
@@ -722,19 +742,32 @@ public class BridgeReconnectTest extends BridgeTestBase
 
             prod0.send(message);
          }
+         int outOfOrder = -1;
+         int supposed = -1;
 
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage r1 = cons1.receive(1500);
             Assert.assertNotNull(r1);
-            Assert.assertEquals(i, r1.getObjectProperty(propKey));
+            if (outOfOrder == -1 && i != r1.getIntProperty(propKey).intValue())
+            {
+               outOfOrder = r1.getIntProperty(propKey).intValue();
+               supposed = i;
+            }
          }
+         if (outOfOrder != -1)
+         {
+            fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
+         }
+
+         log.info("=========== second failure, sending message");
+
 
          // Fail again - should reconnect
          forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
          InVMConnector.failOnCreateConnection = true;
          InVMConnector.numberOfFailures = reconnectAttempts - 1;
-         forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+         forwardingConnection.fail(new HornetQException(5));
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -747,12 +780,22 @@ public class BridgeReconnectTest extends BridgeTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage r1 = cons1.receive(1500);
-            Assert.assertNotNull(r1);
-            Assert.assertEquals(i, r1.getObjectProperty(propKey));
+            Assert.assertNotNull("Didn't receive message", r1);
+            if (outOfOrder == -1 && i != r1.getIntProperty(propKey).intValue())
+            {
+               outOfOrder = r1.getIntProperty(propKey).intValue();
+               supposed = i;
+            }
          }
+         
 
          session0.close();
          session1.close();
+
+         if (outOfOrder != -1)
+         {
+            fail("Message " + outOfOrder + " was received out of order, it was supposed to be " + supposed);
+         }
       }
       finally
       {

@@ -94,11 +94,19 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    public void open(final int maxIO, final boolean useExecutor) throws Exception
    {
-      rfile = new RandomAccessFile(getFile(), "rw");
-
-      channel = rfile.getChannel();
-
-      fileSize = channel.size();
+      try
+      {
+         rfile = new RandomAccessFile(getFile(), "rw");
+   
+         channel = rfile.getChannel();
+   
+         fileSize = channel.size();
+      }
+      catch (IOException e)
+      {
+         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         throw e;
+      }
 
       if (writerExecutor != null && useExecutor)
       {
@@ -193,13 +201,19 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
          return bytesRead;
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          if (callback != null)
          {
             callback.onError(HornetQException.IO_ERROR, e.getLocalizedMessage());
          }
+         
+         factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
 
+         throw e;
+      }
+      catch (Exception e)
+      {
          throw e;
       }
 
@@ -297,9 +311,17 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
       position.addAndGet(bytes.limit());
 
-      if (maxIOSemaphore == null)
+      if (maxIOSemaphore == null || callback == null)
       {
-         doInternalWrite(bytes, sync, callback);
+         // if maxIOSemaphore == null, that means we are not using executors and the writes are synchronous
+         try
+         {
+            doInternalWrite(bytes, sync, callback);
+         }
+         catch (IOException e)
+         {
+            factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), this);
+         }
       }
       else
       {
@@ -315,6 +337,12 @@ public class NIOSequentialFile extends AbstractSequentialFile
                   try
                   {
                      doInternalWrite(bytes, sync, callback);
+                  }
+                  catch (IOException e)
+                  {
+                     NIOSequentialFile.log.warn("Exception on submitting write", e);
+                     factory.onIOError(HornetQException.IO_ERROR, e.getMessage(), NIOSequentialFile.this);
+                     callback.onError(HornetQException.IO_ERROR, e.getMessage());
                   }
                   catch (Throwable e)
                   {

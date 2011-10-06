@@ -33,7 +33,7 @@ public class MessageServiceManager
 {
    protected ExecutorService threadPool;
    protected QueueServiceManager queueManager = new QueueServiceManager();
-   protected TopicServiceManager topicManager = new TopicServiceManager();
+   protected TopicServiceManager topicManager = new TopicServiceManager();  
    protected TimeoutTask timeoutTask;
    protected int timeoutTaskInterval = 1;
    protected MessageServiceConfiguration configuration = new MessageServiceConfiguration();
@@ -178,7 +178,7 @@ public class MessageServiceManager
       queueManager.setLinkStrategy(linkStrategy);
       queueManager.setRegistry(registry);
 
-      queueManager.setServerLocator(defaultLocator);
+      topicManager.setServerLocator(defaultLocator);
       topicManager.setSessionFactory(sessionFactory);
       topicManager.setTimeoutTask(timeoutTask);
       topicManager.setConsumerServerLocator(consumerLocator);

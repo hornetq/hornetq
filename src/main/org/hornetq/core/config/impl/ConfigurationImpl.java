@@ -24,6 +24,7 @@ import java.util.Set;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -165,6 +166,16 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
 
    public static final long DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
+
+   public static final int DEFAULT_CLUSTER_RECONNECT_ATTEMPTS = -1;
+   
+   public static final long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   
+   public static final long DEFAULT_CLUSTER_CONNECTION_TTL = HornetQClient.DEFAULT_CONNECTION_TTL;
+   
+   public static final double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+   
+   public static final long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 

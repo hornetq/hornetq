@@ -135,6 +135,12 @@ public class HornetQException extends Exception
    public static final int DUPLICATE_ID_REJECTED = 113;
 
    
+   /**
+    * A Session Metadata was set in duplication 
+    */
+   public static final int DUPLICATE_METADATA = 114;
+
+   
    // Native Error codes ----------------------------------------------
 
    /**

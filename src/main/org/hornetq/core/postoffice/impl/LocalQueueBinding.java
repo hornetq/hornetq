@@ -135,6 +135,11 @@ public class LocalQueueBinding implements QueueBinding
    {
       return BindingType.LOCAL_QUEUE;
    }
+   
+   public void close() throws Exception
+   {
+      queue.close();
+   }
 
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
@@ -142,12 +147,16 @@ public class LocalQueueBinding implements QueueBinding
    @Override
    public String toString()
    {
-      return "LocalQueueBinding [address=" + address + ", name=" + name + ", filter=" + filter + "]";
-   }
-   
-   public void close() throws Exception
-   {
-      queue.close();
+      return "LocalQueueBinding [address=" + address +
+             ", queue=" +
+             queue +
+             ", filter=" +
+             filter +
+             ", name=" +
+             name +
+             ", clusterName=" +
+             clusterName +
+             "]";
    }
 
 }

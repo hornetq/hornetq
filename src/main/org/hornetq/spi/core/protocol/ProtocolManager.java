@@ -14,6 +14,7 @@
 package org.hornetq.spi.core.protocol;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferDecoder;
 import org.hornetq.spi.core.remoting.Connection;
 
@@ -26,7 +27,7 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public interface ProtocolManager extends BufferDecoder
 {
-   ConnectionEntry createConnectionEntry(Connection connection);
+   ConnectionEntry createConnectionEntry(Acceptor acceptorUsed, Connection connection);
    
    public void removeHandler(final String name);
 

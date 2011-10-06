@@ -13,7 +13,7 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +45,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
 
    private final BlockingQueue<Runnable> delayedResponses = new LinkedBlockingQueue<Runnable>();
 
-   private final Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, delayedResponses);
+   private final ExecutorService executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, delayedResponses);
 
    private final HttpKeepAliveRunnable httpKeepAliveTask;
 
@@ -210,6 +210,19 @@ class HttpAcceptorHandler extends SimpleChannelHandler
          return buffer;
       }
 
+   }
+   
+   
+   public void shutdown()
+   {
+      executor.shutdown();
+      try
+      {
+         executor.awaitTermination(10, TimeUnit.SECONDS);
+      }
+      catch (Exception e)
+      {
+      }
    }
 
    /**

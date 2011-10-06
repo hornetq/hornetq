@@ -61,17 +61,24 @@ public class BridgeConfiguration implements Serializable
    
    private String password;
 
+   private final long connectionTTL;
+   
+   private final long maxRetryInterval;
+
+
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final long clientFailureCheckPeriod,
+                              final long connectionTTL,
                               final long retryInterval,
+                              final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
-                              final long clientFailureCheckPeriod,
                               final List<String> staticConnectors,
                               final boolean ha,
                               final String user,
@@ -89,8 +96,10 @@ public class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.staticConnectors = staticConnectors;
-      this.user = user;
+      this. user = user;
       this.password = password;
+      this.connectionTTL = connectionTTL;
+      this.maxRetryInterval = maxRetryInterval;
       discoveryGroupName = null;
    }
 
@@ -99,12 +108,14 @@ public class BridgeConfiguration implements Serializable
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final long clientFailureCheckPeriod,
+                              final long connectionTTL,
                               final long retryInterval,
+                              final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
-                              final long clientFailureCheckPeriod,
                               final String discoveryGroupName,
                               final boolean ha,
                               final String user,
@@ -126,6 +137,8 @@ public class BridgeConfiguration implements Serializable
       this.ha = ha;
       this.user = user;
       this.password = password;
+      this.connectionTTL = connectionTTL;
+      this.maxRetryInterval = maxRetryInterval;
    }
 
    public String getName()
@@ -136,6 +149,22 @@ public class BridgeConfiguration implements Serializable
    public String getQueueName()
    {
       return queueName;
+   }
+
+   /**
+    * @return the connectionTTL
+    */
+   public long getConnectionTTL()
+   {
+      return connectionTTL;
+   }
+
+   /**
+    * @return the maxRetryInterval
+    */
+   public long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
    }
 
    public String getForwardingAddress()

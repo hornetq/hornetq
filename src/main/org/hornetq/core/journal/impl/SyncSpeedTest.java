@@ -60,11 +60,11 @@ public class SyncSpeedTest
    {
       if (AIO)
       {
-         fileFactory = new AIOSequentialFileFactory(".", 0, 0, false);
+         fileFactory = new AIOSequentialFileFactory(".", 0, 0, false, null);
       }
       else
       {
-         fileFactory = new NIOSequentialFileFactory(".", false, 0, 0, false);
+         fileFactory = new NIOSequentialFileFactory(".", false, 0, 0, false, null);
       }
    }
 

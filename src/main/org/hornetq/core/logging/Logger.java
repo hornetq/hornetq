@@ -81,7 +81,7 @@ public class Logger
 
       if (className != null)
       {
-         delegateFactory = (LogDelegateFactory) ClassloadingUtil.safeInitNewInstance(className);
+          delegateFactory = (LogDelegateFactory) ClassloadingUtil.safeInitNewInstance(className);
       }
       else
       {

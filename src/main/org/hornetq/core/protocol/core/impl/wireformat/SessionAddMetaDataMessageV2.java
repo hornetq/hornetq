@@ -30,7 +30,7 @@ public class SessionAddMetaDataMessageV2 extends PacketImpl
    private String key;
    private String data;
    /**
-    * It won require confirmation during failover / reconnect
+    * It's not required confirmation during failover / reconnect
     */
    private boolean requiresConfirmation = true;
 
@@ -39,9 +39,21 @@ public class SessionAddMetaDataMessageV2 extends PacketImpl
       super(PacketImpl.SESS_ADD_METADATA2);
    }
    
+   protected SessionAddMetaDataMessageV2(byte packetCode)
+   {
+      super(packetCode);
+   }
+   
    public SessionAddMetaDataMessageV2(String k, String d)
    {
       this();
+      key = k;
+      data = d;
+   }
+   
+   protected SessionAddMetaDataMessageV2(final byte packetCode, String k, String d)
+   {
+      super(packetCode);
       key = k;
       data = d;
    }

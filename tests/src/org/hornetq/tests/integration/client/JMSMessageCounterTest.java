@@ -13,15 +13,14 @@
 package org.hornetq.tests.integration.client;
 
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -30,52 +29,58 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class JMSMessageCounterTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(JMSMessageCounterTest.class);
-
-   private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
-   
-   
 
    protected boolean usePersistence()
    {
       return true;
    }
-
-
-
+   
    public void testMessageCounter() throws Exception
    {
 
-      Connection conn = cf.createConnection();
-      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      Queue queue = createQueue(true, "Test");
-      
-      MessageProducer producer = sess.createProducer(queue);
-
-      final int numMessages = 100;
-
-      for (int i = 0; i < numMessages; i++)
+      try
       {
-         TextMessage mess = sess.createTextMessage("msg" + i);
-         producer.send(mess);
+         Connection conn = cf.createConnection();
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+   
+         Queue queue = createQueue(true, "Test");
+         
+         MessageProducer producer = sess.createProducer(queue);
+         producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+   
+         final int numMessages = 100;
+   
+         for (int i = 0; i < numMessages; i++)
+         {
+            TextMessage mess = sess.createTextMessage("msg" + i);
+            producer.send(mess);
+         }
+         
+         conn.close();
+         
+         JMSQueueControl control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
+         assertNotNull(control);
+         
+         System.out.println(control.listMessageCounterAsHTML());
+         
+         jmsServer.stop();
+         
+         restartServer();
+         
+         control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
+         assertNotNull(control);
+         
+         System.out.println(control.listMessageCounterAsHTML());
       }
-      
-      conn.close();
-      
-      JMSQueueControl control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
-      assertNotNull(control);
-      
-      System.out.println(control.listMessageCounterAsHTML());
-      
-      jmsServer.stop();
-      
-      restartServer();
-      
-      control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
-      assertNotNull(control);
-      
-      System.out.println(control.listMessageCounterAsHTML());
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         throw e;
+      }
+      finally
+      {
+         jmsServer.stop();
+      }
 
 
    }

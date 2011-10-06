@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
@@ -262,6 +263,8 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
+         
+         waitForServer(server);
 
          queue = server.locateQueue(ADDRESS);
 
@@ -1274,6 +1277,40 @@ public class PagingTest extends ServiceTestBase
       {
          bb.put(getSamplebyte(j));
       }
+      
+      final AtomicBoolean running = new AtomicBoolean(true);
+      
+      class TCount extends Thread
+      {
+         Queue queue;
+         
+         TCount(Queue queue)
+         {
+            this.queue = queue;
+         }
+         public void run()
+         {
+            try
+            {
+               while (running.get())
+               {
+                 // log.info("Message count = " + queue.getMessageCount() + " on queue " + queue.getName());
+                  queue.getMessagesAdded();
+                  queue.getMessageCount();
+                  //log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
+                  Thread.sleep(10);
+               }
+            }
+            catch (InterruptedException e)
+            {
+               log.info("Thread interrupted");
+            }
+         }
+      };
+      
+      TCount tcount1 = null;
+      TCount tcount2 = null;
+      
 
       try
       {
@@ -1300,7 +1337,8 @@ public class PagingTest extends ServiceTestBase
 
                session.createQueue(PagingTest.ADDRESS.toString(), PagingTest.ADDRESS + "-2", null, true);
             }
-
+            
+            
             ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
             ClientMessage message = null;
@@ -1309,6 +1347,7 @@ public class PagingTest extends ServiceTestBase
             {
                if (i % 500 == 0)
                {
+                  log.info("Sent " + i + " messages");
                   session.commit();
                }
                message = session.createMessage(true);
@@ -1338,6 +1377,23 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
+         
+         Queue queue1 = server.locateQueue(PagingTest.ADDRESS.concat("-1"));
+         
+         Queue queue2 = server.locateQueue(PagingTest.ADDRESS.concat("-2"));
+         
+         assertNotNull(queue1);
+         
+         assertNotNull(queue2);
+         
+         assertNotSame(queue1, queue2);
+
+         tcount1 = new TCount(queue1);
+         
+         tcount2 = new TCount(queue2);
+         
+         tcount1.start();
+         tcount2.start();
 
          ServerLocator locator = createInVMNonHALocator();
          final ClientSessionFactory sf2 = locator.createSessionFactory();
@@ -1375,8 +1431,14 @@ public class PagingTest extends ServiceTestBase
 
                         Assert.assertNotNull(message2);
 
-                        if (i % 1000 == 0)
+                        if (i % 100 == 0)
+                        {
+                           if (i % 5000 == 0)
+                           {
+                              log.info(addressToSubscribe + " consumed " + i + " messages");
+                           }
                            session.commit();
+                        }
 
                         try
                         {
@@ -1437,6 +1499,20 @@ public class PagingTest extends ServiceTestBase
       }
       finally
       {
+         running.set(false);
+         
+         if (tcount1 != null)
+         {
+            tcount1.interrupt();
+            tcount1.join();
+         }
+         
+         if (tcount2 != null)
+         {
+            tcount2.interrupt();
+            tcount2.join();
+         }
+         
          try
          {
             server.stop();

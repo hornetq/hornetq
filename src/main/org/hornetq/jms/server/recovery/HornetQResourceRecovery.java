@@ -33,22 +33,14 @@ public class HornetQResourceRecovery implements XAResourceRecovery
 {
    private final XARecoveryConfig config;
 
-   private final HornetQXAResourceWrapper resourceWrapper;
-
    public HornetQResourceRecovery(XARecoveryConfig config)
    {
       this.config = config;
-      resourceWrapper = new HornetQXAResourceWrapper(config);
    }
 
    public XAResource[] getXAResources()
    {
-      return new XAResource[]{resourceWrapper};
-   }
-
-   public void close()
-   {
-      resourceWrapper.close();
+      return new XAResource[]{new HornetQXAResourceWrapper(config)};
    }
 
    @Override

@@ -395,6 +395,8 @@ public class JMSFailoverTest extends ServiceTestBase
 
       backupJMSService.setContext(ctx2);
 
+      backupJMSService.getHornetQServer().setIdentity("JMSBackup");
+      log.info("Starting backup");
       backupJMSService.start();
 
       liveConf = createBasicConfig(0);
@@ -431,6 +433,9 @@ public class JMSFailoverTest extends ServiceTestBase
       liveJMSService = new JMSServerManagerImpl(liveService);
 
       liveJMSService.setContext(ctx1);
+
+      liveJMSService.getHornetQServer().setIdentity("JMSLive");
+      log.info("Starting life");
 
       liveJMSService.start();
 

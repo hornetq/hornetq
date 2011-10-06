@@ -63,7 +63,7 @@ public class HornetQThreadFactory implements ThreadFactory
       // when sandboxed, the code does not have the RuntimePermission modifyThreadGroup
       if (System.getSecurityManager() == null)
       {
-         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() + " (group:" + group.getName() + ")");
+         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() + " (" + group.getName() + ")");
       }
       else
       {

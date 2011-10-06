@@ -64,7 +64,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    {
       clearData();
       super.setUp();
-
+ 
       topic1 = createTopic("topic1");
 
       // Paging Setting
@@ -77,6 +77,7 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      log.info("#tearDown");
       topic1 = null;
       super.tearDown();
    }

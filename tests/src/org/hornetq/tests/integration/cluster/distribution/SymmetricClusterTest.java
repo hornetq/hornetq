@@ -42,6 +42,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      log.info("#test tearDown");
       stopServers();
 
       super.tearDown();
@@ -240,12 +241,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 1, 1, true);
       waitForBindings(3, "queues.testaddress", 1, 1, true);
       waitForBindings(4, "queues.testaddress", 1, 1, true);
-
-      System.out.println(clusterDescription(servers[0]));
-      System.out.println(clusterDescription(servers[1]));
-      System.out.println(clusterDescription(servers[2]));
-      System.out.println(clusterDescription(servers[3]));
-      System.out.println(clusterDescription(servers[4]));
 
       waitForBindings(0, "queues.testaddress", 4, 4, false);
       waitForBindings(1, "queues.testaddress", 4, 4, false);
@@ -1090,8 +1085,13 @@ public class SymmetricClusterTest extends ClusterTestBase
    public void testRouteWhenNoConsumersFalseNoLocalConsumerLoadBalancedQueues() throws Exception
    {
       setupCluster(false);
-
+      
       startServers();
+
+      for (int i = 0 ; i <= 4; i++)
+      {
+         waitForTopology(servers[i], 5);
+      }
 
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
@@ -1245,10 +1245,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(2, "queues.testaddress", 4, 4, false);
       waitForBindings(3, "queues.testaddress", 4, 4, false);
       waitForBindings(4, "queues.testaddress", 4, 4, false);
-
-      // this.checkReceive(0, 1, 2, 3, 4);
-
-      // Thread.sleep(300000);
 
       verifyReceiveAll(10, 0, 1, 2, 3, 4);
    }
@@ -1475,7 +1471,6 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(3, "queues.testaddress", 6, 6, true);
       waitForBindings(4, "queues.testaddress", 7, 7, true);
 
-      Thread.sleep(2000);
       System.out.println("#####################################");
       System.out.println(clusterDescription(servers[0]));
       System.out.println(clusterDescription(servers[1]));
@@ -1827,5 +1822,12 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       stopServers(0, 1, 2, 3, 4);
    }
+   
+
+   protected boolean isFileStorage()
+   {
+      return false;
+   }
+
 
 }

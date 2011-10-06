@@ -20,7 +20,6 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.ConnectorService;
 import org.hornetq.core.server.ConnectorServiceFactory;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConfigurationHelper;
 
 import java.util.HashSet;
@@ -61,11 +60,15 @@ public class ConnectorsService implements HornetQComponent
 
    public void start() throws Exception
    {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
       List<ConnectorServiceConfiguration> configurationList = configuration.getConnectorServiceConfigurations();
 
       for (ConnectorServiceConfiguration info : configurationList)
       {
-         ConnectorServiceFactory factory = (ConnectorServiceFactory) ClassloadingUtil.safeInitNewInstance(info.getFactoryClassName());
+         Class<?> clazz = loader.loadClass(info.getFactoryClassName());
+
+         ConnectorServiceFactory factory = (ConnectorServiceFactory)clazz.newInstance();
 
          if (info.getParams() != null)
          {

@@ -113,9 +113,15 @@ public class JMSClusteredTestBase extends ServiceTestBase
 
       jmsServer1.start();
       jmsServer1.activated();
+      waitForServer(jmsServer1.getHornetQServer());
 
       jmsServer2.start();
       jmsServer2.activated();
+      waitForServer(jmsServer2.getHornetQServer());
+      
+      waitForTopology(jmsServer1.getHornetQServer(), 2);
+      
+      waitForTopology(jmsServer2.getHornetQServer(), 2);
 
       cf1 = (ConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                                 generateInVMParams(0)));
@@ -228,6 +234,8 @@ public class JMSClusteredTestBase extends ServiceTestBase
          log.warn("Can't stop server2", e);
       }
       
+      Thread.sleep(500);
+      
       ((HornetQConnectionFactory)cf1).close();
       
       ((HornetQConnectionFactory)cf2).close();
@@ -250,9 +258,9 @@ public class JMSClusteredTestBase extends ServiceTestBase
       }
       catch (Throwable e)
       {
-         log.warn("Can't stop server2", e);
+         log.warn("Can't stop server1", e);
       }
-
+ 
       server1 = null;
 
       jmsServer1 = null;

@@ -20,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -34,6 +33,8 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -47,6 +48,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 {
+   Logger log = Logger.getLogger(this.getClass());
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -70,7 +72,10 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
 
    protected abstract boolean isNetty();
 
-   protected int waitForNewLive(long seconds, boolean waitForNewBackup, Map<Integer, TestableServer> servers, int... nodes)
+   protected int waitForNewLive(long seconds,
+                                boolean waitForNewBackup,
+                                Map<Integer, TestableServer> servers,
+                                int... nodes)
    {
       long time = System.currentTimeMillis();
       long toWait = seconds * 1000;
@@ -84,11 +89,11 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
             {
                newLive = node;
             }
-            else if(newLive != -1)
+            else if (newLive != -1)
             {
-               if(waitForNewBackup)
-                  {
-                  if(node != newLive && servers.get(node).isStarted())
+               if (waitForNewBackup)
+               {
+                  if (node != newLive && servers.get(node).isStarted())
                   {
                      return newLive;
                   }
@@ -99,6 +104,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
                }
             }
          }
+
          try
          {
             Thread.sleep(100);
@@ -146,7 +152,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message2 = consumer.receive(10000);
-         
+
          assertNotNull(message2);
 
          Assert.assertEquals("aardvarks", message2.getBodyBuffer().readString());
@@ -166,19 +172,31 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
    protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator,
                                                                                  int topologyMembers) throws Exception
    {
+      return createSessionFactoryAndWaitForTopology(locator, topologyMembers, null);
+   }
+
+   protected ClientSessionFactoryInternal createSessionFactoryAndWaitForTopology(ServerLocator locator,
+                                                                                 int topologyMembers,
+                                                                                 HornetQServer server) throws Exception
+   {
       ClientSessionFactoryInternal sf;
       CountDownLatch countDownLatch = new CountDownLatch(topologyMembers);
 
-      locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
+      LatchClusterTopologyListener topListener = new LatchClusterTopologyListener(countDownLatch);
+      locator.addClusterTopologyListener(topListener);
 
       sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
 
       boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
-      if (!ok) 
+      locator.removeClusterTopologyListener(topListener);
+      if (!ok)
       {
-         System.out.println(((ServerLocatorInternal)locator).getTopology().describe());
-      }      
-      assertTrue(ok);
+         if (server != null)
+         {
+            log.info("failed topology, Topology on server = " + server.getClusterManager().describe());
+         }
+      }
+      assertTrue("expected " + topologyMembers + " members", ok);
       return sf;
    }
 
@@ -191,7 +209,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
       }
       return new ServerLocatorImpl(true, configs);
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -213,7 +231,8 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(String nodeID,
+      public void nodeUP(final long uniqueEventID,
+                         String nodeID,
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {
@@ -229,7 +248,7 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
          }
       }
 
-      public void nodeDown(String nodeID)
+      public void nodeDown(final long uniqueEventID, String nodeID)
       {
       }
    }

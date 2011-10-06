@@ -33,7 +33,9 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private final int windowSize;
 
-      private boolean blocked;
+   private volatile boolean closed;
+   
+   private boolean blocked;
 
    private final SimpleString address;
 
@@ -68,14 +70,17 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
 
       if (!semaphore.tryAcquire(credits))
       {
-         this.blocked = true;
-         try
+         if (!closed)
          {
-            semaphore.acquire(credits);
-         }
-         finally
-         {
-            this.blocked = false;
+            this.blocked = true;
+            try
+            {
+               semaphore.acquire(credits);
+            }
+            finally
+            {
+               this.blocked = false;
+            }
          }
       }
    }
@@ -118,6 +123,7 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    public void close()
    {
       // Closing a producer that is blocking should make it return
+      closed = true;
 
       semaphore.release(Integer.MAX_VALUE / 2);
    }

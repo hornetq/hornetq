@@ -35,7 +35,9 @@ import org.objectweb.jtests.jms.admin.AdminFactory;
  */
 public abstract class JMSTestCase extends TestCase
 {
-   private static final String PROP_FILE_NAME = "provider.properties";
+   public static final String PROP_FILE_NAME = "provider.properties";
+   
+   public static boolean startServer = true;
 
    protected Admin admin;
 
@@ -91,8 +93,10 @@ public abstract class JMSTestCase extends TestCase
       Properties props = getProviderProperties();
       admin = AdminFactory.getAdmin(props);
 
-      admin.startServer();
-
+      if (startServer)
+      {
+         admin.startServer();
+      }
       admin.start();
    }
 
@@ -101,8 +105,10 @@ public abstract class JMSTestCase extends TestCase
    {
       admin.stop();
 
-      admin.stopServer();
-
+      if (startServer)
+      {
+          admin.stopServer();
+      }
       super.tearDown();
    }
 

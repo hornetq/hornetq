@@ -36,9 +36,9 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
 
-   protected static final String groupAddress = getUDPDiscoveryAddress();
+   protected final String groupAddress = getUDPDiscoveryAddress();
 
-   protected static final int groupPort = getUDPDiscoveryPort();
+   protected final int groupPort = getUDPDiscoveryPort();
 
    protected boolean isNetty()
    {
@@ -83,8 +83,8 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
    protected void setServer(final boolean forwardWhenNoConsumers, int server)
    {
       setupLiveServerWithDiscovery(server,
-                                   SymmetricClusterWithDiscoveryTest.groupAddress,
-                                   SymmetricClusterWithDiscoveryTest.groupPort,
+                                   groupAddress,
+                                   groupPort,
                                    isFileStorage(),
                                    isNetty(),
                                    false);

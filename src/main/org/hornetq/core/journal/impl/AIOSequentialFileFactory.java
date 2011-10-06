@@ -25,6 +25,7 @@ import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -60,7 +61,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
       this(journalDir,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
            ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
-           false);
+           false,
+           null);
+   }
+
+   public AIOSequentialFileFactory(final String journalDir, final IOCriticalErrorListener listener)
+   {
+      this(journalDir,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
+           false,
+           listener);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
@@ -68,7 +79,16 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
                                    final int bufferTimeout,
                                    final boolean logRates)
    {
-      super(journalDir, true, bufferSize, bufferTimeout, logRates);
+      this(journalDir, bufferSize, bufferTimeout, logRates, null);
+   }
+
+   public AIOSequentialFileFactory(final String journalDir,
+                                   final int bufferSize,
+                                   final int bufferTimeout,
+                                   final boolean logRates,
+                                   final IOCriticalErrorListener listener)
+   {
+      super(journalDir, true, bufferSize, bufferTimeout, logRates, listener);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)

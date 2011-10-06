@@ -31,6 +31,8 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
 
    boolean removeFailureListener(SessionFailureListener listener);
    
+   void disableFinalizeCheck();
+
    // for testing
 
    int numConnections();
@@ -40,10 +42,14 @@ public interface ClientSessionFactoryInternal extends ClientSessionFactory
    void removeSession(final ClientSessionInternal session, boolean failingOver);
 
    void connect(int reconnectAttempts, boolean failoverOnInitialConnection) throws HornetQException;
+   
+   void sendNodeAnnounce(final long currentEventID, String nodeID, boolean isBackup, TransportConfiguration config, TransportConfiguration backupConfig);
 
    TransportConfiguration getConnectorConfiguration();
 
    void setBackupConnector(TransportConfiguration live, TransportConfiguration backUp);
 
    Object getBackupConnector();
+
+   void setReconnectAttempts(int i);
 }

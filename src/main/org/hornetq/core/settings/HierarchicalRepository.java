@@ -65,6 +65,8 @@ public interface HierarchicalRepository<T>
     */
    void clear();
    
+   void clearListeners();
+   
    void clearCache();
    
    int getCacheSize();

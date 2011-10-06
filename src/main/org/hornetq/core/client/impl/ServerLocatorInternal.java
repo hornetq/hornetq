@@ -13,13 +13,12 @@
 
 package org.hornetq.core.client.impl;
 
-import org.hornetq.api.core.HornetQException;
+import java.util.concurrent.Executor;
+
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-
-import java.util.concurrent.Executor;
 
 /**
  * A ServerLocatorInternal
@@ -32,17 +31,37 @@ public interface ServerLocatorInternal extends ServerLocator
 {
    void start(Executor executor) throws Exception;
    
+   Executor getExecutor();
+   
    void factoryClosed(final ClientSessionFactory factory);
+   
+   AfterConnectInternalListener getAfterConnectInternalListener();
+   
+   void setAfterConnectionInternalListener(AfterConnectInternalListener listener);
+   
+   /** Used to better identify Cluster Connection Locators on logs. To facilitate eventual debugging.
+    * 
+    *  This method used to be on tests interface, but I'm now making it part of the public interface since*/
+   void setIdentity(String identity);
+   
+   String getIdentity();
 
    void setNodeID(String nodeID);
 
    String getNodeID();
+   
+   void cleanup();
 
-   ClientSessionFactory connect() throws  Exception;
+   ClientSessionFactoryInternal connect() throws  Exception;
 
-   void notifyNodeUp(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   void notifyNodeUp(long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
 
-   void notifyNodeDown(String nodeID);
+   /**
+    * 
+    * @param uniqueEventID 0 means get the previous ID +1
+    * @param nodeID
+    */
+   void notifyNodeDown(long uniqueEventID, String nodeID);
 
    void setClusterConnection(boolean clusterConnection);
 

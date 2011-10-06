@@ -400,7 +400,7 @@ public class QueueControlImpl extends AbstractControl implements QueueControl
       {
          Filter filter = FilterImpl.createFilter(filterStr);
          List<Map<String, Object>> messages = new ArrayList<Map<String, Object>>();
-         queue.blockOnExecutorFuture();
+         queue.flushExecutor();
          LinkedListIterator<MessageReference> iterator = queue.iterator();
          try
          {

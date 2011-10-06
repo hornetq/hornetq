@@ -19,6 +19,8 @@ import javax.jms.MessageNotWriteableException;
 import javax.jms.TextMessage;
 
 import junit.framework.Assert;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.objectweb.jtests.jms.framework.PTPTestCase;
 import org.objectweb.jtests.jms.framework.TestConfig;
@@ -31,6 +33,15 @@ import org.objectweb.jtests.jms.framework.TestConfig;
  */
 public class MessageBodyTest extends PTPTestCase
 {
+   
+   /** 
+    * Method to use this class in a Test suite
+    */
+   public static Test suite()
+   {
+      return new TestSuite(MessageBodyTest.class);
+   }
+
 
    /**
     * Test that the <code>TextMessage.clearBody()</code> method does nto clear the 

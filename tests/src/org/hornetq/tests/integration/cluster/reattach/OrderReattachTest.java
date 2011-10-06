@@ -41,15 +41,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class OrderReattachTest extends ServiceTestBase
 {
-
-   // Disabled for now... under investigation (Clebert)
-   public static TestSuite suite()
-   {
-      TestSuite suite = new TestSuite();
-
-      return suite;
-   }
-
    // Constants -----------------------------------------------------
 
    final SimpleString ADDRESS = new SimpleString("address");
@@ -67,13 +58,7 @@ public class OrderReattachTest extends ServiceTestBase
 
    public void testOrderOnSendInVM() throws Throwable
    {
-      for (int i = 0; i < 500; i++)
-      {
-         log.info("#" + getName() + " # " + i);
-         doTestOrderOnSend(false);
-         tearDown();
-         setUp();
-      }
+      doTestOrderOnSend(false);
    }
 
    public void doTestOrderOnSend(final boolean isNetty) throws Throwable
@@ -83,7 +68,7 @@ public class OrderReattachTest extends ServiceTestBase
       server.start();
       ServerLocator locator = createFactory(isNetty);
       locator.setReconnectAttempts(-1);
-      locator.setConfirmationWindowSize(100 * 1024 * 1024);
+      locator.setConfirmationWindowSize(1024 * 1024);
       locator.setBlockOnNonDurableSend(false);
       locator.setBlockOnAcknowledge(false);
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -192,7 +177,7 @@ public class OrderReattachTest extends ServiceTestBase
 
       final int numMessages = 500;
 
-      final int numSessions = 100;
+      final int numSessions = 10;
 
       Set<ClientConsumer> consumers = new HashSet<ClientConsumer>();
       Set<ClientSession> sessions = new HashSet<ClientSession>();

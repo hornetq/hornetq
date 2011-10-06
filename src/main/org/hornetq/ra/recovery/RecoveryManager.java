@@ -43,7 +43,7 @@ public class RecoveryManager
 
    private RecoveryRegistry registry;
 
-   private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry;org.jboss.as.messaging.jms.AS7RecoveryRegistry";
+   private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
 
    private Map<XARecoveryConfig, HornetQResourceRecovery> configMap = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
 
@@ -54,7 +54,7 @@ public class RecoveryManager
 
    public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
    {
-      if(!isRegistered(factory))
+      if(!isRegistered(factory) && registry != null)
       {
          XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);
          HornetQResourceRecovery resourceRecovery = new HornetQResourceRecovery(xaRecoveryConfig);
@@ -68,7 +68,6 @@ public class RecoveryManager
    public void unRegister(HornetQResourceRecovery resourceRecovery)
    {
       registry.unRegister(resourceRecovery);
-      resourceRecovery.close();
    }
 
    public void stop()
@@ -76,7 +75,6 @@ public class RecoveryManager
       for (HornetQResourceRecovery hornetQResourceRecovery : configMap.values())
       {
          registry.unRegister(hornetQResourceRecovery);
-         hornetQResourceRecovery.close();
       }
       configMap.clear();
    }

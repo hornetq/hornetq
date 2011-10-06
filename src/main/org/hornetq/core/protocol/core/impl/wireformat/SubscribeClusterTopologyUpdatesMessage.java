@@ -42,9 +42,21 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
       this.clusterConnection = clusterConnection;
    }
 
+   protected SubscribeClusterTopologyUpdatesMessage(byte packetType, final boolean clusterConnection)
+   {
+      super(packetType);
+
+      this.clusterConnection = clusterConnection;
+   }
+
    public SubscribeClusterTopologyUpdatesMessage()
    {
       super(PacketImpl.SUBSCRIBE_TOPOLOGY);
+   }
+
+   protected SubscribeClusterTopologyUpdatesMessage(byte packetType)
+   {
+      super(packetType);
    }
 
    // Public --------------------------------------------------------
@@ -66,6 +78,17 @@ public class SubscribeClusterTopologyUpdatesMessage extends PacketImpl
       clusterConnection = buffer.readBoolean();
    }
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "SubscribeClusterTopologyUpdatesMessage [clusterConnection=" + clusterConnection +
+             ", toString()=" +
+             super.toString() +
+             "]";
+   }
 
    // Package protected ---------------------------------------------
 

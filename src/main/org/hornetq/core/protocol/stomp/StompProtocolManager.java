@@ -38,6 +38,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.UUIDGenerator;
@@ -109,9 +110,9 @@ class StompProtocolManager implements ProtocolManager
 
    // ProtocolManager implementation --------------------------------
 
-   public ConnectionEntry createConnectionEntry(final Connection connection)
+   public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
-      StompConnection conn = new StompConnection(connection, this);
+      StompConnection conn = new StompConnection(acceptorUsed, connection, this);
 
       // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
@@ -120,13 +121,13 @@ class StompProtocolManager implements ProtocolManager
 
       if (ttl != -1)
       {
-         return new ConnectionEntry(conn, System.currentTimeMillis(), ttl);
+         return new ConnectionEntry(conn, null, System.currentTimeMillis(), ttl);
       }
       else
       {
          // Default to 1 minute - which is same as core protocol
 
-         return new ConnectionEntry(conn, System.currentTimeMillis(), 1 * 60 * 1000);
+         return new ConnectionEntry(conn, null, System.currentTimeMillis(), 1 * 60 * 1000);
       }
    }
 

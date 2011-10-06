@@ -29,6 +29,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
+import org.hornetq.core.asyncio.IOExceptionListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ReusableLatch;
 
@@ -160,6 +161,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private Semaphore maxIOSemaphore;
 
    private BufferCallback bufferCallback;
+   
+   /** A callback for IO errors when they happen */
+   private final IOExceptionListener ioExceptionListener;
 
    /**
     *  Warning: Beware of the C++ pointer! It will bite you! :-)
@@ -180,10 +184,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
     * @param writeExecutor It needs to be a single Thread executor. If null it will use the user thread to execute write operations
     * @param pollerExecutor The thread pool that will initialize poller handlers
     */
-   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor)
+   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor, final IOExceptionListener ioExceptionListener )
    {
       this.writeExecutor = writeExecutor;
       this.pollerExecutor = pollerExecutor;
+      this.ioExceptionListener = ioExceptionListener;
+   }
+
+   public AsynchronousFileImpl(final Executor writeExecutor, final Executor pollerExecutor)
+   {
+      this(writeExecutor, pollerExecutor, null);
    }
 
    public void open(final String fileName, final int maxIO) throws HornetQException
@@ -276,7 +286,15 @@ public class AsynchronousFileImpl implements AsynchronousFile
    
    public void writeInternal(long positionToWrite, long size, ByteBuffer bytes) throws HornetQException
    {
-      writeInternal(handler, positionToWrite, size, bytes);
+      try
+      {
+         writeInternal(handler, positionToWrite, size, bytes);
+      }
+      catch (HornetQException e)
+      {
+         fireExceptionListener(e.getCode(), e.getMessage());
+         throw e;
+      }
       if (bufferCallback != null)
       {
          bufferCallback.bufferDone(bytes);
@@ -522,6 +540,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
                               final String errorMessage)
    {
       AsynchronousFileImpl.log.warn("CallbackError: " + errorMessage);
+      
+      fireExceptionListener(errorCode, errorMessage);
 
       maxIOSemaphore.release();
 
@@ -558,6 +578,18 @@ public class AsynchronousFileImpl implements AsynchronousFile
       if (bufferCallback != null && buffer != null)
       {
          bufferCallback.bufferDone(buffer);
+      }
+   }
+
+   /**
+    * @param errorCode
+    * @param errorMessage
+    */
+   private void fireExceptionListener(final int errorCode, final String errorMessage)
+   {
+      if (ioExceptionListener != null)
+      {
+         ioExceptionListener.onIOException(errorCode, errorMessage);
       }
    }
 

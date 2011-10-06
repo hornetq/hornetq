@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
@@ -578,4 +579,27 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.isCompressLargeMessages();
    }
+   
+   public String toString()
+   {
+      return "DelegatingSession [session=" + session + "]";
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.client.impl.ClientSessionInternal#getChannel()
+    */
+   public Channel getChannel()
+   {
+      return session.getChannel();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.api.core.client.ClientSession#addUniqueMetaData(java.lang.String, java.lang.String)
+    */
+   public void addUniqueMetaData(String key, String data) throws HornetQException
+   {
+      session.addUniqueMetaData(key, data);
+      
+   }
+
 }

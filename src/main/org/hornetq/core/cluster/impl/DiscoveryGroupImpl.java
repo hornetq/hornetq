@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -49,6 +50,8 @@ import org.hornetq.utils.TypedProperties;
 public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 {
    private static final Logger log = Logger.getLogger(DiscoveryGroupImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private static final int SOCKET_TIMEOUT = 500;
 
@@ -64,7 +67,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
    private final Object waitLock = new Object();
 
-   private final Map<String, DiscoveryEntry> connectors = new HashMap<String, DiscoveryEntry>();
+   private final Map<String, DiscoveryEntry> connectors = new ConcurrentHashMap<String, DiscoveryEntry>();
 
    private final long timeout;
 
@@ -168,12 +171,19 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       synchronized (waitLock)
       {
-         waitLock.notify();
+         waitLock.notifyAll();
       }
 
-      socket.close();
-
-      socket = null;
+      try
+      {
+         socket.close();
+   
+         socket = null;
+      }
+      catch (Throwable ignored)
+      {
+         log.warn(ignored.toString(), ignored);
+      }
 
       try
       {
@@ -375,6 +385,14 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
             if (changed)
             {
+               if (isTrace)
+               {
+                  log.trace("Connectors changed on Discovery:");
+                  for (DiscoveryEntry connector : connectors.values())
+                  {
+                     log.trace(connector);
+                  }
+               }
                callListeners();
             }
 
@@ -382,7 +400,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
             {
                received = true;
 
-               waitLock.notify();
+               waitLock.notifyAll();
             }
          }
       }
@@ -438,6 +456,10 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
          if (entry.getValue().getLastUpdate() + timeout <= now)
          {
+            if (isTrace)
+            {
+               log.trace("Timed out node on discovery:" + entry.getValue());
+            }
             iter.remove();
 
             changed = true;
