@@ -122,7 +122,6 @@ public class QueueImpl implements Queue
 
    // The estimate of memory being consumed by this queue. Used to calculate instances of messages to depage
    private final AtomicInteger queueMemorySize = new AtomicInteger(0);
-   private final AtomicInteger queueInstances = new AtomicInteger(0);
 
    private final List<ConsumerHolder> consumerList = new ArrayList<ConsumerHolder>();
 
@@ -462,14 +461,14 @@ public class QueueImpl implements Queue
       {
          if (isTrace)
          {
-         	log.trace("Force delivery scheduling depage");
+            log.trace("Force delivery scheduling depage");
          }
          scheduleDepage();
       }
       
       if (isTrace)
       {
-      	log.trace("Force delivery deliverying async");
+         log.trace("Force delivery deliverying async");
       }
       
       deliverAsync();
@@ -2256,7 +2255,7 @@ public class QueueImpl implements Queue
       }
       catch (Exception e)
       {
-	      QueueImpl.log.warn("Unable to decrement reference counting", e);
+         QueueImpl.log.warn("Unable to decrement reference counting", e);
       }
    }
 
