@@ -19,10 +19,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
