@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.spi.core.logging.LogDelegate;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * 
@@ -80,16 +81,7 @@ public class Logger
 
       if (className != null)
       {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         try
-         {
-            Class<?> clz = loader.loadClass(className);
-            delegateFactory = (LogDelegateFactory)clz.newInstance();
-         }
-         catch (Exception e)
-         {
-            throw new IllegalArgumentException("Error instantiating transformer class \"" + className + "\"", e);
-         }
+          delegateFactory = (LogDelegateFactory) ClassloadingUtil.safeInitNewInstance(className);
       }
       else
       {
