@@ -64,7 +64,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       ClientSession session = sendAndConsume(sf, true);
       System.out.println("failing node 0");
       servers.get(0).crash(session);
-      
+
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
@@ -97,7 +97,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
       locator.close();
    }
-   
+
    protected void createBackupConfig(int liveNode, int nodeid, int... nodes)
    {
       Configuration config1 = super.createDefaultConfig();
@@ -137,12 +137,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
       config0.setClustered(true);
-      List<String> pairs = null;
+      List<String> pairs = new ArrayList<String>();
       for (int node : otherLiveNodes)
       {
          TransportConfiguration otherLiveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
          config0.getConnectorConfigurations().put(otherLiveConnector.getName(), otherLiveConnector);
-         pairs.add(otherLiveConnector.getName());  
+         pairs.add(otherLiveConnector.getName());
 
       }
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
