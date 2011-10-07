@@ -968,8 +968,9 @@ public abstract class UnitTestCase extends TestCase
 
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
+         int totalMaxAIO = AsynchronousFileImpl.getTotalMaxIO();
          AsynchronousFileImpl.resetMaxAIO();
-         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+         Assert.fail("test did not close all its files " + totalMaxAIO);
       }
 
       // We shutdown the global pools to give a better isolation between tests
