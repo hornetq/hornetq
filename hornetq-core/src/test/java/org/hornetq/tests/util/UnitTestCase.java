@@ -78,12 +78,12 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- *
- * Helper base class for our unit tests
- *
+ * Helper base class for our unit tests.
+ * <p>
+ * See {@code org.hornetq.tests.util.ServiceTestBase} for a test case with server set-up.
+ * @see Service
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
- *
  */
 public abstract class UnitTestCase extends TestCase
 {
@@ -968,8 +968,9 @@ public abstract class UnitTestCase extends TestCase
 
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
+         int totalMaxAIO = AsynchronousFileImpl.getTotalMaxIO();
          AsynchronousFileImpl.resetMaxAIO();
-         Assert.fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+         Assert.fail("test did not close all its files " + totalMaxAIO);
       }
 
       // We shutdown the global pools to give a better isolation between tests

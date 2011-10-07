@@ -60,7 +60,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * a regex comparator
     */
-   private final MatchComparator<String> matchComparator = new MatchComparator<String>();
+   private final MatchComparator matchComparator = new MatchComparator();
 
    /**
     * a cache
@@ -263,7 +263,7 @@ public class HierarchicalObjectRepository<T> implements HierarchicalRepository<T
    /**
     * compares to matches to see which one is more specific
     */
-   private static class MatchComparator<T extends String> implements Comparator<T>
+   private static class MatchComparator implements Comparator<String>
    {
       public int compare(final String o1, final String o2)
       {
