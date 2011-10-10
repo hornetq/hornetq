@@ -54,7 +54,6 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.journal.impl.JournalFilesRepository;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -886,12 +885,6 @@ public class ReplicationTest extends ServiceTestBase
 
       @Override
       public SequentialFileFactory getFileFactory()
-      {
-         return null;
-      }
-
-      @Override
-      public JournalFilesRepository getFilesRepository()
       {
          return null;
       }

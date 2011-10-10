@@ -15,7 +15,6 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.dataformat.JournalAddRecord;
@@ -34,9 +33,10 @@ import org.hornetq.core.journal.impl.dataformat.JournalInternalRecord;
 public class FileWrapperJournal extends JournalBase implements Journal
 {
    private final ReentrantLock lockAppend = new ReentrantLock();
-   // private final ReadWriteLock journalLock = new ReentrantReadWriteLock();
 
    private final ConcurrentMap<Long, AtomicInteger> transactions = new ConcurrentHashMap<Long, AtomicInteger>();
+   private final JournalImpl journal;
+   protected volatile JournalFile currentFile;
 
    /**
     * @param journal
@@ -44,24 +44,21 @@ public class FileWrapperJournal extends JournalBase implements Journal
     */
    public FileWrapperJournal(Journal journal) throws Exception
    {
-      super(journal.getFileFactory(), journal.getFilesRepository(), journal.getFileSize());
-      setUpCurrentFile(JournalImpl.SIZE_HEADER);
+      super(journal.getFileFactory().isSupportsCallbacks(), journal.getFileSize());
+      this.journal = (JournalImpl)journal;
+      currentFile = this.journal.setUpCurrentFile(JournalImpl.SIZE_HEADER);
    }
 
    @Override
    public void start() throws Exception
    {
-      throw new HornetQException(HornetQException.UNSUPPORTED_PACKET);
+      throw new UnsupportedOperationException();
    }
 
    @Override
    public void stop() throws Exception
    {
-      SequentialFile seqFile = currentFile.getFile();
-      long pos = seqFile.position();
-      seqFile.close();
-      seqFile.open();
-      seqFile.position(pos);
+      currentFile.getFile().close();
    }
 
    @Override
@@ -97,7 +94,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
          {
             callback.storeLineUp();
          }
-         switchFileIfNecessary(encoder.getEncodeSize());
+         currentFile = journal.switchFileIfNecessary(encoder.getEncodeSize());
          encoder.setFileID(currentFile.getRecordID());
 
          if (callback != null)
@@ -312,9 +309,4 @@ public class FileWrapperJournal extends JournalBase implements Journal
       throw new UnsupportedOperationException();
    }
 
-   @Override
-   public JournalFilesRepository getFilesRepository()
-   {
-      throw new UnsupportedOperationException();
-   }
 }

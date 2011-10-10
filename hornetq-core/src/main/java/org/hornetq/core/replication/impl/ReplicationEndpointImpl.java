@@ -317,6 +317,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
 
       filesReservedForSync.clear();
+      for (Journal j : journals)
+      {
+         if (j instanceof FileWrapperJournal)
+            j.stop();
+      }
       pageManager.stop();
 
       // Storage needs to be the last to stop
@@ -363,7 +368,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
                                        "Backup node can't connect to the live node as the data differs");
          }
       }
-
    }
 
    /**
@@ -411,8 +415,9 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             }
             // files should be already in place.
             filesReservedForSync.remove(jc);
-            getJournal(jc.typeByte).stop();
             registerJournal(jc.typeByte, journal);
+            journal.stop();
+            journal.start();
             journal.loadInternalOnly();
          }
          finally
@@ -540,23 +545,23 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          return;
       }
 
-
       final Journal journal = journalsHolder.get(packet.getJournalContentType());
       synchronized (this)
       {
          if (!started)
                return;
-      Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
+         Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
          log.info("Journal " + packet.getJournalContentType() + ". Reserving fileIDs for synchronization: " +
                   Arrays.toString(packet.getFileIds()));
 
-      for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
-      {
-         mapToFill.put(entry.getKey(), new JournalSyncFile(entry.getValue()));
+         for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
+         {
+            mapToFill.put(entry.getKey(), new JournalSyncFile(entry.getValue()));
+         }
+         FileWrapperJournal syncJournal = new FileWrapperJournal(journal);
+         registerJournal(packet.getJournalContentType().typeByte, syncJournal);
       }
-      registerJournal(packet.getJournalContentType().typeByte, new FileWrapperJournal(journal));
-      }
-   }
+     }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {

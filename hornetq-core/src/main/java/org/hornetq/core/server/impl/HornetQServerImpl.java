@@ -215,8 +215,8 @@ public class HornetQServerImpl implements HornetQServer
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    private final Object initialiseLock = new Object();
-
    private boolean initialised;
+   private final Object startUpLock = new Object();
 
    /**
     * Only applicable to 'remote backup servers'. If this flag is false the backup may not become
@@ -602,8 +602,6 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator.close();
             replicationEndpoint.stop();
 
-            if (!started)
-               return;
             if (!isRemoteBackupUpToDate())
             {
                /*
@@ -614,16 +612,20 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             configuration.setBackup(false);
-            storageManager.start();
-
-            initialisePart2();
-            clusterManager.activate();
+            synchronized (startUpLock)
+            {
+               if (!started)
+                  return;
+               storageManager.start();
+               initialisePart2();
+               clusterManager.activate();
+            }
 
          }
          catch (Exception e)
          {
-            if (e instanceof InterruptedException && !started)
-               // do not log errors if the server is being stopped.
+            if ((e instanceof InterruptedException || e instanceof IllegalStateException) && !started)
+               // do not log these errors if the server is being stopped.
                return;
             log.error("Failure in initialisation", e);
             e.printStackTrace();
@@ -796,6 +798,9 @@ public class HornetQServerImpl implements HornetQServer
 
       synchronized (this)
       {
+         synchronized (startUpLock)
+         {
+
          // Stop the deployers
          if (configuration.isFileDeploymentEnabled())
          {
@@ -917,6 +922,8 @@ public class HornetQServerImpl implements HornetQServer
 
          started = false;
          initialised = false;
+         }
+
          // to display in the log message
          SimpleString tempNodeID = getNodeID();
 

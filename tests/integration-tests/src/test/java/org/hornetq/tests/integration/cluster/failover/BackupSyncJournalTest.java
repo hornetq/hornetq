@@ -45,8 +45,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    public void testNodeID() throws Exception
    {
-      backupServer.start();
-      waitForComponent(backupServer, 5);
+      startBackupFinishSyncing();
       assertTrue("must be running", backupServer.isStarted());
       assertEquals("backup and live should have the same nodeID", liveServer.getServer().getNodeID(),
                    backupServer.getServer().getNodeID());
@@ -113,8 +112,8 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    protected void startBackupFinishSyncing() throws Exception
    {
-      backupServer.start();
       syncDelay.deliverUpToDateMsg();
+      backupServer.start();
       waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
    }
 

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.journal.impl.JournalFilesRepository;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
@@ -180,8 +179,6 @@ public interface Journal extends HornetQComponent
    JournalFile[] getDataFiles();
 
    SequentialFileFactory getFileFactory();
-
-   JournalFilesRepository getFilesRepository();
 
    int getFileSize();
 }

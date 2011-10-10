@@ -26,7 +26,6 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.journal.impl.JournalFilesRepository;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
@@ -616,13 +615,6 @@ public class ReplicatedJournal implements Journal
       throw new UnsupportedOperationException();
    }
 
-   @Override
-   public JournalFilesRepository getFilesRepository()
-   {
-      throw new UnsupportedOperationException();
-   }
-
-   @Override
    public int getFileSize()
    {
       return localJournal.getFileSize();

@@ -15,7 +15,6 @@ package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -177,6 +176,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    private final float compactPercentage;
 
    private final int compactMinFiles;
+   private final JournalFilesRepository filesRepository;
+   private final SequentialFileFactory fileFactory;
+   private volatile JournalFile currentFile;
 
    // Compacting may replace this structure
    private final ConcurrentMap<Long, JournalRecord> records = new ConcurrentHashMap<Long, JournalRecord>();
@@ -223,8 +225,12 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
                       final String fileExtension,
                       final int maxAIO)
    {
-      super(fileFactory, new JournalFilesRepository(fileFactory, filePrefix, fileExtension, 0, maxAIO, fileSize,
-                                                    minFiles), fileSize);
+      super(fileFactory.isSupportsCallbacks(), fileSize);
+      if (fileSize % fileFactory.getAlignment() != 0)
+      {
+         throw new IllegalArgumentException("Invalid journal-file-size " + fileSize + ", It should be multiple of " +
+                  fileFactory.getAlignment());
+      }
       if (minFiles < 2)
       {
          throw new IllegalArgumentException("minFiles cannot be less than 2");
@@ -242,7 +248,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
          this.compactPercentage = compactPercentage / 100f;
       }
+      this.fileFactory = fileFactory;
 
+      this.filesRepository =
+               new JournalFilesRepository(fileFactory, filePrefix, fileExtension, 0, maxAIO, fileSize, minFiles);
       this.compactMinFiles = compactMinFiles;
       this.minFiles = minFiles;
       this.userVersion = 0;
@@ -1706,6 +1715,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       filesRepository.clear();
 
       transactions.clear();
+      currentFile = null;
 
       final Map<Long, TransactionHolder> loadTransactions = new LinkedHashMap<Long, TransactionHolder>();
 
@@ -2366,13 +2376,16 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
    public synchronized void stop() throws Exception
    {
-      JournalImpl.trace("Stopping the journal");
-
       if (state == JournalState.STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
       }
 
+      JournalImpl.trace("Stopping the journal " + this);
+
+      journalLock.writeLock().lock();
+      try
+      {
       lockAppend.lock();
 
       try
@@ -2412,6 +2425,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       finally
       {
          lockAppend.unlock();
+         }
+      }
+      finally
+      {
+         journalLock.writeLock().unlock();
       }
    }
 
@@ -3018,7 +3036,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       try
       {
          Map<Long, JournalFile> map = new HashMap<Long, JournalFile>();
-         log.info("Reserving fileIDs before synchronization: " + Arrays.toString(fileIds));
          long maxID = -1;
          for (long id : fileIds)
          {
@@ -3040,9 +3057,84 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       return fileFactory;
    }
 
-   @Override
-   public JournalFilesRepository getFilesRepository()
+   /**
+    * @param lastDataPos
+    * @return
+    * @throws Exception
+    */
+   protected JournalFile setUpCurrentFile(int lastDataPos) throws Exception
    {
-      return filesRepository;
+      // Create any more files we need
+
+      filesRepository.ensureMinFiles();
+
+      // The current file is the last one that has data
+
+      currentFile = filesRepository.pollLastDataFile();
+      if (currentFile != null)
+      {
+         if (!currentFile.getFile().isOpen())
+         currentFile.getFile().open();
+
+         currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
+      }
+      else
+      {
+         currentFile = filesRepository.getFreeFile();
+
+         filesRepository.openFile(currentFile, true);
+      }
+
+      fileFactory.activateBuffer(currentFile.getFile());
+
+      filesRepository.pushOpenedFile();
+      return currentFile;
+   }
+
+   /**
+    * @param size
+    * @return
+    * @throws Exception
+    */
+   protected JournalFile switchFileIfNecessary(int size) throws Exception
+   {
+      // We take into account the fileID used on the Header
+      if (size > fileSize - currentFile.getFile().calculateBlockStart(JournalImpl.SIZE_HEADER))
+      {
+         throw new IllegalArgumentException("Record is too large to store " + size);
+      }
+
+      if (!currentFile.getFile().fits(size))
+      {
+         moveNextFile(true);
+
+         // The same check needs to be done at the new file also
+         if (!currentFile.getFile().fits(size))
+         {
+            // Sanity check, this should never happen
+            throw new IllegalStateException("Invalid logic on buffer allocation");
+         }
+      }
+      return currentFile;
+   }
+
+   /** You need to guarantee lock.acquire() before calling this method! */
+   private void moveNextFile(final boolean scheduleReclaim) throws Exception
+   {
+      filesRepository.closeFile(currentFile);
+
+      currentFile = filesRepository.openFile();
+
+      if (scheduleReclaim)
+      {
+         scheduleReclaim();
+      }
+
+      if (trace)
+      {
+         log.info("moveNextFile: " + currentFile);
+      }
+
+      fileFactory.activateBuffer(currentFile.getFile());
    }
 }
