@@ -322,6 +322,10 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       {
          frame.addHeader(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
       }
+
+      synchronized(serverMessage)
+      {
+
       HornetQBuffer buffer = serverMessage.getBodyBuffer();
 
       int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
@@ -352,6 +356,7 @@ public class StompFrameHandlerV10 extends VersionedStompFrameHandler implements 
       serverMessage.getBodyBuffer().resetReaderIndex();
 
       StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
+      }
       
       return frame;
 
