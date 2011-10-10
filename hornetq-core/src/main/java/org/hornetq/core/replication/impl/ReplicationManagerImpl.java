@@ -469,8 +469,15 @@ public class ReplicationManagerImpl implements ReplicationManager
       if (enabled)
       {
          SequentialFile file = jf.getFile().copy();
+         try {
          log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
          sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
+         }
+         finally
+         {
+            if (file.isOpen())
+               file.close();
+         }
       }
    }
 
