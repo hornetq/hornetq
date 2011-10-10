@@ -428,6 +428,8 @@ public class JournalStorageManager implements StorageManager
    {
       for (Entry<SimpleString, Collection<Integer>> entry : pageFilesToSync.entrySet())
       {
+         if (!started)
+            return;
          PagingStore store = manager.getPageStore(entry.getKey());
          store.sendPages(replicator, entry.getValue());
       }
@@ -460,6 +462,8 @@ public class JournalStorageManager implements StorageManager
          SequentialFile seqFile = largeMessagesFactory.createSequentialFile(fileName, 1);
          if (!seqFile.exists())
             continue;
+         if (!started)
+            return;
          replicator.syncLargeMessageFile(seqFile, size, getLargeMessageIdFromFilename(fileName));
       }
    }
@@ -498,6 +502,8 @@ public class JournalStorageManager implements StorageManager
    {
       for (JournalFile jf : journalFiles)
       {
+         if (!started)
+            return;
          replicator.syncJournalFile(jf, type);
          jf.setCanReclaim(true);
       }

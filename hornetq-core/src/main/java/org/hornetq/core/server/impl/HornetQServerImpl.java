@@ -823,6 +823,12 @@ public class HornetQServerImpl implements HornetQServer
             pagingManager.stop();
          }
 
+         if (replicationEndpoint != null)
+         {
+            replicationEndpoint.stop();
+            replicationEndpoint = null;
+         }
+
          if (storageManager != null)
          {
             storageManager.stop();
@@ -832,12 +838,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             replicationManager.stop();
             replicationManager = null;
-         }
-
-         if (replicationEndpoint != null)
-         {
-            replicationEndpoint.stop();
-            replicationEndpoint = null;
          }
 
          if (securityManager != null)
@@ -1669,7 +1669,10 @@ public class HornetQServerImpl implements HornetQServer
 
          Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
-         PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress()).getCursorProvider().createSubscription(queueBindingInfo.getId(), filter, true);
+         PageSubscription subscription =
+                  pagingManager.getPageStore(queueBindingInfo.getAddress())
+                               .getCursorProvider()
+                               .createSubscription(queueBindingInfo.getId(), filter, true);
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
                                                 queueBindingInfo.getAddress(),

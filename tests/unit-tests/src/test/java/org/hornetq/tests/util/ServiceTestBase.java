@@ -480,6 +480,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       return locatorWithoutHA;
    }
 
+   // XXX unused
    protected ClientSessionFactoryImpl createFactory(final String connectorClass) throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorClass));
