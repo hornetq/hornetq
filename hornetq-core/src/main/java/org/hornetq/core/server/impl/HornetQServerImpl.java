@@ -602,6 +602,8 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator.close();
             replicationEndpoint.stop();
 
+            if (!started)
+               return;
             if (!isRemoteBackupUpToDate())
             {
                /*
