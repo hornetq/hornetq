@@ -505,17 +505,8 @@ public class JournalStorageManager implements StorageManager
 
    private JournalFile[] prepareJournalForCopy(Journal journal, JournalContent contentType) throws Exception
    {
-      journal.setAutoReclaim(false);
-      /*
-       * XXX HORNETQ-720 need to check whether it is safe to proceed if compacting is running
-       * (specially at the end of it)
-       */
       journal.forceMoveNextFile();
       JournalFile[] datafiles = journal.getDataFiles();
-      for (JournalFile jf : datafiles)
-      {
-         jf.setCanReclaim(false);
-      }
       replicator.sendStartSyncMessage(datafiles, contentType);
       return datafiles;
    }
