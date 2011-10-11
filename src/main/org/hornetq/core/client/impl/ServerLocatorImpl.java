@@ -513,7 +513,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          Pair<TransportConfiguration, TransportConfiguration> pair = topologyArray[pos];
 
-         return pair.a;
+         return pair.getA();
       }
       else
       {
@@ -1329,19 +1329,19 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          log.debug("NodeUp " + this + "::nodeID=" + nodeID + ", connectorPair=" + connectorPair, new Exception("trace"));
       }
 
-      TopologyMember member = new TopologyMember(connectorPair.a, connectorPair.b);
+      TopologyMember member = new TopologyMember(connectorPair.getA(), connectorPair.getB());
 
       if (topology.updateMember(uniqueEventID, nodeID, member))
       {
 
          TopologyMember actMember = topology.getMember(nodeID);
 
-         if (actMember != null && actMember.getConnector().a != null && actMember.getConnector().b != null)
+         if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
          {
             for (ClientSessionFactory factory : factories)
             {
-               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().a,
-                                                                          actMember.getConnector().b);
+               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
+                                                                          actMember.getConnector().getB());
             }
          }
 

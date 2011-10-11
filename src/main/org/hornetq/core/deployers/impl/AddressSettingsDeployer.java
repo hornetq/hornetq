@@ -66,7 +66,7 @@ public class AddressSettingsDeployer extends XmlDeployer
       
       Pair<String, AddressSettings> setting = parser.parseAddressSettings(node);
 
-      addressSettingsRepository.addMatch(setting.a, setting.b);
+      addressSettingsRepository.addMatch(setting.getA(), setting.getB());
    }
 
    @Override

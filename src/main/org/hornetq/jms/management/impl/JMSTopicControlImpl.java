@@ -296,8 +296,8 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
          {
             Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
                                                                                                          .toString());
-            clientID = pair.a;
-            subName = pair.b;
+            clientID = pair.getA();
+            subName = pair.getB();
          }
 
          String filter = queue.getFilter() != null ? queue.getFilter() : null;
@@ -330,8 +330,8 @@ public class JMSTopicControlImpl extends StandardMBean implements TopicControl
             {
                Pair<String, String> pair = HornetQDestination.decomposeQueueNameForDurableSubscription(queue.getName()
                                                                                                             .toString());
-               clientID = pair.a;
-               subName = pair.b;
+               clientID = pair.getA();
+               subName = pair.getB();
             }
 
             String filter = queue.getFilter() != null ? queue.getFilter() : null;

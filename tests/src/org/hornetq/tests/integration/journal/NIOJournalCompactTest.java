@@ -125,8 +125,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       for (Pair<String, String> rename : renamesRead)
       {
          Pair<String, String> original = iterRename.next();
-         Assert.assertEquals(original.a, rename.a);
-         Assert.assertEquals(original.b, rename.b);
+         Assert.assertEquals(original.getA(), rename.getA());
+         Assert.assertEquals(original.getB(), rename.getB());
       }
       Assert.assertFalse(iterNewFiles.hasNext());
 
@@ -720,20 +720,20 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             if (postXA)
             {
-               prepare(tx.a, new SimpleEncoding(10, (byte)0));
+               prepare(tx.getA(), new SimpleEncoding(10, (byte)0));
             }
-            if (tx.a % 2 == 0)
+            if (tx.getA() % 2 == 0)
             {
-               commit(tx.a);
+               commit(tx.getA());
 
                if (deleteTransactRecords)
                {
-                  delete(tx.b);
+                  delete(tx.getB());
                }
             }
             else
             {
-               rollback(tx.a);
+               rollback(tx.getA());
             }
          }
       }
@@ -762,20 +762,20 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          {
             if (postXA)
             {
-               prepare(tx.a, new SimpleEncoding(10, (byte)0));
+               prepare(tx.getA(), new SimpleEncoding(10, (byte)0));
             }
-            if (tx.a % 2 == 0)
+            if (tx.getA() % 2 == 0)
             {
-               commit(tx.a);
+               commit(tx.getA());
 
                if (deleteTransactRecords)
                {
-                  delete(tx.b);
+                  delete(tx.getB());
                }
             }
             else
             {
-               rollback(tx.a);
+               rollback(tx.getA());
             }
          }
       }

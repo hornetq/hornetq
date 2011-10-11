@@ -205,8 +205,8 @@ class StompSession implements SessionCallback
 
       if (pair != null)
       {
-         long consumerID = pair.a;
-         int credits = pair.b;
+         long consumerID = pair.getA();
+         int credits = pair.getB();
    
          if (this.consumerCredits != -1)
          {

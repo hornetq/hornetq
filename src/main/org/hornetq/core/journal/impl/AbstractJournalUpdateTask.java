@@ -143,8 +143,8 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
             filesToRename.writeInt(renames.size());
             for (Pair<String, String> rename : renames)
             {
-               filesToRename.writeUTF(rename.a);
-               filesToRename.writeUTF(rename.b);
+               filesToRename.writeUTF(rename.getA());
+               filesToRename.writeUTF(rename.getB());
             }
          }
 

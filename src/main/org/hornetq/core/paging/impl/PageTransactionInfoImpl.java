@@ -160,7 +160,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          // This is to make sure deliveries that were touched before the commit arrived will be delivered
          for (Pair<PageSubscription, PagePosition> pos : lateDeliveries)
          {
-            pos.a.redeliver(pos.b);
+            pos.getA().redeliver(pos.getB());
          }
          lateDeliveries.clear();
       }
@@ -262,7 +262,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       {
          for (Pair<PageSubscription, PagePosition> pos : lateDeliveries)
          {
-            pos.a.lateDeliveryRollback(pos.b);
+            pos.getA().lateDeliveryRollback(pos.getB());
          }
          lateDeliveries = null;
       }

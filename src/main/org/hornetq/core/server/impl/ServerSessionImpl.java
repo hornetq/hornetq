@@ -1239,7 +1239,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       Pair<UUID, AtomicLong> value = targetAddressInfos.get(SimpleString.toSimpleString(address));
       if (value != null)
       {
-         return value.a.toString();
+         return value.getA().toString();
       }
       else
       {
@@ -1265,8 +1265,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          producerInfo.put("connectionID", this.getConnectionID().toString());
          producerInfo.put("sessionID", this.getName());
          producerInfo.put("destination", entry.getKey().toString());
-         producerInfo.put("lastUUIDSent", entry.getValue().a);
-         producerInfo.put("msgSent", entry.getValue().b.longValue());
+         producerInfo.put("lastUUIDSent", entry.getValue().getA());
+         producerInfo.put("msgSent", entry.getValue().getB().longValue());
          array.put(producerInfo);
       }
    }
@@ -1411,8 +1411,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
       else
       {
-         value.a = msg.getUserID();
-         value.b.incrementAndGet();
+         value.setA(msg.getUserID());
+         value.getB().incrementAndGet();
       }
 
       routingContext.clear();

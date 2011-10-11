@@ -43,22 +43,22 @@ public class TopologyMember implements Serializable
 
    public TransportConfiguration getA()
    {
-      return connector.a;
+      return connector.getA();
    }
 
    public TransportConfiguration getB()
    {
-      return connector.b;
+      return connector.getB();
    }
 
    public void setB(final TransportConfiguration param)
    {
-      connector.b = param;
+      connector.setB(param);
    }
 
    public void setA(final TransportConfiguration param)
    {
-      connector.a = param;
+      connector.setA(param);
    }
 
    /**

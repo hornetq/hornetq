@@ -3094,14 +3094,14 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          for (Pair<String, String> rename : renames)
          {
-            SequentialFile fileTmp = fileFactory.createSequentialFile(rename.a, 1);
-            SequentialFile fileTo = fileFactory.createSequentialFile(rename.b, 1);
+            SequentialFile fileTmp = fileFactory.createSequentialFile(rename.getA(), 1);
+            SequentialFile fileTo = fileFactory.createSequentialFile(rename.getB(), 1);
             // We should do the rename only if the tmp file still exist, or else we could
             // delete a valid file depending on where the crash occured during the control file delete
             if (fileTmp.exists())
             {
                fileTo.delete();
-               fileTmp.renameTo(rename.b);
+               fileTmp.renameTo(rename.getB());
             }
          }
 
