@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.AccessController;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
@@ -29,8 +31,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-
-import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -187,7 +187,7 @@ public class SSLSupport
          }
          else
          {
-            URL url = ClassloadingUtil.findResource(storePath);
+            URL url = findResource(storePath);
             if (url != null)
             {
                return url;
@@ -197,6 +197,41 @@ public class SSLSupport
 
       throw new Exception("Failed to find a store at " + storePath);
    }
+   
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static URL findResource(final String resourceName)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<URL>()
+      {
+         public URL run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               URL resource = loader.getResource(resourceName);
+               if (resource != null)
+                   return resource;
+            }
+            catch (Throwable t)
+            {
+            }
+
+            loader = Thread.currentThread().getContextClassLoader();
+            if (loader == null)
+                return null;
+
+            URL resource = loader.getResource(resourceName);
+            if (resource != null)
+                return resource;
+
+             return null;
+         }
+      });
+   }
+
 
    // Inner classes -------------------------------------------------
 }

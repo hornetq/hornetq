@@ -31,7 +31,7 @@ public class NIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
 
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+   protected String journalDir = System.getProperty("java.io.tmpdir", "/tmp") + "/journal-test";
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
