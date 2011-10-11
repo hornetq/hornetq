@@ -64,7 +64,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          clientProducer.send(message);
       }
       CountDownLatch latch = new CountDownLatch(numMessages);
@@ -91,7 +91,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          clientProducer.send(message);
          clientProducer2.send(message);
          clientProducer3.send(message);

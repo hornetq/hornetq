@@ -1272,18 +1272,19 @@ public class UnitTestCase extends TestCase
       return (size / alignment + (size % alignment != 0 ? 1 : 0)) * alignment;
    }
 
-   protected ClientMessage createTextMessage(final String s, final ClientSession clientSession)
+   protected ClientMessage createTextMessage(final ClientSession session, final String s)
    {
-      return createTextMessage(s, true, clientSession);
+      return createTextMessage(session, s, true);
    }
 
-   protected ClientMessage createTextMessage(final String s, final boolean durable, final ClientSession clientSession)
+
+   protected ClientMessage createTextMessage(final ClientSession session, final String s, final boolean durable)
    {
-      ClientMessage message = clientSession.createMessage(HornetQTextMessage.TYPE,
-                                                          durable,
-                                                          0,
-                                                          System.currentTimeMillis(),
-                                                          (byte)4);
+      ClientMessage message = session.createMessage(HornetQTextMessage.TYPE,
+                                                    durable,
+                                                    0,
+                                                    System.currentTimeMillis(),
+                                                    (byte)1);
       message.getBodyBuffer().writeString(s);
       return message;
    }

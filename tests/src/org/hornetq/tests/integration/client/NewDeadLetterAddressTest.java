@@ -51,7 +51,7 @@ public class NewDeadLetterAddressTest extends UnitTestCase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       ClientProducer producer = clientSession.createProducer(address);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(dlq);
       ClientMessage m = clientConsumer.receive(500);

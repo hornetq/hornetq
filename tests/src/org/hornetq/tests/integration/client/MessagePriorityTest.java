@@ -72,7 +72,7 @@ public class MessagePriorityTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         ClientMessage m = createTextMessage(Integer.toString(i), session);
+         ClientMessage m = createTextMessage(session, Integer.toString(i));
          m.setPriority((byte)i);
          producer.send(m);
       }
@@ -114,7 +114,7 @@ public class MessagePriorityTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         ClientMessage m = createTextMessage(Integer.toString(i), session);
+         ClientMessage m = createTextMessage(session, Integer.toString(i));
          m.setPriority((byte)i);
          producer.send(m);
       }
@@ -153,28 +153,28 @@ public class MessagePriorityTest extends UnitTestCase
       // 3 7
       // 3 3
       // 1 9
-      messages[0] = createTextMessage("a", session);
+      messages[0] = createTextMessage(session, "a");
       messages[0].setPriority((byte)0);
-      messages[1] = createTextMessage("b", session);
+      messages[1] = createTextMessage(session, "b");
       messages[1].setPriority((byte)0);
-      messages[2] = createTextMessage("c", session);
+      messages[2] = createTextMessage(session, "c");
       messages[2].setPriority((byte)0);
 
-      messages[3] = createTextMessage("d", session);
+      messages[3] = createTextMessage(session, "d");
       messages[3].setPriority((byte)7);
-      messages[4] = createTextMessage("e", session);
+      messages[4] = createTextMessage(session, "e");
       messages[4].setPriority((byte)7);
-      messages[5] = createTextMessage("f", session);
+      messages[5] = createTextMessage(session, "f");
       messages[5].setPriority((byte)7);
 
-      messages[6] = createTextMessage("g", session);
+      messages[6] = createTextMessage(session, "g");
       messages[6].setPriority((byte)3);
-      messages[7] = createTextMessage("h", session);
+      messages[7] = createTextMessage(session, "h");
       messages[7].setPriority((byte)3);
-      messages[8] = createTextMessage("i", session);
+      messages[8] = createTextMessage(session, "i");
       messages[8].setPriority((byte)3);
 
-      messages[9] = createTextMessage("j", session);
+      messages[9] = createTextMessage(session, "j");
       messages[9].setPriority((byte)9);
 
       for (int i = 0; i < 10; i++)
@@ -222,7 +222,7 @@ public class MessagePriorityTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         ClientMessage m = createTextMessage(Integer.toString(i), session);
+         ClientMessage m = createTextMessage(session, Integer.toString(i));
          m.setPriority((byte)i);
          producer.send(m);
       }

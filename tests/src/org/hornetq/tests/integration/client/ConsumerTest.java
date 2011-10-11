@@ -82,7 +82,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -116,7 +116,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -150,7 +150,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -188,7 +188,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -228,7 +228,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
       session.close();
@@ -293,7 +293,7 @@ public class ConsumerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
             
