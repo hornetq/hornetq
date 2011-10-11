@@ -53,7 +53,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -84,7 +84,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(ea, eq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
 
       producer.send(clientMessage);
@@ -136,7 +136,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(ea, eq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
       clientSession.start();
@@ -167,7 +167,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       long expiration = System.currentTimeMillis();
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         ClientMessage tm = createTextMessage("Message:" + i, clientSession);
+         ClientMessage tm = createTextMessage(clientSession, "Message:" + i);
          tm.setExpiration(expiration);
          producer.send(tm);
       }
@@ -212,7 +212,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -241,7 +241,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(qName, qName, null, false);
 
       ClientProducer producer = clientSession.createProducer(qName);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 
@@ -279,7 +279,7 @@ public class ExpiryAddressTest extends ServiceTestBase
       clientSession.createQueue(specificExpiryAddress, specificExpiryQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       clientMessage.setExpiration(System.currentTimeMillis());
       producer.send(clientMessage);
 

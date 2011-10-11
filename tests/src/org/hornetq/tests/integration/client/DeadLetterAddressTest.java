@@ -65,7 +65,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -95,7 +95,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(5000);
@@ -132,7 +132,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       final CountDownLatch latch = new CountDownLatch(2);
       TestHandler handler = new TestHandler(latch, clientSession);
@@ -189,7 +189,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -223,7 +223,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -258,7 +258,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         ClientMessage tm = createTextMessage("Message:" + i, clientSession);
+         ClientMessage tm = createTextMessage(clientSession, "Message:" + i);
          producer.send(tm);
       }
 
@@ -339,7 +339,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();
@@ -381,7 +381,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();
@@ -430,7 +430,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(specificDeadLetterAddress, specificDeadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();

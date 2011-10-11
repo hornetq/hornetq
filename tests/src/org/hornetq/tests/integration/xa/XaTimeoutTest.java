@@ -131,10 +131,10 @@ public class XaTimeoutTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m3 = createTextMessage(clientSession, "m3");
+      ClientMessage m4 = createTextMessage(clientSession, "m4");
       clientSession.setTransactionTimeout(1);
       clientSession.start(xid, XAResource.TMNOFLAGS);
       clientProducer.send(m1);
@@ -162,10 +162,10 @@ public class XaTimeoutTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m3 = createTextMessage(clientSession, "m3");
+      ClientMessage m4 = createTextMessage(clientSession, "m4");
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
@@ -232,14 +232,14 @@ public class XaTimeoutTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
-      ClientMessage m5 = createTextMessage("m5", clientSession);
-      ClientMessage m6 = createTextMessage("m6", clientSession);
-      ClientMessage m7 = createTextMessage("m7", clientSession);
-      ClientMessage m8 = createTextMessage("m8", clientSession);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m3 = createTextMessage(clientSession, "m3");
+      ClientMessage m4 = createTextMessage(clientSession, "m4");
+      ClientMessage m5 = createTextMessage(clientSession, "m5");
+      ClientMessage m6 = createTextMessage(clientSession, "m6");
+      ClientMessage m7 = createTextMessage(clientSession, "m7");
+      ClientMessage m8 = createTextMessage(clientSession, "m8");
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
@@ -312,14 +312,14 @@ public class XaTimeoutTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
-      ClientMessage m5 = createTextMessage("m5", clientSession);
-      ClientMessage m6 = createTextMessage("m6", clientSession);
-      ClientMessage m7 = createTextMessage("m7", clientSession);
-      ClientMessage m8 = createTextMessage("m8", clientSession);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m3 = createTextMessage(clientSession, "m3");
+      ClientMessage m4 = createTextMessage(clientSession, "m4");
+      ClientMessage m5 = createTextMessage(clientSession, "m5");
+      ClientMessage m6 = createTextMessage(clientSession, "m6");
+      ClientMessage m7 = createTextMessage(clientSession, "m7");
+      ClientMessage m8 = createTextMessage(clientSession, "m8");
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientProducer clientProducer2 = clientSession2.createProducer(atestq);
       clientProducer2.send(m1);
@@ -387,10 +387,10 @@ public class XaTimeoutTest extends UnitTestCase
    {
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
-      ClientMessage m1 = createTextMessage("m1", clientSession);
-      ClientMessage m2 = createTextMessage("m2", clientSession);
-      ClientMessage m3 = createTextMessage("m3", clientSession);
-      ClientMessage m4 = createTextMessage("m4", clientSession);
+      ClientMessage m1 = createTextMessage(clientSession, "m1");
+      ClientMessage m2 = createTextMessage(clientSession, "m2");
+      ClientMessage m3 = createTextMessage(clientSession, "m3");
+      ClientMessage m4 = createTextMessage(clientSession, "m4");
       clientSession.start(xid, XAResource.TMNOFLAGS);
       clientProducer.send(m1);
       clientProducer.send(m2);
@@ -455,7 +455,7 @@ public class XaTimeoutTest extends UnitTestCase
 
       for (int i = 0; i < messages.length; i++)
       {
-         messages[i] = createTextMessage("m" + i, clientSession);
+         messages[i] = createTextMessage(clientSession, "m" + i);
       }
       for (int i = 0; i < clientSessions.length; i++)
       {

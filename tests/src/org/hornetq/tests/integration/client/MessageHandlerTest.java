@@ -74,7 +74,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -135,7 +135,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          
          message.putIntProperty(new SimpleString("i"), i);
 
@@ -237,7 +237,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("i"), i);
          producer.send(message);
       }
@@ -325,7 +325,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("i"), i);
          producer.send(message);
       }

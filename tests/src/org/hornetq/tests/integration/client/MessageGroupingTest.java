@@ -99,7 +99,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          message.putStringProperty(Message.HDR_GROUP_ID, groupId);
          clientProducer.send(message);
       }
@@ -131,7 +131,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -174,7 +174,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -222,7 +222,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -283,7 +283,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -358,7 +358,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -419,7 +419,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);
@@ -493,7 +493,7 @@ public class MessageGroupingTest extends UnitTestCase
       int numMessages = 4;
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = createTextMessage("m" + i, clientSession);
+         ClientMessage message = createTextMessage(clientSession, "m" + i);
          if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(Message.HDR_GROUP_ID, groupId);

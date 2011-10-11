@@ -76,7 +76,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
       session.createQueue(CoreClientOverSSLTest.QUEUE, CoreClientOverSSLTest.QUEUE, false);
       ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
-      ClientMessage message = createTextMessage(text, session);
+      ClientMessage message = createTextMessage(session, text);
       producer.send(message);
 
       ClientConsumer consumer = session.createConsumer(CoreClientOverSSLTest.QUEUE);
