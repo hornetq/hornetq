@@ -603,7 +603,7 @@ public class FileConfigurationParser
          for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, Set<Role>> securityItem = parseSecurityRoles(list.item(i));
-            config.getSecurityRoles().put(securityItem.a, securityItem.b);
+            config.getSecurityRoles().put(securityItem.getA(), securityItem.getB());
          }
       }
    }
@@ -643,7 +643,7 @@ public class FileConfigurationParser
          for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, AddressSettings> addressSettings = parseAddressSettings(list.item(i));
-            config.getAddressesSettings().put(addressSettings.a, addressSettings.b);
+            config.getAddressesSettings().put(addressSettings.getA(), addressSettings.getB());
          }
       }
    }

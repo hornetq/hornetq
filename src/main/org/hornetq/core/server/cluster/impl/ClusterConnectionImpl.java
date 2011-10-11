@@ -520,11 +520,11 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          log.debug(this + "::NodeAnnounced, backup=" + backup + nodeID + connectorPair);
       }
 
-      TopologyMember newMember = new TopologyMember(connectorPair.a, connectorPair.b);
+      TopologyMember newMember = new TopologyMember(connectorPair.getA(), connectorPair.getB());
       newMember.setUniqueEventID(uniqueEventID);
       if (backup)
       {
-         topology.updateBackup(nodeID, new TopologyMember(connectorPair.a, connectorPair.b));
+         topology.updateBackup(nodeID, new TopologyMember(connectorPair.getA(), connectorPair.getB()));
       }
       else
       {
@@ -541,8 +541,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       sf.sendNodeAnnounce(localMember.getUniqueEventID(),
                           manager.getNodeId(),
                           false,
-                          localMember.getConnector().a,
-                          localMember.getConnector().b);
+                          localMember.getConnector().getA(),
+                          localMember.getConnector().getB());
 
       // sf.sendNodeAnnounce(System.currentTimeMillis(),
       // manager.getNodeId(),
@@ -743,7 +743,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       }
 
       // if the node is more than 1 hop away, we do not create a bridge for direct cluster connection
-      if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.a))
+      if (allowDirectConnectionsOnly && !allowableConnections.contains(connectorPair.getA()))
       {
          return;
       }
@@ -755,7 +755,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          return;
       }
       /*we dont create bridges to backups*/
-      if (connectorPair.a == null)
+      if (connectorPair.getA() == null)
       {
          if (isTrace)
          {
@@ -801,7 +801,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                   queue = server.createQueue(queueName, queueName, null, true, false);
                }
 
-               createNewRecord(eventUID, nodeID, connectorPair.a, queueName, queue, true);
+               createNewRecord(eventUID, nodeID, connectorPair.getA(), queueName, queue, true);
             }
             else
             {

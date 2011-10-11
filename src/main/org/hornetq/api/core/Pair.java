@@ -33,9 +33,9 @@ public class Pair<A, B> implements Serializable
       this.b = b;
    }
 
-   public A a;
+   private A a;
 
-   public B b;
+   private B b;
 
    private int hash = -1;
 
@@ -80,5 +80,27 @@ public class Pair<A, B> implements Serializable
    public String toString()
    {
       return "Pair[a=" + a + ", b=" + b + "]";
+   }
+
+   public void setA(A a)
+   {
+      hash = -1;
+      this.a = a;
+   }
+
+   public A getA()
+   {
+      return a;
+   }
+
+   public void setB(B b)
+   {
+      hash = -1;
+      this.b = b;
+   }
+
+   public B getB()
+   {
+      return b;
    }
 }

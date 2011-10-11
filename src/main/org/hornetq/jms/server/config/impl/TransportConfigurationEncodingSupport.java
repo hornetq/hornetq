@@ -78,12 +78,12 @@ public class TransportConfigurationEncodingSupport
       {
          for (Pair<TransportConfiguration, TransportConfiguration> pair : configs)
          {
-            encode(buffer, pair.a);
-            boolean backup = (pair.b != null);
+            encode(buffer, pair.getA());
+            boolean backup = (pair.getB() != null);
             buffer.writeBoolean(backup);
             if (backup)
             {
-               encode(buffer, pair.b);
+               encode(buffer, pair.getB());
             }
          }
       }
@@ -122,11 +122,11 @@ public class TransportConfigurationEncodingSupport
       {
          for (Pair<TransportConfiguration, TransportConfiguration> pair : configs)
          {
-            size += getEncodeSize(pair.a);
+            size += getEncodeSize(pair.getA());
             size += DataConstants.SIZE_BOOLEAN; // whether there is a backup config
-            if (pair.b != null)
+            if (pair.getB() != null)
             {
-               size += getEncodeSize(pair.b);
+               size += getEncodeSize(pair.getB());
             }
          }
       }

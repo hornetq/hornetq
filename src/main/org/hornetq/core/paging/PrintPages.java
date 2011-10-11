@@ -81,7 +81,7 @@ public class PrintPages
 
          Pair<Map<Long, Set<PagePosition>>, Set<Long>> cursorACKs = PrintPages.loadCursorACKs(arg[1]);
          
-         Set<Long> pgTXs = cursorACKs.b;
+         Set<Long> pgTXs = cursorACKs.getB();
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
          final ExecutorService executor = Executors.newFixedThreadPool(10);
@@ -133,7 +133,7 @@ public class PrintPages
 
                      boolean acked = false;
 
-                     Set<PagePosition> positions = cursorACKs.a.get(q[i]);
+                     Set<PagePosition> positions = cursorACKs.getA().get(q[i]);
                      if (positions != null)
                      {
                         acked = positions.contains(posCheck);

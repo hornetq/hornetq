@@ -236,14 +236,14 @@ public abstract class MultipleBackupsFailoverTestBase extends ServiceTestBase
                          Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                          boolean last)
       {
-         if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
+         if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
          {
-            liveNode.add(connectorPair.a.getName());
+            liveNode.add(connectorPair.getA().getName());
             latch.countDown();
          }
-         if (connectorPair.b != null && !backupNode.contains(connectorPair.b.getName()))
+         if (connectorPair.getB() != null && !backupNode.contains(connectorPair.getB().getName()))
          {
-            backupNode.add(connectorPair.b.getName());
+            backupNode.add(connectorPair.getB().getName());
             latch.countDown();
          }
       }

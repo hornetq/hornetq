@@ -88,7 +88,7 @@ public class SecurityDeployer extends XmlDeployer
    public void deploy(final Node node) throws Exception
    {
       Pair<String, Set<Role>> securityMatch = parser.parseSecurityRoles(node);
-      securityRepository.addMatch(securityMatch.a, securityMatch.b);
+      securityRepository.addMatch(securityMatch.getA(), securityMatch.getB());
    }
 
    /**

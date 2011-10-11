@@ -113,19 +113,19 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
       buffer.writeLong(uniqueEventID);
       if (!exit)
       {
-         if (pair.a != null)
+         if (pair.getA() != null)
          {
             buffer.writeBoolean(true);
-            pair.a.encode(buffer);
+            pair.getA().encode(buffer);
          }
          else
          {
             buffer.writeBoolean(false);
          }
-         if (pair.b != null)
+         if (pair.getB() != null)
          {
             buffer.writeBoolean(true);
-            pair.b.encode(buffer);
+            pair.getB().encode(buffer);
          }
          else
          {
