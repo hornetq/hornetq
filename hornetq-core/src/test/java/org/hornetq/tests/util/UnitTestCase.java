@@ -1284,7 +1284,7 @@ public class UnitTestCase extends TestCase
                                                     durable,
                                                     0,
                                                     System.currentTimeMillis(),
-                                                    (byte)1);
+                                                    (byte)4);
       message.getBodyBuffer().writeString(s);
       return message;
    }
