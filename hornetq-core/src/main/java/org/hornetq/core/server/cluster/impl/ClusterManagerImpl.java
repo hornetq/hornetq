@@ -15,9 +15,11 @@ package org.hornetq.core.server.cluster.impl;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,15 +30,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.client.impl.TopologyMember;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -44,29 +41,29 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
-import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.Future;
 import org.hornetq.utils.UUID;
 
 /**
  * A ClusterManagerImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
+ * @author Clebert Suconic
+ * 
  * Created 18 Nov 2008 09:23:49
  *
  *
  */
-public class ClusterManagerImpl implements ClusterManager
+public class ClusterManagerImpl implements ClusterManagerInternal
 {
    private static final Logger log = Logger.getLogger(ClusterManagerImpl.class);
 
@@ -81,6 +78,8 @@ public class ClusterManagerImpl implements ClusterManager
    private final PostOffice postOffice;
 
    private final ScheduledExecutorService scheduledExecutor;
+   
+   private ClusterConnection defaultClusterConnection;
 
    private final ManagementService managementService;
 
@@ -90,26 +89,15 @@ public class ClusterManagerImpl implements ClusterManager
 
    private volatile boolean started;
 
-   private boolean backup;
+   private volatile boolean backup;
 
    private final boolean clustered;
 
    // the cluster connections which links this node to other cluster nodes
    private final Map<String, ClusterConnection> clusterConnections = new HashMap<String, ClusterConnection>();
 
-   // regular client listeners to be notified of cluster topology changes.
-   // they correspond to regular clients using a HA ServerLocator
-   private final Set<ClusterTopologyListener> clientListeners = new ConcurrentHashSet<ClusterTopologyListener>();
+   private final Set<ServerLocatorInternal> clusterLocators = new ConcurrentHashSet<ServerLocatorInternal>();
 
-   // cluster connections listeners to be notified of cluster topology changes
-   // they correspond to cluster connections on *other nodes connected to this one*
-   private final Set<ClusterTopologyListener> clusterConnectionListeners = new ConcurrentHashSet<ClusterTopologyListener>();
-
-   private final Topology topology = new Topology();
-
-   private volatile ServerLocatorInternal backupServerLocator;
-
-   private final List<ServerLocatorInternal> clusterLocators = new ArrayList<ServerLocatorInternal>();
    private final Executor executor;
 
    public ClusterManagerImpl(final ExecutorFactory executorFactory,
@@ -129,7 +117,7 @@ public class ClusterManagerImpl implements ClusterManager
 
       this.executorFactory = executorFactory;
 
-      executor = executorFactory.getExecutor();
+      executor = executorFactory.getExecutor();;
 
       this.server = server;
 
@@ -148,13 +136,41 @@ public class ClusterManagerImpl implements ClusterManager
       this.clustered = clustered;
    }
 
-   public synchronized void start() throws Exception
+   public String describe()
    {
-      if (started)
+      StringWriter str = new StringWriter();
+      PrintWriter out = new PrintWriter(str);
+
+      out.println("Information on " + this);
+      out.println("*******************************************************");
+
+      for (ClusterConnection conn : this.clusterConnections.values())
       {
-         return;
+         out.println(conn.describe());
       }
 
+      out.println("*******************************************************");
+
+      return str.toString();
+   }
+   
+   public ClusterConnection getDefaultConnection()
+   {
+      return defaultClusterConnection;
+   }
+
+   public String toString()
+   {
+      return "ClusterManagerImpl[server=" + server + "]@" + System.identityHashCode(this);
+   }
+   
+   public String getNodeId()
+   {
+      return nodeUUID.toString();
+   }
+
+   public synchronized void deploy() throws Exception
+   {
       if (clustered)
       {
          for (BroadcastGroupConfiguration config : configuration.getBroadcastGroupConfigurations())
@@ -166,136 +182,107 @@ public class ClusterManagerImpl implements ClusterManager
          {
             deployClusterConnection(config);
          }
+      }
+   }
 
+   public synchronized void start() throws Exception
+   {
+      if (started)
+      {
+         return;
+      }
+
+      for (BroadcastGroup group: broadcastGroups.values())
+      {
+         if (!backup)
+         {
+            group.start();
+         }
+      }
+      
+      for (ClusterConnection conn : clusterConnections.values())
+      {
+         conn.start();
+         if (backup)
+         {
+            conn.informTopology();
+            conn.announceBackup();
+         }
       }
 
       for (BridgeConfiguration config : configuration.getBridgeConfigurations())
       {
-         deployBridge(config);
+         deployBridge(config, !backup);
       }
 
-      // Now announce presence
-
-      if (clusterConnections.size() > 0)
-      {
-         announceNode();
-      }
 
       started = true;
    }
 
-
-   public synchronized void stop() throws Exception
+   public void stop() throws Exception
    {
-      if (!started)
+      synchronized (this)
       {
-         return;
-      }
-
-      if (clustered)
-      {
-         for (BroadcastGroup group : broadcastGroups.values())
+         if (!started)
          {
-            group.stop();
-            managementService.unregisterBroadcastGroup(group.getName());
+            return;
          }
 
-         broadcastGroups.clear();
-
-         for (ClusterConnection clusterConnection : clusterConnections.values())
+         if (clustered)
          {
-            clusterConnection.stop();
-            managementService.unregisterCluster(clusterConnection.getName().toString());
+            for (BroadcastGroup group : broadcastGroups.values())
+            {
+               group.stop();
+               managementService.unregisterBroadcastGroup(group.getName());
+            }
+
+            broadcastGroups.clear();
+
+            for (ClusterConnection clusterConnection : clusterConnections.values())
+            {
+               clusterConnection.stop();
+               managementService.unregisterCluster(clusterConnection.getName().toString());
+            }
+
          }
 
-         clusterConnectionListeners.clear();
-         clientListeners.clear();
-         clusterConnections.clear();
-         topology.clear();
+         for (Bridge bridge : bridges.values())
+         {
+            bridge.stop();
+            managementService.unregisterBridge(bridge.getName().toString());
+         }
 
-      }
-
-      for (Bridge bridge : bridges.values())
-      {
-         bridge.stop();
-         managementService.unregisterBridge(bridge.getName().toString());
-      }
-
-      bridges.clear();
-
-      if(backupServerLocator != null)
-      {
-         backupServerLocator.close();
-         backupServerLocator = null;
+         bridges.clear();
       }
 
       for (ServerLocatorInternal clusterLocator : clusterLocators)
       {
-         clusterLocator.close();
+         try
+         {
+            clusterLocator.close();
+         }
+         catch (Exception e)
+         {
+            log.warn("Error closing serverLocator=" + clusterLocator + ", message=" + e.getMessage(), e);
+         }
       }
       clusterLocators.clear();
       started = false;
+
+      clearClusterConnections();
    }
 
-   public void notifyNodeDown(String nodeID)
+   public void flushExecutor()
    {
-      if (nodeID.equals(nodeUUID.toString()))
+      Future future = new Future();
+      executor.execute(future);
+      if (!future.await(10000))
       {
-         return;
-      }
-
-      boolean removed = topology.removeMember(nodeID);
-
-      if (removed)
-      {
-
-         for (ClusterTopologyListener listener : clientListeners)
-         {
-            listener.nodeDown(nodeID);
-         }
-
-         for (ClusterTopologyListener listener : clusterConnectionListeners)
-         {
-            listener.nodeDown(nodeID);
-         }
+         server.threadDump("Couldn't flush ClusterManager executor (" + this +
+                           ") in 10 seconds, verify your thread pool size");
       }
    }
 
-   // XXX Why is the interface's parameter 'backup' now 'last'?
-   public void notifyNodeUp(final String nodeID,
-                            final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                            final boolean last,
-                            final boolean nodeAnnounce)
-   {
-      TopologyMember member = new TopologyMember(connectorPair);
-      boolean updated = topology.addMember(nodeID, member);
-
-      if(!updated)
-      {
-         return;
-      }
-      
-      for (ClusterTopologyListener listener : clientListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), last);
-      }
-
-
-      for (ClusterTopologyListener listener : clusterConnectionListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), last);
-      }
-
-      //if this is a node being announced we are hearing it direct from the nodes CM so need to inform our cluster connections.
-      if (nodeAnnounce)
-      {
-         for (ClusterConnection clusterConnection : clusterConnections.values())
-         {
-            clusterConnection.nodeAnnounced(nodeID, connectorPair);
-         }
-      }
-   }
-   
    public boolean isStarted()
    {
       return started;
@@ -316,79 +303,17 @@ public class ClusterManagerImpl implements ClusterManager
       return new HashSet<BroadcastGroup>(broadcastGroups.values());
    }
 
-   public ClusterConnection getClusterConnection(final SimpleString name)
+   public ClusterConnection getClusterConnection(final String name)
    {
-      return clusterConnections.get(name.toString());
-   }
-
-   public void addClusterTopologyListener(final ClusterTopologyListener listener,
-                                                     final boolean clusterConnection)
-   {
-      synchronized (this)
-      {
-         if (clusterConnection)
-         {
-            this.clusterConnectionListeners.add(listener);
-         }
-         else
-         {
-            this.clientListeners.add(listener);
-         }
-      }
-
-      // We now need to send the current topology to the client
-      topology.sendTopology(listener);
-   }
-
-   public synchronized void removeClusterTopologyListener(final ClusterTopologyListener listener,
-                                                       final boolean clusterConnection)
-   {
-      if (clusterConnection)
-      {
-         this.clusterConnectionListeners.remove(listener);
-      }
-      else
-      {
-         this.clientListeners.remove(listener);
-      }
-   }
-
-   public Topology getTopology()
-   {
-      return topology;
+      return clusterConnections.get(name);
    }
 
    // backup node becomes live
-  public synchronized void activate()
+   public synchronized void activate()
    {
       if (backup)
       {
          backup = false;
-
-         String nodeID = server.getNodeID().toString();
-
-         TopologyMember member = topology.getMember(nodeID);
-         //we swap the topology backup now = live
-         if (member != null)
-         {
-            member.getConnector().a = member.getConnector().b;
-
-            member.getConnector().b = null;
-         }
-
-         if(backupServerLocator != null)
-         {
-            //todo we could use the topology of this to preempt it arriving from the cc
-            try
-            {
-               backupServerLocator.close();
-            }
-            catch (Exception e)
-            {
-               log.warn("problem closing backup session factory", e);
-            }
-            backupServerLocator = null;
-         }
 
          for (BroadcastGroup broadcastGroup : broadcastGroups.values())
          {
@@ -426,181 +351,28 @@ public class ClusterManagerImpl implements ClusterManager
                log.warn("unable to start bridge " + bridge.getName(), e);
             }
          }
-
-         for (ClusterTopologyListener listener : clientListeners)
-         {
-            listener.nodeUP(nodeID, member.getConnector(), false);
-         }
-
-         for (ClusterTopologyListener listener : clusterConnectionListeners)
-         {
-            listener.nodeUP(nodeID, member.getConnector(), false);
-         }
       }
    }
 
    public void announceBackup() throws Exception
    {
-      List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
-      if(!configs.isEmpty())
+      for (ClusterConnection conn : this.clusterConnections.values())
       {
-         ClusterConnectionConfiguration config = configs.get(0);
-
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
-
-         if (connector == null)
-         {
-            log.warn("No connecor with name '" + config.getConnectorName() +
-                     "'. backup cannot be announced.");
-            return;
-         }
-         announceBackup(config, connector);
-      }
-      else
-      {
-         log.warn("no cluster connections defined, unable to announce backup");
+         conn.announceBackup();
       }
    }
 
-   private synchronized void announceNode()
+   public void addClusterLocator(final ServerLocatorInternal serverLocator)
    {
-      // TODO does this really work with more than one cluster connection? I think not
-
-      // Just take the first one for now
-      ClusterConnection cc = clusterConnections.values().iterator().next();
-
-      String nodeID = server.getNodeID().toString();
-
-      TopologyMember member = topology.getMember(nodeID);
-
-      if (member == null)
-      {
-         if (backup)
-         {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(null, cc.getConnector()));
-         }
-         else
-         {
-            member = new TopologyMember(new Pair<TransportConfiguration, TransportConfiguration>(cc.getConnector(), null));
-         }
-
-         topology.addMember(nodeID, member);
-      }
-      else
-      {
-         if (backup)
-         {
-           // pair.b = cc.getConnector();
-         }
-         else
-         {
-           // pair.a = cc.getConnector();
-         }
-      }
-
-      // Propagate the announcement
-
-      for (ClusterTopologyListener listener : clientListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), false);
-      }
-
-      for (ClusterTopologyListener listener : clusterConnectionListeners)
-      {
-         listener.nodeUP(nodeID, member.getConnector(), false);
-      }
-
+      this.clusterLocators.add(serverLocator);
    }
 
-   private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
+   public void removeClusterLocator(final ServerLocatorInternal serverLocator)
    {
-      if (broadcastGroups.containsKey(config.getName()))
-      {
-         ClusterManagerImpl.log.warn("There is already a broadcast-group with name " + config.getName() +
-                                     " deployed. This one will not be deployed.");
-
-         return;
-      }
-
-      InetAddress localAddress = null;
-      if (config.getLocalBindAddress() != null)
-      {
-         localAddress = InetAddress.getByName(config.getLocalBindAddress());
-      }
-
-      InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
-
-      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
-                                                        config.getName(),
-                                                        localAddress,
-                                                        config.getLocalBindPort(),
-                                                        groupAddress,
-                                                        config.getGroupPort(),
-                                                        !backup);
-
-      for (String connectorInfo : config.getConnectorInfos())
-      {
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
-
-         if (connector == null)
-         {
-            logWarnNoConnector(config.getName(), connectorInfo);
-
-            return;
-         }
-
-         group.addConnector(connector);
-      }
-
-      ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
-                                                                           0L,
-                                                                           config.getBroadcastPeriod(),
-                                                                           MILLISECONDS);
-
-      group.setScheduledFuture(future);
-
-      broadcastGroups.put(config.getName(), group);
-
-      managementService.registerBroadcastGroup(group, config);
-
-      if (!backup)
-      {
-         group.start();
-      }
+      this.clusterLocators.remove(serverLocator);
    }
-
-   private void logWarnNoConnector(final String connectorName, final String bgName)
-   {
-      ClusterManagerImpl.log.warn("There is no connector deployed with name '" + connectorName +
-                                  "'. The broadcast group with name '" +
-                                  bgName +
-                                  "' will not be deployed.");
-   }
-
-   private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
-   {
-      TransportConfiguration[] tcConfigs = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
-                                                                                       connectorNames.size());
-      int count = 0;
-      for (String connectorName : connectorNames)
-      {
-         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-
-         if (connector == null)
-         {
-            ClusterManagerImpl.log.warn("No connector defined with name '" + connectorName +
-                                        "'. The bridge will not be deployed.");
-
-            return null;
-         }
-
-         tcConfigs[count++] = connector;
-      }
-
-      return tcConfigs;
-   }
-
-   public synchronized void deployBridge(final BridgeConfiguration config) throws Exception
+   
+   public synchronized void deployBridge(final BridgeConfiguration config, final boolean start) throws Exception
    {
       if (config.getName() == null)
       {
@@ -688,13 +460,29 @@ public class ClusterManagerImpl implements ClusterManager
       }
 
       serverLocator.setConfirmationWindowSize(config.getConfirmationWindowSize());
-      serverLocator.setReconnectAttempts(config.getReconnectAttempts());
+
+      // We are going to manually retry on the bridge in case of failure
+      serverLocator.setReconnectAttempts(0);
+      serverLocator.setInitialConnectAttempts(-1);
       serverLocator.setRetryInterval(config.getRetryInterval());
+      serverLocator.setMaxRetryInterval(config.getMaxRetryInterval());
       serverLocator.setRetryIntervalMultiplier(config.getRetryIntervalMultiplier());
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
-      serverLocator.setInitialConnectAttempts(config.getReconnectAttempts());
+      serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
+      serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
+      if (!config.isUseDuplicateDetection())
+      {
+         log.debug("Bridge " + config.getName() +
+                   " is configured to not use duplicate detecion, it will send messages synchronously");
+      }
+
       clusterLocators.add(serverLocator);
+
       Bridge bridge = new BridgeImpl(serverLocator,
+                                     config.getReconnectAttempts(),
+                                     config.getRetryInterval(),
+                                     config.getRetryIntervalMultiplier(),
+                                     config.getMaxRetryInterval(),
                                      nodeUUID,
                                      new SimpleString(config.getName()),
                                      queue,
@@ -712,28 +500,74 @@ public class ClusterManagerImpl implements ClusterManager
       bridges.put(config.getName(), bridge);
 
       managementService.registerBridge(bridge, config);
-
-      if (!backup)
+      
+      if (start)
       {
          bridge.start();
       }
+
    }
 
-   public synchronized void destroyBridge(final String name) throws Exception
+   public void destroyBridge(final String name) throws Exception
    {
-      Bridge bridge = bridges.remove(name);
-      if (bridge != null)
+      Bridge bridge;
+
+      synchronized (this)
       {
-         bridge.stop();
-         managementService.unregisterBridge(name);
+         bridge = bridges.remove(name);
+         if (bridge != null)
+         {
+            bridge.stop();
+            managementService.unregisterBridge(name);
+         }
       }
+
+      bridge.flushExecutor();
    }
 
-   private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
+   // for testing
+   public void clear()
+   {
+      for (Bridge bridge : bridges.values())
+      {
+         try
+         {
+            bridge.stop();
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
+      }
+      bridges.clear();
+      for (ClusterConnection clusterConnection : clusterConnections.values())
+      {
+         try
+         {
+            clusterConnection.stop();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+      clearClusterConnections();
+   }
+
+   // Private methods ----------------------------------------------------------------------------------------------------
+   
+   
+   private void clearClusterConnections()
+   {
+      clusterConnections.clear();
+      this.defaultClusterConnection = null;
+   }
+   
+   private void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
       {
-         ClusterManagerImpl.log.warn("Must specify a unique name for each cluster. This one will not be deployed.");
+         ClusterManagerImpl.log.warn("Must specify a unique name for each cluster connection. This one will not be deployed.");
 
          return;
       }
@@ -754,10 +588,10 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
-
-      if(clusterConnections.containsKey(config.getName()))
+      if (clusterConnections.containsKey(config.getName()))
       {
-         log.warn("Cluster Configuration  '" + config.getConnectorName() + "' already exists. The cluster connection will not be deployed.", new Exception ("trace"));
+         log.warn("Cluster Configuration  '" + config.getConnectorName() +
+                  "' already exists. The cluster connection will not be deployed.", new Exception("trace"));
          return;
       }
 
@@ -772,13 +606,29 @@ public class ClusterManagerImpl implements ClusterManager
          {
             ClusterManagerImpl.log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
                                         "'. The cluster connection will not be deployed.");
+            return;
          }
 
-         clusterConnection = new ClusterConnectionImpl(dg,
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + " Starting a Discovery Group Cluster Connection, name=" +
+                      config.getDiscoveryGroupName() +
+                      ", dg=" +
+                      dg);
+         }
+
+         clusterConnection = new ClusterConnectionImpl(this,
+                                                       dg,
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getClientFailureCheckPeriod(),
+                                                       config.getConnectionTTL(),
                                                        config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetryInterval(),
+                                                       config.getReconnectAttempts(),
+                                                       config.getCallTimeout(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
@@ -796,13 +646,26 @@ public class ClusterManagerImpl implements ClusterManager
       }
       else
       {
-         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null? connectorNameListToArray(config.getStaticConnectors()):null;
+         TransportConfiguration[] tcConfigs = config.getStaticConnectors() != null ? connectorNameListToArray(config.getStaticConnectors())
+                                                                                  : null;
 
-         clusterConnection = new ClusterConnectionImpl(tcConfigs,
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + " defining cluster connection towards " + Arrays.toString(tcConfigs));
+         }
+
+         clusterConnection = new ClusterConnectionImpl(this,
+                                                       tcConfigs,
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getClientFailureCheckPeriod(),
+                                                       config.getConnectionTTL(),
                                                        config.getRetryInterval(),
+                                                       config.getRetryIntervalMultiplier(),
+                                                       config.getMaxRetryInterval(),
+                                                       config.getReconnectAttempts(),
+                                                       config.getCallTimeout(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
                                                        config.getConfirmationWindowSize(),
@@ -819,67 +682,21 @@ public class ClusterManagerImpl implements ClusterManager
                                                        config.isAllowDirectConnectionsOnly());
       }
 
+      if (defaultClusterConnection == null)
+      {
+         defaultClusterConnection = clusterConnection;
+      }
+      
       managementService.registerCluster(clusterConnection, config);
 
       clusterConnections.put(config.getName(), clusterConnection);
 
-      clusterConnection.start();
-
-      if(backup)
+      if (log.isDebugEnabled())
       {
-         announceBackup(config, connector);
+         log.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
       }
    }
-
-   private void announceBackup(final ClusterConnectionConfiguration config, final TransportConfiguration connector) throws Exception
-   {
-      if (config.getStaticConnectors() != null)
-      {
-         TransportConfiguration[] tcConfigs = connectorNameListToArray(config.getStaticConnectors());
-
-         backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(tcConfigs);
-         backupServerLocator.setReconnectAttempts(-1);
-      }
-      else if (config.getDiscoveryGroupName() != null)
-      {
-         DiscoveryGroupConfiguration dg = configuration.getDiscoveryGroupConfigurations()
-                                                       .get(config.getDiscoveryGroupName());
-
-         if (dg == null)
-         {
-            ClusterManagerImpl.log.warn("No discovery group with name '" + config.getDiscoveryGroupName() +
-                                        "'. The cluster connection will not be deployed.");
-         }
-
-         backupServerLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithoutHA(dg);
-         backupServerLocator.setReconnectAttempts(-1);
-      }
-      else
-      {
-         return;
-      }
-      log.info("announcing backup");
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
-               if (backupSessionFactory != null)
-               {
-                  backupSessionFactory.getConnection().getChannel(0, -1).send(new NodeAnnounceMessage(nodeUUID.toString(), true, connector));
-                  log.info("backup announced");
-               }
-            }
-            catch (Exception e)
-            {
-               log.warn("Unable to announce backup", e);
-            }
-         }
-      });
-   }
-
+   
    private Transformer instantiateTransformer(final String transformerClassName)
    {
       Transformer transformer = null;
@@ -900,21 +717,90 @@ public class ClusterManagerImpl implements ClusterManager
       }
       return transformer;
    }
-   //for testing
-   public void clear()
+
+
+   private synchronized void deployBroadcastGroup(final BroadcastGroupConfiguration config) throws Exception
    {
-      bridges.clear();
-      for (ClusterConnection clusterConnection : clusterConnections.values())
+      if (broadcastGroups.containsKey(config.getName()))
       {
-         try
-         {
-            clusterConnection.stop();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-         }
+         ClusterManagerImpl.log.warn("There is already a broadcast-group with name " + config.getName() +
+                                     " deployed. This one will not be deployed.");
+
+         return;
       }
-      clusterConnections.clear();
+
+      InetAddress localAddress = null;
+      if (config.getLocalBindAddress() != null)
+      {
+         localAddress = InetAddress.getByName(config.getLocalBindAddress());
+      }
+
+      InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
+
+      BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
+                                                        config.getName(),
+                                                        localAddress,
+                                                        config.getLocalBindPort(),
+                                                        groupAddress,
+                                                        config.getGroupPort(),
+                                                        !backup);
+
+      for (String connectorInfo : config.getConnectorInfos())
+      {
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorInfo);
+
+         if (connector == null)
+         {
+            logWarnNoConnector(config.getName(), connectorInfo);
+
+            return;
+         }
+
+         group.addConnector(connector);
+      }
+
+      ScheduledFuture<?> future = scheduledExecutor.scheduleWithFixedDelay(group,
+                                                                           0L,
+                                                                           config.getBroadcastPeriod(),
+                                                                           MILLISECONDS);
+
+      group.setScheduledFuture(future);
+
+      broadcastGroups.put(config.getName(), group);
+
+      managementService.registerBroadcastGroup(group, config);
    }
+
+   private void logWarnNoConnector(final String connectorName, final String bgName)
+   {
+      ClusterManagerImpl.log.warn("There is no connector deployed with name '" + connectorName +
+                                  "'. The broadcast group with name '" +
+                                  bgName +
+                                  "' will not be deployed.");
+   }
+
+   private TransportConfiguration[] connectorNameListToArray(final List<String> connectorNames)
+   {
+      TransportConfiguration[] tcConfigs = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
+                                                                                       connectorNames.size());
+      int count = 0;
+      for (String connectorName : connectorNames)
+      {
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
+
+         if (connector == null)
+         {
+            ClusterManagerImpl.log.warn("No connector defined with name '" + connectorName +
+                                        "'. The bridge will not be deployed.");
+
+            return null;
+         }
+
+         tcConfigs[count++] = connector;
+      }
+
+      return tcConfigs;
+   }
+
+
 }

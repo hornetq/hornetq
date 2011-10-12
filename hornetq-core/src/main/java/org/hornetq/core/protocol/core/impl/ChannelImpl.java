@@ -62,8 +62,10 @@ public class ChannelImpl implements Channel
    }
 
    private static final Logger log = Logger.getLogger(ChannelImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
-   private final long id;
+   private volatile long id;
 
    private ChannelHandler handler;
 
@@ -114,6 +116,19 @@ public class ChannelImpl implements Channel
       else
       {
          resendCache = null;
+      }
+   }
+   
+   public boolean supports(final byte packetType)
+   {
+      int version = connection.getClientVersion();
+      
+      switch (packetType)
+      {
+         case PacketImpl.CLUSTER_TOPOLOGY_V2:
+            return version >= 122;
+         default:
+            return true;
       }
    }
 
@@ -183,6 +198,11 @@ public class ChannelImpl implements Channel
       synchronized (sendLock)
       {
          packet.setChannelID(id);
+         
+         if (isTrace)
+         {
+            log.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
+         }
 
          HornetQBuffer buffer = packet.encode(connection);
 
@@ -217,6 +237,12 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
+         
+         if (isTrace)
+         {
+            log.trace("Writing buffer for channelID=" + id);
+         }
+
 
          // The actual send must be outside the lock, or with OIO transport, the write can block if the tcp
          // buffer is full, preventing any incoming buffers being handled and blocking failover
@@ -374,6 +400,10 @@ public class ChannelImpl implements Channel
    {
       if (resendCache != null)
       {
+         if (isTrace)
+         {
+            log.trace("Replaying commands on channelID=" + id);
+         }
          clearUpTo(otherLastConfirmedCommandID);
 
          for (final Packet packet : resendCache)

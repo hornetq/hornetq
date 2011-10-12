@@ -28,7 +28,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -85,7 +84,7 @@ public class PageStressTest extends ServiceTestBase
 
          ClientProducer prod = session.createProducer(address);
 
-         ClientMessage message = CreateMessage.createBytesMessage(session, new byte[700], true);
+         ClientMessage message = createBytesMessage(session, new byte[700], true);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -200,7 +199,7 @@ public class PageStressTest extends ServiceTestBase
 
          ClientProducer prod = session.createProducer(address);
 
-         ClientMessage message = CreateMessage.createBytesMessage(session, new byte[700], false);
+         ClientMessage message = createBytesMessage(session, new byte[700], false);
 
          int NUMBER_OF_MESSAGES = 60000;
 

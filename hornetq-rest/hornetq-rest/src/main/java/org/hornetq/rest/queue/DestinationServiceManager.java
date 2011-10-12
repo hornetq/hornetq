@@ -24,7 +24,6 @@ public abstract class DestinationServiceManager
    protected DestinationSettings defaultSettings = DestinationSettings.defaultSettings;
    protected TimeoutTask timeoutTask;
    protected int producerPoolSize;
-   protected long producerTimeToLive;
    protected LinkStrategy linkStrategy;
    protected BindingRegistry registry;
 
@@ -48,15 +47,6 @@ public abstract class DestinationServiceManager
       this.linkStrategy = linkStrategy;
    }
 
-   public long getProducerTimeToLive()
-   {
-      return producerTimeToLive;
-   }
-
-   public void setProducerTimeToLive(long producerTimeToLive)
-   {
-      this.producerTimeToLive = producerTimeToLive;
-   }
 
    public int getProducerPoolSize()
    {

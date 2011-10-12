@@ -198,8 +198,8 @@ public class PageSubscriptionCounterImpl implements PageSubscriptionCounter
       {
          for (Pair<Long, Integer> incElement : loadList)
          {
-            value.addAndGet(incElement.b);
-            incrementRecords.add(incElement.a);
+            value.addAndGet(incElement.getB());
+            incrementRecords.add(incElement.getA());
          }
          loadList.clear();
          loadList = null;

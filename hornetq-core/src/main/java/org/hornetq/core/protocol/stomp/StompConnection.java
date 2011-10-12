@@ -25,6 +25,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 
 /**
@@ -56,6 +57,8 @@ public class StompConnection implements RemotingConnection
    private final long creationTime;
 
    private StompDecoder decoder = new StompDecoder();
+   
+   private final Acceptor acceptorUsed;
 
    private final List<FailureListener> failureListeners = new CopyOnWriteArrayList<FailureListener>();
 
@@ -70,13 +73,15 @@ public class StompConnection implements RemotingConnection
       return decoder;
    }
 
-   StompConnection(final Connection transportConnection, final StompProtocolManager manager)
+   StompConnection(final Acceptor acceptorUsed, final Connection transportConnection, final StompProtocolManager manager)
    {
       this.transportConnection = transportConnection;
 
       this.manager = manager;
       
       this.creationTime = System.currentTimeMillis();
+      
+      this.acceptorUsed = acceptorUsed;
    }
 
    public void addFailureListener(final FailureListener listener)
@@ -185,6 +190,11 @@ public class StompConnection implements RemotingConnection
       internalClose();
 
       callClosingListeners();
+   }
+   
+   Acceptor getAcceptorUsed()
+   {
+      return acceptorUsed;
    }
 
    private void internalClose()

@@ -39,6 +39,8 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
@@ -64,6 +66,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
+
+   private static final boolean isTrace = log.isTraceEnabled();
 
    public static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
 
@@ -93,13 +97,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private FailureCheckAndFlushThread failureCheckAndFlushThread;
 
+   private final ClusterManager clusterManager;
+
    private Map<ProtocolType, ProtocolManager> protocolMap = new ConcurrentHashMap<ProtocolType, ProtocolManager>();
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public RemotingServiceImpl(final Configuration config,
+   public RemotingServiceImpl(final ClusterManager clusterManager,
+                              final Configuration config,
                               final HornetQServer server,
                               final ManagementService managementService,
                               final ScheduledExecutorService scheduledThreadPool)
@@ -108,13 +115,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.server = server;
 
-      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      this.clusterManager = clusterManager;
+
       for (String interceptorClass : config.getInterceptorClassNames())
       {
          try
          {
-            Class<?> clazz = loader.loadClass(interceptorClass);
-            interceptors.add((Interceptor)clazz.newInstance());
+             interceptors.add((Interceptor) safeInitNewInstance(interceptorClass));
          }
          catch (Exception e)
          {
@@ -128,13 +135,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       this.scheduledThreadPool = scheduledThreadPool;
 
-      this.protocolMap.put(ProtocolType.CORE, new CoreProtocolManagerFactory().createProtocolManager(server,
-                                                                                                     interceptors));
+      this.protocolMap.put(ProtocolType.CORE,
+                           new CoreProtocolManagerFactory().createProtocolManager(server, interceptors));
       // difference between Stomp and Stomp over Web Sockets is handled in NettyAcceptor.getPipeline()
-      this.protocolMap.put(ProtocolType.STOMP, new StompProtocolManagerFactory().createProtocolManager(server,
-                                                                                                       interceptors));
-      this.protocolMap.put(ProtocolType.STOMP_WS, new StompProtocolManagerFactory().createProtocolManager(server,
-                                                                                                          interceptors));
+      this.protocolMap.put(ProtocolType.STOMP,
+                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
+      this.protocolMap.put(ProtocolType.STOMP_WS,
+                           new StompProtocolManagerFactory().createProtocolManager(server, interceptors));
    }
 
    // RemotingService implementation -------------------------------
@@ -160,9 +167,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // This needs to be a different thread pool to the main thread pool especially for OIO where we may need
       // to support many hundreds of connections, but the main thread pool must be kept small for better performance
 
-      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads" + System.identityHashCode(this),
-                                                        false,
-                                                        tccl);
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-remoting-threads-" + server.toString() +
+                                                        "-" +
+                                                        System.identityHashCode(this), false, tccl);
 
       threadPool = Executors.newCachedThreadPool(tFactory);
 
@@ -199,8 +206,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             ProtocolType protocol = ProtocolType.valueOf(protocolString.toUpperCase());
 
             ProtocolManager manager = protocolMap.get(protocol);
-
-            Acceptor acceptor = factory.createAcceptor(info.getParams(),
+            
+            ClusterConnection clusterConnection = lookupClusterConnection(info);
+            
+            Acceptor acceptor = factory.createAcceptor(clusterConnection,
+                                                       info.getParams(),
                                                        new DelegatingBufferHandler(),
                                                        manager,
                                                        this,
@@ -269,7 +279,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
+         if (log.isDebugEnabled())
+         {
+            log.debug("Pausing acceptor " + acceptor);
+         }
          acceptor.pause();
+      }
+
+      if (log.isDebugEnabled())
+      {
+         log.debug("Sending disconnect on live connections");
       }
 
       // Now we ensure that no connections will process any more packets after this method is complete
@@ -277,6 +296,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       for (ConnectionEntry entry : connections.values())
       {
          RemotingConnection conn = entry.connection;
+
+         if (log.isTraceEnabled())
+         {
+            log.trace("Sending connection.disconnection packet to " + conn);
+         }
 
          conn.disconnect();
       }
@@ -353,7 +377,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       return protocolMap.get(protocol);
    }
 
-   public void connectionCreated(final Connection connection, final ProtocolType protocol)
+   public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
    {
       if (server == null)
       {
@@ -367,18 +391,29 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalArgumentException("Unknown protocol " + protocol);
       }
 
-      ConnectionEntry entry = pmgr.createConnectionEntry(connection);
+      ConnectionEntry entry = pmgr.createConnectionEntry(acceptor, connection);
+
+      if (isTrace)
+      {
+         log.trace("Connection created " + connection);
+      }
 
       connections.put(connection.getID(), entry);
 
       if (config.isBackup())
       {
          serverSideReplicatingConnection = entry.connection;
-      }      
+      }
    }
-   
+
    public void connectionDestroyed(final Object connectionID)
    {
+
+      if (isTrace)
+      {
+         log.trace("Connection removed " + connectionID + " from server " + this.server, new Exception("trace"));
+      }
+
       ConnectionEntry conn = connections.get(connectionID);
 
       if (conn != null)
@@ -423,7 +458,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       // Connections should only fail when TTL is exceeded
    }
-   
+
    public void connectionReadyForWrites(final Object connectionID, final boolean ready)
    {
    }
@@ -445,6 +480,24 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+   
+   private ClusterConnection lookupClusterConnection(TransportConfiguration config)
+   {
+      String clusterConnectionName = (String)config.getParams().get(org.hornetq.core.remoting.impl.netty.TransportConstants.CLUSTER_CONNECTION);
+      
+      ClusterConnection clusterConnection = null;
+      if (clusterConnectionName != null)
+      {
+         clusterConnection = clusterManager.getClusterConnection(clusterConnectionName);
+      }
+      
+      if (clusterConnection == null)
+      {
+         clusterConnection = clusterManager.getDefaultConnection();
+      }
+      
+      return clusterConnection;
+   }
 
    // Inner classes -------------------------------------------------
 
@@ -457,6 +510,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          if (conn != null)
          {
             conn.connection.bufferReceived(connectionID, buffer);
+         }
+         else
+         {
+            if (log.isTraceEnabled())
+            {
+               log.trace("ConnectionID = " + connectionID + " was already closed, so ignoring packet");
+            }
          }
       }
    }
@@ -474,7 +534,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          this.pauseInterval = pauseInterval;
       }
 
-      public synchronized void close()
+      public void close()
       {
          closed = true;
 
@@ -497,78 +557,127 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          while (!closed)
          {
-            long now = System.currentTimeMillis();
-
-            Set<Object> idsToRemove = new HashSet<Object>();
-
-            for (ConnectionEntry entry : connections.values())
+            try
             {
-               RemotingConnection conn = entry.connection;
+               long now = System.currentTimeMillis();
 
-               boolean flush = true;
+               Set<Object> idsToRemove = new HashSet<Object>();
 
-               if (entry.ttl != -1)
+               for (ConnectionEntry entry : connections.values())
                {
-                  if (now >= entry.lastCheck + entry.ttl)
-                  {
-                     if (!conn.checkDataReceived())
-                     {
-                        idsToRemove.add(conn.getID());
+                  RemotingConnection conn = entry.connection;
 
-                        flush = false;
-                     }
-                     else
+                  boolean flush = true;
+
+                  if (entry.ttl != -1)
+                  {
+                     if (now >= entry.lastCheck + entry.ttl)
                      {
-                        entry.lastCheck = now;
+                        if (!conn.checkDataReceived())
+                        {
+                           idsToRemove.add(conn.getID());
+
+                           flush = false;
+                        }
+                        else
+                        {
+                           entry.lastCheck = now;
+                        }
                      }
+                  }
+
+                  if (flush)
+                  {
+                     conn.flush();
                   }
                }
 
-               if (flush)
+               for (Object id : idsToRemove)
                {
-                  conn.flush();
+                  RemotingConnection conn = removeConnection(id);
+                  if (conn != null)
+                  {
+                     HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
+                                                                "Did not receive data from " + conn.getRemoteAddress() +
+                                                                         ". It is likely the client has exited or crashed without " +
+                                                                         "closing its connection, or the network between the server and client has failed. " +
+                                                                         "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
+                                                                         "Please check user manual for more information." +
+                                                                         " The connection will now be closed.");
+                     conn.fail(me);
+                  }
+               }
+
+               synchronized (this)
+               {
+                  long toWait = pauseInterval;
+
+                  long start = System.currentTimeMillis();
+
+                  while (!closed && toWait > 0)
+                  {
+                     try
+                     {
+                        wait(toWait);
+                     }
+                     catch (InterruptedException e)
+                     {
+                     }
+
+                     now = System.currentTimeMillis();
+
+                     toWait -= now - start;
+
+                     start = now;
+                  }
                }
             }
-
-            for (Object id : idsToRemove)
+            catch (Throwable e)
             {
-               RemotingConnection conn = removeConnection(id);
-
-               HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                          "Did not receive data from " + conn.getRemoteAddress() +
-                                                                   ". It is likely the client has exited or crashed without " +
-                                                                   "closing its connection, or the network between the server and client has failed. " +
-                                                                   "You also might have configured connection-ttl and client-failure-check-period incorrectly. " +
-                                                                   "Please check user manual for more information." +
-                                                                   " The connection will now be closed.");
-               conn.fail(me);
-            }
-
-            synchronized (this)
-            {
-               long toWait = pauseInterval;
-
-               long start = System.currentTimeMillis();
-
-               while (!closed && toWait > 0)
-               {
-                  try
-                  {
-                     wait(toWait);
-                  }
-                  catch (InterruptedException e)
-                  {
-                  }
-
-                  now = System.currentTimeMillis();
-
-                  toWait -= now - start;
-
-                  start = now;
-               }
+               log.warn(e.getMessage(), e);
             }
          }
       }
    }
+   
+   
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static Object safeInitNewInstance(final String className)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(className);
+               return clazz.newInstance();
+            }
+            catch (Throwable t)
+            {
+                try
+                {
+                    loader = Thread.currentThread().getContextClassLoader();
+                    if (loader != null)
+                        return loader.loadClass(className).newInstance();
+                }
+                catch (RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                }
+
+                throw new IllegalArgumentException("Could not find class " + className);
+            }
+         }
+      });
+   }
+
 
 }

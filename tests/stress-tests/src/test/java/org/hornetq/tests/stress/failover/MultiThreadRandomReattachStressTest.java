@@ -13,12 +13,7 @@
 
 package org.hornetq.tests.stress.failover;
 
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.HornetQServers;
-import org.hornetq.tests.cluster.reattach.MultiThreadRandomReattachTestBase;
+import org.hornetq.tests.integration.cluster.reattach.MultiThreadRandomReattachTest;
 
 /**
  * A MultiThreadRandomFailoverStressTest
@@ -26,40 +21,8 @@ import org.hornetq.tests.cluster.reattach.MultiThreadRandomReattachTestBase;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class MultiThreadRandomReattachStressTest extends MultiThreadRandomReattachTestBase
+public class MultiThreadRandomReattachStressTest extends MultiThreadRandomReattachTest
 {
-   private static final Logger log = Logger.getLogger(MultiThreadRandomReattachStressTest.class);
-
-   @Override
-   protected void start() throws Exception
-   {
-      Configuration liveConf = createDefaultConfig();
-      liveConf.setSecurityEnabled(false);
-      liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      liveServer = HornetQServers.newHornetQServer(liveConf, false);
-      liveServer.start();
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#setBody(org.hornetq.api.core.client.ClientMessage)
-    */
-   @Override
-   protected void setBody(final ClientMessage message) throws Exception
-   {
-      // Give each msg a body
-      message.getBodyBuffer().writeBytes(new byte[250]);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#checkSize(org.hornetq.api.core.client.ClientMessage)
-    */
-   @Override
-   protected boolean checkSize(final ClientMessage message)
-   {
-      return message.getBodyBuffer().readableBytes() == 250;
-   }
-
    @Override
    protected int getNumIterations()
    {

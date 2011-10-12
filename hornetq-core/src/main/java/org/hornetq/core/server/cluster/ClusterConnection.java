@@ -19,7 +19,9 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClusterTopologyListener;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A ClusterConnection
@@ -35,26 +37,32 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    SimpleString getName();
 
    String getNodeID();
+   
+   HornetQServer getServer();
+   
+   void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
 
+   void addClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   
+   void removeClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   
    /**
     * @return a Map of node ID and addresses
     */
    Map<String, String> getNodes();
 
-   void handleReplicatedAddBinding(SimpleString address,
-                                   SimpleString uniqueName,
-                                   SimpleString routingName,
-                                   long queueID,
-                                   SimpleString filterString,
-                                   SimpleString queueName,
-                                   int distance) throws Exception;
-
    void activate() throws Exception;
    
    TransportConfiguration getConnector();
+   
+   Topology getTopology();
+   
+   void flushExecutor();
 
    // for debug
-   String description();
+   String describe();
 
-   void nodeAnnounced(String nodeID, Pair<TransportConfiguration,TransportConfiguration> connectorPair);
+   void informTopology();
+   
+   void announceBackup();
 }

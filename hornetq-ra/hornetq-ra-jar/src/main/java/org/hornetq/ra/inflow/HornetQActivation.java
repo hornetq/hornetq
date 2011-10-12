@@ -37,6 +37,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
+import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.Util;
 
@@ -106,7 +107,8 @@ public class HornetQActivation
 
    // Whether we are in the failure recovery loop
    private AtomicBoolean inFailure = new AtomicBoolean(false);
-   
+   private HornetQResourceRecovery resourceRecovery;
+
    static
    {
       try
@@ -314,6 +316,11 @@ public class HornetQActivation
    {
       HornetQActivation.log.debug("Tearing down " + spec);
 
+      if(resourceRecovery != null)
+      {
+         ra.getRecoveryManager().unRegister(resourceRecovery);
+      }
+
       for (HornetQMessageHandler handler : handlers)
       {
          handler.teardown();
@@ -331,6 +338,7 @@ public class HornetQActivation
       if (spec.isHasBeenUpdated())
       {
          factory = ra.createHornetQConnectionFactory(spec);
+         resourceRecovery = ra.getRecoveryManager().register(factory, spec.getUser(), spec.getPassword());
       }
       else
       {

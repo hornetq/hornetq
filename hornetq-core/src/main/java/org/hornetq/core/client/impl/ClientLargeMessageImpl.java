@@ -210,11 +210,11 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
 
    // Inner classes -------------------------------------------------
 
-   private class HornetQOutputStream extends OutputStream
+   protected class HornetQOutputStream extends OutputStream
    {
-      private final HornetQBuffer bufferOut;
+      HornetQBuffer bufferOut;
 
-      private HornetQOutputStream(HornetQBuffer out)
+      HornetQOutputStream(HornetQBuffer out)
       {
          this.bufferOut = out;
       }

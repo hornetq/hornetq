@@ -28,4 +28,6 @@ public interface SecurityStore
    void authenticate(String user, String password) throws Exception;
 
    void check(SimpleString address, CheckType checkType, ServerSession session) throws Exception;
+
+   void stop();
 }

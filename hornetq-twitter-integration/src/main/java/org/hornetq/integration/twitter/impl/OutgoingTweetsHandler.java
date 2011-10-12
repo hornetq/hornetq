@@ -54,6 +54,12 @@ public class OutgoingTweetsHandler implements Consumer, ConnectorService
    private Filter filter = null;
 
    private boolean isStarted = false;
+   
+   
+   public String debug()
+   {
+      return toString();
+   }
 
    public OutgoingTweetsHandler(final String connectorName,
                                 final Map<String, Object> configuration,

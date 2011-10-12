@@ -63,7 +63,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
          {
          }
 
@@ -74,7 +74,8 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          
       };
 
-      Acceptor acceptor = factory.createAcceptor(params,
+      Acceptor acceptor = factory.createAcceptor(null,
+                                                 params,
                                                  handler,
                                                  null,
                                                  listener,

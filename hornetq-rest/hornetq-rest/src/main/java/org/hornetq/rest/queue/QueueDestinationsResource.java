@@ -204,7 +204,6 @@ public class QueueDestinationsResource
       sender.setDestination(queueName);
       sender.setSessionFactory(manager.getSessionFactory());
       sender.setPoolSize(manager.getProducerPoolSize());
-      sender.setProducerTimeToLive(manager.getProducerTimeToLive());
       sender.init();
       queueResource.setSender(sender);
 

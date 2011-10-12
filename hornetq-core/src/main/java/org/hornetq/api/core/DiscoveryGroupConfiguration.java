@@ -179,4 +179,26 @@ public class DiscoveryGroupConfiguration implements Serializable
       result = 31 * result + (int) (discoveryInitialWaitTimeout ^ (discoveryInitialWaitTimeout >>> 32));
       return result;
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "DiscoveryGroupConfiguration [discoveryInitialWaitTimeout=" + discoveryInitialWaitTimeout +
+             ", groupAddress=" +
+             groupAddress +
+             ", groupPort=" +
+             groupPort +
+             ", localBindAddress=" +
+             localBindAddress +
+             ", name=" +
+             name +
+             ", refreshTimeout=" +
+             refreshTimeout +
+             "]";
+   }
+   
+   
 }

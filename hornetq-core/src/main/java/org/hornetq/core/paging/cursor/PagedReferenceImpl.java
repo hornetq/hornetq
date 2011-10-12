@@ -47,6 +47,8 @@ public class PagedReferenceImpl implements PagedReference
    private Long deliveryTime = null;
 
    private int persistedCount;
+   
+   private int messageEstimate;
 
    private AtomicInteger deliveryCount = new AtomicInteger(0);
 
@@ -84,6 +86,15 @@ public class PagedReferenceImpl implements PagedReference
                              final PageSubscription subscription)
    {
       this.position = position;
+
+      if (message == null)
+      {
+         this.messageEstimate = -1;
+      }
+      else
+      {
+         this.messageEstimate = message.getMessage().getMemoryEstimate();
+      }
       this.message = new WeakReference<PagedMessage>(message);
       this.subscription = subscription;
    }
@@ -102,6 +113,20 @@ public class PagedReferenceImpl implements PagedReference
    {
       return persistedCount;
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
+    */
+   public int getMessageMemoryEstimate()
+   {
+      if (messageEstimate < 0)
+      {
+         messageEstimate = getMessage().getMemoryEstimate();
+      }
+      return messageEstimate;
+   }
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.MessageReference#copy(org.hornetq.core.server.Queue)
@@ -163,7 +188,7 @@ public class PagedReferenceImpl implements PagedReference
       deliveryCount.incrementAndGet();
       if (isTrace)
       {
-         log.trace("deliveryCount = " + deliveryCount + " for " + this);
+         log.trace("++deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
       }
 
    }
@@ -174,6 +199,10 @@ public class PagedReferenceImpl implements PagedReference
    public void decrementDeliveryCount()
    {
       deliveryCount.decrementAndGet();
+      if (isTrace)
+      {
+         log.trace("--deliveryCount = " + deliveryCount + " for " + this, new Exception ("trace"));
+      }
    }
 
    /* (non-Javadoc)
@@ -216,7 +245,7 @@ public class PagedReferenceImpl implements PagedReference
    {
       return "PagedReferenceImpl [position=" + position +
              ", message=" +
-             message +
+             getPagedMessage() +
              ", deliveryTime=" +
              deliveryTime +
              ", persistedCount=" +

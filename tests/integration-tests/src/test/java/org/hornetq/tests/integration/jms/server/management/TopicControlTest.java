@@ -98,7 +98,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
       Assert.assertEquals(3, topicControl.getSubscriptionCount());
@@ -118,7 +118,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"_2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
 
@@ -145,7 +145,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       TopicSubscriber subs1 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      TopicSubscriber subs2 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      TopicSubscriber subs2 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID + "2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
       Assert.assertEquals(3, topicControl.listAllSubscriptions().length);
@@ -171,7 +171,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
       String jsonString = topicControl.listDurableSubscriptionsAsJSON();
@@ -179,7 +179,7 @@ public class TopicControlTest extends ManagementTestBase
       Assert.assertEquals(2, infos.length);
       Assert.assertEquals(clientID, infos[0].getClientID());
       Assert.assertEquals(subscriptionName, infos[0].getName());
-      Assert.assertEquals(clientID, infos[1].getClientID());
+      Assert.assertEquals(clientID+"2", infos[1].getClientID());
       Assert.assertEquals(subscriptionName + "2", infos[1].getName());
 
       jsonString = topicControl.listNonDurableSubscriptionsAsJSON();
@@ -344,7 +344,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_1, topic, clientID, subscriptionName);
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_2, topic, clientID+"2", subscriptionName + "2");
 
       JMSUtil.sendMessages(topic, 3);
 
@@ -438,7 +438,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2");
 
       TopicControl topicControl = createManagementControl();
 
@@ -460,7 +460,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       MessageConsumer cons_2 = JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName, Session.CLIENT_ACKNOWLEDGE);
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
-      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
+      MessageConsumer cons_3 = JMSUtil.createDurableSubscriber(connection_3, topic, clientID+"2", subscriptionName + "2", Session.CLIENT_ACKNOWLEDGE);
 
       TopicControl topicControl = createManagementControl();
 

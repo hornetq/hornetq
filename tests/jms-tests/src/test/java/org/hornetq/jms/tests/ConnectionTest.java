@@ -88,8 +88,21 @@ public class ConnectionTest extends JMSTestCase
       connection.setClientID(clientID);
 
       ProxyAssertSupport.assertEquals(clientID, connection.getClientID());
+      
+      Connection connection2 = JMSTest.cf.createConnection();
+      try
+      {
+         connection2.setClientID(clientID);
+         fail("setClientID was expected to throw an exception");
+      }
+      catch (JMSException e)
+      {
+         // expected
+      }
 
       connection.close();
+
+      connection2.setClientID(clientID);
    }
 
    public void testSetClientAfterStart() throws Exception

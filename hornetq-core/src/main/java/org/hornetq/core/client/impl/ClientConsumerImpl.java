@@ -48,11 +48,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
 
-   private static final boolean trace = ClientConsumerImpl.log.isTraceEnabled();
+   private static final boolean isTrace = ClientConsumerImpl.log.isTraceEnabled();
 
-   private static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
+   public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
-   private static final int NUM_PRIORITIES = 10;
+   public static final int NUM_PRIORITIES = 10;
 
    public static final SimpleString FORCED_DELIVERY_MESSAGE = new SimpleString("_hornetq.forced.delivery.seq");
 
@@ -222,6 +222,10 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
+                        if (isTrace)
+                        {
+                           log.trace("Forcing delivery");
+                        }
                         session.forceDelivery(id, forceDeliveryCount++);
 
                         deliveryForced = true;
@@ -257,15 +261,26 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   long seq = m.getLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE);
 
-                  if (forcingDelivery && seq == forceDeliveryCount - 1)
+                  // Need to check if forceDelivery was called at this call
+                  // As we could be receiving a message that came from a previous call
+                  if (forcingDelivery && deliveryForced && seq == forceDeliveryCount - 1)
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue
                      resetIfSlowConsumer();
+                     
+                     if (isTrace)
+                     {
+                        log.trace("There was nothing on the queue, leaving it now:: returning null");
+                     }
 
                      return null;
                   }
                   else
                   {
+                     if (isTrace)
+                     {
+                        log.trace("Ignored force delivery answer as it belonged to another call");
+                     }
                      // Ignore the message
                      continue;
                   }
@@ -300,11 +315,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   largeMessageReceived = m;
                }
+               
+               if (isTrace)
+               {
+                  log.trace("Returning " + m);
+               }
 
                return m;
             }
             else
             {
+               if (isTrace)
+               {
+                  log.trace("Returning null");
+               }
                resetIfSlowConsumer();
                return null;
             }
@@ -405,6 +429,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return closed;
    }
 
+   public void stop() throws HornetQException
+   {
+      stop(true);
+   }
+
    public void stop(final boolean waitForOnMessage) throws HornetQException
    {
       waitForOnMessageToComplete(waitForOnMessage);
@@ -445,6 +474,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // ClientConsumerInternal implementation
    // --------------------------------------------------------------
+
+   public ClientSessionInternal getSession()
+   {
+      return session;
+   }
+   
    public SessionQueueQueryResponseMessage getQueueInfo()
    {
       return queueInfo;
@@ -631,11 +666,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   /**
-    *
+   /** 
+    * 
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
-    *
+    * 
     * @param discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     */
    public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
@@ -648,7 +683,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             if (clientWindowSize == 0 && discountSlowConsumer)
             {
-               if (ClientConsumerImpl.trace)
+               if (ClientConsumerImpl.isTrace)
                {
                   ClientConsumerImpl.log.trace("Sending " + creditsToSend + " -1, for slow consumer");
                }
@@ -666,7 +701,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               if (ClientConsumerImpl.trace)
+               if (ClientConsumerImpl.isTrace)
                {
                   ClientConsumerImpl.log.trace("Sending " + messageBytes + " from flow-control");
                }
@@ -696,12 +731,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // Private
    // ---------------------------------------------------------------------------------------
 
-   /**
+   /** 
     * Sending a initial credit for slow consumers
     * */
    private void startSlowConsumer()
    {
-      if (ClientConsumerImpl.trace)
+      if (ClientConsumerImpl.isTrace)
       {
          ClientConsumerImpl.log.trace("Sending 1 credit to start delivering of one message to slow consumer");
       }
@@ -726,11 +761,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private void queueExecutor()
    {
-      if (ClientConsumerImpl.trace)
+      if (ClientConsumerImpl.isTrace)
       {
          ClientConsumerImpl.log.trace("Adding Runner on Executor for delivery");
       }
-
+      
       sessionExecutor.execute(runner);
    }
 
@@ -813,7 +848,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                //Ignore, this could be a relic from a previous receiveImmediate();
                return;
             }
-
+            
             boolean expired = message.isExpired();
 
             flowControlBeforeConsumption(message);
@@ -822,13 +857,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                onMessageThread = Thread.currentThread();
 
-               if (ClientConsumerImpl.trace)
+               if (ClientConsumerImpl.isTrace)
                {
                   ClientConsumerImpl.log.trace("Calling handler.onMessage");
                }
                theHandler.onMessage(message);
 
-               if (ClientConsumerImpl.trace)
+               if (ClientConsumerImpl.isTrace)
                {
                   ClientConsumerImpl.log.trace("Handler.onMessage done");
                }

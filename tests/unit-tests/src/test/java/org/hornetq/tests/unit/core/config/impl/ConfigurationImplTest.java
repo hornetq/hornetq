@@ -29,9 +29,9 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- *
+ * 
  * A ConfigurationImplTest
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

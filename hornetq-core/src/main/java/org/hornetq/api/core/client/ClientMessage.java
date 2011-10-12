@@ -20,9 +20,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 
 /**
- *
+ * 
  * A ClientMessage represents a message sent and/or received by HornetQ.
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -36,9 +36,9 @@ public interface ClientMessage extends Message
 
    /**
     * Set the delivery count for this message.
-    *
+    * 
     * This method is not meant to be called by HornetQ clients.
-    *
+    * 
     * @param deliveryCount message delivery count
     */
    void setDeliveryCount(int deliveryCount);
@@ -59,20 +59,20 @@ public interface ClientMessage extends Message
     */
    int getBodySize();
 
-   /**
+   /** 
     * Sets the OutputStream that will receive the content of a message received in a non blocking way.
-    * <br>
+    * <br> 
     * This method is used when consuming large messages
-    *
+    * 
     * @throws HornetQException
     */
    void setOutputStream(OutputStream out) throws HornetQException;
 
-   /**
+   /** 
     * Saves the content of the message to the OutputStream.
     * It will block until the entire content is transfered to the OutputStream.
-    * <br>
-    *
+    * <br> 
+    * 
     * @throws HornetQException
     */
    void saveToOutputStream(OutputStream out) throws HornetQException;
@@ -81,18 +81,18 @@ public interface ClientMessage extends Message
     * Wait the outputStream completion of the message.
     *
     * This method is used when consuming large messages
-    *
+    * 
     * @param timeMilliseconds - 0 means wait forever
     * @return true if it reached the end
     * @throws HornetQException
     */
    boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
 
-   /**
-    * Sets the body's IntputStream.
-    * <br>
+   /** 
+    * Sets the body's IntputStream. 
+    * <br> 
     * This method is used when sending large messages
-    *
+    * 
     * @throws HornetQException
     */
    void setBodyInputStream(InputStream bodyInputStream);

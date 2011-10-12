@@ -26,7 +26,7 @@ import org.hornetq.api.core.TransportConfiguration;
  */
 public interface ClusterTopologyListener
 {
-   void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
+   void nodeUP(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last);
    
-   void nodeDown(String nodeID);
+   void nodeDown(long eventUID, String nodeID);
 }

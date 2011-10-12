@@ -25,13 +25,17 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-class ClientProducerCreditsImpl implements ClientProducerCredits
+public class ClientProducerCreditsImpl implements ClientProducerCredits
 {
    private static final Logger log = Logger.getLogger(ClientProducerCreditsImpl.class);
 
    private final Semaphore semaphore;
 
    private final int windowSize;
+
+   private volatile boolean closed;
+   
+   private boolean blocked;
 
    private final SimpleString address;
 
@@ -41,7 +45,7 @@ class ClientProducerCreditsImpl implements ClientProducerCredits
 
    private int refCount;
 
-   ClientProducerCreditsImpl(final ClientSessionInternal session,
+   public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString address,
                                     final int windowSize)
    {
@@ -64,7 +68,31 @@ class ClientProducerCreditsImpl implements ClientProducerCredits
    {
       checkCredits(credits);
 
-      semaphore.acquire(credits);
+      if (!semaphore.tryAcquire(credits))
+      {
+         if (!closed)
+         {
+            this.blocked = true;
+            try
+            {
+               semaphore.acquire(credits);
+            }
+            finally
+            {
+               this.blocked = false;
+            }
+         }
+      }
+   }
+
+   public boolean isBlocked()
+   {
+      return blocked;
+   }
+
+   public int getBalance()
+   {
+      return semaphore.availablePermits();
    }
 
    public void receiveCredits(final int credits)
@@ -95,6 +123,7 @@ class ClientProducerCreditsImpl implements ClientProducerCredits
    public void close()
    {
       // Closing a producer that is blocking should make it return
+      closed = true;
 
       semaphore.release(Integer.MAX_VALUE / 2);
    }

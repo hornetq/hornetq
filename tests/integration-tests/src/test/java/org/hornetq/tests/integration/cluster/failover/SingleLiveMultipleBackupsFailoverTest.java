@@ -20,10 +20,12 @@ import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ServerLocatorImpl;
+import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
@@ -36,7 +38,19 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
    private NodeManager nodeManager;
+   
+   Logger log = Logger.getLogger(SingleLiveMultipleBackupsFailoverTest.class);
 
+   public void _testLoop() throws Exception
+   {
+      for (int i = 0 ; i < 100; i++)
+      {
+         log.info("#test " + i);
+         testMultipleFailovers();
+         tearDown();
+         setUp();
+      }
+   }
    public void testMultipleFailovers() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -46,14 +60,22 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       createBackupConfig(0, 3, 0, 1, 2, 4, 5);
       createBackupConfig(0, 4, 0, 1, 2, 3, 5);
       createBackupConfig(0, 5, 0, 1, 2, 3, 4);
+      
       servers.get(0).start();
+      waitForServer(servers.get(0).getServer());
       servers.get(1).start();
+      waitForServer(servers.get(1).getServer());
       servers.get(2).start();
       servers.get(3).start();
       servers.get(4).start();
       servers.get(5).start();
 
-      ServerLocator locator = getServerLocator(0);
+      ServerLocatorImpl locator = (ServerLocatorImpl)getServerLocator(0);
+      
+      Topology topology = locator.getTopology();
+      
+      // for logging and debugging
+      topology.setOwner("testMultipleFailovers");
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -62,31 +84,32 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       int backupNode;
       ClientSession session = sendAndConsume(sf, true);
-      System.out.println("failing node 0");
+
+      log.info("failing node 0");
       servers.get(0).crash(session);
-
+      
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
       backupNode = waitForNewLive(5, true, servers, 1, 2, 3, 4, 5);
       session = sendAndConsume(sf, false);
-      System.out.println("failing node " + backupNode);
+      log.info("failing node " + backupNode);
       servers.get(backupNode).crash(session);
 
       session.close();
@@ -97,7 +120,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
       locator.close();
    }
-
+   
    protected void createBackupConfig(int liveNode, int nodeid, int... nodes)
    {
       Configuration config1 = super.createDefaultConfig();
@@ -125,7 +148,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config1.setPagingDirectory(config1.getPagingDirectory() + "_" + liveNode);
       config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager)));
+      servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, nodeid)));
    }
 
    protected void createLiveConfig(int liveNode, int ... otherLiveNodes)
@@ -137,12 +160,12 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
       config0.setClustered(true);
-      List<String> pairs = new ArrayList<String>();
+      List<String> pairs = null;
       for (int node : otherLiveNodes)
       {
          TransportConfiguration otherLiveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
          config0.getConnectorConfigurations().put(otherLiveConnector.getName(), otherLiveConnector);
-         pairs.add(otherLiveConnector.getName());
+         pairs.add(otherLiveConnector.getName());  
 
       }
       ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
@@ -155,7 +178,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       config0.setPagingDirectory(config0.getPagingDirectory() + "_" + liveNode);
       config0.setLargeMessagesDirectory(config0.getLargeMessagesDirectory() + "_" + liveNode);
 
-      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager)));
+      servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
    protected boolean isNetty()

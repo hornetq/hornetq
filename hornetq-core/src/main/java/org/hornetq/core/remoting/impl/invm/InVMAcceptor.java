@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.ProtocolType;
@@ -54,16 +55,25 @@ public class InVMAcceptor implements Acceptor
    private volatile boolean started;
 
    private final ExecutorFactory executorFactory;
+   
+   private final ClusterConnection clusterConnection;
 
    private boolean paused;
 
    private NotificationService notificationService;
+   
+   private final Map<String, Object> configuration;
 
-   public InVMAcceptor(final Map<String, Object> configuration,
+   public InVMAcceptor(final ClusterConnection clusterConnection,
+                       final Map<String, Object> configuration,
                        final BufferHandler handler,                       
                        final ConnectionLifeCycleListener listener,
                        final Executor threadPool)
    {
+      this.clusterConnection = clusterConnection;
+      
+      this.configuration = configuration;
+      
       this.handler = handler;
       
       this.listener = listener;
@@ -72,7 +82,17 @@ public class InVMAcceptor implements Acceptor
 
       executorFactory = new OrderedExecutorFactory(threadPool);
    }
+   
+   public Map<String, Object> getConfiguration()
+   {
+      return configuration;
+   }
 
+   public ClusterConnection getClusterConnection()
+   {
+      return clusterConnection;
+   }
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -189,7 +209,7 @@ public class InVMAcceptor implements Acceptor
          throw new IllegalStateException("Acceptor is not started");
       }
 
-      new InVMConnection(id, connectionID, remoteHandler, new Listener(connector), clientExecutor);
+      new InVMConnection(this, id, connectionID, remoteHandler, new Listener(connector), clientExecutor);
    }
 
    public void disconnect(final String connectionID)
@@ -209,6 +229,8 @@ public class InVMAcceptor implements Acceptor
 
    private class Listener implements ConnectionLifeCycleListener
    {
+      //private static Listener instance = new Listener();
+      
       private final InVMConnector connector;
 
       Listener(final InVMConnector connector)
@@ -216,32 +238,34 @@ public class InVMAcceptor implements Acceptor
          this.connector = connector;
       }
 
-      public void connectionCreated(final Connection connection, final ProtocolType protocol)
+      public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
       {
          if (connections.putIfAbsent((String)connection.getID(), connection) != null)
          {
             throw new IllegalArgumentException("Connection already exists with id " + connection.getID());
          }
 
-         listener.connectionCreated(connection, protocol);
+         listener.connectionCreated(acceptor, connection, protocol);
       }
 
       public void connectionDestroyed(final Object connectionID)
       {
-         if (connections.remove(connectionID) != null)
+         InVMConnection connection = (InVMConnection)connections.remove(connectionID);
+         
+         if (connection != null)
          {
+ 
             listener.connectionDestroyed(connectionID);
 
-            // Execute on different thread to avoid deadlocks
-            new Thread()
+              // Execute on different thread after all the packets are sent, to avoid deadlocks
+            connection.getExecutor().execute(new Runnable()
             {
-               @Override
                public void run()
                {
-                  // Remove on the other side too
-                  connector.disconnect((String)connectionID);
+                 // Remove on the other side too
+                   connector.disconnect((String)connectionID);
                }
-            }.start();
+            });
          }
       }
 

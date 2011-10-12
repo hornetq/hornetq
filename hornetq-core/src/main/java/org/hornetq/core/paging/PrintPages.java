@@ -81,7 +81,7 @@ public class PrintPages
 
          Pair<Map<Long, Set<PagePosition>>, Set<Long>> cursorACKs = PrintPages.loadCursorACKs(arg[1]);
          
-         Set<Long> pgTXs = cursorACKs.b;
+         Set<Long> pgTXs = cursorACKs.getB();
 
          ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
          final ExecutorService executor = Executors.newFixedThreadPool(10);
@@ -93,7 +93,7 @@ public class PrintPages
                return executor;
             }
          };
-         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(arg[0], 1000l, scheduled, execfactory, false);
+         PagingStoreFactory pageStoreFactory = new PagingStoreFactoryNIO(arg[0], 1000l, scheduled, execfactory, false, null);
          HierarchicalRepository<AddressSettings> addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
          addressSettingsRepository.setDefault(new AddressSettings());
          StorageManager sm = new NullStorageManager();
@@ -133,7 +133,7 @@ public class PrintPages
 
                      boolean acked = false;
 
-                     Set<PagePosition> positions = cursorACKs.a.get(q[i]);
+                     Set<PagePosition> positions = cursorACKs.getA().get(q[i]);
                      if (positions != null)
                      {
                         acked = positions.contains(posCheck);
@@ -176,7 +176,7 @@ public class PrintPages
     */
    protected static Pair<Map<Long, Set<PagePosition>>, Set<Long>> loadCursorACKs(final String journalLocation) throws Exception
    {
-      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(journalLocation);
+      SequentialFileFactory messagesFF = new NIOSequentialFileFactory(journalLocation, null);
 
       // Will use only default values. The load function should adapt to anything different
       ConfigurationImpl defaultValues = new ConfigurationImpl();
@@ -195,7 +195,7 @@ public class PrintPages
       ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> txs = new ArrayList<PreparedTransactionInfo>();
 
-      messagesJournal.load(records, txs, null);
+      messagesJournal.load(records, txs, null, false);
 
       Map<Long, Set<PagePosition>> cursorRecords = new HashMap<Long, Set<PagePosition>>();
       

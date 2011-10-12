@@ -69,9 +69,9 @@ public class UriStrategy implements PushStrategy
    public boolean push(ClientMessage message)
    {
       String uri = createUri(message);
-      for (int i = 0; i < registration.getMaxRetries(); i++)
+      for (int i = 0; i < 3; i++)
       {
-         long wait = registration.getRetryWaitMillis();
+         int wait = 0;
          ClientRequest request = executor.createRequest(uri);
          request.followRedirects(false);
 
@@ -85,67 +85,31 @@ public class UriStrategy implements PushStrategy
          {
             log.debug(method + " " + uri);
             res = request.httpMethod(method);
-            int status = res.getStatus();
-            if (status == 503)
-            {
-               String retryAfter = (String) res.getHeaders().getFirst("Retry-After");
-               if (retryAfter != null)
-               {
-                  wait = Long.parseLong(retryAfter) * 1000;
-               }
-            }
-            else if (status == 307)
-            {
-               uri = res.getLocation().getHref();
-               wait = 0;
-            }
-            else if ((status >= 200 && status < 299) || status == 303 || status == 304)
-            {
-               log.debug("Success");
-               return true;
-            }
-            else if (status >= 400)
-            {
-               switch (status)
-               {
-                  case 400: // these usually mean the message you are trying to send is crap, let dead letter logic take over
-                  case 411:
-                  case 412:
-                  case 413:
-                  case 414:
-                  case 415:
-                  case 416:
-                     throw new RuntimeException("Something is wrong with the message, status returned: " + status + " for push registration of URI: " + uri);
-                  case 401: // might as well consider these critical failures and abort.  Immediately signal to disable push registration depending on config
-                  case 402:
-                  case 403:
-                  case 405:
-                  case 406:
-                  case 407:
-                  case 417:
-                  case 505:
-                     return false;
-                  case 404:  // request timeout, gone, and not found treat as a retry
-                  case 408:
-                  case 409:
-                  case 410:
-                     break;
-                  default: // all 50x requests just retry (except 505)
-                     break;
-               }
-            }
          }
          catch (Exception e)
          {
-            //throw new RuntimeException(e);
+            throw new RuntimeException(e);
          }
-         try
+         if (res.getStatus() == 503)
          {
-            if (wait > 0) Thread.sleep(wait);
+            String retryAfter = (String) res.getHeaders().getFirst("Retry-After");
+            if (retryAfter != null)
+            {
+               wait = Integer.parseInt(retryAfter);
+            }
          }
-         catch (InterruptedException e)
+         else if (res.getStatus() == 307)
          {
-            throw new RuntimeException("Interrupted");
+            uri = res.getLocation().getHref();
+         }
+         else if ((res.getStatus() >= 200 && res.getStatus() < 299) || res.getStatus() == 303 || res.getStatus() == 304)
+         {
+            log.debug("Success");
+            return true;
+         }
+         else
+         {
+            throw new RuntimeException("failed to push message to: " + uri + " status code: " + res.getStatus());
          }
       }
       return false;

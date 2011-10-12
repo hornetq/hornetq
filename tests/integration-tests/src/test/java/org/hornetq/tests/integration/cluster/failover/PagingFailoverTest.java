@@ -243,7 +243,8 @@ public class PagingFailoverTest extends FailoverTestBase
                                       PagingFailoverTest.PAGE_SIZE,
                                       PagingFailoverTest.PAGE_MAX,
                                       new HashMap<String, AddressSettings>(),
-                                      nodeManager);
+                                      nodeManager,
+                                      2);
    }
 
    @Override

@@ -29,7 +29,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -248,7 +247,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 

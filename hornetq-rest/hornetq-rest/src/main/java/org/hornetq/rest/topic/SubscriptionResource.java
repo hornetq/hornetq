@@ -11,16 +11,12 @@ import org.hornetq.rest.queue.QueueConsumer;
  */
 public class SubscriptionResource extends QueueConsumer implements Subscription
 {
-   protected boolean durable;
-   protected long timeout;
-   private boolean deleteWhenIdle;
+   boolean durable;
 
-   public SubscriptionResource(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector, boolean durable, long timeout)
+   public SubscriptionResource(ClientSessionFactory factory, String destination, String id, DestinationServiceManager serviceManager, String selector)
            throws HornetQException
    {
       super(factory, destination, id, serviceManager, selector);
-      this.durable = durable;
-      this.timeout = timeout;
    }
 
    public boolean isDurable()
@@ -31,25 +27,5 @@ public class SubscriptionResource extends QueueConsumer implements Subscription
    public void setDurable(boolean durable)
    {
       this.durable = durable;
-   }
-
-   public long getTimeout()
-   {
-      return timeout;
-   }
-
-   public void setTimeout(long timeout)
-   {
-      this.timeout = timeout;
-   }
-
-   public boolean isDeleteWhenIdle()
-   {
-      return deleteWhenIdle;
-   }
-
-   public void setDeleteWhenIdle(boolean deleteWhenIdle)
-   {
-      this.deleteWhenIdle = deleteWhenIdle;
    }
 }

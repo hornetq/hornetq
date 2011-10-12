@@ -71,8 +71,14 @@ public interface Queue extends Bindable
    void cancel(MessageReference reference, long timeBase) throws Exception;
 
    void deliverAsync();
+   
+   /** This method will make sure that any pending message (including paged message) will be delivered  */
+   void forceDelivery();
 
    long getMessageCount();
+   
+   /** Return the current message count without waiting for scheduled executors to finish */
+   long getInstantMessageCount();
 
    int getDeliveringCount();
 
@@ -83,6 +89,8 @@ public interface Queue extends Bindable
    List<MessageReference> getScheduledMessages();
 
    long getMessagesAdded();
+   
+   long getInstantMessagesAdded();
 
    MessageReference removeReferenceWithID(long id) throws Exception;
 
@@ -159,7 +167,7 @@ public interface Queue extends Bindable
    
    void resetAllIterators();
 
-   boolean blockOnExecutorFuture();
+   boolean flushExecutor();
    
    void close() throws Exception;
    

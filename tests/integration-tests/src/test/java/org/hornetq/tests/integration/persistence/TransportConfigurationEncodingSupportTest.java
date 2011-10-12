@@ -100,10 +100,10 @@ public class TransportConfigurationEncodingSupportTest extends TestCase
       assertNotNull(decodedConfigs);
       assertEquals(2, decodedConfigs.size());
 
-      assertEquivalent(connectorConfigs.get(0).a, decodedConfigs.get(0).a);
-      assertEquivalent(connectorConfigs.get(0).b, decodedConfigs.get(0).b);
-      assertEquivalent(connectorConfigs.get(1).a, decodedConfigs.get(1).a);
-      assertNull(decodedConfigs.get(1).b);
+      assertEquivalent(connectorConfigs.get(0).getA(), decodedConfigs.get(0).getA());
+      assertEquivalent(connectorConfigs.get(0).getB(), decodedConfigs.get(0).getB());
+      assertEquivalent(connectorConfigs.get(1).getA(), decodedConfigs.get(1).getA());
+      assertNull(decodedConfigs.get(1).getB());
    }
 
    // decoded TransportConfiguration have parameter values as String instead of primitive type

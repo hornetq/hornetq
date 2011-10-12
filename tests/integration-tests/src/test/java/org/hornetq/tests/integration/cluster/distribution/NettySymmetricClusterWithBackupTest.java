@@ -22,6 +22,8 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import org.hornetq.core.logging.Logger;
+
 /**
  * A NettySymmetricClusterWithBackupTest
  *
@@ -31,20 +33,12 @@ package org.hornetq.tests.integration.cluster.distribution;
  */
 public class NettySymmetricClusterWithBackupTest extends SymmetricClusterWithBackupTest
 {
+   private Logger log = Logger.getLogger(NettySymmetricClusterWithBackupTest.class);
+   
    @Override
    protected boolean isNetty()
    {
       return true;
    }
 
-   public void _test() throws Exception
-   {
-      for (int i = 0; i < 50; i++)
-      {
-         System.out.println("\n\n" + i + "\n\n");
-         _testStartStopServers();
-         tearDown();
-         setUp();
-      }
-   }
 }

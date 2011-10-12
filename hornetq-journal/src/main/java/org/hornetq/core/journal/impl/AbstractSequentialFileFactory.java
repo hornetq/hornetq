@@ -25,15 +25,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- *
+ * 
  * An abstract SequentialFileFactory containing basic functionality for both AIO and NIO SequentialFactories
- *
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -51,10 +52,12 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    protected final TimedBuffer timedBuffer;
 
    protected final int bufferSize;
-
+   
    protected final long bufferTimeout;
+   
+   private final IOCriticalErrorListener critialErrorListener;  
 
-   /**
+   /** 
     * Asynchronous writes need to be done at another executor.
     * This needs to be done at NIO, or else we would have the callers thread blocking for the return.
     * At AIO this is necessary as context switches on writes would fire flushes at the kernel.
@@ -65,7 +68,8 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
                                         final boolean buffered,
                                         final int bufferSize,
                                         final int bufferTimeout,
-                                        final boolean logRates)
+                                        final boolean logRates,
+                                        final IOCriticalErrorListener criticalErrorListener)
    {
       this.journalDir = journalDir;
 
@@ -79,6 +83,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       }
       this.bufferSize = bufferSize;
       this.bufferTimeout = bufferTimeout;
+      this.critialErrorListener = criticalErrorListener;
    }
 
    public void stop()
@@ -123,6 +128,19 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    }
 
    /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#onIOError(java.lang.Exception, java.lang.String, org.hornetq.core.journal.SequentialFile)
+    */
+   public void onIOError(int errorCode, String message, SequentialFile file)
+   {
+      if (critialErrorListener != null)
+      {
+         critialErrorListener.onIOException(errorCode, message, file);
+      }
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
     */
    public void activateBuffer(final SequentialFile file)
@@ -155,7 +173,7 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
    {
    }
 
-   /**
+   /** 
     * Create the directory if it doesn't exist yet
     */
    public void createDirs() throws Exception
@@ -190,13 +208,13 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
       return Arrays.asList(fileNames);
    }
 
-   protected static ClassLoader getThisClassLoader()
+   private static ClassLoader getThisClassLoader()
    {
       return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
       {
          public ClassLoader run()
          {
-            return AbstractSequentialFileFactory.class.getClassLoader(); // XXX FIXME!
+            return AbstractSequentialFileFactory.class.getClassLoader();
          }
       });
 

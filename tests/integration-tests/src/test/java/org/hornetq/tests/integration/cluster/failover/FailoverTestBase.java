@@ -97,23 +97,31 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
+      
+      
+      
+      liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
+      
+      waitForServer(liveServer.getServer());
 
       if (backupServer != null)
       {
+         backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServer");
          backupServer.start();
+         waitForServer(backupServer.getServer());
       }
    }
 
    protected TestableServer createLiveServer()
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager, 1));
    }
 
    protected TestableServer createBackupServer()
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager, 2));
    }
 
    /**
@@ -140,6 +148,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
             staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupServer = createBackupServer();
+      backupServer.getServer().setIdentity("bkpIdentityServer");
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
@@ -167,7 +176,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       config1.setSecurityEnabled(false);
       config1.setSharedStore(false);
       config1.setBackup(true);
-      backupConfig = config1;
       backupServer = createBackupServer();
 
       Configuration config0 = super.createDefaultConfig();
@@ -178,7 +186,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       //liveConfig.setBackupConnectorName("toBackup");
       config0.setSecurityEnabled(false);
       config0.setSharedStore(false);
-      liveConfig = config0;
       liveServer = createLiveServer();
 
       backupServer.start();
@@ -188,6 +195,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      logAndSystemOut("#test tearDown");
       backupServer.stop();
 
       liveServer.stop();
@@ -210,8 +218,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         e.printStackTrace();
-         System.exit(9);
+         throw e; 
       }
       try
       {
@@ -220,8 +227,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         e.printStackTrace();
-         System.exit(9);
+         throw e;
       }
    }
 
@@ -401,6 +407,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveServer.crash(sessions);
    }
 
+   protected void crash(final boolean waitFailure, final ClientSession... sessions) throws Exception
+   {
+      liveServer.crash(waitFailure, sessions);
+   }
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -425,21 +436,21 @@ public abstract class FailoverTestBase extends ServiceTestBase
          this.latch = latch;
       }
 
-      public void nodeUP(String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
+      public void nodeUP(final long uniqueEventID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean last)
       {
-         if (connectorPair.a != null && !liveNode.contains(connectorPair.a.getName()))
+         if (connectorPair.getA() != null && !liveNode.contains(connectorPair.getA().getName()))
          {
-            liveNode.add(connectorPair.a.getName());
+            liveNode.add(connectorPair.getA().getName());
             latch.countDown();
          }
-         if (connectorPair.b != null && !backupNode.contains(connectorPair.b.getName()))
+         if (connectorPair.getB() != null && !backupNode.contains(connectorPair.getB().getName()))
          {
-            backupNode.add(connectorPair.b.getName());
+            backupNode.add(connectorPair.getB().getName());
             latch.countDown();
          }
       }
 
-      public void nodeDown(String nodeID)
+      public void nodeDown(final long uniqueEventID, String nodeID)
       {
          //To change body of implemented methods use File | Settings | File Templates.
       }

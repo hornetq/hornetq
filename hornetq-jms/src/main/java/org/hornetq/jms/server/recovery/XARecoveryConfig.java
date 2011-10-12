@@ -13,7 +13,7 @@
 
 package org.hornetq.jms.server.recovery;
 
-import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -24,20 +24,20 @@ import org.hornetq.api.core.TransportConfiguration;
  */
 public class XARecoveryConfig
 {
-   private final TransportConfiguration transportConfiguration;
+   private final HornetQConnectionFactory hornetQConnectionFactory;
    private final String username;
    private final String password;
 
-   public XARecoveryConfig(TransportConfiguration transportConfiguration, String username, String password)
+   public XARecoveryConfig(HornetQConnectionFactory hornetQConnectionFactory, String username, String password)
    {
-      this.transportConfiguration = transportConfiguration;
+      this.hornetQConnectionFactory = hornetQConnectionFactory;
       this.username = username;
       this.password = password;
    }
 
-   public TransportConfiguration getTransportConfiguration()
+   public HornetQConnectionFactory getHornetQConnectionFactory()
    {
-      return transportConfiguration;
+      return hornetQConnectionFactory;
    }
 
    public String getUsername()
@@ -48,5 +48,30 @@ public class XARecoveryConfig
    public String getPassword()
    {
       return password;
+   }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      XARecoveryConfig that = (XARecoveryConfig) o;
+
+      if (hornetQConnectionFactory != null ? !hornetQConnectionFactory.equals(that.hornetQConnectionFactory) : that.hornetQConnectionFactory != null)
+         return false;
+      if (password != null ? !password.equals(that.password) : that.password != null) return false;
+      if (username != null ? !username.equals(that.username) : that.username != null) return false;
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      int result = hornetQConnectionFactory != null ? hornetQConnectionFactory.hashCode() : 0;
+      result = 31 * result + (username != null ? username.hashCode() : 0);
+      result = 31 * result + (password != null ? password.hashCode() : 0);
+      return result;
    }
 }

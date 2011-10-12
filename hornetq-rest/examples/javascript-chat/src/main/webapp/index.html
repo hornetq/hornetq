@@ -50,17 +50,12 @@
                 {
                     if (xhr.status == 200)
                     {
-                       // getting the links from the rest resource
                        topicSender = xhr.getResponseHeader("msg-create");
                        subscriptions = xhr.getResponseHeader("msg-pull-subscriptions");
-
-                       // just adding the report
                        document.getElementById("errors").innerHTML = "Subscriptions URL: " + subscriptions;
                     }
                 }
             }
-            
-            // this will send the request from javascript
             xhr.send(null);
         }
 

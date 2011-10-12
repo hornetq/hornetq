@@ -73,6 +73,15 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       // nothing to be done here.. we don really have a file on this Storage
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#complete()
+    */
+   public void complete() throws Exception
+   {
+      // nothing to be done here.. we don really have a file on this Storage
+
+   }
+
    @Override
    public boolean isLargeMessage()
    {
@@ -153,6 +162,21 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
     */
    public void setPaged()
    {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#setPendingRecordID(long)
+    */
+   public void setPendingRecordID(long pendingRecordID)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#getPendingRecordID()
+    */
+   public long getPendingRecordID()
+   {
+      return -1;
    }
 
 

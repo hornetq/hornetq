@@ -241,6 +241,7 @@ public class BridgeControlImpl extends AbstractControl implements BridgeControl
       try
       {
          bridge.stop();
+         bridge.flushExecutor();
       }
       finally
       {

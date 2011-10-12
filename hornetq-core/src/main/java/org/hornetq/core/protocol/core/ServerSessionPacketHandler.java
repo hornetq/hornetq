@@ -79,6 +79,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCred
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -488,6 +489,23 @@ public class ServerSessionPacketHandler implements ChannelHandler
                      response = new NullResponseMessage();
                   }
                   session.addMetaData(message.getKey(), message.getData());
+                  break;
+               }
+               case PacketImpl.SESS_UNIQUE_ADD_METADATA:
+               {
+                  SessionUniqueAddMetaDataMessage message = (SessionUniqueAddMetaDataMessage)packet;
+                  if (session.addUniqueMetaData(message.getKey(), message.getData()))
+                  {
+                     response = new NullResponseMessage();
+                  }
+                  else
+                  {
+                     response = new HornetQExceptionMessage(new HornetQException(HornetQException.DUPLICATE_METADATA,
+                                                     "Metadata " + message.getKey() +
+                                                              "=" +
+                                                              message.getData() +
+                                                              " had been set already"));
+                  }
                   break;
                }
             }

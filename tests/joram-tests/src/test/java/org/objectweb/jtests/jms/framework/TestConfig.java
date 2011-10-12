@@ -30,7 +30,7 @@ public class TestConfig
    private static final String PROP_NAME = "timeout";
 
    /**
-    * timeout value used by <code>receive</code> method in the tests.
+    * timeout value used by <code>receive</code> method in the tests. 
     * the value is specified in the <code>config/test.properties</code> file.
     */
    public static final long TIMEOUT;

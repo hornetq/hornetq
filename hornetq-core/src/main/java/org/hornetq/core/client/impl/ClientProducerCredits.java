@@ -25,6 +25,8 @@ public interface ClientProducerCredits
    void acquireCredits(int credits) throws InterruptedException;
 
    void receiveCredits(int credits);
+   
+   boolean isBlocked();
 
    void reset();
 

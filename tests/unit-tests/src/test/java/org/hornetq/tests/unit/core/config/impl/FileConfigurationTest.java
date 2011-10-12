@@ -232,6 +232,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals(true, ccc.isDuplicateDetection());
             Assert.assertEquals(false, ccc.isForwardWhenNoConsumers());
             Assert.assertEquals(1, ccc.getMaxHops());
+            Assert.assertEquals(123, ccc.getCallTimeout());
             Assert.assertEquals("connector1", ccc.getStaticConnectors().get(0));
             Assert.assertEquals("connector2", ccc.getStaticConnectors().get(1));
             Assert.assertEquals(null, ccc.getDiscoveryGroupName());
@@ -241,6 +242,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
             Assert.assertEquals("cluster-connection2", ccc.getName());
             Assert.assertEquals("queues2", ccc.getAddress());
             Assert.assertEquals(4, ccc.getRetryInterval());
+            Assert.assertEquals(456, ccc.getCallTimeout());
             Assert.assertEquals(false, ccc.isDuplicateDetection());
             Assert.assertEquals(true, ccc.isForwardWhenNoConsumers());
             Assert.assertEquals(2, ccc.getMaxHops());

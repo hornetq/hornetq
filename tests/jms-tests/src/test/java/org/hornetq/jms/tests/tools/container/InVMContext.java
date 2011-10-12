@@ -182,7 +182,7 @@ public class InVMContext implements Context, Serializable
    public NamingEnumeration listBindings(String contextName) throws NamingException
    {
       contextName = trimSlashes(contextName);
-      if (!"".equals(contextName) && !"".equals(contextName))
+      if (!"".equals(contextName) && !".".equals(contextName))
       {
          try
          {

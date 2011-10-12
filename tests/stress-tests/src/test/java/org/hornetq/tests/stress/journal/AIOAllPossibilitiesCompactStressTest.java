@@ -15,6 +15,7 @@ package org.hornetq.tests.stress.journal;
 
 import java.io.File;
 
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalConstants;
@@ -29,6 +30,23 @@ import org.hornetq.core.journal.impl.JournalConstants;
 public class AIOAllPossibilitiesCompactStressTest extends AllPossibilitiesCompactStressTest
 {
 
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
@@ -43,4 +61,6 @@ public class AIOAllPossibilitiesCompactStressTest extends AllPossibilitiesCompac
                                           1000000,
                                           false);
    }
+
+
 }

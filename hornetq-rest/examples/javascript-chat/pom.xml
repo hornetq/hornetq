@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.hornetq.rest</groupId>
-        <artifactId>hornetq-rest-all</artifactId>
-        <version>2.2.2.Final</version>
-    </parent>
     <groupId>org.hornetq.rest.examples</groupId>
     <artifactId>javascript-chat</artifactId>
+    <version>2.2.0.CR1</version>
     <packaging>war</packaging>
+    <properties>
+        <resteasy.version>2.0.1.GA</resteasy.version>
+        <hornetq.version>2.2.0.CR1</hornetq.version>
+    </properties>
     <name>Browser Chat App</name>
     <repositories>
         <repository>
@@ -117,14 +117,17 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
+	    <version>${hornetq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
+            <version>3.2.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms</artifactId>
+	    <version>${hornetq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>

@@ -37,7 +37,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
@@ -66,7 +65,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -96,7 +95,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(5000);
@@ -133,7 +132,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       final CountDownLatch latch = new CountDownLatch(2);
       TestHandler handler = new TestHandler(latch, clientSession);
@@ -149,10 +148,10 @@ public class DeadLetterAddressTest extends ServiceTestBase
 
    class  TestHandler implements MessageHandler
    {
-      private final CountDownLatch latch;
+      private CountDownLatch latch;
       int count = 0;
 
-      private final ClientSession clientSession;
+      private ClientSession clientSession;
 
       public TestHandler(CountDownLatch latch, ClientSession clientSession)
       {
@@ -190,7 +189,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(dla, dlq2, null, false);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -224,7 +223,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
       clientSession.createQueue(qName, qName, null, false);
       ClientProducer producer = clientSession.createProducer(qName);
-      producer.send(CreateMessage.createTextMessage("heyho!", clientSession));
+      producer.send(createTextMessage(clientSession, "heyho!"));
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
@@ -251,17 +250,15 @@ public class DeadLetterAddressTest extends ServiceTestBase
       SimpleString dlq = new SimpleString("DLQ1");
       clientSession.createQueue(dla, dlq, null, false);
       clientSession.createQueue(qName, qName, null, false);
-      final ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      final ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
       ClientSession sendSession = sessionFactory.createSession(false, true, true);
-      try
-      {
-         ClientProducer producer = sendSession.createProducer(qName);
+      ClientProducer producer = sendSession.createProducer(qName);
       Map<String, Long> origIds = new HashMap<String, Long>();
 
       for (int i = 0; i < NUM_MESSAGES; i++)
       {
-         ClientMessage tm = CreateMessage.createTextMessage("Message:" + i, clientSession);
+         ClientMessage tm = createTextMessage(clientSession, "Message:" + i);
          producer.send(tm);
       }
 
@@ -322,10 +319,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       }
 
       sendSession.close();
-      } finally {
-         sessionFactory.close();
-         locator.close();
-      }
+
    }
 
    public void testDeadlLetterAddressWithDefaultAddressSettings() throws Exception
@@ -345,7 +339,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();
@@ -387,7 +381,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();
@@ -436,7 +430,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
       clientSession.createQueue(specificDeadLetterAddress, specificDeadLetterQueue, false);
 
       ClientProducer producer = clientSession.createProducer(address);
-      ClientMessage clientMessage = CreateMessage.createTextMessage("heyho!", clientSession);
+      ClientMessage clientMessage = createTextMessage(clientSession, "heyho!");
       producer.send(clientMessage);
 
       clientSession.start();

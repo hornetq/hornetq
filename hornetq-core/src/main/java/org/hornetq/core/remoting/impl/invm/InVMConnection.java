@@ -12,13 +12,16 @@
  */
 package org.hornetq.core.remoting.impl.invm;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -35,6 +38,8 @@ public class InVMConnection implements Connection
 {
 
    private static final Logger log = Logger.getLogger(InVMConnection.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
 
    private final BufferHandler handler;
 
@@ -43,6 +48,9 @@ public class InVMConnection implements Connection
    private final String id;
 
    private boolean closed;
+   
+   // Used on tests
+   public static boolean flushEnabled = true;
 
    private final int serverID;
 
@@ -50,15 +58,17 @@ public class InVMConnection implements Connection
    
    private volatile boolean closing;
 
-   public InVMConnection(final int serverID,
+   public InVMConnection(final Acceptor acceptor, 
+                         final int serverID,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
                          final Executor executor)
    {
-      this(serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
+      this(acceptor, serverID, UUIDGenerator.getInstance().generateSimpleStringUUID().toString(), handler, listener, executor);
    }
 
-   public InVMConnection(final int serverID,
+   public InVMConnection(final Acceptor acceptor, 
+                         final int serverID,
                          final String id,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
@@ -74,7 +84,7 @@ public class InVMConnection implements Connection
 
       this.executor = executor;
 
-      listener.connectionCreated(this, ProtocolType.CORE);
+      listener.connectionCreated(acceptor, this, ProtocolType.CORE);
    }
 
    public void close()
@@ -133,23 +143,57 @@ public class InVMConnection implements Connection
                   if (!closed)
                   {
                      copied.readInt(); // read and discard
-
+                     if (isTrace)
+                     {
+                        log.trace(InVMConnection.this + "::Sending inVM packet");
+                     }
                      handler.bufferReceived(id, copied);
                   }
                }
                catch (Exception e)
                {
-                  final String msg = "Failed to write to handler";
+                  final String msg = "Failed to write to handler on connector " + this;
                   InVMConnection.log.error(msg, e);
                   throw new IllegalStateException(msg, e);
                }
+               finally
+               {
+                  if (isTrace)
+                  {
+                     log.trace(InVMConnection.this + "::packet sent done");
+                  }
+               }
             }
          });
+         
+         if (flush && flushEnabled)
+         {
+            final CountDownLatch latch = new CountDownLatch(1);
+            executor.execute(new Runnable(){
+               public void run()
+               {
+                  latch.countDown();
+               }
+            });
+            
+            try
+            {
+               if (!latch.await(10, TimeUnit.SECONDS))
+               {
+                  log.warn("Timed out flushing channel on InVMConnection");
+               }
+            }
+            catch (InterruptedException e)
+            {
+               log.debug(e.getMessage(), e);
+            }
+         }
       }
       catch (RejectedExecutionException e)
       {
          // Ignore - this can happen if server/client is shutdown and another request comes in
       }
+      
    }
 
    public String getRemoteAddress()
@@ -169,4 +213,25 @@ public class InVMConnection implements Connection
    public void removeReadyListener(ReadyListener listener)
    {
    }
+   
+   public void disableFlush()
+   {
+      flushEnabled = false;
+   }
+   
+   public Executor getExecutor()
+   {
+      return executor;
+   }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "InVMConnection [serverID=" + serverID + ", id=" + id + "]";
+   }
+   
+   
 }

@@ -22,7 +22,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -50,8 +49,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -75,8 +74,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -108,8 +107,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -149,8 +148,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -178,8 +177,8 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.createQueue(addressAB, queueName1, null, false);
       clientSession.createQueue(addressAC, queueName2, null, false);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -210,8 +209,8 @@ public class WildCardRoutingTest extends UnitTestCase
       clientSession.deleteQueue(queueName1);
       // the wildcard binding should still exist
       Assert.assertEquals(server.getPostOffice().getBindingsForAddress(addressAB).getBindings().size(), 1);
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -260,15 +259,15 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer();
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(addressAB, CreateMessage.createTextMessage("m1", clientSession));
-      producer.send(addressAC, CreateMessage.createTextMessage("m2", clientSession));
-      producer.send(addressAD, CreateMessage.createTextMessage("m3", clientSession));
-      producer.send(addressAE, CreateMessage.createTextMessage("m4", clientSession));
-      producer.send(addressAF, CreateMessage.createTextMessage("m5", clientSession));
-      producer.send(addressAG, CreateMessage.createTextMessage("m6", clientSession));
-      producer.send(addressAH, CreateMessage.createTextMessage("m7", clientSession));
-      producer.send(addressAJ, CreateMessage.createTextMessage("m8", clientSession));
-      producer.send(addressAK, CreateMessage.createTextMessage("m9", clientSession));
+      producer.send(addressAB, createTextMessage(clientSession, "m1"));
+      producer.send(addressAC, createTextMessage(clientSession, "m2"));
+      producer.send(addressAD, createTextMessage(clientSession, "m3"));
+      producer.send(addressAE, createTextMessage(clientSession, "m4"));
+      producer.send(addressAF, createTextMessage(clientSession, "m5"));
+      producer.send(addressAG, createTextMessage(clientSession, "m6"));
+      producer.send(addressAH, createTextMessage(clientSession, "m7"));
+      producer.send(addressAJ, createTextMessage(clientSession, "m8"));
+      producer.send(addressAK, createTextMessage(clientSession, "m9"));
 
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
@@ -357,15 +356,15 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer();
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(addressAB, CreateMessage.createTextMessage("m1", clientSession));
-      producer.send(addressAC, CreateMessage.createTextMessage("m2", clientSession));
-      producer.send(addressAD, CreateMessage.createTextMessage("m3", clientSession));
-      producer.send(addressAE, CreateMessage.createTextMessage("m4", clientSession));
-      producer.send(addressAF, CreateMessage.createTextMessage("m5", clientSession));
-      producer.send(addressAG, CreateMessage.createTextMessage("m6", clientSession));
-      producer.send(addressAH, CreateMessage.createTextMessage("m7", clientSession));
-      producer.send(addressAJ, CreateMessage.createTextMessage("m8", clientSession));
-      producer.send(addressAK, CreateMessage.createTextMessage("m9", clientSession));
+      producer.send(addressAB, createTextMessage(clientSession, "m1"));
+      producer.send(addressAC, createTextMessage(clientSession, "m2"));
+      producer.send(addressAD, createTextMessage(clientSession, "m3"));
+      producer.send(addressAE, createTextMessage(clientSession, "m4"));
+      producer.send(addressAF, createTextMessage(clientSession, "m5"));
+      producer.send(addressAG, createTextMessage(clientSession, "m6"));
+      producer.send(addressAH, createTextMessage(clientSession, "m7"));
+      producer.send(addressAJ, createTextMessage(clientSession, "m8"));
+      producer.send(addressAK, createTextMessage(clientSession, "m9"));
 
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
@@ -434,8 +433,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -463,8 +462,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -493,8 +492,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -522,8 +521,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -551,8 +550,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -576,8 +575,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -603,8 +602,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m2", m.getBodyBuffer().readString());
@@ -628,8 +627,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m2", m.getBodyBuffer().readString());
@@ -653,8 +652,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -678,8 +677,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -703,8 +702,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());
@@ -731,8 +730,8 @@ public class WildCardRoutingTest extends UnitTestCase
       ClientProducer producer2 = clientSession.createProducer(addressAC);
       ClientConsumer clientConsumer = clientSession.createConsumer(queueName);
       clientSession.start();
-      producer.send(CreateMessage.createTextMessage("m1", clientSession));
-      producer2.send(CreateMessage.createTextMessage("m2", clientSession));
+      producer.send(createTextMessage(clientSession, "m1"));
+      producer2.send(createTextMessage(clientSession, "m2"));
       ClientMessage m = clientConsumer.receive(500);
       Assert.assertNotNull(m);
       Assert.assertEquals("m1", m.getBodyBuffer().readString());

@@ -97,7 +97,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
    // This is useful at debug time...
    // if you set it to true, all the appends, deletes, rollbacks, commits, etc.. are sent to System.out
-   private static final boolean TRACE_RECORDS = false;
+   private static final boolean TRACE_RECORDS = trace;
 
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
@@ -292,6 +292,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       this.fileFactory = fileFactory;
 
       filesRepository = new JournalFilesRepository(fileFactory,
+                                                   this,
                                                    filePrefix,
                                                    fileExtension,
                                                    userVersion,
@@ -1484,7 +1485,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
    public synchronized JournalLoadInformation load(final List<RecordInfo> committedRecords,
                                                    final List<PreparedTransactionInfo> preparedTransactions,
                                                    final TransactionFailureCallback failureCallback,
-                                                   final boolean fixBadTX) throws Exception
+                                                   final boolean changeData) throws Exception
    {
       final Set<Long> recordsToDelete = new HashSet<Long>();
       // ArrayList was taking too long to delete elements on checkDeleteSize
@@ -1554,7 +1555,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
                failureCallback.failedTransaction(transactionID, records, recordsToDelete);
             }
          }
-      }, fixBadTX);
+      }, changeData);
 
       for (RecordInfo record : records)
       {
@@ -1640,15 +1641,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       try
       {
-         if (JournalImpl.trace)
-         {
-            JournalImpl.trace("Starting compacting operation on journal");
-         }
-
-         if (JournalImpl.TRACE_RECORDS)
-         {
-            JournalImpl.traceRecord("Starting compacting operation on journal");
-         }
+         log.debug("Starting compacting operation on journal");
 
          onCompactStart();
 
@@ -1806,16 +1799,8 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
 
-         if (JournalImpl.trace)
-         {
-            trace("Finished compacting on journal");
-         }
-
-         if (JournalImpl.TRACE_RECORDS)
-         {
-            JournalImpl.traceRecord("Finished compacting on journal");
-         }
-
+         log.debug("Finished compacting on journal");
+         
       }
       finally
       {
@@ -1879,7 +1864,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
       return load(loadManager, true);
    }
    
-   public synchronized JournalLoadInformation load(final LoaderCallback loadManager, boolean fixFailingTransactions) throws Exception
+   public synchronized JournalLoadInformation load(final LoaderCallback loadManager, final boolean changeData) throws Exception
    {
       if (state != JournalImpl.STATE_STARTED)
       {
@@ -1902,7 +1887,6 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       int lastDataPos = JournalImpl.SIZE_HEADER;
 
-      // AtomicLong is used only as a reference, not as an Atomic value
       final AtomicLong maxID = new AtomicLong(-1);
 
       for (final JournalFile file : orderedFiles)
@@ -2168,8 +2152,11 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
          }
          else
          {
-            // Empty dataFiles with no data
-            filesRepository.addFreeFileNoInit(file);
+            if (changeData)
+            {
+               // Empty dataFiles with no data
+               filesRepository.addFreeFile(file, false, false);
+            }
          }
       }
 
@@ -2207,7 +2194,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
             JournalImpl.log.warn("Uncommitted transaction with id " + transaction.transactionID +
                                  " found and discarded");
 
-            if (fixFailingTransactions)
+            if (changeData)
             {
                // I append a rollback record here, because otherwise compacting will be throwing messages because of unknown transactions
                this.appendRollbackRecord(transaction.transactionID, false);
@@ -2999,7 +2986,7 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
       if (JournalImpl.trace)
       {
-         JournalImpl.trace("moveNextFile: " + currentFile);
+         log.trace("moveNextFile: " + currentFile);
       }
 
       fileFactory.activateBuffer(currentFile.getFile());
@@ -3107,14 +3094,14 @@ public class JournalImpl implements TestableJournal, JournalRecordProvider
 
          for (Pair<String, String> rename : renames)
          {
-            SequentialFile fileTmp = fileFactory.createSequentialFile(rename.a, 1);
-            SequentialFile fileTo = fileFactory.createSequentialFile(rename.b, 1);
+            SequentialFile fileTmp = fileFactory.createSequentialFile(rename.getA(), 1);
+            SequentialFile fileTo = fileFactory.createSequentialFile(rename.getB(), 1);
             // We should do the rename only if the tmp file still exist, or else we could
             // delete a valid file depending on where the crash occured during the control file delete
             if (fileTmp.exists())
             {
                fileTo.delete();
-               fileTmp.renameTo(rename.b);
+               fileTmp.renameTo(rename.getB());
             }
          }
 

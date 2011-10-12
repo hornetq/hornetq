@@ -27,8 +27,6 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -89,14 +87,28 @@ public class JMSTestBase extends ServiceTestBase
     */
    protected Queue createQueue(final String name) throws Exception, NamingException
    {
-      jmsServer.createQueue(false, name, null, true, "/jms/" + name);
-
-      return (Queue)context.lookup("/jms/" + name);
+      return createQueue(false, name);
    }
 
    protected Topic createTopic(final String name) throws Exception, NamingException
    {
-      jmsServer.createTopic(false, name, "/jms/" + name);
+      return createTopic(false, name);
+   }
+
+   /**
+    * @throws Exception
+    * @throws NamingException
+    */
+   protected Queue createQueue(final boolean storeConfig, final String name) throws Exception, NamingException
+   {
+      jmsServer.createQueue(storeConfig, name, null, true, "/jms/" + name);
+
+      return (Queue)context.lookup("/jms/" + name);
+   }
+
+   protected Topic createTopic(final boolean storeConfig, final String name) throws Exception, NamingException
+   {
+      jmsServer.createTopic(storeConfig, name, "/jms/" + name);
 
       return (Topic)context.lookup("/jms/" + name);
    }
@@ -110,8 +122,9 @@ public class JMSTestBase extends ServiceTestBase
 
       Configuration conf = createDefaultConfig(false);
 
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      conf.getConnectorConfigurations().put("netty", new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      conf.getAcceptorConfigurations().clear();
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY));
+      conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
 
@@ -136,10 +149,10 @@ public class JMSTestBase extends ServiceTestBase
 
    protected void restartServer() throws Exception
    {
-      jmsServer.start();
-      jmsServer.activated();
       context = new InVMContext();
       jmsServer.setContext(context);
+      jmsServer.start();
+      jmsServer.activated();
       registerConnectionFactory();
    }
 
@@ -169,9 +182,6 @@ public class JMSTestBase extends ServiceTestBase
       mbeanServer = null;
 
       super.tearDown();
-
-
-      super.tearDown();
    }
 
    // Private -------------------------------------------------------
@@ -181,7 +191,7 @@ public class JMSTestBase extends ServiceTestBase
    protected void registerConnectionFactory() throws Exception
    {
       List<TransportConfiguration> connectorConfigs = new ArrayList<TransportConfiguration>();
-      connectorConfigs.add(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      connectorConfigs.add(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       createCF(connectorConfigs, "/cf");
 

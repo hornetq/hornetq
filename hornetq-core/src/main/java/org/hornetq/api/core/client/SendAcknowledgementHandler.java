@@ -23,13 +23,14 @@ import org.hornetq.api.core.Message;
  * a SendAcknowledgementHandler to be notified later when the messages has been received by the
  * server. The method {@link #sendAcknowledged(Message)} will be called with the message that was
  * sent asynchronously.
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface SendAcknowledgementHandler
 {
    /**
     * Notifies the client that a message sent asynchronously has been received by the server.
-    *
+    * 
     * @param message message sent asynchronously
     */
    void sendAcknowledged(Message message);

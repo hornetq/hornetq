@@ -57,16 +57,15 @@ public class DiscoveryTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(DiscoveryTest.class);
 
-   private static final String address1 = getUDPDiscoveryAddress();
+   private final String address1 = getUDPDiscoveryAddress();
 
-   private static final String address2 = getUDPDiscoveryAddress(1);
+   private final String address2 = getUDPDiscoveryAddress(1);
 
-   private static final String address3 = getUDPDiscoveryAddress(2);
-
+   private final String address3 = getUDPDiscoveryAddress(2);
 
    public void testSimpleBroadcast() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -109,53 +108,54 @@ public class DiscoveryTest extends UnitTestCase
       dg.stop();
 
    }
-   
+
    public void testSimpleBroadcastSpecificNIC() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
       final String nodeID = RandomUtil.randomString();
-      
-      //We need to choose a real NIC on the local machine - note this will silently pass if the machine
-      //has no usable NIC!
-      
+
+      // We need to choose a real NIC on the local machine - note this will silently pass if the machine
+      // has no usable NIC!
+
       Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-      
+
       InetAddress localAddress = null;
-      
+
       outer: while (networkInterfaces.hasMoreElements())
       {
          NetworkInterface networkInterface = networkInterfaces.nextElement();
-         if (networkInterface.isLoopback() || networkInterface.isVirtual() || !networkInterface.isUp() ||
-                  !networkInterface.supportsMulticast())
+         if (networkInterface.isLoopback() || networkInterface.isVirtual() ||
+             !networkInterface.isUp() ||
+             !networkInterface.supportsMulticast())
          {
             continue;
          }
-         
+
          Enumeration<InetAddress> en = networkInterface.getInetAddresses();
-         
+
          while (en.hasMoreElements())
          {
             InetAddress ia = en.nextElement();
-            
+
             if (ia.getAddress().length == 4)
             {
                localAddress = ia;
-               
+
                break outer;
             }
          }
       }
-      
+
       if (localAddress == null)
       {
          log.warn("Can't find address to use");
-         
+
          return;
       }
-      
+
       log.info("Local address is " + localAddress);
 
       BroadcastGroup bg = new BroadcastGroupImpl(nodeID,
@@ -198,7 +198,7 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testSimpleBroadcastWithStopStartDiscoveryGroup() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -215,7 +215,6 @@ public class DiscoveryTest extends UnitTestCase
       bg.start();
 
       TransportConfiguration live1 = generateTC();
-
 
       bg.addConnector(live1);
 
@@ -253,15 +252,15 @@ public class DiscoveryTest extends UnitTestCase
 
       entries = dg.getDiscoveryEntries();
       assertEqualsDiscoveryEntries(Arrays.asList(live1), entries);
-      
+
       dg.stop();
-      
+
       bg.stop();
    }
 
    public void testIgnoreTrafficFromOwnNode() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -279,10 +278,14 @@ public class DiscoveryTest extends UnitTestCase
 
       TransportConfiguration live1 = generateTC();
 
-
       bg.addConnector(live1);
 
-      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID, RandomUtil.randomString(), null, groupAddress, groupPort, timeout);
+      DiscoveryGroup dg = new DiscoveryGroupImpl(nodeID,
+                                                 RandomUtil.randomString(),
+                                                 null,
+                                                 groupAddress,
+                                                 groupPort,
+                                                 timeout);
 
       dg.start();
 
@@ -390,7 +393,7 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testSimpleBroadcastDifferentAddressAndPort() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -408,7 +411,7 @@ public class DiscoveryTest extends UnitTestCase
 
       bg.addConnector(live1);
 
-      final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
+      final InetAddress groupAddress2 = InetAddress.getByName(address2);
       final int port2 = getUDPDiscoveryPort(1);
 
       DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
@@ -436,14 +439,14 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort1 = getUDPDiscoveryPort();
 
       final int groupPort2 = getUDPDiscoveryPort(1);
-      
+
       final int groupPort3 = getUDPDiscoveryPort(2);
 
-      final InetAddress groupAddress1 = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress1 = InetAddress.getByName(address1);
 
-      final InetAddress groupAddress2 = InetAddress.getByName(DiscoveryTest.address2);
+      final InetAddress groupAddress2 = InetAddress.getByName(address2);
 
-      final InetAddress groupAddress3 = InetAddress.getByName(DiscoveryTest.address3);
+      final InetAddress groupAddress3 = InetAddress.getByName(address3);
 
       final int timeout = 5000;
 
@@ -544,53 +547,53 @@ public class DiscoveryTest extends UnitTestCase
       dg3.stop();
    }
 
-//   -- fix this test
-//   public void testBroadcastNullBackup() throws Exception
-//   {
-//      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
-//      final int groupPort = getUDPDiscoveryPort();
-//      final int timeout = 500;
-//
-//      String nodeID = RandomUtil.randomString();
-//
-//      BroadcastGroup bg = new BroadcastGroupImpl(nodeID,
-//                                                 RandomUtil.randomString(),
-//                                                 null,
-//                                                 -1,
-//                                                 groupAddress,
-//                                                 groupPort,
-//                                                 true);
-//
-//      bg.start();
-//
-//      TransportConfiguration live1 = generateTC();
-//
-//      Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration, TransportConfiguration>(live1,
-//                                                                                                                                    null);
-//
-//      bg.addConnectorPair(connectorPair);
-//
-//      DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
-//                                                 RandomUtil.randomString(),
-//                                                 null,
-//                                                 groupAddress,
-//                                                 groupPort,
-//                                                 timeout,
-//                                                 Executors.newFixedThreadPool(1));
-//
-//      dg.start();
-//
-//      bg.broadcastConnectors();
-//
-//      boolean ok = dg.waitForBroadcast(1000);
-//
-//      Assert.assertTrue(ok);
-//   }
-
+   // -- fix this test
+   // public void testBroadcastNullBackup() throws Exception
+   // {
+   // final InetAddress groupAddress = InetAddress.getByName(address1);
+   // final int groupPort = getUDPDiscoveryPort();
+   // final int timeout = 500;
+   //
+   // String nodeID = RandomUtil.randomString();
+   //
+   // BroadcastGroup bg = new BroadcastGroupImpl(nodeID,
+   // RandomUtil.randomString(),
+   // null,
+   // -1,
+   // groupAddress,
+   // groupPort,
+   // true);
+   //
+   // bg.start();
+   //
+   // TransportConfiguration live1 = generateTC();
+   //
+   // Pair<TransportConfiguration, TransportConfiguration> connectorPair = new Pair<TransportConfiguration,
+   // TransportConfiguration>(live1,
+   // null);
+   //
+   // bg.addConnectorPair(connectorPair);
+   //
+   // DiscoveryGroup dg = new DiscoveryGroupImpl(RandomUtil.randomString(),
+   // RandomUtil.randomString(),
+   // null,
+   // groupAddress,
+   // groupPort,
+   // timeout,
+   // Executors.newFixedThreadPool(1));
+   //
+   // dg.start();
+   //
+   // bg.broadcastConnectors();
+   //
+   // boolean ok = dg.waitForBroadcast(1000);
+   //
+   // Assert.assertTrue(ok);
+   // }
 
    public void testDiscoveryListenersCalled() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -655,7 +658,7 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testConnectorsUpdatedMultipleBroadcasters() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -845,7 +848,7 @@ public class DiscoveryTest extends UnitTestCase
 
    public void testMultipleDiscoveryGroups() throws Exception
    {
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -920,7 +923,7 @@ public class DiscoveryTest extends UnitTestCase
       SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
       notifService.addNotificationListener(notifListener);
 
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
       final int timeout = 500;
 
@@ -959,7 +962,7 @@ public class DiscoveryTest extends UnitTestCase
       SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
       notifService.addNotificationListener(notifListener);
 
-      final InetAddress groupAddress = InetAddress.getByName(DiscoveryTest.address1);
+      final InetAddress groupAddress = InetAddress.getByName(address1);
       final int groupPort = getUDPDiscoveryPort();
 
       BroadcastGroup bg = new BroadcastGroupImpl(RandomUtil.randomString(),
@@ -1004,7 +1007,6 @@ public class DiscoveryTest extends UnitTestCase
       return tc;
    }
 
-
    private TransportConfiguration generateTC()
    {
       return generateTC("");
@@ -1019,12 +1021,11 @@ public class DiscoveryTest extends UnitTestCase
          called = true;
       }
    }
-   
-   
+
    private static void assertEqualsDiscoveryEntries(List<TransportConfiguration> expected, List<DiscoveryEntry> actual)
    {
       assertNotNull(actual);
-      
+
       List<TransportConfiguration> sortedExpected = new ArrayList<TransportConfiguration>(expected);
       Collections.sort(sortedExpected, new Comparator<TransportConfiguration>()
       {
@@ -1042,14 +1043,14 @@ public class DiscoveryTest extends UnitTestCase
             return o2.getConnector().toString().compareTo(o1.getConnector().toString());
          }
       });
-      if(sortedExpected.size() != sortedActual.size())
+      if (sortedExpected.size() != sortedActual.size())
       {
          dump(sortedExpected, sortedActual);
       }
       assertEquals(sortedExpected.size(), sortedActual.size());
       for (int i = 0; i < sortedExpected.size(); i++)
       {
-         if(!sortedExpected.get(i).equals(sortedActual.get(i).getConnector()))
+         if (!sortedExpected.get(i).equals(sortedActual.get(i).getConnector()))
          {
             dump(sortedExpected, sortedActual);
          }

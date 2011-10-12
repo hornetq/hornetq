@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import junit.framework.Assert;
+import junit.framework.TestSuite;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -63,18 +64,35 @@ public class TwitterTest extends ServiceTestBase
    private static final String TWITTER_ACCESS_TOKEN = System.getProperty("twitter.accessToken");
    private static final String TWITTER_ACCESS_TOKEN_SECRET = System.getProperty("twitter.accessTokenSecret");
 
-   @Override
-   protected void setUp() throws Exception
-   {
-      if(TWITTER_CONSUMER_KEY == null || TWITTER_CONSUMER_SECRET == null || TWITTER_ACCESS_TOKEN == null || TWITTER_ACCESS_TOKEN_SECRET == null)
-      {
-         throw new Exception("* * *  Please set twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret in system property  * * *");
-      }
-      super.setUp();
-   }
-
    // incoming
    
+   public void setUp() throws Exception
+   {
+      super.setUp();
+   }
+   
+   
+
+   public static TestSuite suite()
+   {
+      TestSuite suite = new TestSuite(TwitterTest.class.getName() + " testsuite");
+
+      if (TWITTER_CONSUMER_KEY != null && !TWITTER_CONSUMER_KEY.equals("null"))
+      {
+         suite.addTestSuite(TwitterTest.class);
+      }
+      else
+      {
+         // System.out goes towards JUnit report
+         String errorMsg = "Test " + TwitterTest.class.getName() +
+                           " ignored as twitter.consumerKey, twitter.consumerSecret, twitter.accessToken and twitter.accessTokenSecuret is not set in system property  * * *";
+         System.out.println(errorMsg);
+         log.warn(errorMsg);
+      }
+
+      return suite;
+   }
+
    public void testSimpleIncoming() throws Exception
    {
       internalTestIncoming(true,false);

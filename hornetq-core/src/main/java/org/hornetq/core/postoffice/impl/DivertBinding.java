@@ -124,15 +124,30 @@ public class DivertBinding implements Binding
       return BindingType.DIVERT;
    }
 
+
+   
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
    @Override
    public String toString()
    {
-      return "DivertBinding [divert=" + divert + "]";
+      return "DivertBinding [id=" + id +
+             ", address=" +
+             address +
+             ", divert=" +
+             divert +
+             ", filter=" +
+             filter +
+             ", uniqueName=" +
+             uniqueName +
+             ", routingName=" +
+             routingName +
+             ", exclusive=" +
+             exclusive +
+             "]";
    }
-   
+
    public void close() throws Exception
    {    
    }

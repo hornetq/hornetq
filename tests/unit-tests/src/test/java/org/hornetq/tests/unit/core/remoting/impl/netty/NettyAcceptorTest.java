@@ -28,6 +28,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
@@ -80,10 +81,10 @@ public class NettyAcceptorTest extends UnitTestCase
          {
          }
 
-         public void connectionCreated(final Connection connection, final ProtocolType protocol)
+         public void connectionCreated(final Acceptor acceptor, final Connection connection, final ProtocolType protocol)
          {
          }
-
+         
          public void connectionReadyForWrites(Object connectionID, boolean ready)
          {
          }
@@ -108,40 +109,12 @@ public class NettyAcceptorTest extends UnitTestCase
       acceptor.stop();
       Assert.assertFalse(acceptor.isStarted());
       UnitTestCase.checkFreePort(TransportConstants.DEFAULT_PORT);
-
+      
       pool1.shutdown();
       pool2.shutdown();
-
+      
       pool1.awaitTermination(1, TimeUnit.SECONDS);
       pool2.awaitTermination(1, TimeUnit.SECONDS);
-   }
-
-   public void testSplitNullAddress() throws Exception
-   {
-      String[] addresses = NettyAcceptor.splitHosts(null);
-
-      Assert.assertNotNull(addresses);
-      Assert.assertEquals(0, addresses.length);
-   }
-
-   public void testSplitSingleAddress() throws Exception
-   {
-      String[] addresses = NettyAcceptor.splitHosts("localhost");
-
-      Assert.assertNotNull(addresses);
-      Assert.assertEquals(1, addresses.length);
-      Assert.assertEquals("localhost", addresses[0]);
-   }
-
-   public void testSplitManyAddresses() throws Exception
-   {
-      String[] addresses = NettyAcceptor.splitHosts("localhost, 127.0.0.1, 192.168.0.10");
-
-      Assert.assertNotNull(addresses);
-      Assert.assertEquals(3, addresses.length);
-      Assert.assertEquals("localhost", addresses[0]);
-      Assert.assertEquals("127.0.0.1", addresses[1]);
-      Assert.assertEquals("192.168.0.10", addresses[2]);
    }
 
 }

@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.hornetq.rest</groupId>
-        <artifactId>hornetq-rest-all</artifactId>
-        <version>2.2.2.Final</version>
-    </parent>
     <groupId>org.hornetq.rest.examples</groupId>
     <artifactId>mixed-jms-rest</artifactId>
+    <version>2.2.0.CR1</version>
     <packaging>war</packaging>
+    <properties>
+        <resteasy.version>2.0.1.GA</resteasy.version>
+        <hornetq.version>2.2.0.CR1</hornetq.version>
+    </properties>
     <name>Mixed JMS and REST Producers/Consumers</name>
     <repositories>
         <repository>
@@ -103,35 +103,42 @@
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core</artifactId>
+	    <version>${hornetq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.netty</groupId>
             <artifactId>netty</artifactId>
+            <version>3.2.0.Final</version>
         </dependency>
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-jms</artifactId>
+	    <version>${hornetq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.jms</groupId>
             <artifactId>jboss-jms-api_1.1_spec</artifactId>
+            <version>1.0.0.Beta1</version>
         </dependency>
         <dependency>
             <groupId>org.hornetq.rest</groupId>
             <artifactId>hornetq-rest</artifactId>
-	        <version>${project.version}</version>
+	    <version>${hornetq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
+	    <version>${resteasy.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxb-provider</artifactId>
+	    <version>${resteasy.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

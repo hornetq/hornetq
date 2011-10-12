@@ -32,6 +32,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -220,6 +222,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -243,6 +247,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -267,6 +273,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setDiscoveryRefreshTimeout(1l);
       qResourceAdapter.setDiscoveryInitialWaitTimeout(1l);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -285,7 +293,12 @@ public class ResourceAdapterTest extends HornetQRATestBase
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       qResourceAdapter.setDiscoveryAddress("231.7.7.7");
+      
+      //qResourceAdapter.getTransactionManagerLocatorClass
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
+
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -312,6 +325,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectionParameters("server-id=0");
       qResourceAdapter.setHA(true);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -333,6 +348,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -355,6 +372,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -377,6 +396,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectionParameters("server-id=0");
       qResourceAdapter.setReconnectAttempts(100);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -398,6 +419,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);
@@ -419,6 +442,8 @@ public class ResourceAdapterTest extends HornetQRATestBase
       qResourceAdapter.setConnectorClassName(INVM_CONNECTOR_FACTORY);
       qResourceAdapter.setConnectionParameters("server-id=0");
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
+      
+      qResourceAdapter.setTransactionManagerLocatorClass("");
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
       spec.setResourceAdapter(qResourceAdapter);

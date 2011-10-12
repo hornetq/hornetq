@@ -231,18 +231,18 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
             Pair<URL, Deployer> pair = entry.getKey();
-            if (!fileExists(pair.a))
+            if (!fileExists(pair.getA()))
             {
                try
                {
                   Deployer deployer = entry.getValue().deployer;
-                  FileDeploymentManager.log.debug("Undeploying " + deployer + " with url " + pair.a);
-                  deployer.undeploy(pair.a);
+                  FileDeploymentManager.log.debug("Undeploying " + deployer + " with url " + pair.getA());
+                  deployer.undeploy(pair.getA());
                   toRemove.add(pair);
                }
                catch (Exception e)
                {
-                  FileDeploymentManager.log.error("Error undeploying " + pair.a, e);
+                  FileDeploymentManager.log.error("Error undeploying " + pair.getA(), e);
                }
             }
          }
@@ -271,7 +271,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * Checks if the URL is among the current thread context class loader's resources.
-    *
+    * 
     * We do not check that the corresponding file exists using File.exists() directly as it would fail
     * in the case the resource is loaded from inside an EAR file (see https://jira.jboss.org/jira/browse/HORNETQ-122)
     */

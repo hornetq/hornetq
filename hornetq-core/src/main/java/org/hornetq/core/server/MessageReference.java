@@ -32,6 +32,13 @@ public interface MessageReference
    boolean isPaged();
    
    ServerMessage getMessage();
+   
+   /**
+    * We define this method aggregation here because on paging we need to hold the original estimate,
+    * so we need to perform some extra steps on paging.
+    * @return
+    */
+   int getMessageMemoryEstimate();
 
    MessageReference copy(Queue queue);
 

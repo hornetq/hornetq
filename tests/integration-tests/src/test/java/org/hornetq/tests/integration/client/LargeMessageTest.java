@@ -2973,15 +2973,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       super.setUp();
       clearData();
       locator = createFactory(isNetty());
-      log.info("\n*********************************************************************************\n Starting " + getName() +
-               "\n*********************************************************************************");
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      log.info("\n*********************************************************************************\nDone with  " + getName() +
-               "\n*********************************************************************************");
       locator.close();
       super.tearDown();
    }

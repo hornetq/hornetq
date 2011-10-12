@@ -28,9 +28,9 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
 
-   protected static final String groupAddress = getUDPDiscoveryAddress();
+   protected final String groupAddress = getUDPDiscoveryAddress();
 
-   protected static final int groupPort = getUDPDiscoveryPort();
+   protected final int groupPort = getUDPDiscoveryPort();
 
    protected boolean isNetty()
    {
@@ -61,32 +61,32 @@ public class SymmetricClusterWithDiscoveryTest extends SymmetricClusterTest
    protected void setupServers() throws Exception
    {
       setupLiveServerWithDiscovery(0,
-                               SymmetricClusterWithDiscoveryTest.groupAddress,
-                               SymmetricClusterWithDiscoveryTest.groupPort,
+                              groupAddress,
+                               groupPort,
                                isFileStorage(),
                                isNetty(),
                                false);
       setupLiveServerWithDiscovery(1,
-                               SymmetricClusterWithDiscoveryTest.groupAddress,
-                               SymmetricClusterWithDiscoveryTest.groupPort,
+                              groupAddress,
+                               groupPort,
                                isFileStorage(),
                                isNetty(),
                                false);
       setupLiveServerWithDiscovery(2,
-                               SymmetricClusterWithDiscoveryTest.groupAddress,
-                               SymmetricClusterWithDiscoveryTest.groupPort,
+                              groupAddress,
+                               groupPort,
                                isFileStorage(),
                                isNetty(),
                                false);
       setupLiveServerWithDiscovery(3,
-                               SymmetricClusterWithDiscoveryTest.groupAddress,
-                               SymmetricClusterWithDiscoveryTest.groupPort,
+                              groupAddress,
+                               groupPort,
                                isFileStorage(),
                                isNetty(),
                                false);
       setupLiveServerWithDiscovery(4,
-                               SymmetricClusterWithDiscoveryTest.groupAddress,
-                               SymmetricClusterWithDiscoveryTest.groupPort,
+                              groupAddress,
+                               groupPort,
                                isFileStorage(),
                                isNetty(),
                                false);

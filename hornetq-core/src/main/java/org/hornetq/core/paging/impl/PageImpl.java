@@ -41,6 +41,9 @@ public class PageImpl implements Page, Comparable<Page>
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageImpl.class);
+   
+   private static final boolean isTrace = log.isTraceEnabled();
+   private static final boolean isDebug = log.isDebugEnabled();
 
    public static final int SIZE_RECORD = DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_BYTE;
 
@@ -104,6 +107,11 @@ public class PageImpl implements Page, Comparable<Page>
 
    public List<PagedMessage> read(StorageManager storage) throws Exception
    {
+	  if (isDebug)
+	  {
+	     log.debug("reading page " + this.pageId + " on address = " + storeName);
+	  }
+      
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       size.set((int)file.size());
@@ -142,6 +150,10 @@ public class PageImpl implements Page, Comparable<Page>
                      throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
                   }
                   msg.initMessage(storage);
+                  if (isTrace)
+                  {
+                     log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                  }
                   messages.add(msg);
                }
                else
@@ -225,6 +237,11 @@ public class PageImpl implements Page, Comparable<Page>
       if (storageManager != null)
       {
          storageManager.pageDeleted(storeName, pageId);
+      }
+      
+      if (isDebug)
+      {
+         log.debug("Deleting pageId=" + pageId + " on store " + storeName);
       }
 
       if (messages != null)

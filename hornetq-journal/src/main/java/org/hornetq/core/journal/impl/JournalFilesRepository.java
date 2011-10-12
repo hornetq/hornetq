@@ -42,6 +42,10 @@ public class JournalFilesRepository
    private static final Logger log = Logger.getLogger(JournalFilesRepository.class);
 
    private static final boolean trace = JournalFilesRepository.log.isTraceEnabled();
+   
+   // Used to debug the consistency of the journal ordering.
+   // This is meant to be false as these extra checks would cause performance issues
+   private static final boolean CHECK_CONSISTENCE = false;
 
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
@@ -56,6 +60,8 @@ public class JournalFilesRepository
    // Attributes ----------------------------------------------------
 
    private final SequentialFileFactory fileFactory;
+   
+   private final JournalImpl journal;
 
    private final BlockingDeque<JournalFile> dataFiles = new LinkedBlockingDeque<JournalFile>();
 
@@ -78,12 +84,30 @@ public class JournalFilesRepository
    private final int userVersion;
 
    private Executor openFilesExecutor;
+   
+   private Runnable pushOpenRunnable = new Runnable()
+   {
+      public void run()
+      {
+         try
+         {
+            pushOpenedFile();
+         }
+         catch (Exception e)
+         {
+            JournalFilesRepository.log.error(e.getMessage(), e);
+         }
+      }
+   };
+
+
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
+   
    public JournalFilesRepository(final SequentialFileFactory fileFactory,
+                                 final JournalImpl journal,
                                  final String filePrefix,
                                  final String fileExtension,
                                  final int userVersion,
@@ -98,6 +122,7 @@ public class JournalFilesRepository
       this.minFiles = minFiles;
       this.fileSize = fileSize;
       this.userVersion = userVersion;
+      this.journal = journal;
    }
 
    // Public --------------------------------------------------------
@@ -233,11 +258,96 @@ public class JournalFilesRepository
    public void addDataFileOnTop(final JournalFile file)
    {
       dataFiles.addFirst(file);
+      
+      if (CHECK_CONSISTENCE)
+      {
+      	checkDataFiles();
+      }
+   }
+   
+   public String debugFiles()
+   {
+      StringBuffer buffer = new StringBuffer();
+      
+      buffer.append("**********\nCurrent File = "  + journal.getCurrentFile() + "\n");
+      buffer.append("**********\nDataFiles:\n");
+      for (JournalFile file : dataFiles)
+      {
+         buffer.append(file.toString() + "\n");
+      }
+      buffer.append("*********\nFreeFiles:\n");
+      for (JournalFile file : freeFiles)
+      {
+         buffer.append(file.toString() + "\n");
+      }
+      return buffer.toString();
+   }
+   
+   public synchronized void checkDataFiles()
+   {
+      long seq = -1;
+      for (JournalFile file : dataFiles)
+      {
+         if (file.getFileID() <= seq)
+         {
+            log.info("CheckDataFiles:");
+            log.info(debugFiles());
+            log.info("Sequence out of order on journal");
+            System.exit(-1);
+         }
+         
+         if (journal.getCurrentFile() != null && journal.getCurrentFile().getFileID() <= file.getFileID())
+         {
+            log.info("CheckDataFiles:");
+            log.info(debugFiles());
+            log.info("CurrentFile on the journal is <= the sequence file.getFileID=" + file.getFileID() + " on the dataFiles");
+            log.info("Currentfile.getFileId=" + journal.getCurrentFile().getFileID() + " while the file.getFileID()=" + file.getFileID());
+            log.info("IsSame = (" + (journal.getCurrentFile() == file) + ")");
+            
+           // throw new RuntimeException ("Check failure!");
+         }
+         
+         if (journal.getCurrentFile() == file)
+         {
+            throw new RuntimeException ("Check failure! Current file listed as data file!");
+         }
+         
+         seq = file.getFileID();
+      }
+      
+      long lastFreeId = -1;
+      for (JournalFile file : freeFiles)
+      {
+         if (file.getFileID() <= lastFreeId)
+         {
+            log.info("CheckDataFiles:");
+            log.info(debugFiles());
+            log.info("FreeFileID out of order ");
+            
+            throw new RuntimeException ("Check failure!");
+         }
+         
+         lastFreeId= file.getFileID();
+         
+         if (file.getFileID() < seq)
+         {
+            log.info("CheckDataFiles:");
+            log.info(debugFiles());
+            log.info("A FreeFile is less then the maximum data");
+            
+           // throw new RuntimeException ("Check failure!");
+         }
+      }
    }
 
    public void addDataFileOnBottom(final JournalFile file)
    {
       dataFiles.add(file);
+      
+      if (CHECK_CONSISTENCE)
+      {
+      	checkDataFiles();
+      }
    }
 
    // Free File Operations ==========================================
@@ -246,21 +356,22 @@ public class JournalFilesRepository
    {
       return freeFiles.size();
    }
-
-   /**
-    * Add directly to the freeFiles structure without reinitializing the file.
-    * used on load() only
-    */
-   public void addFreeFileNoInit(final JournalFile file)
-   {
-      freeFiles.add(file);
-   }
-
    /**
     * @param file
     * @throws Exception
     */
    public synchronized void addFreeFile(final JournalFile file, final boolean renameTmp) throws Exception
+   {
+      addFreeFile(file, renameTmp, true);
+   }
+
+   /**
+    * @param file
+    * @param renameTmp - should rename the file as it's being added to free files
+    * @param checkDelete - should delete the file if max condition has been met
+    * @throws Exception
+    */
+   public synchronized void addFreeFile(final JournalFile file, final boolean renameTmp, final boolean checkDelete) throws Exception
    {
       long calculatedSize = 0;
       try
@@ -280,7 +391,7 @@ public class JournalFilesRepository
       }
       else
       // FIXME - size() involves a scan!!!
-      if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
+      if (!checkDelete || (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles))
       {
          // Re-initialise it
 
@@ -300,7 +411,23 @@ public class JournalFilesRepository
       }
       else
       {
+         if (trace)
+         {
+            log.trace("DataFiles.size() = " + dataFiles.size());
+            log.trace("openedFiles.size() = " + openedFiles.size());
+            log.trace("minfiles = " + minFiles);
+            log.trace("Free Files = "  + freeFiles.size());
+            log.trace("File " + file + 
+                      " being deleted as freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() (" + 
+                      (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size()) + 
+                      ") < minFiles (" + minFiles + ")" );
+         }
          file.getFile().delete();
+      }
+      
+      if (CHECK_CONSISTENCE)
+      {
+      	checkDataFiles();
       }
    }
 
@@ -333,28 +460,13 @@ public class JournalFilesRepository
          JournalFilesRepository.trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
       }
 
-      Runnable run = new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               pushOpenedFile();
-            }
-            catch (Exception e)
-            {
-               JournalFilesRepository.log.error(e.getMessage(), e);
-            }
-         }
-      };
-
       if (openFilesExecutor == null)
       {
-         run.run();
+         pushOpenRunnable.run();
       }
       else
       {
-         openFilesExecutor.execute(run);
+         openFilesExecutor.execute(pushOpenRunnable);
       }
 
       JournalFile nextFile = null;

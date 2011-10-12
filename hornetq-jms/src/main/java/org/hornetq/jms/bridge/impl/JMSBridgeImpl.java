@@ -14,6 +14,8 @@
 package org.hornetq.jms.bridge.impl;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -942,10 +944,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          try
          {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class aClass = loader.loadClass(transactionManagerLocatorClass);
-            Object o = aClass.newInstance();
-            Method m = aClass.getMethod(transactionManagerLocatorMethod);
+            Object o = safeInitNewInstance(transactionManagerLocatorClass);
+            Method m = o.getClass().getMethod(transactionManagerLocatorMethod);
             tm = (TransactionManager)m.invoke(o);
          }
          catch (Exception e)
@@ -2003,4 +2003,44 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
       }
    }
+
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static Object safeInitNewInstance(final String className)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(className);
+               return clazz.newInstance();
+            }
+            catch (Throwable t)
+            {
+                try
+                {
+                    loader = Thread.currentThread().getContextClassLoader();
+                    if (loader != null)
+                        return loader.loadClass(className).newInstance();
+                }
+                catch (RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                }
+
+                throw new IllegalArgumentException("Could not find class " + className);
+            }
+         }
+      });
+   }
+
+
 }

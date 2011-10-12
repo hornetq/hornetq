@@ -49,6 +49,8 @@ public class PageCursorProviderImpl implements PageCursorProvider
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageCursorProviderImpl.class);
+   
+   boolean isTrace = log.isTraceEnabled();
 
    // Attributes ----------------------------------------------------
 
@@ -87,6 +89,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
+      if (log.isDebugEnabled())
+      {
+         log.debug(this.pagingStore.getAddress() + " creating subscription " + cursorID + " with filter " + filter, new Exception ("trace"));
+      }
       PageSubscription activeCursor = activeCursors.get(cursorID);
       if (activeCursor != null)
       {
@@ -160,6 +166,10 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // anyone reading from this cache will have to wait reading to finish first
                // we also want only one thread reading this cache
                cache.lock();
+               if (isTrace)
+               {
+                  log.trace("adding " + pageId +  " into cursor = " + this.pagingStore.getAddress());
+               }
                softCache.put(pageId, cache);
             }
          }
@@ -324,6 +334,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                return;
             }
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("Asserting cleanup for address " + this.pagingStore.getAddress());
+            }
 
             ArrayList<PageSubscription> cursorList = new ArrayList<PageSubscription>();
             cursorList.addAll(activeCursors.values());
@@ -338,16 +353,32 @@ public class PageCursorProviderImpl implements PageCursorProvider
                {
                   if (!cursor.isComplete(minPage))
                   {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Cursor " + cursor + " was considered incomplete at page " + minPage);
+                     }
+                     
                      complete = false;
                      break;
+                  }
+                  else
+                  {
+                     if (log.isDebugEnabled())
+                     {
+                        log.debug("Cursor " + cursor + "was considered **complete** at page " + minPage);
+                     }
                   }
                }
 
                if (complete)
                {
 
-                  log.info("Address " + pagingStore.getAddress() +
+                  if (log.isDebugEnabled())
+                  {
+                     log.debug("Address " + pagingStore.getAddress() +
                            " is leaving page mode as all messages are consumed and acknowledged from the page store");
+                  }
+                  
                   pagingStore.forceAnotherPage();
 
                   Page currentPage = pagingStore.getCurrentPage();
@@ -411,7 +442,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
             PagedMessage[] pgdMessages;
             synchronized (softCache)
             {
-               cache = softCache.remove((long)depagedPage.getPageId());
+               cache = softCache.get((long)depagedPage.getPageId());
+            }
+            
+            if (isTrace)
+            {
+               log.trace("Removing page " + depagedPage.getPageId() + " from page-cache");
             }
 
             if (cache == null)
@@ -430,6 +466,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             }
 
             depagedPage.delete(pgdMessages);
+            
             synchronized (softCache)
             {
                softCache.remove((long)depagedPage.getPageId());
@@ -504,10 +541,19 @@ public class PageCursorProviderImpl implements PageCursorProvider
       for (PageSubscription cursor : cursorList)
       {
          long firstPage = cursor.getFirstPage();
+         if (log.isDebugEnabled())
+         {
+            log.debug(this.pagingStore.getAddress() + " has a cursor " + cursor + " with first page=" + firstPage);
+         }
          if (firstPage < minPage)
          {
             minPage = firstPage;
          }
+      }
+
+      if (log.isDebugEnabled())
+      {
+         log.debug(this.pagingStore.getAddress() + " has minPage=" + minPage);
       }
 
       return minPage;

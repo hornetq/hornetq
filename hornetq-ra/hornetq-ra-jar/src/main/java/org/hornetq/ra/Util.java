@@ -19,6 +19,7 @@ import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.server.recovery.RecoveryRegistry;
 
 /**
  * Various utility functions
@@ -269,5 +270,19 @@ public class Util
       }
    }
 
-   
+   public static RecoveryRegistry locateRecoveryRegistry(final String locatorClass)
+   {
+      try
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class<?> aClass = loader.loadClass(locatorClass);
+         Object o = aClass.newInstance();
+         return (RecoveryRegistry)o;
+      }
+      catch (Throwable e)
+      {
+         log.debug(e.getMessage(), e);
+         return null;
+      }
+   }
 }

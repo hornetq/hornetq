@@ -26,7 +26,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- *
+ * 
  * A SessionCloseOnGCTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -57,7 +57,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       //locator.close();
-
+      
       server.stop();
 
       server = null;
@@ -269,12 +269,11 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
    public void testCloseOneSessionOnGC() throws Exception
    {
-      final ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)locator.createSessionFactory();
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
 
-      try
-      {
-         ClientSession session = sf.createSession(false, true, true);
-         WeakReference<ClientSession> wses = new WeakReference<ClientSession>(session);
+      ClientSession session = sf.createSession(false, true, true);
+
+      WeakReference<ClientSession> wses = new WeakReference<ClientSession>(session);
 
       Assert.assertEquals(1, server.getRemotingService().getConnections().size());
 
@@ -285,18 +284,12 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       Assert.assertEquals(0, sf.numSessions());
       Assert.assertEquals(1, sf.numConnections());
       Assert.assertEquals(1, server.getRemotingService().getConnections().size());
-      }
-      finally
-      {
-         sf.close();
-      }
    }
 
    public void testCloseSeveralSessionOnGC() throws Exception
    {
-      final ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)locator.createSessionFactory();
-      try
-      {
+      ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl) locator.createSessionFactory();
+
       ClientSession session1 = sf.createSession(false, true, true);
       ClientSession session2 = sf.createSession(false, true, true);
       ClientSession session3 = sf.createSession(false, true, true);
@@ -316,11 +309,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       Assert.assertEquals(0, sf.numSessions());
       Assert.assertEquals(1, sf.numConnections());
       Assert.assertEquals(1, server.getRemotingService().getConnections().size());
-
-      }
-      finally
-      {
-         sf.close();
-      }
    }
+
 }

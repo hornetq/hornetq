@@ -20,7 +20,6 @@ import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -78,7 +77,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -125,7 +124,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("x"), i);
          producer.send(message);
       }
@@ -173,7 +172,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          if (i % 2 == 0)
          {
             message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
@@ -211,7 +210,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -249,7 +248,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("x"), i);
          producer.send(message);
       }
@@ -304,7 +303,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -339,7 +338,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 

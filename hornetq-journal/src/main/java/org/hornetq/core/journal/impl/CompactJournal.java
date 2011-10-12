@@ -13,6 +13,8 @@
 
 package org.hornetq.core.journal.impl;
 
+import org.hornetq.core.journal.IOCriticalErrorListener;
+
 /**
  * This is an undocumented class, that will open a journal and force compacting on it.
  * It may be used under special cases, but it shouldn't be needed under regular circumstances as the system should detect 
@@ -37,7 +39,7 @@ public class CompactJournal
 
       try
       {
-         CompactJournal.compactJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]));
+         CompactJournal.compactJournal(arg[0], arg[1], arg[2], 2, Integer.parseInt(arg[3]), null);
       }
       catch (Exception e)
       {
@@ -50,9 +52,10 @@ public class CompactJournal
                                      final String journalPrefix,
                                      final String journalSuffix,
                                      final int minFiles,
-                                     final int fileSize) throws Exception
+                                     final int fileSize,
+                                     final IOCriticalErrorListener listener) throws Exception
    {
-      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
+      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory, listener);
 
       JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
 

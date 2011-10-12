@@ -57,7 +57,6 @@ public class LinkedListTest extends UnitTestCase
             payload = new byte[10 * 1024];
          }
 
-         @Override
          protected void finalize() throws Exception
          {
             count.decrementAndGet();
@@ -113,8 +112,10 @@ public class LinkedListTest extends UnitTestCase
 
       assertEquals(1000, count.get());
 
+      int removed = 0;
       while (iter.hasNext())
       {
+         System.out.println("removed " + (removed++));
          iter.next();
          iter.remove();
       }

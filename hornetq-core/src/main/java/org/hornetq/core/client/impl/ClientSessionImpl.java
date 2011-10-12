@@ -63,7 +63,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuation
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCreditsMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -95,8 +97,13 @@ import org.hornetq.utils.TokenBucketLimiterImpl;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ *
+ * @version <tt>$Revision: 3603 $</tt> $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
+ *
+ * $Id: ClientSessionImpl.java 3603 2008-01-21 18:49:20Z timfox $
+ *
  */
-class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
+public class ClientSessionImpl implements ClientSessionInternal, FailureListener, CommandConfirmationHandler
 {
    // Constants ----------------------------------------------------------------------------
 
@@ -190,7 +197,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    // Constructors ----------------------------------------------------------------------------
 
-   ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
+   public ClientSessionImpl(final ClientSessionFactoryInternal sessionFactory,
                             final String name,
                             final String username,
                             final String password,
@@ -275,6 +282,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    // ClientSession implementation
    // -----------------------------------------------------------------
+   
+   public Channel getChannel()
+   {
+      return channel;
+   }
 
    public void createQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
    {
@@ -511,6 +523,11 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       checkClosed();
 
+      if (log.isTraceEnabled())
+      {
+         log.trace("Sending commit");
+      }
+      
       if (rollbackOnly)
       {
          rollbackOnFailover();
@@ -660,7 +677,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       stop(true);
    }
 
-   private void stop(final boolean waitForOnMessage) throws HornetQException
+   public void stop(final boolean waitForOnMessage) throws HornetQException
    {
       checkClosed();
 
@@ -780,7 +797,10 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void addConsumer(final ClientConsumerInternal consumer)
    {
-      consumers.put(consumer.getID(), consumer);
+      synchronized (consumers)
+      {
+         consumers.put(consumer.getID(), consumer);
+      }
    }
 
    public void addProducer(final ClientProducerInternal producer)
@@ -790,7 +810,10 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
-      consumers.remove(consumer.getID());
+      synchronized (consumers)
+      {
+         consumers.remove(consumer.getID());
+      }
    }
 
    public void removeProducer(final ClientProducerInternal producer)
@@ -838,7 +861,13 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
    {
       if (closed)
       {
+         log.debug("Session was already closed, giving up now, this=" + this);
          return;
+      }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("Calling close on session "  + this);
       }
 
       try
@@ -917,12 +946,21 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
             if (response.isReattached())
             {
+               if (log.isDebugEnabled())
+               {
+                  log.debug("ClientSession reattached fine, replaying commands");
+               }
                // The session was found on the server - we reattached transparently ok
 
                channel.replayCommands(response.getLastConfirmedCommandID());
             }
             else
             {
+
+               if (log.isDebugEnabled())
+               {
+                  log.debug("ClientSession couldn't be reattached, creating a new session");
+               }
 
                // The session wasn't found on the server - probably we're failing over onto a backup server where the
                // session won't exist or the target server has been restarted - in this case the session will need to be
@@ -1087,14 +1125,25 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    public void addMetaDataV1(String key, String data) throws HornetQException
    {
-      metadata.put(key, data);
+      synchronized (metadata)
+      {
+         metadata.put(key, data);
+      }
       channel.sendBlocking(new SessionAddMetaDataMessage(key, data));
    }
 
    public void addMetaData(String key, String data) throws HornetQException
    {
-      metadata.put(key, data);
+      synchronized (metadata)
+      {
+         metadata.put(key, data);
+      }
       channel.sendBlocking(new SessionAddMetaDataMessageV2(key, data));
+   }
+   
+   public void addUniqueMetaData(String key, String data) throws HornetQException
+   {
+      channel.sendBlocking(new SessionUniqueAddMetaDataMessage(key, data));
    }
 
    public ClientSessionFactoryInternal getSessionFactory()
@@ -1187,6 +1236,15 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
          sendAckHandler.sendAcknowledged(ssm.getMessage());
       }
+      else if (packet.getType() == PacketImpl.SESS_SEND_CONTINUATION)
+      {
+         SessionSendContinuationMessage scm = (SessionSendContinuationMessage) packet;
+         if (!scm.isContinues())
+         {
+            sendAckHandler.sendAcknowledged(scm.getMessage());
+         }
+      }
+      
    }
 
    // XAResource implementation
@@ -1276,7 +1334,7 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       }
       catch (HornetQException e)
       {
-         ClientSessionImpl.log.error("Caught jmsexecptione ", e);
+         ClientSessionImpl.log.error("Caught Exception ", e);
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }
@@ -1602,14 +1660,30 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
       return remotingConnection;
    }
    
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
    public String toString()
    {
       StringBuffer buffer = new StringBuffer();
-      for (Map.Entry<String, String> entry : metadata.entrySet())
+      synchronized (metadata)
       {
-         buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+         for (Map.Entry<String, String> entry : metadata.entrySet())
+         {
+            buffer.append(entry.getKey() + "=" + entry.getValue() + ",");
+         }
       }
-      return "ClientSessionImpl::(" + buffer.toString() + ")";
+
+      return "ClientSessionImpl [name=" + name +
+             ", username=" +
+             username +
+             ", closed=" +
+             closed +
+             " metaData=(" +
+             buffer +
+             ")]@" +
+             Integer.toHexString(hashCode());
    }
 
    // Protected
@@ -1770,13 +1844,25 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    private void doCleanup(boolean failingOver)
    {
-      remotingConnection.removeFailureListener(this);
+      if (remotingConnection == null)
+      {
+         remotingConnection.removeFailureListener(this);
+      }
+      
+      if (log.isDebugEnabled())
+      {
+         log.debug("calling cleanup on " + this);
+      }
 
       synchronized (this)
       {
          closed = true;
 
          channel.close();
+         
+         // if the server is sending a disconnect
+         // any pending blocked operation could hang without this
+         channel.returnBlocking();
       }
 
       sessionFactory.removeSession(this, failingOver);
@@ -1818,9 +1904,12 @@ class ClientSessionImpl implements ClientSessionInternal, FailureListener, Comma
 
    private void flushAcks() throws HornetQException
    {
-      for (ClientConsumerInternal consumer : consumers.values())
+      synchronized (consumers)
       {
-         consumer.flushAcks();
+         for (ClientConsumerInternal consumer : consumers.values())
+         {
+            consumer.flushAcks();
+         }
       }
    }
 

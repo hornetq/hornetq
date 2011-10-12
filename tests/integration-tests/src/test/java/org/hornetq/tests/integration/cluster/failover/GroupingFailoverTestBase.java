@@ -12,22 +12,9 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import junit.framework.Assert;
-
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.client.impl.Topology;
-import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.cluster.MessageFlowRecord;
-import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 
 /**
@@ -39,7 +26,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
    public void testGroupingLocalHandlerFails() throws Exception
    {
-     setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
+      setupBackupServer(2, 0, isFileStorage(), isSharedServer(), isNetty());
 
       setupLiveServer(0, isFileStorage(), isSharedServer(), isNetty());
 
@@ -56,7 +43,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
-
 
       try
       {
@@ -79,7 +65,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForServerTopology(servers[1], 3, 5);
+         waitForTopology(servers[1], 2);
 
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
 
@@ -88,7 +74,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          closeSessionFactory(0);
 
          servers[0].stop(true);
-         
+
          waitForServerRestart(2);
 
          setupSessionFactory(2, isNetty());
@@ -129,13 +115,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 2, 1);
 
-
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
-
 
       try
       {
@@ -162,8 +146,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 1, true);
 
-         waitForServerTopology(servers[1], 3, 5);
-
+         waitForTopology(servers[1], 2);
 
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id1"));
          sendWithProperty(0, "queues.testaddress", 10, false, Message.HDR_GROUP_ID, new SimpleString("id2"));
@@ -176,6 +159,8 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeSessionFactory(0);
 
+         Thread.sleep(1000);
+         
          servers[0].stop(true);
 
          waitForServerRestart(2);
@@ -215,38 +200,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       }
    }
 
-   private void waitForServerTopology(HornetQServer server, int nodes, int seconds)
-         throws InterruptedException
-   {
-      Topology topology = server.getClusterManager().getTopology();
-      long timeToWait = System.currentTimeMillis() + (seconds * 1000);
-      while(topology.nodes()!= nodes)
-      {
-         Thread.sleep(100);
-         if(System.currentTimeMillis() > timeToWait)
-         {
-            fail("timed out waiting for server topology");
-         }
-      }
-   }
-
    public boolean isNetty()
    {
       return true;
    }
 
    abstract boolean isSharedServer();
-
-   private void fail(final RemotingConnection conn, final CountDownLatch latch) throws InterruptedException
-   {
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      Assert.assertTrue(ok);
-   }
 
 }

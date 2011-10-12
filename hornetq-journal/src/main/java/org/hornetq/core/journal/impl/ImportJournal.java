@@ -105,7 +105,7 @@ public class ImportJournal
 
       journalDir.mkdirs();
 
-      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory);
+      NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory, null);
 
       JournalImpl journal = new JournalImpl(fileSize, minFiles, 0, 0, nio, journalPrefix, journalSuffix, 1);
 

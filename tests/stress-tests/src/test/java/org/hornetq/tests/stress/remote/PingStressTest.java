@@ -23,12 +23,14 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.remoting.PingTest;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -41,7 +43,7 @@ public class PingStressTest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PingStressTest.class);
+   private static final Logger log = Logger.getLogger(PingTest.class);
 
    private static final long PING_INTERVAL = 500;
 
@@ -225,6 +227,8 @@ public class PingStressTest extends ServiceTestBase
       }
       
       csf1.close();
+      
+      locator.close();
 
    }
 

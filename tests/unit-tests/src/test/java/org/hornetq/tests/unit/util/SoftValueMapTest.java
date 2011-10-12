@@ -44,24 +44,6 @@ public class SoftValueMapTest extends UnitTestCase
       // each buffer will be 1/10th of the maxMemory
       int bufferSize = (int)(maxMemory / 100);
 
-      class Value implements SoftValueHashMap.ValueCache
-      {
-         byte[] payload;
-
-         Value(byte[] payload)
-         {
-            this.payload = payload;
-         }
-
-         /* (non-Javadoc)
-          * @see org.hornetq.utils.SoftValueHashMap.ValueCache#isLive()
-          */
-         public boolean isLive()
-         {
-            return false;
-         }
-      }
-
       SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(100);
 
       final int MAX_ELEMENTS = 1000;
@@ -82,31 +64,6 @@ public class SoftValueMapTest extends UnitTestCase
    public void testEvictionsLeastUsed()
    {
       forceGC();
-
-      class Value implements SoftValueHashMap.ValueCache
-      {
-         byte[] payload;
-         
-         boolean live;
-
-         Value(byte[] payload)
-         {
-            this.payload = payload;
-         }
-
-         /* (non-Javadoc)
-          * @see org.hornetq.utils.SoftValueHashMap.ValueCache#isLive()
-          */
-         public boolean isLive()
-         {
-            return live;
-         }
-         
-         public void setLive(boolean live)
-         {
-            this.live = live;
-         }
-      }
 
       SoftValueHashMap<Long, Value> softCache = new SoftValueHashMap<Long, Value>(200);
       
@@ -144,6 +101,53 @@ public class SoftValueMapTest extends UnitTestCase
 
       System.out.println("Soft cache has " + softCache.size() + " elements");
    }
+   
+   public void testEvictOldestElement()
+   {
+      Value one = new Value(new byte[100]);
+      Value two = new Value(new byte[100]);
+      Value three = new Value(new byte[100]);
+      
+      
+      SoftValueHashMap<Integer, Value> softCache = new SoftValueHashMap<Integer, Value>(2);
+      softCache.put(3, three);
+      softCache.put(2, two);
+      softCache.put(1, one);
+      
+      assertNull(softCache.get(3));
+      assertEquals(two, softCache.get(2));
+      assertEquals(one, softCache.get(1));
+      
+      
+      
+   }
+   
+   class Value implements SoftValueHashMap.ValueCache
+   {
+      byte[] payload;
+      
+      boolean live;
+
+      Value(byte[] payload)
+      {
+         this.payload = payload;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.utils.SoftValueHashMap.ValueCache#isLive()
+       */
+      public boolean isLive()
+      {
+         return live;
+      }
+      
+      public void setLive(boolean live)
+      {
+         this.live = live;
+      }
+   }
+
+
 
    // Package protected ---------------------------------------------
 

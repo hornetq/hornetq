@@ -14,6 +14,7 @@
 package org.hornetq.core.protocol.core.impl;
 
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
@@ -43,6 +44,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_RESPONS
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
@@ -83,10 +85,13 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SET_TIMEOUT
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_START;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_SUSPEND;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
@@ -137,6 +142,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionRequestProducerCred
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SessionUniqueAddMetaDataMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAForgetMessage;
@@ -151,21 +157,18 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutMessage
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 
 /**
  * A PacketDecoder
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public final class PacketDecoder
+public class PacketDecoder
 {
-
-   private PacketDecoder()
-   {
-      // Utility
-   }
-
-   public static Packet decode(final HornetQBuffer in)
+   private static final Logger log = Logger.getLogger(PacketDecoder.class);
+   
+   public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
 
@@ -505,6 +508,11 @@ public final class PacketDecoder
             packet = new ClusterTopologyChangeMessage();
             break;
          }
+         case CLUSTER_TOPOLOGY_V2:
+         {
+            packet = new ClusterTopologyChangeMessage_V2();
+            break;
+         }
          case NODE_ANNOUNCE:
          {
             packet = new NodeAnnounceMessage();
@@ -515,6 +523,11 @@ public final class PacketDecoder
             packet = new SubscribeClusterTopologyUpdatesMessage();
             break;
          }
+         case SUBSCRIBE_TOPOLOGY_V2:
+         {
+            packet = new SubscribeClusterTopologyUpdatesMessageV2();
+            break;
+         }
          case SESS_ADD_METADATA:
          {
             packet = new SessionAddMetaDataMessage();
@@ -523,6 +536,11 @@ public final class PacketDecoder
          case SESS_ADD_METADATA2:
          {
             packet = new SessionAddMetaDataMessageV2();
+            break;
+         }
+         case SESS_UNIQUE_ADD_METADATA:
+         {
+            packet = new SessionUniqueAddMetaDataMessage();
             break;
          }
          default:

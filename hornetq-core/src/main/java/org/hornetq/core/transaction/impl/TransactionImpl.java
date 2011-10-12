@@ -424,6 +424,10 @@ public class TransactionImpl implements Transaction
 
    public void markAsRollbackOnly(final HornetQException exception)
    {
+      if (log.isDebugEnabled())
+      {
+         log.debug("Marking Transaction " + this.id + " as rollback only");
+      }
       state = State.ROLLBACK_ONLY;
 
       this.exception = exception;

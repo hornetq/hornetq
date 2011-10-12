@@ -24,7 +24,7 @@ public class PairTest extends TestCase
    {
       Pair<Integer, Integer> p = new Pair<Integer, Integer>(Integer.valueOf(12), Integer.valueOf(13));
       int hash = p.hashCode();
-      p.a = null;
+      p.setA(null);
       assertTrue(hash != p.hashCode());
    }
 }

@@ -82,7 +82,7 @@ public class FakeQueue implements Queue
       
    }
 
-   public boolean blockOnExecutorFuture()
+   public boolean flushExecutor()
    {
       return true;
    }
@@ -651,6 +651,33 @@ public class FakeQueue implements Queue
     * @see org.hornetq.core.server.Queue#moveReferences(org.hornetq.core.filter.Filter, org.hornetq.api.core.SimpleString, boolean)
     */
    public int moveReferences(Filter filter, SimpleString toAddress, boolean rejectDuplicates) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#forceDelivery()
+    */
+   public void forceDelivery()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#getInstantMessageCount()
+    */
+   public long getInstantMessageCount()
+   {
+      // TODO Auto-generated method stub
+      return 0;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#getInstantMessagesAdded()
+    */
+   public long getInstantMessagesAdded()
    {
       // TODO Auto-generated method stub
       return 0;

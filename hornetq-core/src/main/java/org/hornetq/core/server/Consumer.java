@@ -27,4 +27,6 @@ public interface Consumer
    HandleStatus handle(MessageReference reference) throws Exception;
 
    Filter getFilter();
+   
+   String debug();
 }

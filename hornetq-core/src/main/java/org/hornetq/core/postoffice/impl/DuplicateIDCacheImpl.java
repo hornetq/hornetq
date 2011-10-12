@@ -85,9 +85,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
          if (count < cacheSize)
          {
-            ByteArrayHolder bah = new ByteArrayHolder(id.a);
+            ByteArrayHolder bah = new ByteArrayHolder(id.getA());
 
-            Pair<ByteArrayHolder, Long> pair = new Pair<ByteArrayHolder, Long>(bah, id.b);
+            Pair<ByteArrayHolder, Long> pair = new Pair<ByteArrayHolder, Long>(bah, id.getB());
 
             cache.put(bah, ids.size());
 
@@ -101,7 +101,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
                txID = storageManager.generateUniqueID();
             }
 
-            storageManager.deleteDuplicateIDTransactional(txID, id.b);
+            storageManager.deleteDuplicateIDTransactional(txID, id.getB());
          }
 
          count++;
@@ -136,11 +136,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          {
             id = ids.get(posUsed.intValue());
             
-            if (id.a.equals(bah))
+            if (id.getA().equals(bah))
             {
-               id.a = null;
-               storageManager.deleteDuplicateID(id.b);
-               id.b = null;
+               id.setA(null);
+               storageManager.deleteDuplicateID(id.getB());
+               id.setB(null);
             }
          }
       }
@@ -202,19 +202,19 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          id = ids.get(pos);
 
          // The id here might be null if it was explicit deleted
-         if (id.a != null)
+         if (id.getA() != null)
          {
-            cache.remove(id.a);
+            cache.remove(id.getA());
    
             // Record already exists - we delete the old one and add the new one
             // Note we can't use update since journal update doesn't let older records get
             // reclaimed
    
-            if (id.b != null)
+            if (id.getB() != null)
             {
                try
                {
-                  storageManager.deleteDuplicateID(id.b);
+                  storageManager.deleteDuplicateID(id.getB());
                }
                catch (Exception e)
                {
@@ -223,11 +223,11 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
             }
          }
 
-         id.a = holder;
+         id.setA(holder);
 
          // The recordID could be negative if the duplicateCache is configured to not persist, 
          // -1 would mean null on this case
-         id.b = recordID >= 0 ? recordID : null;
+         id.setB(recordID >= 0 ? recordID : null);
          
          holder.pos = pos;
       }

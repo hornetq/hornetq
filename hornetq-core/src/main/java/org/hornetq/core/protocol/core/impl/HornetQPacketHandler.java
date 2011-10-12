@@ -163,6 +163,17 @@ public class HornetQPacketHandler implements ChannelHandler
                                        "Server will not accept create session requests");
          }
 
+         if (connection.getClientVersion() == 0)
+         {
+            connection.setClientVersion(request.getVersion());
+         }
+         else if (connection.getClientVersion() != request.getVersion())
+         {
+            log.warn("Client is not being consistent on the request versioning. " +
+            		   "It just sent a version id=" + request.getVersion() + 
+            		   " while it informed " + connection.getClientVersion() + " previously");
+         }
+         
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
          ServerSession session = server.createSession(request.getName(),

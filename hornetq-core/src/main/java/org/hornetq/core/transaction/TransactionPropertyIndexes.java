@@ -24,6 +24,8 @@ package org.hornetq.core.transaction;
  */
 public class TransactionPropertyIndexes
 {
+   
+   public static final int LARGE_MESSAGE_CONFIRMATIONS = 1;
 
    public static final int PAGE_SYNC = 2;
    

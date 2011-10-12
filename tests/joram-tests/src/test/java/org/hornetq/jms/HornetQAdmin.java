@@ -16,7 +16,10 @@ package org.hornetq.jms;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -234,7 +237,7 @@ public class HornetQAdmin implements Admin
    public void startServer() throws Exception
    {
       String[] vmArgs = new String[] { "-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory" };
-      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), "-Xms512m -Xmx512m ", vmArgs, true, true);
+      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
 
       final BufferedReader br = new BufferedReader(isr);

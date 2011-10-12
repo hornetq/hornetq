@@ -49,45 +49,35 @@ public class NIOvsOIOTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public static TestSuite suite()
+   public void testNIOPerf() throws Exception
    {
-      return new TestSuite();
+      testPerf(true);
    }
    
-//   public void testNIOPerf() throws Exception
-//   {
-//      log.info("************* Testing NIO");
-//      testPerf(true);
-//   }
-//   
-//   public void testOIOPerf() throws Exception
-//   {
-//      log.info("************ Testing OIO");
-//      testPerf(false);
-//   }
+   public void testOIOPerf() throws Exception
+   {
+      testPerf(false);
+   }
    
    private void doTest(String dest) throws Exception
    {
-      System.getProperties().put("hq.batchHQ", "true");
-      
-      String connectorFactoryClassName = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
-      
       
       final int numSenders = 1;
 
       final int numReceivers = 1;
       
-      final int numMessages = 200000;
+      final int numMessages = 20000;
       
       Receiver[] receivers = new Receiver[numReceivers];
       
       Sender[] senders = new Sender[numSenders];
       
       List<ClientSessionFactory> factories = new ArrayList<ClientSessionFactory>();
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       
       for (int i = 0; i < numReceivers; i++)
       {
-         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
 
          ClientSessionFactory sf = locator.createSessionFactory();
          
@@ -102,8 +92,6 @@ public class NIOvsOIOTest extends UnitTestCase
       
       for (int i = 0; i < numSenders; i++)
       {
-         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-
          ClientSessionFactory sf = locator.createSessionFactory();
 
          factories.add(sf);
@@ -134,7 +122,7 @@ public class NIOvsOIOTest extends UnitTestCase
       
       double rate = 1000 * (double)(numMessages * numSenders) / (end - start);
       
-      log.info("Rate is " + rate + " msgs sec");
+      logAndSystemOut("Rate is " + rate + " msgs sec");
       
       for (int i = 0; i < numSenders; i++)
       {         
@@ -150,6 +138,8 @@ public class NIOvsOIOTest extends UnitTestCase
       {      
          sf.close();
       }
+      
+      locator.close();
    }
 
    private void testPerf(boolean nio) throws Exception
@@ -217,7 +207,7 @@ public class NIOvsOIOTest extends UnitTestCase
 
       void prepare() throws Exception
       {
-         session = sf.createSession();
+         session = sf.createSession(true, true);
 
          producer = session.createProducer(dest);
       }
@@ -277,7 +267,7 @@ public class NIOvsOIOTest extends UnitTestCase
 
       void prepare() throws Exception
       {
-         session = sf.createSession();
+         session = sf.createSession(true, true, 0);
 
          queueName = UUIDGenerator.getInstance().generateStringUUID();
 

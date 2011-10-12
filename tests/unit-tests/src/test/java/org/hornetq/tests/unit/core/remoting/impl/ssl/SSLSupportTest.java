@@ -98,8 +98,7 @@ public class SSLSupportTest extends UnitTestCase
          return;
       }
 
-		SSLSupport.createServerContext("hornetq.keystore", keyStorePassword,
-				trustStorePath, trustStorePassword);
+      SSLSupport.createServerContext("config/hornetq.keystore", keyStorePassword, trustStorePath, trustStorePassword);
    }
 
    public void testServerContextWithBadKeyStorePassword() throws Exception

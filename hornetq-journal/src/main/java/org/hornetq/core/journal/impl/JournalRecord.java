@@ -68,8 +68,8 @@ public class JournalRecord
       {
          for (Pair<JournalFile, Integer> updFile : updateFiles)
          {
-            file.incNegCount(updFile.a);
-            updFile.a.decSize(updFile.b);
+            file.incNegCount(updFile.getA());
+            updFile.getA().decSize(updFile.getB());
          }
       }
    }
@@ -85,7 +85,7 @@ public class JournalRecord
 
          for (Pair<JournalFile, Integer> update : updateFiles)
          {
-            buffer.append(", update=" + update.a.getFile().getFileName());
+            buffer.append(", update=" + update.getA().getFile().getFileName());
          }
 
       }

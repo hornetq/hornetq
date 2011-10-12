@@ -24,6 +24,7 @@ import java.util.Set;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
@@ -110,7 +111,15 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MAX_IO_AIO = 500;
 
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+
    public static final int DEFAULT_JOURNAL_MAX_IO_NIO = 1;
+
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
@@ -150,7 +159,7 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_ID_CACHE_SIZE = 2000;
 
    public static final boolean DEFAULT_PERSIST_ID_CACHE = true;
-
+   
    public static final boolean DEFAULT_CLUSTER_DUPLICATE_DETECTION = true;
 
    public static final boolean DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS = false;
@@ -158,6 +167,16 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
 
    public static final long DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
+
+   public static final int DEFAULT_CLUSTER_RECONNECT_ATTEMPTS = -1;
+   
+   public static final long DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD = HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   
+   public static final long DEFAULT_CLUSTER_CONNECTION_TTL = HornetQClient.DEFAULT_CONNECTION_TTL;
+   
+   public static final double DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER = HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+   
+   public static final long DEFAULT_CLUSTER_MAX_RETRY_INTERVAL = HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 
@@ -178,7 +197,7 @@ public class ConfigurationImpl implements Configuration
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
-
+   
    protected String name = "ConfigurationImpl::" + System.identityHashCode(this);
 
    protected boolean clustered = ConfigurationImpl.DEFAULT_CLUSTERED;
@@ -224,7 +243,7 @@ public class ConfigurationImpl implements Configuration
    protected String logDelegateFactoryClassName = ConfigurationImpl.DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
-
+   
    protected Map<String, TransportConfiguration> connectorConfigs = new HashMap<String, TransportConfiguration>();
 
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
@@ -277,15 +296,15 @@ public class ConfigurationImpl implements Configuration
 
    protected int journalMaxIO_AIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_AIO;
 
-   protected int journalBufferTimeout_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
+   protected int journalBufferTimeout_AIO = ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO;
 
-   protected int journalBufferSize_AIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
+   protected int journalBufferSize_AIO = ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_AIO;
 
    protected int journalMaxIO_NIO = ConfigurationImpl.DEFAULT_JOURNAL_MAX_IO_NIO;
 
-   protected int journalBufferTimeout_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
+   protected int journalBufferTimeout_NIO = ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT_NIO;
 
-   protected int journalBufferSize_NIO = JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
+   protected int journalBufferSize_NIO = ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE_NIO;
 
    protected boolean logJournalWriteRate = ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
@@ -349,7 +368,7 @@ public class ConfigurationImpl implements Configuration
       return allowAutoFailBack;
    }
 
-   public void setAllowAutoFailBack(final boolean allowAutoFailBack)
+   public void setAllowAutoFailBack(boolean allowAutoFailBack)
    {
       this.allowAutoFailBack = allowAutoFailBack;
    }
@@ -506,7 +525,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.liveConnectorName = liveConnectorName;
    }
-
+   
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
@@ -887,7 +906,7 @@ public class ConfigurationImpl implements Configuration
       return failoverOnServerShutdown;
    }
 
-   public void setFailoverOnServerShutdown(final boolean failoverOnServerShutdown)
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
    {
       this.failoverOnServerShutdown = failoverOnServerShutdown;
    }
@@ -1352,7 +1371,7 @@ public class ConfigurationImpl implements Configuration
 
    public List<ConnectorServiceConfiguration> getConnectorServiceConfigurations()
    {
-      return connectorServiceConfigurations;
+      return this.connectorServiceConfigurations;
    }
 
    public long getFailbackDelay()
@@ -1360,14 +1379,14 @@ public class ConfigurationImpl implements Configuration
       return failbackDelay;
    }
 
-   public void setFailbackDelay(final long failbackDelay)
+   public void setFailbackDelay(long failbackDelay)
    {
       this.failbackDelay = failbackDelay;
    }
 
    public void setConnectorServiceConfigurations(final List<ConnectorServiceConfiguration> configs)
    {
-      connectorServiceConfigurations = configs;
+      this.connectorServiceConfigurations = configs;
    }
 
    /* (non-Javadoc)
@@ -1381,7 +1400,7 @@ public class ConfigurationImpl implements Configuration
    /* (non-Javadoc)
     * @see org.hornetq.core.config.Configuration#setName(java.lang.String)
     */
-   public void setName(final String name)
+   public void setName(String name)
    {
       this.name = name;
    }

@@ -20,17 +20,17 @@ package org.hornetq.spi.core.remoting;
 public interface Connector
 {
    /**
-    * Starts the connector.
+    * starts the connector
     */
    void start();
 
    /**
-    * Closes the connector.
+    * closes the connector
     */
    void close();
 
    /**
-    * Returns true if the connector is started, otherwise false.
+    * returns true if the connector is started, oterwise false.
     *
     * @return true if the connector is started
     */
@@ -39,9 +39,9 @@ public interface Connector
    /**
     * Create and return a connection from this connector.
     * <p/>
-    * This method must NOT throw an exception if it fails to create the connection (e.g. network is
-    * not available), in this case it MUST return {@code null}.
-    * 
+    * This method must NOT throw an exception if it fails to create the connection
+    * (e.g. network is not available), in this case it MUST return null
+    *
     * @return The connection, or null if unable to create a connection (e.g. network is unavailable)
     */
    Connection createConnection();

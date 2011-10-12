@@ -242,6 +242,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       try
       {
          clusterConnection.start();
+         clusterConnection.flushExecutor();
       }
       finally
       {
@@ -255,6 +256,7 @@ public class ClusterConnectionControlImpl extends AbstractControl implements Clu
       try
       {
          clusterConnection.stop();
+         clusterConnection.flushExecutor();
       }
       finally
       {

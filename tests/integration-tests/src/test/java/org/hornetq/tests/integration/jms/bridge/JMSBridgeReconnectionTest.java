@@ -12,9 +12,6 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-
 import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
@@ -31,6 +28,11 @@ import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
  */
 public class JMSBridgeReconnectionTest extends BridgeTestBase
 {
+   /**
+    * 
+    */
+   private static final int TIME_WAIT = 5000;
+   
    private static final Logger log = Logger.getLogger(JMSBridgeReconnectionTest.class);
 
    // Crash and reconnect
@@ -175,8 +177,6 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
       bridge.stop();
       Assert.assertFalse(bridge.isStarted());
-
-      // Thread.sleep(3000);
       
       // we restart and setup the server for the test's tearDown checks
       jmsServer1.start();
@@ -245,7 +245,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
          // Wait a while before starting up to simulate the dest being down for a while
          JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(10000);
+         Thread.sleep(TIME_WAIT);
          JMSBridgeReconnectionTest.log.info("Done wait");
 
          // Restart the server
@@ -337,7 +337,7 @@ public class JMSBridgeReconnectionTest extends BridgeTestBase
 
          // Wait a while before starting up to simulate the dest being down for a while
          JMSBridgeReconnectionTest.log.info("Waiting 5 secs before bringing server back up");
-         Thread.sleep(10000);
+         Thread.sleep(TIME_WAIT);
          JMSBridgeReconnectionTest.log.info("Done wait");
 
          // Restart the server

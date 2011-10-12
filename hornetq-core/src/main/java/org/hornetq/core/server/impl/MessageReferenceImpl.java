@@ -186,6 +186,16 @@ public class MessageReferenceImpl implements MessageReference
    {
       queue.acknowledge(tx, this);
    }
+   
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.MessageReference#getMessageMemoryEstimate()
+    */
+   public int getMessageMemoryEstimate()
+   {
+      return message.getMemoryEstimate();
+   }
+
 
    // Public --------------------------------------------------------
 

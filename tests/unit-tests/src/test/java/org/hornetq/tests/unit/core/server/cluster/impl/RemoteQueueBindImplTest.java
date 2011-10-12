@@ -617,7 +617,7 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.server.Queue#blockOnExecutorFuture()
        */
-      public boolean blockOnExecutorFuture()
+      public boolean flushExecutor()
       {
          // TODO Auto-generated method stub
          return false;
@@ -648,6 +648,33 @@ public class RemoteQueueBindImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#forceDelivery()
+       */
+      public void forceDelivery()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#getInstantMessageCount()
+       */
+      public long getInstantMessageCount()
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.Queue#getInstantMessagesAdded()
+       */
+      public long getInstantMessagesAdded()
+      {
+         // TODO Auto-generated method stub
+         return 0;
       }
 
    }

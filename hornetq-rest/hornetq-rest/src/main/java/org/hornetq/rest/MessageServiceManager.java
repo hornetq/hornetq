@@ -33,7 +33,7 @@ public class MessageServiceManager
 {
    protected ExecutorService threadPool;
    protected QueueServiceManager queueManager = new QueueServiceManager();
-   protected TopicServiceManager topicManager = new TopicServiceManager();
+   protected TopicServiceManager topicManager = new TopicServiceManager();  
    protected TimeoutTask timeoutTask;
    protected int timeoutTaskInterval = 1;
    protected MessageServiceConfiguration configuration = new MessageServiceConfiguration();
@@ -175,11 +175,10 @@ public class MessageServiceManager
       queueManager.setDefaultSettings(defaultSettings);
       queueManager.setPushStoreFile(configuration.getQueuePushStoreDirectory());
       queueManager.setProducerPoolSize(configuration.getProducerSessionPoolSize());
-      queueManager.setProducerTimeToLive(configuration.getProducerTimeToLive());
       queueManager.setLinkStrategy(linkStrategy);
       queueManager.setRegistry(registry);
 
-      queueManager.setServerLocator(defaultLocator);
+      topicManager.setServerLocator(defaultLocator);
       topicManager.setSessionFactory(sessionFactory);
       topicManager.setTimeoutTask(timeoutTask);
       topicManager.setConsumerServerLocator(consumerLocator);
@@ -187,7 +186,6 @@ public class MessageServiceManager
       topicManager.setDefaultSettings(defaultSettings);
       topicManager.setPushStoreFile(configuration.getTopicPushStoreDirectory());
       topicManager.setProducerPoolSize(configuration.getProducerSessionPoolSize());
-      queueManager.setProducerTimeToLive(configuration.getProducerTimeToLive());
       topicManager.setLinkStrategy(linkStrategy);
       topicManager.setRegistry(registry);
 

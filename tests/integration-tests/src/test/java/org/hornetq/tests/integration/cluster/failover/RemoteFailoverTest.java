@@ -43,7 +43,7 @@ public class RemoteFailoverTest extends FailoverTest
 
    // Static --------------------------------------------------------
    
-   public static class SharedLiveServerConfiguration extends RemoteServerConfiguration
+   public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
 
       @Override

@@ -149,7 +149,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       setupCluster();
 
       startServers(5, 0);
-      servers[0].getClusterManager().getTopology().setDebug(true);
       setupSessionFactory(0, isNetty());
 
       createQueue(0, "queues.testaddress", "queue0", null, false);

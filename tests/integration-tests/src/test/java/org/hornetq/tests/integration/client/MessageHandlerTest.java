@@ -21,7 +21,6 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -75,7 +74,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          producer.send(message);
       }
 
@@ -136,7 +135,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          
          message.putIntProperty(new SimpleString("i"), i);
 
@@ -238,7 +237,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("i"), i);
          producer.send(message);
       }
@@ -326,7 +325,7 @@ public class MessageHandlerTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = CreateMessage.createTextMessage("m" + i, session);
+         ClientMessage message = createTextMessage(session, "m" + i);
          message.putIntProperty(new SimpleString("i"), i);
          producer.send(message);
       }

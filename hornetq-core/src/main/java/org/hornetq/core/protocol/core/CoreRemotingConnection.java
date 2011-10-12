@@ -24,7 +24,16 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  *
  */
 public interface CoreRemotingConnection extends RemotingConnection
-{
+{  
+
+   /** The client protocol used  on the communication.
+    *  This will determine if the client has support for certain packet types */
+   int getClientVersion();
+   
+   /** The client protocol used  on the communication.
+    *  This will determine if the client has support for certain packet types */
+   void setClientVersion(int clientVersion);
+   
    /**
     * return the channel with the channel id specified.
     * <p/>
@@ -74,7 +83,7 @@ public interface CoreRemotingConnection extends RemotingConnection
    long getIDGeneratorSequence();
 
    /**
-    * Return the current timeout for blocking calls.
+    * Return the current timeout for blocking calls
     *
     * @return the timeout in milliseconds
     */
@@ -86,7 +95,7 @@ public interface CoreRemotingConnection extends RemotingConnection
     * @return the lock
     */
    Object getTransferLock();
-
+   
    /**
     * Called periodically to flush any data in the batch buffer
     */

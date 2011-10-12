@@ -21,14 +21,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.*;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
@@ -51,8 +48,6 @@ public class SessionCloseTest extends UnitTestCase
    private HornetQServer server;
 
    private ClientSessionFactory sf;
-
-   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -257,9 +252,7 @@ public class SessionCloseTest extends UnitTestCase
 
       server.start();
 
-      locator =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       sf = locator.createSessionFactory();
 
    }
@@ -277,13 +270,8 @@ public class SessionCloseTest extends UnitTestCase
          server.stop();
       }
 
-      if (locator != null)
-      {
-         locator.close();
-      }
-
-      locator = null;
       sf = null;
+
       server = null;
 
       super.tearDown();

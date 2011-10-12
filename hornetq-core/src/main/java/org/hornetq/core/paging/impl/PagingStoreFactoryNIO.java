@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -62,14 +63,16 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    protected final boolean syncNonTransactional;
 
    private PagingManager pagingManager;
-   
+
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private final long syncTimeout;
 
    private StorageManager storageManager;
 
    private PostOffice postOffice;
+
+   private final IOCriticalErrorListener critialErrorListener;
 
    // Static --------------------------------------------------------
 
@@ -81,15 +84,27 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
                                 final ExecutorFactory executorFactory,
                                 final boolean syncNonTransactional)
    {
+      this(directory, syncTimeout, scheduledExecutor, executorFactory, syncNonTransactional, null);
+   }
+
+   public PagingStoreFactoryNIO(final String directory,
+                                final long syncTimeout,
+                                final ScheduledExecutorService scheduledExecutor,
+                                final ExecutorFactory executorFactory,
+                                final boolean syncNonTransactional,
+                                final IOCriticalErrorListener critialErrorListener)
+   {
       this.directory = directory;
 
       this.executorFactory = executorFactory;
 
       this.syncNonTransactional = syncNonTransactional;
-      
+
       this.scheduledExecutor = scheduledExecutor;
-      
+
       this.syncTimeout = syncTimeout;
+
+      this.critialErrorListener = critialErrorListener;
    }
 
    // Public --------------------------------------------------------
@@ -231,24 +246,24 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    protected SequentialFileFactory newFileFactory(final String directoryName)
    {
-      return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false);
+      return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false, critialErrorListener);
    }
-   
+
    protected PagingManager getPagingManager()
    {
       return pagingManager;
    }
-   
+
    protected StorageManager getStorageManager()
    {
       return storageManager;
    }
-   
+
    protected PostOffice getPostOffice()
    {
       return postOffice;
    }
-   
+
    protected ExecutorFactory getExecutorFactory()
    {
       return executorFactory;

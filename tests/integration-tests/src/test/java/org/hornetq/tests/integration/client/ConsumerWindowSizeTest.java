@@ -37,7 +37,6 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
-import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -435,7 +434,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            prod.send(CreateMessage.createTextMessage(session, "Msg" + i, true));
+            prod.send(createTextMessage(session, "Msg" + i));
          }
 
          for (int i = 0; i < numberOfMessages - 1; i++)
@@ -535,7 +534,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          // or the client will be buffering messages
          Assert.assertNull(consNeverUsed.receive(1));
 
-         ClientMessage msg = CreateMessage.createTextMessage(session, "This one will expire", true);
+         ClientMessage msg = createTextMessage(session, "This one will expire");
          if (largeMessages)
          {
             msg.getBodyBuffer().writeBytes(new byte[600]);
@@ -544,7 +543,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          msg.setExpiration(System.currentTimeMillis() + 100);
          prod.send(msg);
 
-         msg = CreateMessage.createTextMessage(session, "First-on-non-buffered", true);
+         msg = createTextMessage(session, "First-on-non-buffered");
 
          prod.send(msg);
 
@@ -561,7 +560,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            msg = CreateMessage.createTextMessage(session, "Msg" + i, true);
+            msg = createTextMessage(session, "Msg" + i);
 
             if (largeMessages)
             {
@@ -666,7 +665,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = CreateMessage.createTextMessage(session1, "Msg" + i, true);
+            ClientMessage msg = createTextMessage(session1, "Msg" + i);
             if (largeMessages)
             {
                msg.getBodyBuffer().writeBytes(new byte[600]);
@@ -737,7 +736,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = CreateMessage.createTextMessage(session1, "Msg" + i, true);
+            ClientMessage msg = createTextMessage(session1, "Msg" + i);
             if (largeMessages)
             {
                msg.getBodyBuffer().writeBytes(new byte[600]);
@@ -1010,7 +1009,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = CreateMessage.createTextMessage(session, "Msg" + i, true);
+            ClientMessage msg = createTextMessage(session, "Msg" + i);
             if (largeMessages)
             {
                msg.getBodyBuffer().writeBytes(new byte[600]);
@@ -1172,7 +1171,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = CreateMessage.createTextMessage(session, "Msg" + i, true);
+            ClientMessage msg = createTextMessage(session, "Msg" + i);
             if (largeMessage)
             {
                msg.getBodyBuffer().writeBytes(new byte[600]);
@@ -1320,7 +1319,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            ClientMessage msg = CreateMessage.createTextMessage(sessionA, "Msg" + i, true);
+            ClientMessage msg = createTextMessage(sessionA, "Msg" + i);
             if (largeMessages)
             {
                msg.getBodyBuffer().writeBytes(new byte[600]);

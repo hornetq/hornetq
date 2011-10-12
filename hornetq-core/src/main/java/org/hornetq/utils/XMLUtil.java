@@ -18,6 +18,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -331,8 +333,8 @@ public class XMLUtil
          NodeList nl2 = node2.getChildNodes();
 
          short[] toFilter = new short[] { Node.TEXT_NODE, Node.ATTRIBUTE_NODE, Node.COMMENT_NODE };
-         List<Node> nodes = XMLUtil.filter(nl, toFilter);
-         List<Node> nodes2 = XMLUtil.filter(nl2, toFilter);
+         List nodes = XMLUtil.filter(nl, toFilter);
+         List nodes2 = XMLUtil.filter(nl2, toFilter);
 
          int length = nodes.size();
 
@@ -343,8 +345,8 @@ public class XMLUtil
 
          for (int i = 0; i < length; i++)
          {
-            Node n = nodes.get(i);
-            Node n2 = nodes2.get(i);
+            Node n = (Node)nodes.get(i);
+            Node n2 = (Node)nodes2.get(i);
             XMLUtil.assertEquivalent(n, n2);
          }
       }
@@ -481,7 +483,7 @@ public class XMLUtil
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-      Schema schema = factory.newSchema(Thread.currentThread().getContextClassLoader().getResource(schemaFile));
+      Schema schema = factory.newSchema(findResource(schemaFile));
       Validator validator = schema.newValidator();
 
       // validate the DOM tree
@@ -509,9 +511,9 @@ public class XMLUtil
 
    // Private --------------------------------------------------------------------------------------
 
-   private static List<Node> filter(final NodeList nl, final short[] typesToFilter)
+   private static List filter(final NodeList nl, final short[] typesToFilter)
    {
-      List<Node> nodes = new ArrayList<Node>();
+      List nodes = new ArrayList();
 
       outer: for (int i = 0; i < nl.getLength(); i++)
       {
@@ -527,6 +529,40 @@ public class XMLUtil
          nodes.add(n);
       }
       return nodes;
+   }
+
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static URL findResource(final String resourceName)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<URL>()
+      {
+         public URL run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               URL resource = loader.getResource(resourceName);
+               if (resource != null)
+                   return resource;
+            }
+            catch (Throwable t)
+            {
+            }
+
+            loader = Thread.currentThread().getContextClassLoader();
+            if (loader == null)
+                return null;
+
+            URL resource = loader.getResource(resourceName);
+            if (resource != null)
+                return resource;
+
+             return null;
+         }
+      });
    }
 
    // Inner classes --------------------------------------------------------------------------------

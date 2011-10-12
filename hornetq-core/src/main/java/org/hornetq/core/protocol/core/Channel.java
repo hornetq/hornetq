@@ -36,6 +36,9 @@ public interface Channel
     * @return the id
     */
    long getID();
+   
+   /** For protocol check */
+   boolean supports(byte packetID);
 
    /**
     * sends a packet on this channel.

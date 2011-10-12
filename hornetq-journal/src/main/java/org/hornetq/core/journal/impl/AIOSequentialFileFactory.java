@@ -14,6 +14,8 @@
 package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,14 +23,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- *
+ * 
  * A AIOSequentialFileFactory
- *
+ * 
  * @author clebert.suconic@jboss.com
  *
  */
@@ -56,7 +59,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
       this(journalDir,
            JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
            JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
-           false);
+           false,
+           null);
+   }
+
+   public AIOSequentialFileFactory(final String journalDir, final IOCriticalErrorListener listener)
+   {
+      this(journalDir,
+           JournalConstants.DEFAULT_JOURNAL_BUFFER_SIZE_AIO,
+           JournalConstants.DEFAULT_JOURNAL_BUFFER_TIMEOUT_AIO,
+           false,
+           listener);
    }
 
    public AIOSequentialFileFactory(final String journalDir,
@@ -64,7 +77,16 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
                                    final int bufferTimeout,
                                    final boolean logRates)
    {
-      super(journalDir, true, bufferSize, bufferTimeout, logRates);
+      this(journalDir, bufferSize, bufferTimeout, logRates, null);
+   }
+
+   public AIOSequentialFileFactory(final String journalDir,
+                                   final int bufferSize,
+                                   final int bufferTimeout,
+                                   final boolean logRates,
+                                   final IOCriticalErrorListener listener)
+   {
+      super(journalDir, true, bufferSize, bufferTimeout, logRates, listener);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
@@ -143,7 +165,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
 
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
                                                                               true,
-                                                                              AbstractSequentialFileFactory.getThisClassLoader()));
+                                                                              AIOSequentialFileFactory.getThisClassLoader()));
 
    }
 
@@ -292,4 +314,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
          }
       }
    }
+
+   private static ClassLoader getThisClassLoader()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return AIOSequentialFileFactory.class.getClassLoader();
+         }
+      });
+
+   }
+
 }

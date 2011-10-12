@@ -28,13 +28,7 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.BridgeConfiguration;
-import org.hornetq.core.config.BroadcastGroupConfiguration;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.ConnectorServiceConfiguration;
-import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.DivertConfiguration;
+import org.hornetq.core.config.*;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.config.impl.Validators;
@@ -610,7 +604,7 @@ public class FileConfigurationParser
          for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, Set<Role>> securityItem = parseSecurityRoles(list.item(i));
-            config.getSecurityRoles().put(securityItem.a, securityItem.b);
+            config.getSecurityRoles().put(securityItem.getA(), securityItem.getB());
          }
       }
    }
@@ -650,7 +644,7 @@ public class FileConfigurationParser
          for (int i = 0; i < list.getLength(); i++)
          {
             Pair<String, AddressSettings> addressSettings = parseAddressSettings(list.item(i));
-            config.getAddressesSettings().put(addressSettings.a, addressSettings.b);
+            config.getAddressesSettings().put(addressSettings.getA(), addressSettings.getB());
          }
       }
    }
@@ -1010,11 +1004,28 @@ public class FileConfigurationParser
                                                     "max-hops",
                                                     ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS,
                                                     Validators.GE_ZERO);
+      
+      long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(e, "check-period",
+                                                                   ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
+
+      long connectionTTL = XMLConfigurationUtil.getLong(e, "connection-ttl",
+                                                        ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL, Validators.GT_ZERO) ;
+
 
       long retryInterval = XMLConfigurationUtil.getLong(e,
                                                         "retry-interval",
                                                         ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
+      
+      long callTimeout = XMLConfigurationUtil.getLong(e, "call-timeout", HornetQClient.DEFAULT_CALL_TIMEOUT, Validators.GT_ZERO);
+                                                        
+      double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier", 
+                                                                      ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER, Validators.GT_ZERO);
+      
+      long maxRetryInterval = XMLConfigurationUtil.getLong(e, "max-retry-interval", ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
+      
+      int reconnectAttempts = XMLConfigurationUtil.getInteger(e, "reconnect-attempts", ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
+
 
       int confirmationWindowSize = XMLConfigurationUtil.getInteger(e,
                                                                    "confirmation-window-size",
@@ -1055,7 +1066,13 @@ public class FileConfigurationParser
          config = new ClusterConnectionConfiguration(name,
                                                      address,
                                                      connectorName,
+                                                     clientFailureCheckPeriod,
+                                                     connectionTTL,
                                                      retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetryInterval,
+                                                     reconnectAttempts,
+                                                     callTimeout,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
@@ -1068,7 +1085,13 @@ public class FileConfigurationParser
          config = new ClusterConnectionConfiguration(name,
                                                      address,
                                                      connectorName,
+                                                     clientFailureCheckPeriod,
+                                                     connectionTTL,
                                                      retryInterval,
+                                                     retryIntervalMultiplier,
+                                                     maxRetryInterval,
+                                                     reconnectAttempts,
+                                                     callTimeout,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
@@ -1108,16 +1131,25 @@ public class FileConfigurationParser
                                                                    null,
                                                                    Validators.NO_CHECK);
 
+       // Default bridge conf
+      int confirmationWindowSize = XMLConfigurationUtil.getInteger(brNode,
+                                                                   "confirmation-window-size",
+                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                                                   Validators.GT_ZERO);
+
       long retryInterval = XMLConfigurationUtil.getLong(brNode,
                                                         "retry-interval",
                                                         HornetQClient.DEFAULT_RETRY_INTERVAL,
                                                         Validators.GT_ZERO);
 
-      // Default bridge conf
-      int confirmationWindowSize = XMLConfigurationUtil.getInteger(brNode,
-                                                                   "confirmation-window-size",
-                                                                   FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                                   Validators.GT_ZERO);
+      long clientFailureCheckPeriod = XMLConfigurationUtil.getLong(brNode, "check-period",
+                                                                   HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, Validators.GT_ZERO) ;
+
+      long connectionTTL = XMLConfigurationUtil.getLong(brNode, "connection-ttl",
+                                                        HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO) ;
+      
+      long maxRetryInterval = XMLConfigurationUtil.getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
+      
 
       double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(brNode,
                                                                       "retry-interval-multiplier",
@@ -1180,12 +1212,14 @@ public class FileConfigurationParser
                                           forwardingAddress,
                                           filterString,
                                           transformerClassName,
+                                          clientFailureCheckPeriod,
+                                          connectionTTL,
                                           retryInterval,
+                                          maxRetryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
-                                          HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           staticConnectorNames,
                                           ha,
                                           user,
@@ -1198,12 +1232,14 @@ public class FileConfigurationParser
                                           forwardingAddress,
                                           filterString,
                                           transformerClassName,
+                                          clientFailureCheckPeriod,
+                                          connectionTTL,
                                           retryInterval,
+                                          maxRetryInterval,
                                           retryIntervalMultiplier,
                                           reconnectAttempts,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
-                                          HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           discoveryGroupName,
                                           ha,
                                           user,
@@ -1213,7 +1249,7 @@ public class FileConfigurationParser
       mainConfig.getBridgeConfigurations().add(config);
    }
 
-   private void getStaticConnectors(final List<String> staticConnectorNames, final Node child)
+   private void getStaticConnectors(List<String> staticConnectorNames, Node child)
    {
       NodeList children2 = ((Element)child).getElementsByTagName("connector-ref");
 

@@ -60,9 +60,13 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    void flushAcks() throws HornetQException;
 
+   void stop() throws HornetQException;
+
    void stop(boolean waitForOnMessage) throws HornetQException;
 
    void start();
    
    SessionQueueQueryResponseMessage getQueueInfo();
+   
+   ClientSessionInternal getSession();
 }

@@ -41,8 +41,10 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.ra.recovery.RecoveryManager;
 
 /**
  * The resource adapter for HornetQ
@@ -106,6 +108,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    private String unparsedJndiParams;
 
+   RecoveryManager recoveryManager;
+
    /**
     * Constructor
     */
@@ -119,6 +123,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       raProperties = new HornetQRAProperties();
       configured = new AtomicBoolean(false);
       activations = new ConcurrentHashMap<ActivationSpec, HornetQActivation>();
+      recoveryManager = new RecoveryManager();
    }
 
    public TransactionManager getTM()
@@ -209,6 +214,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       
       locateTM();
 
+      recoveryManager.start();
+
       this.ctx = ctx;
 
       HornetQResourceAdapter.log.info("HornetQ resource adaptor started");
@@ -241,7 +248,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (defaultHornetQConnectionFactory != null)
       {
          defaultHornetQConnectionFactory.close();
+
+         XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
       }
+
+      recoveryManager.stop();
 
       HornetQResourceAdapter.log.info("HornetQ resource adapter stopped");
    }
@@ -405,36 +416,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       }
 
       raProperties.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
-   }
-
-   /**
-    * Get load balancing policy class name
-    *
-    * @return The value
-    */
-   public String getLoadBalancingPolicyClassName()
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("getLoadBalancingPolicyClassName()");
-      }
-
-      return raProperties.getConnectionLoadBalancingPolicyClassName();
-   }
-
-   /**
-    * Set load balancing policy class name
-    *
-    * @param loadBalancingPolicyClassName The value
-    */
-   public void setLoadBalancingPolicyClassName(final String loadBalancingPolicyClassName)
-   {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("setLoadBalancingPolicyClassName(" + loadBalancingPolicyClassName + ")");
-      }
-
-      raProperties.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
    }
 
    /**
@@ -1347,6 +1328,13 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
    }
 
+
+
+   public RecoveryManager getRecoveryManager()
+   {
+      return recoveryManager;
+   }
+
    /**
     * Get the resource adapter properties
     *
@@ -1368,6 +1356,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    protected void setup() throws HornetQException
    {
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
+      recoveryManager.register(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
    }
 
    public Map<ActivationSpec, HornetQActivation> getActivations()
@@ -1390,6 +1379,42 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return defaultHornetQConnectionFactory;
    }
 
+   /**
+    * @param transactionManagerLocatorClass
+    * @see org.hornetq.ra.HornetQRAProperties#setTransactionManagerLocatorClass(java.lang.String)
+    */
+   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   {
+      raProperties.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getTransactionManagerLocatorClass()
+    */
+   public String getTransactionManagerLocatorClass()
+   {
+      return raProperties.getTransactionManagerLocatorClass();
+   }
+
+   /**
+    * @return
+    * @see org.hornetq.ra.HornetQRAProperties#getTransactionManagerLocatorMethod()
+    */
+   public String getTransactionManagerLocatorMethod()
+   {
+      return raProperties.getTransactionManagerLocatorMethod();
+   }
+
+   /**
+    * @param transactionManagerLocatorMethod
+    * @see org.hornetq.ra.HornetQRAProperties#setTransactionManagerLocatorMethod(java.lang.String)
+    */
+   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   {
+      raProperties.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
+   }
+
    public HornetQConnectionFactory createHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
    {
       HornetQConnectionFactory cf;
@@ -1405,7 +1430,53 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          ha = HornetQClient.DEFAULT_IS_HA;
       }
-      
+
+      if (discoveryAddress != null)
+      {
+         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                              : getDiscoveryPort();
+         
+         if(discoveryPort == null)
+         {
+            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+         }
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Connection Factory on the resource adapter for discovery=" + groupConfiguration + " with ha=" + ha);
+         }
+
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
+
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
+
+         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
+
+         groupConfiguration.setRefreshTimeout(refreshTimeout);
+
+         if (ha)
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+         else
+         {
+            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+         }
+      }
+      else
       if (connectorClassName != null)
       {
          TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
@@ -1436,6 +1507,12 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
             transportConfigurations[i] = tc;
          }
          
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Connection Factory on the resource adapter for transport=" + transportConfigurations + " with ha=" + ha);
+         }
+         
          if (ha)
          {
             cf = HornetQJMSClient.createConnectionFactoryWithHA(JMSFactoryType.XA_CF, transportConfigurations);
@@ -1443,46 +1520,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          else
          {
             cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
-         }
-      }
-      else if (discoveryAddress != null)
-      {
-         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
-                                                                              : getDiscoveryPort();
-
-         if(discoveryPort == null)
-         {
-            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
-         }
-
-         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
-
-         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
-                                                                    : raProperties.getDiscoveryRefreshTimeout();
-         if (refreshTimeout == null)
-         {
-            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
-         }
-
-         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
-                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
-
-         if(initialTimeout == null)
-         {
-            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
-         }
-
-         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
-
-         groupConfiguration.setRefreshTimeout(refreshTimeout);
-
-         if (ha)
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithHA(groupConfiguration, JMSFactoryType.XA_CF);
-         }
-         else
-         {
-            cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
          }
       }
       else

@@ -83,7 +83,15 @@ public class FileLockNodeManager extends NodeManager
 
       if (!file.exists())
       {
-         fileCreated = file.createNewFile();
+         try
+         {
+            fileCreated = file.createNewFile();
+         }
+         catch (Exception e)
+         {
+            log.warn("can't open file " + file, e);
+            throw e;
+         }
          if (!fileCreated)
          {
             throw new IllegalStateException("Unable to create server lock file");

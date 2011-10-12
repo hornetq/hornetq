@@ -54,7 +54,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
 
    // Public --------------------------------------------------------
 
-   public static class SharedLiveServerConfiguration extends RemoteServerConfiguration
+   public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
 
       @Override
@@ -82,7 +82,7 @@ public class FailoverWithSharedStoreTest extends ClusterTestBase
 
    }
 
-   public static class SharedBackupServerConfiguration extends RemoteServerConfiguration
+   public class SharedBackupServerConfiguration extends RemoteServerConfiguration
    {
 
       @Override

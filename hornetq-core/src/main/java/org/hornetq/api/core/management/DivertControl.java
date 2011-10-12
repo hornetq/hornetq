@@ -13,10 +13,9 @@
 
 package org.hornetq.api.core.management;
 
-import org.hornetq.core.server.Divert;
-
 /**
- * A DivertControl is used to manage a {@link Divert}.
+ * A DivertControl is used to manage a divert.
+ * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public interface DivertControl

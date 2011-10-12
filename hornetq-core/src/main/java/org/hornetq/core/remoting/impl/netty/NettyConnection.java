@@ -21,6 +21,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.core.buffers.impl.ChannelBufferWrapper;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.ProtocolType;
+import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.ReadyListener;
@@ -72,6 +73,15 @@ public class NettyConnection implements Connection
                           boolean batchingEnabled,
                           boolean directDeliver)
    {
+      this(null, channel, listener, batchingEnabled, directDeliver);
+   }
+   
+   public NettyConnection(final Acceptor acceptor,
+                          final Channel channel,
+                          final ConnectionLifeCycleListener listener,
+                          boolean batchingEnabled,
+                          boolean directDeliver)
+   {
       this.channel = channel;
 
       this.listener = listener;
@@ -80,7 +90,7 @@ public class NettyConnection implements Connection
 
       this.directDeliver = directDeliver;
 
-      listener.connectionCreated(this, ProtocolType.CORE);
+      listener.connectionCreated(acceptor, this, ProtocolType.CORE);
    }
 
    // Public --------------------------------------------------------

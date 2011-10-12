@@ -202,5 +202,4 @@ public class PushQueueConsumerTest extends MessageTestBase
       Assert.assertEquals("1", MyResource.gotit);
       Assert.assertEquals(204, pushSubscription.request().delete().getStatus());
    }
-
 }
