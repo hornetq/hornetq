@@ -15,13 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.hornetq.tests.integration.stomp;
+package org.hornetq.tests.integration.stomp.v11;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +29,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
@@ -57,15 +50,13 @@ import org.hornetq.spi.core.protocol.ProtocolType;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
-public abstract class StompTestBase extends UnitTestCase
+public abstract class StompTestBase2 extends UnitTestCase
 {
-   private static final transient Logger log = Logger.getLogger(StompTestBase.class);
+   private static final transient Logger log = Logger.getLogger(StompTestBase2.class);
 
-   private int port = 61613;
-
-   private Socket stompSocket;
-
-   private ByteArrayOutputStream inputBuffer;
+   protected String hostname = "127.0.0.1";
+   
+   protected int port = 61613;
 
    private ConnectionFactory connectionFactory;
 
@@ -90,15 +81,10 @@ public abstract class StompTestBase extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      forceGC();
 
       server = createServer();
       server.start();
       connectionFactory = createConnectionFactory();
-
-      stompSocket = createSocket();
-      inputBuffer = new ByteArrayOutputStream();
 
       connection = connectionFactory.createConnection();
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -120,7 +106,6 @@ public abstract class StompTestBase extends UnitTestCase
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
       params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_STOMP_PORT);
-      params.put(TransportConstants.STOMP_CONSUMERS_CREDIT, "-1");
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
@@ -138,41 +123,15 @@ public abstract class StompTestBase extends UnitTestCase
    protected void tearDown() throws Exception
    {
       connection.close();
-      if (stompSocket != null)
-      {
-         stompSocket.close();
-      }
+
       server.stop();
 
       super.tearDown();
    }
 
-   protected void reconnect() throws Exception
-   {
-      reconnect(0);
-   }
-
-   protected void reconnect(long sleep) throws Exception
-   {
-      stompSocket.close();
-
-      if (sleep > 0)
-      {
-         Thread.sleep(sleep);
-      }
-
-      stompSocket = createSocket();
-      inputBuffer = new ByteArrayOutputStream();
-   }
-
    protected ConnectionFactory createConnectionFactory()
    {
       return new HornetQJMSConnectionFactory(false, new TransportConfiguration(InVMConnectorFactory.class.getName()));
-   }
-
-   protected Socket createSocket() throws IOException
-   {
-      return new Socket("localhost", port);
    }
 
    protected String getQueueName()
@@ -193,59 +152,6 @@ public abstract class StompTestBase extends UnitTestCase
    protected String getTopicPrefix()
    {
       return "jms.topic.";
-   }
-
-   public void sendFrame(String data) throws Exception
-   {
-      byte[] bytes = data.getBytes("UTF-8");
-      OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < bytes.length; i++)
-      {
-         outputStream.write(bytes[i]);
-      }
-      outputStream.flush();
-   }
-
-   public void sendFrame(byte[] data) throws Exception
-   {
-      OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < data.length; i++)
-      {
-         outputStream.write(data[i]);
-      }
-      outputStream.flush();
-   }
-
-   public String receiveFrame(long timeOut) throws Exception
-   {
-      stompSocket.setSoTimeout((int)timeOut);
-      InputStream is = stompSocket.getInputStream();
-      int c = 0;
-      for (;;)
-      {
-         c = is.read();
-         if (c < 0)
-         {
-            throw new IOException("socket closed.");
-         }
-         else if (c == 0)
-         {
-            c = is.read();
-            if (c != '\n')
-            {
-               byte[] ba = inputBuffer.toByteArray();
-               System.out.println(new String(ba, "UTF-8"));
-            }
-            Assert.assertEquals("Expecting stomp frame to terminate with \0\n", c, '\n');
-            byte[] ba = inputBuffer.toByteArray();
-            inputBuffer.reset();
-            return new String(ba, "UTF-8");
-         }
-         else
-         {
-            inputBuffer.write(c);
-         }
-      }
    }
 
    public void sendMessage(String msg) throws Exception
@@ -279,18 +185,4 @@ public abstract class StompTestBase extends UnitTestCase
       producer.send(message);
    }
 
-   protected void waitForReceipt() throws Exception
-   {
-      String frame = receiveFrame(50000);
-      assertNotNull(frame);
-      assertTrue(frame.indexOf("RECEIPT") > -1);
-   }
-
-   protected void waitForFrameToTakeEffect() throws InterruptedException
-   {
-      // bit of a dirty hack :)
-      // another option would be to force some kind of receipt to be returned
-      // from the frame
-      Thread.sleep(2000);
-   }
 }

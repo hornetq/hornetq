@@ -15,7 +15,10 @@ package org.hornetq.core.protocol.stomp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -24,6 +27,8 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Acceptor;
 import org.hornetq.spi.core.remoting.Connection;
@@ -37,8 +42,9 @@ import org.hornetq.spi.core.remoting.Connection;
  */
 public class StompConnection implements RemotingConnection
 {
-
    private static final Logger log = Logger.getLogger(StompConnection.class);
+   
+   protected static final String CONNECTION_ID_PROP = "__HQ_CID";
 
    private final StompProtocolManager manager;
 
@@ -50,13 +56,14 @@ public class StompConnection implements RemotingConnection
 
    private String clientID;
 
+   //this means login is valid. (stomp connection ok)
    private boolean valid;
 
    private boolean destroyed = false;
    
    private final long creationTime;
 
-   private StompDecoder decoder = new StompDecoder();
+   private StompDecoder decoder;
    
    private final Acceptor acceptorUsed;
 
@@ -67,6 +74,17 @@ public class StompConnection implements RemotingConnection
    private final Object failLock = new Object();
    
    private volatile boolean dataReceived;
+   
+   private StompVersions version;
+   
+   private VersionedStompFrameHandler frameHandler;
+   
+   //this means the version negotiation done.
+   private boolean initialized;
+   
+   private FrameEventListener stompListener;
+   
+   private final Object sendLock = new Object();
 
    public StompDecoder getDecoder()
    {
@@ -78,6 +96,8 @@ public class StompConnection implements RemotingConnection
       this.transportConnection = transportConnection;
 
       this.manager = manager;
+      
+      this.decoder = new StompDecoder(this);
       
       this.creationTime = System.currentTimeMillis();
       
@@ -189,7 +209,10 @@ public class StompConnection implements RemotingConnection
 
       internalClose();
 
-      callClosingListeners();
+      synchronized(sendLock)
+      {
+         callClosingListeners();
+      }
    }
    
    Acceptor getAcceptorUsed()
@@ -202,10 +225,6 @@ public class StompConnection implements RemotingConnection
       transportConnection.close();
 
       manager.cleanup(this);
-   }
-
-   public void disconnect()
-   {
    }
 
    public void fail(final HornetQException me)
@@ -359,4 +378,356 @@ public class StompConnection implements RemotingConnection
       }
    }
 
+   /*
+    * accept-version value takes form of "v1,v2,v3..."
+    * we need to return the highest supported version
+    */
+   public void negotiateVersion(StompFrame frame) throws HornetQStompException
+   {
+      String acceptVersion = frame.getHeader(Stomp.Headers.ACCEPT_VERSION);
+      
+      if (acceptVersion == null)
+      {
+         this.version = StompVersions.V1_0;
+      }
+      else
+      {
+         Set<String> requestVersions = new HashSet<String>();
+         StringTokenizer tokenizer = new StringTokenizer(acceptVersion, ",");
+         while (tokenizer.hasMoreTokens())
+         {
+            requestVersions.add(tokenizer.nextToken());
+         }
+         
+         if (requestVersions.contains("1.1"))
+         {
+            this.version = StompVersions.V1_1;
+         }
+         else if (requestVersions.contains("1.0"))
+         {
+            this.version = StompVersions.V1_0;
+         }
+         else
+         {
+            //not a supported version!
+            HornetQStompException error = new HornetQStompException("Stomp versions not supported: " + acceptVersion);
+            error.addHeader("version", acceptVersion);
+            error.addHeader("content-type", "text/plain");
+            error.setBody("Supported protocol version are " + manager.getSupportedVersionsAsString());
+            error.setDisconnect(true);
+            throw error;
+         }
+         log.error("------------------ negotiated version is " + this.version);
+      }
+      
+      this.frameHandler = VersionedStompFrameHandler.getHandler(this, this.version);
+      this.initialized = true;
+   }
+
+   //reject if the host doesn't match
+   public void setHost(String host) throws HornetQStompException
+   {
+      if (host == null)
+      {
+         HornetQStompException error = new HornetQStompException("Header host is null");
+         error.setBody("Cannot accept null as host");
+         throw error;
+      }
+      
+      String localHost = manager.getVirtualHostName();
+      if (!host.equals(localHost))
+      {
+         HornetQStompException error = new HornetQStompException("Header host doesn't match server host");
+         error.setBody("host " + host + " doesn't match server host name");
+         throw error;
+      }
+   }
+
+   public void handleFrame(StompFrame request)
+   {
+      StompFrame reply = null;
+      
+      if (stompListener != null)
+      {
+         stompListener.requestAccepted(request);
+      }
+
+      String cmd = request.getCommand();
+      try
+      {
+         if (!initialized)
+         {
+            if ( ! (Stomp.Commands.CONNECT.equals(cmd) || Stomp.Commands.STOMP.equals(cmd)))
+            {
+               throw new HornetQStompException("Connection hasn't been established.");
+            }
+            //decide version
+            negotiateVersion(request);
+         }
+         reply = frameHandler.handleFrame(request);
+      }
+      catch (HornetQStompException e)
+      {
+         reply = e.getFrame();
+      }
+      
+      if (reply != null)
+      {
+         sendFrame(reply);
+      }
+      
+      if (Stomp.Commands.DISCONNECT.equals(cmd))
+      {
+         this.disconnect();
+      }
+   }
+
+   public void sendFrame(StompFrame frame)
+   {
+      manager.sendReply(this, frame);
+   }
+
+   public boolean validateUser(String login, String passcode)
+   {
+      this.valid = manager.validateUser(login, passcode);
+      if (valid)
+      {
+         this.login = login;
+         this.passcode = passcode;
+      }
+      return valid;
+   }
+
+   public ServerMessageImpl createServerMessage()
+   {
+      return manager.createServerMessage();
+   }
+
+   public StompSession getSession(String txID) throws HornetQStompException
+   {
+      StompSession session = null;
+      try
+      {
+         if (txID == null)
+         {
+            session = manager.getSession(this);
+         }
+         else
+         {
+            session = manager.getTransactedSession(this, txID);
+         }
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Exception getting session", e);
+      }
+      
+      return session;
+   }
+
+   public void validate() throws HornetQStompException
+   {
+      if (!this.valid)
+      {
+         throw new HornetQStompException("Connection is not valid.");
+      }
+   }
+
+   public void sendServerMessage(ServerMessageImpl message, String txID) throws HornetQStompException
+   {
+      StompSession stompSession = getSession(txID);
+
+      if (stompSession.isNoLocal())
+      {
+         message.putStringProperty(CONNECTION_ID_PROP, getID().toString());
+      }
+      try
+      {
+         stompSession.getSession().send(message, true);
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error sending message " + message, e);
+      }
+   }
+
+   @Override
+   public void disconnect()
+   {
+      destroy();
+   }
+
+   public void beginTransaction(String txID) throws HornetQStompException
+   {
+      try
+      {
+         manager.beginTransaction(this, txID);
+      }
+      catch (HornetQStompException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error beginning a transaction: " + txID, e);
+      }
+   }
+
+   public void commitTransaction(String txID) throws HornetQStompException
+   {
+      try
+      {
+         manager.commitTransaction(this, txID);
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error committing " + txID, e);
+      }
+   }
+
+   public void abortTransaction(String txID) throws HornetQStompException
+   {
+      try
+      {
+         manager.abortTransaction(this, txID);
+      }
+      catch (HornetQStompException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error aborting " + txID, e);
+      }
+   }
+
+   public void subscribe(String destination, String selector, String ack,
+         String id, String durableSubscriptionName, boolean noLocal) throws HornetQStompException
+   {
+      if (noLocal)
+      {
+         String noLocalFilter = CONNECTION_ID_PROP + " <> '" + getID().toString() + "'";
+         if (selector == null)
+         {
+            selector = noLocalFilter;
+         }
+         else
+         {
+            selector += " AND " + noLocalFilter;
+         }
+      }
+
+      if (ack == null)
+      {
+         ack = Stomp.Headers.Subscribe.AckModeValues.AUTO;
+      }
+
+      String subscriptionID = null;
+      if (id != null)
+      {
+         subscriptionID = id;
+      }
+      else
+      {
+         if (destination == null)
+         {
+            throw new HornetQStompException("Client must set destination or id header to a SUBSCRIBE command");
+         }
+         subscriptionID = "subscription/" + destination;
+      }
+      
+      try
+      {
+         manager.createSubscription(this, subscriptionID, durableSubscriptionName, destination, selector, ack, noLocal);
+      }
+      catch (HornetQStompException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error creating subscription " + subscriptionID, e);
+      }
+   }
+
+   public void unsubscribe(String subscriptionID) throws HornetQStompException
+   {
+      try
+      {
+         manager.unsubscribe(this, subscriptionID);
+      }
+      catch (HornetQStompException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error unsubscripting " + subscriptionID, e);
+      }
+   }
+
+   public void acknowledge(String messageID, String subscriptionID) throws HornetQStompException
+   {
+      try
+      {
+         manager.acknowledge(this, messageID, subscriptionID);
+      }
+      catch (HornetQStompException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         throw new HornetQStompException("Error acknowledging message " + messageID, e);
+      }
+   }
+
+   public String getVersion()
+   {
+      return String.valueOf(version);
+   }
+
+   public String getHornetQServerName()
+   {
+      //hard coded, review later.
+      return "HornetQ/2.2.5 HornetQ Messaging Engine";
+   }
+
+   public StompFrame createStompMessage(ServerMessage serverMessage,
+         StompSubscription subscription, int deliveryCount) throws Exception
+   {
+      return frameHandler.createMessageFrame(serverMessage, subscription, deliveryCount);
+   }
+
+   public void addStompEventListener(FrameEventListener listener)
+   {
+      this.stompListener = listener;
+   }
+
+   //send a ping stomp frame
+   public void ping(StompFrame pingFrame)
+   {
+      manager.sendReply(this, pingFrame);
+   }
+
+   public void physicalSend(StompFrame frame) throws Exception
+   {
+      HornetQBuffer buffer = frame.toHornetQBuffer();
+      
+      synchronized (sendLock)
+      {
+         getTransportConnection().write(buffer, false, false);
+      }
+
+      if (stompListener != null)
+      {
+         stompListener.replySent(frame);
+      }
+
+   }
+
+   public VersionedStompFrameHandler getFrameHandler()
+   {
+      return this.frameHandler;
+   }
 }

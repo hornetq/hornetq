@@ -43,7 +43,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-class StompSession implements SessionCallback
+public class StompSession implements SessionCallback
 {
    private static final Logger log = Logger.getLogger(StompSession.class);
 
@@ -94,11 +94,11 @@ class StompSession implements SessionCallback
       {
          StompSubscription subscription = subscriptions.get(consumerID);
 
-         StompFrame frame = createFrame(serverMessage, deliveryCount, subscription);
+         StompFrame frame = connection.createStompMessage(serverMessage, subscription, deliveryCount);
 
          int length = frame.getEncodedSize();
 
-         if (subscription.isAutoACK())
+         if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
          {
             session.acknowledge(consumerID, serverMessage.getMessageID());
             session.commit();
@@ -120,57 +120,6 @@ class StompSession implements SessionCallback
          return 0;
       }
 
-   }
-
-   /**
-    * @param serverMessage
-    * @param deliveryCount
-    * @param subscription
-    * @return
-    * @throws UnsupportedEncodingException
-    * @throws Exception
-    */
-   private StompFrame createFrame(ServerMessage serverMessage, int deliveryCount, StompSubscription subscription) throws UnsupportedEncodingException,
-                                                                                                                 Exception
-   {
-      synchronized (serverMessage)
-      {
-         Map<String, Object> headers = new HashMap<String, Object>();
-         headers.put(Stomp.Headers.Message.DESTINATION, serverMessage.getAddress().toString());
-         if (subscription.getID() != null)
-         {
-            headers.put(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
-         }
-         
-         HornetQBuffer buffer = serverMessage.getBodyBuffer();
-   
-         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                                 : serverMessage.getEndOfBodyPosition();
-         int size = bodyPos - buffer.readerIndex();
-         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-         byte[] data = new byte[size];
-         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
-         {
-            headers.put(Headers.CONTENT_LENGTH, data.length);
-            buffer.readBytes(data);
-         }
-         else
-         {
-            SimpleString text = buffer.readNullableSimpleString();
-            if (text != null)
-            {
-               data = text.toString().getBytes("UTF-8");
-            }
-            else
-            {
-               data = new byte[0];
-            }
-         }
-         serverMessage.getBodyBuffer().resetReaderIndex();
-         StompFrame frame = new StompFrame(Stomp.Responses.MESSAGE, headers, data);
-         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
-         return frame;
-      }
    }
 
    public int sendLargeMessageContinuation(long consumerID, byte[] body, boolean continues, boolean requiresResponse)
@@ -197,24 +146,44 @@ class StompSession implements SessionCallback
       connection.getTransportConnection().removeReadyListener(listener);
    }
 
-   public void acknowledge(String messageID) throws Exception
+   public void acknowledge(String messageID, String subscriptionID) throws Exception
    {
       long id = Long.parseLong(messageID);
       Pair<Long, Integer> pair = messagesToAck.remove(id);
 
-      if (pair != null)
+      if (pair == null)
       {
-         long consumerID = pair.getA();
-         int credits = pair.getB();
-   
-         if (this.consumerCredits != -1)
-         {
-            session.receiveConsumerCredits(consumerID, credits);
-         }
-         
-         session.acknowledge(consumerID, id);
-         session.commit();
+         throw new HornetQStompException("failed to ack because no message with id: " + id);
       }
+
+      long consumerID = pair.getA();
+      int credits = pair.getB();
+
+      StompSubscription sub = subscriptions.get(consumerID);
+
+      if (subscriptionID != null)
+      {
+         if (!sub.getID().equals(subscriptionID))
+         {
+            throw new HornetQStompException("subscription id " + subscriptionID + " does not match " + sub.getID());
+         }
+      }
+
+      if (this.consumerCredits != -1)
+      {
+         session.receiveConsumerCredits(consumerID, credits);
+      }
+      
+      if (sub.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.CLIENT_INDIVIDUAL))
+      {
+         session.individualAcknowledge(consumerID, id);
+      }
+      else
+      {
+         session.acknowledge(consumerID, id);
+      }
+
+      session.commit();
    }
 
    public void addSubscription(long consumerID,
@@ -250,10 +219,10 @@ class StompSession implements SessionCallback
       }
       session.createConsumer(consumerID, queue, SimpleString.toSimpleString(selector), false);
 
-      StompSubscription subscription = new StompSubscription(subscriptionID, ack.equals(Stomp.Headers.Subscribe.AckModeValues.AUTO));
+      StompSubscription subscription = new StompSubscription(subscriptionID, ack);
       subscriptions.put(consumerID, subscription);
       
-      if (subscription.isAutoACK())
+      if (subscription.getAck().equals(Stomp.Headers.Subscribe.AckModeValues.AUTO))
       {
          session.receiveConsumerCredits(consumerID, -1);
       }

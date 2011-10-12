@@ -17,6 +17,11 @@
  */
 package org.hornetq.core.protocol.stomp;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -31,51 +36,51 @@ import org.hornetq.core.logging.Logger;
  * @author Tim Fox
  * 
  */
-class StompFrame
+public class StompFrame
 {
-   private static final Logger log = Logger.getLogger(StompFrame.class);
+   protected static final Logger log = Logger.getLogger(StompFrame.class);
 
-   public static final byte[] NO_DATA = new byte[] {};
+   protected static final byte[] NO_DATA = new byte[] {};
 
-   private static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
+   protected static final byte[] END_OF_FRAME = new byte[] { 0, '\n' };
 
-   private final String command;
+   protected String command;
 
-   private final Map<String, Object> headers;
+   protected Map<String, String> headers;
 
-   private final byte[] content;
-
-   private HornetQBuffer buffer = null;
-
-   private int size;
+   protected String body;
    
-   public StompFrame(String command, Map<String, Object> headers, byte[] data)
+   protected byte[] bytesBody;
+
+   protected HornetQBuffer buffer = null;
+
+   protected int size;
+   
+   protected boolean disconnect;
+   
+   public StompFrame(String command)
    {
-      this.command = command;
-      this.headers = headers;
-      this.content = data;
+      this(command, false);
    }
 
-   public StompFrame(String command, Map<String, Object> headers)
+   public StompFrame(String command, boolean disconnect)
+   {
+      this.command = command;
+      this.headers = new LinkedHashMap<String, String>();
+      this.disconnect = disconnect;
+   }
+
+   public StompFrame(String command, Map<String, String> headers,
+         byte[] content)
    {
       this.command = command;
       this.headers = headers;
-      this.content = NO_DATA;
+      this.bytesBody = content;
    }
 
    public String getCommand()
    {
       return command;
-   }
-
-   public byte[] getContent()
-   {
-      return content;
-   }
-   
-   public Map<String, Object> getHeaders()
-   {
-      return headers;
    }
 
    public int getEncodedSize() throws Exception
@@ -90,33 +95,39 @@ class StompFrame
    @Override
    public String toString()
    {
-      return "StompFrame[command=" + command + ", headers=" + headers + ", content-length=" + content.length + "]";
+      return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " + this.bytesBody;
    }
 
    public String asString()
    {
       String out = command + '\n';
-      for (Entry<String, Object> header : headers.entrySet())
+      for (Entry<String, String> header : headers.entrySet())
       {
          out += header.getKey() + ": " + header.getValue() + '\n';
       }
       out += '\n';
-      out += new String(content);
+      out += body;
       return out;
    }
-
  
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
       if (buffer == null)
       {
-         buffer = HornetQBuffers.dynamicBuffer(content.length + 512);
+         if (bytesBody != null)
+         {
+            buffer = HornetQBuffers.dynamicBuffer(bytesBody.length + 512);
+         }
+         else
+         {
+            buffer = HornetQBuffers.dynamicBuffer(512);
+         }
 
          StringBuffer head = new StringBuffer();
          head.append(command);
          head.append(Stomp.NEWLINE);
          // Output the headers.
-         for (Map.Entry<String, Object> header : headers.entrySet())
+         for (Map.Entry<String, String> header : headers.entrySet())
          {
             head.append(header.getKey());
             head.append(Stomp.Headers.SEPARATOR);
@@ -127,11 +138,132 @@ class StompFrame
          head.append(Stomp.NEWLINE);
 
          buffer.writeBytes(head.toString().getBytes("UTF-8"));
-         buffer.writeBytes(content);
+         if (bytesBody != null)
+         {
+            buffer.writeBytes(bytesBody);
+         }
          buffer.writeBytes(END_OF_FRAME);
 
          size = buffer.writerIndex();
       }
       return buffer;
+   }
+
+   public String getHeader(String key)
+   {
+      return headers.get(key);
+   }
+
+   public void addHeader(String key, String val)
+   {
+      headers.put(key, val);
+   }
+   
+   public Map<String, String> getHeadersMap()
+   {
+      return headers;
+   }
+   
+   public static class Header
+   {
+      public String key;
+      public String val;
+      
+      public Header(String key, String val)
+      {
+         this.key = key;
+         this.val = val;
+      }
+
+      public String getEscapedKey()
+      {
+         return escape(key);
+      }
+
+      public String getEscapedValue()
+      {
+         return escape(val);
+      }
+      
+      public static String escape(String str)
+      {
+         int len = str.length();
+         
+         char[] buffer = new char[2*len];
+         int iBuffer = 0;
+         for (int i = 0; i < len; i++)
+         {
+            char c = str.charAt(i);
+            if (c == '\n')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = 'n';
+            }
+            else if (c == '\\')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = '\\';
+            }
+            else if (c == ':')
+            {
+               buffer[iBuffer++] = '\\';
+               buffer[iBuffer] = ':';
+            }
+            else
+            {
+               buffer[iBuffer] = c;
+            }
+            iBuffer++;
+         }
+         
+         char[] total = new char[iBuffer];
+         System.arraycopy(buffer, 0, total, 0, iBuffer);
+         
+         return new String(total);
+      }
+   }
+
+   public void setBody(String body) throws UnsupportedEncodingException
+   {
+      this.body = body;
+      this.bytesBody = body.getBytes("UTF-8");
+   }
+
+   public boolean hasHeader(String key)
+   {
+      return headers.containsKey(key);
+   }
+
+   public String getBody() throws UnsupportedEncodingException
+   {
+      if (body == null)
+      {
+         if (bytesBody != null)
+         {
+            body = new String(bytesBody, "UTF-8");
+         }
+      }
+      return body;
+   }
+   
+   //Since 1.1, there is a content-type header that needs to take care of
+   public byte[] getBodyAsBytes() throws UnsupportedEncodingException
+   {
+      return bytesBody;
+   }
+
+   public boolean needsDisconnect()
+   {
+      return disconnect;
+   }
+
+   public void setByteBody(byte[] content)
+   {
+      this.bytesBody = content;
+   }
+
+   public void setNeedsDisconnect(boolean b)
+   {
+      disconnect = b;
    }
 }

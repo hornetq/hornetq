@@ -40,12 +40,6 @@ public interface Stomp
 
       String UNSUBSCRIBE = "UNSUBSCRIBE";
 
-      String BEGIN_TRANSACTION = "BEGIN";
-
-      String COMMIT_TRANSACTION = "COMMIT";
-
-      String ABORT_TRANSACTION = "ABORT";
-
       String BEGIN = "BEGIN";
 
       String COMMIT = "COMMIT";
@@ -53,6 +47,11 @@ public interface Stomp
       String ABORT = "ABORT";
 
       String ACK = "ACK";
+
+      //1.1
+      String NACK = "NACK";
+      
+      String STOMP = "STOMP";
    }
 
    public interface Responses
@@ -75,6 +74,10 @@ public interface Stomp
       String TRANSACTION = "transaction";
 
       String CONTENT_LENGTH = "content-length";
+
+      String ACCEPT_VERSION = "accept-version";
+
+      String CONTENT_TYPE = "content-type";
 
       public interface Response
       {
@@ -140,6 +143,8 @@ public interface Stomp
             String AUTO = "auto";
 
             String CLIENT = "client";
+            
+            String CLIENT_INDIVIDUAL = "client-individual";
          }
       }
 
@@ -159,11 +164,21 @@ public interface Stomp
          String CLIENT_ID = "client-id";
 
          String REQUEST_ID = "request-id";
+         
+         //1.1
+         String ACCEPT_VERSION = "accept-version";
+         String HOST = "host";
+
+         Object HEART_BEAT = "heart-beat";
       }
 
       public interface Error
       {
+         //1.0 only
          String MESSAGE = "message";
+         
+         //1.1
+         String VERSION = "version";
       }
 
       public interface Connected
@@ -171,11 +186,21 @@ public interface Stomp
          String SESSION = "session";
 
          String RESPONSE_ID = "response-id";
+
+         //1.1
+         String VERSION = "version";
+
+         String SERVER = "server";
+
+         String HEART_BEAT = "heart-beat";
       }
 
       public interface Ack
       {
          String MESSAGE_ID = "message-id";
+         
+         //1.1
+         String SUBSCRIPTION = "subscription";
       }
    }
 }

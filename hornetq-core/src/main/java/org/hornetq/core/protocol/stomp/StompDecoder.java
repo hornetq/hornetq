@@ -30,115 +30,141 @@ public class StompDecoder
 {
    private static final Logger log = Logger.getLogger(StompDecoder.class);
 
-   private static final boolean TRIM_LEADING_HEADER_VALUE_WHITESPACE = true;
+   public static final boolean TRIM_LEADING_HEADER_VALUE_WHITESPACE = true;
 
-   private static final String COMMAND_ABORT = "ABORT";
+   public static final String COMMAND_ABORT = "ABORT";
 
-   private static final int COMMAND_ABORT_LENGTH = COMMAND_ABORT.length();
+   public static final int COMMAND_ABORT_LENGTH = COMMAND_ABORT.length();
 
-   private static final String COMMAND_ACK = "ACK";
+   public static final String COMMAND_ACK = "ACK";
 
-   private static final int COMMAND_ACK_LENGTH = COMMAND_ACK.length();
+   public static final int COMMAND_ACK_LENGTH = COMMAND_ACK.length();
 
-   private static final String COMMAND_BEGIN = "BEGIN";
+   public static final String COMMAND_NACK = "NACK";
 
-   private static final int COMMAND_BEGIN_LENGTH = COMMAND_BEGIN.length();
+   public static final int COMMAND_NACK_LENGTH = COMMAND_NACK.length();
 
-   private static final String COMMAND_COMMIT = "COMMIT";
+   public static final String COMMAND_BEGIN = "BEGIN";
 
-   private static final int COMMAND_COMMIT_LENGTH = COMMAND_COMMIT.length();
+   public static final int COMMAND_BEGIN_LENGTH = COMMAND_BEGIN.length();
 
-   private static final String COMMAND_CONNECT = "CONNECT";
+   public static final String COMMAND_COMMIT = "COMMIT";
 
-   private static final int COMMAND_CONNECT_LENGTH = COMMAND_CONNECT.length();
+   public static final int COMMAND_COMMIT_LENGTH = COMMAND_COMMIT.length();
 
-   private static final String COMMAND_DISCONNECT = "DISCONNECT";
+   public static final String COMMAND_CONNECT = "CONNECT";
 
-   private static final int COMMAND_DISCONNECT_LENGTH = COMMAND_DISCONNECT.length();
+   public static final int COMMAND_CONNECT_LENGTH = COMMAND_CONNECT.length();
 
-   private static final String COMMAND_SEND = "SEND";
+   public static final String COMMAND_DISCONNECT = "DISCONNECT";
 
-   private static final int COMMAND_SEND_LENGTH = COMMAND_SEND.length();
+   public static final int COMMAND_DISCONNECT_LENGTH = COMMAND_DISCONNECT.length();
 
-   private static final String COMMAND_SUBSCRIBE = "SUBSCRIBE";
+   public static final String COMMAND_SEND = "SEND";
 
-   private static final int COMMAND_SUBSCRIBE_LENGTH = COMMAND_SUBSCRIBE.length();
+   public static final int COMMAND_SEND_LENGTH = COMMAND_SEND.length();
 
-   private static final String COMMAND_UNSUBSCRIBE = "UNSUBSCRIBE";
+   public static final String COMMAND_STOMP = "STOMP";
 
-   private static final int COMMAND_UNSUBSCRIBE_LENGTH = COMMAND_UNSUBSCRIBE.length();
+   public static final int COMMAND_STOMP_LENGTH = COMMAND_STOMP.length();
+
+   public static final String COMMAND_SUBSCRIBE = "SUBSCRIBE";
+
+   public static final int COMMAND_SUBSCRIBE_LENGTH = COMMAND_SUBSCRIBE.length();
+
+   public static final String COMMAND_UNSUBSCRIBE = "UNSUBSCRIBE";
+
+   public static final int COMMAND_UNSUBSCRIBE_LENGTH = COMMAND_UNSUBSCRIBE.length();
 
    /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-   private static final String COMMAND_CONNECTED = "CONNECTED";
+   public static final String COMMAND_CONNECTED = "CONNECTED";
 
-   private static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
+   public static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
    
-   private static final String COMMAND_MESSAGE = "MESSAGE";
+   public static final String COMMAND_MESSAGE = "MESSAGE";
 
-   private static final int COMMAND_MESSAGE_LENGTH = COMMAND_MESSAGE.length();
+   public static final int COMMAND_MESSAGE_LENGTH = COMMAND_MESSAGE.length();
 
-   private static final String COMMAND_ERROR = "ERROR";
+   public static final String COMMAND_ERROR = "ERROR";
 
-   private static final int COMMAND_ERROR_LENGTH = COMMAND_ERROR.length();
+   public static final int COMMAND_ERROR_LENGTH = COMMAND_ERROR.length();
 
-   private static final String COMMAND_RECEIPT = "RECEIPT";
+   public static final String COMMAND_RECEIPT = "RECEIPT";
 
-   private static final int COMMAND_RECEIPT_LENGTH = COMMAND_RECEIPT.length();
+   public static final int COMMAND_RECEIPT_LENGTH = COMMAND_RECEIPT.length();
    /**** end  ****/
 
-   private static final byte A = (byte)'A';
+   public static final byte A = (byte)'A';
 
-   private static final byte B = (byte)'B';
+   public static final byte B = (byte)'B';
 
-   private static final byte C = (byte)'C';
+   public static final byte C = (byte)'C';
 
-   private static final byte D = (byte)'D';
+   public static final byte D = (byte)'D';
 
-   private static final byte E = (byte)'E';
+   public static final byte E = (byte)'E';
 
-   private static final byte M = (byte)'M';
+   public static final byte T = (byte)'T';
 
-   private static final byte S = (byte)'S';
+   public static final byte M = (byte)'M';
+
+   public static final byte S = (byte)'S';
    
-   private static final byte R = (byte)'R';
+   public static final byte R = (byte)'R';
 
-   private static final byte U = (byte)'U';
+   public static final byte U = (byte)'U';
 
-   private static final byte HEADER_SEPARATOR = (byte)':';
+   public static final byte N = (byte)'N';
+   
+   public static final byte LN = (byte)'n';
 
-   private static final byte NEW_LINE = (byte)'\n';
+   public static final byte HEADER_SEPARATOR = (byte)':';
 
-   private static final byte SPACE = (byte)' ';
+   public static final byte NEW_LINE = (byte)'\n';
 
-   private static final byte TAB = (byte)'\t';
+   public static final byte SPACE = (byte)' ';
 
-   private static String CONTENT_LENGTH_HEADER_NAME = "content-length";
+   public static final byte TAB = (byte)'\t';
 
-   private byte[] workingBuffer = new byte[1024];
+   public static final String CONTENT_TYPE_HEADER_NAME = "content-type";
 
-   private int pos;
+   public static String CONTENT_LENGTH_HEADER_NAME = "content-length";
 
-   private int data;
+   public byte[] workingBuffer = new byte[1024];
 
-   private String command;
+   public int pos;
 
-   private Map<String, Object> headers;
+   public int data;
 
-   private int headerBytesCopyStart;
+   public String command;
 
-   private boolean readingHeaders;
+   public Map<String, String> headers;
 
-   private boolean headerValueWhitespace;
+   public int headerBytesCopyStart;
 
-   private boolean inHeaderName;
+   public boolean readingHeaders;
 
-   private String headerName;
+   public boolean headerValueWhitespace;
 
-   private boolean whiteSpaceOnly;
+   public boolean inHeaderName;
 
-   private int contentLength;
+   public String headerName;
 
-   private int bodyStart;
+   public boolean whiteSpaceOnly;
+
+   public int contentLength;
+   
+   public String contentType;
+
+   public int bodyStart;
+   
+   public StompConnection connection;
+
+   public StompDecoder(StompConnection stompConnection)
+   {
+      this.connection = stompConnection;
+      init();
+   }
 
    public StompDecoder()
    {
@@ -156,13 +182,25 @@ public class StompDecoder
     * followed by an empty line
     * followed by an optional message body
     * terminated with a null character
+    * 
+    * Note: to support both 1.0 and 1.1, we just assemble a
+    * standard StompFrame and let the versioned handler to do more
+    * spec specific job (like trimming, escaping etc).
     */
    public synchronized StompFrame decode(final HornetQBuffer buffer) throws Exception
    {
-      //log.info("got buff " + buffer.readableBytes());
+      if (connection != null && connection.isValid())
+      {
+         VersionedStompFrameHandler handler = connection.getFrameHandler();
+         return handler.decode(this, buffer);
+      }
       
-      long start = System.nanoTime();
-      
+      return defaultDecode(buffer);
+   }
+   
+   public StompFrame defaultDecode(final HornetQBuffer buffer) throws HornetQStompException
+   {
+
       int readable = buffer.readableBytes();
 
       if (data + readable >= workingBuffer.length)
@@ -338,6 +376,16 @@ public class StompDecoder
                   // SEND
                   command = COMMAND_SEND;
                }
+               else if (workingBuffer[offset + 1] == T)
+               {
+                  if (!tryIncrement(offset + COMMAND_STOMP_LENGTH + 1))
+                  {
+                     return null;
+                  }
+
+                  // SEND
+                  command = COMMAND_STOMP;                  
+               }
                else
                {
                   if (!tryIncrement(offset + COMMAND_SUBSCRIBE_LENGTH + 1))
@@ -375,8 +423,6 @@ public class StompDecoder
             throwInvalid();
          }
       }
-      
-      long commandTime = System.nanoTime() - start;
 
       if (readingHeaders)
       {
@@ -482,8 +528,6 @@ public class StompDecoder
             }
          }
       }
-      
-      long headersTime = System.nanoTime() - start - commandTime;
 
       // Now the body
 
@@ -526,8 +570,6 @@ public class StompDecoder
          }
       }
       
-      
-
       if (content != null)
       {
          if (data > pos)
@@ -546,33 +588,27 @@ public class StompDecoder
          StompFrame ret = new StompFrame(command, headers, content);
 
          init();
-         
-        // log.info("decoded");
-         
-         long bodyTime = System.nanoTime() - start - headersTime - commandTime;
-         
-        // log.info("command: "+ commandTime + " headers: " + headersTime + " body: " + bodyTime);
 
          return ret;
       }
       else
       {
          return null;
-      }
+      }      
    }
 
-   private void throwInvalid() throws StompException
+   public void throwInvalid() throws HornetQStompException
    {
-      throw new StompException("Invalid STOMP frame: " + this.dumpByteArray(workingBuffer));
+      throw new HornetQStompException("Invalid STOMP frame: " + this.dumpByteArray(workingBuffer));
    }
 
-   private void init()
+   public void init()
    {
       pos = 0;
 
       command = null;
-
-      headers = new HashMap<String, Object>();
+      
+      headers = new HashMap<String, String>();
 
       this.headerBytesCopyStart = -1;
 
@@ -588,10 +624,12 @@ public class StompDecoder
 
       contentLength = -1;
 
+      contentType = null;
+      
       bodyStart = -1;
    }
 
-   private void resizeWorking(final int newSize)
+   public void resizeWorking(final int newSize)
    {
       byte[] oldBuffer = workingBuffer;
 
@@ -600,7 +638,7 @@ public class StompDecoder
       System.arraycopy(oldBuffer, 0, workingBuffer, 0, oldBuffer.length);
    }
 
-   private boolean tryIncrement(final int length)
+   public boolean tryIncrement(final int length)
    {
       if (pos + length >= data)
       {

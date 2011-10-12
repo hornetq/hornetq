@@ -17,41 +17,15 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.IOException;
-
 /**
- * @author <a href="http://hiramchirino.com">chirino</a>
+ * 
+ * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
-class StompException extends IOException
+public interface FrameEventListener
 {
-   private static final long serialVersionUID = -2869735532997332242L;
 
-   private final boolean fatal;
+   void replySent(StompFrame reply);
 
-   public StompException()
-   {
-      this(null);
-   }
+   void requestAccepted(StompFrame request);
 
-   public StompException(String s)
-   {
-      this(s, false);
-   }
-
-   public StompException(String s, boolean fatal)
-   {
-      this(s, fatal, null);
-   }
-
-   public StompException(String s, boolean fatal, Throwable cause)
-   {
-      super(s);
-      this.fatal = fatal;
-      initCause(cause);
-   }
-
-   public boolean isFatal()
-   {
-      return fatal;
-   }
 }

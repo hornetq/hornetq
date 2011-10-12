@@ -93,4 +93,19 @@ public class HornetQServers
       return server;
    }
 
+   public static HornetQServer newHornetQServer(Configuration config,
+         String defUser, String defPass)
+   {
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
+      
+      securityManager.addUser(defUser, defPass);
+
+      HornetQServer server = HornetQServers.newHornetQServer(config,
+                                                      ManagementFactory.getPlatformMBeanServer(),
+                                                      securityManager,
+                                                      config.isPersistenceEnabled());
+
+      return server;
+   }
+
 }

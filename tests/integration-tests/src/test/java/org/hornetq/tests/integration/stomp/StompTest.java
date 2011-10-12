@@ -192,7 +192,6 @@ public class StompTest extends StompTestBase
 
    public void testSendMessageWithReceipt() throws Exception
    {
-
       MessageConsumer consumer = session.createConsumer(queue);
 
       String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
@@ -370,12 +369,13 @@ public class StompTest extends StompTestBase
       frame = receiveFrame(100000);
       Assert.assertTrue(frame.startsWith("CONNECTED"));
 
-      frame = "SUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n" + "ack:auto\n\n" + Stomp.NULL;
+      frame = "SUBSCRIBE\n" + "destination:" + getQueuePrefix() + getQueueName() + "\n" + "ack:auto\n\nfff" + Stomp.NULL;
       sendFrame(frame);
 
       sendMessage(getName());
 
       frame = receiveFrame(10000);
+      System.out.println("-------- frame received: " + frame);
       Assert.assertTrue(frame.startsWith("MESSAGE"));
       Assert.assertTrue(frame.indexOf("destination:") > 0);
       Assert.assertTrue(frame.indexOf(getName()) > 0);
@@ -406,6 +406,9 @@ public class StompTest extends StompTestBase
       sendMessage(payload, queue);
 
       frame = receiveFrame(10000);
+      
+      System.out.println("Message: " + frame);
+      
       Assert.assertTrue(frame.startsWith("MESSAGE"));
 
       Pattern cl = Pattern.compile("Content-length:\\s*(\\d+)", Pattern.CASE_INSENSITIVE);
