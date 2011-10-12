@@ -18,7 +18,7 @@ import java.util.List;
  */
 @XmlRootElement(name = "push-registration")
 @XmlAccessorType(XmlAccessType.PROPERTY)
-@XmlType(propOrder = {"destination", "durable", "selector", "target", "authenticationMechanism", "headers"})
+@XmlType(propOrder = {"enabled", "destination", "durable", "selector", "target", "maxRetries", "retryWaitMillis", "disableOnFailure", "authenticationMechanism", "headers"})
 public class PushRegistration implements Serializable
 {
    private String id;
@@ -29,6 +29,54 @@ public class PushRegistration implements Serializable
    private String destination;
    private Object loadedFrom;
    private String selector;
+   private long retryWaitMillis = 1000;
+   private boolean disableOnFailure;
+   private int maxRetries = 10;
+   private boolean enabled = true;
+
+   @XmlElement
+   public int getMaxRetries()
+   {
+      return maxRetries;
+   }
+
+   public void setMaxRetries(int maxRetries)
+   {
+      this.maxRetries = maxRetries;
+   }
+
+   @XmlElement
+   public long getRetryWaitMillis()
+   {
+      return retryWaitMillis;
+   }
+
+   public void setRetryWaitMillis(long retryWaitMillis)
+   {
+      this.retryWaitMillis = retryWaitMillis;
+   }
+
+   @XmlElement
+   public boolean isDisableOnFailure()
+   {
+      return disableOnFailure;
+   }
+
+   public void setDisableOnFailure(boolean disableOnFailure)
+   {
+      this.disableOnFailure = disableOnFailure;
+   }
+
+   @XmlElement
+   public boolean isEnabled()
+   {
+      return enabled;
+   }
+
+   public void setEnabled(boolean enabled)
+   {
+      this.enabled = enabled;
+   }
 
    @XmlTransient
    public Object getLoadedFrom()
@@ -121,11 +169,17 @@ public class PushRegistration implements Serializable
    public String toString()
    {
       return "PushRegistration{" +
-              "durable=" + durable +
+              "id='" + id + '\'' +
+              ", durable=" + durable +
               ", target=" + target +
               ", authenticationMechanism=" + authenticationMechanism +
               ", headers=" + headers +
               ", destination='" + destination + '\'' +
+              ", selector='" + selector + '\'' +
+              ", retryWaitMillis=" + retryWaitMillis +
+              ", disableOnFailure=" + disableOnFailure +
+              ", maxRetries=" + maxRetries +
+              ", enabled=" + enabled +
               '}';
    }
 }

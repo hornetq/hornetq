@@ -1,12 +1,15 @@
 package org.hornetq.rest.test;
 
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.rest.MessageServiceManager;
+import org.hornetq.rest.queue.push.xml.PushRegistration;
 import org.hornetq.rest.queue.push.xml.XmlLink;
 import org.hornetq.rest.topic.PushTopicRegistration;
 import org.hornetq.rest.topic.TopicDeployment;
@@ -80,6 +83,56 @@ public class PersistentPushTopicConsumerTest
       EmbeddedContainer.stop();
       deployment = null;
    }
+
+   @Test
+   public void testFailure() throws Exception
+   {
+      startup();
+      deployTopic();
+
+      ClientRequest request = new ClientRequest(generateURL("/topics/testTopic"));
+
+      ClientResponse<?> response = request.head();
+      Assert.assertEquals(200, response.getStatus());
+      Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
+      System.out.println("create: " + sender);
+      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-subscriptions");
+      System.out.println("push subscriptions: " + pushSubscriptions);
+
+      PushTopicRegistration reg = new PushTopicRegistration();
+      reg.setDurable(true);
+      XmlLink target = new XmlLink();
+      target.setHref("http://localhost:3333/error");
+      target.setRelationship("uri");
+      reg.setTarget(target);
+      reg.setDisableOnFailure(true);
+      reg.setMaxRetries(3);
+      reg.setRetryWaitMillis(10);
+      response = pushSubscriptions.request().body("application/xml", reg).post();
+      Assert.assertEquals(201, response.getStatus());
+      Link pushSubscription = response.getLocation();
+
+      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+      Assert.assertEquals(201, res.getStatus());
+
+      Thread.sleep(1000);
+
+      response = pushSubscription.request().get();
+      PushTopicRegistration reg2 = response.getEntity(PushTopicRegistration.class);
+      Assert.assertEquals(reg.isDurable(), reg2.isDurable());
+      Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
+      Assert.assertFalse(reg2.isEnabled());
+
+      String destination = reg2.getDestination();
+      ClientSession session = manager.getQueueManager().getSessionFactory().createSession(false, false, false);
+      ClientSession.QueueQuery query = session.queueQuery(new SimpleString(destination));
+      Assert.assertFalse(query.isExists());
+
+
+      manager.getQueueManager().getPushStore().removeAll();
+      shutdown();
+   }
+
 
    @Test
    public void testSuccessFirst() throws Exception

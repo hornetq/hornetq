@@ -36,6 +36,22 @@ public class PostMessage
    protected DestinationServiceManager serviceManager;
    private AtomicLong counter = new AtomicLong(1);
    private final String startupTime = Long.toString(System.currentTimeMillis());
+   protected long producerTimeToLive;
+
+   protected static class Pooled
+   {
+      public ClientSession session;
+      public ClientProducer producer;
+
+      private Pooled(ClientSession session, ClientProducer producer)
+      {
+         this.session = session;
+         this.producer = producer;
+      }
+   }
+
+   protected ArrayBlockingQueue<Pooled> pool;
+   protected int poolSize = 10;
 
    protected String generateDupId()
    {
@@ -44,6 +60,7 @@ public class PostMessage
 
    public void publish(HttpHeaders headers, byte[] body, String dup,
                        boolean durable,
+                       Long ttl,
                        Long expiration,
                        Integer priority) throws Exception
    {
@@ -51,7 +68,7 @@ public class PostMessage
       try
       {
          ClientProducer producer = pooled.producer;
-         ClientMessage message = createHornetQMessage(headers, body, durable, expiration, priority, pooled.session);
+         ClientMessage message = createHornetQMessage(headers, body, durable, ttl, expiration, priority, pooled.session);
          message.putStringProperty(ClientMessage.HDR_DUPLICATE_DETECTION_ID.toString(), dup);
          producer.send(message);
          pool.add(pooled);
@@ -73,16 +90,18 @@ public class PostMessage
    @PUT
    @Path("{id}")
    public Response putWithId(@PathParam("id") String dupId, @QueryParam("durable") Boolean durable,
+                             @QueryParam("ttl") Long ttl,
                              @QueryParam("expiration") Long expiration,
                              @QueryParam("priority") Integer priority,
                              @Context HttpHeaders headers, @Context UriInfo uriInfo, byte[] body)
    {
-      return postWithId(dupId, durable, expiration, priority, headers, uriInfo, body);
+      return postWithId(dupId, durable, ttl, expiration, priority, headers, uriInfo, body);
    }
 
    @POST
    @Path("{id}")
    public Response postWithId(@PathParam("id") String dupId, @QueryParam("durable") Boolean durable,
+                              @QueryParam("ttl") Long ttl,
                               @QueryParam("expiration") Long expiration,
                               @QueryParam("priority") Integer priority,
                               @Context HttpHeaders headers, @Context UriInfo uriInfo, byte[] body)
@@ -100,7 +119,7 @@ public class PostMessage
       }
       try
       {
-         publish(headers, body, dupId, isDurable, expiration, priority);
+         publish(headers, body, dupId, isDurable, ttl, expiration, priority);
       }
       catch (Exception e)
       {
@@ -115,21 +134,15 @@ public class PostMessage
       return builder.build();
    }
 
-
-   protected static class Pooled
+   public long getProducerTimeToLive()
    {
-      public ClientSession session;
-      public ClientProducer producer;
-
-      private Pooled(ClientSession session, ClientProducer producer)
-      {
-         this.session = session;
-         this.producer = producer;
-      }
+      return producerTimeToLive;
    }
 
-   protected ArrayBlockingQueue<Pooled> pool;
-   protected int poolSize = 10;
+   public void setProducerTimeToLive(long producerTimeToLive)
+   {
+      this.producerTimeToLive = producerTimeToLive;
+   }
 
    public DestinationServiceManager getServiceManager()
    {
@@ -228,6 +241,7 @@ public class PostMessage
 
    protected ClientMessage createHornetQMessage(HttpHeaders headers, byte[] body,
                                                 boolean durable,
+                                                Long ttl,
                                                 Long expiration,
                                                 Integer priority,
                                                 ClientSession session) throws Exception
@@ -236,6 +250,14 @@ public class PostMessage
       if (expiration != null)
       {
          message.setExpiration(expiration.longValue());
+      }
+      else if (ttl != null)
+      {
+         message.setExpiration(System.currentTimeMillis() + ttl.longValue());
+      }
+      else if (producerTimeToLive > 0)
+      {
+         message.setExpiration(System.currentTimeMillis() + producerTimeToLive);
       }
       if (priority != null)
       {

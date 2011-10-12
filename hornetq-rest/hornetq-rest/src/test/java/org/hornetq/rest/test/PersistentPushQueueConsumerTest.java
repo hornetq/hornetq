@@ -74,7 +74,7 @@ public class PersistentPushQueueConsumerTest
       Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
       System.out.println("create: " + sender);
       Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-consumers");
-      System.out.println("push consumers: " + pushSubscriptions);
+      System.out.println("push subscriptions: " + pushSubscriptions);
 
       request = new ClientRequest(generateURL("/queues/forwardQueue"));
       response = request.head();
@@ -87,6 +87,7 @@ public class PersistentPushQueueConsumerTest
 
       PushRegistration reg = new PushRegistration();
       reg.setDurable(true);
+      reg.setDisableOnFailure(true);
       XmlLink target = new XmlLink();
       target.setHref(generateURL("/queues/forwardQueue"));
       target.setRelationship("destination");
@@ -107,6 +108,49 @@ public class PersistentPushQueueConsumerTest
       Assert.assertEquals("1", res.getEntity(String.class));
       Link session = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), res, "consumer");
       Assert.assertEquals(204, session.request().delete().getStatus());
+
+      manager.getQueueManager().getPushStore().removeAll();
+      shutdown();
+   }
+
+   @Test
+   public void testFailure() throws Exception
+   {
+      startup();
+      deployQueues();
+
+      ClientRequest request = new ClientRequest(generateURL("/queues/testQueue"));
+
+      ClientResponse<?> response = request.head();
+      Assert.assertEquals(200, response.getStatus());
+      Link sender = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "create");
+      System.out.println("create: " + sender);
+      Link pushSubscriptions = MessageTestBase.getLinkByTitle(manager.getQueueManager().getLinkStrategy(), response, "push-consumers");
+      System.out.println("push subscriptions: " + pushSubscriptions);
+
+      PushRegistration reg = new PushRegistration();
+      reg.setDurable(true);
+      XmlLink target = new XmlLink();
+      target.setHref("http://localhost:3333/error");
+      target.setRelationship("uri");
+      reg.setTarget(target);
+      reg.setDisableOnFailure(true);
+      reg.setMaxRetries(3);
+      reg.setRetryWaitMillis(10);
+      response = pushSubscriptions.request().body("application/xml", reg).post();
+      Assert.assertEquals(201, response.getStatus());
+      Link pushSubscription = response.getLocation();
+
+      ClientResponse res = sender.request().body("text/plain", Integer.toString(1)).post();
+      Assert.assertEquals(201, res.getStatus());
+
+      Thread.sleep(1000);
+
+      response = pushSubscription.request().get();
+      PushRegistration reg2 = response.getEntity(PushRegistration.class);
+      Assert.assertEquals(reg.isDurable(), reg2.isDurable());
+      Assert.assertEquals(reg.getTarget().getHref(), reg2.getTarget().getHref());
+      Assert.assertFalse(reg2.isEnabled());
 
       manager.getQueueManager().getPushStore().removeAll();
       shutdown();
