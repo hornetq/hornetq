@@ -2,15 +2,22 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <parent>
+        <groupId>org.hornetq</groupId>
+        <artifactId>hornetq-pom</artifactId>
+        <version>2.2.3-SNAPSHOT</version>
+    </parent>
+
     <name>HornetQ REST Interface Parent POM</name>
     <groupId>org.hornetq.rest</groupId>
     <artifactId>hornetq-rest-all</artifactId>
-    <version>2.2.0.CR1</version>
     <packaging>pom</packaging>
 
+
     <properties>
-        <resteasy.version>2.0.1.GA</resteasy.version>
-        <hornetq.version>2.2.8.EAP.CR2</hornetq.version>
+        <resteasy.version>2.1.0.GA</resteasy.version>
+        <!--- test -->
+        <hornetq.version>${project.version}</hornetq.version>
     </properties>
 
     <licenses>
@@ -74,7 +81,7 @@
             <dependency>
                 <groupId>org.jboss.netty</groupId>
                 <artifactId>netty</artifactId>
-                <version>3.2.0.Final</version>
+                <version>3.2.3.Final</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
@@ -105,53 +112,14 @@
             <id>maven2-repository.dev.java.net</id>
             <url>http://download.java.net/maven/2</url>
         </pluginRepository>
-        <pluginRepository>
-            <id>maven-repository.dev.java.net</id>
-            <name>Java.net Maven 1 Repository (legacy)</name>
-            <url>http://download.java.net/maven/1</url>
-            <layout>legacy</layout>
-        </pluginRepository>
     </pluginRepositories>
     <build>
         <pluginManagement>
             <plugins>
-                <!--
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.4</version>
-                    <configuration>
-                        <minmemory>128m</minmemory>
-                        <maxmemory>512m</maxmemory>
-                        <quiet>false</quiet>
-                        <aggregate>true</aggregate>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                -->
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>2.0-beta-5</version>
-                </plugin>
                 <plugin>
                     <inherited>true</inherited>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
-                    <version>2.0.3</version>
                     <executions>
                         <execution>
                             <id>attach-sources</id>
@@ -161,56 +129,10 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.4</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <configuration>
-                        <createChecksum>true</createChecksum>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-pmd-plugin</artifactId>
-                    <configuration>
-                        <linkXref>true</linkXref>
-                        <sourceEncoding>utf-8</sourceEncoding>
-                        <minimumTokens>100</minimumTokens>
-                        <targetJdk>1.5</targetJdk>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>cobertura-maven-plugin</artifactId>
-                    <configuration/>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>clean</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
@@ -233,80 +155,4 @@
 
     </build>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <configuration>
-                    <configLocation>
-                        config/jboss_checks.xml
-                    </configLocation>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>findbugs-maven-plugin</artifactId>
-                <version>1.1.1</version>
-                <configuration>
-                    <xmlOutput>true</xmlOutput>
-                    <effort>Max</effort>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <minmemory>128m</minmemory>
-                    <maxmemory>1024m</maxmemory>
-                    <quiet>false</quiet>
-                    <aggregate>true</aggregate>
-                    <excludePackageNames>com.restfully.*:org.jboss.resteasy.examples.*:org.jboss.resteasy.tests.*
-                    </excludePackageNames>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>
-                    maven-project-info-reports-plugin
-                </artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-            </plugin>
-            <!--
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-changes-plugin</artifactId>
-               <reportSets>
-                  <reportSet>
-                     <reports>
-                        <report>jira-report</report>
-                     </reports>
-                  </reportSet>
-               </reportSets>
-            </plugin>
-            <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-changelog-plugin</artifactId>
-               <configuration>
-                  <type>range</type>
-                  <range>30</range>
-                  <headingDateFormat>dd MMM, yyyy</headingDateFormat>
-               </configuration>
-            </plugin>
-            -->
-        </plugins>
-    </reporting>
 </project>
