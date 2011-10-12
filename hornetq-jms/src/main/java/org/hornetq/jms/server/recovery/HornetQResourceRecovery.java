@@ -21,8 +21,7 @@
 */
 package org.hornetq.jms.server.recovery;
 
-// TODO: AndyTaylor will need to fix this
-//import org.jboss.tm.XAResourceRecovery;
+import org.jboss.tm.XAResourceRecovery;
 
 import javax.transaction.xa.XAResource;
 
@@ -30,8 +29,7 @@ import javax.transaction.xa.XAResource;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  *         9/20/11
  */
-//TODO: AndyTaylor will need to fix this
-public class HornetQResourceRecovery //implements XAResourceRecovery
+public class HornetQResourceRecovery implements XAResourceRecovery
 {
    private final XARecoveryConfig config;
 
