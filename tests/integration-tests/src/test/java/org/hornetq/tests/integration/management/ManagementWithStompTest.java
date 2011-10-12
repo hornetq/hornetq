@@ -174,7 +174,8 @@ public class ManagementWithStompTest extends ManagementTestBase
       TransportConfiguration stompTransport = new TransportConfiguration(NettyAcceptorFactory.class.getName(), params);
       conf.getAcceptorConfigurations().add(stompTransport);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      server = HornetQServers.newHornetQServer(conf, mbeanServer, false, "brianm", "wombats");
+
       server.start();
 
       locator = createInVMNonHALocator();
