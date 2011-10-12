@@ -92,6 +92,7 @@
             <artifactId>maven-jar-plugin</artifactId>
             <executions>
                <execution>
+                  <phase>test</phase>
                   <goals>
                      <goal>test-jar</goal>
                   </goals>

@@ -64,6 +64,16 @@
          <version>${project.version}</version>
       </dependency>
       <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-commons</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.hornetq</groupId>
+         <artifactId>hornetq-journal</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <dependency>
          <groupId>org.jboss.javaee</groupId>
          <artifactId>jboss-jca-api</artifactId>
       </dependency>
@@ -92,6 +102,7 @@
             <artifactId>maven-jar-plugin</artifactId>
             <executions>
                <execution>
+                  <phase>test</phase>
                   <goals>
                      <goal>test-jar</goal>
                   </goals>

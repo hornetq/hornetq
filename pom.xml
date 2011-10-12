@@ -387,12 +387,12 @@
             <module>tests</module>
          </modules>
          <properties>
-            <skipUnitTests>false</skipUnitTests>
-            <skipJmsTests>false</skipJmsTests>
-            <skipJoramTests>false</skipJoramTests>
+            <skipUnitTests>true</skipUnitTests>
+            <skipJmsTests>true</skipJmsTests>
+            <skipJoramTests>true</skipJoramTests>
             <skipIntegrationTests>false</skipIntegrationTests>
-            <skipTimingTests>false</skipTimingTests>
-            <skipConcurrentTests>false</skipConcurrentTests>
+            <skipTimingTests>true</skipTimingTests>
+            <skipConcurrentTests>true</skipConcurrentTests>
             <skipStressTests>true</skipStressTests>
             <skipSoakTests>true</skipSoakTests>
             <skipPerformanceTests>true</skipPerformanceTests>
