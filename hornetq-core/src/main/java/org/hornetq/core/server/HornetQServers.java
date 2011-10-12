@@ -108,4 +108,19 @@ public class HornetQServers
       return server;
    }
 
+   public static HornetQServer newHornetQServer(final Configuration config,
+                                                final MBeanServer mbeanServer,
+                                                final boolean enablePersistence,
+                                                String user,
+                                                String password)
+   {
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
+      
+      securityManager.addUser(user, password);
+
+      HornetQServer server = HornetQServers.newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
+
+      return server;
+   }
+
 }
