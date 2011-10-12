@@ -120,6 +120,8 @@
                   <!-- exclude some replication tests for now -->
                   <exclude>**/cluster/failover/Remote*.java</exclude>
                   <exclude>**/failover/remote/**.java</exclude>
+                  <exclude>**/Replicated*.java</exclude>
+                  <excluse>**/replication/**.java</excluse>
                </excludes>
                <argLine>-Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin</argLine>
             </configuration>
