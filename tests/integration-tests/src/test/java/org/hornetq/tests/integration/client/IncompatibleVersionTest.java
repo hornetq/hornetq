@@ -181,7 +181,7 @@ public class IncompatibleVersionTest extends ServiceTestBase
       prop.load(in);
       prop.setProperty("hornetq.version.compatibleVersionList", verList);
       prop.setProperty("hornetq.version.incrementingVersion", Integer.toString(ver));
-      prop.store(new FileOutputStream("tests/tmpfiles/" + propFileName), null);
+      prop.store(new FileOutputStream("target/test-classes/" + propFileName), null);
       
       Process server = null;
       boolean result = false;
