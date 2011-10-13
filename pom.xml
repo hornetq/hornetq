@@ -387,9 +387,9 @@
             <module>tests</module>
          </modules>
          <properties>
-            <skipUnitTests>true</skipUnitTests>
-            <skipJmsTests>true</skipJmsTests>
-            <skipJoramTests>true</skipJoramTests>
+            <skipUnitTests>false</skipUnitTests>
+            <skipJmsTests>false</skipJmsTests>
+            <skipJoramTests>false</skipJoramTests>
             <skipIntegrationTests>false</skipIntegrationTests>
             <skipTimingTests>true</skipTimingTests>
             <skipConcurrentTests>true</skipConcurrentTests>
@@ -475,6 +475,7 @@
                   <testFailureIgnore>true</testFailureIgnore>
                   <runOrder>alphabetical</runOrder>
                   <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                  <argLine>-Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
                </configuration>
             </plugin>
             <plugin>

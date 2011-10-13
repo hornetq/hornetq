@@ -124,7 +124,7 @@
                   <excluse>**/replication/**.java</excluse>
                   <exclude>**/*Replicated**.java</exclude>
                </excludes>
-               <argLine>-Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin</argLine>
+               <argLine>-Djava.library.path=${user.dir}/distribution/hornetq/src/main/resources/bin -Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>

@@ -114,6 +114,7 @@
                   <exclude>org/hornetq/jms/tests/stress/*.java</exclude>
                   <exclude>org/hornetq/jms/tests/manual/**</exclude>
                </excludes>
+               <argLine>-Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>

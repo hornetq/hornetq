@@ -129,6 +129,7 @@
                <includes>
                   <include>**/*Test.java</include>
                </includes>
+               <argLine>-Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
             </configuration>
          </plugin>
       </plugins>
