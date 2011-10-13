@@ -27,6 +27,10 @@
             <configuration>
                <skipTests>${skipUnitTests}</skipTests>
                <argLine>-Djava.util.logging.config.file=${user.dir}/distribution/hornetq/src/main/resources/stand-alone/non-clustered/logging.properties</argLine>
+               <excludes>
+                  <!--todo this test is dependant on the jar so needs to be run post package as an integration tests-->
+                  <exclude>**/ManifestTest.java</exclude>
+               </excludes>
             </configuration>
          </plugin>
       </plugins>
