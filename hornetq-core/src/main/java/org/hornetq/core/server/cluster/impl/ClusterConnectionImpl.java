@@ -241,9 +241,12 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
 
-      backupServerLocator = clusterConnector.createServerLocator(false);
-      backupServerLocator.setReconnectAttempts(-1);
-      backupServerLocator.setInitialConnectAttempts(-1);
+      if (backupServerLocator != null)
+      {
+         backupServerLocator = clusterConnector.createServerLocator(false);
+         backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
+      }
 
       if (tcConfigs != null && tcConfigs.length > 0)
       {
@@ -344,9 +347,12 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new DiscoveryClusterConnector(dg);
 
-      backupServerLocator = clusterConnector.createServerLocator(false);
-      backupServerLocator.setReconnectAttempts(-1);
-      backupServerLocator.setInitialConnectAttempts(-1);
+      if (backupServerLocator != null)
+      {
+         backupServerLocator = clusterConnector.createServerLocator(false);
+         backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
+      }
 
       this.manager = manager;
    }

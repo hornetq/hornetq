@@ -1522,9 +1522,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       // cause reconnect loop
       public void run()
       {
-         CLOSE_RUNNABLES.add(this);
          try
          {
+            CLOSE_RUNNABLES.add(this);
             conn.fail(new HornetQException(HornetQException.DISCONNECTED,
                   "The connection was disconnected because of server shutdown"));
          } finally
@@ -1536,6 +1536,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       public ClientSessionFactoryImpl stop()
       {
+         CLOSE_RUNNABLES.remove(this);
          causeExit();
          return ClientSessionFactoryImpl.this;
       }
