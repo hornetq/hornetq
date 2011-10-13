@@ -63,7 +63,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       FileDeploymentManagerTest.log.debug("Filename is " + filename);
 
-      File file = new File("tests/tmpfiles/" + filename);
+      File file = new File("target/test-classes/");
+
+      file.mkdirs();
+
+      file = new File("target/test-classes/" + filename);
 
       FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
 
@@ -92,6 +96,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       finally
       {
          file.delete();
+         fdm.stop();
       }
    }
 
@@ -101,7 +106,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       FileDeploymentManagerTest.log.debug("Filename is " + filename);
 
-      File file = new File("tests/tmpfiles/" + filename);
+      File file = new File("target/test-classes/");
+
+      file.mkdirs();
+
+      file = new File("target/test-classes/" + filename);
 
       FileDeploymentManagerTest.log.debug(file.getAbsoluteFile());
 
@@ -125,6 +134,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       finally
       {
          file.delete();
+         fdm.stop();
       }
    }
 
@@ -138,9 +148,17 @@ public class FileDeploymentManagerTest extends UnitTestCase
       String filename2 = "fdm_test_file.xml2";
       String filename3 = "fdm_test_file.xml3";
 
-      File file1 = new File("tests/tmpfiles/" + filename1);
-      File file2 = new File("tests/tmpfiles/" + filename2);
-      File file3 = new File("tests/tmpfiles/" + filename3);
+      File file1 = new File("target/test-classes/");
+      File file2 = new File("target/test-classes/");
+      File file3 = new File("target/test-classes/");
+
+      file1.mkdirs();
+      file2.mkdirs();
+      file3.mkdirs();
+
+      file1 = new File("target/test-classes/" + filename1);
+      file2 = new File("target/test-classes/" + filename2);
+      file3 = new File("target/test-classes/" + filename3);
 
       file1.createNewFile();
       file2.createNewFile();
@@ -222,9 +240,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
          file1.delete();
          file2.delete();
          file3.delete();
+         fdm.stop();
       }
-      
-      fdm.stop();
+
    }
 
    public void testRedeploy() throws Exception
@@ -235,7 +253,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       String filename = "fdm_test_file.xml1";
 
-      File file = new File("tests/tmpfiles/" + filename);
+      File file = new File("target/test-classes/");
+
+      file.mkdirs();
+
+      file = new File("target/test-classes/" + filename);
 
       file.createNewFile();
       long oldLastModified = file.lastModified();
@@ -286,7 +308,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
 
       String filename = "fdm_test_file.xml1";
 
-      File file = new File("tests/tmpfiles/" + filename);
+      File file = new File("target/test-classes/");
+
+      file.mkdirs();
+
+      file = new File("target/test-classes/" + filename);
 
       file.createNewFile();
 
