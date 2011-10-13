@@ -57,6 +57,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ServerLocatorImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -913,8 +914,25 @@ public class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+      List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables = new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
+      ArrayList<Exception> exceptions = new ArrayList<Exception>();
+      if(!closeRunnables.isEmpty())
+      {
+         for (ClientSessionFactoryImpl.CloseRunnable closeRunnable : closeRunnables)
+         {
+            exceptions.add(closeRunnable.stop().e);
+         }
+      }
       cleanupPools();
-
+      //clean up pools before failing
+      if(!exceptions.isEmpty())
+      {
+         for (Exception exception : exceptions)
+         {
+            exception.printStackTrace();
+         }
+         fail("Client Session Factories still tryint to reconnect, see above to see where created");
+      }
       Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
       {
@@ -925,12 +943,12 @@ public class UnitTestCase extends TestCase
             {
                alreadyFailedThread.add(thread);
                System.out.println(threadDump(this.getName() + " has left threads running. Look at thread " +
-                                             thread.getName() +
-                                             " id = " +
-                                             thread.getId() +
-                                             " has running locators on test " +
-                                             this.getName() +
-                                             " on this following dump"));
+                     thread.getName() +
+                     " id = " +
+                     thread.getId() +
+                     " has running locators on test " +
+                     this.getName() +
+                     " on this following dump"));
                fail("test left serverlocator running, this could effect other tests");
             }
             else if (stackTraceElement.getMethodName().contains("BroadcastGroupImpl.run") && !alreadyFailedThread.contains(thread))
