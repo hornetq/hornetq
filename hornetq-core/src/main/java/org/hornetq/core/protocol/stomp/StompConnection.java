@@ -417,7 +417,6 @@ public class StompConnection implements RemotingConnection
             error.setDisconnect(true);
             throw error;
          }
-         log.error("------------------ negotiated version is " + this.version);
       }
       
       this.frameHandler = VersionedStompFrameHandler.getHandler(this, this.version);
