@@ -77,6 +77,21 @@ public class SessionReceiveContinuationMessage extends SessionContinuationMessag
       super.encodeRest(buffer);
       buffer.writeLong(consumerID);
    }
+   @Override
+   public int getPacketSize()
+   {
+      if (size == -1)
+      {
+         // This packet was created by the LargeMessageController
+         return 0;
+      }
+      else
+      {
+         return size;
+      }
+   }
+   
+   
 
    @Override
    public void decodeRest(final HornetQBuffer buffer)
