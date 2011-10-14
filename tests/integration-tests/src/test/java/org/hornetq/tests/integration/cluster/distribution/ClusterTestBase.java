@@ -121,8 +121,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected NodeManager[] nodeManagers;
 
-   protected ServerLocator[] locators0;
-
    protected ClientSessionFactory[] sfs;
 
    protected long[] timeStarts;
@@ -184,7 +182,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
       UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
 
-      locators0 = null;
       servers = null;
 
       sfs = null;
@@ -592,15 +589,15 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void closeAllServerLocatorsFactories() throws Exception
    {
-      for (int i = 0; i < locators0.length; i++)
+      for (int i = 0; i < locators.length; i++)
       {
-         ServerLocator sf = locators0[i];
+         ServerLocator sf = locators[i];
 
          if (sf != null)
          {
             sf.close();
 
-            locators0[i] = null;
+            locators[i] = null;
          }
       }
    }
@@ -1400,16 +1397,16 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       if (ha)
       {
-         locators0[node] = HornetQClient.createServerLocatorWithHA(serverTotc);
+         locators[node] = HornetQClient.createServerLocatorWithHA(serverTotc);
       }
       else
       {
-         locators0[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
+         locators[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
       }
 
-      locators0[node].setBlockOnNonDurableSend(true);
-      locators0[node].setBlockOnDurableSend(true);
-      ClientSessionFactory sf = locators0[node].createSessionFactory();
+      locators[node].setBlockOnNonDurableSend(true);
+      locators[node].setBlockOnDurableSend(true);
+      ClientSessionFactory sf = locators[node].createSessionFactory();
 
       ClientSession session = sf.createSession();
       session.close();
@@ -1436,12 +1433,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
-      locators0[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
+      locators[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
 
-      locators0[node].setBlockOnNonDurableSend(true);
-      locators0[node].setBlockOnDurableSend(true);
-      locators0[node].setReconnectAttempts(reconnectAttempts);
-      ClientSessionFactory sf = locators0[node].createSessionFactory();
+      locators[node].setBlockOnNonDurableSend(true);
+      locators[node].setBlockOnDurableSend(true);
+      locators[node].setReconnectAttempts(reconnectAttempts);
+      ClientSessionFactory sf = locators[node].createSessionFactory();
 
       sfs[node] = sf;
    }
@@ -1466,14 +1463,14 @@ public abstract class ClusterTestBase extends ServiceTestBase
          serverTotc = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
       }
 
-      locators0[node] = HornetQClient.createServerLocatorWithHA(serverTotc);
-      locators0[node].setRetryInterval(100);
-      locators0[node].setRetryIntervalMultiplier(1d);
-      locators0[node].setReconnectAttempts(-1);
-      locators0[node].setBlockOnNonDurableSend(blocking);
-      locators0[node].setBlockOnDurableSend(blocking);
+      locators[node] = HornetQClient.createServerLocatorWithHA(serverTotc);
+      locators[node].setRetryInterval(100);
+      locators[node].setRetryIntervalMultiplier(1d);
+      locators[node].setReconnectAttempts(-1);
+      locators[node].setBlockOnNonDurableSend(blocking);
+      locators[node].setBlockOnDurableSend(blocking);
 
-      ClientSessionFactory sf = locators0[node].createSessionFactory();
+      ClientSessionFactory sf = locators[node].createSessionFactory();
       sfs[node] = sf;
    }
 
