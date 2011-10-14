@@ -119,7 +119,6 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
 
    public void addUser(final String user, final String password)
    {
-      log.error("-------------------------------adding user: " + user + " password " + password);
       if (user == null)
       {
          throw new IllegalArgumentException("User cannot be null");
