@@ -408,6 +408,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          {
             Message clientFile = createLargeClientMessage(session, messageSize, true);
             clientFile.putIntProperty("txid", 2);
+            clientFile.putIntProperty("i", i);
             producer.send(clientFile);
          }
          session.end(xid2, XAResource.TMSUCCESS);
@@ -422,6 +423,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          
          for (int start = 0 ; start < 2; start++)
          {
+            System.out.println("Start " + start);
             
             sf = locator.createSessionFactory();
             
@@ -437,6 +439,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
             session.start();
             for (int i = 0 ; i < 10; i++)
             {
+               log.info("I = " + i);
                ClientMessage msg = cons1.receive(5000);
                assertNotNull(msg);
                assertEquals(1, msg.getIntProperty("txid").intValue());

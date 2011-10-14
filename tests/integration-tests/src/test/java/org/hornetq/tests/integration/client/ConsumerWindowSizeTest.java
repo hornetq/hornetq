@@ -37,6 +37,7 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -910,6 +911,123 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       internalTestSlowConsumerOnMessageHandlerNoBuffers(true);
    }
+
+   public void testFlowControl() throws Exception
+   {
+      internalTestFlowControlOnRollback(false);
+   }
+   
+   public void testFlowControlLargeMessage() throws Exception
+   {
+      internalTestFlowControlOnRollback(true);
+   }
+   
+   private void internalTestFlowControlOnRollback(final boolean isLargeMessage) throws Exception
+   {
+
+      HornetQServer server = createServer(false, isNetty());
+      
+      AddressSettings settings = new AddressSettings();
+      settings.setMaxDeliveryAttempts(-1);
+      server.getAddressSettingsRepository().addMatch("#", settings);
+
+      ClientSession session = null;
+
+      try
+      {
+         final int numberOfMessages = 100;
+
+         server.start();
+
+         locator.setConsumerWindowSize(300000);
+         
+         if (isLargeMessage)
+         {
+            // something to ensure we are using large messages
+            locator.setMinLargeMessageSize(100);
+         }
+         else
+         {
+            // To make sure large messages won't kick in, we set anything large
+            locator.setMinLargeMessageSize(Integer.MAX_VALUE);
+         }
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         session = sf.createSession(false, false, false);
+
+         SimpleString ADDRESS = new SimpleString("some-queue");
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+         
+         
+         ClientProducer producer = session.createProducer(ADDRESS);
+         
+         for (int i = 0 ; i < numberOfMessages; i++)
+         {
+            ClientMessage msg = session.createMessage(true);
+            msg.putIntProperty("count", i);
+            msg.getBodyBuffer().writeBytes(new byte[1024]);
+            producer.send(msg);
+         }
+         
+         session.commit();
+         
+         ClientConsumerInternal consumer = (ClientConsumerInternal)session.createConsumer(ADDRESS);
+         
+         session.start();
+
+         for (int repeat = 0; repeat < 100; repeat ++)
+         {
+            System.out.println("Repeat " + repeat);
+            long timeout = System.currentTimeMillis() + 2000;
+            // At least 10 messages on the buffer
+            while (timeout > System.currentTimeMillis() && consumer.getBufferSize() <= 10)
+            {
+               Thread.sleep(10);
+            }
+            assertTrue(consumer.getBufferSize() >= 10);
+            
+            ClientMessage msg = consumer.receive(500);
+            msg.getBodyBuffer().readByte();
+            assertNotNull(msg);
+            msg.acknowledge();
+            session.rollback();
+         }
+         
+         
+         for (int i = 0 ; i < numberOfMessages; i++)
+         {
+            ClientMessage msg = consumer.receive(5000);
+            assertNotNull(msg);
+            System.out.println("msg " + msg);
+            msg.getBodyBuffer().readByte();
+            msg.acknowledge();
+            session.commit();
+         }
+
+      }
+      finally
+      {
+         try
+         {
+            if (session != null)
+            {
+               session.close();
+            }
+         }
+         catch (Exception ignored)
+         {
+         }
+
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+
 
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
    {
