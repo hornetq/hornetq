@@ -44,8 +44,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      try
-      {
          startServers(2, 0, 1);
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
@@ -89,17 +87,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          System.out.println("*****************************************************************************");
       }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
-   }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception
    {
@@ -121,8 +108,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
-      try
-      {
+
          startServers(2, 0, 1);
 
          setupSessionFactory(0, isNetty());
@@ -188,17 +174,6 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          System.out.println("*****************************************************************************");
       }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1, 2);
-      }
-   }
 
    public boolean isNetty()
    {

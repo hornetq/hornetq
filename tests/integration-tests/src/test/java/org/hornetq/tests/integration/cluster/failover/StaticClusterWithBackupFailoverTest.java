@@ -84,19 +84,25 @@ public class StaticClusterWithBackupFailoverTest extends ClusterWithBackupFailov
                                         new int[] { 0, 1 });
    }
 
+   protected boolean isSharedStorage()
+   {
+      return true;
+   }
+
    @Override
    protected void setupServers() throws Exception
    {
       // The backups
-      setupBackupServer(3, 0, isFileStorage(), true, isNetty());
-      setupBackupServer(4, 1, isFileStorage(), true, isNetty());
-      setupBackupServer(5, 2, isFileStorage(), true, isNetty());
+      setupBackupServer(3, 0, isFileStorage(), isSharedStorage(), isNetty());
+      setupBackupServer(4, 1, isFileStorage(), isSharedStorage(), isNetty());
+      setupBackupServer(5, 2, isFileStorage(), isSharedStorage(), isNetty());
 
       // The lives
-      setupLiveServer(0, isFileStorage(), true, isNetty());
-      setupLiveServer(1, isFileStorage(), true, isNetty());
-      setupLiveServer(2, isFileStorage(), true, isNetty());
+      setupLiveServer(0, isFileStorage(), isSharedStorage(), isNetty());
+      setupLiveServer(1, isFileStorage(), isSharedStorage(), isNetty());
+      setupLiveServer(2, isFileStorage(), isSharedStorage(), isNetty());
    }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

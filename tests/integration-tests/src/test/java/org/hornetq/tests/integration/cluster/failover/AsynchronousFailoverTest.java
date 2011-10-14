@@ -23,16 +23,23 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * A MultiThreadFailoverTest
- * 
+ *
  * Test Failover where failure is prompted by another thread
  *
  * @author Tim Fox
@@ -43,11 +50,11 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 {
    private static final Logger log = Logger.getLogger(AsynchronousFailoverTest.class);
 
-   private volatile MyListener listener;
+   private volatile CountDownSessionFailureListener listener;
 
    private volatile ClientSessionFactoryInternal sf;
 
-   private Object lockFail = new Object();
+   private final Object lockFail = new Object();
 
    class MyListener implements SessionFailureListener
    {
@@ -171,7 +178,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             locator.setBlockOnDurableSend(true);
             locator.setReconnectAttempts(-1);
             locator.setConfirmationWindowSize(10 * 1024 * 1024);
-            sf = (ClientSessionFactoryInternal)createSessionFactoryAndWaitForTopology(locator, 2);
+            sf = createSessionFactoryAndWaitForTopology(locator, 2);
             try
             {
 
@@ -202,7 +209,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   {
                      log.debug("#test crashing test");
                   }
-                  crash((ClientSession)createSession);
+                  crash(createSession);
                }
 
                /*if (listener != null)
@@ -265,11 +272,9 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          ClientSession session = sf.createSession(true, true, 0);
 
-         MyListener listener = new MyListener();
+         listener = new CountDownSessionFailureListener();
 
          session.addFailureListener(listener);
-
-         this.listener = listener;
 
          ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
 
@@ -301,7 +306,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                   {
                      e.printStackTrace();
                   }
-                  Assert.assertEquals(e.getCode(), HornetQException.UNBLOCKED);
+                  Assert.assertEquals("Expected UNBLOCKED", HornetQException.UNBLOCKED, e.getCode());
 
                   retry = true;
                }
@@ -391,15 +396,14 @@ public class AsynchronousFailoverTest extends FailoverTestBase
          try
          {
 
-            MyListener listener = new MyListener();
 
-            this.listener = listener;
             boolean retry = false;
 
             final int numMessages = 1000;
 
             session = sf.createSession(false, false);
 
+            listener = new CountDownSessionFailureListener();
             session.addFailureListener(listener);
 
             do
@@ -462,12 +466,11 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             boolean blocked = false;
 
             retry = false;
-            ArrayList<Integer> msgs = new ArrayList<Integer>();
 
             ClientConsumer consumer = null;
             do
             {
-               msgs.clear();
+               ArrayList<Integer> msgs = new ArrayList<Integer>();
                try
                {
                   if (consumer == null)
@@ -587,13 +590,13 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 }

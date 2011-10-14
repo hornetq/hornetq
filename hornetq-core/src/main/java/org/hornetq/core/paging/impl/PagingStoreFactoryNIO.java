@@ -41,7 +41,7 @@ import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * Integration point between Paging and NIO
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -170,6 +170,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    public void setPostOffice(final PostOffice postOffice)
    {
+      assert this.postOffice == null;
       this.postOffice = postOffice;
    }
 

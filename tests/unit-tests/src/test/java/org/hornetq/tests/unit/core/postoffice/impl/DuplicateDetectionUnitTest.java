@@ -14,10 +14,8 @@
 package org.hornetq.tests.unit.core.postoffice.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,18 +26,15 @@ import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.paging.PageTransactionInfo;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
+import org.hornetq.tests.unit.util.FakePagingManager;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
@@ -100,7 +95,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
 
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
@@ -126,7 +121,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          journal.stop();
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
@@ -156,7 +151,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          mapDups.clear();
 
-         journal = new JournalStorageManager(configuration, factory);
+         journal = new JournalStorageManager(configuration, factory, null);
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
@@ -189,160 +184,4 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       }
 
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-   static class FakePagingManager implements PagingManager
-   {
-
-      public void activate()
-      {
-      }
-
-      public long addSize(final long size)
-      {
-         return 0;
-      }
-
-      public void addTransaction(final PageTransactionInfo pageTransaction)
-      {
-      }
-
-      public PagingStore createPageStore(final SimpleString destination) throws Exception
-      {
-         return null;
-      }
-
-      public long getTotalMemory()
-      {
-         return 0;
-      }
-
-      public SimpleString[] getStoreNames()
-      {
-         return null;
-      }
-
-      public long getMaxMemory()
-      {
-         return 0;
-      }
-
-      public PagingStore getPageStore(final SimpleString address) throws Exception
-      {
-         return null;
-      }
-
-      public void deletePageStore(SimpleString storeName) throws Exception
-      {
-      }
-
-      public PageTransactionInfo getTransaction(final long transactionID)
-      {
-         return null;
-      }
-
-      public boolean isBackup()
-      {
-         return false;
-      }
-
-      public boolean isGlobalPageMode()
-      {
-         return false;
-      }
-
-      public boolean isPaging(final SimpleString destination) throws Exception
-      {
-         return false;
-      }
-
-      public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
-      {
-         return false;
-      }
-
-      public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
-      {
-         return false;
-      }
-
-      public void reloadStores() throws Exception
-      {
-      }
-
-      public void removeTransaction(final long transactionID)
-      {
-
-      }
-
-      public void setGlobalPageMode(final boolean globalMode)
-      {
-      }
-
-      public void setPostOffice(final PostOffice postOffice)
-      {
-      }
-
-      public void resumeDepages()
-      {
-      }
-
-      public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
-      {
-      }
-
-      public boolean isStarted()
-      {
-         return false;
-      }
-
-      public void start() throws Exception
-      {
-      }
-
-      public void stop() throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#isGlobalFull()
-       */
-      public boolean isGlobalFull()
-      {
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#getTransactions()
-       */
-      public Map<Long, PageTransactionInfo> getTransactions()
-      {
-         return null;
-      }
-
-      
-      
-      
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.PagingManager#processReload()
-       */
-      public void processReload()
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
-       */
-      public void onChange()
-      {
-      }
-
-   }
-
 }

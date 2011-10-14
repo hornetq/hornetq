@@ -36,7 +36,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 
 /**
  * A PageProviderIMpl
- * 
+ *
  * TODO: this may be moved entirely into PagingStore as there's an one-to-one relationship here
  *       However I want to keep this isolated as much as possible during development
  *
@@ -81,11 +81,6 @@ public class PageCursorProviderImpl implements PageCursorProvider
    }
 
    // Public --------------------------------------------------------
-
-   public PagingStore getAssociatedStore()
-   {
-      return pagingStore;
-   }
 
    public synchronized PageSubscription createSubscription(long cursorID, Filter filter, boolean persistent)
    {
@@ -156,7 +151,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             cache = softCache.get(pageId);
             if (cache == null)
             {
-               if (!pagingStore.checkPage((int)pageId))
+               if (!pagingStore.checkPageFileExists((int)pageId))
                {
                   return null;
                }
@@ -253,6 +248,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       for (PageSubscription cursor : activeCursors.values())
       {
+         cursor.disableAutoCleanup();
+      }
+
+      for (PageSubscription cursor : activeCursors.values())
+      {
          cursor.stop();
       }
 
@@ -262,7 +262,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       while (!future.await(10000))
       {
-         log.warn("Waiting cursor provider " + this + " to finish executors");
+         log.warn("Waiting cursor provider " + this + " to finish executors" + executor);
       }
 
    }
@@ -280,7 +280,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
       while (!future.await(10000))
       {
-         log.warn("Waiting cursor provider " + this + " to finish executors");
+         log.warn("Waiting cursor provider " + this + " to finish executors " + executor);
       }
 
    }
@@ -312,6 +312,12 @@ public class PageCursorProviderImpl implements PageCursorProvider
                storageManager.clearContext();
             }
          }
+
+         @Override
+         public String toString()
+         {
+            return "PageCursorProvider:scheduleCleanup()";
+         }
       });
    }
 
@@ -319,8 +325,15 @@ public class PageCursorProviderImpl implements PageCursorProvider
    {
       ArrayList<Page> depagedPages = new ArrayList<Page>();
 
-      pagingStore.lock();
-
+      while (true)
+      {
+         if (pagingStore.lock(100))
+         {
+            break;
+         }
+         if (!pagingStore.isStarted())
+            return;
+      }
       synchronized (this)
       {
          try
@@ -370,6 +383,11 @@ public class PageCursorProviderImpl implements PageCursorProvider
                   }
                }
 
+               if (!pagingStore.isStarted())
+               {
+                  return;
+               }
+
                if (complete)
                {
 
@@ -409,6 +427,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             if (pagingStore.getNumberOfPages() == 0 || pagingStore.getNumberOfPages() == 1 &&
                 pagingStore.getCurrentPage().getNumberOfMessages() == 0)
             {
+
                pagingStore.stopPaging();
             }
             else
@@ -486,7 +505,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
     * @param currentPage
     * @throws Exception
     */
-   protected void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
+   private void storePositions(ArrayList<PageSubscription> cursorList, Page currentPage) throws Exception
    {
       try
       {
@@ -523,8 +542,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
 
    // Protected -----------------------------------------------------
 
-   /* Protected as we may let test cases to instrument the test */
-   protected PageCacheImpl createPageCache(final long pageId) throws Exception
+   private PageCacheImpl createPageCache(final long pageId) throws Exception
    {
       return new PageCacheImpl(pagingStore.createPage((int)pageId));
    }

@@ -42,7 +42,7 @@ public class RemoteFailoverTest extends FailoverTest
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    public class SharedLiveServerConfiguration extends RemoteServerConfiguration
    {
 
@@ -110,7 +110,7 @@ public class RemoteFailoverTest extends FailoverTest
       }
       return createTransportConfiguration(true, false, params);
    }
-   
+
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
    {

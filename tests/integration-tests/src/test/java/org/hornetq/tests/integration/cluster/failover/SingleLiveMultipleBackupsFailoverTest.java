@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -125,7 +126,8 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    {
       Configuration config1 = super.createDefaultConfig();
       config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true, generateParams(nodeid, isNetty())));
+      config1.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
+                                                                           generateParams(nodeid, isNetty())));
       config1.setSecurityEnabled(false);
       config1.setSharedStore(true);
       config1.setBackup(true);
@@ -134,12 +136,16 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 
       for (int node : nodes)
       {
-         TransportConfiguration liveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+         TransportConfiguration liveConnector =
+                  createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
          config1.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
          staticConnectors.add(liveConnector.getName());
       }
-      TransportConfiguration backupConnector = createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
-      ClusterConnectionConfiguration ccc1 = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1, staticConnectors, false);
+      TransportConfiguration backupConnector =
+               createTransportConfiguration(isNetty(), false, generateParams(nodeid, isNetty()));
+      ClusterConnectionConfiguration ccc1 =
+               new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
+                                                  staticConnectors, false);
       config1.getClusterConfigurations().add(ccc1);
       config1.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
 
@@ -151,25 +157,29 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       servers.put(nodeid, new SameProcessHornetQServer(createInVMFailoverServer(true, config1, nodeManager, nodeid)));
    }
 
-   protected void createLiveConfig(int liveNode, int ... otherLiveNodes)
+   protected void createLiveConfig(int liveNode, int... otherLiveNodes)
    {
-      TransportConfiguration liveConnector = createTransportConfiguration(isNetty(), false, generateParams(liveNode, isNetty()));
+      TransportConfiguration liveConnector =
+               createTransportConfiguration(isNetty(), false, generateParams(liveNode, isNetty()));
       Configuration config0 = super.createDefaultConfig();
       config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true, generateParams(liveNode, isNetty())));
+      config0.getAcceptorConfigurations().add(createTransportConfiguration(isNetty(), true,
+                                                                           generateParams(liveNode, isNetty())));
       config0.setSecurityEnabled(false);
       config0.setSharedStore(true);
       config0.setClustered(true);
       List<String> pairs = null;
       for (int node : otherLiveNodes)
       {
-         TransportConfiguration otherLiveConnector = createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
+         TransportConfiguration otherLiveConnector =
+                  createTransportConfiguration(isNetty(), false, generateParams(node, isNetty()));
          config0.getConnectorConfigurations().put(otherLiveConnector.getName(), otherLiveConnector);
          pairs.add(otherLiveConnector.getName());  
 
       }
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-            pairs, false);
+      ClusterConnectionConfiguration ccc0 =
+               new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
+                                                  pairs, false);
       config0.getClusterConfigurations().add(ccc0);
       config0.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
 
@@ -181,12 +191,28 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       servers.put(liveNode, new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
+   @Override
    protected boolean isNetty()
    {
       return false;
    }
 
-
-
+   @Override
+   protected void tearDown() throws Exception
+   {
+      for (Entry<Integer, TestableServer> entry : servers.entrySet())
+      {
+         try
+         {
+            entry.getValue().stop();
+         }
+         catch (Exception e)
+         {
+            // ignore
+         }
+      }
+      servers.clear();
+      super.tearDown();
+   }
 
 }

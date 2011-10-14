@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
@@ -31,7 +32,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -45,6 +46,13 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean started = false;
 
+   /**
+    * Lock used at the start of synchronization between a live server and its backup.
+    * Synchronization will lock all {@link PagingStore} instances, and so any operation here that
+    * requires a lock on a {@link PagingStore} instance needs to take a read-lock on
+    * {@link #syncLock} to avoid dead-locks.
+    */
+   private final ReentrantReadWriteLock syncLock = new ReentrantReadWriteLock();
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
@@ -53,7 +61,8 @@ public class PagingManagerImpl implements PagingManager
 
    private final StorageManager storageManager;
 
-   private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
+   private final ConcurrentMap<Long, PageTransactionInfo> transactions =
+            new ConcurrentHashMap<Long, PageTransactionInfo>();
 
    // Static
    // --------------------------------------------------------------------------------------------------------------------------
@@ -77,9 +86,9 @@ public class PagingManagerImpl implements PagingManager
    // Public
    // ---------------------------------------------------------------------------------------------------------------------------
 
-   
+
    // Hierarchical changes listener
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.settings.HierarchicalRepositoryChangeListener#onChange()
     */
@@ -88,60 +97,58 @@ public class PagingManagerImpl implements PagingManager
       reaplySettings();
    }
 
-
-   
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
    public void reaplySettings()
    {
-      for (PagingStore store : stores.values())
+    for (PagingStore store : stores.values())
       {
          AddressSettings settings = this.addressSettingsRepository.getMatch(store.getAddress().toString());
          store.applySetting(settings);
       }
    }
-   
+
    public SimpleString[] getStoreNames()
    {
       Set<SimpleString> names = stores.keySet();
       return names.toArray(new SimpleString[names.size()]);
    }
 
-   public synchronized void reloadStores() throws Exception
+   public void reloadStores() throws Exception
    {
-      List<PagingStore> reloadedStores = pagingStoreFactory.reloadStores(addressSettingsRepository);
-
-      for (PagingStore store : reloadedStores)
+      lock();
+      try
       {
-         store.start();
-         stores.put(store.getStoreName(), store);
+         List<PagingStore> reloadedStores = pagingStoreFactory.reloadStores(addressSettingsRepository);
+
+         for (PagingStore store : reloadedStores)
+         {
+            store.start();
+            stores.put(store.getStoreName(), store);
+         }
+      }
+      finally
+      {
+         unlock();
       }
 
    }
 
-   private synchronized PagingStore createPageStore(final SimpleString storeName) throws Exception
-   {
-      PagingStore store = stores.get(storeName);
-
-      if (store == null)
-      {
-         store = newStore(storeName);
-
-         store.start();
-
-         stores.put(storeName, store);
-      }
-
-      return store;
-   }
-   
    public void deletePageStore(final SimpleString storeName) throws Exception
    {
-      PagingStore store = stores.remove(storeName);
-      if (store != null)
+      syncLock.readLock().lock();
+      try
       {
-         store.stop();
+         PagingStore store = stores.remove(storeName);
+         if (store != null)
+         {
+            store.stop();
+         }
+      }
+      finally
+      {
+         syncLock.readLock().unlock();
       }
    }
 
@@ -150,12 +157,11 @@ public class PagingManagerImpl implements PagingManager
    {
       PagingStore store = stores.get(storeName);
 
-      if (store == null)
+      if (store != null)
       {
-         store = createPageStore(storeName);
+         return store;
       }
-
-      return store;
+      return newStore(storeName);
    }
 
    /** this will be set by the postOffice itself.
@@ -192,7 +198,7 @@ public class PagingManagerImpl implements PagingManager
       }
       return transactions.get(id);
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.paging.PagingManager#getTransactions()
     */
@@ -210,20 +216,28 @@ public class PagingManagerImpl implements PagingManager
       return started;
    }
 
-   public synchronized void start() throws Exception
+   public void start() throws Exception
    {
-      if (started)
+      lock();
+      try
       {
-         return;
+         if (started)
+         {
+            return;
+         }
+
+         pagingStoreFactory.setPagingManager(this);
+
+         pagingStoreFactory.setStorageManager(storageManager);
+
+         reloadStores();
+
+         started = true;
       }
-
-      pagingStoreFactory.setPagingManager(this);
-
-      pagingStoreFactory.setStorageManager(storageManager);
-
-      reloadStores();
-
-      started = true;
+      finally
+      {
+         unlock();
+      }
    }
 
    public synchronized void stop() throws Exception
@@ -232,15 +246,23 @@ public class PagingManagerImpl implements PagingManager
       {
          return;
       }
-
       started = false;
 
-      for (PagingStore store : stores.values())
+      lock();
+      try
       {
-         store.stop();
-      }
 
-      pagingStoreFactory.stop();
+         for (PagingStore store : stores.values())
+         {
+            store.stop();
+         }
+
+         pagingStoreFactory.stop();
+      }
+      finally
+      {
+         unlock();
+      }
    }
 
    public void processReload() throws Exception
@@ -258,17 +280,32 @@ public class PagingManagerImpl implements PagingManager
 
    // Private -------------------------------------------------------
 
-   protected PagingStore newStore(final SimpleString address) 
+   private PagingStore newStore(final SimpleString address) throws Exception
    {
-      return pagingStoreFactory.newStore(address,
-                                         addressSettingsRepository.getMatch(address.toString()));
-   }
-   
-   protected PagingStoreFactory getStoreFactory()
-   {
-      return pagingStoreFactory;
+      syncLock.readLock().lock();
+      try {
+         PagingStore store = stores.get(address);
+         if (store == null)
+         {
+            store = pagingStoreFactory.newStore(address, addressSettingsRepository.getMatch(address.toString()));
+            store.start();
+            stores.put(address, store);
+         }
+         return store;
+      }
+      finally
+      {
+         syncLock.readLock().unlock();
+      }
    }
 
-   // Inner classes -------------------------------------------------
+   public void unlock()
+   {
+      syncLock.writeLock().unlock();
+   }
 
+   public void lock()
+   {
+      syncLock.writeLock().lock();
+   }
 }

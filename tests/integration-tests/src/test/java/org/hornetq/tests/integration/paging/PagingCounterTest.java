@@ -257,7 +257,7 @@ public class PagingCounterTest extends ServiceTestBase
    {
       PageSubscription subscription = server.getPagingManager()
                                             .getPageStore(new SimpleString("A1"))
-                                            .getCursorProvier()
+                                            .getCursorProvider()
                                             .getSubscription(queue.getID());
 
       PageSubscriptionCounter counter = subscription.getCounter();

@@ -34,7 +34,7 @@ import org.hornetq.core.server.HornetQServer;
 public class RemoteProcessHornetQServer implements TestableServer
 {
 
-   private String configurationClassName;
+   private final String configurationClassName;
    private Process serverProcess;
    private boolean initialised = false;
    private CountDownLatch initLatch;
@@ -44,7 +44,7 @@ public class RemoteProcessHornetQServer implements TestableServer
    {
       this.configurationClassName = configurationClassName;
    }
-   
+
    public boolean isInitialised()
    {
       if (serverProcess == null)
@@ -53,7 +53,7 @@ public class RemoteProcessHornetQServer implements TestableServer
       }
       try
       {
-         initLatch = new CountDownLatch(1);         
+         initLatch = new CountDownLatch(1);
          RemoteProcessHornetQServerSupport.isInitialised(serverProcess);
          boolean ok = initLatch.await(10, TimeUnit.SECONDS);
          if (ok)
@@ -144,7 +144,7 @@ public class RemoteProcessHornetQServer implements TestableServer
          RemoteProcessHornetQServerSupport.crash(serverProcess);
          serverProcess = null;
       }
-      
+
       if (waitFailure)
       {
          // Wait to be informed of failure

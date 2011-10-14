@@ -14,9 +14,9 @@
 package org.hornetq.api.core;
 
 /**
- * 
- * HornetQException is the root exception for HornetQ API. 
- * 
+ *
+ * HornetQException is the root exception for HornetQ API.
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -57,7 +57,7 @@ public class HornetQException extends Exception
    public static final int UNBLOCKED = 005;
 
    /**
-    * Unexpected I/O error occured on the server.
+    * Unexpected I/O error occurred on the server.
     */
    public static final int IO_ERROR = 006;
 
@@ -83,13 +83,13 @@ public class HornetQException extends Exception
    public static final int INVALID_FILTER_EXPRESSION = 103;
 
    /**
-    * A HornetQ resource is not in a legal state (e.g. calling 
+    * A HornetQ resource is not in a legal state (e.g. calling
     * ClientConsumer.receive() if a MessageHandler is set)
     */
    public static final int ILLEGAL_STATE = 104;
 
    /**
-    * A security problem occured (authentication issues, permission issues,...)
+    * A security problem occurred (authentication issues, permission issues,...)
     */
    public static final int SECURITY_EXCEPTION = 105;
 
@@ -128,13 +128,13 @@ public class HornetQException extends Exception
     * server is starting and has not finish to be initialized)
     */
    public static final int SESSION_CREATION_REJECTED = 112;
-   
+
    /**
     * A DuplicateID was rejected.
     */
    public static final int DUPLICATE_ID_REJECTED = 113;
 
-   
+
    /**
     * A Session Metadata was set in duplication 
     */
@@ -144,7 +144,7 @@ public class HornetQException extends Exception
    // Native Error codes ----------------------------------------------
 
    /**
-    * A internal error occured in the AIO native code
+    * A internal error occurred in the AIO native code
     */
    public static final int NATIVE_ERROR_INTERNAL = 200;
 
@@ -174,12 +174,12 @@ public class HornetQException extends Exception
    public static final int NATIVE_ERROR_CANT_OPEN_CLOSE_FILE = 205;
 
    /**
-    * An error occured while allocating a queue in AIO native code
+    * An error occurred while allocating a queue in AIO native code
     */
    public static final int NATIVE_ERROR_CANT_ALLOCATE_QUEUE = 206;
 
    /**
-    * An error occured while pre-allocating a file in AIO native code
+    * An error occurred while pre-allocating a file in AIO native code
     */
    public static final int NATIVE_ERROR_PREALLOCATE_FILE = 208;
 

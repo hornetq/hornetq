@@ -13,15 +13,10 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import junit.framework.Assert;
-
-import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A LargeMessageFailoverTest
@@ -37,11 +32,6 @@ public class LargeMessageFailoverTest extends FailoverTest
 
    private static final Logger log = Logger.getLogger(LargeMessageFailoverTest.class);
 
-   
-   private static final int MIN_LARGE_MESSAGE = 1024;
-   
-   private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
-   
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -53,18 +43,12 @@ public class LargeMessageFailoverTest extends FailoverTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
-   /**
-    * @param name
-    */
+
    public LargeMessageFailoverTest(final String name)
    {
       super(name);
    }
 
-   /**
-    * 
-    */
    public LargeMessageFailoverTest()
    {
       super();
@@ -73,12 +57,14 @@ public class LargeMessageFailoverTest extends FailoverTest
    @Override
    public void testLiveAndBackupLiveComesBackNewFactory() throws Exception
    {
+      // skip test because it triggers OutOfMemoryError.
       Thread.sleep(1000);
    }
 
    @Override
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
    {
+      // skip test because it triggers OutOfMemoryError.
       Thread.sleep(1000);
    }
 
@@ -89,23 +75,17 @@ public class LargeMessageFailoverTest extends FailoverTest
    @Override
    protected void assertMessageBody(final int i, final ClientMessage message)
    {
-      HornetQBuffer buffer = message.getBodyBuffer();
-
-      for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
-      {
-         Assert.assertEquals("equal at " + j, buffer.readByte(), UnitTestCase.getSamplebyte(j));
-      }
+      assertLargeMessageBody(i, message);
    }
-   
 
+
+   @Override
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
       ServerLocator locator = super.getServerLocator();
-      locator.setMinLargeMessageSize(LARGE_MESSAGE_SIZE);
-      return (ServerLocatorInternal) locator;
+      locator.setMinLargeMessageSize(MIN_LARGE_MESSAGE);
+      return (ServerLocatorInternal)locator;
    }
-
-
 
    /**
     * @param i
@@ -114,11 +94,6 @@ public class LargeMessageFailoverTest extends FailoverTest
    @Override
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
-      message.setBodyInputStream(UnitTestCase.createFakeLargeStream(LARGE_MESSAGE_SIZE));
+      setLargeMessageBody(i, message);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

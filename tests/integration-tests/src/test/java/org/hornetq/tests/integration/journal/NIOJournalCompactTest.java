@@ -54,9 +54,9 @@ import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**
- * 
+ *
  * A JournalImplTestBase
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -131,11 +131,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       Assert.assertFalse(iterNewFiles.hasNext());
 
    }
-   
+
 //   public void testRepeat() throws Exception
 //   {
 //      int i = 0 ;
-//      
+//
 //      while (true)
 //      {
 //         System.out.println("#test (" + (i++) + ")");
@@ -1757,16 +1757,16 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       final AtomicLong seqGenerator = new AtomicLong(1);
 
       final ExecutorService executor = Executors.newCachedThreadPool();
-      
+
       OrderedExecutorFactory factory = new OrderedExecutorFactory(executor);
-      
+
       final ExecutorService deleteExecutor = Executors.newCachedThreadPool();
 
-      final JournalStorageManager storage = new JournalStorageManager(config, factory);
+      final JournalStorageManager storage = new JournalStorageManager(config, factory, null);
 
       storage.start();
       storage.loadInternalOnly();
-      
+
       ((JournalImpl)storage.getMessageJournal()).setAutoReclaim(false);
       final LinkedList<Long> survivingMsgs = new LinkedList<Long>();
 
@@ -1796,9 +1796,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
                      storage.storeMessageTransactional(tx, message);
                   }
                   ServerMessageImpl message = new ServerMessageImpl(seqGenerator.incrementAndGet(), 100);
-                  
+
                   survivingMsgs.add(message.getMessageID());
-                  
+
                   // This one will stay here forever
                   storage.storeMessage(message);
 
@@ -1885,9 +1885,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       executor.shutdown();
 
       assertTrue(executor.awaitTermination(10, TimeUnit.SECONDS));
-      
+
       deleteExecutor.shutdown();
-      
+
       assertTrue(deleteExecutor.awaitTermination(30, TimeUnit.SECONDS));
 
       storage.stop();
@@ -1905,6 +1905,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       file.mkdir();
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
 

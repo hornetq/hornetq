@@ -30,14 +30,12 @@ import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
  * A SameProcessHornetQServer
  *
  * @author jmesnil
- *
- *
  */
 public class SameProcessHornetQServer implements TestableServer
 {
    private static Logger log = Logger.getLogger(SameProcessHornetQServer.class);
-   
-   private HornetQServer server;
+
+   private final HornetQServer server;
 
    public SameProcessHornetQServer(HornetQServer server)
    {
@@ -58,7 +56,7 @@ public class SameProcessHornetQServer implements TestableServer
    {
       server.setIdentity(identity);
    }
-   
+
    public boolean isStarted()
    {
       return server.isStarted();
@@ -114,13 +112,14 @@ public class SameProcessHornetQServer implements TestableServer
       ClusterManagerImpl clusterManager = (ClusterManagerImpl) server.getClusterManager();
       clusterManager.flushExecutor();
       clusterManager.clear();
+      Assert.assertTrue("server should be running!", server.isStarted());
       server.stop(true);
 
       if (waitFailure)
       {
          // Wait to be informed of failure
          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
-         Assert.assertTrue(ok);
+      Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount(), ok);
       }
    }
 
@@ -142,7 +141,7 @@ public class SameProcessHornetQServer implements TestableServer
 
    // Public --------------------------------------------------------
 
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

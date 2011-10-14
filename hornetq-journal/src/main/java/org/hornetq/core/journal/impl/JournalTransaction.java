@@ -149,7 +149,7 @@ public class JournalTransaction
    }
 
    /**
-    * 
+    *
     */
    public void clear()
    {
@@ -246,7 +246,7 @@ public class JournalTransaction
       neg.add(new JournalUpdate(file, id, 0));
    }
 
-   /** 
+   /**
     * The caller of this method needs to guarantee appendLock.lock at the journal. (unless this is being called from load what is a single thread process).
     * */
    public void commit(final JournalFile file)
@@ -316,7 +316,7 @@ public class JournalTransaction
       }
    }
 
-   public void waitCallbacks() throws Exception
+   public void waitCallbacks() throws InterruptedException
    {
       if (callbackList != null)
       {
@@ -336,7 +336,7 @@ public class JournalTransaction
       }
    }
 
-   /** 
+   /**
     * The caller of this method needs to guarantee appendLock.lock before calling this method if being used outside of the lock context.
     * or else potFilesMap could be affected
     * */
@@ -367,7 +367,7 @@ public class JournalTransaction
       }
    }
 
-   /** 
+   /**
     * The caller of this method needs to guarantee appendLock.lock before calling this method if being used outside of the lock context.
     * or else potFilesMap could be affected
     * */

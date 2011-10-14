@@ -16,8 +16,15 @@ package org.hornetq.core.client.impl;
 import java.lang.ref.WeakReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.hornetq.api.core.HornetQBuffer;
@@ -157,7 +164,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
+   ClientSessionFactoryImpl(final ServerLocatorInternal serverLocator,
                                    final TransportConfiguration connectorConfig,
                                    final long callTimeout,
                                    final long clientFailureCheckPeriod,
@@ -1511,7 +1518,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    public class CloseRunnable implements Runnable
    {
-      private CoreRemotingConnection conn;
+      private final CoreRemotingConnection conn;
 
       public CloseRunnable(CoreRemotingConnection conn)
       {
@@ -1640,7 +1647,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
 
       /**
-       * 
+       *
        */
       public void send()
       {

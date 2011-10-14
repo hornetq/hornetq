@@ -144,9 +144,9 @@ public class NettyConnector implements Connector
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Executor closeExecutor;
-   
+
    private BatchFlusher flusher;
-   
+
    private ScheduledFuture<?> batchFlusherFuture;
 
    // Static --------------------------------------------------------
@@ -378,7 +378,7 @@ public class NettyConnector implements Connector
                handlers.add(new HttpRequestEncoder());
 
                handlers.add(new HttpResponseDecoder());
-               
+
                handlers.add(new HttpChunkAggregator(Integer.MAX_VALUE));
 
                handlers.add(new HttpHandler());
@@ -397,7 +397,7 @@ public class NettyConnector implements Connector
       if (batchDelay > 0)
       {
          flusher = new BatchFlusher();
-         
+
          batchFlusherFuture = scheduledThreadPool.scheduleWithFixedDelay(flusher, batchDelay, batchDelay, TimeUnit.MILLISECONDS);
       }
 
@@ -410,22 +410,22 @@ public class NettyConnector implements Connector
       }
       NettyConnector.log.debug("Started Netty Connector version " + Version.ID);
    }
-   
+
    public synchronized void close()
    {
       if (channelFactory == null)
       {
          return;
       }
-      
+
       if (batchFlusherFuture != null)
       {
          batchFlusherFuture.cancel(false);
-         
+
          flusher.cancel();
-         
+
          flusher = null;
-         
+
          batchFlusherFuture = null;
       }
 
@@ -557,7 +557,7 @@ public class NettyConnector implements Connector
       private String cookie;
 
       private final CookieEncoder cookieEncoder = new CookieEncoder(false);
-      
+
       public HttpHandler() throws Exception
       {
          url = new URI("http", null, host, port, servletPath, null, null).toString();
@@ -729,10 +729,10 @@ public class NettyConnector implements Connector
       public void connectionReadyForWrites(Object connectionID, boolean ready)
       {
       }
-      
-      
+
+
    }
-   
+
    private class BatchFlusher implements Runnable
    {
       private boolean cancelled;

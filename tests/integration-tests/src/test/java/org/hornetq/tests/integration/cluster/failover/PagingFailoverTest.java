@@ -14,12 +14,9 @@
 package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -28,17 +25,16 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
-import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * A PagingFailoverTest
- * 
+ *
  * TODO: validate replication failover also
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -50,11 +46,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    // Constants -----------------------------------------------------
 
-   private static final int PAGE_MAX = 100 * 1024;
-
-   private static final int PAGE_SIZE = 10 * 1024;
-
-   static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
+   private static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
    // Attributes ----------------------------------------------------
    private ServerLocator locator;
@@ -95,7 +87,7 @@ public class PagingFailoverTest extends FailoverTestBase
       internalTestPage(true, false);
    }
 
-   public void testPageTransactionedFailBeforeconsume() throws Exception
+   public void testPageTransactionedFailBeforeConsume() throws Exception
    {
       internalTestPage(true, true);
    }
@@ -134,11 +126,14 @@ public class PagingFailoverTest extends FailoverTestBase
          if (failBeforeConsume)
          {
             crash(session);
+            waitForBackup(sf, 60);
          }
-         
-         
+
+
+
+
          session.close();
-         
+
          session = sf.createSession(!transacted, !transacted, 0);
 
          session.start();
@@ -161,9 +156,9 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.commit();
-         
+
          cons.close();
-         
+
          Thread.sleep(1000);
 
          if (!failBeforeConsume)
@@ -173,7 +168,7 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.close();
-         
+
          session = sf.createSession(true, true, 0);
 
          cons = session.createConsumer(PagingFailoverTest.ADDRESS);
@@ -202,23 +197,6 @@ public class PagingFailoverTest extends FailoverTestBase
       }
    }
 
-   /**
-    * @param session
-    * @param latch
-    * @throws InterruptedException
-    */
-   private void failSession(final ClientSession session, final CountDownLatch latch) throws InterruptedException
-   {
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      Assert.assertTrue(latch.await(5000, TimeUnit.MILLISECONDS));
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -226,23 +204,19 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
    @Override
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createInVMFailoverServer(true,
-                                      configuration,
-                                      PagingFailoverTest.PAGE_SIZE,
-                                      PagingFailoverTest.PAGE_MAX,
-                                      new HashMap<String, AddressSettings>(),
+      return createInVMFailoverServer(true, configuration, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>(),
                                       nodeManager,
                                       2);
    }

@@ -109,7 +109,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    private final boolean strictUpdateDeliveryCount;
 
-   private RemotingConnection remotingConnection;
+   private final RemotingConnection remotingConnection;
 
    private final Map<Long, ServerConsumer> consumers = new ConcurrentHashMap<Long, ServerConsumer>();
 
@@ -153,9 +153,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    private OperationContext sessionContext;
 
    // Session's usage should be by definition single threaded, hence it's not needed to use a concurrentHashMap here
-   private Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString, Pair<UUID, AtomicLong>>();
+   private final Map<SimpleString, Pair<UUID, AtomicLong>> targetAddressInfos = new HashMap<SimpleString,  Pair<UUID, AtomicLong>>();
 
-   private long creationTime = System.currentTimeMillis();
+   private final long creationTime = System.currentTimeMillis();
 
    // Constructors ---------------------------------------------------------------------------------
 

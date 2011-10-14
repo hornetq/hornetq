@@ -27,7 +27,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -42,7 +41,7 @@ public class ConcurrentStompTest extends UnitTestCase
 {
    private static final transient Logger log = Logger.getLogger(ConcurrentStompTest.class);
 
-   private int port = 61613;
+   private final int port = 61613;
 
    private Socket stompSocket;
 
@@ -82,6 +81,7 @@ public class ConcurrentStompTest extends UnitTestCase
       
       new Thread()
       {
+         @Override
          public void run()
          {
             int i = 0;
@@ -117,6 +117,7 @@ public class ConcurrentStompTest extends UnitTestCase
 
    // Implementation methods
    // -------------------------------------------------------------------------
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -147,6 +148,7 @@ public class ConcurrentStompTest extends UnitTestCase
       return HornetQServers.newHornetQServer(config);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (stompSocket != null)
@@ -177,9 +179,9 @@ public class ConcurrentStompTest extends UnitTestCase
    {
       byte[] bytes = data.getBytes("UTF-8");
       OutputStream outputStream = socket.getOutputStream();
-      for (int i = 0; i < bytes.length; i++)
+      for (byte b : bytes)
       {
-         outputStream.write(bytes[i]);
+         outputStream.write(b);
       }
       outputStream.flush();
    }

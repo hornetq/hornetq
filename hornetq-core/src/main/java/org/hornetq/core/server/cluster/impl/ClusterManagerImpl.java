@@ -41,6 +41,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -58,7 +60,7 @@ import org.hornetq.utils.UUID;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 18 Nov 2008 09:23:49
  *
  *
@@ -78,7 +80,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    private final PostOffice postOffice;
 
    private final ScheduledExecutorService scheduledExecutor;
-   
+
    private ClusterConnection defaultClusterConnection;
 
    private final ManagementService managementService;
@@ -153,17 +155,18 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       return str.toString();
    }
-   
+
    public ClusterConnection getDefaultConnection()
    {
       return defaultClusterConnection;
    }
 
+   @Override
    public String toString()
    {
       return "ClusterManagerImpl[server=" + server + "]@" + System.identityHashCode(this);
    }
-   
+
    public String getNodeId()
    {
       return nodeUUID.toString();
@@ -199,7 +202,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             group.start();
          }
       }
-      
+
       for (ClusterConnection conn : clusterConnections.values())
       {
          conn.start();
@@ -362,6 +365,31 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       }
    }
 
+   // XXX HORNETQ-720 + cluster fixes: needs review
+   @Override
+   public void announceReplicatingBackup(Channel liveChannel)
+   {
+      List<ClusterConnectionConfiguration> configs = this.configuration.getClusterConfigurations();
+      if(!configs.isEmpty())
+      {
+         ClusterConnectionConfiguration config = configs.get(0);
+
+         TransportConfiguration connector = configuration.getConnectorConfigurations().get(config.getConnectorName());
+
+         if (connector == null)
+         {
+            log.warn("No connector with name '" + config.getConnectorName() +
+                     "'. backup cannot be announced.");
+            return;
+         }
+         liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector));
+      }
+      else
+      {
+         log.warn("no cluster connections defined, unable to announce backup");
+      }
+   }
+
    public void addClusterLocator(final ServerLocatorInternal serverLocator)
    {
       this.clusterLocators.add(serverLocator);
@@ -371,7 +399,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    {
       this.clusterLocators.remove(serverLocator);
    }
-   
+
    public synchronized void deployBridge(final BridgeConfiguration config, final boolean start) throws Exception
    {
       if (config.getName() == null)
@@ -500,7 +528,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       bridges.put(config.getName(), bridge);
 
       managementService.registerBridge(bridge, config);
-      
+
       if (start)
       {
          bridge.start();
@@ -555,14 +583,14 @@ public class ClusterManagerImpl implements ClusterManagerInternal
    }
 
    // Private methods ----------------------------------------------------------------------------------------------------
-   
-   
+
+
    private void clearClusterConnections()
    {
       clusterConnections.clear();
       this.defaultClusterConnection = null;
    }
-   
+
    private void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception
    {
       if (config.getName() == null)
@@ -583,7 +611,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
       if (connector == null)
       {
-         log.warn("No connecor with name '" + config.getConnectorName() +
+         log.warn("No connector with name '" + config.getConnectorName() +
                   "'. The cluster connection will not be deployed.");
          return;
       }
@@ -686,7 +714,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       {
          defaultClusterConnection = clusterConnection;
       }
-      
+
       managementService.registerCluster(clusterConnection, config);
 
       clusterConnections.put(config.getName(), clusterConnection);
@@ -696,7 +724,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
          log.debug("ClusterConnection.start at " + clusterConnection, new Exception("trace"));
       }
    }
-   
+
    private Transformer instantiateTransformer(final String transformerClassName)
    {
       Transformer transformer = null;

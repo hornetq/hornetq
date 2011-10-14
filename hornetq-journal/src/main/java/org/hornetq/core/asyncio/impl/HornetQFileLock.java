@@ -14,6 +14,7 @@
 package org.hornetq.core.asyncio.impl;
 
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
 /**
@@ -27,7 +28,7 @@ public class HornetQFileLock extends FileLock
 {
 
    private final int handle;
-   
+
    /**
     * @param channel
     * @param position
@@ -36,7 +37,7 @@ public class HornetQFileLock extends FileLock
     */
    protected HornetQFileLock(final int handle)
    {
-      super(null, 0, 0, false);
+      super((FileChannel)null, 0, 0, false);
       this.handle = handle;
    }
 

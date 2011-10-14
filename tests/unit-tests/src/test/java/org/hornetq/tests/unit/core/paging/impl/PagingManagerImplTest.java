@@ -23,9 +23,9 @@ import junit.framework.Assert;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
-import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
@@ -40,7 +40,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -64,13 +64,13 @@ public class PagingManagerImplTest extends UnitTestCase
       AddressSettings settings = new AddressSettings();
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.setDefault(settings);
-      
-      
+
+
       PagingStoreFactoryNIO storeFactory = new PagingStoreFactoryNIO(getPageDir(),
                                                                      100, null,
                                 new OrderedExecutorFactory(Executors.newCachedThreadPool()),
                                 true);
-      
+
       storeFactory.setPostOffice(new FakePostOffice());
 
       PagingManagerImpl managerImpl = new PagingManagerImpl(storeFactory,
@@ -79,7 +79,7 @@ public class PagingManagerImplTest extends UnitTestCase
 
       managerImpl.start();
 
-      TestSupportPageStore store = (TestSupportPageStore)managerImpl.getPageStore(new SimpleString("simple-test"));
+      PagingStore store = managerImpl.getPageStore(new SimpleString("simple-test"));
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 

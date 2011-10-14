@@ -40,7 +40,7 @@ public class CreateQueueMessage extends PacketImpl
    private boolean durable;
 
    private boolean temporary;
-   
+
    private boolean requiresResponse;
 
    // Static --------------------------------------------------------
@@ -54,7 +54,7 @@ public class CreateQueueMessage extends PacketImpl
                              final boolean temporary,
                              final boolean requiresResponse)
    {
-      super(PacketImpl.CREATE_QUEUE);
+      this();
 
       this.address = address;
       this.queueName = queueName;
@@ -108,7 +108,7 @@ public class CreateQueueMessage extends PacketImpl
    {
       return temporary;
    }
-   
+
    public boolean isRequiresResponse()
    {
       return requiresResponse;

@@ -18,7 +18,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.CLUSTER_TOPOLOGY_V2
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.CREATE_REPLICATION;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DELETE_QUEUE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.DISCONNECT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.EXCEPTION;
@@ -44,7 +43,6 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.REPLICATION_RESPONS
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_ADD_METADATA2;
-import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_BINDINGQUERY_RESP;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_CLOSE;
@@ -68,6 +66,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_CONTINUAT
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_SEND_LARGE;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_START;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_STOP;
+import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_UNIQUE_ADD_METADATA;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_COMMIT;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_END;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SESS_XA_FORGET;
@@ -88,12 +87,11 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY;
 import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_V2;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateQueueMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.DisconnectMessage;
@@ -111,12 +109,14 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMess
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.RollbackMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionAddMetaDataMessage;
@@ -164,11 +164,15 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class PacketDecoder
+public final class PacketDecoder
 {
-   private static final Logger log = Logger.getLogger(PacketDecoder.class);
-   
-   public Packet decode(final HornetQBuffer in)
+
+   private PacketDecoder()
+   {
+      // Utility
+   }
+
+   public static Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
 
@@ -428,11 +432,6 @@ public class PacketDecoder
             packet = new SessionProducerCreditsMessage();
             break;
          }
-         case CREATE_REPLICATION:
-         {
-            packet = new CreateReplicationSessionMessage();
-            break;
-         }
          case REPLICATION_APPEND:
          {
             packet = new ReplicationAddMessage();
@@ -485,7 +484,7 @@ public class PacketDecoder
          }
          case REPLICATION_LARGE_MESSAGE_END:
          {
-            packet = new ReplicationLargemessageEndMessage();
+            packet = new ReplicationLargeMessageEndMessage();
             break;
          }
          case REPLICATION_LARGE_MESSAGE_WRITE:
@@ -541,6 +540,21 @@ public class PacketDecoder
          case SESS_UNIQUE_ADD_METADATA:
          {
             packet = new SessionUniqueAddMetaDataMessage();
+            break;
+         }
+         case PacketImpl.BACKUP_REGISTRATION:
+         {
+            packet = new BackupRegistrationMessage();
+            break;
+         }
+         case PacketImpl.REPLICATION_START_STOP_SYNC:
+         {
+            packet = new ReplicationStartSyncMessage();
+            break;
+         }
+         case PacketImpl.REPLICATION_SYNC_FILE:
+         {
+            packet = new ReplicationSyncFileMessage();
             break;
          }
          default:

@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.core.journal.impl.fakes;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,20 +29,17 @@ import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.TimedBuffer;
-import org.hornetq.core.logging.Logger;
 
 /**
- * 
+ *
  * A FakeSequentialFileFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class FakeSequentialFileFactory implements SequentialFileFactory
 {
-   private static final Logger log = Logger.getLogger(FakeSequentialFileFactory.class);
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -284,11 +283,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          }
       }
 
-      public boolean isSendError()
-      {
-         return sendError;
-      }
-
       public void setSendError(final boolean sendError)
       {
          this.sendError = sendError;
@@ -312,8 +306,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       public boolean isOpen()
       {
-         // log.debug("is open" + System.identityHashCode(this) +" open is now "
-         // + open);
          return open;
       }
 
@@ -474,7 +466,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       }
 
-      public void sync() throws Exception
+      public void sync() throws IOException
       {
          if (supportsCallback)
          {
@@ -498,7 +490,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
          writeDirect(bytes, sync, null);
       }
-      
+
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#writeInternal(java.nio.ByteBuffer)
        */
@@ -507,7 +499,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          writeDirect(bytes, true);
       }
 
-      
+
 
       private void checkAndResize(final int size)
       {
@@ -680,9 +672,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       public void copyTo(SequentialFile newFileName)
       {
          // TODO Auto-generated method stub
-         
       }
 
+      @Override
+      public File getJavaFile()
+      {
+         throw new UnsupportedOperationException();
+      }
    }
 
    /* (non-Javadoc)

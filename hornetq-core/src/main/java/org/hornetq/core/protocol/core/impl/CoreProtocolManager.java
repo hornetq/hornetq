@@ -31,6 +31,8 @@ import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
 import org.hornetq.core.protocol.core.impl.wireformat.NodeAnnounceMessage;
@@ -55,9 +57,9 @@ import org.hornetq.spi.core.remoting.Connection;
 public class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
-   
+
    private final HornetQServer server;
 
    private final List<Interceptor> interceptors;
@@ -72,7 +74,7 @@ public class CoreProtocolManager implements ProtocolManager
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
       final Configuration config = server.getConfiguration();
-      
+
       Executor connectionExecutor = server.getExecutorFactory().getExecutor();
 
       final CoreRemotingConnection rc = new RemotingConnectionImpl(connection,
@@ -81,7 +83,7 @@ public class CoreProtocolManager implements ProtocolManager
                                                                                                              : null,
                                                                                                              server.getNodeID());
 
-      Channel channel1 = rc.getChannel(1, -1);
+      Channel channel1 = rc.getChannel(CHANNEL_ID.SESSION.id, -1);
 
       ChannelHandler handler = new HornetQPacketHandler(this, server, channel1, rc);
 
@@ -118,12 +120,12 @@ public class CoreProtocolManager implements ProtocolManager
             else if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY || packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
             {
                SubscribeClusterTopologyUpdatesMessage msg = (SubscribeClusterTopologyUpdatesMessage)packet;
-               
+
                if (packet.getType() == PacketImpl.SUBSCRIBE_TOPOLOGY_V2)
                {
                   channel0.getConnection().setClientVersion(((SubscribeClusterTopologyUpdatesMessageV2)msg).getClientVersion());
                }
-               
+
                final ClusterTopologyListener listener = new ClusterTopologyListener()
                {
                   public void nodeUP(final long uniqueEventID,
@@ -170,18 +172,19 @@ public class CoreProtocolManager implements ProtocolManager
                         }
                      });
                   }
-                  
+
+                  @Override
                   public String toString()
                   {
                      return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
                   }
                };
-               
+
                final boolean isCC = msg.isClusterConnection();
                if (acceptorUsed.getClusterConnection() != null)
                {
                   acceptorUsed.getClusterConnection().addClusterTopologyListener(listener, isCC);
-                  
+
                   rc.addCloseListener(new CloseListener()
                   {
                      public void connectionClosed()
@@ -195,36 +198,52 @@ public class CoreProtocolManager implements ProtocolManager
             {
                NodeAnnounceMessage msg = (NodeAnnounceMessage)packet;
 
-               Pair<TransportConfiguration, TransportConfiguration> pair;
-               if (msg.isBackup())
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(null, msg.getConnector());
-               }
-               else
-               {
-                  pair = new Pair<TransportConfiguration, TransportConfiguration>(msg.getConnector(), msg.getBackupConnector());
-               }
+               final boolean backup = msg.isBackup();
+              Pair<TransportConfiguration, TransportConfiguration> pair =  getPair(msg.getConnector(), backup);
+
                if (isTrace)
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
 
                acceptorUsed.getClusterConnection().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+            } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
+            {
+               BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
+               if (server.startReplication(rc))
+               {
+                  /*
+                   * HORNETQ-720 Instantiate a new server locator to call notifyNodeUp(...)? Or send
+                   * a CLUSTER_TOPOLOGY(_2?) message?
+                   */
+//                  server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), true), true,
+//                                                          true);
+               }
             }
+         }
+
+          private Pair<TransportConfiguration, TransportConfiguration> getPair(TransportConfiguration conn,
+                                                                              boolean isBackup)
+         {
+            if (isBackup)
+            {
+               return new Pair<TransportConfiguration, TransportConfiguration>(null, conn);
+            }
+            return new Pair<TransportConfiguration, TransportConfiguration>(conn, null);
          }
       });
 
       return entry;
    }
 
-   private Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
+   private final Map<String, ServerSessionPacketHandler> sessionHandlers = new ConcurrentHashMap<String, ServerSessionPacketHandler>();
 
-   public ServerSessionPacketHandler getSessionHandler(final String sessionName)
+   ServerSessionPacketHandler getSessionHandler(final String sessionName)
    {
       return sessionHandlers.get(sessionName);
    }
 
-   public void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
+   void addSessionHandler(final String name, final ServerSessionPacketHandler handler)
    {
       sessionHandlers.put(name, handler);
    }
@@ -239,9 +258,15 @@ public class CoreProtocolManager implements ProtocolManager
    }
 
    // This is never called using the core protocol, since we override the HornetQFrameDecoder with our core
-   // optimised version HornetQFrameDecoder2, which nevers calls this
+   // optimised version HornetQFrameDecoder2, which never calls this
    public int isReadyToHandle(HornetQBuffer buffer)
    {
       return -1;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "CoreProtocolManager(server=" + server + ")";
    }
 }

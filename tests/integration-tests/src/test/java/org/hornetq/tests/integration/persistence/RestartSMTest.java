@@ -27,7 +27,6 @@ import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -38,7 +37,7 @@ import org.hornetq.utils.OrderedExecutorFactory;
  * A DeleteMessagesRestartTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Mar 2, 2009 10:14:38 AM
  *
  *
@@ -88,7 +87,7 @@ public class RestartSMTest extends ServiceTestBase
 
       PostOffice postOffice = new FakePostOffice();
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
+      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory, null);
 
       try
       {

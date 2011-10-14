@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
@@ -21,65 +20,25 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
  * A ReplicatedAsynchronousFailoverTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-   
+   @Override
    protected TestableServer createLiveServer()
    {
-      return new SameProcessHornetQServer(createServer(true, liveConfig));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager, 1));
    }
 
+   @Override
    protected TestableServer createBackupServer()
    {
-      return new SameProcessHornetQServer(createServer(true, backupConfig));
+      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager, 2));
    }
-   
+
    @Override
    protected void createConfigs() throws Exception
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
-      config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(false);
-      config1.setBackup(true);
-      backupServer = createBackupServer();
-      
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
-
-      /*liveConfig.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      liveConfig.setBackupConnectorName("toBackup");*/
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(false);
-      liveServer = createLiveServer();
-      
-      backupServer.start();
-      liveServer.start();
+      createReplicatedConfigs();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

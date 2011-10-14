@@ -19,14 +19,18 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
+ * Used by the {@link JournalStorageManager} to update the replicated journal.
+ *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public interface ReplicationManager extends HornetQComponent
 {
@@ -79,8 +83,43 @@ public interface ReplicationManager extends HornetQComponent
 
    /**
     * @param journalInfo
-    * @throws HornetQException 
+    * @throws HornetQException
     */
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
 
+   /**
+    * Reserve the following fileIDs in the backup server.
+    * @param datafiles
+    * @param contentType
+    * @throws HornetQException
+    */
+   void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType) throws HornetQException;
+
+   /**
+    * Informs backup that data synchronization is done.
+    * <p>
+    * So if 'live' fails, the (up-to-date) backup now may take over its duties.
+    */
+   void sendSynchronizationDone();
+
+   /**
+    * Sends the whole content of the file to be duplicated.
+    * @throws HornetQException
+    * @throws Exception
+    */
+   void syncJournalFile(JournalFile jf, JournalContent type) throws Exception;
+
+   /**
+    * @param seqFile
+    * @throws Exception
+    */
+   void syncLargeMessageFile(SequentialFile seqFile, long size, long id) throws Exception;
+
+   /**
+    * @param file
+    * @param id
+    * @param pageStore
+    * @throws Exception
+    */
+   void syncPages(SequentialFile file, long id, SimpleString pageStore) throws Exception;
 }

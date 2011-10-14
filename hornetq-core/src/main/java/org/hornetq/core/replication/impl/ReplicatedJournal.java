@@ -14,6 +14,7 @@
 package org.hornetq.core.replication.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCompletion;
@@ -22,7 +23,9 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
@@ -30,7 +33,7 @@ import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager;
 
 /**
- * Used by the {@link JournalStorageManager} to replicate journal calls. 
+ * Used by the {@link JournalStorageManager} to replicate journal calls.
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -59,10 +62,11 @@ public class ReplicatedJournal implements Journal
 
    private final byte journalID;
 
-   public ReplicatedJournal(final byte journaID, final Journal localJournal, final ReplicationManager replicationManager)
+   public ReplicatedJournal(final byte journalID, final Journal localJournal,
+                            final ReplicationManager replicationManager)
    {
       super();
-      journalID = journaID;
+      this.journalID = journalID;
       this.localJournal = localJournal;
       this.replicationManager = replicationManager;
    }
@@ -201,10 +205,10 @@ public class ReplicatedJournal implements Journal
       }
       replicationManager.appendCommitRecord(journalID, txID, lineUpContext);
       localJournal.appendCommitRecord(txID, sync, callback, lineUpContext);
-      
+
    }
 
-   
+
    /**
     * @param id
     * @param sync
@@ -492,7 +496,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#perfBlast(int)
     */
-   public void perfBlast(final int pages) throws Exception
+   public void perfBlast(final int pages)
    {
       localJournal.perfBlast(pages);
    }
@@ -569,6 +573,52 @@ public class ReplicatedJournal implements Journal
       localJournal.lineUpContex(callback);
    }
 
+   @Override
+   public JournalLoadInformation loadSyncOnly() throws Exception
+   {
+      return localJournal.loadSyncOnly();
+   }
+
+   @Override
+   public Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception
+   {
+      throw new UnsupportedOperationException("This method should only be called at a replicating backup");
+   }
+
+   @Override
+   public void synchronizationLock()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void synchronizationUnlock()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void forceMoveNextFile()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public JournalFile[] getDataFiles()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public SequentialFileFactory getFileFactory()
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   public int getFileSize()
+   {
+      return localJournal.getFileSize();
+   }
 
    // Package protected ---------------------------------------------
 

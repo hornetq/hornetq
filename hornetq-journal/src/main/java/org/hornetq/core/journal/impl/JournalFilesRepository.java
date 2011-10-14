@@ -33,8 +33,6 @@ import org.hornetq.core.logging.Logger;
  * Guaranteeing that they will be delivered in order to the Journal
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class JournalFilesRepository
 {
@@ -115,6 +113,18 @@ public class JournalFilesRepository
                                  final int fileSize,
                                  final int minFiles)
    {
+      if (filePrefix == null)
+      {
+         throw new IllegalArgumentException("filePrefix cannot be null");
+      }
+      if (fileExtension == null)
+      {
+         throw new IllegalArgumentException("fileExtension cannot be null");
+      }
+      if (maxAIO <= 0)
+      {
+         throw new IllegalArgumentException("maxAIO must be a positive number");
+      }
       this.fileFactory = fileFactory;
       this.maxAIO = maxAIO;
       this.filePrefix = filePrefix;
@@ -172,22 +182,31 @@ public class JournalFilesRepository
 
       for (JournalFile file : files)
       {
-         long fileID = file.getFileID();
-         if (nextFileID.get() < fileID)
-         {
-            nextFileID.set(fileID);
-         }
-
-         long fileNameID = getFileNameID(file.getFile().getFileName());
+         final long fileIdFromFile = file.getFileID();
+         final long fileIdFromName = getFileNameID(file.getFile().getFileName());
 
          // The compactor could create a fileName but use a previously assigned ID.
          // Because of that we need to take both parts into account
-         if (nextFileID.get() < fileNameID)
-         {
-            nextFileID.set(fileNameID);
-         }
+         setNextFileID(Math.max(fileIdFromName, fileIdFromFile));
       }
+   }
 
+   /**
+    * Set the {link #nextFileID} value to {@code targetUpdate} if the current value is less than
+    * {@code targetUpdate}.
+    * @param targetUpdate
+    */
+   public void setNextFileID(final long targetUpdate)
+   {
+      while (true)
+      {
+         final long current = nextFileID.get();
+         if (current >= targetUpdate)
+            return;
+
+         if (nextFileID.compareAndSet(current, targetUpdate))
+            return;
+      }
    }
 
    public void ensureMinFiles() throws Exception
@@ -200,7 +219,7 @@ public class JournalFilesRepository
          for (int i = 0; i < filesToCreate; i++)
          {
             // Keeping all files opened can be very costly (mainly on AIO)
-            freeFiles.add(createFile(false, false, true, false));
+            freeFiles.add(createFile(false, false, true, false, -1));
          }
       }
 
@@ -448,10 +467,10 @@ public class JournalFilesRepository
       return openedFiles.size();
    }
 
-   /** 
+   /**
     * <p>This method will instantly return the opened file, and schedule opening and reclaiming.</p>
     * <p>In case there are no cached opened files, this method will block until the file was opened,
-    * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as HornetQ).</p> 
+    * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as HornetQ).</p>
     * */
    public JournalFile openFile() throws InterruptedException
    {
@@ -489,8 +508,8 @@ public class JournalFilesRepository
       return nextFile;
    }
 
-   /** 
-    * 
+   /**
+    *
     * Open a file and place it into the openedFiles queue
     * */
    public void pushOpenedFile() throws Exception
@@ -528,7 +547,7 @@ public class JournalFilesRepository
 
       if (nextFile == null)
       {
-         nextFile = createFile(keepOpened, multiAIO, initFile, tmpCompactExtension);
+         nextFile = createFile(keepOpened, multiAIO, initFile, tmpCompactExtension, -1);
       }
       else
       {
@@ -546,6 +565,15 @@ public class JournalFilesRepository
       return nextFile;
    }
 
+   /**
+    * Creates files for journal synchronization of a replicated backup.
+    * @param isCurrent a current file is initialized and kept open.
+    */
+   public JournalFile createRemoteBackupSyncFile(long fileID) throws Exception
+   {
+      return createFile(false, false, true, false, fileID);
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -561,13 +589,12 @@ public class JournalFilesRepository
    private JournalFile createFile(final boolean keepOpened,
                                   final boolean multiAIO,
                                   final boolean init,
-                                  final boolean tmpCompact) throws Exception
+                                  final boolean tmpCompact,
+                                  final long fileIdPreSet) throws Exception
    {
-      long fileID = generateFileID();
+      long fileID = fileIdPreSet != -1 ? fileIdPreSet : generateFileID();
 
-      String fileName;
-
-      fileName = createFileName(tmpCompact, fileID);
+      final String fileName = createFileName(tmpCompact, fileID);
 
       if (JournalFilesRepository.trace)
       {
@@ -672,6 +699,10 @@ public class JournalFilesRepository
       return jf;
    }
 
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public String toString()
+   {
+      return "JournalFilesRepository(dataFiles=" + dataFiles + ", freeFiles=" + freeFiles + ", openedFiles=" +
+               openedFiles + ")";
+   }
 }

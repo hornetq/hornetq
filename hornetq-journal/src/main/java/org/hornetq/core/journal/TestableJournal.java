@@ -37,8 +37,6 @@ public interface TestableJournal extends Journal
 
    void debugWait() throws Exception;
 
-   int getFileSize();
-
    int getMinFiles();
 
    String getFilePrefix();
@@ -47,20 +45,19 @@ public interface TestableJournal extends Journal
 
    int getMaxAIO();
 
-   void forceMoveNextFile() throws Exception;
-
-   void setAutoReclaim(boolean autoReclaim);
-
-   boolean isAutoReclaim();
-
    void testCompact() throws Exception;
    
    JournalFile getCurrentFile();
-   
 
    /** This method is called automatically when a new file is opened.
     * @return true if it needs to re-check due to cleanup or other factors  */
    boolean checkReclaimStatus() throws Exception;
 
-   JournalFile[] getDataFiles();
+   /**
+    * Sets whether the journal should auto-reclaim its internal files.
+    * <p>
+    * This setting is not permanent, so it can only be used for tests.
+    * @param autoReclaim
+    */
+   void setAutoReclaim(boolean autoReclaim);
 }

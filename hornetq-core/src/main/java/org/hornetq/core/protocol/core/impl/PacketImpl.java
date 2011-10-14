@@ -38,7 +38,7 @@ public class PacketImpl implements Packet
 
    protected long channelID;
 
-   protected final byte type;
+   private final byte type;
 
    protected int size = -1;
 
@@ -68,8 +68,6 @@ public class PacketImpl implements Packet
    public static final byte CREATE_QUEUE = 34;
 
    public static final byte DELETE_QUEUE = 35;
-
-   public static final byte CREATE_REPLICATION = 36;
 
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
@@ -180,7 +178,7 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATION_COMPARE_DATA = 102;
 
-   public static final byte REPLICATION_SYNC = 103;
+   public static final byte REPLICATION_SYNC_FILE = 103;
    
    public static final byte SESS_ADD_METADATA = 104;
    
@@ -204,6 +202,9 @@ public class PacketImpl implements Packet
 
    public static final byte CLUSTER_TOPOLOGY_V2 = 114;
 
+   public static final byte BACKUP_REGISTRATION = 115;
+
+   public static final byte REPLICATION_START_STOP_SYNC = 120;
  
    // Static --------------------------------------------------------
 

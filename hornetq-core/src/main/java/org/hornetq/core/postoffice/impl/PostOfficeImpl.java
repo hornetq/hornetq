@@ -841,7 +841,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    /**
     * @param message
     */
-   protected void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
+   private void cleanupInternalPropertiesBeforeRouting(final ServerMessage message)
    {
       LinkedList<SimpleString> valuesToRemove = null;
 
@@ -892,13 +892,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    private class PageDelivery extends TransactionOperationAbstract
    {
-      private Set<Queue> queues = new HashSet<Queue>();
+      private final Set<Queue> queues = new HashSet<Queue>();
 
       public void addQueues(List<Queue> queueList)
       {
          queues.addAll(queueList);
       }
 
+      @Override
       public void afterCommit(Transaction tx)
       {
          // We need to try delivering async after paging, or nothing may start a delivery after paging since nothing is
@@ -913,6 +914,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       /* (non-Javadoc)
        * @see org.hornetq.core.transaction.TransactionOperation#getRelatedMessageReferences()
        */
+      @Override
       public List<MessageReference> getRelatedMessageReferences()
       {
          return Collections.emptyList();
@@ -928,9 +930,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       for (Map.Entry<SimpleString, RouteContextList> entry : context.getContexListing().entrySet())
       {
-         PagingStore store = pagingManager.getPageStore(entry.getKey());
-
-         if (store.page(message, context, entry.getValue()))
+         if (storageManager.addToPage(pagingManager, entry.getKey(), message, context, entry.getValue()))
          {
             if (message.isLargeMessage())
             {

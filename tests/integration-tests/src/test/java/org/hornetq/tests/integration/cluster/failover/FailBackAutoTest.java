@@ -29,13 +29,14 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
+import org.hornetq.tests.util.TransportConfigurationUtils;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -57,47 +58,38 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (locator != null)
-      {
-         try
-         {
-            locator.close();
-         }
-         catch (Exception e)
-         {
-            //
-         }
-      }
+      closeServerLocator(locator);
       super.tearDown();
    }
- 
+
    public void testAutoFailback() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       locator.setFailoverOnInitialConnection(true);
       locator.setReconnectAttempts(-1);
-      ((ServerLocatorInternal)locator).setIdentity("testAutoFailback");
-       
+      locator.setIdentity("testAutoFailback");
+
       ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
       final CountDownLatch latch = new CountDownLatch(1);
 
       ClientSession session = sendAndConsume(sf, true);
-      
+
       System.out.println(locator.getTopology().describe());
 
-      MyListener listener = new MyListener(latch);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
 
       session.addFailureListener(listener);
-      
-      System.out.println(locator.getTopology().describe());
+
+      backupServer.stop();
 
       liveServer.crash();
-      
+
+      backupServer.start();
       assertTrue(latch.await(5, TimeUnit.SECONDS));
-      
+
       log.info("backup (nowLive) topology = " + backupServer.getServer().getClusterManager().getDefaultConnection().getTopology().describe());
-      
+
       log.info("Server Crash!!!");
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -111,21 +103,21 @@ public class FailBackAutoTest extends FailoverTestBase
       verifyMessageOnServer(1, 1);
 
       System.out.println(locator.getTopology().describe());
-      
+
 
       session.removeFailureListener(listener);
 
       final CountDownLatch latch2 = new CountDownLatch(1);
 
-      listener = new MyListener(latch2);
+      listener = new CountDownSessionFailureListener(latch2);
 
       session.addFailureListener(listener);
 
       log.info("******* starting live server back");
       liveServer.start();
-      
+
       Thread.sleep(1000);
-      
+
       System.out.println("After failback: " + locator.getTopology().describe());
 
       assertTrue(latch2.await(5, TimeUnit.SECONDS));
@@ -181,7 +173,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       ClientSession session = sendAndConsume(sf, true);
 
-      MyListener listener = new MyListener(latch);
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
@@ -199,16 +191,14 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      CountDownLatch latch2 = new CountDownLatch(1);
-
-      listener = new MyListener(latch2);
+      listener = new CountDownSessionFailureListener();
 
       session.addFailureListener(listener);
 
       log.info("restarting live node now");
       liveServer.start();
-      
-      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+
+      assertTrue(listener.getLatch().await(5, TimeUnit.SECONDS));
 
       message = session.createMessage(true);
 
@@ -220,7 +210,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       session.removeFailureListener(listener);
 
-      listener = new MyListener(latch3);
+      listener = new CountDownSessionFailureListener(latch3);
 
       session.addFailureListener(listener);
 
@@ -239,6 +229,7 @@ public class FailBackAutoTest extends FailoverTestBase
       Assert.assertEquals(0, sf.numConnections());
    }
 
+   @Override
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -282,13 +273,13 @@ public class FailBackAutoTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
-      return getInVMTransportAcceptorConfiguration(live);
+      return TransportConfigurationUtils.getInVMAcceptor(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      return getInVMConnectorTransportConfiguration(live);
+      return TransportConfigurationUtils.getInVMConnector(live);
    }
 
 
@@ -298,7 +289,7 @@ public class FailBackAutoTest extends FailoverTestBase
 
       if (createQueue)
       {
-         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+         session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, false);
       }
 
       ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
@@ -333,7 +324,7 @@ public class FailBackAutoTest extends FailoverTestBase
       }
 
       ClientMessage message3 = consumer.receiveImmediate();
-      
+
       consumer.close();
 
       Assert.assertNull(message3);
@@ -346,29 +337,10 @@ public class FailBackAutoTest extends FailoverTestBase
     * @param message
     * @throws Exception
     */
+   @Override
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
       message.getBodyBuffer().writeString("message" + i);
    }
 
-   class MyListener implements SessionFailureListener
-   {
-      private final CountDownLatch latch;
-
-      public MyListener(CountDownLatch latch)
-      {
-         this.latch = latch;
-      }
-
-      public void connectionFailed(final HornetQException me, boolean failedOver)
-      {
-         System.out.println("Failed, me");
-         latch.countDown();
-      }
-
-      public void beforeReconnect(HornetQException exception)
-      {
-         System.out.println("MyListener.beforeReconnect");
-      }
-   }
 }

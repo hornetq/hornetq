@@ -13,6 +13,9 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.io.FileInputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -22,19 +25,21 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
-import org.hornetq.core.protocol.core.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCommitMessage;
@@ -42,20 +47,20 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationCompareDataMess
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageBeingMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargeMessageWriteMessage;
-import org.hornetq.core.protocol.core.impl.wireformat.ReplicationLargemessageEndMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * A RepplicationManagerImpl
+ * A ReplicationManagerImpl
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicationManagerImpl implements ReplicationManager
 {
@@ -67,11 +72,9 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
-   private final ClientSessionFactoryInternal sessionFactory;
-
    private CoreRemotingConnection replicatingConnection;
 
-   private Channel replicatingChannel;
+   private final Channel replicatingChannel;
 
    private boolean started;
 
@@ -85,22 +88,21 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private SessionFailureListener failureListener;
 
+   private CoreRemotingConnection remotingConnection;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationManagerImpl(final ClientSessionFactoryInternal sessionFactory, final ExecutorFactory executorFactory)
-   {
-      super();
-      this.sessionFactory = sessionFactory;
-      this.executorFactory = executorFactory;
-   }
-
-   // Public --------------------------------------------------------
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#replicate(byte[], org.hornetq.core.replication.ReplicationToken)
+   /**
+    * @param remotingConnection
     */
+   public ReplicationManagerImpl(CoreRemotingConnection remotingConnection, final ExecutorFactory executorFactory)
+   {
+      this.executorFactory = executorFactory;
+      replicatingChannel = remotingConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
+      this.remotingConnection = remotingConnection;
+   }
 
    public void appendAddRecord(final byte journalID, final long id, final byte recordType, final EncodingSupport record)
    {
@@ -264,14 +266,11 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#largeMessageDelete(long)
-    */
    public void largeMessageDelete(final long messageId)
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId));
+         sendReplicatePacket(new ReplicationLargeMessageEndMessage(messageId));
       }
    }
 
@@ -304,65 +303,15 @@ public class ReplicationManagerImpl implements ReplicationManager
          throw new IllegalStateException("ReplicationManager is already started");
       }
 
-      replicatingConnection = sessionFactory.getConnection();
-
-      if (replicatingConnection == null)
-      {
-         ReplicationManagerImpl.log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
-         throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                    "Backup server MUST be started before live server. Initialisation will not proceed.");
-      }
-
-      long channelID = replicatingConnection.generateChannelID();
-
-      Channel mainChannel = replicatingConnection.getChannel(1, -1);
-
-      replicatingChannel = replicatingConnection.getChannel(channelID, -1);
-
       replicatingChannel.setHandler(responseHandler);
-
-      CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID);
-
-      mainChannel.sendBlocking(replicationStartPackage);
-
-      failureListener = new SessionFailureListener()
-      {
-         public void connectionFailed(final HornetQException me, boolean failedOver)
-         {
-            if (me.getCode() == HornetQException.DISCONNECTED)
-            {
-               // Backup has shut down - no need to log a stack trace
-               ReplicationManagerImpl.log.warn("The backup node has been shut-down, replication will now stop");
-            }
-            else
-            {
-               ReplicationManagerImpl.log.warn("Connection to the backup node failed, removing replication now", me);
-            }
-
-            try
-            {
-               stop();
-            }
-            catch (Exception e)
-            {
-               ReplicationManagerImpl.log.warn(e.getMessage(), e);
-            }
-         }
-
-         public void beforeReconnect(final HornetQException me)
-         {
-         }
-      };
-      sessionFactory.addFailureListener(failureListener);
+      failureListener = new ReplicatedSessionFailureListener();
+      remotingConnection.addFailureListener(failureListener);
 
       started = true;
 
       enabled = true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.HornetQComponent#stop()
-    */
    public void stop() throws Exception
    {
       if (!started)
@@ -392,15 +341,8 @@ public class ReplicationManagerImpl implements ReplicationManager
          replicatingChannel.close();
       }
 
-      sessionFactory.causeExit();
-      sessionFactory.removeFailureListener(failureListener);
-      if (replicatingConnection != null)
-      {
-         replicatingConnection.destroy();
-      }
-
-      replicatingConnection = null;
-
+      remotingConnection.removeFailureListener(failureListener);
+      remotingConnection = null;
       started = false;
    }
 
@@ -424,9 +366,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
-    */
    public void compareJournals(final JournalLoadInformation[] journalInfo) throws HornetQException
    {
       replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
@@ -445,6 +384,8 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private void sendReplicatePacket(final Packet packet, boolean lineUp)
    {
+      if (!enabled)
+         return;
       boolean runItNow = false;
 
       OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
@@ -455,17 +396,15 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       synchronized (replicationLock)
       {
-         if (!enabled)
+         if (enabled)
          {
-            // Already replicating channel failed, so just play the action now
-
-            runItNow = true;
+            pendingTokens.add(repliToken);
+            replicatingChannel.send(packet);
          }
          else
          {
-            pendingTokens.add(repliToken);
-
-            replicatingChannel.send(packet);
+            // Already replicating channel failed, so just play the action now
+            runItNow = true;
          }
       }
 
@@ -477,6 +416,11 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
+   /**
+    * @throws IllegalStateException By default, all replicated packets generate a replicated
+    *            response. If your packets are triggering this exception, it may be because the
+    *            packets were not sent with {@link #sendReplicatePacket(Packet)}.
+    */
    private void replicated()
    {
       OperationContext ctx = pendingTokens.poll();
@@ -491,12 +435,38 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Inner classes -------------------------------------------------
 
-   protected class ResponseHandler implements ChannelHandler
+   private final class ReplicatedSessionFailureListener implements SessionFailureListener
    {
-      /* (non-Javadoc)
-       * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
-       */
-      public void handlePacket(final Packet packet)
+      public void connectionFailed(final HornetQException me, boolean failedOver)
+      {
+         if (me.getCode() == HornetQException.DISCONNECTED)
+         {
+            // Backup has shut down - no need to log a stack trace
+            ReplicationManagerImpl.log.warn("The backup node has been shut-down, replication will now stop");
+         }
+         else
+         {
+            ReplicationManagerImpl.log.warn("Connection to the backup node failed, removing replication now", me);
+         }
+
+         try
+         {
+            stop();
+         }
+         catch (Exception e)
+         {
+            ReplicationManagerImpl.log.warn(e.getMessage(), e);
+         }
+      }
+
+      public void beforeReconnect(final HornetQException me)
+      {
+      }
+   }
+
+   private class ResponseHandler implements ChannelHandler
+   {
+     public void handlePacket(final Packet packet)
       {
          if (packet.getType() == PacketImpl.REPLICATION_RESPONSE)
          {
@@ -526,4 +496,108 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    }
 
+   @Override
+   public void syncJournalFile(JournalFile jf, JournalContent content) throws Exception
+   {
+      if (!enabled)
+      {
+         return;
+      }
+      SequentialFile file = jf.getFile().copy();
+      try
+      {
+         log.info("Replication: sending " + jf + " (size=" + file.size() + ") to backup. " + file);
+         sendLargeFile(content, null, jf.getFileID(), file, Long.MAX_VALUE);
+      }
+      finally
+      {
+         if (file.isOpen())
+            file.close();
+      }
+   }
+
+   @Override
+   public void syncLargeMessageFile(SequentialFile file, long size, long id) throws Exception
+   {
+      if (enabled)
+         sendLargeFile(null, null, id, file, size);
+   }
+
+   @Override
+   public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
+   {
+   if (enabled)
+      sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
+   }
+
+   /**
+    * Sends large files in reasonably sized chunks to the backup during replication synchronization.
+    * @param content journal type or {@code null} for large-messages and pages
+    * @param pageStore page store name for pages, or {@code null} otherwise
+    * @param id journal file id or (large) message id
+    * @param file
+    * @param maxBytesToSend maximum number of bytes to read and send from the file
+    * @throws Exception
+    */
+   private void sendLargeFile(JournalContent content,
+      SimpleString pageStore,
+      final long id,
+      SequentialFile file,
+      long maxBytesToSend) throws Exception
+   {
+      if (!enabled)
+         return;
+      if (!file.isOpen())
+      {
+         file.open();
+      }
+      final FileChannel channel = (new FileInputStream(file.getJavaFile())).getChannel();
+      try
+      {
+         final ByteBuffer buffer = ByteBuffer.allocate(1 << 17);
+         while (true)
+         {
+            buffer.clear();
+            int bytesRead = channel.read(buffer);
+            int toSend = bytesRead;
+            if (bytesRead > 0)
+            {
+            if (bytesRead >= maxBytesToSend)
+            {
+               toSend = (int)maxBytesToSend;
+               maxBytesToSend = 0;
+            }
+            else
+            {
+               maxBytesToSend = maxBytesToSend - bytesRead;
+            }
+            buffer.limit(toSend);
+         }
+         buffer.rewind();
+
+         // sending -1 or 0 bytes will close the file at the backup
+         sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, bytesRead, buffer));
+         if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
+            break;
+         }
+      }
+      finally
+      {
+         channel.close();
+      }
+   }
+
+   @Override
+   public void sendStartSyncMessage(JournalFile[] datafiles, JournalContent contentType) throws HornetQException
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(datafiles, contentType));
+   }
+
+   @Override
+   public void sendSynchronizationDone()
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(null, null));
+   }
 }

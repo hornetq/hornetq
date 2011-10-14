@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.config.BridgeConfiguration;
+import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
  * A ClusterManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 18 Nov 2008 09:23:26
  *
  */
@@ -32,7 +33,7 @@ public interface ClusterManager extends HornetQComponent
    Map<String, Bridge> getBridges();
 
    Set<ClusterConnection> getClusterConnections();
-   
+
    /**
     * Return the default ClusterConnection to be used case it's not defined by the acceptor
     * @return
@@ -42,16 +43,19 @@ public interface ClusterManager extends HornetQComponent
    ClusterConnection getClusterConnection(String name);
 
    Set<BroadcastGroup> getBroadcastGroups();
-   
+
    void activate();
 
    void flushExecutor();
 
    void announceBackup() throws Exception;
-   
+
    void deploy() throws Exception;
 
    void deployBridge(BridgeConfiguration config, boolean start) throws Exception;
+
+   // HORNETQ-720
+   void announceReplicatingBackup(Channel liveChannel);
 
    void destroyBridge(String name) throws Exception;
 

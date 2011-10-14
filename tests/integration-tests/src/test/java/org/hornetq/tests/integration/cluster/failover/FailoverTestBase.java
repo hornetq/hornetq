@@ -24,10 +24,12 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
@@ -35,16 +37,19 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.NodeManager;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
+import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A FailoverTestBase
@@ -57,6 +62,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
+   /*
+    * Used only by tests of large messages.
+    */
+   protected static final int MIN_LARGE_MESSAGE = 1024;
+   private static final int LARGE_MESSAGE_SIZE = MIN_LARGE_MESSAGE * 3;
+
+   protected static final int PAGE_MAX = 2 * 1024;
+   protected static final int PAGE_SIZE = 1024;
+
    // Attributes ----------------------------------------------------
 
    protected TestableServer liveServer;
@@ -68,6 +82,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected Configuration liveConfig;
 
    protected NodeManager nodeManager;
+
+   protected boolean startBackupServer = true;
 
    // Static --------------------------------------------------------
 
@@ -97,20 +113,23 @@ public abstract class FailoverTestBase extends ServiceTestBase
       super.setUp();
       clearData();
       createConfigs();
-      
-      
-      
+
+
+
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
-      
+
       waitForServer(liveServer.getServer());
 
       if (backupServer != null)
       {
          backupServer.setIdentity(this.getClass().getSimpleName() + "/backupServer");
+        if (startBackupServer)
+        {
          backupServer.start();
          waitForServer(backupServer.getServer());
+        }
       }
    }
 
@@ -125,8 +144,39 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    /**
-    * @throws Exception
+    * Large message version of {@link #setBody(int, ClientMessage)}.
+    * @param i
+    * @param message
+    * @param size
     */
+   protected static void setLargeMessageBody(final int i, final ClientMessage message)
+   {
+      try
+      {
+         message.setBodyInputStream(UnitTestCase.createFakeLargeStream(LARGE_MESSAGE_SIZE));
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e);
+      }
+   }
+
+   /**
+    * Large message version of {@link #assertMessageBody(int, ClientMessage)}.
+    * @param i
+    * @param message
+    */
+   protected static void assertLargeMessageBody(final int i, final ClientMessage message)
+   {
+      HornetQBuffer buffer = message.getBodyBuffer();
+
+      for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
+      {
+         Assert.assertTrue("expecting " + LARGE_MESSAGE_SIZE + " bytes, got " + j, buffer.readable());
+         Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
+      }
+   }
+
    protected void createConfigs() throws Exception
    {
       nodeManager = new InVMNodeManager();
@@ -142,11 +192,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
       TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       backupConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
-      ArrayList<String> staticConnectors = new ArrayList<String>();
-      staticConnectors.add(liveConnector.getName());
-      ClusterConnectionConfiguration cccLive = new ClusterConnectionConfiguration("cluster1", "jms", backupConnector.getName(), -1, false, false, 1, 1,
-            staticConnectors, false);
-      backupConfig.getClusterConfigurations().add(cccLive);
+      ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
+                                                        liveConnector.getName());
       backupServer = createBackupServer();
       backupServer.getServer().setIdentity("bkpIdentityServer");
 
@@ -156,49 +203,47 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setSecurityEnabled(false);
       liveConfig.setSharedStore(true);
       liveConfig.setClustered(true);
-      List<String> pairs = null;
-      ClusterConnectionConfiguration ccc0 = new ClusterConnectionConfiguration("cluster1", "jms", liveConnector.getName(), -1, false, false, 1, 1,
-            pairs, false);
-      liveConfig.getClusterConfigurations().add(ccc0);
+      ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveServer = createLiveServer();
    }
 
    protected void createReplicatedConfigs() throws Exception
    {
-      Configuration config1 = super.createDefaultConfig();
-      config1.setBindingsDirectory(config1.getBindingsDirectory() + "_backup");
-      config1.setJournalDirectory(config1.getJournalDirectory() + "_backup");
-      config1.setPagingDirectory(config1.getPagingDirectory() + "_backup");
-      config1.setLargeMessagesDirectory(config1.getLargeMessagesDirectory() + "_backup");
-      config1.getAcceptorConfigurations().clear();
-      config1.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(false));
-      config1.setSecurityEnabled(false);
-      config1.setSharedStore(false);
-      config1.setBackup(true);
+      final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
+      final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
+      final TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
+
+      nodeManager = new InVMNodeManager();
+      backupConfig = createDefaultConfig();
+      liveConfig = createDefaultConfig();
+
+      ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
+                                                     liveConnector);
+
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + "_backup");
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + "_backup");
+      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + "_backup");
+      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + "_backup");
+      backupConfig.setSecurityEnabled(false);
+
       backupServer = createBackupServer();
+      backupServer.getServer().setIdentity("idBackup");
 
-      Configuration config0 = super.createDefaultConfig();
-      config0.getAcceptorConfigurations().clear();
-      config0.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
+      liveConfig.getAcceptorConfigurations().clear();
+      liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-      config0.getConnectorConfigurations().put("toBackup", getConnectorTransportConfiguration(false));
-      //liveConfig.setBackupConnectorName("toBackup");
-      config0.setSecurityEnabled(false);
-      config0.setSharedStore(false);
+
       liveServer = createLiveServer();
-
-      backupServer.start();
-      liveServer.start();
+      liveServer.getServer().setIdentity("idLive");
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       logAndSystemOut("#test tearDown");
-      backupServer.stop();
-
-      liveServer.stop();
+      stopComponent(backupServer);
+      stopComponent(liveServer);
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
@@ -218,7 +263,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
       catch (IOException e)
       {
-         throw e; 
+         throw e;
       }
       try
       {
@@ -241,18 +286,43 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
 
-      boolean ok = countDownLatch.await(5, TimeUnit.SECONDS);
-      assertTrue(ok);
+      assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
       return sf;
    }
 
-   protected void waitForBackup(ClientSessionFactoryInternal sf, long seconds)
-         throws Exception
+   /**
+    * This method will Waits for backup to be in the "started" state and to finish synchronization
+    * with the live.
+    * @param sessionFactory
+    * @param seconds
+    * @throws Exception
+    */
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
    {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (sf.getBackupConnector() == null)
+      waitForBackup(sessionFactory, seconds, true);
+         }
+
+   /**
+    * @param sessionFactory
+    * @param seconds
+    * @param waitForSync whether to wait for sync'ing data with the live to finish or not
+    */
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds, boolean waitForSync)
+   {
+      final long toWait = seconds * 1000;
+      final long time = System.currentTimeMillis();
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
+      while (true)
       {
+         if (sessionFactory.getBackupConnector() != null && (actualServer.isRemoteBackupUpToDate() || !waitForSync))
+         {
+            break;
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("backup server never started (" + backupServer.isStarted() + "), or never finished synchronizing (" +
+                     actualServer.isRemoteBackupUpToDate() + ")");
+   }
          try
          {
             Thread.sleep(100);
@@ -261,106 +331,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
          {
             //ignore
          }
-         if (sf.getBackupConnector() != null)
-         {
-            break;
          }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started");
-         }
-      }
-      System.out.println("sf.getBackupConnector() = " + sf.getBackupConnector());
-   }
-
-   protected void waitForBackup(long seconds)
-   {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (!backupServer.isInitialised())
-      {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            //ignore
-         }
-         if (backupServer.isInitialised())
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("backup server never started");
-         }
-      }
-   }
-
-   protected void waitForBackup(long seconds, TestableServer server)
-   {
-      long time = System.currentTimeMillis();
-      long toWait = seconds * 1000;
-      while (!server.isInitialised())
-      {
-         try
-         {
-            Thread.sleep(100);
-         }
-         catch (InterruptedException e)
-         {
-            //ignore
-         }
-         if (server.isInitialised())
-         {
-            break;
-         }
-         else if (System.currentTimeMillis() > (time + toWait))
-         {
-            fail("server never started");
-         }
-      }
-   }
-
-
-   protected TransportConfiguration getInVMConnectorTransportConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", server1Params);
-      }
-   }
-
-   protected TransportConfiguration getInVMTransportAcceptorConfiguration(final boolean live)
-   {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", server1Params);
-      }
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory");
+         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName());
       }
       else
       {
@@ -369,7 +347,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
+         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName(),
                server1Params);
       }
    }
@@ -378,7 +356,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
+         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName());
       }
       else
       {
@@ -387,8 +365,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-               server1Params);
+         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), server1Params);
       }
    }
 

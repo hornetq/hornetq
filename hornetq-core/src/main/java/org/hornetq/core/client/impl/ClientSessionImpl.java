@@ -113,7 +113,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Attributes ----------------------------------------------------------------------------
 
-   private Map<String, String> metadata = new HashMap<String, String>();
+   private final Map<String, String> metadata = new HashMap<String, String>();
 
    private final ClientSessionFactoryInternal sessionFactory;
 
@@ -452,13 +452,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    /*
-    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on the remoting thread.
-    * Direct consumers have issues with blocking and failover.
-    * E.g. if direct then inside MessageHandler call a blocking method like rollback or acknowledge (blocking)
-    * This can block until failove completes, which disallows the thread to be used to deliver any responses to the client
-    * during that period, so failover won't occur.
-    * If we want direct consumers we need to rethink how they work
-   */
+    * Note, we DO NOT currently support direct consumers (i.e. consumers we're delivery occurs on
+    * the remoting thread. Direct consumers have issues with blocking and failover. E.g. if direct
+    * then inside MessageHandler call a blocking method like rollback or acknowledge (blocking) This
+    * can block until failover completes, which disallows the thread to be used to deliver any
+    * responses to the client during that period, so failover won't occur. If we want direct
+    * consumers we need to rethink how they work
+    */
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
                                         final int windowSize,
@@ -1659,10 +1659,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return remotingConnection;
    }
-   
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
+
    @Override
    public String toString()
    {

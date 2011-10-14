@@ -13,14 +13,13 @@
 
 package org.hornetq.core.server;
 
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.core.journal.SequentialFile;
+
 /**
  * A LargeMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
- * Created 30-Sep-08 10:58:04 AM
- *
- *
  */
 public interface LargeServerMessage extends ServerMessage
 {
@@ -34,13 +33,13 @@ public interface LargeServerMessage extends ServerMessage
    long getPendingRecordID();
 
    boolean isFileExists() throws Exception;
-   
+
    /**
     * We have to copy the large message content in case of DLQ and paged messages
     * For that we need to pre-mark the LargeMessage with a flag when it is paged
     */
    void setPaged();
-   
+
    /** Close the files if opened */
    void releaseResources();
 
@@ -49,4 +48,17 @@ public interface LargeServerMessage extends ServerMessage
    void incrementDelayDeletionCount();
 
    void decrementDelayDeletionCount() throws Exception;
+
+   /**
+    * This method only has relevance in a backup server.
+    * @param sync {@code true} if this file is meant for appends of a message that needs to be
+    *           sync'ed with the live.
+    */
+   void setReplicationSync(boolean sync);
+
+   /**
+    * @return
+    * @throws HornetQException
+    */
+   SequentialFile getFile() throws HornetQException;
 }

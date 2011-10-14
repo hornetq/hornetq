@@ -57,7 +57,6 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.cursor.impl.PagePositionImpl;
-import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -1176,7 +1175,7 @@ public class PagingTest extends ServiceTestBase
          session.commit();
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -1288,6 +1287,7 @@ public class PagingTest extends ServiceTestBase
          {
             this.queue = queue;
          }
+         @Override
          public void run()
          {
             try
@@ -1347,7 +1347,6 @@ public class PagingTest extends ServiceTestBase
             {
                if (i % 500 == 0)
                {
-                  log.info("Sent " + i + " messages");
                   session.commit();
                }
                message = session.createMessage(true);
@@ -1409,6 +1408,7 @@ public class PagingTest extends ServiceTestBase
 
             threads[start - 1] = new Thread()
             {
+               @Override
                public void run()
                {
                   try
@@ -1615,6 +1615,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread t = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -2191,7 +2192,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < 50; i++)
          {
-            System.out.println("Sending " + i);
+            // System.out.println("Sending " + i);
             ClientMessage message = sessionNonTX.createMessage(true);
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
@@ -2201,7 +2202,7 @@ public class PagingTest extends ServiceTestBase
 
             if (i % 2 == 0)
             {
-               System.out.println("Sending 20 msgs to make it page");
+               // System.out.println("Sending 20 msgs to make it page");
                for (int j = 0; j < 20; j++)
                {
                   ClientMessage msgSend = sessionNonTX.createMessage(true);
@@ -2213,7 +2214,7 @@ public class PagingTest extends ServiceTestBase
             }
             else
             {
-               System.out.println("Consuming 20 msgs to make it page");
+               // System.out.println("Consuming 20 msgs to make it page");
                ClientConsumer consumer = sessionNonTX.createConsumer(PagingTest.ADDRESS);
                for (int j = 0; j < 20; j++)
                {
@@ -2253,11 +2254,8 @@ public class PagingTest extends ServiceTestBase
 
             Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
-            // System.out.println(messageID);
-            Assert.assertNotNull(messageID);
-            Assert.assertEquals("message received out of order", i, messageID.intValue());
-
-            System.out.println("MessageID = " + messageID);
+            Assert.assertNotNull("MessageID", messageID);
+            Assert.assertEquals("message received out of order " + messageID, i, messageID.intValue());
 
             message.acknowledge();
          }
@@ -2322,6 +2320,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread producerThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -2450,6 +2449,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread producerThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionProducer = null;
@@ -2517,7 +2517,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < numberOfMessages; i++)
          {
             ClientMessage msg = consumer.receive(5000);
-            assertNotNull(msg);
+            assertNotNull(String.valueOf(i), msg);
             log.info("Received " + i + " with property = " + msg.getIntProperty("count"));
             if (i != msg.getIntProperty("count").intValue())
             {
@@ -2608,7 +2608,7 @@ public class PagingTest extends ServiceTestBase
             message.getBodyBuffer().writeBytes(body);
             message.putIntProperty(new SimpleString("id"), i);
 
-            TestSupportPageStore store = (TestSupportPageStore)server.getPostOffice()
+            PagingStore store = server.getPostOffice()
                                                                      .getPagingManager()
                                                                      .getPageStore(PagingTest.ADDRESS);
 
@@ -2841,13 +2841,12 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 0; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             if (i == 55)
             {
                System.out.println("i = 55");
             }
             ClientMessage msg = consumer.receive(5000);
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
@@ -2940,10 +2939,9 @@ public class PagingTest extends ServiceTestBase
          // 347 = I just picked any odd number, not rounded, to make sure it's not at the beggining of any page
          for (int i = 0; i < 347; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
@@ -2973,10 +2971,9 @@ public class PagingTest extends ServiceTestBase
          session.start();
          for (int i = 347; i < numberOfMessages; i++)
          {
-            System.out.println("Received " + i);
             ClientMessage msg = consumer.receive(5000);
             assertEquals(i, msg.getIntProperty("id").intValue());
-            Assert.assertNotNull(msg);
+            Assert.assertNotNull("Received " + i, msg);
             msg.acknowledge();
             session.commit();
          }
@@ -3827,6 +3824,7 @@ public class PagingTest extends ServiceTestBase
 
          Thread consumeThread = new Thread()
          {
+            @Override
             public void run()
             {
                ClientSession sessionConsumer = null;
@@ -4027,7 +4025,7 @@ public class PagingTest extends ServiceTestBase
          }
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -4145,7 +4143,7 @@ public class PagingTest extends ServiceTestBase
          }
 
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          long timeout = System.currentTimeMillis() + 5000;
          while (store.isPaging() && timeout > System.currentTimeMillis())
@@ -4153,7 +4151,7 @@ public class PagingTest extends ServiceTestBase
             Thread.sleep(100);
          }
 
-         store.getCursorProvier().cleanup();
+         store.getCursorProvider().cleanup();
 
          Thread.sleep(1000);
 
@@ -4392,9 +4390,9 @@ public class PagingTest extends ServiceTestBase
 
          pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
 
-         pgStoreAddress.getCursorProvier().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
+         pgStoreAddress.getCursorProvider().getSubscription(server.locateQueue(ADDRESS).getID()).cleanupEntries();
 
-         pgStoreAddress.getCursorProvier().cleanup();
+         pgStoreAddress.getCursorProvider().cleanup();
 
          while (timeout > System.currentTimeMillis() && pgStoreAddress.isPaging())
          {

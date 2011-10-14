@@ -35,8 +35,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    protected LinkedListImpl<T>[] levels;
 
-   protected final int priorities;
-
    private int size;
 
    private int lastReset;
@@ -47,8 +45,6 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    public PriorityLinkedListImpl(final int priorities)
    {
-      this.priorities = priorities;
-
       levels = (LinkedListImpl<T>[])Array.newInstance(LinkedListImpl.class, priorities);
 
       for (int i = 0; i < priorities; i++)

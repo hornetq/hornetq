@@ -28,7 +28,7 @@ import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
@@ -50,20 +50,20 @@ import org.hornetq.utils.ExecutorFactory;
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
  * external management interface of the HornetQ Server is defined by the HornetQServerManagement interface This
  * interface is never exposed outside the HornetQ server, e.g. by JMX or other means
- * 
+ *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface HornetQServer extends HornetQComponent
 {
-   
+
    /** This method was created mainly for testing but it may be used in scenarios where 
     *  you need to have more than one Server inside the same VM.
     *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
    void setIdentity(String identity);
-   
+
    String getIdentity();
-   
+
    String describe();
    
    Configuration getConfiguration();
@@ -71,7 +71,7 @@ public interface HornetQServer extends HornetQComponent
    RemotingService getRemotingService();
 
    StorageManager getStorageManager();
-   
+
    PagingManager getPagingManager();
 
    ManagementService getManagementService();
@@ -81,12 +81,12 @@ public interface HornetQServer extends HornetQComponent
    MBeanServer getMBeanServer();
 
    Version getVersion();
-   
+
    NodeManager getNodeManager();
 
    /**
     * Returns the resource to manage this HornetQ server.
-    * 
+    *
     * Using this control will throw IllegalStateException if the
     * server is not properly started.
     */
@@ -95,10 +95,6 @@ public interface HornetQServer extends HornetQComponent
    void registerActivateCallback(ActivateCallback callback);
 
    void unregisterActivateCallback(ActivateCallback callback);
-
-   /** The journal at the backup server has to be equivalent as the journal used on the live node. 
-    *  Or else the backup node is out of sync. */
-   ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
    ServerSession createSession(String name,
                                String username,
@@ -154,13 +150,13 @@ public interface HornetQServer extends HornetQComponent
                      SimpleString filterString,
                      boolean durable,
                      boolean temporary) throws Exception;
-   
+
    Queue locateQueue(SimpleString queueName) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
-   
+
    ExecutorService getThreadPool();
    
    ExecutorFactory getExecutorFactory();
@@ -168,19 +164,19 @@ public interface HornetQServer extends HornetQComponent
    void setGroupingHandler(GroupingHandler groupingHandler);
 
    GroupingHandler getGroupingHandler();
-   
+
    ReplicationEndpoint getReplicationEndpoint();
-   
+
    ReplicationManager getReplicationManager();
 
-   boolean checkActivate() throws Exception;      
-   
+   boolean checkActivate() throws Exception;
+
    void deployDivert(DivertConfiguration config) throws Exception;
 
    void destroyDivert(SimpleString name) throws Exception;
 
    ConnectorsService getConnectorsService();
-   
+
    void deployBridge(BridgeConfiguration config) throws Exception;
 
    void destroyBridge(String name) throws Exception;
@@ -190,4 +186,10 @@ public interface HornetQServer extends HornetQComponent
    void threadDump(String reason);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
+
+   /**
+    * @param rc
+    * @return {@code true} if replication started successfully, {@code false} otherwise
+    */
+   boolean startReplication(CoreRemotingConnection rc);
 }

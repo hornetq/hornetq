@@ -23,6 +23,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
@@ -33,19 +34,22 @@ import org.hornetq.core.persistence.config.PersistedAddressSetting;
 import org.hornetq.core.persistence.config.PersistedRoles;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RouteContextList;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * 
+ *
  * A StorageManager
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
@@ -56,12 +60,12 @@ public interface StorageManager extends HornetQComponent
 
    /** Get the context associated with the thread for later reuse */
    OperationContext getContext();
-   
+
    void lineUpContext();
 
    /** It just creates an OperationContext without associating it */
    OperationContext newContext(Executor executor);
-   
+
    OperationContext newSingleThreadContext();
 
    /** Set the context back to the thread */
@@ -85,20 +89,20 @@ public interface StorageManager extends HornetQComponent
 
    void afterCompleteOperations(IOAsyncTask run);
 
-   /** Block until the operations are done. 
+   /** Block until the operations are done.
     *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
     *           in case of the pools are full
     * @throws Exception */
    boolean waitOnOperations(long timeout) throws Exception;
 
-   /** Block until the operations are done. 
+   /** Block until the operations are done.
     *  Warning: Don't use it inside an ordered executor, otherwise the system may lock up
     *           in case of the pools are full
     * @throws Exception */
    void waitOnOperations() throws Exception;
 
    void clearContext();
-   
+
    long generateUniqueID();
 
    long getCurrentUniqueID();
@@ -116,7 +120,7 @@ public interface StorageManager extends HornetQComponent
    void deleteMessage(long messageID) throws Exception;
 
    void storeAcknowledge(long queueID, long messageID) throws Exception;
-   
+
    void storeCursorAcknowledge(long queueID, PagePosition position) throws Exception;
 
    void updateDeliveryCount(MessageReference ref) throws Exception;
@@ -134,7 +138,7 @@ public interface StorageManager extends HornetQComponent
    void storeAcknowledgeTransactional(long txID, long queueID, long messageID) throws Exception;
 
    void storeCursorAcknowledgeTransactional(long txID, long queueID, PagePosition position) throws Exception;
-   
+
    void deleteCursorAcknowledgeTransactional(long txID, long ackID) throws Exception;
 
    void updateScheduledDeliveryTimeTransactional(long txID, MessageReference ref) throws Exception;
@@ -148,9 +152,9 @@ public interface StorageManager extends HornetQComponent
    LargeServerMessage createLargeMessage();
 
    /**
-    * 
+    *
     * @param id
-    * @param message This is a temporary message that holds the parsed properties. 
+    * @param message This is a temporary message that holds the parsed properties.
     *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
     * @return
     * @throws Exception 
@@ -166,16 +170,13 @@ public interface StorageManager extends HornetQComponent
    void rollback(long txID) throws Exception;
 
    void storePageTransaction(long txID, PageTransactionInfo pageTransaction) throws Exception;
-   
+
    void updatePageTransaction(long txID, PageTransactionInfo pageTransaction,  int depage) throws Exception;
-   
+
+   /** FIXME Unused */
    void updatePageTransaction(PageTransactionInfo pageTransaction,  int depage) throws Exception;
 
    void deletePageTransactional(long recordID) throws Exception;
-
-   /** This method is only useful at the backup side. We only load internal structures making the journals ready for
-    *  append mode on the backup side. */
-   JournalLoadInformation[] loadInternalOnly() throws Exception;
 
    JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                              final PagingManager pagingManager,
@@ -197,43 +198,68 @@ public interface StorageManager extends HornetQComponent
 
    JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
 
-   // grouping relateed operations
+   // grouping related operations
    void addGrouping(GroupBinding groupBinding) throws Exception;
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
-   
+
    void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception;
-   
+
    void deleteAddressSetting(SimpleString addressMatch) throws Exception;
-   
+
    List<PersistedAddressSetting> recoverAddressSettings() throws Exception;
-   
+
    void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception;
-   
+
    void deleteSecurityRoles(SimpleString addressMatch) throws Exception;
 
    List<PersistedRoles> recoverPersistedRoles() throws Exception;
-   
-   /** 
+
+   /**
     * @return The ID with the stored counter
     */
    long storePageCounter(long txID, long queueID, long value) throws Exception;
-   
+
    void deleteIncrementRecord(long txID, long recordID) throws Exception;
-   
+
    void deletePageCounter(long txID, long recordID) throws Exception;
 
    /**
     * @return the ID with the increment record
-    * @throws Exception 
+    * @throws Exception
     */
    long storePageCounterInc(long txID, long queueID, int add) throws Exception;
-   
+
    /**
     * @return the ID with the increment record
-    * @throws Exception 
+    * @throws Exception
     */
    long storePageCounterInc(long queueID, int add) throws Exception;
-   
-   
+
+   /**
+    * @return the bindings journal
+    */
+   Journal getBindingsJournal();
+
+   /**
+    * @return the message journal
+    */
+   Journal getMessageJournal();
+
+   /**
+    * @param replicationManager
+    * @param pagingManager
+    * @throws Exception
+    */
+   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception;
+
+   /**
+    * Adds message to page if we are paging.
+    * @return whether we added the message to a page or not.
+    */
+   boolean addToPage(PagingManager pagingManager,
+      SimpleString address,
+      ServerMessage message,
+      RoutingContext ctx,
+      RouteContextList listCtx) throws Exception;
 }

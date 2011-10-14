@@ -69,13 +69,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private transient String identity;
 
-   private Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
+   private final Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
 
    private TransportConfiguration[] initialConnectors;
 
-   private DiscoveryGroupConfiguration discoveryGroupConfiguration;
+   private final DiscoveryGroupConfiguration discoveryGroupConfiguration;
 
-   private StaticConnector staticConnector = new StaticConnector();
+   private final StaticConnector staticConnector = new StaticConnector();
 
    private final Topology topology;
 
@@ -331,8 +331,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private synchronized void initialise() throws Exception
    {
-      if (!readOnly)
+      if (readOnly)
       {
+         return;
+      }
+
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -366,7 +369,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          readOnly = true;
       }
-   }
 
    private ServerLocatorImpl(final Topology topology,
                              final boolean useHA,
@@ -1477,7 +1479,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   class StaticConnector implements Serializable
+   final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
 
@@ -1630,6 +1632,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
       }
 
+      @Override
       public void finalize() throws Throwable
       {
          if (!closed && finalizeCheck)

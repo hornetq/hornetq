@@ -54,20 +54,20 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
    public void testDeleteMessagesOnStartup() throws Exception
    {
       createStorage();
-      
+
       Queue theQueue = new FakeQueue(new SimpleString(""));
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
       queues.put(100l, theQueue);
-      
+
       ServerMessage msg = new ServerMessageImpl(1, 100);
-      
+
       journal.storeMessage(msg);
 
       for (int i = 2; i < 100; i++)
       {
          journal.storeMessage(new ServerMessageImpl(i, 100));
       }
-      
+
       journal.storeReference(100, 1, true);
 
       journal.stop();
@@ -75,21 +75,23 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
       journal.start();
 
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
-      
+
       journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null);
 
       assertEquals(98, deletedMessage.size());
-      
+
       for (Long messageID : deletedMessage)
       {
          assertTrue("messageID = " + messageID, messageID.longValue() >= 2 && messageID <= 99);
       }
    }
 
+   @Override
    protected JournalStorageManager createJournalStorageManager(Configuration configuration)
    {
-      return new JournalStorageManager(configuration, execFactory)
+      return new JournalStorageManager(configuration, execFactory, null)
       {
+         @Override
          public void deleteMessage(final long messageID) throws Exception
          {
             System.out.println("message : " + messageID);
@@ -107,6 +109,6 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
+
 
 }

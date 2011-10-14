@@ -82,10 +82,13 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
+import org.hornetq.core.replication.impl.ReplicationEndpointImpl;
+import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
@@ -141,13 +144,14 @@ public class HornetQServerImpl implements HornetQServer
 
    private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
 
-   // JMS Topics (which are outside of the scope of the core API) will require a dumb subscription with a dummy-filter
-   // at this current version
-   // as a way to keep its existence valid and TCK tests
-   // That subscription needs an invalid filter, however paging needs to ignore any subscription with this filter.
-   // For that reason, this filter needs to be rejected on paging or any other component on the system, and just be
-   // ignored for any purpose
-   // It's declared here as this filter is considered a global ignore
+   /*
+    * JMS Topics (which are outside of the scope of the core API) will require a dumb subscription
+    * with a dummy-filter at this current version as a way to keep its existence valid and TCK
+    * tests. That subscription needs an invalid filter, however paging needs to ignore any
+    * subscription with this filter. For that reason, this filter needs to be rejected on paging or
+    * any other component on the system, and just be ignored for any purpose It's declared here as
+    * this filter is considered a global ignore
+    */
    public static final String GENERIC_IGNORED_FILTER = "__HQX=-1";
 
    // Static
@@ -215,8 +219,14 @@ public class HornetQServerImpl implements HornetQServer
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
    private final Object initialiseLock = new Object();
-
    private boolean initialised;
+   private final Object startUpLock = new Object();
+
+   /**
+    * Only applicable to 'remote backup servers'. If this flag is false the backup may not become
+    * 'live'.
+    */
+   private volatile boolean backupUpToDate = true;
 
    // private FailoverManager replicationFailoverManager;
 
@@ -236,7 +246,7 @@ public class HornetQServerImpl implements HornetQServer
    private Thread backupActivationThread;
 
    private Activation activation;
-   
+
    private final ShutdownOnCriticalErrorListener shutdownOnCriticalIO = new ShutdownOnCriticalErrorListener();
 
    // Constructors
@@ -382,8 +392,9 @@ public class HornetQServerImpl implements HornetQServer
             }
             else
             {
-               // Replicated
-
+               assert replicationEndpoint == null;
+               backupUpToDate = false;
+               replicationEndpoint = new ReplicationEndpointImpl(this, shutdownOnCriticalIO);
                activation = new SharedNothingBackupActivation();
             }
 
@@ -459,7 +470,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       stop(failoverOnServerShutdown, false);
    }
-   
+
    protected void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
    {
       synchronized (this)
@@ -470,8 +481,9 @@ public class HornetQServerImpl implements HornetQServer
          }
 
          connectorsService.stop();
-         // we stop the groupinghandler before we stop te cluster manager so binding mappings aren't removed in case of
-         // failover
+
+         // we stop the groupingHandler before we stop the cluster manager so binding mappings
+         // aren't removed in case of failover
          if (groupingHandler != null)
          {
             managementService.removeNotificationListener(groupingHandler);
@@ -502,6 +514,9 @@ public class HornetQServerImpl implements HornetQServer
 
       synchronized (this)
       {
+         synchronized (startUpLock)
+         {
+
          // Stop the deployers
          if (configuration.isFileDeploymentEnabled())
          {
@@ -603,9 +618,9 @@ public class HornetQServerImpl implements HornetQServer
          {
             // Ignore
          }
-         
+
          securityStore.stop();
- 
+
          threadPool = null;
 
          scheduledPool = null;
@@ -624,6 +639,8 @@ public class HornetQServerImpl implements HornetQServer
 
          started = false;
          initialised = false;
+         }
+
          // to display in the log message
          SimpleString tempNodeID = getNodeID();
 
@@ -754,11 +771,11 @@ public class HornetQServerImpl implements HornetQServer
       return version;
    }
 
-   public boolean isStarted()
+   public synchronized boolean isStarted()
    {
       return started;
    }
-   
+
    public boolean isStopped()
    {
       return stopped;
@@ -813,12 +830,14 @@ public class HornetQServerImpl implements HornetQServer
       return session;
    }
 
-   public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
+   private synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
       }
+
+      channel.setHandler(replicationEndpoint);
 
       if (replicationEndpoint.getChannel() != null)
       {
@@ -1157,6 +1176,7 @@ public class HornetQServerImpl implements HornetQServer
 
    // PUBLIC -------
 
+   @Override
    public String toString()
    {
       if (identity != null)
@@ -1204,7 +1224,7 @@ public class HornetQServerImpl implements HornetQServer
    {
 
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                             (long)configuration.getJournalBufferSize_NIO(),
+                                                             configuration.getJournalBufferSize_NIO(),
                                                              scheduledPool,
                                                              executorFactory,
                                                              configuration.isJournalSyncNonTransactional(),
@@ -1213,8 +1233,8 @@ public class HornetQServerImpl implements HornetQServer
                                    addressSettingsRepository);
    }
 
-   /** 
-    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
+   /**
+    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance)
     */
    protected StorageManager createStorageManager()
    {
@@ -1462,7 +1482,7 @@ public class HornetQServerImpl implements HornetQServer
       // this needs to be done before clustering is fully activated
       callActivateCallbacks();
 
-      // Deply any pre-defined diverts
+      // Deploy any pre-defined diverts
       deployDiverts();
 
       if (deploymentManager != null)
@@ -1546,7 +1566,7 @@ public class HornetQServerImpl implements HornetQServer
             Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
             PageSubscription subscription = pagingManager.getPageStore(queueBindingInfo.getAddress())
-                                                         .getCursorProvier()
+                                  .getCursorProvider()
                                                          .createSubscription(queueBindingInfo.getId(), filter, true);
 
             Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
@@ -1677,7 +1697,7 @@ public class HornetQServerImpl implements HornetQServer
       else
       {
          pageSubscription = pagingManager.getPageStore(address)
-                                         .getCursorProvier()
+.getCursorProvider()
                                          .createSubscription(queueID, filter, durable);
       }
 
@@ -1965,7 +1985,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       /**
-       * 
+       *
        */
       public void close(boolean permanently) throws Exception
       {
@@ -2008,21 +2028,22 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
    }
-   
+
    private class ShutdownOnCriticalErrorListener implements IOCriticalErrorListener
    {
       boolean failedAlready = false;
-      
+
       public synchronized void onIOException(int code, String message, SequentialFile file)
       {
          if (!failedAlready)
          {
             failedAlready = true;
-            
+
             log.warn("Critical IO Error, shutting down the server. code=" + code + ", message=" + message);
-            
+
             new Thread()
             {
+               @Override
                public void run()
                {
                   try
@@ -2097,7 +2118,7 @@ public class HornetQServerImpl implements HornetQServer
 
       }
    }
-   
+
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
     *  For that reason any class trying to do a privileged block should do with the AccessController directly.
@@ -2137,4 +2158,44 @@ public class HornetQServerImpl implements HornetQServer
    }
 
 
+   @Override
+   public boolean startReplication(CoreRemotingConnection rc)
+   {
+      replicationManager = new ReplicationManagerImpl(rc, executorFactory);
+      try
+      {
+         replicationManager.start();
+         storageManager.startReplication(replicationManager, pagingManager);
+         return true;
+      }
+      catch (Exception e)
+      {
+         /*
+          * The reasoning here is that the exception was either caused by (1) the (interaction with)
+          * the backup, or (2) by an IO Error at the storage. If (1), we can swallow the exception
+          * and ignore the replication request. If (2) the live will crash shortly.
+          */
+         // HORNETQ-720 Need to verify whether swallowing the exception here is acceptable
+         log.warn("Exception when trying to start replication", e);
+         replicationManager = null;
+         return false;
+      }
+   }
+
+   /**
+    * Whether a remote backup server was in sync with its live server. If it was not in sync, it may
+    * not take over the live's functions.
+    * <p>
+    * A local backup server or a live server should always return {@code true}
+    * @return
+    */
+   public boolean isRemoteBackupUpToDate()
+   {
+      return backupUpToDate;
+   }
+
+   public void setRemoteBackupUpToDate()
+   {
+      backupUpToDate = true;
+   }
 }

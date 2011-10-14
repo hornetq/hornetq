@@ -49,9 +49,9 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    protected ExecutorService executor;
 
    protected ExecutorFactory execFactory;
-   
+
    protected JournalStorageManager journal;
-   
+
    protected JMSStorageManager jmsJournal;
 
 
@@ -72,7 +72,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
       execFactory = new OrderedExecutorFactory(executor);
 
       File testdir = new File(getTestDir());
- 
+
       deleteDirectory(testdir);
    }
 
@@ -80,7 +80,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       executor.shutdown();
-       
+
       if (journal != null)
       {
          try
@@ -91,7 +91,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
          {
             e.printStackTrace(); // >> junit report
          }
-         
+
          journal = null;
       }
 
@@ -105,13 +105,13 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
          {
             e.printStackTrace(); // >> junit report
          }
-         
+
          jmsJournal = null;
       }
 
       super.tearDown();
    }
-   
+
    /**
     * @return
     * @throws Exception
@@ -125,7 +125,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
       journal.start();
 
       journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
-      
+
       Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
       journal.loadMessageJournal(new FakePostOffice(), null, null, queues, null, null, null);
@@ -136,7 +136,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
     */
    protected JournalStorageManager createJournalStorageManager(Configuration configuration)
    {
-      return new JournalStorageManager(configuration, execFactory);
+      return new JournalStorageManager(configuration, execFactory, null);
    }
 
    /**
@@ -150,7 +150,7 @@ public abstract class StorageManagerTestBase extends ServiceTestBase
       jmsJournal = new JMSJournalStorageManagerImpl(new TimeAndCounterIDGenerator(), configuration, null);
 
       jmsJournal.start();
-      
+
       jmsJournal.load();
    }
 

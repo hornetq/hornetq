@@ -14,15 +14,17 @@
 package org.hornetq.core.journal;
 
 import java.util.List;
+import java.util.Map;
 
+import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
- * 
+ *
  * Most methods on the journal provide a blocking version where you select the sync mode and a non blocking mode where you pass a completion callback as a parameter.
- * 
+ *
  * Notice also that even on the callback methods it's possible to pass the sync mode. That will only make sense on the NIO operations.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -84,13 +86,13 @@ public interface Journal extends HornetQComponent
     */
    void appendCommitRecord(long txID, boolean sync, IOCompletion callback, boolean lineUpContext) throws Exception;
 
-   /** 
-    * 
-    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction 
+   /**
+    *
+    * <p>If the system crashed after a prepare was called, it should store information that is required to bring the transaction
     *     back to a state it could be committed. </p>
-    * 
+    *
     * <p> transactionData allows you to store any other supporting user-data related to the transaction</p>
-    * 
+    *
     * @param txID
     * @param transactionData - extra user data for the prepare
     * @throws Exception
@@ -111,11 +113,18 @@ public interface Journal extends HornetQComponent
 
    JournalLoadInformation load(LoaderCallback reloadManager) throws Exception;
 
-   /** Load internal data structures and not expose any data.
-    *  This is only useful if you're using the journal but not interested on the current data.
-    *  Useful in situations where the journal is being replicated, copied... etc. */
+   /**
+    * Load internal data structures and not expose any data. This is only useful if you're using the
+    * journal but not interested on the current data. Useful in situations where the journal is
+    * being replicated, copied... etc.
+    */
    JournalLoadInformation loadInternalOnly() throws Exception;
-   
+
+   /**
+    * Load internal data structures, and remain waiting for synchronization to complete.
+    */
+   JournalLoadInformation loadSyncOnly() throws Exception;
+
    void lineUpContex(IOCompletion callback);
 
    JournalLoadInformation load(List<RecordInfo> committedRecords,
@@ -125,11 +134,51 @@ public interface Journal extends HornetQComponent
    int getAlignment() throws Exception;
 
    int getNumberOfRecords();
-   
+
    int getUserVersion();
 
-   void perfBlast(int pages) throws Exception;
+   void perfBlast(int pages);
 
    void runDirectJournalBlast() throws Exception;
 
+   /**
+    * Reserves journal file IDs, creates the necessary files for synchronization, and places
+    * references to these (reserved for sync) files in the map.
+    * <p>
+    * During the synchronization between a live server and backup, we reserve in the backup the
+    * journal file IDs used in the live server. This call also makes sure the files are created
+    * empty without any kind of headers added.
+    * @param fileIds IDs to reserve for synchronization
+    * @return map to be filled with id and journal file pairs for <b>synchronization</b>.
+    * @throws Exception
+    */
+   Map<Long, JournalFile> createFilesForBackupSync(long[] fileIds) throws Exception;
+
+   /**
+    * Write lock the Journal and write lock the compacting process. Necessary only during
+    * replication for backup synchronization.
+    */
+   void synchronizationLock();
+
+   /**
+    * Unlock the Journal and the compacting process.
+    * @see Journal#synchronizationLock()
+    */
+   void synchronizationUnlock();
+
+   /**
+    * Force the usage of a new {@link JournalFile}.
+    * @throws Exception
+    */
+   void forceMoveNextFile() throws Exception;
+
+   /**
+    * Returns the {@link JournalFile}s in use.
+    * @return
+    */
+   JournalFile[] getDataFiles();
+
+   SequentialFileFactory getFileFactory();
+
+   int getFileSize();
 }

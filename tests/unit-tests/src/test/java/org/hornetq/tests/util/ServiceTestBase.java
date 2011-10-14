@@ -25,8 +25,11 @@ import javax.management.MBeanServer;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -41,6 +44,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.NodeManager;
@@ -49,15 +53,14 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
-import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * 
+ *
  * Base class with basic utilities on starting up a basic server
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
@@ -65,9 +68,9 @@ public abstract class ServiceTestBase extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
-   
+
    protected static final long WAIT_TIMEOUT = 10000;
-   
+
 
    // Attributes ----------------------------------------------------
 
@@ -79,7 +82,7 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   private List<ServerLocator> locators = new ArrayList<ServerLocator>();
+   private final List<ServerLocator> locators = new ArrayList<ServerLocator>();
 
    @Override
    protected void tearDown() throws Exception
@@ -106,6 +109,20 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+   public static final void closeServerLocator(ServerLocator locator)
+   {
+      if (locator == null)
+         return;
+      try
+      {
+         locator.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
    {
       waitForTopology(server, nodes, WAIT_TIMEOUT);
@@ -116,9 +133,9 @@ public abstract class ServiceTestBase extends UnitTestCase
       log.debug("waiting for " + nodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
-      
+
       Set<ClusterConnection> ccs = server.getClusterManager().getClusterConnections();
-      
+
       if (ccs.size() != 1)
       {
          throw new IllegalStateException("You need a single cluster connection on this version of waitForTopology on ServiceTestBase");
@@ -155,10 +172,10 @@ public abstract class ServiceTestBase extends UnitTestCase
       log.debug("waiting for " + nodes + " on the topology for server = " + server);
 
       long start = System.currentTimeMillis();
-      
+
       ClusterConnection clusterConnection = server.getClusterManager().getClusterConnection(clusterConnectionName);
 
-      
+
       Topology topology = clusterConnection.getTopology();
 
       do
@@ -184,6 +201,41 @@ public abstract class ServiceTestBase extends UnitTestCase
       throw new Exception(msg);
    }
 
+   protected final static void waitForComponent(final HornetQComponent component, final long seconds) throws Exception
+   {
+      long time = System.currentTimeMillis();
+      long toWait = seconds * 1000;
+      while (!component.isStarted())
+      {
+         try
+         {
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            // ignore
+         }
+         if (System.currentTimeMillis() > (time + toWait))
+         {
+            fail("component did not start within timeout of " + seconds);
+         }
+      }
+   }
+
+   protected static final void stopComponent(HornetQComponent component)
+   {
+      if (component == null)
+         return;
+      if (component.isStarted())
+         try
+         {
+            component.stop();
+         }
+         catch (Exception e)
+         {
+            // no-op
+         }
+   }
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)
    {
@@ -252,7 +304,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void waitForServer(HornetQServer server) throws InterruptedException
    {
       long timetowait = System.currentTimeMillis() + 5000;
@@ -260,13 +312,13 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          Thread.sleep(100);
       }
-      
+
       if (!server.isStarted())
       {
          log.info(threadDump("Server didn't start"));
          fail("server didnt start");
       }
-      
+
       if (!server.getConfiguration().isBackup())
       {
          timetowait = System.currentTimeMillis() + 5000;
@@ -274,7 +326,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          {
             Thread.sleep(100);
          }
-         
+
          if (!server.isInitialised())
          {
             fail("Server didn't initialize");
@@ -323,7 +375,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       return createServer(realFiles, configuration, pageSize, maxAddressSize, AddressFullMessagePolicy.PAGE, settings);
    }
-   
+
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final int pageSize,
@@ -431,7 +483,7 @@ public abstract class ServiceTestBase extends UnitTestCase
                                          ManagementFactory.getPlatformMBeanServer(),
                                          securityManager,
                                          nodeManager);
-      
+
       server.setIdentity("Server " + id);
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -542,7 +594,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   protected void createQueue(String address, String queue) throws Exception
+   protected void createQueue(final String address, final String queue) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
@@ -570,11 +622,11 @@ public abstract class ServiceTestBase extends UnitTestCase
       locators.add(locatorWithoutHA);
       return locatorWithoutHA;
    }
-   
+
    protected ServerLocator createInVMLocator(final int serverID)
    {
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
-      
+
       return HornetQClient.createServerLocatorWithHA(tnspConfig);
    }
 
@@ -594,7 +646,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       TransportConfiguration tnspConfig = new TransportConfiguration(INVM_CONNECTOR_FACTORY, server1Params, name);
       return tnspConfig;
    }
- 
+
+   // XXX unused
    protected ClientSessionFactoryImpl createFactory(final String connectorClass) throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorClass));
@@ -619,7 +672,59 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    * @param i
+    * @param message
+    * @throws Exception
+    */
+   protected void setBody(final int i, final ClientMessage message) throws Exception
+   {
+      message.getBodyBuffer().writeString("message" + i);
+   }
+
+   /**
+    * @param i
+    * @param message
+    */
+   protected void assertMessageBody(final int i, final ClientMessage message)
+   {
+      Assert.assertEquals(message.toString(), "message" + i, message.getBodyBuffer().readString());
+   }
+
+   /**
+    * Send durable messages with pre-specified body.
+    * @param session
+    * @param producer
+    * @param numMessages
+    * @throws Exception
+    */
+   public final void sendMessages(ClientSession session, ClientProducer producer, int numMessages) throws Exception
+   {
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         setBody(i, message);
+         message.putIntProperty("counter", i);
+         producer.send(message);
+      }
+   }
+
+
+   protected final void receiveMessagesAndAck(ClientConsumer consumer, final int start, int msgCount)
+            throws HornetQException
+   {
+      for (int i = start; i < msgCount; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+         Assert.assertNotNull("Expecting a message " + i, message);
+         assertMessageBody(i, message);
+         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
+         message.acknowledge();
+      }
+   }
+
+   /**
+    * Deleting a file on LargeDire is an asynchronous process. We need to keep looking for a while
+    * if the file hasn't been deleted yet.
     */
    protected void validateNoFilesOnLargeDir(final int expect) throws Exception
    {
@@ -631,8 +736,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          Thread.sleep(100);
       }
-      
-      
+
+
       if (expect != largeMessagesFileDir.listFiles().length)
       {
          for (File file : largeMessagesFileDir.listFiles())
@@ -645,7 +750,8 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while
+    * if the file hasn't been deleted yet
     */
    protected void validateNoFilesOnLargeDir() throws Exception
    {
@@ -659,43 +765,45 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       final NodeManager nodeManager;
 
-      public InVMNodeManagerServer(NodeManager nodeManager)
+      public InVMNodeManagerServer(final NodeManager nodeManager)
       {
          super();
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration, final NodeManager nodeManager)
       {
          super(configuration);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final MBeanServer mbeanServer,
+                                   final NodeManager nodeManager)
       {
          super(configuration, mbeanServer);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final HornetQSecurityManager securityManager,
+                                   final NodeManager nodeManager)
       {
          super(configuration, securityManager);
          this.nodeManager = nodeManager;
       }
 
-      public InVMNodeManagerServer(Configuration configuration,
-                                   MBeanServer mbeanServer,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
+      public InVMNodeManagerServer(final Configuration configuration,
+                                   final MBeanServer mbeanServer,
+                                   final HornetQSecurityManager securityManager,
+                                   final NodeManager nodeManager)
       {
          super(configuration, mbeanServer, securityManager);
          this.nodeManager = nodeManager;
       }
 
       @Override
-      protected NodeManager createNodeManager(String directory)
+      protected NodeManager createNodeManager(final String directory)
       {
          return nodeManager;
       }

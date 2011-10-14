@@ -36,7 +36,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public abstract class AbstractSequentialFile implements SequentialFile
+abstract class AbstractSequentialFile implements SequentialFile
 {
 
    // Constants -----------------------------------------------------
@@ -104,16 +104,16 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
       file.delete();
    }
-   
+
    public void copyTo(SequentialFile newFileName) throws Exception
    {
       log.debug("Copying "  + this + " as " + newFileName);
       newFileName.open();
       this.open();
-      
-      
+
+
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-      
+
       for (;;)
       {
          buffer.rewind();
@@ -375,4 +375,9 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    }
 
+   @Override
+   public File getJavaFile()
+   {
+      return getFile().getAbsoluteFile();
+   }
 }

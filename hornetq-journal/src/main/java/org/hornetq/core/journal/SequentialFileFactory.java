@@ -17,9 +17,9 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * 
+ *
  * A SequentialFileFactory
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
@@ -28,6 +28,12 @@ public interface SequentialFileFactory
 {
    SequentialFile createSequentialFile(String fileName, int maxIO);
 
+   /**
+    * @param extension extension to filter files with. Its value should not contain '.', as the
+    *           method appends one to it.
+    * @return
+    * @throws Exception
+    */
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();
@@ -62,7 +68,7 @@ public interface SequentialFileFactory
 
    void stop();
 
-   /** 
+   /**
     * Create the directory if it doesn't exist yet
     */
    void createDirs() throws Exception;
