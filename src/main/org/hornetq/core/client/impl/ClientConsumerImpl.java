@@ -574,7 +574,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          largeMessageCache.deleteOnExit();
       }
 
-      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 60, largeMessageCache);
+      currentLargeMessageController = new LargeMessageControllerImpl(this, packet.getLargeMessageSize(), 5, largeMessageCache);
 
       if (currentChunkMessage.isCompressed())
       {
@@ -596,7 +596,18 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-      currentLargeMessageController.addPacket(chunk);
+      if (currentLargeMessageController == null)
+      {
+         if (log.isTraceEnabled())
+         {
+            log.trace("Sending back credits for largeController = null " + chunk.getPacketSize());
+         }
+         flowControl(chunk.getPacketSize(), false);
+      }
+      else
+      {
+         currentLargeMessageController.addPacket(chunk);
+      }
    }
 
    public void clear(boolean waitForOnMessage) throws HornetQException
@@ -609,12 +620,39 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          while (iter.hasNext())
          {
-            ClientMessageInternal message = iter.next();
+            try
+            {
+               ClientMessageInternal message = iter.next();
+               
+               if (message.isLargeMessage())
+               {
+                  ClientLargeMessageInternal largeMessage = (ClientLargeMessageInternal)message;
+                  largeMessage.getLargeMessageController().cancel();
+               }
 
-            flowControlBeforeConsumption(message);
+               flowControlBeforeConsumption(message);
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
          }
 
          clearBuffer();
+         
+         try
+         {
+            if (currentLargeMessageController != null)
+            {
+               currentLargeMessageController.cancel();
+               currentLargeMessageController = null;
+            }
+         }
+         catch (Throwable e)
+         {
+            // nothing that could be done here
+            log.warn(e.getMessage(), e);
+         }
       }
 
       // Need to send credits for the messages in the buffer
@@ -680,6 +718,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
+         
+         if (log.isTraceEnabled())
+         {
+            log.trace(this + "::FlowControl::creditsToSend=" + creditsToSend + ", clientWindowSize = " + clientWindowSize + " messageBytes = " + messageBytes);
+         }
 
          if (creditsToSend >= clientWindowSize)
          {
@@ -687,7 +730,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                if (ClientConsumerImpl.trace)
                {
-                  ClientConsumerImpl.log.trace("Sending " + creditsToSend + " -1, for slow consumer");
+                  ClientConsumerImpl.log.trace("FlowControl::Sending " + creditsToSend + " -1, for slow consumer");
                }
 
                // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be

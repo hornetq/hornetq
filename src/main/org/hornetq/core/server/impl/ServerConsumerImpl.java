@@ -61,7 +61,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(ServerConsumerImpl.class);
-   
+
    private static boolean isTrace = log.isTraceEnabled();
 
    // Static ---------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private boolean started;
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
-   
+
    public String debug()
    {
       return toString() + "::Delivering " + this.deliveringRefs.size();
@@ -115,7 +115,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    private final Binding binding;
 
    private boolean transferring = false;
-   
+
    /* As well as consumer credit based flow control, we also tap into TCP flow control (assuming transport is using TCP)
     * This is useful in the case where consumer-window-size = -1, but we don't want to OOM by sending messages ad infinitum to the Netty
     * write queue when the TCP buffer is full, e.g. the client is slow or has died.    
@@ -163,11 +163,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       minLargeMessageSize = session.getMinLargeMessageSize();
 
       this.strictUpdateDeliveryCount = strictUpdateDeliveryCount;
-      
+
       this.callback.addReadyListener(this);
 
       this.creationTime = System.currentTimeMillis();
-      
+
       if (browseOnly)
       {
          browserDeliverer = new BrowserDeliverer(messageQueue.iterator());
@@ -185,7 +185,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       return id;
    }
-   
+
    public boolean isBrowseOnly()
    {
       return browseOnly;
@@ -195,12 +195,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       return creationTime;
    }
-   
+
    public String getConnectionID()
    {
       return this.session.getConnectionID().toString();
    }
-   
+
    public String getSessionID()
    {
       return this.session.getName();
@@ -210,20 +210,23 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       if (availableCredits != null && availableCredits.get() <= 0)
       {
-         if (log.isDebugEnabled() )
+         if (log.isDebugEnabled())
          {
-            log.debug(this  + " is busy for the lack of credits!!!");
+            log.debug(this + " is busy for the lack of credits. Current credits = " +
+                      availableCredits +
+                      " Can't receive reference " +
+                      ref);
          }
-         
+
          return HandleStatus.BUSY;
       }
-      
-// TODO - https://jira.jboss.org/browse/HORNETQ-533      
-//      if (!writeReady.get())
-//      {
-//         return HandleStatus.BUSY;
-//      }
-      
+
+      // TODO - https://jira.jboss.org/browse/HORNETQ-533
+      // if (!writeReady.get())
+      // {
+      // return HandleStatus.BUSY;
+      // }
+
       synchronized (lock)
       {
          // If the consumer is stopped then we don't accept the message, it
@@ -233,11 +236,18 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          {
             return HandleStatus.BUSY;
          }
-         
+
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
          if (largeMessageDeliverer != null)
          {
+            if (log.isDebugEnabled())
+            {
+               log.debug(this + " is busy delivering large message " +
+                         largeMessageDeliverer +
+                         ", can't deliver reference " +
+                         ref);
+            }
             return HandleStatus.BUSY;
          }
 
@@ -268,7 +278,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             // the updateDeliveryCount would still be updated after c
             if (strictUpdateDeliveryCount && !ref.isPaged())
             {
-               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() && !ref.getQueue().isInternalQueue() && !ref.isPaged())
+               if (ref.getMessage().isDurable() && ref.getQueue().isDurable() &&
+                   !ref.getQueue().isInternalQueue() &&
+                   !ref.isPaged())
                {
                   storageManager.updateDeliveryCount(ref);
                }
@@ -309,7 +321,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    public void close(final boolean failed) throws Exception
    {
       callback.removeReadyListener(this);
-      
+
       setStarted(false);
 
       if (largeMessageDeliverer != null)
@@ -355,8 +367,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
-         props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filter == null ? null
-                                                                                        : filter.getFilterString());
+         props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING,
+                                       filter == null ? null : filter.getFilterString());
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
@@ -406,9 +418,27 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
    }
 
-   public LinkedList<MessageReference> cancelRefs(final boolean failed, final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
+   public LinkedList<MessageReference> cancelRefs(final boolean failed,
+                                                  final boolean lastConsumedAsDelivered,
+                                                  final Transaction tx) throws Exception
    {
       boolean performACK = lastConsumedAsDelivered;
+
+      try
+      {
+         if (largeMessageDeliverer != null)
+         {
+            largeMessageDeliverer.finish();
+         }
+      }
+      catch (Throwable e)
+      {
+         log.warn("Error on resetting large message deliver - " + largeMessageDeliverer, e);
+      }
+      finally
+      {
+         largeMessageDeliverer = null;
+      }
 
       LinkedList<MessageReference> refs = new LinkedList<MessageReference>();
 
@@ -430,8 +460,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
             {
                if (!failed)
                {
-                  //We don't decrement delivery count if the client failed, since there's a possibility that refs were actually delivered but we just didn't get any acks for them
-                  //before failure
+                  // We don't decrement delivery count if the client failed, since there's a possibility that refs
+                  // were actually delivered but we just didn't get any acks for them
+                  // before failure
                   ref.decrementDeliveryCount();
                }
 
@@ -492,18 +523,23 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    }
 
    public void receiveCredits(final int credits) throws Exception
-   {      
+   {
       if (credits == -1)
       {
+         if (log.isDebugEnabled())
+         {
+            log.debug(this + ":: FlowControl::Received disable flow control message");
+         }
          // No flow control
          availableCredits = null;
-         
-         //There may be messages already in the queue
+
+         // There may be messages already in the queue
          promptDelivery();
       }
       else if (credits == 0)
       {
-         //reset, used on slow consumers
+         // reset, used on slow consumers
+         log.debug(this + ":: FlowControl::Received reset flow control message");
          availableCredits.set(0);
       }
       else
@@ -512,16 +548,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
          if (log.isDebugEnabled())
          {
-            log.debug(this + "::Received " + credits +
-                                     " credits, previous value = " +
-                                     previous +
-                                     " currentValue = " +
-                                     availableCredits.get());
+            log.debug(this + "::FlowControl::Received " +
+                      credits +
+                      " credits, previous value = " +
+                      previous +
+                      " currentValue = " +
+                      availableCredits.get());
          }
 
          if (previous <= 0 && previous + credits > 0)
          {
-            if (log.isTraceEnabled() )
+            if (log.isTraceEnabled())
             {
                log.trace(this + "::calling promptDelivery from receiving credits");
             }
@@ -541,7 +578,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       {
          return;
       }
-      
+
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
 
@@ -573,21 +610,21 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
       while (ref.getMessage().getMessageID() != messageID);
    }
-   
+
    public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
          return;
       }
-      
+
       MessageReference ref = removeReferenceByID(messageID);
-      
+
       if (ref == null)
       {
          throw new IllegalStateException("Cannot find ref to ack " + messageID);
       }
-      
+
       if (autoCommitAcks)
       {
          ref.getQueue().acknowledge(ref);
@@ -627,13 +664,13 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       return ref;
    }
-      
+
    public void readyForWriting(final boolean ready)
    {
       if (ready)
       {
          writeReady.set(true);
-         
+
          promptDelivery();
       }
       else
@@ -701,9 +738,16 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       if (availableCredits != null)
       {
          availableCredits.addAndGet(-packetSize);
+
+         if (log.isTraceEnabled())
+         {
+            log.trace(this + "::FlowControl::delivery standard taking " +
+                      packetSize +
+                      " from credits, available now is " +
+                      availableCredits);
+         }
       }
    }
-
 
    // Inner classes
    // ------------------------------------------------------------------------
@@ -766,6 +810,12 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
             if (availableCredits != null && availableCredits.get() <= 0)
             {
+               if (log.isTraceEnabled())
+               {
+                  log.trace(this + "::FlowControl::delivery largeMessage interrupting as there are no more credits, available=" +
+                            availableCredits);
+               }
+
                return false;
             }
 
@@ -774,7 +824,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                context = largeMessage.getBodyEncoder();
 
                sizePendingLargeMessage = context.getLargeBodySize();
-               
+
                context.open();
 
                sentInitialPacket = true;
@@ -787,6 +837,15 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                if (availableCredits != null)
                {
                   availableCredits.addAndGet(-packetSize);
+
+                  if (log.isTraceEnabled())
+                  {
+                     log.trace(this + "::FlowControl::" +
+                               " deliver initialpackage with " +
+                               packetSize +
+                               " delivered, available now = " +
+                               availableCredits);
+                  }
                }
 
                // Execute the rest of the large message on a different thread so as not to tie up the delivery thread
@@ -802,7 +861,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                {
                   if (ServerConsumerImpl.isTrace)
                   {
-                     log.trace("deliverLargeMessage: Leaving loop of send LargeMessage because of credits");
+                     log.trace(this + "::FlowControl::deliverLargeMessage Leaving loop of send LargeMessage because of credits, available=" +
+                               availableCredits);
                   }
 
                   return false;
@@ -825,16 +885,17 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
                int chunkLen = body.length;
 
-               if (ServerConsumerImpl.isTrace)
-               {
-                  log.trace("deliverLargeMessage: Sending " + packetSize +
-                                           " availableCredits now is " +
-                                           availableCredits);
-               }
-
                if (availableCredits != null)
                {
                   availableCredits.addAndGet(-packetSize);
+
+                  if (log.isTraceEnabled())
+                  {
+                     log.trace(this + "::FlowControl::largeMessage deliver continuation, packetSize=" +
+                               packetSize +
+                               " available now=" +
+                               availableCredits);
+                  }
                }
 
                positionPendingLargeMessage += chunkLen;
@@ -898,7 +959,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       }
 
       private final LinkedListIterator<MessageReference> iterator;
-      
+
       public synchronized void close()
       {
          iterator.close();

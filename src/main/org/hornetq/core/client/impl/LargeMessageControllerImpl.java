@@ -31,6 +31,7 @@ import org.hornetq.api.core.HornetQBuffers;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UTF8Util;
@@ -141,7 +142,7 @@ public class LargeMessageControllerImpl implements LargeMessageController
          {
             checkForPacket(totalSize - 1);
          }
-         catch (Exception ignored)
+         catch (Throwable ignored)
          {
          }
       }
@@ -227,6 +228,24 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public synchronized void cancel()
    {
+      
+      int totalSize = 0;
+      Packet polledPacket = null;
+      while ((polledPacket = packets.poll()) != null)
+      {
+         totalSize += polledPacket.getPacketSize();
+      }
+
+      try
+      {
+         consumerInternal.flowControl(totalSize, false);
+      }
+      catch (Exception ignored)
+      {
+         // what else can we do here?
+         log.warn(ignored.getMessage(), ignored);
+      }
+       
       packets.offer(new SessionReceiveContinuationMessage());
       streamEnded = true;
       streamClosed = true;
@@ -279,6 +298,11 @@ public class LargeMessageControllerImpl implements LargeMessageController
 
    public synchronized void saveBuffer(final OutputStream output) throws HornetQException
    {
+      if (streamClosed)
+      {
+         throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                    "The large message lost connection with its session, either because of a rollback or a closed session");
+      }
       setOutputStream(output);
       waitCompletion(0);
    }
