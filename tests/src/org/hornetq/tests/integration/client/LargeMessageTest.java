@@ -15,6 +15,9 @@ package org.hornetq.tests.integration.client;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -70,6 +73,135 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       return false;
    }
+   
+   public void testRollbackPartiallyConsumedBuffer() throws Exception
+   {
+      for (int i = 0 ; i < 1; i++)
+      {
+         log.info("#test " + i);
+         internalTestRollbackPartiallyConsumedBuffer(false);
+         tearDown();
+         setUp();
+         
+      }
+      
+   }
+   
+   public void testRollbackPartiallyConsumedBufferWithRedeliveryDelay() throws Exception
+   {
+      internalTestRollbackPartiallyConsumedBuffer(true);
+   }
+   
+   
+   private void internalTestRollbackPartiallyConsumedBuffer(final boolean redeliveryDelay) throws Exception
+   {
+      final int messageSize = 100 * 1024;
+      
+
+      final ClientSession session;
+
+      try
+      {
+         server = createServer(true, isNetty());
+         
+         AddressSettings settings = new AddressSettings();
+         if (redeliveryDelay)
+         {
+            settings.setRedeliveryDelay(1000);
+            if (locator.isCompressLargeMessage())
+            {
+               locator.setConsumerWindowSize(0);
+            }
+         }
+         settings.setMaxDeliveryAttempts(-1);
+         
+         server.getAddressSettingsRepository().addMatch("#", settings);
+
+         server.start();
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         for (int i = 0 ; i < 20; i++)
+         {
+            Message clientFile = createLargeClientMessage(session, messageSize, true);
+            
+            clientFile.putIntProperty("value", i);
+   
+            producer.send(clientFile);
+         }
+
+         session.commit();
+
+         session.start();
+         
+         final CountDownLatch latch = new CountDownLatch(1);
+         
+         final AtomicInteger errors = new AtomicInteger(0);
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+         
+         consumer.setMessageHandler(new MessageHandler()
+         {
+            int counter = 0;
+            public void onMessage(ClientMessage message)
+            {
+               message.getBodyBuffer().readByte();
+               System.out.println("message:" + message);
+               try
+               {
+                  if (counter ++ <  20)
+                  {
+                     Thread.sleep(100);
+                     System.out.println("Rollback");
+                     message.acknowledge();
+                     session.rollback();
+                  }
+                  else
+                  {
+                     message.acknowledge();
+                     session.commit();
+                  }
+                  
+                  if (counter == 40)
+                  {
+                     latch.countDown();
+                  }
+               }
+               catch (Exception e)
+               {
+                  latch.countDown();
+                  e.printStackTrace();
+                  errors.incrementAndGet();
+               }
+            }
+         });
+         
+         assertTrue(latch.await(40, TimeUnit.SECONDS));
+
+         consumer.close();
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -124,7 +256,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
+            session.close();
          }
          catch (Throwable ignored)
          {
@@ -132,7 +264,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          try
          {
-            session.close();
+            server.stop();
          }
          catch (Throwable ignored)
          {
@@ -500,15 +632,16 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
 
          ClientMessage msg1 = consumerExpiry.receive(5000);
+         assertTrue(msg1.isLargeMessage());
          Assert.assertNotNull(msg1);
          msg1.acknowledge();
-
-         session.rollback();
 
          for (int j = 0; j < messageSize; j++)
          {
             Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
          }
+
+         session.rollback();
 
          consumerExpiry.close();
 
@@ -521,12 +654,12 @@ public class LargeMessageTest extends LargeMessageTestBase
             Assert.assertNotNull(msg1);
             msg1.acknowledge();
 
-            session.rollback();
-
             for (int j = 0; j < messageSize; j++)
             {
                Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
             }
+
+            session.rollback();
 
             consumerExpiry.close();
          }
@@ -638,12 +771,12 @@ public class LargeMessageTest extends LargeMessageTestBase
          Assert.assertNotNull(msg1);
          msg1.acknowledge();
 
-         session.rollback();
-
          for (int j = 0; j < messageSize; j++)
          {
             Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
          }
+
+         session.rollback();
 
          consumerExpiry.close();
 
@@ -655,12 +788,12 @@ public class LargeMessageTest extends LargeMessageTestBase
             Assert.assertNotNull(msg1);
             msg1.acknowledge();
 
-            session.rollback();
-
             for (int j = 0; j < messageSize; j++)
             {
                Assert.assertEquals(UnitTestCase.getSamplebyte(j), msg1.getBodyBuffer().readByte());
             }
+
+            session.rollback();
 
             consumerExpiry.close();
          }
@@ -1892,6 +2025,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientConsumer consumer = session.createConsumer(queue[1]);
          ClientMessage msg = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+         msg.getBodyBuffer().readByte();
          Assert.assertNull(consumer.receiveImmediate());
          Assert.assertNotNull(msg);
 
