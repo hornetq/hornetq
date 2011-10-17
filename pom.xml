@@ -562,6 +562,7 @@
             <configuration>
                <xmlOutput>true</xmlOutput>
                <effort>Max</effort>
+               <failOnError>false</failOnError>
             </configuration>
          </plugin>
 
