@@ -49,6 +49,21 @@
             <para>Message acknowledgements are not transactional. The ACK frame can not be part of a transaction
               (it will be ignored if its <literal>transaction</literal> header is set).</para>
           </section>
+          <section>
+            <title>Stomp 1.1 Notes</title>
+            <section>
+				<title>Virtual Hosting</title>
+                <para>HornetQ currently doesn't support virtual hosting, which means the 'host' header 
+                in CONNECT fram will be ignored.</para>
+            </section>
+            <section>
+				<title>Heart-beating</title>
+                <para>HornetQ specifies a minimum value for both client and server heart-beat intervals. 
+                The minimum interval for both client and server heartbeats is 500 milliseconds. That means if 
+                a client sends a CONNECT frame with heartbeat values lower than 500, the server will defaults 
+                the value to 500 milliseconds regardless the values of the 'heart-beat' header in the frame.</para>
+            </section>
+          </section>
         </section>
 
         <section>
