@@ -76,7 +76,11 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
+import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
+import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
@@ -87,9 +91,10 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- *
- * Helper base class for our unit tests
- *
+ * Helper base class for our unit tests.
+ * <p>
+ * See {@code org.hornetq.tests.util.ServiceTestBase} for a test case with server set-up.
+ * @see Service
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:csuconic@redhat.com">Clebert</a>
  *
@@ -100,15 +105,15 @@ public abstract class UnitTestCase extends TestCase
 
    private static final Logger log = Logger.getLogger(UnitTestCase.class);
 
-   private static final Logger logInstance = Logger.getLogger(UnitTestCase.class);
+   public static final String INVM_ACCEPTOR_FACTORY = InVMAcceptorFactory.class.getCanonicalName();
 
-   public static final String INVM_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory";
+   public static final String INVM_CONNECTOR_FACTORY = InVMConnectorFactory.class.getCanonicalName();
 
-   public static final String INVM_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
+   public static final String NETTY_ACCEPTOR_FACTORY = NettyAcceptorFactory.class.getCanonicalName();
 
-   public static final String NETTY_ACCEPTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory";
+   public static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   public static final String NETTY_CONNECTOR_FACTORY = "org.hornetq.core.remoting.impl.netty.NettyConnectorFactory";
+   protected static final String CLUSTER_PASSWORD = "UnitTestsClusterPassword";
 
    // Attributes ----------------------------------------------------
 
@@ -143,7 +148,7 @@ public abstract class UnitTestCase extends TestCase
       }
    }
 
-   protected Configuration createClusteredDefaultConfig(final int index,
+   protected static Configuration createClusteredDefaultConfig(final int index,
                                                                final Map<String, Object> params,
                                                                final String... acceptors)
    {
@@ -154,9 +159,9 @@ public abstract class UnitTestCase extends TestCase
       return config;
    }
 
-   protected Configuration createDefaultConfig(final int index,
-                                               final Map<String, Object> params,
-                                               final String... acceptors)
+   protected static Configuration createDefaultConfig(final int index,
+                                                      final Map<String, Object> params,
+                                                      final String... acceptors)
    {
       Configuration configuration = createBasicConfig(index);
 
@@ -171,7 +176,7 @@ public abstract class UnitTestCase extends TestCase
       return configuration;
    }
 
-   protected ConfigurationImpl createBasicConfig()
+   protected static ConfigurationImpl createBasicConfig()
    {
       return createBasicConfig(0);
    }
@@ -180,7 +185,7 @@ public abstract class UnitTestCase extends TestCase
     * @param serverID
     * @return
     */
-   protected ConfigurationImpl createBasicConfig(final int serverID)
+   protected static ConfigurationImpl createBasicConfig(final int serverID)
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -193,10 +198,11 @@ public abstract class UnitTestCase extends TestCase
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(serverID, false));
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
-   protected Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
+   protected static Configuration createDefaultConfig(final Map<String, Object> params, final String... acceptors)
    {
       Configuration configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
@@ -221,16 +227,16 @@ public abstract class UnitTestCase extends TestCase
          TransportConfiguration transportConfig = new TransportConfiguration(acceptor, params);
          configuration.getAcceptorConfigurations().add(transportConfig);
       }
-
+      configuration.setClusterPassword(CLUSTER_PASSWORD);
       return configuration;
    }
 
-   protected String getUDPDiscoveryAddress()
+   protected static String getUDPDiscoveryAddress()
    {
       return System.getProperty("TEST-UDP-ADDRESS", "230.1.2.3");
    }
 
-   protected String getUDPDiscoveryAddress(int variant)
+   protected static String getUDPDiscoveryAddress(final int variant)
    {
       String value = getUDPDiscoveryAddress();
 
@@ -241,12 +247,12 @@ public abstract class UnitTestCase extends TestCase
       return value.substring(0, posPoint + 1) + (last + variant);
    }
 
-   public int getUDPDiscoveryPort()
+   public static int getUDPDiscoveryPort()
    {
       return Integer.parseInt(System.getProperty("TEST-UDP-PORT", "6750"));
    }
 
-   public int getUDPDiscoveryPort(final int variant)
+   public static int getUDPDiscoveryPort(final int variant)
    {
       return getUDPDiscoveryPort() + variant;
    }
@@ -278,7 +284,7 @@ public abstract class UnitTestCase extends TestCase
 
    public static void forceGC()
    {
-      logInstance.info("#test forceGC");
+      log.info("#test forceGC");
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
       // A loop that will wait GC, using the minimal time as possible
       while (dumbReference.get() != null)
@@ -292,10 +298,10 @@ public abstract class UnitTestCase extends TestCase
          {
          }
       }
-      logInstance.info("#test forceGC Done");
+      log.info("#test forceGC Done");
    }
 
-   public static void forceGC(Reference<?> ref, long timeout)
+   public static void forceGC(final Reference<?> ref, final long timeout)
    {
       long waitUntil = System.currentTimeMillis() + timeout;
       // A loop that will wait GC, using the minimal time as possible
@@ -635,17 +641,17 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the journalDir
     */
-   public String getJournalDir()
+   public static String getJournalDir()
    {
       return getJournalDir(getTestDir());
    }
 
-   protected String getJournalDir(final String testDir)
+   protected static String getJournalDir(final String testDir)
    {
       return testDir + "/journal";
    }
 
-   protected String getJournalDir(final int index, final boolean backup)
+   protected static String getJournalDir(final int index, final boolean backup)
    {
       String dir = getJournalDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
 
@@ -655,7 +661,7 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir()
+   protected static String getBindingsDir()
    {
       return getBindingsDir(getTestDir());
    }
@@ -663,7 +669,7 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(final String testDir)
+   protected static String getBindingsDir(final String testDir)
    {
       return testDir + "/bindings";
    }
@@ -671,7 +677,7 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the bindingsDir
     */
-   protected String getBindingsDir(final int index, final boolean backup)
+   protected static String getBindingsDir(final int index, final boolean backup)
    {
       return getBindingsDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }
@@ -692,7 +698,7 @@ public abstract class UnitTestCase extends TestCase
       return testDir + "/page";
    }
 
-   protected String getPageDir(final int index, final boolean backup)
+   protected static String getPageDir(final int index, final boolean backup)
    {
       return getPageDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }
@@ -700,7 +706,7 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the largeMessagesDir
     */
-   protected String getLargeMessagesDir()
+   protected static String getLargeMessagesDir()
    {
       return getLargeMessagesDir(getTestDir());
    }
@@ -708,12 +714,12 @@ public abstract class UnitTestCase extends TestCase
    /**
     * @return the largeMessagesDir
     */
-   protected String getLargeMessagesDir(final String testDir)
+   protected static String getLargeMessagesDir(final String testDir)
    {
       return testDir + "/large-msg";
    }
 
-   protected String getLargeMessagesDir(final int index, final boolean backup)
+   protected static String getLargeMessagesDir(final int index, final boolean backup)
    {
       return getLargeMessagesDir(getTestDir()) + index + "-" + (backup ? "B" : "L");
    }

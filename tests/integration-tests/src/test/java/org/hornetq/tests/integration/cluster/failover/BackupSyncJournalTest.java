@@ -231,6 +231,8 @@ public class BackupSyncJournalTest extends FailoverTestBase
          sessionFactory.close();
       if (session != null)
          session.close();
+      if (producer != null)
+         producer.close();
       closeServerLocator(locator);
 
       super.tearDown();
