@@ -51,8 +51,6 @@ import org.hornetq.spi.core.remoting.Connection;
  * A CoreProtocolManager
  *
  * @author Tim Fox
- *
- *
  */
 public class CoreProtocolManager implements ProtocolManager
 {
@@ -216,8 +214,8 @@ public class CoreProtocolManager implements ProtocolManager
                    * HORNETQ-720 Instantiate a new server locator to call notifyNodeUp(...)? Or send
                    * a CLUSTER_TOPOLOGY(_2?) message?
                    */
-//                  server.getClusterManager().notifyNodeUp(msg.getNodeID(), getPair(msg.getConnector(), true), true,
-//                                                          true);
+                  acceptorUsed.getClusterConnection().nodeAnnounced(System.currentTimeMillis(), msg.getNodeID(),
+                                                                    getPair(msg.getConnector(), true), true);
                }
             }
          }
