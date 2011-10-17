@@ -455,6 +455,11 @@
                 HornetQ server to send and receive Stomp messages.</para>
         </section>
         <section>
+            <title>Stomp1.1</title>
+            <para>The <literal>stomp</literal> example shows you how to configure a
+                HornetQ server to send and receive Stomp messages via a Stomp 1.1 connection.</para>
+        </section>
+        <section>
             <title>Stomp Over Web Sockets</title>
             <para>The <literal>stomp-websockets</literal> example shows you how to configure a
                 HornetQ server to send and receive Stomp messages directly from Web browsers (provided

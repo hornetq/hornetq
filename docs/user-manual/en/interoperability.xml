@@ -26,7 +26,7 @@
     <section id="stomp">
         <title>Stomp</title>
         <para><ulink url="http://stomp.codehaus.org/">Stomp</ulink> is a text-orientated wire protocol that allows
-            Stomp clients to communicate with Stomp Brokers.</para>
+            Stomp clients to communicate with Stomp Brokers. HornetQ now supports both Stomp 1.0 and Stomp 1.1.</para>
         <para><ulink url="http://stomp.codehaus.org/Clients">Stomp clients</ulink> are available for
         several languages and platforms making it a good choice for interoperability.</para>
         <section id="stomp.native">
