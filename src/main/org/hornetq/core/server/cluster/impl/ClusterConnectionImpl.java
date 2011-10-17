@@ -241,6 +241,14 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
 
+      backupServerLocator = clusterConnector.createServerLocator(false);
+
+      if (backupServerLocator != null)
+      {
+         backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
+      }
+
       if (tcConfigs != null && tcConfigs.length > 0)
       {
          // a cluster connection will connect to other nodes only if they are directly connected
@@ -339,6 +347,14 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.allowDirectConnectionsOnly = allowDirectConnectionsOnly;
 
       clusterConnector = new DiscoveryClusterConnector(dg);
+
+      backupServerLocator = clusterConnector.createServerLocator(false);
+
+      if (backupServerLocator != null)
+      {
+         backupServerLocator.setReconnectAttempts(-1);
+         backupServerLocator.setInitialConnectAttempts(-1);
+      }
 
       this.manager = manager;
    }
@@ -450,12 +466,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    
    public void announceBackup()
    {
-      this.backupServerLocator = clusterConnector.createServerLocator(false);
-      
-      backupServerLocator.setReconnectAttempts(-1);
-      backupServerLocator.setInitialConnectAttempts(-1);
-
-       
       executor.execute(new Runnable()
       {
          public void run()
