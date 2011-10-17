@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
  * A ConfigurationValidationTr
  *
  * @author jmesnil
- * 
+ *
  * Created 22 janv. 2009 14:53:19
  *
  *
@@ -51,7 +51,7 @@ public class ConfigurationValidationTest extends UnitTestCase
       String xml = "<configuration xmlns='urn:hornetq'>" + "</configuration>";
       Element element = XMLUtil.stringToElement(xml);
       Assert.assertNotNull(element);
-      XMLUtil.validate(element, "hornetq-configuration.xsd");
+      XMLUtil.validate(element, "schema/hornetq-configuration.xsd");
    }
 
    public void testFullConfiguration() throws Exception
