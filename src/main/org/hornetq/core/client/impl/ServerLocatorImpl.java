@@ -1300,7 +1300,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             else
             {
-               updateArraysAndPairs(false);
+               updateArraysAndPairs();
 
                if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
                {
@@ -1345,7 +1345,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
          }
 
-         updateArraysAndPairs(last);
+         updateArraysAndPairs();
+      }
+
+      if (last)
+      {
+         synchronized (this)
+         {
+            receivedTopology = true;
+            // Notify if waiting on getting topology
+            notifyAll();
+         }
       }
    }
 
@@ -1373,7 +1383,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   private synchronized void updateArraysAndPairs(final boolean updateReceived)
+   private synchronized void updateArraysAndPairs()
    {
       Collection<TopologyMember> membersCopy = topology.getMembers();
 
@@ -1384,12 +1394,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       for (TopologyMember pair : membersCopy)
       {
          topologyArray[count++] = pair.getConnector();
-      }
-
-      if (updateReceived)
-      {
-         receivedTopology = true;
-         notifyAll();
       }
    }
 
