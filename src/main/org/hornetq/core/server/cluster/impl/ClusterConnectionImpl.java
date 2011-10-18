@@ -1135,9 +1135,9 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       public synchronized void onMessage(final ClientMessage message)
       {
-         if (isTrace)
+         if (log.isDebugEnabled())
          {
-            log.trace("Flow record on " + clusterConnector + " Receiving message " + message);
+            log.debug("ClusterCommunication::Flow record on " + clusterConnector + " Receiving message " + message);
          }
          try
          {

@@ -79,9 +79,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private final Topology topology;
 
-   private Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
+   private volatile Pair<TransportConfiguration, TransportConfiguration>[] topologyArray;
 
-   private boolean receivedTopology;
+   private volatile boolean receivedTopology;
 
    private boolean compressLargeMessage;
 
@@ -505,7 +505,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       this(topology, useHA, null, transportConfigs);
    }
 
-   private TransportConfiguration selectConnector()
+   private synchronized TransportConfiguration selectConnector()
    {
       if (receivedTopology)
       {
@@ -1290,23 +1290,23 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (topology.removeMember(eventTime, nodeID))
       {
-         if (topology.isEmpty())
+         synchronized (this)
          {
-            // Resetting the topology to its original condition as it was brand new
-            synchronized (this)
-            {
-               topologyArray = null;
-               receivedTopology = false;
-            }
-         }
-         else
-         {
-            updateArraysAndPairs();
-
-            if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+            if (topology.isEmpty())
             {
                // Resetting the topology to its original condition as it was brand new
                receivedTopology = false;
+               topologyArray = null;
+            }
+            else
+            {
+               updateArraysAndPairs(false);
+
+               if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+               {
+                  // Resetting the topology to its original condition as it was brand new
+                  receivedTopology = false;
+               }
             }
          }
       }
@@ -1345,17 +1345,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
          }
 
-         updateArraysAndPairs();
-      }
-
-      if (last)
-      {
-         synchronized (this)
-         {
-            receivedTopology = true;
-            // Notify if waiting on getting topology
-            notifyAll();
-         }
+         updateArraysAndPairs(last);
       }
    }
 
@@ -1383,7 +1373,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   private synchronized void updateArraysAndPairs()
+   private synchronized void updateArraysAndPairs(final boolean updateReceived)
    {
       Collection<TopologyMember> membersCopy = topology.getMembers();
 
@@ -1394,6 +1384,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       for (TopologyMember pair : membersCopy)
       {
          topologyArray[count++] = pair.getConnector();
+      }
+
+      if (updateReceived)
+      {
+         receivedTopology = true;
+         notifyAll();
       }
    }
 

@@ -473,9 +473,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
       
-      if (isTrace)
+      if (log.isDebugEnabled())
       {
-         log.trace("Sending notification for addBinding " + binding + " from server " + server);
+         log.debug("ClusterCommunication::Sending notification for addBinding " + binding + " from server " + server);
       }
 
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));

@@ -494,10 +494,11 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       for (int i = 0; i < 10; i++)
       {
+         log.info("#test " + i);
          setupCluster(false);
 
          startServers(0, 1, 2);
-
+         
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
