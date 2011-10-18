@@ -1290,22 +1290,29 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (topology.removeMember(eventTime, nodeID))
       {
-         synchronized (this)
+         if (clusterConnection)
          {
-            if (topology.isEmpty())
+            updateArraysAndPairs();
+         }
+         else
+         {
+            synchronized (this)
             {
-               // Resetting the topology to its original condition as it was brand new
-               receivedTopology = false;
-               topologyArray = null;
-            }
-            else
-            {
-               updateArraysAndPairs();
-
-               if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+               if (topology.isEmpty())
                {
                   // Resetting the topology to its original condition as it was brand new
                   receivedTopology = false;
+                  topologyArray = null;
+               }
+               else
+               {
+                  updateArraysAndPairs();
+   
+                  if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
+                  {
+                     // Resetting the topology to its original condition as it was brand new
+                     receivedTopology = false;
+                  }
                }
             }
          }
