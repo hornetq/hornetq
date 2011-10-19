@@ -348,7 +348,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new DiscoveryClusterConnector(dg);
 
-      backupServerLocator = clusterConnector.createServerLocator(false);
+      backupServerLocator = clusterConnector.createServerLocator(true);
 
       if (backupServerLocator != null)
       {
@@ -470,29 +470,33 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       {
          public void run()
          {
-            try
-            {
-               if (log.isDebugEnabled())
-               {
-                  log.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
-               }
-               ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
-               if (backupSessionFactory != null)
-               {
-                  backupSessionFactory.getConnection()
-                                      .getChannel(0, -1)
-                                      .send(new NodeAnnounceMessage(System.currentTimeMillis(),
-                                                                    nodeUUID.toString(),
-                                                                    true,
-                                                                    connector,
-                                                                    null));
-                  log.info("backup announced");
-               }
-            }
-            catch (Exception e)
-            {
-               log.warn("Unable to announce backup, retrying", e);
-            }
+             while (true)
+             {
+                 try
+                 {
+                    if (log.isDebugEnabled())
+                    {
+                       log.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
+                    }
+                    ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
+                    if (backupSessionFactory != null)
+                    {
+                       backupSessionFactory.getConnection()
+                                           .getChannel(0, -1)
+                                           .send(new NodeAnnounceMessage(System.currentTimeMillis(),
+                                                                         nodeUUID.toString(),
+                                                                         true,
+                                                                         connector,
+                                                                         null));
+                       log.info("backup announced");
+                       break;
+                    }
+                 }
+                 catch (Exception e)
+                 {
+                    log.warn("Unable to announce backup, retrying", e);
+                 }
+             }
          }
       });
    }

@@ -1288,31 +1288,30 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          log.debug("nodeDown " + this + " nodeID=" + nodeID + " as being down", new Exception("trace"));
       }
 
-      if (topology.removeMember(eventTime, nodeID))
+      topology.removeMember(eventTime, nodeID);
+
+      if (clusterConnection)
       {
-         if (clusterConnection)
+         updateArraysAndPairs();
+      }
+      else
+      {
+         synchronized (this)
          {
-            updateArraysAndPairs();
-         }
-         else
-         {
-            synchronized (this)
+            if (topology.isEmpty())
             {
-               if (topology.isEmpty())
+               // Resetting the topology to its original condition as it was brand new
+               receivedTopology = false;
+               topologyArray = null;
+            }
+            else
+            {
+               updateArraysAndPairs();
+
+               if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
                {
                   // Resetting the topology to its original condition as it was brand new
                   receivedTopology = false;
-                  topologyArray = null;
-               }
-               else
-               {
-                  updateArraysAndPairs();
-   
-                  if (topology.nodes() == 1 && topology.getMember(this.nodeID) != null)
-                  {
-                     // Resetting the topology to its original condition as it was brand new
-                     receivedTopology = false;
-                  }
                }
             }
          }
@@ -1338,22 +1337,20 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       TopologyMember member = new TopologyMember(connectorPair.getA(), connectorPair.getB());
 
-      if (topology.updateMember(uniqueEventID, nodeID, member))
+      topology.updateMember(uniqueEventID, nodeID, member);
+
+      TopologyMember actMember = topology.getMember(nodeID);
+
+      if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
       {
-
-         TopologyMember actMember = topology.getMember(nodeID);
-
-         if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
+         for (ClientSessionFactory factory : factories)
          {
-            for (ClientSessionFactory factory : factories)
-            {
-               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
-                                                                          actMember.getConnector().getB());
-            }
+            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
+                                                                       actMember.getConnector().getB());
          }
-
-         updateArraysAndPairs();
       }
+
+      updateArraysAndPairs();
 
       if (last)
       {
