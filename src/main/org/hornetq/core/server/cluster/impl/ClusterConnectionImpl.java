@@ -470,32 +470,28 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       {
          public void run()
          {
-             while (true)
+             try
              {
-                 try
-                 {
-                    if (log.isDebugEnabled())
-                    {
-                       log.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
-                    }
-                    ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
-                    if (backupSessionFactory != null)
-                    {
-                       backupSessionFactory.getConnection()
-                                           .getChannel(0, -1)
-                                           .send(new NodeAnnounceMessage(System.currentTimeMillis(),
-                                                                         nodeUUID.toString(),
-                                                                         true,
-                                                                         connector,
-                                                                         null));
-                       log.info("backup announced");
-                       break;
-                    }
-                 }
-                 catch (Exception e)
-                 {
-                    log.warn("Unable to announce backup, retrying", e);
-                 }
+                if (log.isDebugEnabled())
+                {
+                   log.debug(ClusterConnectionImpl.this + ":: announcing " + connector + " to " + backupServerLocator);
+                }
+                ClientSessionFactory backupSessionFactory = backupServerLocator.connect();
+                if (backupSessionFactory != null)
+                {
+                   backupSessionFactory.getConnection()
+                                       .getChannel(0, -1)
+                                       .send(new NodeAnnounceMessage(System.currentTimeMillis(),
+                                                                     nodeUUID.toString(),
+                                                                     true,
+                                                                     connector,
+                                                                     null));
+                   log.info("backup announced");
+                }
+             }
+             catch (Exception e)
+             {
+                log.warn("Unable to announce backup, retrying", e);
              }
          }
       });
