@@ -1,0 +1,10 @@
+/build
+/eclipse-output
+/thirdparty
+/logs
+/ObjectStore
+/tmp
+/data
+/junit*.properties
+/target
+.gitignore
