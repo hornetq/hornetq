@@ -2127,7 +2127,7 @@ public class HornetQServerImpl implements HornetQServer
             while (true)
             {
                nodeManager.awaitLiveNode();
-               if (quorumManager.isNodeDown())
+               if (!started || quorumManager.isNodeDown())
                {
                   break;
                }
