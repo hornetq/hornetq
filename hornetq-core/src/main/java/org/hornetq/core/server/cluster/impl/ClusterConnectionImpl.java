@@ -65,12 +65,12 @@ import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
 
 /**
- * 
+ *
  * A ClusterConnectionImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author Clebert Suconic
- * 
+ *
  * Created 21 Jan 2009 14:43:05
  *
  *
@@ -142,11 +142,11 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
 
    private final ClusterManagerInternal manager;
-   
-   
+
+
    // Stuff that used to be on the ClusterManager
 
-   
+
    private final Topology topology = new Topology(this);
 
    private volatile ServerLocatorInternal backupServerLocator;
@@ -214,7 +214,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.executorFactory = executorFactory;
 
       this.executor = executorFactory.getExecutor();
-      
+
       this.topology.setExecutor(executor);
 
       this.server = server;
@@ -325,7 +325,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.executorFactory = executorFactory;
 
       this.executor = executorFactory.getExecutor();
-      
+
       this.topology.setExecutor(executor);
 
       this.server = server;
@@ -367,10 +367,10 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          {
             return;
          }
-         
-   
+
+
          started = true;
-   
+
          if (!backup)
          {
             activate();
@@ -378,7 +378,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       }
 
    }
-   
+
    public void flushExecutor()
    {
       Future future = new Future();
@@ -435,35 +435,23 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                                       props);
          managementService.sendNotification(notification);
       }
-      
 
 
-      executor.execute(new Runnable()
+      if (backupServerLocator != null)
       {
-         public void run()
-         {
-            synchronized (ClusterConnectionImpl.this)
-            {
-               if (backupServerLocator != null)
-               {
-                  backupServerLocator.close();
-                  backupServerLocator = null;
-               }
+         backupServerLocator.close();
+         backupServerLocator = null;
+      }
 
-               if (serverLocator != null)
-               {
-                  serverLocator.close();
-                  serverLocator = null;
-               }
-            }
-
-         }
-      });
+      if (serverLocator != null)
+      {
+         serverLocator.close();
+         serverLocator = null;
+      }
 
       started = false;
    }
 
-   
    public void announceBackup()
    {
       executor.execute(new Runnable()
@@ -501,7 +489,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    {
       return topology.getMember(manager.getNodeId());
    }
-   
+
    public void addClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)
    {
       topology.addClusterTopologyListener(listener);
@@ -519,7 +507,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    {
       return topology;
    }
-   
+
    public void nodeAnnounced(final long uniqueEventID,
                              final String nodeID,
                              final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
@@ -610,7 +598,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       }
 
       backup = false;
-      
+
       topology.updateAsLive(manager.getNodeId(), new TopologyMember(connector, null));
 
       if (backupServerLocator != null)
@@ -831,13 +819,13 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          }
       }
    }
-   
+
    public synchronized void informTopology()
    {
       String nodeID = server.getNodeID().toString();
-      
+
       TopologyMember localMember;
-      
+
       if (backup)
       {
          localMember = new TopologyMember(null, connector);
@@ -859,21 +847,21 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final boolean start) throws Exception
    {
       final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, false, connector);
-      
+
       String nodeId;
-      
+
       synchronized (this)
       {
          if (!started)
          {
             return;
          }
-         
+
          if (serverLocator == null)
          {
             return;
          }
-         
+
          nodeId = serverLocator.getNodeID();
       }
 
