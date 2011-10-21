@@ -364,6 +364,7 @@
 			</xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="confirmation-window-size" type="xsd:int">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xsd:long"/>
 			<xsd:choice>
 				<xsd:element maxOccurs="1" minOccurs="0" name="static-connectors">
                     <xsd:complexType>

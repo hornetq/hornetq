@@ -1,10 +1,10 @@
-<configuration 
-   xmlns="urn:hornetq" 
+<configuration
+   xmlns="urn:hornetq"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="urn:hornetq ../../src/config/common/schema/hornetq-configuration.xsd">
       <name>SomeNameForUseOnTheApplicationServer</name>
       <clustered>true</clustered>
-      <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>             
+      <scheduled-thread-pool-max-size>12345</scheduled-thread-pool-max-size>
       <thread-pool-max-size>54321</thread-pool-max-size>
       <persistence-enabled>false</persistence-enabled>
       <file-deployment-enabled>true</file-deployment-enabled>
@@ -20,17 +20,17 @@
       <log-delegate-factory-class-name>ocelot</log-delegate-factory-class-name>
       <message-counter-enabled>true</message-counter-enabled>
       <message-counter-max-day-history>5</message-counter-max-day-history>
-      <message-counter-sample-period>123456</message-counter-sample-period>      
+      <message-counter-sample-period>123456</message-counter-sample-period>
       <connection-ttl-override>12345</connection-ttl-override>
       <transaction-timeout>98765</transaction-timeout>
       <transaction-timeout-scan-period>56789</transaction-timeout-scan-period>
       <message-expiry-scan-period>10111213</message-expiry-scan-period>
       <message-expiry-thread-priority>8</message-expiry-thread-priority>
       <id-cache-size>127</id-cache-size>
-      <persist-id-cache>true</persist-id-cache>      
+      <persist-id-cache>true</persist-id-cache>
       <backup>true</backup>
       <shared-store>true</shared-store>
-      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
+      <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
       <paging-directory>pagingdir</paging-directory>
       <bindings-directory>somedir</bindings-directory>
       <create-bindings-dir>false</create-bindings-dir>
@@ -38,10 +38,10 @@
       <create-journal-dir>false</create-journal-dir>
       <journal-type>NIO</journal-type>
       <journal-compact-min-files>123</journal-compact-min-files>
-      <journal-compact-percentage>33</journal-compact-percentage>      
+      <journal-compact-percentage>33</journal-compact-percentage>
       <journal-buffer-timeout>1000</journal-buffer-timeout>
       <journal-buffer-size>10000</journal-buffer-size>
-      <journal-sync-transactional>false</journal-sync-transactional>      
+      <journal-sync-transactional>false</journal-sync-transactional>
       <journal-sync-non-transactional>true</journal-sync-non-transactional>
       <journal-file-size>12345678</journal-file-size>
       <journal-min-files>100</journal-min-files>
@@ -61,7 +61,7 @@
             <param key="a1" value="v1"/>
             <param key="a2" value="123"/>
             <param key="a3" value="345"/>
-            <param key="a4" value="v4"/>      
+            <param key="a4" value="v4"/>
          </connector>
          <connector name="connector2">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
@@ -71,12 +71,12 @@
       </connectors>
       <acceptors>
          <acceptor name="acceptor1">
-            <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
+            <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>
             <param key="d1" value="y1"/>
             <param key="d2" value="456"/>
          </acceptor>
    	     <acceptor name="acceptor2">
-   	        <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
+   	        <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>
    	        <param key="e1" value="z1"/>
    	        <param key="e2" value="567"/>
    	     </acceptor>
@@ -112,7 +112,7 @@
          </discovery-group>
       </discovery-groups>
       <diverts>
-         <divert name="divert1">         
+         <divert name="divert1">
             <routing-name>routing-name1</routing-name>
             <address>address1</address>
             <forwarding-address>forwarding-address1</forwarding-address>
@@ -120,7 +120,7 @@
             <transformer-class-name>org.foo.Transformer</transformer-class-name>
             <exclusive>true</exclusive>
          </divert>
-         <divert name="divert2">        
+         <divert name="divert2">
             <routing-name>routing-name2</routing-name>
             <address>address2</address>
             <forwarding-address>forwarding-address2</forwarding-address>
@@ -170,6 +170,7 @@
              <use-duplicate-detection>true</use-duplicate-detection>
              <forward-when-no-consumers>false</forward-when-no-consumers>
              <max-hops>1</max-hops>
+             <call-timeout>123</call-timeout>
             <static-connectors>
                <connector-ref>connector1</connector-ref>
                <connector-ref>connector2</connector-ref>
@@ -182,10 +183,11 @@
              <use-duplicate-detection>false</use-duplicate-detection>
              <forward-when-no-consumers>true</forward-when-no-consumers>
              <max-hops>2</max-hops>
+             <call-timeout>456</call-timeout>
              <discovery-group-ref discovery-group-name="dg1"/>
          </cluster-connection>
       </cluster-connections>
-      
+
     <security-settings>
       <security-setting match="a1">
          <permission type="createNonDurableQueue" roles="a1.1"/>
@@ -215,5 +217,5 @@
          <message-counter-history-day-limit>8</message-counter-history-day-limit>
       </address-setting>
    </address-settings>
-   
+
 </configuration>

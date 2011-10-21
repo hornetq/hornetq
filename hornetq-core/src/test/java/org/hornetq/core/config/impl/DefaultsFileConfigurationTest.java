@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.config.impl;
+package org.hornetq.core.config.impl;
 
 import java.util.Collections;
 
