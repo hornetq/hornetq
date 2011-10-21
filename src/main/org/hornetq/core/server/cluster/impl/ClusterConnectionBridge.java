@@ -339,7 +339,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (permanently)
       {
          log.debug("cluster node for bridge " + this.getName() + " is permanently down");
-         discoveryLocator.notifyNodeDown(targetNodeEventUID+1, targetNodeID);
+         discoveryLocator.notifyNodeDown(System.currentTimeMillis(), targetNodeID);
       }
 
    }
