@@ -14,8 +14,7 @@
 package org.hornetq.core.remoting.impl.netty;
 
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Semaphore;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -61,7 +60,7 @@ public class NettyConnection implements Connection
 
    private volatile HornetQBuffer batchBuffer;
 
-   private final Lock writeLock = new ReentrantLock();
+   private final Semaphore writeLock = new Semaphore(1);
    
    private Set<ReadyListener> readyListeners = new ConcurrentHashSet<ReadyListener>();
 
@@ -153,7 +152,7 @@ public class NettyConnection implements Connection
          return;
       }
 
-      if (writeLock.tryLock())
+      if (writeLock.tryAcquire())
       {
          try
          {
@@ -166,7 +165,7 @@ public class NettyConnection implements Connection
          }
          finally
          {
-            writeLock.unlock();
+            writeLock.release();
          }
       }
    }
@@ -179,7 +178,8 @@ public class NettyConnection implements Connection
    public void write(HornetQBuffer buffer, final boolean flush, final boolean batched)
    {
 
-      writeLock.lock();
+      try {
+      writeLock.acquire();
 
       try
       {
@@ -240,9 +240,14 @@ public class NettyConnection implements Connection
             }
          }
       }
-      finally
+         finally
+         {
+            writeLock.release();
+         }
+      }
+      catch (InterruptedException e)
       {
-         writeLock.unlock();
+         Thread.currentThread().interrupt();
       }
    }
 
