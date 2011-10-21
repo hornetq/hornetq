@@ -58,9 +58,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
     */
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER,
-                              ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD,
-                              true);
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_CLUSTER_USER, CLUSTER_PASSWORD, true);
    }
 
    public void testSendManagementMessageWithAdminRole() throws Exception

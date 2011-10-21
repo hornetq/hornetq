@@ -33,7 +33,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQServer;
@@ -41,6 +46,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.JAASSecurityManager;
+import org.hornetq.tests.util.CreateMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.jboss.security.SimpleGroup;
 
@@ -51,8 +57,8 @@ import org.jboss.security.SimpleGroup;
 public class SecurityTest extends ServiceTestBase
 {
    /*
-   *  create session tests
-    *  */
+    * create session tests
+    */
    private static final String addressA = "addressA";
 
    private static final String queueA = "queueA";
@@ -72,7 +78,7 @@ public class SecurityTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
-      
+
       super.tearDown();
    }
 
@@ -120,7 +126,7 @@ public class SecurityTest extends ServiceTestBase
          ClientSessionFactory cf = locator.createSessionFactory();
          try
          {
-            ClientSession session = cf.createSession(false, true, true);
+            cf.createSession(false, true, true);
             Assert.fail("should throw exception");
          }
          catch (HornetQException e)
@@ -151,7 +157,7 @@ public class SecurityTest extends ServiceTestBase
 
          try
          {
-            ClientSession session = cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
+            cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
             Assert.fail("should not throw exception");
          }
          catch (HornetQException e)
@@ -493,52 +499,52 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          server.start();
-         
+
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         
+
          HornetQSecurityManager securityManager = server.getSecurityManager();
-         
+
          securityManager.addUser("auser", "pass");
-         
+
          Role role = new Role("arole", true, true, true, false, false, false, false);
-         
+
          Set<Role> roles = new HashSet<Role>();
-         
+
          roles.add(role);
-         
+
          securityRepository.addMatch(SecurityTest.addressA, roles);
-         
+
          securityManager.addRole("auser", "arole");
-         
+
          locator.setBlockOnNonDurableSend(true);
-         
+
          ClientSessionFactory cf = locator.createSessionFactory();
-         
+
          ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         
+
          session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         
+
          ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         
+
          cp.send(session.createMessage(false));
-         
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer(queueA);
-         
+
          ClientMessage receivedMessage = cons.receive(5000);
-         
+
          assertNotNull(receivedMessage);
-         
+
          receivedMessage.acknowledge();
-         
+
          role = new Role("arole", false, false, true, false, false, false, false);
-         
+
          roles = new HashSet<Role>();
-         
+
          roles.add(role);
-         
-         
+
+
          // This was added to validate https://issues.jboss.org/browse/SOA-3363
          securityRepository.addMatch(SecurityTest.addressA, roles);
          boolean failed = false;
@@ -551,12 +557,12 @@ public class SecurityTest extends ServiceTestBase
             failed = true;
          }
          // This was added to validate https://issues.jboss.org/browse/SOA-3363 ^^^^^
-         
+
          assertTrue("Failure expected on send after removing the match", failed);
-         
-         
+
+
          session.close();
-         
+
       }
       finally
       {
@@ -672,7 +678,7 @@ public class SecurityTest extends ServiceTestBase
          senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
          ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
          cp.send(session.createMessage(false));
-         ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
+         session.createConsumer(SecurityTest.queueA);
          session.close();
          senSession.close();
       }
@@ -715,7 +721,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createMessage(false));
          try
          {
-            ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
+            session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
@@ -766,7 +772,7 @@ public class SecurityTest extends ServiceTestBase
          cp.send(session.createMessage(false));
          try
          {
-            ClientConsumer cc = session.createConsumer(SecurityTest.queueA);
+            session.createConsumer(SecurityTest.queueA);
          }
          catch (HornetQException e)
          {
@@ -911,7 +917,7 @@ public class SecurityTest extends ServiceTestBase
 
          securityManager.addRole("auser", "receiver");
 
-         ClientConsumer consumer = session.createConsumer(SecurityTest.queueA);
+         session.createConsumer(SecurityTest.queueA);
 
          // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
          // next createConsumer should fail
@@ -919,8 +925,8 @@ public class SecurityTest extends ServiceTestBase
 
          ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
          ClientProducer prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(createTextMessage(sendingSession, "Test", true));
-         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
          try
          {
             sendingSession.commit();
@@ -939,8 +945,8 @@ public class SecurityTest extends ServiceTestBase
          sendingSession.start(xid, XAResource.TMNOFLAGS);
 
          prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(createTextMessage(sendingSession, "Test", true));
-         prod.send(createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
          sendingSession.end(xid, XAResource.TMSUCCESS);
 
          try
@@ -1156,7 +1162,7 @@ public class SecurityTest extends ServiceTestBase
 
          try
          {
-            ClientSession session = cf.createSession(false, true, true);
+            cf.createSession(false, true, true);
             Assert.fail("should not throw exception");
          }
          catch (HornetQException e)
@@ -1237,7 +1243,7 @@ public class SecurityTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
+            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          // Step 5. bill tries to make a connection using wrong password
@@ -1248,7 +1254,7 @@ public class SecurityTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            System.out.println("User bill failed to connect. Details: " + e.getMessage());
+            assertEquals("User bill failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          // Step 6. bill makes a good connection.
@@ -1375,7 +1381,7 @@ public class SecurityTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
+            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          // Step 5. bill tries to make a connection using wrong password
@@ -1386,7 +1392,7 @@ public class SecurityTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
-            System.out.println("User bill failed to connect. Details: " + e.getMessage());
+            assertEquals("User failed to connect", HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          // Step 6. bill makes a good connection.
@@ -1516,7 +1522,7 @@ public class SecurityTest extends ServiceTestBase
 
          try
          {
-            ClientConsumer con = connection.createConsumer(queue);
+            connection.createConsumer(queue);
             Assert.fail("should throw exception");
          }
          catch (HornetQException e)
@@ -1539,12 +1545,12 @@ public class SecurityTest extends ServiceTestBase
 
       try
       {
-         ClientConsumer con = connection.createConsumer(queue);
+         connection.createConsumer(queue);
          Assert.fail("should throw exception");
       }
       catch (HornetQException e)
       {
-         // pass
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
    }
 
