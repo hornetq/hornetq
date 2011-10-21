@@ -62,7 +62,7 @@ public class NettyConnection implements Connection
 
    private final Semaphore writeLock = new Semaphore(1);
 
-   private Set<ReadyListener> readyListeners = new ConcurrentHashSet<ReadyListener>();
+   private final Set<ReadyListener> readyListeners = new ConcurrentHashSet<ReadyListener>();
 
    // Static --------------------------------------------------------
 
@@ -70,8 +70,8 @@ public class NettyConnection implements Connection
 
    public NettyConnection(final Channel channel,
                           final ConnectionLifeCycleListener listener,
-                          boolean batchingEnabled,
-                          boolean directDeliver)
+                          final boolean batchingEnabled,
+                          final boolean directDeliver)
    {
       this(null, channel, listener, batchingEnabled, directDeliver);
    }
@@ -79,8 +79,8 @@ public class NettyConnection implements Connection
    public NettyConnection(final Acceptor acceptor,
                           final Channel channel,
                           final ConnectionLifeCycleListener listener,
-                          boolean batchingEnabled,
-                          boolean directDeliver)
+                          final boolean batchingEnabled,
+                          final boolean directDeliver)
    {
       this.channel = channel;
 
@@ -160,7 +160,7 @@ public class NettyConnection implements Connection
             {
                channel.write(batchBuffer.channelBuffer());
 
-               batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+               batchBuffer = HornetQBuffers.dynamicBuffer(NettyConnection.BATCHING_BUFFER_SIZE);
             }
          }
          finally
@@ -188,14 +188,14 @@ public class NettyConnection implements Connection
             {
                // Lazily create batch buffer
 
-               batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+               batchBuffer = HornetQBuffers.dynamicBuffer(NettyConnection.BATCHING_BUFFER_SIZE);
             }
 
             if (batchBuffer != null)
             {
                batchBuffer.writeBytes(buffer, 0, buffer.writerIndex());
 
-               if (batchBuffer.writerIndex() >= BATCHING_BUFFER_SIZE || !batched || flush)
+               if (batchBuffer.writerIndex() >= NettyConnection.BATCHING_BUFFER_SIZE || !batched || flush)
                {
                   // If the batch buffer is full or it's flush param or not batched then flush the buffer
 
@@ -214,7 +214,7 @@ public class NettyConnection implements Connection
                {
                   // Create a new buffer
 
-                  batchBuffer = HornetQBuffers.dynamicBuffer(BATCHING_BUFFER_SIZE);
+                  batchBuffer = HornetQBuffers.dynamicBuffer(NettyConnection.BATCHING_BUFFER_SIZE);
                }
             }
 
