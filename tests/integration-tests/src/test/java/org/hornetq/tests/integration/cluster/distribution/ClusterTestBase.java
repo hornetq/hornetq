@@ -169,9 +169,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
          if (servers[i] == null)
             continue;
 
-         for (ClusterConnection cc : servers[i].getClusterManager().getClusterConnections())
+         final ClusterManager clusterManager = servers[i].getClusterManager();
+         if (clusterManager != null)
          {
-            cc.stop();
+            for (ClusterConnection cc : clusterManager.getClusterConnections())
+            {
+               cc.stop();
+            }
          }
          stopComponent(servers[i]);
 
