@@ -602,10 +602,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
    {
-      if (closed)
-      {
-         throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
-      }
+      assertOpen();
 
       try
       {
@@ -616,7 +613,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
       }
 
-      ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
+      synchronized (this)
+      {
+         assertOpen();
+         ClientSessionFactoryInternal factory =
+                  new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
                                                                           callTimeout,
                                                                           clientFailureCheckPeriod,
@@ -633,15 +634,21 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       addFactory(factory);
 
-      return factory;
+         return factory;
+      }
    }
 
-   public ClientSessionFactory createSessionFactory() throws Exception
+   private void assertOpen()
    {
       if (closed || closing)
       {
          throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
       }
+   }
+
+   public ClientSessionFactory createSessionFactory() throws Exception
+   {
+      assertOpen();
 
       try
       {
@@ -669,6 +676,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       synchronized (this)
       {
+         assertOpen();
          boolean retry;
          int attempts = 0;
          do
@@ -1218,6 +1226,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          staticConnector.disconnect();
       }
 
+      synchronized (this)
+      {
       Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
       for (ClientSessionFactory factory : clonedFactory)
@@ -1233,6 +1243,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
 
       factories.clear();
+      }
 
       if (shutdownPool)
       {
@@ -1655,7 +1666,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       class Connector
       {
-         private TransportConfiguration initialConnector;
+         private final TransportConfiguration initialConnector;
 
          private volatile ClientSessionFactoryInternal factory;
 
