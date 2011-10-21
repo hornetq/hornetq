@@ -130,7 +130,7 @@ public class Topology implements Serializable
          TopologyMember currentMember = getMember(nodeId);
          if (currentMember == null)
          {
-            log.warn("There's no live to be updated on backup update, node=" + nodeId + " memberInput=" + memberInput,
+            log.debug("There's no live to be updated on backup update, node=" + nodeId + " memberInput=" + memberInput,
                      new Exception("trace"));
 
             currentMember = memberInput;
