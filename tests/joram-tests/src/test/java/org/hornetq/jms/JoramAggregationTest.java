@@ -49,7 +49,7 @@ import org.objectweb.jtests.jms.framework.JMSTestCase;
 
 /**
  * JoramAggregationTest.
- * 
+ *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @version $Revision: 1.2 $
  */
@@ -60,25 +60,16 @@ public class JoramAggregationTest extends TestCase
       super(name);
    }
 
-   
-   
-   /** Used to similuate tests while renaming its names. */
-   private static class DummyTestCase extends TestCase
-   {
-       DummyTestCase(String name)
-       {
-           super (name);
-       }
-   }
- 
    /**
-    * One of the goals of this class also is to keep original classNames into testNames. So, you will realize several proxies existent here to
-    * keep these class names while executing method names.
+    * One of the goals of this class also is to keep original classNames into testNames.
+    * <p>
+    * So, you will realize several proxies existent here to keep these class names while executing
+    * method names.
     */
    static class TestProxy extends TestCase
    {
-       Hashtable hashTests = new Hashtable();
-
+      Hashtable<Test, Test> hashTests = new Hashtable<Test, Test>();
+      Test testcase;
 
        public TestProxy(Test testcase, String name)
        {
@@ -86,7 +77,8 @@ public class JoramAggregationTest extends TestCase
            this.testcase = testcase;
        }
 
-       public int countTestCases()
+       @Override
+      public int countTestCases()
        {
            return testcase.countTestCases();
        }
@@ -98,20 +90,20 @@ public class JoramAggregationTest extends TestCase
         */
        private Test createDummyTest(Test test)
        {
-           Test dummyTest = (Test)hashTests.get(test);
+           Test dummyTest = hashTests.get(test);
            if (dummyTest==null)
            {
-               if (test instanceof TestCase)
+            if (test instanceof TestCase || test instanceof TestSuite)
                {
-                   dummyTest = new DummyTestCase(this.getName() + ":"+ ((TestCase)test).getName());
-               } else
-               if (test instanceof TestSuite)
+               dummyTest = new TestCase(this.getName() + ":" + ((TestCase)test).getName())
                {
-                   dummyTest = new DummyTestCase(this.getName() + ":"+ ((TestCase)test).getName());
+               };
                }
                else
                {
-                   dummyTest = new DummyTestCase(test.getClass().getName());
+               dummyTest = new TestCase(test.getClass().getName())
+               {
+               };
                }
 
                hashTests.put(test,dummyTest);
@@ -120,7 +112,8 @@ public class JoramAggregationTest extends TestCase
            return dummyTest;
        }
 
-       public void run(final TestResult result)
+       @Override
+      public void run(final TestResult result)
        {
            TestResult subResult = new TestResult();
            subResult.addListener(new TestListener()
@@ -151,13 +144,11 @@ public class JoramAggregationTest extends TestCase
            });
            testcase.run(subResult);
        }
-
-       Test testcase;
    }
 
-   
 
-   
+
+
 
    public static junit.framework.Test suite() throws Exception
    {
@@ -181,11 +172,12 @@ public class JoramAggregationTest extends TestCase
       suite.addTest(new TestProxy(TopicSessionTest.suite(), TopicSessionTest.class.getName()));
       suite.addTest(new TestProxy(UnifiedSessionTest.suite(), UnifiedSessionTest.class.getName()));
       suite.addTest(new TestProxy(TemporaryTopicTest.suite(), TemporaryTopicTest.class.getName()));
-      
+
       return new TestAggregation(suite);
    }
+
    /**
-    * Should be overriden 
+    * Should be overridden
     * @return
     */
    protected static Properties getProviderProperties() throws IOException
@@ -195,10 +187,10 @@ public class JoramAggregationTest extends TestCase
       return props;
    }
 
-   
+
    static class TestAggregation extends TestSetup
    {
-      
+
       Admin admin;
 
       /**
@@ -208,7 +200,8 @@ public class JoramAggregationTest extends TestCase
       {
          super(test);
       }
-      
+
+      @Override
       public void setUp() throws Exception
       {
          JMSTestCase.startServer = false;
@@ -219,13 +212,13 @@ public class JoramAggregationTest extends TestCase
          admin.startServer();
 
       }
-      
+
+      @Override
       public void tearDown() throws Exception
       {
-         System.out.println("TearDown");
          admin.stopServer();
          JMSTestCase.startServer = true;
       }
-      
+
    }
 }
