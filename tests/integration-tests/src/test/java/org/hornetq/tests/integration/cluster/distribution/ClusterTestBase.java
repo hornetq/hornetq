@@ -568,7 +568,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          if (holder != null)
          {
-            holder.consumer.close();
+            holder.close();
             // holder.session.close();
 
             consumers[i] = null;

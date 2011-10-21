@@ -19,15 +19,20 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A DeleteMessagesRestartTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Mar 2, 2009 10:14:38 AM
  *
  *
@@ -81,7 +86,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
       for (int i = 0; i < 100; i++)
       {
-         ClientMessage msg = createBytesMessage(session, new byte[0], true);
+         ClientMessage msg = createBytesMessage(session, HornetQBytesMessage.TYPE, new byte[0], true);
          prod.send(msg);
       }
 

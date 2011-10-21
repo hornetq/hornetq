@@ -28,11 +28,12 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * This is an integration-tests that will take some time to run.
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  */
 public class PageStressTest extends ServiceTestBase
@@ -84,7 +85,7 @@ public class PageStressTest extends ServiceTestBase
 
          ClientProducer prod = session.createProducer(address);
 
-         ClientMessage message = createBytesMessage(session, new byte[700], true);
+         ClientMessage message = createBytesMessage(session, HornetQBytesMessage.TYPE, new byte[700], true);
 
          for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
          {
@@ -199,7 +200,7 @@ public class PageStressTest extends ServiceTestBase
 
          ClientProducer prod = session.createProducer(address);
 
-         ClientMessage message = createBytesMessage(session, new byte[700], false);
+         ClientMessage message = createBytesMessage(session, HornetQBytesMessage.TYPE, new byte[700], false);
 
          int NUMBER_OF_MESSAGES = 60000;
 
@@ -299,7 +300,7 @@ public class PageStressTest extends ServiceTestBase
       clearData();
 
       locator = createInVMNonHALocator();
-      
+
       locator.setBlockOnAcknowledge(true);
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnNonDurableSend(false);

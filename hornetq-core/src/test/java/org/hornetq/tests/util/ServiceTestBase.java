@@ -52,7 +52,6 @@ import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
 import org.hornetq.utils.UUIDGenerator;
@@ -660,13 +659,12 @@ public abstract class ServiceTestBase extends UnitTestCase
       return m.getBodyBuffer().readString();
    }
 
-   protected ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
+   protected ClientMessage createBytesMessage(final ClientSession session,
+                                              final byte type,
+                                              final byte[] b,
+                                              final boolean durable)
    {
-      ClientMessage message = session.createMessage(HornetQBytesMessage.TYPE,
-                                                    durable,
-                                                    0,
-                                                    System.currentTimeMillis(),
-                                                    (byte)1);
+      ClientMessage message = session.createMessage(type, durable, 0, System.currentTimeMillis(), (byte)1);
       message.getBodyBuffer().writeBytes(b);
       return message;
    }
