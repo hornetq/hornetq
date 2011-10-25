@@ -573,19 +573,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactoryInternal connect() throws Exception
    {
-      ClientSessionFactoryInternal sf;
       // static list of initial connectors
       if (initialConnectors != null && discoveryGroup == null)
       {
-         sf = (ClientSessionFactoryInternal)staticConnector.connect();
+         ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect();
+         addFactory(sf);
+         return sf;
       }
       // wait for discovery group to get the list of initial connectors
-      else
-      {
-         sf = (ClientSessionFactoryInternal)createSessionFactory();
-      }
-      addFactory(sf);
-      return sf;
+      return (ClientSessionFactoryInternal)createSessionFactory();
    }
 
    /* (non-Javadoc)
@@ -1490,7 +1486,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       public ClientSessionFactory connect() throws HornetQException
       {
-         if (closed)
+         if (closed || closing)
          {
             throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
          }
@@ -1598,6 +1594,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          connectors = new ArrayList<Connector>();
          for (TransportConfiguration initialConnector : initialConnectors)
          {
+            assertOpen();
             ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(ServerLocatorImpl.this,
                                                                                 initialConnector,
                                                                                 callTimeout,
