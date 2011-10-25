@@ -48,17 +48,13 @@ public class NettyFailoverTest extends FailoverTest
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory");
+         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
       }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory",
-                                           server1Params);
-      }
+      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
    }
 
    @Override
@@ -66,17 +62,13 @@ public class NettyFailoverTest extends FailoverTest
    {
       if (live)
       {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
+         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
+      server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory",
-                                           server1Params);
-      }
+      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
    }
 
    // Private -------------------------------------------------------
