@@ -70,6 +70,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private transient String identity;
 
    private final Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
+   private final Set<ClientSessionFactoryInternal> connectingFactories = new HashSet<ClientSessionFactoryInternal>();
 
    private TransportConfiguration[] initialConnectors;
 
@@ -624,11 +625,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                                           threadPool,
                                                                           scheduledThreadPool,
                                                                           interceptors);
-
-      factory.connect(reconnectAttempts, failoverOnInitialConnection);
-
-      addFactory(factory);
-
+         connectingFactories.add(factory);
+         factory.connect(reconnectAttempts, failoverOnInitialConnection);
+         connectingFactories.remove(factory);
+         addFactory(factory);
          return factory;
       }
    }
@@ -689,11 +689,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                       threadPool,
                                                       scheduledThreadPool,
                                                       interceptors);
+               connectingFactories.add(factory);
                factory.connect(initialConnectAttempts, failoverOnInitialConnection);
+               connectingFactories.remove(factory);
             }
             catch (HornetQException e)
             {
-               factory.close();
+               if (factory != null)
+               {
+                  connectingFactories.remove(factory);
+                  factory.close();
+               }
                factory = null;
                if (e.getCode() == HornetQException.NOT_CONNECTED)
                {
@@ -743,7 +749,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                           "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
             }
-
          }
 
          addFactory(factory);
@@ -1214,6 +1219,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          staticConnector.disconnect();
       }
 
+      for (ClientSessionFactoryInternal factory : connectingFactories)
+      {
+         factory.causeExit();
+         factory.close();
+      }
       synchronized (this)
       {
       Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
@@ -1464,9 +1474,18 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public synchronized void addFactory(ClientSessionFactoryInternal factory)
    {
-      if (factory != null)
+      if (factory == null)
       {
-         TransportConfiguration backup = null;
+         return;
+      }
+
+      if (closed || closing)
+      {
+         factory.close();
+         return;
+      }
+
+      TransportConfiguration backup = null;
 
          if (topology != null)
          {
@@ -1475,7 +1494,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
          factories.add(factory);
-      }
+
    }
 
    final class StaticConnector implements Serializable
