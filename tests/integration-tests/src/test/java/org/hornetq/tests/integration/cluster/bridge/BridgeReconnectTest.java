@@ -235,8 +235,6 @@ public class BridgeReconnectTest extends BridgeTestBase
       Map<String, Object> server2Params = new HashMap<String, Object>();
       HornetQServer service2 = createBackupHornetQServer(2, server2Params, isNetty(), 0, nodeManager);
 
-      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
-
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
       TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
