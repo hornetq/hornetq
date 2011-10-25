@@ -218,6 +218,18 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       this.ctx = ctx;
 
+      if (!configured.getAndSet(true))
+      {
+         try
+         {
+            setup();
+         }
+         catch (HornetQException e)
+         {
+            throw new ResourceAdapterInternalException("Unable to create activation", e);
+         }
+      }
+
       HornetQResourceAdapter.log.info("HornetQ resource adaptor started");
    }
 
