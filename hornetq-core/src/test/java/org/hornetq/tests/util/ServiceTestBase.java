@@ -262,22 +262,22 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          if (acceptor)
          {
-            className = NettyAcceptorFactory.class.getName();
+            className = NETTY_ACCEPTOR_FACTORY;
          }
          else
          {
-            className = NettyConnectorFactory.class.getName();
+            className = NETTY_CONNECTOR_FACTORY;
          }
       }
       else
       {
          if (acceptor)
          {
-            className = InVMAcceptorFactory.class.getName();
+            className = INVM_ACCEPTOR_FACTORY;
          }
          else
          {
-            className = InVMConnectorFactory.class.getName();
+            className = INVM_CONNECTOR_FACTORY;
          }
       }
       return new TransportConfiguration(className, params);
@@ -309,13 +309,13 @@ public abstract class ServiceTestBase extends UnitTestCase
       long timetowait = System.currentTimeMillis() + 5000;
       while (!server.isStarted() && System.currentTimeMillis() < timetowait)
       {
-         Thread.sleep(100);
+         Thread.sleep(50);
       }
 
       if (!server.isStarted())
       {
          log.info(threadDump("Server didn't start"));
-         fail("server didnt start");
+         fail("server didnt start: " + server);
       }
 
       if (!server.getConfiguration().isBackup())
@@ -323,12 +323,12 @@ public abstract class ServiceTestBase extends UnitTestCase
          timetowait = System.currentTimeMillis() + 5000;
          while (!server.isInitialised() && System.currentTimeMillis() < timetowait)
          {
-            Thread.sleep(100);
+            Thread.sleep(50);
          }
 
          if (!server.isInitialised())
          {
-            fail("Server didn't initialize");
+            fail("Server didn't initialize: " + server);
          }
       }
    }

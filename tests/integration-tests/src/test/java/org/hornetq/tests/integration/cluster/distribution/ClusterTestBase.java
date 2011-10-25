@@ -2189,9 +2189,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
          log.info("started server " + servers[node]);
 
          log.info("started server " + node);
+      }
 
+      for (int node : nodes)
+      {
          waitForServer(servers[node]);
-
       }
 
    }
