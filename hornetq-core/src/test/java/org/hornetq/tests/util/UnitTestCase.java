@@ -189,13 +189,15 @@ public abstract class UnitTestCase extends TestCase
    {
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(serverID, false));
       configuration.setJournalMinFiles(2);
-      configuration.setJournalDirectory(getJournalDir(serverID, false));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(getDefaultJournalType());
+
+      configuration.setJournalDirectory(getJournalDir(serverID, false));
+      configuration.setBindingsDirectory(getBindingsDir(serverID, false));
       configuration.setPagingDirectory(getPageDir(serverID, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(serverID, false));
+
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
       configuration.setClusterPassword(CLUSTER_PASSWORD);
