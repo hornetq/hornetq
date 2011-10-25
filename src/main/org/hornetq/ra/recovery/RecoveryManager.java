@@ -54,6 +54,8 @@ public class RecoveryManager
 
    public HornetQResourceRecovery register(HornetQConnectionFactory factory, String userName, String password)
    {
+      log.debug("registering recovery for factory : " + factory);
+      
       if(!isRegistered(factory) && registry != null)
       {
          XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(factory, userName, password);

@@ -65,6 +65,22 @@ public class XARecoveryConfig
 
       return true;
    }
+   
+   
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "XARecoveryConfig [hornetQConnectionFactory=" + hornetQConnectionFactory +
+             ", username=" +
+             username +
+             ", password=" +
+             password +
+             "]";
+   }
 
    @Override
    public int hashCode()

@@ -1687,7 +1687,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
              username +
              ", closed=" +
              closed +
-             " metaData=(" +
+             ", factory = " + this.sessionFactory +
+             ", metaData=(" +
              buffer +
              ")]@" +
              Integer.toHexString(hashCode());
