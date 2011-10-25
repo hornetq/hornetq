@@ -329,13 +329,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       });
    }
 
-   private synchronized void initialise() throws Exception
+   private synchronized void initialise() throws HornetQException
    {
       if (readOnly)
       {
          return;
       }
-
+      try
+      {
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -369,6 +370,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          readOnly = true;
       }
+      catch (Exception e)
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
+      }
+   }
 
    private ServerLocatorImpl(final Topology topology,
                              final boolean useHA,
@@ -604,14 +610,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       assertOpen();
 
-      try
-      {
          initialise();
-      }
-      catch (Exception e)
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-      }
 
       synchronized (this)
       {
@@ -650,14 +649,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       assertOpen();
 
-      try
-      {
-         initialise();
-      }
-      catch (Exception e)
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-      }
+      initialise();
 
       if (initialConnectors == null && discoveryGroup != null)
       {
@@ -1503,14 +1495,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
          }
 
-         try
-         {
-            initialise();
-         }
-         catch (Exception e)
-         {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-         }
+         initialise();
 
          ClientSessionFactory csf = null;
 
