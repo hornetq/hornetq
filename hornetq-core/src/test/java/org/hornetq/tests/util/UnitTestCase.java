@@ -924,14 +924,24 @@ public abstract class UnitTestCase extends TestCase
    {
       List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables = new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
       ArrayList<Exception> exceptions = new ArrayList<Exception>();
-      if(!closeRunnables.isEmpty())
+      try
       {
+         if (!closeRunnables.isEmpty())
+         {
          for (ClientSessionFactoryImpl.CloseRunnable closeRunnable : closeRunnables)
          {
-            exceptions.add(closeRunnable.stop().e);
+               if (closeRunnable != null)
+               {
+                  exceptions.add(closeRunnable.stop().e);
+               }
+            }
          }
       }
-      cleanupPools();
+      finally
+      {
+         cleanupPools();
+      }
+
       //clean up pools before failing
       if(!exceptions.isEmpty())
       {
