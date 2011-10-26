@@ -57,6 +57,8 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
 {
+   private enum STATE{ INITIALIZED, CLOSED, CLOSING};
+   
    private static final long serialVersionUID = -1615857864410205260L;
 
    private static final Logger log = Logger.getLogger(ServerLocatorImpl.class);
@@ -69,7 +71,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private transient String identity;
 
-   private Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
+   private final Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
+   private final Set<ClientSessionFactoryInternal> connectingFactories = new HashSet<ClientSessionFactoryInternal>();
 
    private TransportConfiguration[] initialConnectors;
 
@@ -154,9 +157,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private int initialMessagePacketSize;
 
-   private volatile boolean closed;
-
-   private volatile boolean closing;
+   private volatile STATE state;
 
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
@@ -252,7 +253,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return globalScheduledThreadPool;
    }
 
-   private void setThreadPools()
+   private synchronized void setThreadPools()
    {
       if (threadPool != null)
       {
@@ -329,10 +330,16 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       });
    }
 
-   private synchronized void initialise() throws Exception
+   private synchronized void initialise() throws HornetQException
    {
-      if (!readOnly)
+      if (readOnly)
       {
+         return;
+      }
+
+      try
+      {
+         state = STATE.INITIALIZED;
          setThreadPools();
 
          instantiateLoadBalancingPolicy();
@@ -365,6 +372,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
 
          readOnly = true;
+      }
+      catch (Exception e)
+      {
+         state = null;
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
       }
    }
 
@@ -515,14 +527,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          return pair.getA();
       }
-      else
-      {
-         // Get from initialconnectors
+      
+      // Get from initialconnectors
 
-         int pos = loadBalancingPolicy.select(initialConnectors.length);
+      int pos = loadBalancingPolicy.select(initialConnectors.length);
 
-         return initialConnectors[pos];
-      }
+      return initialConnectors[pos];
    }
 
    public void start(Executor executor) throws Exception
@@ -541,7 +551,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             catch (Exception e)
             {
-               if (!closing)
+               if (!isClosed())
                {
                   log.warn("did not connect the cluster connection to other nodes", e);
                }
@@ -565,19 +575,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactoryInternal connect() throws Exception
    {
-      ClientSessionFactoryInternal sf;
       // static list of initial connectors
       if (initialConnectors != null && discoveryGroup == null)
       {
-         sf = (ClientSessionFactoryInternal)staticConnector.connect();
+         ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect();
+         addFactory(sf);
+         return sf;
       }
       // wait for discovery group to get the list of initial connectors
-      else
-      {
-         sf = (ClientSessionFactoryInternal)createSessionFactory();
-      }
-      addFactory(sf);
-      return sf;
+      return (ClientSessionFactoryInternal)createSessionFactory();
    }
 
    /* (non-Javadoc)
@@ -593,27 +599,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return afterConnectListener;
    }
 
-   public boolean isClosed()
+   public synchronized ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
    {
-      return closed || closing;
-   }
+      assertOpen();
 
-   public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
-   {
-      if (closed)
-      {
-         throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
-      }
-
-      try
-      {
-         initialise();
-      }
-      catch (Exception e)
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-      }
-
+      initialise();
+   
       ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
                                                                           callTimeout,
@@ -627,28 +618,38 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                                           scheduledThreadPool,
                                                                           interceptors);
 
-      factory.connect(reconnectAttempts, failoverOnInitialConnection);
+      addToConnecting(factory);
+      try
+      {
+         factory.connect(reconnectAttempts, failoverOnInitialConnection);
+         addFactory(factory);
+         return factory;
+      }
+      finally
+      {
+         removeFromConnecting(factory);
+      }
+   }
 
-      addFactory(factory);
+   private void removeFromConnecting(ClientSessionFactoryInternal factory)
+   {
+      connectingFactories.remove(factory);
+   }
 
-      return factory;
+   private void addToConnecting(ClientSessionFactoryInternal factory)
+   {
+      synchronized (connectingFactories)
+      {
+         assertOpen();
+         connectingFactories.add(factory);
+      }
    }
 
    public ClientSessionFactory createSessionFactory() throws Exception
    {
-      if (closed || closing)
-      {
-         throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
-      }
+      assertOpen();
 
-      try
-      {
-         initialise();
-      }
-      catch (Exception e)
-      {
-         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-      }
+      initialise();
 
       if (initialConnectors == null && discoveryGroup != null)
       {
@@ -691,7 +692,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                                                       threadPool,
                                                       scheduledThreadPool,
                                                       interceptors);
-               factory.connect(initialConnectAttempts, failoverOnInitialConnection);
+               try
+               {
+                  addToConnecting(factory);
+                  factory.connect(initialConnectAttempts, failoverOnInitialConnection);
+               }
+               finally
+               {
+                  removeFromConnecting(factory);
+               }
             }
             catch (HornetQException e)
             {
@@ -723,10 +732,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          if (ha || clusterConnection)
          {
-            long timeout = System.currentTimeMillis() + 30000;
-            while (!ServerLocatorImpl.this.closed && !ServerLocatorImpl.this.closing &&
-                   !receivedTopology &&
-                   timeout > System.currentTimeMillis())
+            final long timeout = System.currentTimeMillis() + 30000;
+            while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
             {
                // Now wait for the topology
 
@@ -740,7 +747,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
             }
 
-            if (System.currentTimeMillis() > timeout && !receivedTopology && !closed && !closing)
+            if (System.currentTimeMillis() > timeout && !receivedTopology && !isClosed())
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                           "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
@@ -1184,7 +1191,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    protected void doClose(final boolean sendClose)
    {
-      if (closed)
+      if (state == STATE.CLOSED)
       {
          if (log.isDebugEnabled())
          {
@@ -1193,12 +1200,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          return;
       }
 
-      if (log.isDebugEnabled())
-      {
-         log.debug(this + " is calling close", new Exception("trace"));
-      }
-
-      closing = true;
+      state = STATE.CLOSING;
 
       if (discoveryGroup != null)
       {
@@ -1215,8 +1217,20 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          staticConnector.disconnect();
       }
-
-      Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
+      
+      synchronized (connectingFactories)
+      {
+         for (ClientSessionFactoryInternal csf : connectingFactories)
+         {
+            csf.causeExit();
+            csf.close();
+         }
+         connectingFactories.clear();
+      }
+      
+      synchronized (this)
+      {
+         Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
       for (ClientSessionFactory factory : clonedFactory)
       {
@@ -1268,7 +1282,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
       readOnly = false;
 
-      closed = true;
+         state = STATE.CLOSED;
+      }
    }
 
    /** This is directly called when the connection to the node is gone,
@@ -1378,13 +1393,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                 discoveryGroupConfiguration +
                 "]";
       }
-      else
-      {
-         return "ServerLocatorImpl [initialConnectors=" + Arrays.toString(initialConnectors) +
-                ", discoveryGroupConfiguration=" +
-                discoveryGroupConfiguration +
-                "]";
-      }
+      return "ServerLocatorImpl [initialConnectors=" + Arrays.toString(initialConnectors) +
+             ", discoveryGroupConfiguration=" +
+             discoveryGroupConfiguration +
+             "]";
    }
 
    private synchronized void updateArraysAndPairs()
@@ -1467,18 +1479,27 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public synchronized void addFactory(ClientSessionFactoryInternal factory)
    {
-      if (factory != null)
+      if (factory == null)
       {
-         TransportConfiguration backup = null;
-
-         if (topology != null)
-         {
-            backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
-         }
-
-         factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
-         factories.add(factory);
+         return;
       }
+
+      if (isClosed())
+      {
+         factory.causeExit();
+         factory.close();
+         return;
+      }
+
+      TransportConfiguration backup = null;
+
+      if (topology != null)
+      {
+         backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+      }
+
+      factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
+      factories.add(factory);
    }
 
    class StaticConnector implements Serializable
@@ -1489,19 +1510,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       public ClientSessionFactory connect() throws HornetQException
       {
-         if (closed)
-         {
-            throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
-         }
+         assertOpen();
 
-         try
-         {
-            initialise();
-         }
-         catch (Exception e)
-         {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
-         }
+         initialise();
 
          ClientSessionFactory csf = null;
 
@@ -1511,7 +1522,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          {
 
             int retryNumber = 0;
-            while (csf == null && !ServerLocatorImpl.this.closed && !ServerLocatorImpl.this.closing)
+            while (csf == null && !isClosed())
             {
                retryNumber++;
                for (Connector conn : connectors)
@@ -1564,7 +1575,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                   break;
                }
 
-               if (!closed && !closing)
+               if (!isClosed())
                {
                   Thread.sleep(retryInterval);
                }
@@ -1577,7 +1588,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
          }
 
-         if (csf == null && !closed)
+         if (csf == null && !isClosed())
          {
             log.warn("Failed to connecto to any static connector, throwing exception now");
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
@@ -1636,7 +1647,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       public void finalize() throws Throwable
       {
-         if (!closed && finalizeCheck)
+         if (!isClosed() && finalizeCheck)
          {
             log.warn("I'm closing a core ServerLocator you left open. Please make sure you close all ServerLocators explicitly " + "before letting them go out of scope! " +
                      System.identityHashCode(this));
@@ -1681,7 +1692,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                ClientSessionFactoryInternal factoryToUse = factory;
                if (factoryToUse != null)
                {
-                  factory.connect(1, false);
+                  try
+                  {
+                     addToConnecting(factoryToUse);
+                     factoryToUse.connect(1, false);
+                  }
+                  finally
+                  {
+                     removeFromConnecting(factoryToUse);
+                  }
                }
                return factoryToUse;
             }
@@ -1704,9 +1723,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
          }
 
-         /* (non-Javadoc)
-          * @see java.lang.Object#toString()
-          */
          @Override
          public String toString()
          {
@@ -1714,5 +1730,18 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          }
 
       }
+   }
+
+   private void assertOpen()
+   {
+      if (state != null && state != STATE.INITIALIZED)
+      {
+         throw new IllegalStateException("Cannot create session factory, server locator is closed (maybe it has been garbage collected)");
+      }
+   }
+
+   public boolean isClosed()
+   {
+      return state != STATE.INITIALIZED;
    }
 }
