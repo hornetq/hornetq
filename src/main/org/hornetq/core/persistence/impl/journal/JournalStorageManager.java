@@ -1985,7 +1985,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private OperationContext getContext(final boolean sync)
+   protected OperationContext getContext(final boolean sync)
    {
       if (sync)
       {
