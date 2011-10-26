@@ -22,6 +22,7 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.util.UnitTestCase;
 
 import javax.resource.ResourceException;
 import java.util.HashSet;
@@ -44,6 +45,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
    public void testSimpleMessageReceivedOnQueueWithSecurityFails() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
@@ -74,6 +76,7 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
          roles.add(role);
        server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);
       HornetQActivationSpec spec = new HornetQActivationSpec();
