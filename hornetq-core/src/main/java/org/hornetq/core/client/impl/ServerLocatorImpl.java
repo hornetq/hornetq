@@ -555,7 +555,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             }
             catch (Exception e)
             {
-               if (!isClosed())
+               if (isInitialized())
                {
                   log.warn("did not connect the cluster connection to other nodes", e);
                }
@@ -606,6 +606,11 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public boolean isClosed()
    {
       return state == STATE.CLOSED || state == STATE.CLOSING;
+   }
+
+   public boolean isInitialized()
+   {
+      return state == STATE.INITIALIZED;
    }
 
    public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
@@ -700,6 +705,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
             try
             {
+               assertOpen();
+
                factory =
                         new ClientSessionFactoryImpl(this, tc, callTimeout, clientFailureCheckPeriod, connectionTTL,
                                                      retryInterval, retryIntervalMultiplier, maxRetryInterval,
@@ -748,7 +755,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          if (ha || clusterConnection)
          {
             long timeout = System.currentTimeMillis() + 30000;
-            while (!isClosed() && !receivedTopology && timeout > System.currentTimeMillis())
+            while (isInitialized() && !receivedTopology && timeout > System.currentTimeMillis())
             {
                // Now wait for the topology
 
@@ -1537,7 +1544,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          {
 
             int retryNumber = 0;
-            while (csf == null && isClosed())
+            while (csf == null && isInitialized())
             {
                retryNumber++;
                for (Connector conn : connectors)
@@ -1590,7 +1597,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                   break;
                }
 
-               if (!isClosed())
+               if (isInitialized())
                {
                   Thread.sleep(retryInterval);
                }
@@ -1603,7 +1610,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors", e);
          }
 
-         if (csf == null && !isClosed())
+         if (csf == null && isInitialized())
          {
             log.warn("Failed to connecto to any static connector, throwing exception now");
             throw new HornetQException(HornetQException.NOT_CONNECTED, "Failed to connect to any static connectors");
