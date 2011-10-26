@@ -599,7 +599,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       return afterConnectListener;
    }
 
-   public synchronized ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
+   public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
    {
       assertOpen();
 
@@ -1222,29 +1222,29 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          for (ClientSessionFactoryInternal csf : connectingFactories)
          {
-            csf.causeExit();
-            csf.close();
+           csf.close();
          }
          connectingFactories.clear();
       }
       
-      synchronized (this)
+      synchronized (factories)
       {
          Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
-      for (ClientSessionFactory factory : clonedFactory)
-      {
-         if (sendClose)
+         for (ClientSessionFactory factory : clonedFactory)
          {
-            factory.close();
+            if (sendClose)
+            {
+               factory.close();
+            }
+            else
+            {
+               factory.cleanup();
+            }
          }
-         else
-         {
-            factory.cleanup();
-         }
-      }
 
-      factories.clear();
+         factories.clear();
+      }
 
       if (shutdownPool)
       {
@@ -1282,8 +1282,8 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
       readOnly = false;
 
-         state = STATE.CLOSED;
-      }
+      state = STATE.CLOSED;
+ 
    }
 
    /** This is directly called when the connection to the node is gone,
@@ -1477,28 +1477,31 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       topology.removeClusterTopologyListener(listener);
    }
 
-   public synchronized void addFactory(ClientSessionFactoryInternal factory)
+   private synchronized void addFactory(ClientSessionFactoryInternal factory)
    {
       if (factory == null)
       {
          return;
       }
 
-      if (isClosed())
+      synchronized (factories)
       {
-         factory.close();
-         return;
+         if (isClosed())
+         {
+            factory.close();
+            return;
+         }
+
+         TransportConfiguration backup = null;
+
+         if (topology != null)
+         {
+            backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+         }
+
+         factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
+         factories.add(factory);
       }
-
-      TransportConfiguration backup = null;
-
-      if (topology != null)
-      {
-         backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
-      }
-
-      factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
-      factories.add(factory);
    }
 
    class StaticConnector implements Serializable
