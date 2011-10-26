@@ -33,10 +33,6 @@ import org.hornetq.jms.tests.util.ProxyAssertSupport;
  * A DeliveryOrderTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 1.1 $</tt>
- *
- * $Id$
- *
  */
 public class DeliveryOrderTest extends JMSTestCase
 {
@@ -127,9 +123,6 @@ public class DeliveryOrderTest extends JMSTestCase
             return;
          }
 
-
-         System.out.println("Message " + msg);
-         
          try
          {
             TextMessage tm = (TextMessage)msg;
