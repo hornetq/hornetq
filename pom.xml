@@ -392,7 +392,7 @@
             <skipJoramTests>false</skipJoramTests>
             <skipIntegrationTests>false</skipIntegrationTests>
             <skipTimingTests>true</skipTimingTests>
-            <skipConcurrentTests>true</skipConcurrentTests>
+            <skipConcurrentTests>false</skipConcurrentTests>
             <skipStressTests>true</skipStressTests>
             <skipSoakTests>true</skipSoakTests>
             <skipPerformanceTests>true</skipPerformanceTests>
