@@ -636,8 +636,6 @@ public abstract class UnitTestCase extends TestCase
       recreateDirectory(getLargeMessagesDir(testDir));
       recreateDirectory(getClientLargeMessagesDir(testDir));
       recreateDirectory(getTemporaryDir(testDir));
-
-      System.out.println("deleted " + testDir);
    }
 
    /**
