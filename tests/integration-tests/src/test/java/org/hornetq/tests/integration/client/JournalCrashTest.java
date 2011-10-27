@@ -18,7 +18,12 @@ import java.util.ArrayList;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -146,8 +151,8 @@ public class JournalCrashTest extends ServiceTestBase
 
          restart.sendMessages(start, end);
 
-         System.out.println("....end");
-         System.out.flush();
+         // System.out.println("....end");
+         // System.out.flush();
 
          Runtime.getRuntime().halt(100);
       }
@@ -276,13 +281,13 @@ public class JournalCrashTest extends ServiceTestBase
       journal.start();
       journal.load(records, transactions, null);
 
-      System.out.println("===============================================");
-      System.out.println("Journal records at the end:");
-
-      for (RecordInfo record : records)
-      {
-         System.out.println(record.id + ", update = " + record.isUpdate);
-      }
+//      System.out.println("===============================================");
+//      System.out.println("Journal records at the end:");
+//
+//      for (RecordInfo record : records)
+//      {
+//         System.out.println(record.id + ", update = " + record.isUpdate);
+//      }
       journal.stop();
    }
 

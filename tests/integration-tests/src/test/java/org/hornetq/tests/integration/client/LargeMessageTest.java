@@ -26,7 +26,14 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -43,7 +50,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A LargeMessageTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created 29-Sep-08 4:04:10 PM
  *
  *
@@ -73,7 +80,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       return false;
    }
-   
+
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
       for (int i = 0 ; i < 1; i++)
@@ -82,28 +89,28 @@ public class LargeMessageTest extends LargeMessageTestBase
          internalTestRollbackPartiallyConsumedBuffer(false);
          tearDown();
          setUp();
-         
+
       }
-      
+
    }
-   
+
    public void testRollbackPartiallyConsumedBufferWithRedeliveryDelay() throws Exception
    {
       internalTestRollbackPartiallyConsumedBuffer(true);
    }
-   
-   
+
+
    private void internalTestRollbackPartiallyConsumedBuffer(final boolean redeliveryDelay) throws Exception
    {
       final int messageSize = 100 * 1024;
-      
+
 
       final ClientSession session;
 
       try
       {
          server = createServer(true, isNetty());
-         
+
          AddressSettings settings = new AddressSettings();
          if (redeliveryDelay)
          {
@@ -114,7 +121,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             }
          }
          settings.setMaxDeliveryAttempts(-1);
-         
+
          server.getAddressSettingsRepository().addMatch("#", settings);
 
          server.start();
@@ -130,35 +137,35 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int i = 0 ; i < 20; i++)
          {
             Message clientFile = createLargeClientMessage(session, messageSize, true);
-            
+
             clientFile.putIntProperty("value", i);
-   
+
             producer.send(clientFile);
          }
 
          session.commit();
 
          session.start();
-         
+
          final CountDownLatch latch = new CountDownLatch(1);
-         
+
          final AtomicInteger errors = new AtomicInteger(0);
 
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-         
+
          consumer.setMessageHandler(new MessageHandler()
          {
             int counter = 0;
             public void onMessage(ClientMessage message)
             {
                message.getBodyBuffer().readByte();
-               System.out.println("message:" + message);
+               // System.out.println("message:" + message);
                try
                {
                   if (counter ++ <  20)
                   {
                      Thread.sleep(100);
-                     System.out.println("Rollback");
+                     // System.out.println("Rollback");
                      message.acknowledge();
                      session.rollback();
                   }
@@ -167,7 +174,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                      message.acknowledge();
                      session.commit();
                   }
-                  
+
                   if (counter == 40)
                   {
                      latch.countDown();
@@ -181,7 +188,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                }
             }
          });
-         
+
          assertTrue(latch.await(40, TimeUnit.SECONDS));
 
          consumer.close();
@@ -2583,7 +2590,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
-   
+
    // JBPAPP-6237
    public void testPageOnLargeMessageMultipleQueues() throws Exception
    {
@@ -2779,7 +2786,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage message = session.createMessage(true);
-            
+
             message.putIntProperty("msgID", msgId++);
 
             message.putBooleanProperty("TestLarge", false);
@@ -2813,34 +2820,34 @@ public class LargeMessageTest extends LargeMessageTestBase
             ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
 
             session.start();
-            
+
             for (int received = 0 ; received < 5; received++)
             {
                for (int i = 0; i < 100; i++)
                {
                   ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-   
+
                   Assert.assertNotNull(message2);
-                  
+
                   assertFalse(message2.getBooleanProperty("TestLarge"));
-   
+
                   message2.acknowledge();
-   
+
                   Assert.assertNotNull(message2);
                }
-   
+
                for (int i = 0; i < 10; i++)
                {
                   ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
-   
+
                   Assert.assertNotNull(messageLarge);
-                  
+
                   assertTrue(messageLarge.getBooleanProperty("TestLarge"));
-   
+
                   ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                  
+
                   messageLarge.acknowledge();
-                  
+
                   messageLarge.saveToOutputStream(bout);
                   byte[] body = bout.toByteArray();
                   assertEquals(numberOfBytesBigMessage, body.length);
@@ -2849,7 +2856,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                      assertEquals(getSamplebyte(bi), body[bi]);
                   }
                }
-               
+
                session.rollback();
             }
 

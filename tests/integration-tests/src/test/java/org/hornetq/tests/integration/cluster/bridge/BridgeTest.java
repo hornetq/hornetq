@@ -1087,6 +1087,7 @@ public class BridgeTest extends ServiceTestBase
 
          class ConsumerThread extends Thread
          {
+            @Override
             public void run()
             {
                try
@@ -1137,6 +1138,7 @@ public class BridgeTest extends ServiceTestBase
             {
                this.nmsg = nmsg;
             }
+            @Override
             public void run()
             {
                ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(server0tc);
@@ -1204,7 +1206,6 @@ public class BridgeTest extends ServiceTestBase
 
          for (int repeat = 0 ; repeat < totalrepeats; repeat++)
          {
-            System.out.println("Repeat " + repeat);
             ArrayList<Thread> threads = new ArrayList<Thread>();
    
             threads.add(new ConsumerThread());
