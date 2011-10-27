@@ -387,7 +387,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       e.fillInStackTrace();
 
-      this.topology = topology;
+      this.topology = topology == null ? new Topology(this) : topology;
 
       this.ha = useHA;
 
@@ -466,7 +466,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     */
    public ServerLocatorImpl(final boolean useHA, final DiscoveryGroupConfiguration groupConfiguration)
    {
-      this(useHA ? new Topology(null) : null, useHA, groupConfiguration, null);
+      this(new Topology(null), useHA, groupConfiguration, null);
       if (useHA)
       {
          // We only set the owner at where the Topology was created.
@@ -482,7 +482,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
     */
    public ServerLocatorImpl(final boolean useHA, final TransportConfiguration... transportConfigs)
    {
-      this(useHA ? new Topology(null) : null, useHA, null, transportConfigs);
+      this(new Topology(null), useHA, null, transportConfigs);
       if (useHA)
       {
          // We only set the owner at where the Topology was created.
@@ -1292,7 +1292,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    public void notifyNodeDown(final long eventTime, final String nodeID)
    {
 
-      if (topology == null)
+      if (!ha)
       {
          // there's no topology here
          return;
@@ -1339,7 +1339,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                             final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             final boolean last)
    {
-      if (topology == null)
+      if (!ha)
       {
          // there's no topology
          return;
@@ -1425,7 +1425,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          this.initialConnectors[count++] = entry.getConnector();
 
-         if (topology != null && topology.getMember(entry.getNodeID()) == null)
+         if (ha && topology.getMember(entry.getNodeID()) == null)
          {
             TopologyMember member = new TopologyMember(entry.getConnector(), null);
             // on this case we set it as zero as any update coming from server should be accepted
@@ -1494,7 +1494,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          TransportConfiguration backup = null;
 
-         if (topology != null)
+         if (ha)
          {
             backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
          }

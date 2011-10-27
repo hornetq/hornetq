@@ -858,7 +858,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final Queue queue,
                                 final boolean start) throws Exception
    {
-      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, false, connector);
+      final ServerLocatorInternal targetLocator = new ServerLocatorImpl(topology, true, connector);
       
       String nodeId;
       

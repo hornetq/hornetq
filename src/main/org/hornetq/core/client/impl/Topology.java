@@ -58,9 +58,9 @@ public class Topology implements Serializable
     * keys are node IDs
     * values are a pair of live/backup transport configurations
     */
-   private final Map<String, TopologyMember> mapTopology = new ConcurrentHashMap<String, TopologyMember>();
+   private final Map<String, TopologyMember> topology = new ConcurrentHashMap<String, TopologyMember>();
 
-   private final Map<String, Long> mapDelete = new ConcurrentHashMap<String, Long>();
+   private transient final Map<String, Long> mapDelete = new ConcurrentHashMap<String, Long>();
 
    public Topology(final Object owner)
    {
@@ -111,8 +111,8 @@ public class Topology implements Serializable
             log.debug(this + "::node " + nodeId + "=" + memberInput);
          }
          memberInput.setUniqueEventID(System.currentTimeMillis());
-         mapTopology.remove(nodeId);
-         mapTopology.put(nodeId, memberInput);
+         topology.remove(nodeId);
+         topology.put(nodeId, memberInput);
          sendMemberUp(memberInput.getUniqueEventID(), nodeId, memberInput);
       }
    }
@@ -134,13 +134,13 @@ public class Topology implements Serializable
                      new Exception("trace"));
 
             currentMember = memberInput;
-            mapTopology.put(nodeId, currentMember);
+            topology.put(nodeId, currentMember);
          }
 
          TopologyMember newMember = new TopologyMember(currentMember.getA(), memberInput.getB());
          newMember.setUniqueEventID(System.currentTimeMillis());
-         mapTopology.remove(nodeId);
-         mapTopology.put(nodeId, newMember);
+         topology.remove(nodeId);
+         topology.put(nodeId, newMember);
          sendMemberUp(newMember.getUniqueEventID(), nodeId, newMember);
 
          return newMember;
@@ -172,7 +172,7 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         TopologyMember currentMember = mapTopology.get(nodeId);
+         TopologyMember currentMember = topology.get(nodeId);
 
          if (currentMember == null)
          {
@@ -184,7 +184,7 @@ public class Topology implements Serializable
                                   memberInput, new Exception("trace"));
             }
             memberInput.setUniqueEventID(uniqueEventID);
-            mapTopology.put(nodeId, memberInput);
+            topology.put(nodeId, memberInput);
             sendMemberUp(uniqueEventID, nodeId, memberInput);
             return true;
          }
@@ -217,8 +217,8 @@ public class Topology implements Serializable
 
 
                newMember.setUniqueEventID(uniqueEventID);
-               mapTopology.remove(nodeId);
-               mapTopology.put(nodeId, newMember);
+               topology.remove(nodeId);
+               topology.put(nodeId, newMember);
                sendMemberUp(uniqueEventID, nodeId, newMember);
 
                return true;
@@ -296,7 +296,7 @@ public class Topology implements Serializable
 
       synchronized (this)
       {
-         member = mapTopology.get(nodeId);
+         member = topology.get(nodeId);
          if (member != null)
          {
             if (member.getUniqueEventID() > uniqueEventID)
@@ -307,7 +307,7 @@ public class Topology implements Serializable
             else
             {
                mapDelete.put(nodeId, uniqueEventID);
-               member = mapTopology.remove(nodeId);
+               member = topology.remove(nodeId);
             }
          }
       }
@@ -320,7 +320,7 @@ public class Topology implements Serializable
                             ", result=" +
                             member +
                             ", size = " +
-                            mapTopology.size(), new Exception("trace"));
+                            topology.size(), new Exception("trace"));
       }
 
       if (member != null)
@@ -414,7 +414,7 @@ public class Topology implements Serializable
 
             synchronized (Topology.this)
             {
-               copy = new HashMap<String, TopologyMember>(mapTopology);
+               copy = new HashMap<String, TopologyMember>(topology);
             }
 
             for (Map.Entry<String, TopologyMember> entry : copy.entrySet())
@@ -439,12 +439,12 @@ public class Topology implements Serializable
 
    public synchronized TopologyMember getMember(final String nodeID)
    {
-      return mapTopology.get(nodeID);
+      return topology.get(nodeID);
    }
 
    public synchronized boolean isEmpty()
    {
-      return mapTopology.isEmpty();
+      return topology.isEmpty();
    }
 
    public Collection<TopologyMember> getMembers()
@@ -452,7 +452,7 @@ public class Topology implements Serializable
       ArrayList<TopologyMember> members;
       synchronized (this)
       {
-         members = new ArrayList<TopologyMember>(mapTopology.values());
+         members = new ArrayList<TopologyMember>(topology.values());
       }
       return members;
    }
@@ -460,7 +460,7 @@ public class Topology implements Serializable
    public synchronized int nodes()
    {
       int count = 0;
-      for (TopologyMember member : mapTopology.values())
+      for (TopologyMember member : topology.values())
       {
          if (member.getA() != null)
          {
@@ -483,12 +483,12 @@ public class Topology implements Serializable
    {
 
       String desc = text + "topology on " + this + ":\n";
-      for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(mapTopology).entrySet())
+      for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(topology).entrySet())
       {
          desc += "\t" + entry.getKey() + " => " + entry.getValue() + "\n";
       }
       desc += "\t" + "nodes=" + nodes() + "\t" + "members=" + members();
-      if (mapTopology.isEmpty())
+      if (topology.isEmpty())
       {
          desc += "\tEmpty";
       }
@@ -497,7 +497,7 @@ public class Topology implements Serializable
 
    public int members()
    {
-      return mapTopology.size();
+      return topology.size();
    }
 
    /** The owner exists mainly for debug purposes.
@@ -510,7 +510,7 @@ public class Topology implements Serializable
 
    public TransportConfiguration getBackupForConnector(final TransportConfiguration connectorConfiguration)
    {
-      for (TopologyMember member : mapTopology.values())
+      for (TopologyMember member : topology.values())
       {
          if (member.getA() != null && member.getA().equals(connectorConfiguration))
          {
