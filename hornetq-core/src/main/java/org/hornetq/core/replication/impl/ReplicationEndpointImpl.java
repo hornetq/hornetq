@@ -683,11 +683,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (packet.isRollback())
       {
-         journalToUse.appendRollbackRecord(packet.getTxId(), false);
+         journalToUse.appendRollbackRecord(packet.getTxId(), packet.getSync());
       }
       else
       {
-         journalToUse.appendCommitRecord(packet.getTxId(), false);
+         journalToUse.appendCommitRecord(packet.getTxId(), packet.getSync());
       }
    }
 

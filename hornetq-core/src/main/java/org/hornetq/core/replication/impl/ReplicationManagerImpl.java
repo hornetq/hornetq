@@ -167,11 +167,13 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#appendCommitRecord(byte, long, boolean)
     */
-   public void appendCommitRecord(final byte journalID, final long txID, final boolean lineUp) throws Exception
+   public
+            void
+            appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID), lineUp);
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID, sync), lineUp);
       }
    }
 
@@ -214,11 +216,11 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#appendRollbackRecord(byte, long, boolean)
     */
-   public void appendRollbackRecord(final byte journalID, final long txID) throws Exception
+   public void appendRollbackRecord(final byte journalID, final long txID, boolean sync) throws Exception
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationCommitMessage(journalID, false, txID));
+         sendReplicatePacket(new ReplicationCommitMessage(journalID, true, txID, sync));
       }
    }
 

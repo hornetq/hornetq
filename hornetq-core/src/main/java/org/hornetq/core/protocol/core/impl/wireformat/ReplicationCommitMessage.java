@@ -37,6 +37,8 @@ public class ReplicationCommitMessage extends PacketImpl
 
    private long txId;
 
+   private boolean sync;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -46,12 +48,13 @@ public class ReplicationCommitMessage extends PacketImpl
       super(PacketImpl.REPLICATION_COMMIT_ROLLBACK);
    }
 
-   public ReplicationCommitMessage(final byte journalID, final boolean rollback, final long txId)
+   public ReplicationCommitMessage(final byte journalID, final boolean rollback, final long txId, boolean sync)
    {
       this();
       this.journalID = journalID;
       this.rollback = rollback;
       this.txId = txId;
+      this.sync = sync;
    }
 
    // Public --------------------------------------------------------
@@ -62,6 +65,7 @@ public class ReplicationCommitMessage extends PacketImpl
       buffer.writeByte(journalID);
       buffer.writeBoolean(rollback);
       buffer.writeLong(txId);
+      buffer.writeBoolean(sync);
    }
 
    @Override
@@ -70,6 +74,7 @@ public class ReplicationCommitMessage extends PacketImpl
       journalID = buffer.readByte();
       rollback = buffer.readBoolean();
       txId = buffer.readLong();
+      sync = buffer.readBoolean();
    }
 
    public boolean isRollback()
@@ -82,6 +87,11 @@ public class ReplicationCommitMessage extends PacketImpl
       return txId;
    }
 
+   public boolean getSync()
+   {
+      return sync;
+   }
+
    /**
     * @return the journalID
     */
@@ -89,13 +99,4 @@ public class ReplicationCommitMessage extends PacketImpl
    {
       return journalID;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

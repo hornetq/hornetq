@@ -48,11 +48,11 @@ public interface ReplicationManager extends HornetQComponent
 
    void appendDeleteRecordTransactional(byte journalID, long txID, long id) throws Exception;
 
-   void appendCommitRecord(byte journalID, long txID, boolean lineUp) throws Exception;
+   void appendCommitRecord(byte journalID, long txID, boolean sync, boolean lineUp) throws Exception;
 
    void appendPrepareRecord(byte journalID, long txID, EncodingSupport transactionData) throws Exception;
 
-   void appendRollbackRecord(byte journalID, long txID) throws Exception;
+   void appendRollbackRecord(byte journalID, long txID, boolean sync) throws Exception;
 
    /** A list of tokens that are still waiting for replications to be completed */
    Set<OperationContext> getActiveTokens();

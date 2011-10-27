@@ -299,7 +299,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = consumer.receive(1000);
 
-         assertNotNull(message);
+         assertNotNull("Expecting message #" + i, message);
 
          message.acknowledge();
       }

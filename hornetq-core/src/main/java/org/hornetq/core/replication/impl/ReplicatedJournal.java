@@ -38,7 +38,6 @@ import org.hornetq.core.replication.ReplicationManager;
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  * @see JournalStorageManager
- *
  */
 public class ReplicatedJournal implements Journal
 {
@@ -177,7 +176,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID, true);
+      replicationManager.appendCommitRecord(journalID, txID, sync, true);
       localJournal.appendCommitRecord(txID, sync);
    }
 
@@ -190,7 +189,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID, true);
+      replicationManager.appendCommitRecord(journalID, txID, sync, true);
       localJournal.appendCommitRecord(txID, sync, callback);
    }
 
@@ -203,9 +202,8 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendCommit " + txID);
       }
-      replicationManager.appendCommitRecord(journalID, txID, lineUpContext);
+      replicationManager.appendCommitRecord(journalID, txID, sync, lineUpContext);
       localJournal.appendCommitRecord(txID, sync, callback, lineUpContext);
-
    }
 
 
@@ -225,9 +223,6 @@ public class ReplicatedJournal implements Journal
       localJournal.appendDeleteRecord(id, sync);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.Journal#appendDeleteRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
-    */
    public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion completionCallback) throws Exception
    {
       if (ReplicatedJournal.trace)
@@ -351,7 +346,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendRollback " + txID);
       }
-      replicationManager.appendRollbackRecord(journalID, txID);
+      replicationManager.appendRollbackRecord(journalID, txID, sync);
       localJournal.appendRollbackRecord(txID, sync);
    }
 
@@ -364,7 +359,7 @@ public class ReplicatedJournal implements Journal
       {
          ReplicatedJournal.trace("AppendRollback " + txID);
       }
-      replicationManager.appendRollbackRecord(journalID, txID);
+      replicationManager.appendRollbackRecord(journalID, txID, sync);
       localJournal.appendRollbackRecord(txID, sync, callback);
    }
 
