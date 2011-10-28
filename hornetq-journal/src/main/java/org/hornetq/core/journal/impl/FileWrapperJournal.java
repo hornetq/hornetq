@@ -58,6 +58,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    @Override
    public void stop() throws Exception
    {
+      if (currentFile.getFile().isOpen())
       currentFile.getFile().close();
    }
 
