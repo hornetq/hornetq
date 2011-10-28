@@ -115,7 +115,7 @@ public class LinkedListTest extends UnitTestCase
       int removed = 0;
       while (iter.hasNext())
       {
-         System.out.println("removed " + (removed++));
+        // System.out.println("removed " + (removed++));
          iter.next();
          iter.remove();
       }
