@@ -330,11 +330,15 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
 
       filesReservedForSync.clear();
-      for (Journal j : journals)
+      if (journals != null)
       {
-         if (j instanceof FileWrapperJournal)
-            j.stop();
+         for (Journal j : journals)
+         {
+            if (j instanceof FileWrapperJournal)
+               j.stop();
+         }
       }
+
       pageManager.stop();
 
       // Storage needs to be the last to stop
