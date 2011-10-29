@@ -611,6 +611,19 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          bindings.route(message, context);
       }
+      else
+      {
+    	 // this is a debug and not warn because this could be a regular scenario on publish-subscribe queues (or topic subscriptions on JMS)
+    	 if (log.isDebugEnabled())
+    	 {
+    	    log.debug("Couldn't find any bindings for address=" + address + " on message=" + message);
+    	 }
+      }
+      
+      if (log.isTraceEnabled())
+      {
+         log.trace("Message after routed=" + message);
+      }
 
       if (context.getQueueCount() == 0)
       {
@@ -625,6 +638,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             // Send to the DLA for the address
 
             SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("sending message to dla address = " + dlaAddress + ", message=" + message);
+            }
 
             if (dlaAddress == null)
             {
@@ -639,6 +657,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                message.setAddress(dlaAddress);
 
                route(message, context.getTransaction(), false);
+            }
+         }
+         else
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("Message " + message + " is not going anywhere as it didn't have a binding on address:" + address);
             }
          }
       }

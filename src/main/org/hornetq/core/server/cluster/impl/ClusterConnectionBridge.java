@@ -74,8 +74,6 @@ public class ClusterConnectionBridge extends BridgeImpl
    
    private final long targetNodeEventUID;
 
-   private final TransportConfiguration connector;
-
    private final ServerLocatorInternal discoveryLocator;
 
    public ClusterConnectionBridge(final ClusterConnection clusterConnection,
@@ -138,7 +136,6 @@ public class ClusterConnectionBridge extends BridgeImpl
       this.managementAddress = managementAddress;
       this.managementNotificationAddress = managementNotificationAddress;
       this.flowRecord = flowRecord;
-      this.connector = connector;
 
       // we need to disable DLQ check on the clustered bridges
       queue.setInternalQueue(true);
@@ -152,7 +149,14 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
-      ClientSessionFactoryInternal factory = super.createSessionFactory();
+      ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
+      
+      if (factory == null)
+      {
+         log.warn("NodeID=" + targetNodeID + " is not available on the topology. Retrying the connection to that node now");
+         return null;
+      }
+      factory.setReconnectAttempts(0);
       factory.getConnection().addFailureListener(new FailureListener()
       {
 

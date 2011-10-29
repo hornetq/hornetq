@@ -815,6 +815,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
                PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
             }
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
+            }
 
             // Address is full, we just pretend we are paging, and drop the data
             return true;

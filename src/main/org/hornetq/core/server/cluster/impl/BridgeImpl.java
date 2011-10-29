@@ -701,6 +701,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          if (csf == null || csf.isClosed())
          {
             csf = createSessionFactory();
+            if (csf == null)
+            {
+               // Retrying. This probably means the node is not available (for the cluster connection case)
+               scheduleRetryConnect();
+               return;
+            }
             // Session is pre-acknowledge
             session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
          }

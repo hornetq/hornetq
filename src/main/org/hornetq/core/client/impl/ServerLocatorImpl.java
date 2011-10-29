@@ -598,6 +598,40 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       return afterConnectListener;
    }
+   
+   public ClientSessionFactory createSessionFactory(String nodeID) throws Exception
+   {
+      log.info(topology.describe("full topology"));
+      TopologyMember topologyMember = topology.getMember(nodeID);
+      
+      log.info("Creating connection factory towards " + nodeID + " = " + topologyMember);
+      
+      if (topologyMember == null)
+      {
+         return null;
+      }
+      else
+      if (topologyMember.getA() != null)
+      {
+         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getA());
+         if (topologyMember.getB() != null)
+         {
+            factory.setBackupConnector(topologyMember.getA(), topologyMember.getB());
+         }
+         return factory;
+      }
+      else if (topologyMember.getA() == null && topologyMember.getB() != null)
+      {
+         // This shouldn't happen, however I wanted this to consider all possible cases
+         ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getB());
+         return factory;
+      }
+      else
+      {
+         // it shouldn't happen
+         return null;
+      }
+   }
 
    public ClientSessionFactory createSessionFactory(final TransportConfiguration transportConfiguration) throws Exception
    {

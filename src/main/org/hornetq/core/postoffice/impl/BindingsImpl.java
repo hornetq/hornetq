@@ -595,6 +595,10 @@ public class BindingsImpl implements Bindings
          {
             binding.route(message, context);
          }
+         else
+         {
+            log.warn("Couldn't find binding with id=" + bindingID + " on routeFromCluster for message=" + message + " binding = " + this);
+         }
       }
    }
 

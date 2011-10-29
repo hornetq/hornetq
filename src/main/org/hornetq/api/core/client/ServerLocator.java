@@ -54,6 +54,15 @@ public interface ServerLocator
     * Create a ClientSessionFactory to a specific server. The server must already be known about by this ServerLocator.
     * This method allows the user to make a connection to a specific server bypassing any load balancing policy in force
     * @param transportConfiguration
+    * @return The ClientSesionFactory or null if the node is not present on the topology
+    * @throws Exception if a failure happened in creating the ClientSessionFactory or the ServerLocator does not know about the passed in transportConfiguration
+    */
+   ClientSessionFactory createSessionFactory(final String nodeID) throws Exception;
+   
+   /**
+    * Create a ClientSessionFactory to a specific server. The server must already be known about by this ServerLocator.
+    * This method allows the user to make a connection to a specific server bypassing any load balancing policy in force
+    * @param transportConfiguration
     * @return The ClientSesionFactory
     * @throws Exception if a failure happened in creating the ClientSessionFactory or the ServerLocator does not know about the passed in transportConfiguration
     */
