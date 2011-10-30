@@ -961,7 +961,6 @@ public class HornetQMessage implements javax.jms.Message
       sb.append(getJMSMessageID());
       sb.append("]:");
       sb.append(message.isDurable() ? "PERSISTENT" : "NON-PERSISTENT");
-      sb.append(",coreMessage=" +  message);
       return sb.toString();
    }
 
