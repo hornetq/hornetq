@@ -25,12 +25,8 @@ import static org.hornetq.utils.DataConstants.NULL;
 import static org.hornetq.utils.DataConstants.SHORT;
 import static org.hornetq.utils.DataConstants.STRING;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -142,7 +138,7 @@ public class TypedProperties
       checkCreateProperties();
       doPutValue(key, value == null ? new NullValue() : new StringValue(value));
    }
-
+   
    public void putNullValue(final SimpleString key)
    {
       checkCreateProperties();
@@ -608,63 +604,7 @@ public class TypedProperties
    @Override
    public String toString()
    {
-      StringWriter strWriter = new StringWriter();
-      PrintWriter out = new PrintWriter(strWriter);
-      Iterator<Entry<SimpleString, PropertyValue>> propIter = properties.entrySet().iterator();
-      while (propIter.hasNext())
-      {
-         Entry<SimpleString, PropertyValue> item = propIter.next();
-
-         // When debugging TypedProperties, we need to identify the actual array on PrintData and other log outputs
-         if (item.getKey().toString().startsWith("_HQ_ROUTE_TO"))
-         {
-            String outstr = toLongArray(item.getValue());
-            
-            out.print(item.getKey() + "=" + outstr);
-         }
-         else
-         {
-            out.print(item.getKey() + "=" + item.getValue());
-         }
-         if (propIter.hasNext())
-         {
-            out.print(",");
-         }
-      }
-      return "TypedProperties[" + strWriter.toString() + "]";
-   }
-
-   /**
-    * @param item
-    * @return
-    */
-   private String toLongArray(PropertyValue value)
-   {
-      StringBuffer outstr = new StringBuffer();
-
-      try
-      {
-         byte[] ids = (byte [])value.getValue();
-
-         ByteBuffer buff = ByteBuffer.wrap(ids);
-
-         while (buff.hasRemaining())
-         {
-            long bindingID = buff.getLong();
-            outstr.append(bindingID);
-            if (buff.hasRemaining())
-            {
-               outstr.append(",");
-            }
-         }
-      }
-      catch (Throwable e)
-      {
-         log.warn(e.getMessage(), e);
-         outstr = new StringBuffer();
-         outstr.append(value.toString());
-      }
-      return "[" + outstr.toString() + "]";
+      return "TypedProperties[" + properties + "]";
    }
 
    // Private ------------------------------------------------------------------------------------
