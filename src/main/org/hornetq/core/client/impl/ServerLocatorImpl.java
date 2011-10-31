@@ -1243,9 +1243,9 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       state = STATE.CLOSING;
 
-      synchronized (this)
+      if (discoveryGroup != null)
       {
-         if (discoveryGroup != null)
+         synchronized (this)
          {
             try
             {
@@ -1256,10 +1256,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                log.error("Failed to stop discovery group", e);
             }
          }
-         else
-         {
-            staticConnector.disconnect();
-         }
+      }
+      else
+      {
+         staticConnector.disconnect();
       }
 
       synchronized (connectingFactories)
