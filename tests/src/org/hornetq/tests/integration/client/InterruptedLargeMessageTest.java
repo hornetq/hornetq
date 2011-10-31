@@ -13,36 +13,30 @@
 
 package org.hornetq.tests.integration.client;
 
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import junit.framework.Assert;
-
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.client.impl.ClientConsumerInternal;
-import org.hornetq.core.config.Configuration;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.wireformat.SessionSendContinuationMessage;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerSessionImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
-import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A LargeMessageTest
@@ -332,9 +326,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          server.stop(false);
          server.start();
 
-         server.stop();
-
          validateNoFilesOnLargeDir();
+
+         server.stop();
       }
       finally
       {
