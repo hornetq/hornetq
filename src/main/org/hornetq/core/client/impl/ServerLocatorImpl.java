@@ -57,6 +57,9 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
 {
+    /*needed for backward compatibility*/
+   private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
+   /*end of compatibility fixes*/
    private enum STATE{ INITIALIZED, CLOSED, CLOSING};
    
    private static final long serialVersionUID = -1615857864410205260L;
