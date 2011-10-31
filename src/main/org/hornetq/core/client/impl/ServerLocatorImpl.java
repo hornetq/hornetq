@@ -57,11 +57,15 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
 {
-    /*needed for backward compatibility*/
+   /*needed for backward compatibility*/
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
+
    /*end of compatibility fixes*/
-   private enum STATE{ INITIALIZED, CLOSED, CLOSING};
-   
+   private enum STATE
+   {
+      INITIALIZED, CLOSED, CLOSING
+   };
+
    private static final long serialVersionUID = -1615857864410205260L;
 
    private static final Logger log = Logger.getLogger(ServerLocatorImpl.class);
@@ -75,6 +79,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private transient String identity;
 
    private final Set<ClientSessionFactoryInternal> factories = new HashSet<ClientSessionFactoryInternal>();
+
    private final Set<ClientSessionFactoryInternal> connectingFactories = new HashSet<ClientSessionFactoryInternal>();
 
    private TransportConfiguration[] initialConnectors;
@@ -530,7 +535,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          return pair.getA();
       }
-      
+
       // Get from initialconnectors
 
       int pos = loadBalancingPolicy.select(initialConnectors.length);
@@ -601,20 +606,19 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       return afterConnectListener;
    }
-   
+
    public ClientSessionFactory createSessionFactory(String nodeID) throws Exception
    {
       log.info(topology.describe("full topology"));
       TopologyMember topologyMember = topology.getMember(nodeID);
-      
+
       log.info("Creating connection factory towards " + nodeID + " = " + topologyMember);
-      
+
       if (topologyMember == null)
       {
          return null;
       }
-      else
-      if (topologyMember.getA() != null)
+      else if (topologyMember.getA() != null)
       {
          ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)createSessionFactory(topologyMember.getA());
          if (topologyMember.getB() != null)
@@ -641,7 +645,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       assertOpen();
 
       initialise();
-   
+
       ClientSessionFactoryInternal factory = new ClientSessionFactoryImpl(this,
                                                                           transportConfiguration,
                                                                           callTimeout,
@@ -1239,31 +1243,34 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       state = STATE.CLOSING;
 
-      if (discoveryGroup != null)
+      synchronized (this)
       {
-         try
+         if (discoveryGroup != null)
          {
-            discoveryGroup.stop();
+            try
+            {
+               discoveryGroup.stop();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to stop discovery group", e);
+            }
          }
-         catch (Exception e)
+         else
          {
-            log.error("Failed to stop discovery group", e);
+            staticConnector.disconnect();
          }
       }
-      else
-      {
-         staticConnector.disconnect();
-      }
-      
+
       synchronized (connectingFactories)
       {
          for (ClientSessionFactoryInternal csf : connectingFactories)
          {
-           csf.close();
+            csf.close();
          }
          connectingFactories.clear();
       }
-      
+
       synchronized (factories)
       {
          Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
@@ -1320,7 +1327,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       readOnly = false;
 
       state = STATE.CLOSED;
- 
+
    }
 
    /** This is directly called when the connection to the node is gone,

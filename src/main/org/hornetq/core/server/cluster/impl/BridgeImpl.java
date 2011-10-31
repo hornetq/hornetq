@@ -131,6 +131,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private NotificationService notificationService;
 
+   private boolean stopping = false;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -198,7 +200,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       this.notificationService = notificationService;
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -207,6 +209,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       started = true;
+
+      stopping = false;
 
       if (activated)
       {
@@ -221,7 +225,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          notificationService.sendNotification(notification);
       }
    }
-   
+
    public String debug()
    {
       return toString();
@@ -304,20 +308,32 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       });
    }
 
-   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break. 
-    *  This method is intended to expose this executor to the ClusterManager */
+   public boolean isConnected()
+   {
+      return session != null;
+   }
+
+   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
+   *  This method is intended to expose this executor to the ClusterManager */
    public Executor getExecutor()
    {
       return executor;
    }
-   
+
    public void stop() throws Exception
    {
+      if (stopping)
+      {
+         return;
+      }
+      
+      stopping = true;
+      
       if (log.isDebugEnabled())
       {
          log.debug("Bridge " + this.name + " being stopped");
       }
-      
+
       if (futureScheduledReconnection != null)
       {
          futureScheduledReconnection.cancel(true);
@@ -470,7 +486,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (log.isDebugEnabled())
             {
-               log.debug("The transformer " + transformer + " made a copy of the message " + message + " as transformedMessage");
+               log.debug("The transformer " + transformer +
+                         " made a copy of the message " +
+                         message +
+                         " as transformedMessage");
             }
          }
          return transformedMessage;
@@ -543,12 +562,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          // that this will throw a disconnect, we need to remove the message
          // from the acks so it will get resent, duplicate detection will cope
          // with any messages resent
-         
+
          if (log.isTraceEnabled())
          {
             log.trace("going to send message " + message);
          }
-         
+
          try
          {
             producer.send(dest, message);
@@ -579,7 +598,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             producer.close();
          }
-         
+
          csf.cleanup();
       }
       catch (Throwable dontCare)
@@ -679,7 +698,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       return csf;
    }
-
 
    /* Hook for creating session factory */
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
@@ -803,6 +821,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (serverLocator.isClosed())
       {
          log.warn("ServerLocator was shutdown, can't retry on opening connection for bridge");
+         return;
+      }
+
+      if (stopping)
+      {
+         log.info("Bridge is stopping, will not retry");
          return;
       }
 
@@ -968,7 +992,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       public synchronized void run()
       {
-         connect();
+         if (!stopping)
+         {
+            connect();
+         }
       }
    }
 }

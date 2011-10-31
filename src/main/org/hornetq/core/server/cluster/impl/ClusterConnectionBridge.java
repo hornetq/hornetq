@@ -71,7 +71,7 @@ public class ClusterConnectionBridge extends BridgeImpl
    private final SimpleString idsHeaderName;
 
    private final String targetNodeID;
-   
+
    private final long targetNodeEventUID;
 
    private final ServerLocatorInternal discoveryLocator;
@@ -150,10 +150,11 @@ public class ClusterConnectionBridge extends BridgeImpl
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
       ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
-      
+
       if (factory == null)
       {
-         log.warn("NodeID=" + targetNodeID + " is not available on the topology. Retrying the connection to that node now");
+         log.warn("NodeID=" + targetNodeID +
+                  " is not available on the topology. Retrying the connection to that node now");
          return null;
       }
       factory.setReconnectAttempts(0);
@@ -181,7 +182,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       // nodes could have same queue ids
       // Note we must copy since same message may get routed to other nodes which require different headers
       ServerMessage messageCopy = message.copy();
-      
+
       if (log.isTraceEnabled())
       {
          log.trace("Clustered bridge  copied message " + message + " as " + messageCopy + " before delivery");
@@ -192,7 +193,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       Set<SimpleString> propNames = new HashSet<SimpleString>(messageCopy.getPropertyNames());
 
       byte[] queueIds = message.getBytesProperty(idsHeaderName);
-      
+
       if (queueIds == null)
       {
          // Sanity check only
@@ -215,7 +216,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       messageCopy.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
 
       messageCopy = super.beforeForward(messageCopy);
- 
+
       return messageCopy;
    }
 
