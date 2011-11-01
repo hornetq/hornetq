@@ -170,11 +170,21 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    public synchronized void incrementDelayDeletionCount()
    {
       delayDeletionCount.incrementAndGet();
+      try
+      {
+         incrementRefCount();
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+      }
    }
 
    public synchronized void decrementDelayDeletionCount() throws Exception
    {
       int count = delayDeletionCount.decrementAndGet();
+      
+      decrementRefCount();
 
       if (count == 0)
       {
