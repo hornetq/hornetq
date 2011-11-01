@@ -142,6 +142,9 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    private final Set<TransportConfiguration> allowableConnections = new HashSet<TransportConfiguration>();
 
    private final ClusterManagerInternal manager;
+   
+   private final int minLargeMessageSize;
+
 
    // Stuff that used to be on the ClusterManager
 
@@ -156,6 +159,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final TransportConfiguration connector,
                                 final SimpleString name,
                                 final SimpleString address,
+                                final int minLargeMessageSize,
                                 final long clientFailureCheckPeriod,
                                 final long connectionTTL,
                                 final long retryInterval,
@@ -237,6 +241,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.manager = manager;
 
       this.callTimeout = callTimeout;
+      
+      this.minLargeMessageSize = minLargeMessageSize;
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
 
@@ -265,6 +271,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                 final TransportConfiguration connector,
                                 final SimpleString name,
                                 final SimpleString address,
+                                final int minLargeMessageSize,
                                 final long clientFailureCheckPeriod,
                                 final long connectionTTL,
                                 final long retryInterval,
@@ -310,6 +317,8 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
       this.maxRetryInterval = maxRetryInterval;
+      
+      this.minLargeMessageSize = minLargeMessageSize;
 
       this.reconnectAttempts = reconnectAttempts;
 
@@ -902,6 +911,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       targetLocator.setRetryInterval(retryInterval);
       targetLocator.setMaxRetryInterval(maxRetryInterval);
       targetLocator.setRetryIntervalMultiplier(retryIntervalMultiplier);
+      targetLocator.setMinLargeMessageSize(minLargeMessageSize);
 
       targetLocator.setAfterConnectionInternalListener(this);
 

@@ -1021,6 +1021,8 @@ public class FileConfigurationParser
       double retryIntervalMultiplier = XMLConfigurationUtil.getDouble(e, "retry-interval-multiplier", 
                                                                       ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER, Validators.GT_ZERO);
       
+      int minLargeMessageSize = XMLConfigurationUtil.getInteger(e, "min-large-message-size", HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE, Validators.GT_ZERO);
+      
       long maxRetryInterval = XMLConfigurationUtil.getLong(e, "max-retry-interval", ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
       
       int reconnectAttempts = XMLConfigurationUtil.getInteger(e, "reconnect-attempts", ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS, Validators.MINUS_ONE_OR_GE_ZERO);
@@ -1065,6 +1067,7 @@ public class FileConfigurationParser
          config = new ClusterConnectionConfiguration(name,
                                                      address,
                                                      connectorName,
+                                                     minLargeMessageSize,
                                                      clientFailureCheckPeriod,
                                                      connectionTTL,
                                                      retryInterval,
@@ -1084,6 +1087,7 @@ public class FileConfigurationParser
          config = new ClusterConnectionConfiguration(name,
                                                      address,
                                                      connectorName,
+                                                     minLargeMessageSize,
                                                      clientFailureCheckPeriod,
                                                      connectionTTL,
                                                      retryInterval,
@@ -1146,6 +1150,11 @@ public class FileConfigurationParser
 
       long connectionTTL = XMLConfigurationUtil.getLong(brNode, "connection-ttl",
                                                         HornetQClient.DEFAULT_CONNECTION_TTL, Validators.GT_ZERO) ;
+      
+      int minLargeMessageSize = XMLConfigurationUtil.getInteger(brNode,
+                                                                "min-large-message-size",
+                                                                HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                                                Validators.GT_ZERO);
       
       long maxRetryInterval = XMLConfigurationUtil.getLong(brNode, "max-retry-interval", HornetQClient.DEFAULT_MAX_RETRY_INTERVAL, Validators.GT_ZERO);
       
@@ -1211,6 +1220,7 @@ public class FileConfigurationParser
                                           forwardingAddress,
                                           filterString,
                                           transformerClassName,
+                                          minLargeMessageSize,
                                           clientFailureCheckPeriod,
                                           connectionTTL,
                                           retryInterval,
@@ -1231,6 +1241,7 @@ public class FileConfigurationParser
                                           forwardingAddress,
                                           filterString,
                                           transformerClassName,
+                                          minLargeMessageSize,
                                           clientFailureCheckPeriod,
                                           connectionTTL,
                                           retryInterval,

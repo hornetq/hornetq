@@ -64,6 +64,8 @@ public class BridgeConfiguration implements Serializable
    private final long connectionTTL;
    
    private final long maxRetryInterval;
+   
+   private final int minLargeMessageSize;
 
 
    public BridgeConfiguration(final String name,
@@ -71,6 +73,7 @@ public class BridgeConfiguration implements Serializable
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final int minLargeMessageSize,
                               final long clientFailureCheckPeriod,
                               final long connectionTTL,
                               final long retryInterval,
@@ -87,6 +90,7 @@ public class BridgeConfiguration implements Serializable
       this.name = name;
       this.queueName = queueName;
       this.forwardingAddress = forwardingAddress;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.filterString = filterString;
       this.transformerClassName = transformerClassName;
       this.retryInterval = retryInterval;
@@ -108,6 +112,7 @@ public class BridgeConfiguration implements Serializable
                               final String forwardingAddress,
                               final String filterString,
                               final String transformerClassName,
+                              final int minLargeMessageSize,
                               final long clientFailureCheckPeriod,
                               final long connectionTTL,
                               final long retryInterval,
@@ -126,6 +131,7 @@ public class BridgeConfiguration implements Serializable
       this.forwardingAddress = forwardingAddress;
       this.filterString = filterString;
       this.transformerClassName = transformerClassName;
+      this.minLargeMessageSize = minLargeMessageSize;
       this.retryInterval = retryInterval;
       this.retryIntervalMultiplier = retryIntervalMultiplier;
       this.reconnectAttempts = reconnectAttempts;
@@ -241,6 +247,14 @@ public class BridgeConfiguration implements Serializable
    public void setQueueName(final String queueName)
    {
       this.queueName = queueName;
+   }
+
+   /**
+    * @return the minLargeMessageSize
+    */
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
    }
 
    /**
