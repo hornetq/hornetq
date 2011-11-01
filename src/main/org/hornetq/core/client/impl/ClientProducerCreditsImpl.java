@@ -58,7 +58,10 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       // Doesn't need to be fair since session is single threaded
 
       semaphore = new Semaphore(0, false);
-
+   }
+   
+   public void init()
+   {
       // We initial request twice as many credits as we request in subsequent requests
       // This allows the producer to keep sending as more arrive, minimising pauses
       checkCredits(windowSize);

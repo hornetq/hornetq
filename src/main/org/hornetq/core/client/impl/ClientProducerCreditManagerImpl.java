@@ -48,28 +48,43 @@ public class ClientProducerCreditManagerImpl implements ClientProducerCreditMana
       this.windowSize = windowSize;
    }
 
-   public synchronized ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
+   public ClientProducerCredits getCredits(final SimpleString address, final boolean anon)
    {
-      ClientProducerCredits credits = producerCredits.get(address);
-
-      if (credits == null)
+      boolean needInit = false;
+      ClientProducerCredits credits;
+      
+      synchronized(this)
       {
-         // Doesn't need to be fair since session is single threaded
-         credits = new ClientProducerCreditsImpl(session, address, windowSize);
-
-         producerCredits.put(address, credits);
+         credits = producerCredits.get(address);
+   
+         if (credits == null)
+         {
+            // Doesn't need to be fair since session is single threaded
+            credits = new ClientProducerCreditsImpl(session, address, windowSize);
+            needInit = true;
+   
+            producerCredits.put(address, credits);
+         }
+   
+         if (!anon)
+         {
+            credits.incrementRefCount();
+   
+            // Remove from anon credits (if there)
+            unReferencedCredits.remove(address);
+         }
+         else
+         {
+            addToUnReferencedCache(address, credits);
+         }
       }
-
-      if (!anon)
+      
+      // The init is done outside of the lock
+      // otherwise packages may arrive with flow control
+      // while this is still sending requests causing a dead lock
+      if (needInit)
       {
-         credits.incrementRefCount();
-
-         // Remove from anon credits (if there)
-         unReferencedCredits.remove(address);
-      }
-      else
-      {
-         addToUnReferencedCache(address, credits);
+         credits.init();
       }
 
       return credits;
