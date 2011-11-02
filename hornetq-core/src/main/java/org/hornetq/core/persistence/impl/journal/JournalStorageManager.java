@@ -1215,26 +1215,26 @@ public class JournalStorageManager implements StorageManager
    {
       // no need to store if it's the same value
       // otherwise the journal will get OME in case of lots of redeliveries
-      if (ref.getDeliveryCount() != ref.getPersistedCount())
+      if (ref.getDeliveryCount() == ref.getPersistedCount())
       {
-         ref.setPersistedCount(ref.getDeliveryCount());
-         DeliveryCountUpdateEncoding updateInfo =
-                  new DeliveryCountUpdateEncoding(ref.getQueue().getID(), ref.getDeliveryCount());
+         return;
+      }
+
+      ref.setPersistedCount(ref.getDeliveryCount());
+      DeliveryCountUpdateEncoding updateInfo =
+               new DeliveryCountUpdateEncoding(ref.getQueue().getID(), ref.getDeliveryCount());
 
          readLock();
          try
          {
             messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                               JournalStorageManager.UPDATE_DELIVERY_COUNT, updateInfo,
-
                                               syncNonTransactional, getContext(syncNonTransactional));
          }
-
          finally
          {
             readUnLock();
          }
-      }
    }
 
       public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
@@ -2581,13 +2581,6 @@ public class JournalStorageManager implements StorageManager
        }
 
        /* (non-Javadoc)
-        * @see org.hornetq.core.persistence.OperationContext#complete()
-        */
-       public void complete()
-       {
-       }
-
-       /* (non-Javadoc)
         * @see org.hornetq.core.persistence.OperationContext#executeOnCompletion(org.hornetq.core.journal.IOAsyncTask)
         */
        public void executeOnCompletion(final IOAsyncTask runnable)
@@ -3038,11 +3031,6 @@ public class JournalStorageManager implements StorageManager
       public byte recordType;
 
       public long id;
-
-      public DeleteEncoding()
-      {
-         super();
-      }
 
       public DeleteEncoding(final byte recordType, final long id)
       {

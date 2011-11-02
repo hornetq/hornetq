@@ -1689,23 +1689,21 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          super.finalize();
       }
 
-      class Connector
+      private class Connector
       {
          private final TransportConfiguration initialConnector;
 
          private volatile ClientSessionFactoryInternal factory;
 
-         private boolean interrupted = false;
-
          private Exception e;
 
-         public Connector(TransportConfiguration initialConnector, ClientSessionFactoryInternal factory)
+         Connector(TransportConfiguration initialConnector, ClientSessionFactoryInternal factory)
          {
             this.initialConnector = initialConnector;
             this.factory = factory;
          }
 
-         public ClientSessionFactory tryConnect() throws HornetQException
+         private ClientSessionFactory tryConnect() throws HornetQException
          {
             if (log.isDebugEnabled())
             {
@@ -1738,8 +1736,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
          public void disconnect()
          {
-            interrupted = true;
-
             if (factory != null)
             {
                factory.causeExit();

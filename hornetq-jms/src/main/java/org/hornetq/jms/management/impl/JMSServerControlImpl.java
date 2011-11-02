@@ -44,7 +44,6 @@ import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.jms.client.HornetQDestination;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
 import org.hornetq.jms.server.config.impl.ConnectionFactoryConfigurationImpl;
@@ -105,24 +104,24 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
    private static String[] determineJMSDestination(String coreAddress)
    {
       String[] result = new String[2]; // destination name & type
-      if (coreAddress.startsWith(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX))
+      if (coreAddress.startsWith(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX))
       {
-         result[0] = coreAddress.substring(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
+         result[0] = coreAddress.substring(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX.length());
          result[1] = "queue";
       }
-      else if (coreAddress.startsWith(HornetQQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+      else if (coreAddress.startsWith(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
       {
-         result[0] = coreAddress.substring(HornetQQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+         result[0] = coreAddress.substring(HornetQDestination.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
          result[1] = "tempqueue";
       }
-      else if (coreAddress.startsWith(HornetQQueue.JMS_TOPIC_ADDRESS_PREFIX))
+      else if (coreAddress.startsWith(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX))
       {
-         result[0] = coreAddress.substring(HornetQQueue.JMS_TOPIC_ADDRESS_PREFIX.length());
+         result[0] = coreAddress.substring(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX.length());
          result[1] = "topic";
       }
-      else if (coreAddress.startsWith(HornetQQueue.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+      else if (coreAddress.startsWith(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
       {
-         result[0] = coreAddress.substring(HornetQQueue.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+         result[0] = coreAddress.substring(HornetQDestination.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
          result[1] = "temptopic";
       }
       else
@@ -914,44 +913,29 @@ public class JMSServerControlImpl extends AbstractControl implements JMSServerCo
       CONNECTION_FACTORY_DESTROYED;
    }
 
-   private static List<String> toList(final String commaSeparatedString)
-   {
-      List<String> list = new ArrayList<String>();
-      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
-      {
-         return list;
-      }
-      String[] values = commaSeparatedString.split(",");
-      for (int i = 0; i < values.length; i++)
-      {
-         list.add(values[i].trim());
-      }
-      return list;
-   }
-
    public String[] listTargetDestinations(String sessionID) throws Exception
    {
       String[] addresses = server.getHornetQServer().getHornetQServerControl().listTargetAddresses(sessionID);
       Map<String, DestinationControl> allDests = new HashMap<String, DestinationControl>();
 
       Object[] queueControls = server.getHornetQServer().getManagementService().getResources(JMSQueueControl.class);
-      for (int i = 0; i < queueControls.length; i++)
+      for (Object queueControl2 : queueControls)
       {
-         JMSQueueControl queueControl = (JMSQueueControl)queueControls[i];
+         JMSQueueControl queueControl = (JMSQueueControl)queueControl2;
          allDests.put(queueControl.getAddress(), queueControl);
       }
 
       Object[] topicControls = server.getHornetQServer().getManagementService().getResources(TopicControl.class);
-      for (int i = 0; i < topicControls.length; i++)
+      for (Object topicControl2 : topicControls)
       {
-         TopicControl topicControl = (TopicControl)topicControls[i];
+         TopicControl topicControl = (TopicControl)topicControl2;
          allDests.put(topicControl.getAddress(), topicControl);
       }
 
       List<String> destinations = new ArrayList<String>();
-      for (int i = 0; i < addresses.length; i++)
+      for (String addresse : addresses)
       {
-         DestinationControl control = allDests.get(addresses[i]);
+         DestinationControl control = allDests.get(addresse);
          if (control != null)
          {
             destinations.add(control.getAddress());

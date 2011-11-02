@@ -28,7 +28,6 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.cursor.PagePosition;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperationAbstract;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -57,9 +56,9 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    private volatile boolean rolledback = false;
 
-   private AtomicInteger numberOfMessages = new AtomicInteger(0);
+   private final AtomicInteger numberOfMessages = new AtomicInteger(0);
    
-   private AtomicInteger numberOfPersistentMessages = new AtomicInteger(0);
+   private final AtomicInteger numberOfPersistentMessages = new AtomicInteger(0);
    
    private List<Pair<PageSubscription, PagePosition>> lateDeliveries;
 
@@ -228,11 +227,6 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          {
             PageTransactionInfoImpl.this.onUpdate(1, storageManager, pagingManager);
          }
-
-         public List<MessageReference> getRelatedMessageReferences()
-         {
-            return null;
-         }
       });
    }
    
@@ -268,6 +262,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       }
    }
 
+   @Override
    public String toString()
    {
       return "PageTransactionInfoImpl(transactionID=" + transactionID +
@@ -324,7 +319,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
    
    static class UpdatePageTXOperation extends TransactionOperationAbstract
    {
-      private HashMap<PageTransactionInfo, AtomicInteger> countsToUpdate = new HashMap<PageTransactionInfo, AtomicInteger>();
+      private final HashMap<PageTransactionInfo, AtomicInteger> countsToUpdate = new HashMap<PageTransactionInfo, AtomicInteger>();
       
       private boolean stored = false;
       
@@ -356,16 +351,19 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
          counter.addAndGet(increment);
       }
       
+      @Override
       public void beforePrepare(Transaction tx) throws Exception
       {
          storeUpdates(tx);
       }
       
+      @Override
       public void beforeCommit(Transaction tx) throws Exception
       {
          storeUpdates(tx);
       }
       
+      @Override
       public void afterCommit(Transaction tx)
       {
          for (Map.Entry<PageTransactionInfo, AtomicInteger> entry : countsToUpdate.entrySet())

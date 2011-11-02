@@ -18,13 +18,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
@@ -253,7 +251,7 @@ class StompProtocolManager implements ProtocolManager
             Iterator<Entry<String, StompSession>> iterator = transactedSessions.entrySet().iterator();
             while (iterator.hasNext())
             {
-               Map.Entry<String, StompSession> entry = (Map.Entry<String, StompSession>)iterator.next();
+               Map.Entry<String, StompSession> entry = iterator.next();
                if (entry.getValue().getConnection() == connection)
                {
                   ServerSession serverSession = entry.getValue().getSession();

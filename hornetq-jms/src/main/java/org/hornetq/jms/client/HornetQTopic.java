@@ -13,12 +13,9 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.JMSException;
 import javax.jms.Topic;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.jms.client.HornetQDestination;
 
 /**
  * HornetQ implementation of a JMS Topic.
@@ -40,7 +37,7 @@ public class HornetQTopic extends HornetQDestination implements Topic
 
    public static SimpleString createAddressFromName(final String name)
    {
-      return new SimpleString(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + name);
+      return new SimpleString(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX + name);
    }
 
    // Attributes ----------------------------------------------------
@@ -49,7 +46,7 @@ public class HornetQTopic extends HornetQDestination implements Topic
 
    public HornetQTopic(final String name)
    {
-      super(HornetQQueue.JMS_TOPIC_ADDRESS_PREFIX + name, name, false, false, null);
+      super(HornetQDestination.JMS_TOPIC_ADDRESS_PREFIX + name, name, false, false, null);
    }
    
 

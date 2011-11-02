@@ -18,11 +18,8 @@ import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
-import org.hornetq.core.protocol.stomp.HornetQStompException;
-import org.hornetq.core.protocol.stomp.SimpleBytes;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompFrame;
-import org.hornetq.core.protocol.stomp.StompFrame.Header;
 
 /**
  * 
@@ -31,7 +28,7 @@ import org.hornetq.core.protocol.stomp.StompFrame.Header;
 public class StompFrameV11 extends StompFrame
 {
    //stomp 1.1 talks about repetitive headers.
-   private List<Header> allHeaders = new ArrayList<Header>();
+   private final List<Header> allHeaders = new ArrayList<Header>();
    private String contentType;
 
    public StompFrameV11(String command, Map<String, String> headers, byte[] content)

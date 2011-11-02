@@ -35,6 +35,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.SimpleStringReader;
 
 // CHECKSTYLE:OFF
+// NO_UCD
 /**
  * A JavaCC 2.0 grammar for HornetQ filters
  *

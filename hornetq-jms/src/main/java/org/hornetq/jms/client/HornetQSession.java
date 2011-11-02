@@ -45,9 +45,6 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 import javax.jms.TransactionInProgressException;
-import javax.jms.XAQueueSession;
-import javax.jms.XASession;
-import javax.jms.XATopicSession;
 import javax.transaction.xa.XAResource;
 
 import org.hornetq.api.core.HornetQException;

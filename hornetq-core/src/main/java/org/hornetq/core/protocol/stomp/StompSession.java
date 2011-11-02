@@ -12,21 +12,14 @@
  */
 package org.hornetq.core.protocol.stomp;
 
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.OperationContext;
-import org.hornetq.core.protocol.stomp.Stomp.Headers;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.QueueQueryResult;
 import org.hornetq.core.server.ServerMessage;
@@ -35,7 +28,6 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.remoting.ReadyListener;
 import org.hornetq.utils.ConfigurationHelper;
-import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -45,8 +37,6 @@ import org.hornetq.utils.UUIDGenerator;
  */
 public class StompSession implements SessionCallback
 {
-   private static final Logger log = Logger.getLogger(StompSession.class);
-
    private final StompProtocolManager manager;
 
    private final StompConnection connection;
@@ -239,7 +229,7 @@ public class StompSession implements SessionCallback
       Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
       while (iterator.hasNext())
       {
-         Map.Entry<Long, StompSubscription> entry = (Map.Entry<Long, StompSubscription>)iterator.next();
+         Map.Entry<Long, StompSubscription> entry = iterator.next();
          long consumerID = entry.getKey();
          StompSubscription sub = entry.getValue();
          if (id != null && id.equals(sub.getID()))
@@ -257,7 +247,7 @@ public class StompSession implements SessionCallback
       Iterator<Entry<Long, StompSubscription>> iterator = subscriptions.entrySet().iterator();
       while (iterator.hasNext())
       {
-         Map.Entry<Long, StompSubscription> entry = (Map.Entry<Long, StompSubscription>)iterator.next();
+         Map.Entry<Long, StompSubscription> entry = iterator.next();
          StompSubscription sub = entry.getValue();
          if (sub.getID().equals(subscriptionID))
          {
