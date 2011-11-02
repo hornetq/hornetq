@@ -20,7 +20,9 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
@@ -33,6 +35,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.security.Role;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.impl.ConnectorsService;
@@ -57,7 +60,7 @@ import org.hornetq.utils.ExecutorFactory;
 public interface HornetQServer extends HornetQComponent
 {
 
-   /** This method was created mainly for testing but it may be used in scenarios where 
+   /** This method was created mainly for testing but it may be used in scenarios where
     *  you need to have more than one Server inside the same VM.
     *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
    void setIdentity(String identity);
@@ -65,7 +68,7 @@ public interface HornetQServer extends HornetQComponent
    String getIdentity();
 
    String describe();
-   
+
    Configuration getConfiguration();
 
    RemotingService getRemotingService();
@@ -113,7 +116,7 @@ public interface HornetQServer extends HornetQComponent
    Set<ServerSession> getSessions();
 
    boolean isStarted();
-   
+
    boolean isStopped();
 
    HierarchicalRepository<Set<Role>> getSecurityRepository();
@@ -182,14 +185,17 @@ public interface HornetQServer extends HornetQComponent
    void destroyBridge(String name) throws Exception;
 
    ServerSession getSessionByID(String sessionID);
-   
+
    void threadDump(String reason);
 
    void stop(boolean failoverOnServerShutdown) throws Exception;
 
    /**
     * @param rc
+    * @param pair
+    * @param clusterConnection
     * @return {@code true} if replication started successfully, {@code false} otherwise
     */
-   boolean startReplication(CoreRemotingConnection rc);
+   boolean startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
+      Pair<TransportConfiguration, TransportConfiguration> pair);
 }

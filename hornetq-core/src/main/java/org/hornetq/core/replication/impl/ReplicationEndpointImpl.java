@@ -88,11 +88,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    private final IOCriticalErrorListener criticalErrorListener;
 
-   private static void trace(final String msg)
-   {
-      ReplicationEndpointImpl.log.trace(msg);
-   }
-
    private final HornetQServerImpl server;
 
    private Channel channel;
@@ -152,10 +147,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       journals[id] = journal;
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.hornetq.core.remoting.ChannelHandler#handlePacket(org.hornetq.core.remoting.Packet)
-    */
    public void handlePacket(final Packet packet)
    {
       PacketImpl response = new ReplicationResponseMessage();
@@ -212,7 +203,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
-         else if (type == PacketImpl.REPLICATION_START_STOP_SYNC)
+         else if (type == PacketImpl.REPLICATION_START_FINISH_SYNC)
          {
             handleStartReplicationSynchronization((ReplicationStartSyncMessage)packet);
          }
@@ -425,7 +416,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Private -------------------------------------------------------
 
-   private void finishSynchronization() throws Exception
+   private void finishSynchronization(String nodeID) throws Exception
    {
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
@@ -486,7 +477,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
       }
       journalsHolder = null;
-      server.setRemoteBackupUpToDate();
+      server.setRemoteBackupUpToDate(nodeID);
       log.info("Backup server " + server + " is synchronized with live-server.");
       return;
    }
@@ -565,7 +556,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (packet.isSynchronizationFinished())
       {
-         finishSynchronization();
+         finishSynchronization(packet.getNodeID());
          return;
       }
 

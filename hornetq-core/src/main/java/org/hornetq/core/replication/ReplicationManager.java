@@ -98,9 +98,11 @@ public interface ReplicationManager extends HornetQComponent
    /**
     * Informs backup that data synchronization is done.
     * <p>
-    * So if 'live' fails, the (up-to-date) backup now may take over its duties.
+    * So if 'live' fails, the (up-to-date) backup now may take over its duties. To do so, it must
+    * know which is the live's {@code nodeID}.
+    * @param nodeID
     */
-   void sendSynchronizationDone();
+   void sendSynchronizationDone(String nodeID);
 
    /**
     * Sends the whole content of the file to be duplicated.

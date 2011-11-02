@@ -42,6 +42,7 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.filter.Filter;
@@ -90,6 +91,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.ResourceManager;
@@ -219,9 +221,11 @@ public class JournalStorageManager implements StorageManager
     private boolean journalLoaded = false;
 
     // Persisted core configuration
-    private final Map<SimpleString, PersistedRoles> mapPersistedRoles = new ConcurrentHashMap<SimpleString, PersistedRoles>();
+   private final Map<SimpleString, PersistedRoles> mapPersistedRoles =
+            new ConcurrentHashMap<SimpleString, PersistedRoles>();
 
-    private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings = new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
+   private final Map<SimpleString, PersistedAddressSetting> mapPersistedAddressSettings =
+            new ConcurrentHashMap<SimpleString, PersistedAddressSetting>();
 
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
                                 final IOCriticalErrorListener criticalErrorListener)
@@ -231,24 +235,24 @@ public class JournalStorageManager implements StorageManager
 
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
                                 final ReplicationManager replicator, final IOCriticalErrorListener criticalErrorListener)
-    {
-        this.executorFactory = executorFactory;
+   {
+      this.executorFactory = executorFactory;
 
-        executor = executorFactory.getExecutor();
+      executor = executorFactory.getExecutor();
 
-        this.replicator = replicator;
+      this.replicator = replicator;
 
-        if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
-            {
-                throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
-            }
+      if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
+      {
+         throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
+      }
 
-        bindingsDir = config.getBindingsDirectory();
+      bindingsDir = config.getBindingsDirectory();
 
-        if (bindingsDir == null)
-            {
-                throw new NullPointerException("bindings-dir is null");
-            }
+      if (bindingsDir == null)
+      {
+         throw new NullPointerException("bindings-dir is null");
+      }
 
         createBindingsDir = config.isCreateBindingsDir();
 
@@ -306,11 +310,11 @@ public class JournalStorageManager implements StorageManager
                                                          config.getJournalBufferTimeout_NIO(),
                                                          config.isLogJournalWriteRate(),
                                                          criticalErrorListener);
-            }
-        else
-            {
-                throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
-            }
+      }
+      else
+      {
+         throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
+      }
 
       idGenerator = new BatchingIDGenerator(0, JournalStorageManager.CHECKPOINT_BATCH_SIZE, bindingsJournal);
         Journal localMessage = new JournalImpl(config.getJournalFileSize(),
@@ -323,21 +327,19 @@ public class JournalStorageManager implements StorageManager
                                                config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
                                                : config.getJournalMaxIO_NIO());
 
-        if (replicator != null)
-            {
-                messageJournal = new ReplicatedJournal((byte)1, localMessage, replicator);
-            }
-        else
-            {
-                messageJournal = localMessage;
-            }
+      if (replicator != null)
+      {
+         messageJournal = new ReplicatedJournal((byte)1, localMessage, replicator);
+      }
+      else
+      {
+         messageJournal = localMessage;
+      }
 
-        largeMessagesDirectory = config.getLargeMessagesDirectory();
-
-        largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
-
-        perfBlastPages = config.getJournalPerfBlastPages();
-    }
+      largeMessagesDirectory = config.getLargeMessagesDirectory();
+      largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
+      perfBlastPages = config.getJournalPerfBlastPages();
+   }
 
     public void clearContext()
     {
@@ -355,7 +357,9 @@ public class JournalStorageManager implements StorageManager
     * @throws HornetQException
     */
    @Override
-   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
+   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+      throws Exception
    {
       if (!started)
       {
@@ -418,7 +422,8 @@ public class JournalStorageManager implements StorageManager
       storageManagerLock.writeLock().lock();
       try
       {
-         replicator.sendSynchronizationDone();
+         replicator.sendSynchronizationDone(nodeID);
+         clusterConnection.nodeAnnounced(System.currentTimeMillis(), nodeID, pair, true);
          // XXX HORNETQ-720 SEND a compare journals message?
       }
       finally

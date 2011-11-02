@@ -24,6 +24,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
@@ -47,6 +48,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -580,16 +582,10 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessage(long)
-    */
    public void confirmPendingLargeMessage(long recordID) throws Exception
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#stop(boolean)
-    */
    public void stop(boolean ioCriticalError) throws Exception
    {
    }
@@ -607,7 +603,8 @@ public class NullStorageManager implements StorageManager
    }
 
    @Override
-   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception
+   public void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair) throws Exception
    {
       // no-op
    }
@@ -621,5 +618,4 @@ public class NullStorageManager implements StorageManager
    {
       return false;
    }
-
  }

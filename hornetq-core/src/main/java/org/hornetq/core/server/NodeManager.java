@@ -69,6 +69,11 @@ public abstract class NodeManager implements HornetQComponent
       return uuid;
    }
 
+   public void setNodeID(String nodeID)
+   {
+      this.nodeID = new SimpleString(nodeID);
+   }
+
    public abstract boolean isAwaitingFailback() throws Exception;
 
    public abstract boolean isBackupLive() throws Exception;

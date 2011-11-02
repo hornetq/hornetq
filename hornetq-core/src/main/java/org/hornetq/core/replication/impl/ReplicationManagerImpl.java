@@ -480,7 +480,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private static class NullEncoding implements EncodingSupport
    {
-
       static NullEncoding instance = new NullEncoding();
 
       public void decode(final HornetQBuffer buffer)
@@ -495,7 +494,6 @@ public class ReplicationManagerImpl implements ReplicationManager
       {
          return 0;
       }
-
    }
 
    @Override
@@ -528,8 +526,8 @@ public class ReplicationManagerImpl implements ReplicationManager
    @Override
    public void syncPages(SequentialFile file, long id, SimpleString queueName) throws Exception
    {
-   if (enabled)
-      sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
+      if (enabled)
+         sendLargeFile(null, queueName, id, file, Long.MAX_VALUE);
    }
 
    /**
@@ -541,10 +539,7 @@ public class ReplicationManagerImpl implements ReplicationManager
     * @param maxBytesToSend maximum number of bytes to read and send from the file
     * @throws Exception
     */
-   private void sendLargeFile(JournalContent content,
-      SimpleString pageStore,
-      final long id,
-      SequentialFile file,
+   private void sendLargeFile(JournalContent content, SimpleString pageStore, final long id, SequentialFile file,
       long maxBytesToSend) throws Exception
    {
       if (!enabled)
@@ -564,23 +559,23 @@ public class ReplicationManagerImpl implements ReplicationManager
             int toSend = bytesRead;
             if (bytesRead > 0)
             {
-            if (bytesRead >= maxBytesToSend)
-            {
-               toSend = (int)maxBytesToSend;
-               maxBytesToSend = 0;
+               if (bytesRead >= maxBytesToSend)
+               {
+                  toSend = (int)maxBytesToSend;
+                  maxBytesToSend = 0;
+               }
+               else
+               {
+                  maxBytesToSend = maxBytesToSend - bytesRead;
+               }
+               buffer.limit(toSend);
             }
-            else
-            {
-               maxBytesToSend = maxBytesToSend - bytesRead;
-            }
-            buffer.limit(toSend);
-         }
-         buffer.rewind();
+            buffer.rewind();
 
-         // sending -1 or 0 bytes will close the file at the backup
-         sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, bytesRead, buffer));
-         if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
-            break;
+            // sending -1 or 0 bytes will close the file at the backup
+            sendReplicatePacket(new ReplicationSyncFileMessage(content, pageStore, id, bytesRead, buffer));
+            if (bytesRead == -1 || bytesRead == 0 || maxBytesToSend == 0)
+               break;
          }
       }
       finally
@@ -597,9 +592,9 @@ public class ReplicationManagerImpl implements ReplicationManager
    }
 
    @Override
-   public void sendSynchronizationDone()
+   public void sendSynchronizationDone(String nodeID)
    {
       if (enabled)
-         sendReplicatePacket(new ReplicationStartSyncMessage(null, null));
+         sendReplicatePacket(new ReplicationStartSyncMessage(nodeID));
    }
 }

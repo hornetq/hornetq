@@ -22,6 +22,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
@@ -42,6 +43,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RouteContextList;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -70,9 +72,9 @@ public interface StorageManager extends HornetQComponent
 
    /** Set the context back to the thread */
    void setContext(OperationContext context);
-   
+
    /**
-    * 
+    *
     * @param ioCriticalError is the server being stopped due to an IO critical error
     */
    void stop(boolean ioCriticalError) throws Exception;
@@ -109,7 +111,7 @@ public interface StorageManager extends HornetQComponent
 
    /** Confirms that a large message was finished */
    void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception;
-   
+
    /** Confirms that a large message was finished */
    void confirmPendingLargeMessage(long recordID) throws Exception;
 
@@ -157,7 +159,7 @@ public interface StorageManager extends HornetQComponent
     * @param message This is a temporary message that holds the parsed properties.
     *        The remoting layer can't create a ServerMessage directly, then this will be replaced.
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
 
@@ -249,9 +251,14 @@ public interface StorageManager extends HornetQComponent
    /**
     * @param replicationManager
     * @param pagingManager
+    * @param nodeID
+    * @param clusterConnection
+    * @param pair
     * @throws Exception
     */
-   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager) throws Exception;
+   void startReplication(ReplicationManager replicationManager, PagingManager pagingManager, String nodeID,
+      ClusterConnection clusterConnection, Pair<TransportConfiguration, TransportConfiguration> pair)
+      throws Exception;
 
    /**
     * Adds message to page if we are paging.

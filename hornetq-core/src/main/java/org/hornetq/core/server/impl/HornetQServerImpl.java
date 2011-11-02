@@ -109,6 +109,7 @@ import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
@@ -473,7 +474,7 @@ public class HornetQServerImpl implements HornetQServer
       stop(failoverOnServerShutdown, false);
    }
 
-   protected void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
+   private void stop(boolean failoverOnServerShutdown, boolean criticalIOError) throws Exception
    {
       synchronized (this)
       {
@@ -584,7 +585,7 @@ public class HornetQServerImpl implements HornetQServer
 
          for (Runnable task : tasks)
          {
-            HornetQServerImpl.log.debug(this + "::Waiting for " + task);
+               HornetQServerImpl.log.info(this + "::Waiting for " + task);
          }
 
          if (memoryManager != null)
@@ -592,9 +593,9 @@ public class HornetQServerImpl implements HornetQServer
             memoryManager.stop();
          }
 
-         threadPool.shutdown();
+            threadPool.shutdown();
 
-         scheduledPool.shutdown();
+            scheduledPool.shutdown();
 
          try
          {
@@ -1222,7 +1223,7 @@ public class HornetQServerImpl implements HornetQServer
    // null);
    // }
 
-   protected PagingManager createPagingManager()
+   private PagingManager createPagingManager()
    {
 
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
@@ -1238,7 +1239,7 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance)
     */
-   protected StorageManager createStorageManager()
+   private StorageManager createStorageManager()
    {
       if (configuration.isPersistenceEnabled())
       {
@@ -2086,7 +2087,7 @@ public class HornetQServerImpl implements HornetQServer
 
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
-            final QuorumManager quorumManager = new QuorumManager(serverLocator, nodeManager.getNodeId().toString());
+            final QuorumManager quorumManager = new QuorumManager(serverLocator);
 
             serverLocator.setReconnectAttempts(-1);
 
@@ -2127,10 +2128,11 @@ public class HornetQServerImpl implements HornetQServer
             while (true)
             {
                nodeManager.awaitLiveNode();
-               if (!started || quorumManager.isNodeDown())
-               {
-                  break;
-               }
+               break;
+//               if (!started || quorumManager.isNodeDown())
+//               {
+//                  break;
+//               }
             }
 
             serverLocator.close();
@@ -2278,13 +2280,20 @@ public class HornetQServerImpl implements HornetQServer
 
 
    @Override
-   public boolean startReplication(CoreRemotingConnection rc)
+   public boolean startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
+      Pair<TransportConfiguration, TransportConfiguration> pair)
    {
+      if (replicationManager != null)
+      {
+         return false;
+      }
+
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
       try
       {
          replicationManager.start();
-         storageManager.startReplication(replicationManager, pagingManager);
+         storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(), clusterConnection,
+                                         pair);
          return true;
       }
       catch (Exception e)
@@ -2313,8 +2322,9 @@ public class HornetQServerImpl implements HornetQServer
       return backupUpToDate;
    }
 
-   public void setRemoteBackupUpToDate()
+   public void setRemoteBackupUpToDate(String nodeID)
    {
+      nodeManager.setNodeID(nodeID);
       backupUpToDate = true;
    }
 }

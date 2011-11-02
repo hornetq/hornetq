@@ -140,7 +140,7 @@ public class BackupSyncDelay implements Interceptor
             deliver();
          }
 
-         if (packet.getType() == PacketImpl.REPLICATION_START_STOP_SYNC && mustHold)
+         if (packet.getType() == PacketImpl.REPLICATION_START_FINISH_SYNC && mustHold)
          {
             ReplicationStartSyncMessage syncMsg = (ReplicationStartSyncMessage)packet;
             if (syncMsg.isSynchronizationFinished() && !deliver)

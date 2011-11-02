@@ -204,7 +204,7 @@ public class PacketImpl implements Packet
 
    public static final byte BACKUP_REGISTRATION = 115;
 
-   public static final byte REPLICATION_START_STOP_SYNC = 120;
+   public static final byte REPLICATION_START_FINISH_SYNC = 120;
  
    // Static --------------------------------------------------------
 

@@ -208,14 +208,9 @@ class CoreProtocolManager implements ProtocolManager
             } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
                BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-               if (server.startReplication(rc))
+               if (server.startReplication(rc, acceptorUsed.getClusterConnection(), getPair(msg.getConnector(), true)))
                {
-                  /*
-                   * HORNETQ-720 Instantiate a new server locator to call notifyNodeUp(...)? Or send
-                   * a CLUSTER_TOPOLOGY(_2?) message?
-                   */
-                  acceptorUsed.getClusterConnection().nodeAnnounced(System.currentTimeMillis(), msg.getNodeID(),
-                                                                    getPair(msg.getConnector(), true), true);
+                  // XXX if it fails, the backup should get to know it
                }
             }
          }

@@ -32,16 +32,14 @@ final class QuorumManager implements ClusterTopologyListener
 
    // volatile boolean started;
    private final ServerLocator locator;
-   private final String targetServerName;
+   private final String targetServerName = "";
    private final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
             new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
    private static final long DISCOVERY_TIMEOUT = 3;
 
-   public QuorumManager(ServerLocator serverLocator, String nodeID)
+   public QuorumManager(ServerLocator serverLocator)
    {
       this.locator = serverLocator;
-      this.targetServerName = nodeID;
-
       locator.addClusterTopologyListener(this);
    }
 

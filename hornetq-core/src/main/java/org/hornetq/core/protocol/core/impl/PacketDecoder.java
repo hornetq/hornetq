@@ -547,7 +547,7 @@ public final class PacketDecoder
             packet = new BackupRegistrationMessage();
             break;
          }
-         case PacketImpl.REPLICATION_START_STOP_SYNC:
+         case PacketImpl.REPLICATION_START_FINISH_SYNC:
          {
             packet = new ReplicationStartSyncMessage();
             break;

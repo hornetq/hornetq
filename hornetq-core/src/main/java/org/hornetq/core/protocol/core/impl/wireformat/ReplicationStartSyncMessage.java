@@ -16,20 +16,24 @@ public class ReplicationStartSyncMessage extends PacketImpl
    private long[] ids;
    private JournalContent journalType;
    private boolean synchronizationIsFinished;
+   private String nodeID;
 
    public ReplicationStartSyncMessage()
    {
-      super(REPLICATION_START_STOP_SYNC);
+      super(REPLICATION_START_FINISH_SYNC);
+   }
+
+   public ReplicationStartSyncMessage(String nodeID)
+   {
+      this();
+      synchronizationIsFinished = true;
+      this.nodeID = nodeID;
    }
 
    public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType)
    {
       this();
-      if (datafiles == null && contentType == null)
-      {
-         synchronizationIsFinished = true;
-         return;
-      }
+      synchronizationIsFinished = false;
       ids = new long[datafiles.length];
       for (int i = 0; i < datafiles.length; i++)
       {
@@ -43,7 +47,10 @@ public class ReplicationStartSyncMessage extends PacketImpl
    {
       buffer.writeBoolean(synchronizationIsFinished);
       if (synchronizationIsFinished)
+      {
+         buffer.writeString(nodeID);
          return;
+      }
       buffer.writeByte(journalType.typeByte);
       buffer.writeInt(ids.length);
       for (long id : ids)
@@ -57,7 +64,10 @@ public class ReplicationStartSyncMessage extends PacketImpl
    {
       synchronizationIsFinished = buffer.readBoolean();
       if (synchronizationIsFinished)
+      {
+         nodeID = buffer.readString();
          return;
+      }
       journalType = JournalContent.getType(buffer.readByte());
       int length = buffer.readInt();
       ids = new long[length];
@@ -84,5 +94,10 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public long[] getFileIds()
    {
       return ids;
+   }
+
+   public String getNodeID()
+   {
+      return nodeID;
    }
 }
