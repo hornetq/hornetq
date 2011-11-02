@@ -159,7 +159,9 @@ public class LargeMessageCompressTest extends LargeMessageTest
          
          msg1.setOutputStream(output);
 
-         msg1.waitOutputStreamCompletion(0);         
+         msg1.waitOutputStreamCompletion(0);      
+         
+         output.close();
          
          msg1.acknowledge();
 
@@ -176,7 +178,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
             byte b = (byte)input.read();
             assertEquals("position = "  + i, getSamplebyte(i), b);
          }
-         
+         input.close();
          testFile.delete();
          validateNoFilesOnLargeDir();
       }
@@ -239,6 +241,8 @@ public class LargeMessageCompressTest extends LargeMessageTest
          msg1.saveToOutputStream(output);
          
          msg1.acknowledge();
+         
+         output.close();
 
          session.commit();
 
@@ -253,6 +257,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
             byte b = (byte)input.read();
             assertEquals("position = "  + i, getSamplebyte(i), b);
          }
+         input.close();
          
          testFile.delete();
          validateNoFilesOnLargeDir();
@@ -358,6 +363,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
             byte b = (byte)input.read();
             assertEquals("position = "  + i, msgs[i], b);
          }
+         input.close();
          
          testFile.delete();
          validateNoFilesOnLargeDir();
