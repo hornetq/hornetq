@@ -426,6 +426,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
 
                currentPageId = 0;
+               if (currentPage != null)
+               {
+                  currentPage.close();
+               }
                currentPage = null;
 
                List<String> files = fileFactory.listFiles("page");
