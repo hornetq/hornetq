@@ -28,7 +28,6 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.management.MBeanServer;
 
 import junit.framework.Assert;
 
@@ -40,13 +39,11 @@ import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
@@ -54,21 +51,20 @@ import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.tests.integration.jms.server.management.JMSUtil;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A JMSFailoverTest
  *
  * A simple test to test failover when using the JMS API.
  * Most of the failover tests are done on the Core API.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 7 Nov 2008 11:13:39
  *
  *
@@ -256,15 +252,17 @@ public class JMSFailoverTest extends ServiceTestBase
 
    public void testManualFailover() throws Exception
    {
-      HornetQConnectionFactory jbcfLive = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                            new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      HornetQConnectionFactory jbcfLive =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       jbcfLive.setBlockOnNonDurableSend(true);
       jbcfLive.setBlockOnDurableSend(true);
 
-      HornetQConnectionFactory jbcfBackup = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
-                                                                                              new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                                         backupParams));
+      HornetQConnectionFactory jbcfBackup =
+               HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                 new TransportConfiguration(INVM_CONNECTOR_FACTORY,
+                                                                                            backupParams));
       jbcfBackup.setBlockOnNonDurableSend(true);
       jbcfBackup.setBlockOnDurableSend(true);
       jbcfBackup.setInitialConnectAttempts(-1);
@@ -348,13 +346,12 @@ public class JMSFailoverTest extends ServiceTestBase
    protected void startServers() throws Exception
    {
       NodeManager nodeManager = new InVMNodeManager();
-      backuptc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", backupParams);
-      livetc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+      backuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+      livetc = new TransportConfiguration(INVM_CONNECTOR_FACTORY);
 
-      liveAcceptortc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory");
+      liveAcceptortc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
 
-      backupAcceptortc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                    backupParams);
+      backupAcceptortc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams);
 
       backupConf = createBasicConfig(0);
 
@@ -378,8 +375,7 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.setSecurityEnabled(false);
       backupConf.setJournalType(getDefaultJournalType());
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      backupConf.getAcceptorConfigurations()
-                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
+      backupConf.getAcceptorConfigurations().add(new TransportConfiguration(INVM_ACCEPTOR_FACTORY, backupParams));
       backupConf.setBackup(true);
       backupConf.setSharedStore(true);
       backupConf.setBindingsDirectory(getBindingsDir());
@@ -389,7 +385,7 @@ public class JMSFailoverTest extends ServiceTestBase
       backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
       backupConf.setPersistenceEnabled(true);
       backupConf.setClustered(true);
-      backupService = new InVMNodeManagerServer(backupConf, nodeManager);
+      backupService = new ServiceTestBase.InVMNodeManagerServer(backupConf, nodeManager);
 
       backupJMSService = new JMSServerManagerImpl(backupService);
 
@@ -481,53 +477,4 @@ public class JMSFailoverTest extends ServiceTestBase
          this.e = e;
       }
    }
-
-   // Inner classes -------------------------------------------------
-   class InVMNodeManagerServer extends HornetQServerImpl
-   {
-      final NodeManager nodeManager;
-
-      public InVMNodeManagerServer(NodeManager nodeManager)
-      {
-         super();
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, NodeManager nodeManager)
-      {
-         super(configuration);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration, MBeanServer mbeanServer, NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
-      {
-         super(configuration, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      public InVMNodeManagerServer(Configuration configuration,
-                                   MBeanServer mbeanServer,
-                                   HornetQSecurityManager securityManager,
-                                   NodeManager nodeManager)
-      {
-         super(configuration, mbeanServer, securityManager);
-         this.nodeManager = nodeManager;
-      }
-
-      @Override
-      protected NodeManager createNodeManager(String directory)
-      {
-         return nodeManager;
-      }
-
-   }
-
 }

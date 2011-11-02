@@ -1057,36 +1057,6 @@ public class HornetQServerImpl implements HornetQServer
       return connectorsService;
    }
 
-   public synchronized boolean checkActivate() throws Exception
-   {
-      if (configuration.isBackup())
-      {
-         // Handle backup server activation
-
-         if (!configuration.isSharedStore())
-         {
-            if (replicationEndpoint == null)
-            {
-               HornetQServerImpl.log.warn("There is no replication endpoint, can't activate this backup server");
-
-               throw new HornetQException(HornetQException.INTERNAL_ERROR, "Can't activate the server");
-            }
-
-            replicationEndpoint.stop();
-         }
-
-         // Complete the startup procedure
-
-         HornetQServerImpl.log.info("Activating backup server");
-
-         configuration.setBackup(false);
-
-         initialisePart2();
-      }
-
-      return true;
-   }
-
    public void deployDivert(DivertConfiguration config) throws Exception
    {
       if (config.getName() == null)

@@ -759,7 +759,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   class InVMNodeManagerServer extends HornetQServerImpl
+   public final class InVMNodeManagerServer extends HornetQServerImpl
    {
       final NodeManager nodeManager;
 

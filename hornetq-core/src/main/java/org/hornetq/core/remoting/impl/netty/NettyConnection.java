@@ -270,7 +270,7 @@ public class NettyConnection implements Connection
       readyListeners.remove(listener);
    }
 
-   public void fireReady(final boolean ready)
+   void fireReady(final boolean ready)
    {
       for (ReadyListener listener: readyListeners)
       {

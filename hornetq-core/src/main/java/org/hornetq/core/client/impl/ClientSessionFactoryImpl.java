@@ -1056,11 +1056,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       if (pingerFuture != null)
       {
          pingRunnable.cancel();
-
          pingerFuture.cancel(false);
-
          pingRunnable = null;
-
          pingerFuture = null;
       }
    }
@@ -1520,7 +1517,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    {
       private final CoreRemotingConnection conn;
 
-      public CloseRunnable(CoreRemotingConnection conn)
+      private CloseRunnable(CoreRemotingConnection conn)
       {
          this.conn = conn;
       }

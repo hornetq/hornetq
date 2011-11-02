@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
@@ -21,8 +20,6 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
  * A NettyReplicatedFailoverTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class NettyReplicatedFailoverTest extends NettyFailoverTest
 {
@@ -46,17 +43,17 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
    {
       return new SameProcessHornetQServer(createServer(true, liveConfig));
    }
-   
+
    @Override
    protected TestableServer createBackupServer()
    {
       return new SameProcessHornetQServer(createServer(true, backupConfig));
    }
-   
+
    @Override
    protected void createConfigs() throws Exception
    {
-  createReplicatedConfigs();
+      createReplicatedConfigs();
    }
 
    // Private -------------------------------------------------------

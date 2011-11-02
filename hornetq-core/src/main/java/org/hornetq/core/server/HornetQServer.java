@@ -161,7 +161,7 @@ public interface HornetQServer extends HornetQComponent
    ScheduledExecutorService getScheduledPool();
 
    ExecutorService getThreadPool();
-   
+
    ExecutorFactory getExecutorFactory();
 
    void setGroupingHandler(GroupingHandler groupingHandler);
@@ -171,8 +171,6 @@ public interface HornetQServer extends HornetQComponent
    ReplicationEndpoint getReplicationEndpoint();
 
    ReplicationManager getReplicationManager();
-
-   boolean checkActivate() throws Exception;
 
    void deployDivert(DivertConfiguration config) throws Exception;
 
