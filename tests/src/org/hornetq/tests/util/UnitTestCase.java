@@ -111,7 +111,7 @@ public class UnitTestCase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + File.separator + "hornetq-unit-test";
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
@@ -1168,9 +1168,19 @@ public class UnitTestCase extends TestCase
 
          for (int j = 0; j < files.length; j++)
          {
-            if (!deleteDirectory(new File(directory, files[j])))
+            try
             {
-               return false;
+               
+               File fileTmp = new File(directory, files[j]);
+               if (!deleteDirectory(fileTmp))
+               {
+                  log.warn("Couldn't delete " + fileTmp);
+                  return false;
+               }
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
             }
          }
       }

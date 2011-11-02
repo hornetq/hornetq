@@ -307,6 +307,21 @@ public class PageImpl implements Page, Comparable<Page>
    {
       return otherPage.getPageId() - this.pageId;
    }
+   
+   public void finalize()
+   {
+      try
+      {
+         if (file != null && file.isOpen())
+         {
+            file.close();
+         }
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+      }
+   }
 
 
    /* (non-Javadoc)

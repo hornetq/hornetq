@@ -74,6 +74,22 @@ public class LargeMessageTest extends LargeMessageTestBase
       return false;
    }
    
+   /**
+    * 
+    */
+   public LargeMessageTest()
+   {
+      super();
+   }
+
+   /**
+    * @param test
+    */
+   public LargeMessageTest(String test)
+   {
+      super(test);
+   }
+
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
       for (int i = 0 ; i < 1; i++)
@@ -1712,6 +1728,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                  LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
+
 
    public void testPageOnLargeMessage() throws Exception
    {
