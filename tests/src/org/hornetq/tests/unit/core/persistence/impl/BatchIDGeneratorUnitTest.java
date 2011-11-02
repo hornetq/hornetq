@@ -127,6 +127,8 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       Assert.assertEquals("No Ids were generated, so the currentID was supposed to stay the same",
                           lastId,
                           batch.getCurrentID());
+      
+      journal.stop();
 
    }
 
