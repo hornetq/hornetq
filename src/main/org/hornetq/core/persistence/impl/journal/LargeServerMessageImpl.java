@@ -383,6 +383,10 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
             log.warn("Error on copying large message this for DLA or Expiry", e);
             return null;
          }
+         finally
+         {
+            releaseResources();
+         }
       }
    }
 
@@ -426,7 +430,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
             file = storageManager.createFileForLargeMessage(getMessageID(), durable);
 
-            file.open();
+            openFile();
             
             bodySize = file.size();
          }
@@ -436,6 +440,27 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          // TODO: There is an IO_ERROR on trunk now, this should be used here instead
          throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
       }
+   }
+   
+   protected void openFile() throws Exception
+   {
+	  if (file == null)
+	  {
+		  validateFile();
+	  }
+	  else
+      if (!file.isOpen())
+      {
+         file.open();
+      }
+   }
+   
+   protected void closeFile() throws Exception
+   {
+	  if (file != null && file.isOpen())
+	  {
+	     file.close();
+	  }
    }
 
    /* (non-Javadoc)
@@ -454,9 +479,9 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       file = storageManager.createFileForLargeMessage(message.getMessageID(), durable);
       try
       {
-         file.open();
+         openFile();
          bodySize = file.size();
-         file.close();
+         closeFile();
       }
       catch (Exception e)
       {
@@ -474,7 +499,11 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       {
          try
          {
-            cFile = file.copy();
+            if (cFile != null && cFile.isOpen())
+            {
+               cFile.close();
+            }
+            cFile = file.cloneFile();
             cFile.open();
          }
          catch (Exception e)

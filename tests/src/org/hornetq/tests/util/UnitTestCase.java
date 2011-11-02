@@ -1174,7 +1174,9 @@ public class UnitTestCase extends TestCase
                File fileTmp = new File(directory, files[j]);
                if (!deleteDirectory(fileTmp))
                {
+                  // This is because of Windows is dumb on releasing files
                   log.warn("Couldn't delete " + fileTmp);
+                  forceGC();
                   return false;
                }
             }

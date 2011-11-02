@@ -86,7 +86,7 @@ public class AIOSequentialFile extends AbstractSequentialFile implements IOExcep
       return pos;
    }
 
-   public SequentialFile copy()
+   public SequentialFile cloneFile()
    {
       return new AIOSequentialFile(factory,
                                    -1,

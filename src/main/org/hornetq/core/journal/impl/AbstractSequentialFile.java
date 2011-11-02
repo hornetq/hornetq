@@ -109,7 +109,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       log.debug("Copying "  + this + " as " + newFileName);
       newFileName.open();
-      this.open();
+      if (!isOpen())
+      {
+         this.open();
+      }
       
       
       ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);

@@ -212,7 +212,10 @@ public class PageImpl implements Page, Comparable<Page>
 
    public void open() throws Exception
    {
-      file.open();
+      if (!file.isOpen())
+      {
+         file.open();
+      }
       size.set((int)file.size());
       file.position(0);
    }

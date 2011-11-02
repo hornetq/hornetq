@@ -252,7 +252,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return "NIOSequentialFile " + getFile();
    }
 
-   public SequentialFile copy()
+   public SequentialFile cloneFile()
    {
       return new NIOSequentialFile(factory, getFile(), maxIO, writerExecutor);
    }

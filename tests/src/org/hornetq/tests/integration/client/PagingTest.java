@@ -121,6 +121,8 @@ public class PagingTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       locator.close();
+      
+      locator = null;
 
       super.tearDown();
    }
@@ -263,7 +265,7 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
-         
+
          waitForServer(server);
 
          queue = server.locateQueue(ADDRESS);
@@ -647,8 +649,7 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
-         
-         
+
          locator = createInVMNonHALocator();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
@@ -662,7 +663,7 @@ public class PagingTest extends ServiceTestBase
          session = sf.createSession(false, false, false);
 
          producer = session.createProducer(PagingTest.ADDRESS);
-         
+
          for (int i = 0; i < numberOfMessages; i++)
          {
             message = session.createMessage(true);
@@ -679,9 +680,9 @@ public class PagingTest extends ServiceTestBase
                session.commit();
             }
          }
-         
+
          session.commit();
-         
+
          server.stop();
 
          server = createServer(true,
@@ -696,7 +697,7 @@ public class PagingTest extends ServiceTestBase
 
          queue = server.locateQueue(ADDRESS);
 
-        // assertEquals(numberOfMessages, queue.getMessageCount());
+         // assertEquals(numberOfMessages, queue.getMessageCount());
 
          xids = new LinkedList<Xid>();
 
@@ -727,7 +728,6 @@ public class PagingTest extends ServiceTestBase
          sessionConsumer.commit();
 
          sessionConsumer.close();
-
 
       }
       finally
@@ -1041,50 +1041,56 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      ServerLocator locator = createInVMNonHALocator();
-
-      locator.setBlockOnNonDurableSend(true);
-      locator.setBlockOnDurableSend(true);
-      locator.setBlockOnAcknowledge(true);
-
-      ClientSessionFactory csf = locator.createSessionFactory();
-
-      ClientSession session = csf.createSession();
-
-      session.start();
-
-      for (int i = 1; i <= 2; i++)
+      try
       {
-         ClientConsumer cons = session.createConsumer("q" + i);
 
-         for (int j = 3; j < 6; j++)
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+
+         ClientSessionFactory csf = locator.createSessionFactory();
+
+         ClientSession session = csf.createSession();
+
+         session.start();
+
+         for (int i = 1; i <= 2; i++)
          {
-            ClientMessage msg = cons.receive(5000);
+            ClientConsumer cons = session.createConsumer("q" + i);
 
-            assertNotNull(msg);
+            for (int j = 3; j < 6; j++)
+            {
+               ClientMessage msg = cons.receive(5000);
 
-            assertEquals("str-" + j, msg.getStringProperty("id"));
+               assertNotNull(msg);
 
-            msg.acknowledge();
+               assertEquals("str-" + j, msg.getStringProperty("id"));
+
+               msg.acknowledge();
+            }
+
+            session.commit();
+            assertNull(cons.receive(500));
+
          }
 
-         session.commit();
-         assertNull(cons.receive(500));
+         session.close();
 
+         long timeout = System.currentTimeMillis() + 5000;
+
+         while (System.currentTimeMillis() < timeout && server.getPagingManager().getPageStore(ADDRESS).isPaging())
+         {
+            Thread.sleep(100);
+         }
+
+         locator.close();
       }
-
-      session.close();
-
-      long timeout = System.currentTimeMillis() + 5000;
-
-      while (System.currentTimeMillis() < timeout && server.getPagingManager().getPageStore(ADDRESS).isPaging())
+      finally
       {
-         Thread.sleep(100);
+         server.stop();
       }
-
-      locator.close();
-
-      server.stop();
    }
 
    public void testTwoQueuesOneNoRouting() throws Exception
@@ -1277,27 +1283,28 @@ public class PagingTest extends ServiceTestBase
       {
          bb.put(getSamplebyte(j));
       }
-      
+
       final AtomicBoolean running = new AtomicBoolean(true);
-      
+
       class TCount extends Thread
       {
          Queue queue;
-         
+
          TCount(Queue queue)
          {
             this.queue = queue;
          }
+
          public void run()
          {
             try
             {
                while (running.get())
                {
-                 // log.info("Message count = " + queue.getMessageCount() + " on queue " + queue.getName());
+                  // log.info("Message count = " + queue.getMessageCount() + " on queue " + queue.getName());
                   queue.getMessagesAdded();
                   queue.getMessageCount();
-                  //log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
+                  // log.info("Message added = " + queue.getMessagesAdded() + " on queue " + queue.getName());
                   Thread.sleep(10);
                }
             }
@@ -1307,10 +1314,9 @@ public class PagingTest extends ServiceTestBase
             }
          }
       };
-      
+
       TCount tcount1 = null;
       TCount tcount2 = null;
-      
 
       try
       {
@@ -1337,8 +1343,7 @@ public class PagingTest extends ServiceTestBase
 
                session.createQueue(PagingTest.ADDRESS.toString(), PagingTest.ADDRESS + "-2", null, true);
             }
-            
-            
+
             ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
             ClientMessage message = null;
@@ -1377,21 +1382,21 @@ public class PagingTest extends ServiceTestBase
                                PagingTest.PAGE_MAX,
                                new HashMap<String, AddressSettings>());
          server.start();
-         
+
          Queue queue1 = server.locateQueue(PagingTest.ADDRESS.concat("-1"));
-         
+
          Queue queue2 = server.locateQueue(PagingTest.ADDRESS.concat("-2"));
-         
+
          assertNotNull(queue1);
-         
+
          assertNotNull(queue2);
-         
+
          assertNotSame(queue1, queue2);
 
          tcount1 = new TCount(queue1);
-         
+
          tcount2 = new TCount(queue2);
-         
+
          tcount1.start();
          tcount2.start();
 
@@ -1500,19 +1505,19 @@ public class PagingTest extends ServiceTestBase
       finally
       {
          running.set(false);
-         
+
          if (tcount1 != null)
          {
             tcount1.interrupt();
             tcount1.join();
          }
-         
+
          if (tcount2 != null)
          {
             tcount2.interrupt();
             tcount2.join();
          }
-         
+
          try
          {
             server.stop();
@@ -2510,7 +2515,7 @@ public class PagingTest extends ServiceTestBase
 
          producerThread.start();
 
-         assertTrue(ready.await(10, TimeUnit.SECONDS));
+         assertTrue(ready.await(100, TimeUnit.SECONDS));
 
          ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS);
 
