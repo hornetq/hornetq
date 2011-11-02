@@ -52,7 +52,7 @@ import org.hornetq.spi.core.remoting.Connection;
  *
  * @author Tim Fox
  */
-public class CoreProtocolManager implements ProtocolManager
+class CoreProtocolManager implements ProtocolManager
 {
    private static final Logger log = Logger.getLogger(CoreProtocolManager.class);
 
@@ -62,7 +62,7 @@ public class CoreProtocolManager implements ProtocolManager
 
    private final List<Interceptor> interceptors;
 
-   public CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
+   CoreProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
 
