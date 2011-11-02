@@ -72,8 +72,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
-   private CoreRemotingConnection replicatingConnection;
-
    private final Channel replicatingChannel;
 
    private boolean started;
@@ -167,9 +165,8 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#appendCommitRecord(byte, long, boolean)
     */
-   public
-            void
-            appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp) throws Exception
+   public void appendCommitRecord(final byte journalID, final long txID, boolean sync, final boolean lineUp)
+      throws Exception
    {
       if (enabled)
       {
@@ -205,7 +202,8 @@ public class ReplicationManagerImpl implements ReplicationManager
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#appendPrepareRecord(byte, long, org.hornetq.core.journal.EncodingSupport, boolean)
     */
-   public void appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData) throws Exception
+   public void appendPrepareRecord(final byte journalID, final long txID, final EncodingSupport transactionData)
+      throws Exception
    {
       if (enabled)
       {
@@ -321,6 +319,8 @@ public class ReplicationManagerImpl implements ReplicationManager
          return;
       }
 
+      synchronized (replicationLock)
+      {
       enabled = false;
 
       // Complete any pending operations...
@@ -337,7 +337,7 @@ public class ReplicationManagerImpl implements ReplicationManager
             ReplicationManagerImpl.log.warn("Error completing callback on replication manager", e);
          }
       }
-
+      }
       if (replicatingChannel != null)
       {
          replicatingChannel.close();
