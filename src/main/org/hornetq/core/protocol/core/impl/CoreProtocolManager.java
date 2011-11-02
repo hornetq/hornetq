@@ -39,6 +39,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -208,8 +209,23 @@ public class CoreProtocolManager implements ProtocolManager
                {
                   log.trace("Server " + server + " receiving nodeUp from NodeID=" + msg.getNodeID() + ", pair=" + pair);
                }
-
-               acceptorUsed.getClusterConnection().nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+               
+               if (acceptorUsed != null)
+               {
+                  ClusterConnection clusterConn = acceptorUsed.getClusterConnection();
+                  if (clusterConn != null)
+                  {
+                     clusterConn.nodeAnnounced(msg.getCurrentEventID(), msg.getNodeID(), pair, msg.isBackup());
+                  }
+                  else
+                  {
+                     log.debug("Cluster connection is null on acceptor = " + acceptorUsed);
+                  }
+               }
+               else
+               {
+                  log.debug("there is no acceptor used configured at the CoreProtocolManager " + this);
+               }
             }
          }
       });
