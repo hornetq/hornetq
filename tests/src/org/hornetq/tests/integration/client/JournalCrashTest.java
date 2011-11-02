@@ -127,20 +127,15 @@ public class JournalCrashTest extends ServiceTestBase
    {
       try
       {
-         int start = 4;
-         int end = 8;
+         int start = Integer.parseInt(arg[1]);
 
-         if (arg.length > 0)
-         {
-            start = Integer.parseInt(arg[0]);
-         }
-
-         if (arg.length > 1)
-         {
-            end = Integer.parseInt(arg[1]);
-         }
+         int end = Integer.parseInt(arg[2]);
+         
+         long timeStart = Long.parseLong(arg[0]);
 
          JournalCrashTest restart = new JournalCrashTest();
+         
+         restart.setTimeStart(timeStart);
 
          restart.startServer();
 
@@ -196,10 +191,10 @@ public class JournalCrashTest extends ServiceTestBase
 
    public void testRestartJournal() throws Throwable
    {
-      runExternalProcess(0, JournalCrashTest.FIRST_RUN);
-      runExternalProcess(JournalCrashTest.FIRST_RUN, JournalCrashTest.SECOND_RUN);
-      runExternalProcess(JournalCrashTest.SECOND_RUN, JournalCrashTest.THIRD_RUN);
-      runExternalProcess(JournalCrashTest.THIRD_RUN, JournalCrashTest.FOURTH_RUN);
+      runExternalProcess(getTimeStart(), 0, JournalCrashTest.FIRST_RUN);
+      runExternalProcess(getTimeStart(), JournalCrashTest.FIRST_RUN, JournalCrashTest.SECOND_RUN);
+      runExternalProcess(getTimeStart(), JournalCrashTest.SECOND_RUN, JournalCrashTest.THIRD_RUN);
+      runExternalProcess(getTimeStart(), JournalCrashTest.THIRD_RUN, JournalCrashTest.FOURTH_RUN);
 
       printJournal();
 
@@ -241,7 +236,7 @@ public class JournalCrashTest extends ServiceTestBase
     * @throws Exception
     * @throws InterruptedException
     */
-   private void runExternalProcess(final int start, final int end) throws Exception, InterruptedException
+   private void runExternalProcess(final long timeStart, final int start, final int end) throws Exception, InterruptedException
    {
       System.err.println("running external process...");
       Process process = SpawnedVMSupport.spawnVM(this.getClass().getCanonicalName(),
@@ -249,6 +244,7 @@ public class JournalCrashTest extends ServiceTestBase
                                                  new String[] {},
                                                  true,
                                                  true,
+                                                 Long.toString(timeStart),
                                                  Integer.toString(start),
                                                  Integer.toString(end));
 

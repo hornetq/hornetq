@@ -113,7 +113,20 @@ public class UnitTestCase extends TestCase
 
    private final String baseDir = System.getProperty("java.io.tmpdir", "/tmp") + File.separator + "hornetq-unit-test";
 
-   private final String testDir = baseDir + File.separator + System.currentTimeMillis();
+   private long timeStart = System.currentTimeMillis();
+   
+   public long getTimeStart()
+   {
+      return timeStart;
+   }
+   
+   private String testDir = baseDir + File.separator + timeStart;
+   
+   public void setTimeStart(long time)
+   {
+      timeStart = time;
+      testDir = baseDir + File.separator + timeStart;
+   }
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
@@ -899,7 +912,7 @@ public class UnitTestCase extends TestCase
 
       OperationContextImpl.clearContext();
 
-      deleteDirectory(new File(baseDir));
+      clearData(getTestDir());
 
       InVMRegistry.instance.clear();
 
