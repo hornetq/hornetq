@@ -917,6 +917,8 @@ public class PagingOrderTest extends ServiceTestBase
       conn.close();
 
       server.stop();
+      
+      jmsServer.stop();
 
    }
 
@@ -996,6 +998,8 @@ public class PagingOrderTest extends ServiceTestBase
 
 
       server.stop();
+      
+      jmsServer.stop();
 
    }
 
