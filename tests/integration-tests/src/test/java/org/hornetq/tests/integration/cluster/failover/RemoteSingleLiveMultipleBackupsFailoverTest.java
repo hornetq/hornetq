@@ -24,7 +24,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.integration.cluster.util.RemoteProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.RemoteServerConfiguration;
@@ -137,13 +136,14 @@ public class RemoteSingleLiveMultipleBackupsFailoverTest extends SingleLiveMulti
 
    }
 
+   @Override
    protected boolean isNetty()
    {
       return true;
    }
 
    @Override
-   protected void createLiveConfig(int liveNode, int... otherLiveNodes)
+   protected void createLiveConfig(int liveNode)
    {
       servers.put(liveNode, new RemoteProcessHornetQServer(SharedLiveServerConfiguration.class.getName()));
    }
