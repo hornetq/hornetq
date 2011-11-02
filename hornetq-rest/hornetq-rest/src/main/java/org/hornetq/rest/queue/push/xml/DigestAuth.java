@@ -9,4 +9,5 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "digest")
 public class DigestAuth extends BasicAuth
 {
+   private static final long serialVersionUID = 1857805131477468686L;
 }

@@ -1,12 +1,12 @@
 package org.hornetq.rest.topic;
 
-import org.hornetq.rest.queue.push.xml.PushRegistration;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hornetq.rest.queue.push.xml.PushRegistration;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"topic"})
 public class PushTopicRegistration extends PushRegistration
 {
+   private static final long serialVersionUID = -2526239344680405891L;
    private String topic;
 
    @XmlElement

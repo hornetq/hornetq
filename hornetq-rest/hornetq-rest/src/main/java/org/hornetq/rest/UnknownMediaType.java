@@ -6,6 +6,8 @@ package org.hornetq.rest;
  */
 public class UnknownMediaType extends RuntimeException
 {
+   private static final long serialVersionUID = -1445038845165315001L;
+
    public UnknownMediaType(String s)
    {
       super(s);

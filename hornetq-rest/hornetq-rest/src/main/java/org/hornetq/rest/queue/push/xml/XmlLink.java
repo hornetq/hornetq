@@ -1,10 +1,11 @@
 package org.hornetq.rest.queue.push.xml;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.Serializable;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -14,6 +15,7 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.PROPERTY)
 public class XmlLink implements Serializable
 {
+   private static final long serialVersionUID = -6517264072911034419L;
    protected String method;
    protected String className;
    protected String rel;

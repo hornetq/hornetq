@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"username", "password"})
 public class BasicAuth extends AuthenticationType
 {
+   private static final long serialVersionUID = 2052716241089832934L;
    private String username;
    private String password;
 
