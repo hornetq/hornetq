@@ -177,8 +177,8 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
                
                if (validateFrame(frame))
                {
-                 frameQueue.offer(frame);
-                 receiveList.clear();
+                  frameQueue.offer(frame);
+                  receiveList.clear();
                }
                else
                {
@@ -188,13 +188,25 @@ public abstract class AbstractStompClientConnection implements StompClientConnec
          }
          else
          {
-            receiveList.add(b);
+            if (b == 10 && receiveList.size() == 0)
+            {
+               //may be a ping
+               incrementServerPing();
+            }
+            else
+            {
+               receiveList.add(b);
+            }
          }
       }
       //clear readbuffer
       readBuffer.rewind();
    }
    
+   protected void incrementServerPing()
+   {
+   }
+
    private boolean validateFrame(ClientStompFrame f) throws UnsupportedEncodingException
    {
       String h = f.getHeader("content-length");

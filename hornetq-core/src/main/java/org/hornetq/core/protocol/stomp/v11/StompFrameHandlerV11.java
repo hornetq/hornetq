@@ -126,6 +126,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       {
          response = new HornetQStompException("Encoding error.", e).getFrame();
       }
+
       return response;
    }
 
@@ -193,7 +194,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
    @Override
    public StompFrame onSend(StompFrame frame)
-   {
+   {      
       StompFrame response = null;
       try
       {
@@ -492,7 +493,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    public StompFrame createPingFrame() throws UnsupportedEncodingException
    {
       StompFrame frame = new StompFrame(Stomp.Commands.STOMP);
-      frame.setBody("\n");
+      frame.setPing(true);
       return frame;
    }
    
@@ -658,31 +659,37 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       buffer.readBytes(decoder.workingBuffer, decoder.data, readable);
 
       decoder.data += readable;
-
+      
       if (decoder.command == null)
       {
-         if (decoder.data < 4)
+         int offset = 0;
+         
+         //check for ping
+         while (decoder.workingBuffer[offset] == StompDecoder.NEW_LINE)
          {
-            // Need at least four bytes to identify the command
-            // - up to 3 bytes for the command name + potentially another byte for a leading \n
-
-            return null;
-         }
-
-         int offset;
-
-         if (decoder.workingBuffer[0] == StompDecoder.NEW_LINE)
-         {
+            if (heartBeater != null)
+            {
+               //client ping
+               heartBeater.pingAccepted();
+            }
             // Yuck, some badly behaved STOMP clients add a \n *after* the terminating NUL char at the end of the
             // STOMP
             // frame this can manifest as an extra \n at the beginning when the next STOMP frame is read - we need to
             // deal
             // with this
-            offset = 1;
+            offset++;
+            if (offset >= decoder.data)
+            {
+               decoder.data = 0;
+               return null;
+            }
          }
-         else
+            
+         if (decoder.data < 4)
          {
-            offset = 0;
+            // Need at least four bytes to identify the command
+            // - up to 3 bytes for the command name + potentially another byte for a leading \n
+            return null;
          }
 
          byte b = decoder.workingBuffer[offset];
@@ -1025,7 +1032,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
 
       // Now the body
-
+      
       byte[] content = null;
 
       if (decoder.contentLength != -1)

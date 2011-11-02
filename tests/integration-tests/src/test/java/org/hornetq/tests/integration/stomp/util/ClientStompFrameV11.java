@@ -21,6 +21,7 @@ package org.hornetq.tests.integration.stomp.util;
 public class ClientStompFrameV11 extends AbstractClientStompFrame
 {
    boolean forceOneway = false;
+   boolean isPing = false;
    
    public ClientStompFrameV11(String command)
    {
@@ -42,5 +43,15 @@ public class ClientStompFrameV11 extends AbstractClientStompFrame
          return true;
       }
       return false;
+   }
+
+   public void setPing(boolean b)
+   {
+      isPing = b;
+   }
+   
+   public boolean isPing()
+   {
+      return isPing;
    }
 }

@@ -25,5 +25,11 @@ public class ClientStompFrameV10 extends AbstractClientStompFrame
    {
       super(command);
    }
+
+   @Override
+   public boolean isPing()
+   {
+      return false;
+   }
    
 }

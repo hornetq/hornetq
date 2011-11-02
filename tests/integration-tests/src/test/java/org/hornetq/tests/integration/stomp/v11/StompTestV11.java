@@ -55,6 +55,7 @@ public class StompTestV11 extends StompTestBase2
    
    protected void tearDown() throws Exception
    {
+      System.out.println("Connection 11 : " + connV11.isConnected());
       if (connV11.isConnected())
       {
          connV11.disconnect();
@@ -238,6 +239,7 @@ public class StompTestV11 extends StompTestBase2
       //unsub
       ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
       unsubFrame.addHeader("id", "a-sub");
+      newConn.sendFrame(unsubFrame);
       
       newConn.disconnect();
    }
@@ -491,9 +493,8 @@ public class StompTestV11 extends StompTestBase2
       ClientStompFrame reply = connV11.sendFrame(frame);
       
       assertEquals("CONNECTED", reply.getCommand());
-      
       assertEquals("500,500", reply.getHeader("heart-beat"));
-      
+
       connV11.disconnect();
       
       //heart-beat (500,1000)
@@ -518,7 +519,7 @@ public class StompTestV11 extends StompTestBase2
       Thread.sleep(10000);
       
       //now check the frame size
-      int size = connV11.getFrameQueueSize();
+      int size = connV11.getServerPingNumber();
       
       System.out.println("ping received: " + size);
       
@@ -533,12 +534,211 @@ public class StompTestV11 extends StompTestBase2
       //send will be ok
       connV11.sendFrame(frame);
       
-      connV11.stopPinger();
-      
       connV11.disconnect();
-
    }
    
+   public void testSendWithHeartBeatsAndReceive() throws Exception
+   {
+      StompClientConnection newConn = null;
+      try
+      {
+         ClientStompFrame frame = connV11.createFrame("CONNECT");
+         frame.addHeader("host", "127.0.0.1");
+         frame.addHeader("login", this.defUser);
+         frame.addHeader("passcode", this.defPass);
+         frame.addHeader("heart-beat", "500,1000");
+         frame.addHeader("accept-version", "1.0,1.1");
+
+         connV11.sendFrame(frame);
+
+         connV11.startPinger(500);
+
+         frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-type", "text/plain");
+
+         for (int i = 0; i < 10; i++)
+         {
+            frame.setBody("Hello World " + i + "!");
+            connV11.sendFrame(frame);
+            Thread.sleep(500);
+         }
+
+         // subscribe
+         newConn = StompClientConnectionFactory.createClientConnection("1.1",
+               hostname, port);
+         newConn.connect(defUser, defPass);
+
+         ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "auto");
+
+         newConn.sendFrame(subFrame);
+
+         int cnt = 0;
+
+         frame = newConn.receiveFrame();
+
+         while (frame != null)
+         {
+            cnt++;
+            Thread.sleep(500);
+            frame = newConn.receiveFrame(5000);
+         }
+
+         assertEquals(10, cnt);
+
+         // unsub
+         ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         newConn.sendFrame(unsubFrame);
+      }
+      finally
+      {
+         if (newConn != null)
+            newConn.disconnect();
+         connV11.disconnect();
+      }
+   }
+   
+   public void testSendAndReceiveWithHeartBeats() throws Exception
+   {
+      connV11.connect(defUser, defPass);
+      ClientStompFrame frame = connV11.createFrame("SEND");
+      frame.addHeader("destination", getQueuePrefix() + getQueueName());
+      frame.addHeader("content-type", "text/plain");
+      
+      for (int i = 0; i < 10; i++)
+      {
+         frame.setBody("Hello World " + i + "!");
+         connV11.sendFrame(frame);
+         Thread.sleep(500);
+      }
+      
+      //subscribe
+      StompClientConnection newConn = StompClientConnectionFactory.createClientConnection("1.1", hostname, port);
+      try
+      {
+         frame = newConn.createFrame("CONNECT");
+         frame.addHeader("host", "127.0.0.1");
+         frame.addHeader("login", this.defUser);
+         frame.addHeader("passcode", this.defPass);
+         frame.addHeader("heart-beat", "500,1000");
+         frame.addHeader("accept-version", "1.0,1.1");
+
+         newConn.sendFrame(frame);
+
+         newConn.startPinger(500);
+
+         Thread.sleep(500);
+
+         ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "auto");
+
+         newConn.sendFrame(subFrame);
+
+         int cnt = 0;
+
+         frame = newConn.receiveFrame();
+
+         while (frame != null)
+         {
+            cnt++;
+            Thread.sleep(500);
+            frame = newConn.receiveFrame(5000);
+         }
+
+         assertEquals(10, cnt);
+
+         // unsub
+         ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         newConn.sendFrame(unsubFrame);
+      }
+      finally
+      {
+         newConn.disconnect();
+      }
+   }
+
+   public void testSendWithHeartBeatsAndReceiveWithHeartBeats() throws Exception
+   {
+      StompClientConnection newConn = null;
+      try
+      {
+         ClientStompFrame frame = connV11.createFrame("CONNECT");
+         frame.addHeader("host", "127.0.0.1");
+         frame.addHeader("login", this.defUser);
+         frame.addHeader("passcode", this.defPass);
+         frame.addHeader("heart-beat", "500,1000");
+         frame.addHeader("accept-version", "1.0,1.1");
+
+         connV11.sendFrame(frame);
+
+         connV11.startPinger(500);
+
+         frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-type", "text/plain");
+
+         for (int i = 0; i < 10; i++)
+         {
+            frame.setBody("Hello World " + i + "!");
+            connV11.sendFrame(frame);
+            Thread.sleep(500);
+         }
+
+         // subscribe
+         newConn = StompClientConnectionFactory.createClientConnection("1.1",
+               hostname, port);
+         frame = newConn.createFrame("CONNECT");
+         frame.addHeader("host", "127.0.0.1");
+         frame.addHeader("login", this.defUser);
+         frame.addHeader("passcode", this.defPass);
+         frame.addHeader("heart-beat", "500,1000");
+         frame.addHeader("accept-version", "1.0,1.1");
+
+         newConn.sendFrame(frame);
+
+         newConn.startPinger(500);
+
+         Thread.sleep(500);
+
+         ClientStompFrame subFrame = newConn.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "auto");
+
+         newConn.sendFrame(subFrame);
+
+         int cnt = 0;
+
+         frame = newConn.receiveFrame();
+
+         while (frame != null)
+         {
+            cnt++;
+            Thread.sleep(500);
+            frame = newConn.receiveFrame(5000);
+         }
+         assertEquals(10, cnt);
+
+         // unsub
+         ClientStompFrame unsubFrame = newConn.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         newConn.sendFrame(unsubFrame);
+      }
+      finally
+      {
+         if (newConn != null)
+            newConn.disconnect();
+         connV11.disconnect();
+      }
+   }
+
    public void testNack() throws Exception
    {
       connV11.connect(defUser, defPass);

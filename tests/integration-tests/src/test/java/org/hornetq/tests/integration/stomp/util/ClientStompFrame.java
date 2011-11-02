@@ -42,4 +42,6 @@ public interface ClientStompFrame
 
    public ByteBuffer toByteBufferWithExtra(String str)  throws UnsupportedEncodingException;
    
+   public boolean isPing();
+   
 }

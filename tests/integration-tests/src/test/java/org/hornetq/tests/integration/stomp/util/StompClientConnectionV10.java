@@ -88,14 +88,16 @@ public class StompClientConnectionV10 extends AbstractStompClientConnection
    @Override
    public void startPinger(long interval)
    {
-      // TODO Auto-generated method stub
-      
    }
 
    @Override
    public void stopPinger()
    {
-      // TODO Auto-generated method stub
-      
+   }
+
+   @Override
+   public int getServerPingNumber()
+   {
+      return 0;
    }
 }

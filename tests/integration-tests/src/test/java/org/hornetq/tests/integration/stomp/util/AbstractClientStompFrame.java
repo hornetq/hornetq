@@ -25,7 +25,7 @@ import java.util.Set;
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  *
  */
-public class AbstractClientStompFrame implements ClientStompFrame
+public abstract class AbstractClientStompFrame implements ClientStompFrame
 {
    protected static final String HEADER_RECEIPT = "receipt";
    
@@ -56,6 +56,13 @@ public class AbstractClientStompFrame implements ClientStompFrame
    @Override
    public ByteBuffer toByteBuffer() throws UnsupportedEncodingException
    {
+      if (isPing())
+      {
+         ByteBuffer buffer = ByteBuffer.allocateDirect(1);
+         buffer.put((byte)0x0A);
+         buffer.rewind();
+         return buffer;
+      }
       StringBuffer sb = new StringBuffer();
       sb.append(command + "\n");
       int n = headers.size();

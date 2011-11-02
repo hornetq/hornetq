@@ -52,6 +52,8 @@ public interface StompClientConnection
    void destroy();
 
    ClientStompFrame sendWickedFrame(ClientStompFrame frame) throws IOException, InterruptedException;
+
+   int getServerPingNumber();
    
 }
 

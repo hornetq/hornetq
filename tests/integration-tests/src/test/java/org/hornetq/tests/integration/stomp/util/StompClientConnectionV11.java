@@ -29,6 +29,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public static final String RECEIPT_HEADER = "receipt";
    
    private Pinger pinger;
+   private volatile int serverPingCounter;
 
    public StompClientConnectionV11(String host, int port) throws IOException
    {
@@ -126,6 +127,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
    public void disconnect() throws IOException, InterruptedException
    {
       stopPinger();
+      
       ClientStompFrame frame = factory.newFrame(DISCONNECT_COMMAND);
       frame.addHeader("receipt", "1");
       
@@ -184,6 +186,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
          pingFrame = (ClientStompFrameV11) createFrame("STOMP");
          pingFrame.setBody("\n");
          pingFrame.setForceOneway();
+         pingFrame.setPing(true);
       }
       
       public void startPing()
@@ -205,11 +208,7 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
             {
                try
                {
-                  System.out.println("============sending ping");
-                  
                   sendFrame(pingFrame);
-                  
-                  System.out.println("Pinged " + pingFrame);
                   
                   this.wait(pingInterval);
                }
@@ -219,9 +218,20 @@ public class StompClientConnectionV11 extends AbstractStompClientConnection
                   e.printStackTrace();
                }
             }
-            System.out.println("Pinger stopped");
          }
       }
    }
+
+   @Override
+   public int getServerPingNumber()
+   {
+      return serverPingCounter;
+   }
+   
+   protected void incrementServerPing()
+   {
+      serverPingCounter++;
+   }
+
 
 }

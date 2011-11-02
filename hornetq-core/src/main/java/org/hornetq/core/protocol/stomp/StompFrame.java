@@ -58,6 +58,8 @@ public class StompFrame
    
    protected boolean disconnect;
    
+   protected boolean isPing;
+   
    public StompFrame(String command)
    {
       this(command, false);
@@ -109,6 +111,16 @@ public class StompFrame
       out += body;
       return out;
    }
+   
+   public boolean isPing()
+   {
+      return isPing;
+   }
+   
+   public void setPing(boolean ping)
+   {
+      isPing = ping;
+   }
  
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
@@ -121,6 +133,12 @@ public class StompFrame
          else
          {
             buffer = HornetQBuffers.dynamicBuffer(512);
+         }
+
+         if (isPing())
+         {
+            buffer.writeByte((byte)10);
+            return buffer;
          }
 
          StringBuffer head = new StringBuffer();
