@@ -48,7 +48,7 @@ public class NettyConnectionTest extends UnitTestCase
    public void testGetID() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());
-      NettyConnection conn = new NettyConnection(channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
 
       Assert.assertEquals(channel.getId().intValue(), conn.getID());
    }
@@ -60,7 +60,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       Assert.assertEquals(0, channel.getWritten().size());
 
-      NettyConnection conn = new NettyConnection(channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
       conn.write(buff);
 
       Assert.assertEquals(1, channel.getWritten().size());
@@ -69,7 +69,7 @@ public class NettyConnectionTest extends UnitTestCase
    public void testCreateBuffer() throws Exception
    {
       Channel channel = new SimpleChannel(RandomUtil.randomInt());
-      NettyConnection conn = new NettyConnection(channel, new MyListener(), false, false);
+      NettyConnection conn = new NettyConnection(null, channel, new MyListener(), false, false);
 
       final int size = 1234;
 
@@ -235,7 +235,7 @@ public class NettyConnectionTest extends UnitTestCase
       {
 
       }
-      
+
       public void connectionReadyForWrites(Object connectionID, boolean ready)
       {
       }

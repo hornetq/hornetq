@@ -68,14 +68,6 @@ public class NettyConnection implements Connection
 
    // Constructors --------------------------------------------------
 
-   public NettyConnection(final Channel channel,
-                          final ConnectionLifeCycleListener listener,
-                          boolean batchingEnabled,
-                          boolean directDeliver)
-   {
-      this(null, channel, listener, batchingEnabled, directDeliver);
-   }
-
    public NettyConnection(final Acceptor acceptor,
                           final Channel channel,
                           final ConnectionLifeCycleListener listener,
