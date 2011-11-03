@@ -25,14 +25,14 @@ import org.hornetq.core.client.impl.ServerLocatorImpl;
  * quorum will help a remote backup in deciding whether to replace its 'live' server or to wait for
  * it.
  */
-final class QuorumManager implements ClusterTopologyListener
+public final class QuorumManager implements ClusterTopologyListener
 {
 
    // private static final Logger LOG = Logger.getLogger(QuorumManager.class);
 
    // volatile boolean started;
    private final ServerLocator locator;
-   private final String targetServerName = "";
+   private String targetServerID = "";
    private final Map<String, Pair<TransportConfiguration, TransportConfiguration>> nodes =
             new ConcurrentHashMap<String, Pair<TransportConfiguration, TransportConfiguration>>();
    private static final long DISCOVERY_TIMEOUT = 3;
@@ -47,7 +47,7 @@ final class QuorumManager implements ClusterTopologyListener
    public void nodeUP(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair,
             boolean last)
    {
-      if (targetServerName.equals(nodeID))
+      if (targetServerID.equals(nodeID))
       {
          return;
       }
@@ -57,20 +57,25 @@ final class QuorumManager implements ClusterTopologyListener
    @Override
    public void nodeDown(long eventUID, String nodeID)
    {
-      if (targetServerName.equals(nodeID))
+      if (targetServerID.equals(nodeID))
       {
-         // targetReturned = false;
-         // trigger action
-
-         // decide to wake backup
-         locator.removeClusterTopologyListener(this);
+         if (!targetServerID.isEmpty())
+            synchronized (this)
+            {
+               notify();
+            }
       }
       nodes.remove(nodeID);
    }
 
+   public void setLiveID(String liveID)
+   {
+      targetServerID = liveID;
+   }
+
    public boolean isNodeDown()
    {
-      boolean liveShutdownCleanly = !nodes.containsKey(targetServerName);
+      boolean liveShutdownCleanly = !nodes.containsKey(targetServerID);
       boolean noOtherServersAround = nodes.size() == 0;
       if (liveShutdownCleanly || noOtherServersAround)
          return true;
@@ -85,7 +90,7 @@ final class QuorumManager implements ClusterTopologyListener
       {
          for (Entry<String, Pair<TransportConfiguration, TransportConfiguration>> pair : nodes.entrySet())
          {
-            if (targetServerName.equals(pair.getKey()))
+            if (targetServerID.equals(pair.getKey()))
                continue;
             TransportConfiguration serverTC = pair.getValue().getA();
             ServerLocatorImpl locator = (ServerLocatorImpl)HornetQClient.createServerLocatorWithoutHA(serverTC);

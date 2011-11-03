@@ -19,6 +19,7 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.impl.QuorumManager;
 
 /**
  * A ReplicationEndpoint
@@ -37,5 +38,12 @@ public interface ReplicationEndpoint extends ChannelHandler, HornetQComponent
    void compareJournalInformation(JournalLoadInformation[] journalInformation) throws HornetQException;
 
    void registerJournal(final byte id, final Journal journal);
+
+   /**
+    * Sets the quorumManager used by the server in the replicationEndpoint. It is used to inform the
+    * backup server of the live's nodeID.
+    * @param quorumManager
+    */
+   void setQuorumManager(QuorumManager quorumManager);
 
 }

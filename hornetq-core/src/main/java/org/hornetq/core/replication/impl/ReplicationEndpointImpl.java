@@ -68,6 +68,7 @@ import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.hornetq.core.server.impl.QuorumManager;
 
 /**
  *
@@ -118,6 +119,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
    private boolean started;
+
+   private QuorumManager quorumManager;
 
    // Constructors --------------------------------------------------
    public ReplicationEndpointImpl(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
@@ -416,7 +419,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Private -------------------------------------------------------
 
-   private void finishSynchronization(String nodeID) throws Exception
+   private void finishSynchronization(String liveID) throws Exception
    {
       for (JournalContent jc : EnumSet.allOf(JournalContent.class))
       {
@@ -477,7 +480,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          }
       }
       journalsHolder = null;
-      server.setRemoteBackupUpToDate(nodeID);
+      quorumManager.setLiveID(liveID);
+      server.setRemoteBackupUpToDate(liveID);
       log.info("Backup server " + server + " is synchronized with live-server.");
       return;
    }
@@ -902,5 +906,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          return "JournalSyncFile(file=" + file.getAbsolutePath() + ")";
       }
+   }
+
+   @Override
+   public void setQuorumManager(QuorumManager quorumManager)
+   {
+      this.quorumManager = quorumManager;
    }
 }

@@ -1959,11 +1959,8 @@ public class HornetQServerImpl implements HornetQServer
             while (backupActivationThread.isAlive() && System.currentTimeMillis() - start < timeout)
             {
                nodeManager.interrupt();
-
                backupActivationThread.interrupt();
-
                backupActivationThread.join(1000);
-
             }
 
             if (System.currentTimeMillis() - start >= timeout)
@@ -2049,6 +2046,7 @@ public class HornetQServerImpl implements HornetQServer
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
             serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
             final QuorumManager quorumManager = new QuorumManager(serverLocator);
+            replicationEndpoint.setQuorumManager(quorumManager);
 
             serverLocator.setReconnectAttempts(-1);
 
@@ -2086,14 +2084,18 @@ public class HornetQServerImpl implements HornetQServer
 
             // Server node (i.e. Life node) is not running, now the backup takes over.
             // we must remember to close stuff we don't need any more
+            synchronized (quorumManager)
+            {
             while (true)
             {
-               nodeManager.awaitLiveNode();
+                  quorumManager.wait();
+                  // nodeManager.awaitLiveNode();
                break;
 //               if (!started || quorumManager.isNodeDown())
 //               {
 //                  break;
 //               }
+               }
             }
 
             serverLocator.close();
