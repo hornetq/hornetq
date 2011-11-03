@@ -15,7 +15,6 @@ package org.hornetq.core.server;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -159,8 +158,6 @@ public interface HornetQServer extends HornetQComponent
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    ScheduledExecutorService getScheduledPool();
-
-   ExecutorService getThreadPool();
 
    ExecutorFactory getExecutorFactory();
 

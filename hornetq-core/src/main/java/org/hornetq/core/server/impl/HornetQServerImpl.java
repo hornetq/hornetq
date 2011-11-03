@@ -378,12 +378,8 @@ public class HornetQServerImpl implements HornetQServer
 
             started = true;
 
-            HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() +
-                                       " [" +
-                                       nodeManager.getNodeId() +
-                                       "]" +
-                                       (this.identity != null ? " (" + identity : ")") +
-                                       " started");
+            HornetQServerImpl.log.info("HornetQ Server version " + getVersion().getFullVersion() + " [" +
+                     nodeManager.getNodeId() + "]" + (this.identity != null ? " (" + identity + ")" : "") + " started");
          }
 
          // The activation on fail-back may change the value of isBackup, for that reason we are not using else here
@@ -702,11 +698,6 @@ public class HornetQServerImpl implements HornetQServer
    public ScheduledExecutorService getScheduledPool()
    {
       return scheduledPool;
-   }
-
-   public ExecutorService getThreadPool()
-   {
-      return threadPool;
    }
 
    public Configuration getConfiguration()

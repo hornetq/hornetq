@@ -766,7 +766,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
                catch (InterruptedException ignore)
                {
                }
-
             }
 
             if (System.currentTimeMillis() > timeout && !receivedTopology && isInitialized())
