@@ -13,7 +13,6 @@
 
 package org.hornetq.jms.client;
 
-import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
 
 

@@ -40,8 +40,6 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
@@ -338,7 +336,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName());
+         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
       }
       else
       {
@@ -347,8 +345,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName(),
-               server1Params);
+         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
       }
    }
 
@@ -356,7 +353,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    {
       if (live)
       {
-         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName());
+         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       }
       else
       {
@@ -365,7 +362,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
                org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
 
-         return new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(), server1Params);
+         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
       }
    }
 

@@ -18,7 +18,6 @@ import java.util.Set;
 
 import javax.naming.Context;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQComponent;

@@ -27,7 +27,6 @@ public final class ReplicatedBackupUtils
     */
    public static void createClusterConnectionConf(Configuration configuration, String name, String... connectors)
    {
-
       List<String> conn = new ArrayList<String>(connectors.length);
       for (String iConn : connectors)
       {

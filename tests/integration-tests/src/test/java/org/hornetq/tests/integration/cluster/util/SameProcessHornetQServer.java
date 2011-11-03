@@ -13,18 +13,16 @@
 
 package org.hornetq.tests.integration.cluster.util;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
+import org.hornetq.tests.util.CountDownSessionFailureListener;
 
 /**
  * A SameProcessHornetQServer
@@ -49,7 +47,7 @@ public class SameProcessHornetQServer implements TestableServer
 
    public void destroy()
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+      // To change body of implemented methods use File | Settings | File Templates.
    }
 
    public void setIdentity(String identity)
@@ -89,24 +87,10 @@ public class SameProcessHornetQServer implements TestableServer
 
    public void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
-      final CountDownLatch latch = new CountDownLatch(sessions.length);
-
-      class MyListener implements SessionFailureListener
-      {
-         public void connectionFailed(final HornetQException me, boolean failedOver)
-         {
-            log.debug("MyListener.connectionFailed failedOver=" + failedOver, me);
-            latch.countDown();
-         }
-
-         public void beforeReconnect(HornetQException exception)
-         {
-            log.debug("MyListener.beforeReconnect", exception);
-         }
-      }
+      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(sessions.length);
       for (ClientSession session : sessions)
       {
-         session.addFailureListener(new MyListener());
+         session.addFailureListener(listener);
       }
 
       ClusterManagerImpl clusterManager = (ClusterManagerImpl) server.getClusterManager();
@@ -118,14 +102,11 @@ public class SameProcessHornetQServer implements TestableServer
       if (waitFailure)
       {
          // Wait to be informed of failure
-         boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
-      Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount(), ok);
+         boolean ok = listener.getLatch().await(10000, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("Failed to stop the server! Latch count is " + listener.getLatch().getCount(), ok);
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.util.TestableServer#getServer()
-    */
    public HornetQServer getServer()
    {
       return server;

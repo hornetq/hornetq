@@ -11,7 +11,12 @@ public final class CountDownSessionFailureListener implements SessionFailureList
 
    public CountDownSessionFailureListener()
    {
-      latch = new CountDownLatch(1);
+      this(1);
+   }
+
+   public CountDownSessionFailureListener(int n)
+   {
+      latch = new CountDownLatch(n);
    }
 
    public CountDownSessionFailureListener(CountDownLatch latch)

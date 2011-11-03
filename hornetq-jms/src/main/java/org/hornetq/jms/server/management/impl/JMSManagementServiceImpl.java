@@ -15,7 +15,6 @@ package org.hornetq.jms.server.management.impl;
 
 import javax.management.ObjectName;
 
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -29,7 +28,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.management.ManagementService;
 import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.management.impl.JMSConnectionFactoryControlImpl;

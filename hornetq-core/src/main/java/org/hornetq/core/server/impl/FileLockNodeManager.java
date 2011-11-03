@@ -35,7 +35,7 @@ public class FileLockNodeManager extends NodeManager
 {
    private final Logger log = Logger.getLogger(this.getClass());
 
-   protected static final String SERVER_LOCK_NAME = "server.lock";
+   private static final String SERVER_LOCK_NAME = "server.lock";
 
    private static final String ACCESS_MODE = "rw";
 
@@ -149,13 +149,13 @@ public class FileLockNodeManager extends NodeManager
          return false;
       }
    }
-   
+
    public boolean isLiveLocked()
    {
       return liveLock != null;
    }
 
-   
+
    @Override
    public void interrupt()
    {
@@ -258,7 +258,7 @@ public class FileLockNodeManager extends NodeManager
          backupLock.release();
          backupLock = null;
       }
-      
+
    }
 
    public String getDirectory()
@@ -386,7 +386,7 @@ public class FileLockNodeManager extends NodeManager
          {
             // This just means that another object on the same JVM is holding the lock
          }
-         
+
          if (lock == null)
          {
             try
@@ -403,7 +403,7 @@ public class FileLockNodeManager extends NodeManager
             return lock;
          }
       }
-         
+
       // todo this is here because sometimes channel.lock throws a resource deadlock exception but trylock works,
       // need to investigate further and review
       FileLock lock;
