@@ -769,7 +769,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
             }
 
-            if (System.currentTimeMillis() > timeout && !receivedTopology)
+            if (System.currentTimeMillis() > timeout && !receivedTopology && isInitialized())
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                           "Timed out waiting to receive cluster topology. Group:" + discoveryGroup);
@@ -1209,7 +1209,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       doClose(true);
    }
 
-   protected void doClose(final boolean sendClose)
+   private void doClose(final boolean sendClose)
    {
       if (state == STATE.CLOSED)
       {
@@ -1417,7 +1417,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private synchronized void updateArraysAndPairs()
    {
-      assertOpen();
       Collection<TopologyMember> membersCopy = topology.getMembers();
 
       topologyArray =
@@ -1521,7 +1520,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   final class StaticConnector implements Serializable
+   private final class StaticConnector implements Serializable
    {
       private static final long serialVersionUID = 6772279632415242634l;
 
