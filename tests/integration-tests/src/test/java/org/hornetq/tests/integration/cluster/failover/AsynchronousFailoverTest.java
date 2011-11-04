@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.cluster.failover;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
 
@@ -28,7 +27,6 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
@@ -55,20 +53,6 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    private volatile ClientSessionFactoryInternal sf;
 
    private final Object lockFail = new Object();
-
-   class MyListener implements SessionFailureListener
-   {
-      CountDownLatch latch = new CountDownLatch(1);
-
-      public void connectionFailed(final HornetQException me, boolean failedOver)
-      {
-         latch.countDown();
-      }
-
-      public void beforeReconnect(final HornetQException me)
-      {
-      }
-   }
 
    public void testNonTransactional() throws Throwable
    {
