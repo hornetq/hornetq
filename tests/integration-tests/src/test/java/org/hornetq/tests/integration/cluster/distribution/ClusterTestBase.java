@@ -815,7 +815,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
 
             SimpleString id = (SimpleString)message.getObjectProperty(Message.HDR_GROUP_ID);
-            System.out.println("received " + id + " on consumer " + consumerIDs[i]);
+
             if (groupIdsReceived.get(id) == null)
             {
                groupIdsReceived.put(id, i);
@@ -932,9 +932,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
                                            message.getObjectProperty(ClusterTestBase.COUNT_PROP);
                }
                outOfOrder = true;
-               System.out.println("Message j=" + j +
-                                  " was received out of order = " +
-                                  message.getObjectProperty(ClusterTestBase.COUNT_PROP));
+               System.out.println("Message j=" + j + " was received out of order = " +
+                        message.getObjectProperty(ClusterTestBase.COUNT_PROP));
                log.info("Message j=" + j +
                         " was received out of order = " +
                         message.getObjectProperty(ClusterTestBase.COUNT_PROP));
@@ -1991,13 +1990,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          timeStarts[node] = System.currentTimeMillis();
 
-         servers[node].setIdentity("server " + node);
          log.info("starting server " + servers[node]);
          servers[node].start();
 
          log.info("started server " + servers[node]);
-
-         log.info("started server " + node);
       }
 
       for (int node : nodes)

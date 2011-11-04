@@ -206,7 +206,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       for (ClusterConnection conn : clusterConnections.values())
       {
          conn.start();
-         if (backup)
+         if (backup && configuration.isSharedStore())
          {
             conn.informTopology();
             conn.announceBackup();
@@ -378,8 +378,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
 
          if (connector == null)
          {
-            log.warn("No connector with name '" + config.getConnectorName() +
-                     "'. backup cannot be announced.");
+            log.warn("No connector with name '" + config.getConnectorName() + "'. backup cannot be announced.");
             return;
          }
          liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector));
