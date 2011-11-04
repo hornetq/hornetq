@@ -112,8 +112,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       clearData();
       createConfigs();
 
-
-
       liveServer.setIdentity(this.getClass().getSimpleName() + "/liveServer");
 
       liveServer.start();
@@ -193,7 +191,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
       ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
                                                         liveConnector.getName());
       backupServer = createBackupServer();
-      backupServer.getServer().setIdentity("bkpIdentityServer");
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
@@ -226,14 +223,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setSecurityEnabled(false);
 
       backupServer = createBackupServer();
-      backupServer.getServer().setIdentity("idBackup");
-
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
 
       liveServer = createLiveServer();
-      liveServer.getServer().setIdentity("idLive");
    }
 
    @Override
@@ -320,16 +314,16 @@ public abstract class FailoverTestBase extends ServiceTestBase
          {
             fail("backup server never started (" + backupServer.isStarted() + "), or never finished synchronizing (" +
                      actualServer.isRemoteBackupUpToDate() + ")");
-   }
+         }
          try
          {
             Thread.sleep(100);
          }
          catch (InterruptedException e)
          {
-            //ignore
+            fail(e.getMessage());
          }
-         }
+      }
    }
 
    protected TransportConfiguration getNettyAcceptorTransportConfiguration(final boolean live)
@@ -338,15 +332,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
       {
          return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY);
       }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-               org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
-      }
+      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+
+      return new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, server1Params);
    }
 
    protected TransportConfiguration getNettyConnectorTransportConfiguration(final boolean live)
@@ -355,15 +347,12 @@ public abstract class FailoverTestBase extends ServiceTestBase
       {
          return new TransportConfiguration(NETTY_CONNECTOR_FACTORY);
       }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
-               org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+      Map<String, Object> server1Params = new HashMap<String, Object>();
 
-         return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
-      }
+      server1Params.put(org.hornetq.core.remoting.impl.netty.TransportConstants.PORT_PROP_NAME,
+                        org.hornetq.core.remoting.impl.netty.TransportConstants.DEFAULT_PORT + 1);
+      return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
    }
 
    protected abstract TransportConfiguration getAcceptorTransportConfiguration(boolean live);
