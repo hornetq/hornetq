@@ -79,6 +79,7 @@ import org.hornetq.tests.util.UnitTestCase;
 public class PagingTest extends ServiceTestBase
 {
    private ServerLocator locator;
+   static final int MESSAGE_SIZE = 1024; // 1k
 
    public PagingTest(final String name)
    {
@@ -119,8 +120,7 @@ public class PagingTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
-
+      closeServerLocator(locator);
       super.tearDown();
    }
 
@@ -139,8 +139,6 @@ public class PagingTest extends ServiceTestBase
                                           new HashMap<String, AddressSettings>());
 
       server.start();
-
-      final int messageSize = 1024;
 
       final int numberOfMessages = 5000;
 
@@ -166,11 +164,11 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
+         for (int j = 1; j <= MESSAGE_SIZE; j++)
          {
             bb.put(getSamplebyte(j));
          }
@@ -373,7 +371,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 1000;
 
@@ -395,11 +393,11 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
+         for (int j = 1; j <= MESSAGE_SIZE; j++)
          {
             bb.put(getSamplebyte(j));
          }
@@ -520,7 +518,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 1000;
 
@@ -542,11 +540,11 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
+         for (int j = 1; j <= MESSAGE_SIZE; j++)
          {
             bb.put(getSamplebyte(j));
          }
@@ -591,16 +589,12 @@ public class PagingTest extends ServiceTestBase
 
          assertEquals(numberOfMessages, queue.getMessageCount());
 
-         LinkedList<Xid> xids = new LinkedList<Xid>();
-
-         int msgReceived = 0;
          ClientSession sessionConsumer = sf.createSession(false, false, false);
          sessionConsumer.start();
          ClientConsumer consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
          for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
          {
             log.info("Received " + msgCount);
-            msgReceived++;
             ClientMessage msg = consumer.receiveImmediate();
             if (msg == null)
             {
@@ -697,16 +691,12 @@ public class PagingTest extends ServiceTestBase
 
         // assertEquals(numberOfMessages, queue.getMessageCount());
 
-         xids = new LinkedList<Xid>();
-
-         msgReceived = 0;
          sessionConsumer = sf.createSession(false, false, false);
          sessionConsumer.start();
          consumer = sessionConsumer.createConsumer(PagingTest.ADDRESS);
          for (int msgCount = 0; msgCount < numberOfMessages; msgCount++)
          {
             log.info("Received " + msgCount);
-            msgReceived++;
             ClientMessage msg = consumer.receiveImmediate();
             if (msg == null)
             {
@@ -758,7 +748,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 5000;
 
@@ -786,11 +776,11 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
+         for (int j = 1; j <= MESSAGE_SIZE; j++)
          {
             bb.put(getSamplebyte(j));
          }
@@ -940,7 +930,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 6;
 
@@ -970,11 +960,11 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ByteBuffer bb = ByteBuffer.wrap(body);
 
-         for (int j = 1; j <= messageSize; j++)
+         for (int j = 1; j <= MESSAGE_SIZE; j++)
          {
             bb.put(getSamplebyte(j));
          }
@@ -1104,7 +1094,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 1000;
 
@@ -1130,7 +1120,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          for (int i = 0; i < numberOfMessages; i++)
          {
@@ -1264,15 +1254,15 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 3000;
 
-      final byte[] body = new byte[messageSize];
+      final byte[] body = new byte[MESSAGE_SIZE];
 
       ByteBuffer bb = ByteBuffer.wrap(body);
 
-      for (int j = 1; j <= messageSize; j++)
+      for (int j = 1; j <= MESSAGE_SIZE; j++)
       {
          bb.put(getSamplebyte(j));
       }
@@ -1540,15 +1530,15 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 3000;
 
-      final byte[] body = new byte[messageSize];
+      final byte[] body = new byte[MESSAGE_SIZE];
 
       ByteBuffer bb = ByteBuffer.wrap(body);
 
-      for (int j = 1; j <= messageSize; j++)
+      for (int j = 1; j <= MESSAGE_SIZE; j++)
       {
          bb.put(getSamplebyte(j));
       }
@@ -1873,8 +1863,6 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024; // 1k
-
       try
       {
          ServerLocator locator = createInVMNonHALocator();
@@ -1890,7 +1878,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
          // HornetQBuffer bodyLocal = HornetQChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
          ClientMessage message = null;
@@ -2017,7 +2005,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024; // 1k
+
 
       try
       {
@@ -2028,7 +2016,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientSessionFactory sf = locator.createSessionFactory();
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ClientSession sessionTransacted = sf.createSession(null, null, false, false, false, false, 0);
          ClientProducer producerTransacted = sessionTransacted.createProducer(PagingTest.ADDRESS);
@@ -2167,7 +2155,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024; // 1k
+
 
       try
       {
@@ -2178,7 +2166,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientSessionFactory sf = locator.createSessionFactory();
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          ClientSession sessionTransacted = sf.createSession(null, null, false, false, false, false, 0);
          ClientProducer producerTransacted = sessionTransacted.createProducer(PagingTest.ADDRESS);
@@ -2302,7 +2290,7 @@ public class PagingTest extends ServiceTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-      final int messageSize = 1024; // 1k
+
       final int numberOfMessages = 10000;
 
       ServerLocator locator = createInVMNonHALocator();
@@ -2316,7 +2304,7 @@ public class PagingTest extends ServiceTestBase
 
          final ClientSessionFactory sf = locator.createSessionFactory();
 
-         final byte[] body = new byte[messageSize];
+         final byte[] body = new byte[MESSAGE_SIZE];
 
          Thread producerThread = new Thread()
          {
@@ -2433,7 +2421,7 @@ public class PagingTest extends ServiceTestBase
 
       final AtomicInteger errors = new AtomicInteger(0);
 
-      final int messageSize = 1024;
+
       final int numberOfMessages = 2000;
 
       try
@@ -2445,7 +2433,7 @@ public class PagingTest extends ServiceTestBase
 
          final CountDownLatch ready = new CountDownLatch(1);
 
-         final byte[] body = new byte[messageSize];
+         final byte[] body = new byte[MESSAGE_SIZE];
 
          Thread producerThread = new Thread()
          {
@@ -3945,7 +3933,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 200;
 
@@ -3980,7 +3968,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          for (int i = 0; i < numberOfMessages; i++)
          {
@@ -4070,7 +4058,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       final int numberOfMessages = 1000;
 
@@ -4097,7 +4085,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = new byte[messageSize];
+         byte[] body = new byte[MESSAGE_SIZE];
 
          for (int i = 0; i < numberOfMessages; i++)
          {
@@ -4193,7 +4181,7 @@ public class PagingTest extends ServiceTestBase
 
       server.start();
 
-      final int messageSize = 1024;
+
 
       ServerLocator locator = null;
       ClientSessionFactory sf = null;
@@ -4227,7 +4215,7 @@ public class PagingTest extends ServiceTestBase
 
             message.putStringProperty("id", "str" + i);
 
-            message.setBodyInputStream(createFakeLargeStream(messageSize));
+            message.setBodyInputStream(createFakeLargeStream(MESSAGE_SIZE));
 
             producer.send(message);
 
@@ -4255,7 +4243,7 @@ public class PagingTest extends ServiceTestBase
 
                assertEquals("str" + msgNr, msg.getStringProperty("id"));
 
-               for (int j = 0; j < messageSize; j++)
+               for (int j = 0; j < MESSAGE_SIZE; j++)
                {
                   assertEquals(getSamplebyte(j), msg.getBodyBuffer().readByte());
                }
@@ -4370,7 +4358,7 @@ public class PagingTest extends ServiceTestBase
 
             assertEquals("str" + msgNr, msg.getStringProperty("id"));
 
-            for (int i = 0; i < messageSize; i++)
+            for (int i = 0; i < MESSAGE_SIZE; i++)
             {
                assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
             }

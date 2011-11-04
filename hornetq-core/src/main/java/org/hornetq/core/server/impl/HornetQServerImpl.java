@@ -1783,9 +1783,9 @@ public class HornetQServerImpl implements HornetQServer
    // Inner classes
    // --------------------------------------------------------------------------------
 
-   class FailbackChecker implements Runnable
+   private class FailbackChecker implements Runnable
    {
-      boolean restarting = false;
+      private boolean restarting = false;
 
       public void run()
       {
