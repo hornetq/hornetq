@@ -705,11 +705,6 @@ public class HornetQServerImpl implements HornetQServer
       return configuration;
    }
 
-   public MBeanServer getMBeanServer()
-   {
-      return mbeanServer;
-   }
-
    public PagingManager getPagingManager()
    {
       return pagingManager;

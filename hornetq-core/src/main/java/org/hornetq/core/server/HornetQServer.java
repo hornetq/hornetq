@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.management.MBeanServer;
-
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -79,8 +77,6 @@ public interface HornetQServer extends HornetQComponent
    ManagementService getManagementService();
 
    HornetQSecurityManager getSecurityManager();
-
-   MBeanServer getMBeanServer();
 
    Version getVersion();
 
