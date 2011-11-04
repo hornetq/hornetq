@@ -1580,6 +1580,9 @@ public class FailoverTest extends FailoverTestBase
 
    public void testBackupServerNotRemoved() throws Exception
    {
+      // HORNETQ-720 Disabling test for replicating backups.
+      if (!backupServer.getServer().getConfiguration().isSharedStore())
+         return;
       locator.setFailoverOnInitialConnection(true);
       createSessionFactory();
 

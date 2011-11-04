@@ -2021,6 +2021,7 @@ public class HornetQServerImpl implements HornetQServer
    private final class SharedNothingBackupActivation implements Activation
    {
       private ServerLocatorInternal serverLocator;
+      private volatile boolean failedConnection;
 
       public void run()
       {
@@ -2068,7 +2069,21 @@ public class HornetQServerImpl implements HornetQServer
                   }
                   catch (Exception e)
                   {
-                     log.warn("Unable to announce backup for replication.", e);
+                     log.warn("Unable to announce backup for replication. Trying to stop the server.", e);
+                     failedConnection = true;
+                     try
+                     {
+                        synchronized (quorumManager)
+                        {
+                           quorumManager.notify();
+                        }
+                        HornetQServerImpl.this.stop();
+                        return;
+                     }
+                     catch (Exception e1)
+                     {
+                        throw new RuntimeException(e1);
+                     }
                   }
                }
             });
@@ -2081,11 +2096,12 @@ public class HornetQServerImpl implements HornetQServer
             // we must remember to close stuff we don't need any more
             synchronized (quorumManager)
             {
-            while (true)
-            {
+               if (failedConnection)
+                  return;
+               while (true)
+               {
                   quorumManager.wait();
-                  // nodeManager.awaitLiveNode();
-               break;
+                  break;
 //               if (!started || quorumManager.isNodeDown())
 //               {
 //                  break;
@@ -2096,6 +2112,8 @@ public class HornetQServerImpl implements HornetQServer
             serverLocator.close();
             replicationEndpoint.stop();
 
+            if (failedConnection)
+               return;
             if (!isRemoteBackupUpToDate())
             {
                /*
