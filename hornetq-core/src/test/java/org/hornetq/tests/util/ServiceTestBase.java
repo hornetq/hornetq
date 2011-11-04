@@ -306,6 +306,8 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected void waitForServer(HornetQServer server) throws InterruptedException
    {
+      if (server == null)
+         return;
       long timetowait = System.currentTimeMillis() + 5000;
       while (!server.isStarted() && System.currentTimeMillis() < timetowait)
       {

@@ -63,8 +63,7 @@ public class RemoteProcessHornetQServer implements TestableServer
       }
       catch (Exception e)
       {
-         e.printStackTrace();
-         return false;
+         throw new RuntimeException(e);
       }
       return false;
    }
@@ -118,7 +117,7 @@ public class RemoteProcessHornetQServer implements TestableServer
    {
       crash(true, sessions);
    }
-   
+
    public void crash(final boolean waitFailure, ClientSession... sessions) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(sessions.length);
@@ -149,7 +148,7 @@ public class RemoteProcessHornetQServer implements TestableServer
       {
          // Wait to be informed of failure
          boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
-   
+
          Assert.assertTrue(ok);
       }
    }
