@@ -27,17 +27,13 @@ import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A SymmetricClusterWithBackupTest
- *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 13 Mar 2009 11:00:31
- *
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> Created 13 Mar 2009 11:00:31
  */
 public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
 {
    private static final Logger log = Logger.getLogger(SymmetricClusterWithBackupTest.class);
 
+   @Override
    public void testStopAllStartAll() throws Throwable
    {
       try
@@ -129,12 +125,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
          verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
          verifyNotReceive(0, 1, 2, 3, 4);
-
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
       }
       catch (Throwable e)
       {
@@ -256,12 +246,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
 
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
-
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
    }
 
    //@Override
@@ -460,12 +444,6 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       verifyReceiveRoundRobinInSomeOrder(10, 23, 24, 25);
 
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
-
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
    }
 
    @Override
