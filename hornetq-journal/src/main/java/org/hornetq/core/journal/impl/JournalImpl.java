@@ -2008,6 +2008,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       if (replicationSync)
       {
          assert filesRepository.getDataFiles().isEmpty();
+         filesRepository.ensureMinFiles();
          setJournalState(JournalState.SYNCING);
          return new JournalLoadInformation(0, -1);
       }
@@ -3081,13 +3082,11 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       {
          if (!currentFile.getFile().isOpen())
          currentFile.getFile().open();
-
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
       }
       else
       {
          currentFile = filesRepository.getFreeFile();
-
          filesRepository.openFile(currentFile, true);
       }
 
