@@ -1692,7 +1692,10 @@ public class Base64
       {
          try
          {
-            bis.close();
+            if (bis != null)
+            {
+               bis.close();
+            }
          }
          catch (Exception e)
          {
