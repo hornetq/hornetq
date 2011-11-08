@@ -1921,6 +1921,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
                                                                                       address,
                                                                                       connectorFrom.getName(),
+                                                                                      HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                                                       ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD,
                                                                                       ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL,
                                                                                       retryInterval,

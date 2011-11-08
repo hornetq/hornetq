@@ -426,6 +426,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
 
                currentPageId = 0;
+               if (currentPage != null)
+               {
+                  currentPage.close();
+               }
                currentPage = null;
 
                List<String> files = fileFactory.listFiles("page");
@@ -814,6 +818,11 @@ public class PagingStoreImpl implements TestSupportPageStore
                printedDropMessagesWarning = true;
 
                PagingStoreImpl.log.warn("Messages are being dropped on address " + getStoreName());
+            }
+            
+            if (log.isDebugEnabled())
+            {
+               log.debug("Message " + message + " beig dropped for fullAddressPolicy==DROP");
             }
 
             // Address is full, we just pretend we are paging, and drop the data

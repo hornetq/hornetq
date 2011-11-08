@@ -84,6 +84,11 @@ public class DivertImpl implements Divert
       // properly on ack, since the original address will be overwritten
 
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
+      
+      if (log.isTraceEnabled())
+      {
+         log.trace("Diverting message " + message + " into " + this);
+      }
 
       long id = storageManager.generateUniqueID();
       

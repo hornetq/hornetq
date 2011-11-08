@@ -25,9 +25,9 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.SendAcknowledgementHandler;
 import org.hornetq.api.core.client.SessionFailureListener;
-import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -46,7 +46,6 @@ import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.core.server.management.NotificationService;
 import org.hornetq.spi.core.protocol.RemotingConnection;
-import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
@@ -132,6 +131,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private NotificationService notificationService;
 
+   private boolean stopping = false;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -199,7 +200,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       this.notificationService = notificationService;
    }
-   
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -208,6 +209,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       started = true;
+
+      stopping = false;
 
       if (activated)
       {
@@ -222,7 +225,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          notificationService.sendNotification(notification);
       }
    }
-   
+
    public String debug()
    {
       return toString();
@@ -305,20 +308,32 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       });
    }
 
-   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break. 
-    *  This method is intended to expose this executor to the ClusterManager */
+   public boolean isConnected()
+   {
+      return session != null;
+   }
+
+   /** The cluster manager needs to use the same executor to close the serverLocator, otherwise the stop will break.
+   *  This method is intended to expose this executor to the ClusterManager */
    public Executor getExecutor()
    {
       return executor;
    }
-   
+
    public void stop() throws Exception
    {
+      if (stopping)
+      {
+         return;
+      }
+      
+      stopping = true;
+      
       if (log.isDebugEnabled())
       {
          log.debug("Bridge " + this.name + " being stopped");
       }
-      
+
       if (futureScheduledReconnection != null)
       {
          futureScheduledReconnection.cancel(true);
@@ -471,7 +486,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (log.isDebugEnabled())
             {
-               log.debug("The transformer " + transformer + " made a copy of the message " + message + " as transformedMessage");
+               log.debug("The transformer " + transformer +
+                         " made a copy of the message " +
+                         message +
+                         " as transformedMessage");
             }
          }
          return transformedMessage;
@@ -544,12 +562,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          // that this will throw a disconnect, we need to remove the message
          // from the acks so it will get resent, duplicate detection will cope
          // with any messages resent
-         
+
          if (log.isTraceEnabled())
          {
             log.trace("going to send message " + message);
          }
-         
+
          try
          {
             producer.send(dest, message);
@@ -580,7 +598,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             producer.close();
          }
-         
+
          csf.cleanup();
       }
       catch (Throwable dontCare)
@@ -681,7 +699,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       return csf;
    }
 
-
    /* Hook for creating session factory */
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
@@ -702,6 +719,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          if (csf == null || csf.isClosed())
          {
             csf = createSessionFactory();
+            if (csf == null)
+            {
+               // Retrying. This probably means the node is not available (for the cluster connection case)
+               scheduleRetryConnect();
+               return;
+            }
             // Session is pre-acknowledge
             session = (ClientSessionInternal)csf.createSession(user, password, false, true, true, true, 1);
          }
@@ -798,6 +821,12 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (serverLocator.isClosed())
       {
          log.warn("ServerLocator was shutdown, can't retry on opening connection for bridge");
+         return;
+      }
+
+      if (stopping)
+      {
+         log.info("Bridge is stopping, will not retry");
          return;
       }
 
@@ -963,7 +992,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       public synchronized void run()
       {
-         connect();
+         if (!stopping)
+         {
+            connect();
+         }
       }
    }
 }

@@ -27,6 +27,8 @@ public interface ClientProducerCredits
    void receiveCredits(int credits);
    
    boolean isBlocked();
+   
+   void init();
 
    void reset();
 

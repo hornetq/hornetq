@@ -199,6 +199,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
          {
             Assert.assertEquals("bridge1", bc.getName());
             Assert.assertEquals("queue1", bc.getQueueName());
+            Assert.assertEquals(4, bc.getMinLargeMessageSize());
             Assert.assertEquals("bridge-forwarding-address1", bc.getForwardingAddress());
             Assert.assertEquals("sku > 1", bc.getFilterString());
             Assert.assertEquals("org.foo.BridgeTransformer", bc.getTransformerClassName());
@@ -227,6 +228,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
          if (ccc.getName().equals("cluster-connection1"))
          {
             Assert.assertEquals("cluster-connection1", ccc.getName());
+            Assert.assertEquals(321, ccc.getMinLargeMessageSize());
             Assert.assertEquals("queues1", ccc.getAddress());
             Assert.assertEquals(3, ccc.getRetryInterval());
             Assert.assertEquals(true, ccc.isDuplicateDetection());

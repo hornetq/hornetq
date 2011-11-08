@@ -609,7 +609,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
-      public SequentialFile copy()
+      public SequentialFile cloneFile()
       {
          return null; // To change body of implemented methods use File | Settings | File Templates.
       }

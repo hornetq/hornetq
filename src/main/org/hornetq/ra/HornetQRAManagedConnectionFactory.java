@@ -138,6 +138,11 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
                                                      cm);
       }
 
+      if (connectionFactory == null)
+      {
+         connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
+         resourceRecovery = ra.getRecoveryManager().register(connectionFactory, null, null);
+      }
       return cf;
    }
 

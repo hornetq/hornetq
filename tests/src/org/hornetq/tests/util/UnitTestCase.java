@@ -111,7 +111,22 @@ public class UnitTestCase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private static final String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
+   private final String baseDir = System.getProperty("java.io.tmpdir", "/tmp") + File.separator + "hornetq-unit-test";
+
+   private long timeStart = System.currentTimeMillis();
+   
+   public long getTimeStart()
+   {
+      return timeStart;
+   }
+   
+   private String testDir = baseDir + File.separator + timeStart;
+   
+   public void setTimeStart(long time)
+   {
+      timeStart = time;
+      testDir = baseDir + File.separator + timeStart;
+   }
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
@@ -617,7 +632,7 @@ public class UnitTestCase extends TestCase
    {
       // Need to delete the root
 
-      File file = new File(testDir);
+      File file = new File(baseDir);
       deleteDirectory(file);
       file.mkdirs();
 
@@ -627,8 +642,6 @@ public class UnitTestCase extends TestCase
       recreateDirectory(getLargeMessagesDir(testDir));
       recreateDirectory(getClientLargeMessagesDir(testDir));
       recreateDirectory(getTemporaryDir(testDir));
-
-      System.out.println("deleted " + testDir);
    }
 
    /**
@@ -899,7 +912,7 @@ public class UnitTestCase extends TestCase
 
       OperationContextImpl.clearContext();
 
-      deleteDirectory(new File(getTestDir()));
+      clearData(getTestDir());
 
       InVMRegistry.instance.clear();
 
@@ -914,6 +927,9 @@ public class UnitTestCase extends TestCase
    protected void tearDown() throws Exception
    {
       cleanupPools();
+      
+      deleteDirectory(new File(baseDir));
+
 
       Map<Thread, StackTraceElement[]> threadMap = Thread.getAllStackTraces();
       for (Thread thread : threadMap.keySet())
@@ -1162,15 +1178,42 @@ public class UnitTestCase extends TestCase
 
    protected boolean deleteDirectory(final File directory)
    {
+      if (!directory.exists())
+      {
+         return true;
+      }
+      else
       if (directory.isDirectory())
       {
          String[] files = directory.list();
 
          for (int j = 0; j < files.length; j++)
          {
-            if (!deleteDirectory(new File(directory, files[j])))
+            try
             {
-               return false;
+               
+               File fileTmp = new File(directory, files[j]);
+               if (!deleteDirectory(fileTmp))
+               {
+                  // This is because of Windows is dumb on releasing files
+                  log.warn("could not delete " + fileTmp);
+                  forceGC();
+                  if (!deleteDirectory(fileTmp))
+                  {
+                     log.warn("**************************************************************");
+                     log.warn("could not delete " + fileTmp + " even afer a retry on GC");
+                     log.warn("**************************************************************");
+                  }
+                  else
+                  {
+                     log.info(fileTmp + " was deleted without a problem after a retry on GC");
+                  }
+                  return false;
+               }
+            }
+            catch (Throwable e)
+            {
+               e.printStackTrace();
             }
          }
       }

@@ -470,6 +470,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       serverLocator.setClientFailureCheckPeriod(config.getClientFailureCheckPeriod());
       serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
+      serverLocator.setMinLargeMessageSize(config.getMinLargeMessageSize());
       if (!config.isUseDuplicateDetection())
       {
          log.debug("Bridge " + config.getName() +
@@ -622,6 +623,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getMinLargeMessageSize(),
                                                        config.getClientFailureCheckPeriod(),
                                                        config.getConnectionTTL(),
                                                        config.getRetryInterval(),
@@ -659,6 +661,7 @@ public class ClusterManagerImpl implements ClusterManagerInternal
                                                        connector,
                                                        new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
+                                                       config.getMinLargeMessageSize(),
                                                        config.getClientFailureCheckPeriod(),
                                                        config.getConnectionTTL(),
                                                        config.getRetryInterval(),

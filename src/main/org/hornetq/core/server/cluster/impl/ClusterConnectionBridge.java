@@ -71,10 +71,8 @@ public class ClusterConnectionBridge extends BridgeImpl
    private final SimpleString idsHeaderName;
 
    private final String targetNodeID;
-   
-   private final long targetNodeEventUID;
 
-   private final TransportConfiguration connector;
+   private final long targetNodeEventUID;
 
    private final ServerLocatorInternal discoveryLocator;
 
@@ -138,7 +136,6 @@ public class ClusterConnectionBridge extends BridgeImpl
       this.managementAddress = managementAddress;
       this.managementNotificationAddress = managementNotificationAddress;
       this.flowRecord = flowRecord;
-      this.connector = connector;
 
       // we need to disable DLQ check on the clustered bridges
       queue.setInternalQueue(true);
@@ -152,7 +149,15 @@ public class ClusterConnectionBridge extends BridgeImpl
 
    protected ClientSessionFactoryInternal createSessionFactory() throws Exception
    {
-      ClientSessionFactoryInternal factory = super.createSessionFactory();
+      ClientSessionFactoryInternal factory = (ClientSessionFactoryInternal)serverLocator.createSessionFactory(targetNodeID);
+
+      if (factory == null)
+      {
+         log.warn("NodeID=" + targetNodeID +
+                  " is not available on the topology. Retrying the connection to that node now");
+         return null;
+      }
+      factory.setReconnectAttempts(0);
       factory.getConnection().addFailureListener(new FailureListener()
       {
 
@@ -177,7 +182,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       // nodes could have same queue ids
       // Note we must copy since same message may get routed to other nodes which require different headers
       ServerMessage messageCopy = message.copy();
-      
+
       if (log.isTraceEnabled())
       {
          log.trace("Clustered bridge  copied message " + message + " as " + messageCopy + " before delivery");
@@ -188,7 +193,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       Set<SimpleString> propNames = new HashSet<SimpleString>(messageCopy.getPropertyNames());
 
       byte[] queueIds = message.getBytesProperty(idsHeaderName);
-      
+
       if (queueIds == null)
       {
          // Sanity check only
@@ -211,7 +216,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       messageCopy.putBytesProperty(MessageImpl.HDR_ROUTE_TO_IDS, queueIds);
 
       messageCopy = super.beforeForward(messageCopy);
- 
+
       return messageCopy;
    }
 
@@ -339,7 +344,7 @@ public class ClusterConnectionBridge extends BridgeImpl
       if (permanently)
       {
          log.debug("cluster node for bridge " + this.getName() + " is permanently down");
-         discoveryLocator.notifyNodeDown(targetNodeEventUID+1, targetNodeID);
+         discoveryLocator.notifyNodeDown(System.currentTimeMillis(), targetNodeID);
       }
 
    }

@@ -13,6 +13,9 @@
 
 package org.hornetq.core.persistence.impl.journal;
 
+import java.io.File;
+
+import org.hornetq.core.server.impl.FileLockNodeManager;
 /**
  * A PrintData
  *
@@ -40,6 +43,25 @@ public class PrintData
       {
          System.out.println("Use: java -cp hornetq-core.jar <bindings directory> <message directory>");
          System.exit(-1);
+      }
+      
+      File serverLockFile = new File(arg[1], "server.lock");
+      
+      if (serverLockFile.isFile())
+      {
+         try
+         {
+            FileLockNodeManager fileLock = new FileLockNodeManager(arg[1]);
+            fileLock.start();
+            System.out.println("********************************************");
+            System.out.println("Server's ID=" + fileLock.getNodeId().toString());
+            System.out.println("********************************************");
+            fileLock.stop();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
       }
       
       System.out.println("********************************************");

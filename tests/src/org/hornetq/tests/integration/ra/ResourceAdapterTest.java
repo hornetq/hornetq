@@ -16,6 +16,7 @@ import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.util.UnitTestCase;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
@@ -31,6 +32,7 @@ public class ResourceAdapterTest extends HornetQRATestBase
    public void testStartStop() throws Exception
    {
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
+      qResourceAdapter.setConnectorClassName(UnitTestCase.INVM_CONNECTOR_FACTORY);
       HornetQRATestBase.MyBootstrapContext ctx = new HornetQRATestBase.MyBootstrapContext();
       
       qResourceAdapter.setTransactionManagerLocatorClass("");

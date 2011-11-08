@@ -313,6 +313,8 @@
             </xsd:element>
 			<xsd:element maxOccurs="1" minOccurs="0" name="transformer-class-name" type="xsd:string">
 			</xsd:element>
+			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int">
+			</xsd:element>			
 			<xsd:element maxOccurs="1" minOccurs="0" name="check-period" type="xsd:long">
 			</xsd:element>			
 			<xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xsd:long">
@@ -363,6 +365,8 @@
 			<xsd:element maxOccurs="1" minOccurs="0" name="check-period" type="xsd:long">
 			</xsd:element>			
 			<xsd:element maxOccurs="1" minOccurs="0" name="connection-ttl" type="xsd:long">
+			</xsd:element>			
+			<xsd:element maxOccurs="1" minOccurs="0" name="min-large-message-size" type="xsd:int">
 			</xsd:element>			
 			<xsd:element maxOccurs="1" minOccurs="0" name="call-timeout" type="xsd:long">
 			</xsd:element>

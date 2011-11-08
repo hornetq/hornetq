@@ -93,7 +93,7 @@ public interface SequentialFile
 
    void renameTo(String newFileName) throws Exception;
 
-   SequentialFile copy();
+   SequentialFile cloneFile();
    
    void copyTo(SequentialFile newFileName) throws Exception;
 

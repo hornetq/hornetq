@@ -514,6 +514,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          {
             if (requiresResponse)
             {
+               log.debug("Sending exception to client", e);
                response = new SessionXAResponseMessage(true, e.errorCode, e.getMessage());
             }
             else
@@ -525,6 +526,7 @@ public class ServerSessionPacketHandler implements ChannelHandler
          {
             if (requiresResponse)
             {
+               log.debug("Sending exception to client", e);
                response = new HornetQExceptionMessage((HornetQException)e);
             }
             else

@@ -1275,11 +1275,11 @@ public class JournalStorageManager implements StorageManager
             log.info("Deleting unreferenced message id=" + msg.getMessageID() + " from the journal");
             try
             {
-               deleteMessage(msg.getMessageID());
+                deleteMessage(msg.getMessageID());
             }
             catch (Exception ignored)
             {
-               log.warn("It wasn't possible to delete message " + msg.getMessageID());
+               log.warn("It wasn't possible to delete message " + msg.getMessageID(), ignored);
             }
          }
       }
@@ -1985,7 +1985,7 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-   private OperationContext getContext(final boolean sync)
+   protected OperationContext getContext(final boolean sync)
    {
       if (sync)
       {

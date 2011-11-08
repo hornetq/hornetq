@@ -317,6 +317,7 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
+      log.debug("Starting server " + this);
       OperationContextImpl.clearContext();
 
       try

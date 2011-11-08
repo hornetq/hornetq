@@ -700,6 +700,24 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
    // Private --------------------------------------------------------------------------------------
 
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "HornetQConnectionFactory [serverLocator=" + serverLocator +
+             ", clientID=" +
+             clientID +
+             ", dupsOKBatchSize=" +
+             dupsOKBatchSize +
+             ", transactionBatchSize=" +
+             transactionBatchSize +
+             ", readOnly=" +
+             readOnly +
+             "]";
+   }
+
    private void checkWrite()
    {
       if (readOnly)

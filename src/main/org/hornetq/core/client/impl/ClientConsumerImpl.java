@@ -14,6 +14,8 @@
 package org.hornetq.core.client.impl;
 
 import java.io.File;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.concurrent.Executor;
 
@@ -116,6 +118,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final SessionQueueQueryResponseMessage queueInfo;
 
    private volatile boolean ackIndividually;
+   
+   private final ClassLoader contextClassLoader;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -130,7 +134,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
                              final Channel channel,
-                             final SessionQueueQueryResponseMessage queueInfo)
+                             final SessionQueueQueryResponseMessage queueInfo,
+                             final ClassLoader contextClassLoader)
    {
       this.id = id;
 
@@ -153,6 +158,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.ackBatchSize = ackBatchSize;
 
       this.queueInfo = queueInfo;
+      
+      this.contextClassLoader = contextClassLoader;
    }
 
    // ClientConsumer implementation
@@ -861,7 +868,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-
+      
       session.workDone();
 
       // We pull the message from the buffer from inside the Runnable so we can ensure priority
@@ -894,6 +901,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                return;
             }
             
+            
+            
             boolean expired = message.isExpired();
 
             flowControlBeforeConsumption(message);
@@ -906,7 +915,32 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   ClientConsumerImpl.log.trace("Calling handler.onMessage");
                }
-               theHandler.onMessage(message);
+               final ClassLoader originalLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+               {
+                  public ClassLoader run()
+                  {
+                     ClassLoader originalLoader = Thread.currentThread().getContextClassLoader();
+
+                     Thread.currentThread().setContextClassLoader(contextClassLoader);
+
+                     return originalLoader;
+                  }
+               });
+               try
+               {
+                  theHandler.onMessage(message);
+               }
+               finally
+               {
+                  AccessController.doPrivileged(new PrivilegedAction<Object>()
+                  {
+                     public Object run()
+                     {
+                        Thread.currentThread().setContextClassLoader(originalLoader);
+                        return null;
+                     }
+                  });
+               }
 
                if (ClientConsumerImpl.trace)
                {

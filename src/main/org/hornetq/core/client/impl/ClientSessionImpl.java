@@ -12,6 +12,8 @@
  */
 package org.hornetq.core.client.impl;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,6 +84,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.remoting.Connection;
+import org.hornetq.spi.core.remoting.ConnectorFactory;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -925,7 +928,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       synchronized (this)
       {
-         if (closed)
+         if (closed/* || closing*/)
          {
             return;
          }
@@ -1687,7 +1690,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
              username +
              ", closed=" +
              closed +
-             " metaData=(" +
+             ", factory = " + this.sessionFactory +
+             ", metaData=(" +
              buffer +
              ")]@" +
              Integer.toHexString(hashCode());
@@ -1778,7 +1782,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                   : null,
                                                                executor,
                                                                channel,
-                                                               queueInfo);
+                                                               queueInfo,
+                                                               lookupTCCL());
 
       addConsumer(consumer);
 
@@ -1847,6 +1852,18 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          throw new HornetQException(HornetQException.OBJECT_CLOSED, "Session is closed");
       }
+   }
+   
+   private ClassLoader lookupTCCL()
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>()
+      {
+         public ClassLoader run()
+         {
+            return Thread.currentThread().getContextClassLoader();
+         }
+      });
+
    }
 
    private void doCleanup(boolean failingOver)

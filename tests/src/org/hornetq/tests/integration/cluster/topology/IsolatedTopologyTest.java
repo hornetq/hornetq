@@ -28,7 +28,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A IsolatedTopologyTest

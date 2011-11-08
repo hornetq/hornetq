@@ -147,6 +147,7 @@
              <forwarding-address>bridge-forwarding-address1</forwarding-address>
              <filter string="sku > 1"/>
              <transformer-class-name>org.foo.BridgeTransformer</transformer-class-name>
+             <min-large-message-size>4</min-large-message-size>
              <retry-interval>3</retry-interval>
              <retry-interval-multiplier>0.2</retry-interval-multiplier>
              <reconnect-attempts>2</reconnect-attempts>
@@ -166,6 +167,7 @@
          <cluster-connection name="cluster-connection1">
              <address>queues1</address>
              <connector-ref>connector1</connector-ref>
+            <min-large-message-size>321</min-large-message-size>
              <call-timeout>123</call-timeout>
              <retry-interval>3</retry-interval>
              <use-duplicate-detection>true</use-duplicate-detection>

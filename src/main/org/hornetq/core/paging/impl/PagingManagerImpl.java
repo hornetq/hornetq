@@ -114,8 +114,17 @@ public class PagingManagerImpl implements PagingManager
 
       for (PagingStore store : reloadedStores)
       {
-         store.start();
-         stores.put(store.getStoreName(), store);
+         PagingStore oldStore = stores.get(store.getStoreName());
+         if (oldStore != null)
+         {
+            oldStore.stop();
+            oldStore.start();
+         }
+         else
+         {
+            store.start();
+            stores.put(store.getStoreName(), store);
+         }
       }
 
    }
