@@ -70,7 +70,7 @@ public class BridgeConfiguration implements Serializable
    private final int minLargeMessageSize;
 
    /**
-    *  For backward compatibility on the API... no MinLareMessage on this constructor
+    *  For backward compatibility on the API... no MinLargeMessage on this constructor
     */
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -78,7 +78,6 @@ public class BridgeConfiguration implements Serializable
                               final String filterString,
                               final String transformerClassName,
                               final long retryInterval,
-                              final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
@@ -97,7 +96,7 @@ public class BridgeConfiguration implements Serializable
            HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
            HornetQClient.DEFAULT_CONNECTION_TTL,
            retryInterval,
-           maxRetryInterval,
+           retryInterval,
            retryIntervalMultiplier,
            reconnectAttempts,
            useDuplicateDetection,
@@ -156,7 +155,6 @@ public class BridgeConfiguration implements Serializable
                               final String filterString,
                               final String transformerClassName,
                               final long retryInterval,
-                              final long maxRetryInterval,
                               final double retryIntervalMultiplier,
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
@@ -175,7 +173,7 @@ public class BridgeConfiguration implements Serializable
            HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
            HornetQClient.DEFAULT_CONNECTION_TTL,
            retryInterval,
-           maxRetryInterval,
+           retryInterval,
            retryIntervalMultiplier,
            reconnectAttempts,
            useDuplicateDetection,
