@@ -149,6 +149,17 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       configFileName = null;
    }
 
+   public JMSServerManagerImpl(final HornetQServer server, final BindingRegistry registry) throws Exception
+   {
+      this.server = server;
+
+      this.coreConfig = server.getConfiguration();
+
+      configFileName = null;
+
+      this.registry = registry;
+   }
+
    public JMSServerManagerImpl(final HornetQServer server, final String configFileName) throws Exception
    {
       this.server = server;
