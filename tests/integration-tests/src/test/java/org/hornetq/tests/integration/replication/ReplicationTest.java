@@ -75,6 +75,7 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 import org.hornetq.tests.util.ReplicatedBackupUtils;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.TransportConfigurationUtils;
@@ -114,6 +115,7 @@ public class ReplicationTest extends ServiceTestBase
 
       Configuration backupConfig = createDefaultConfig(netty);
       Configuration liveConfig = createDefaultConfig(netty);
+
       backupConfig.setBackup(backup);
       if (interceptors.length > 0)
       {
@@ -431,6 +433,7 @@ public class ReplicationTest extends ServiceTestBase
       StorageManager storage = getStorage();
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
+      FailoverTestBase.waitForBackup(null, 5, true, backupServer);
 
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
@@ -452,7 +455,7 @@ public class ReplicationTest extends ServiceTestBase
 
       Assert.assertTrue(latch.await(1, TimeUnit.SECONDS));
 
-      Assert.assertEquals(0, manager.getActiveTokens().size());
+      Assert.assertEquals("should be empty " + manager.getActiveTokens(), 0, manager.getActiveTokens().size());
    }
 
    public void testOrderOnNonPersistency() throws Exception

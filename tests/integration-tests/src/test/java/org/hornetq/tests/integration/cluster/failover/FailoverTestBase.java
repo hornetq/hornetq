@@ -38,6 +38,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.InVMNodeManager;
@@ -287,30 +288,36 @@ public abstract class FailoverTestBase extends ServiceTestBase
     * @param seconds
     * @throws Exception
     */
-   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds) throws Exception
+   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
    {
-      waitForBackup(sessionFactory, seconds, true);
-         }
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
+      waitForBackup(sessionFactory, seconds, true, actualServer);
+   }
 
    /**
     * @param sessionFactory
     * @param seconds
-    * @param waitForSync whether to wait for sync'ing data with the live to finish or not
+    * @param waitForSync
+    * @param actualServer
     */
-   protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, long seconds, boolean waitForSync)
+   public static void waitForBackup(ClientSessionFactoryInternal sessionFactory,
+                                    int seconds,
+                                    boolean waitForSync,
+                                    final HornetQServer backup)
    {
+      final HornetQServerImpl actualServer = (HornetQServerImpl)backup;
       final long toWait = seconds * 1000;
       final long time = System.currentTimeMillis();
-      final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
       while (true)
       {
-         if (sessionFactory.getBackupConnector() != null && (actualServer.isRemoteBackupUpToDate() || !waitForSync))
+         if ((sessionFactory == null || sessionFactory.getBackupConnector() != null) &&
+                  (actualServer.isRemoteBackupUpToDate() || !waitForSync))
          {
             break;
          }
          if (System.currentTimeMillis() > (time + toWait))
          {
-            fail("backup server never started (" + backupServer.isStarted() + "), or never finished synchronizing (" +
+            fail("backup server never started (" + actualServer.isStarted() + "), or never finished synchronizing (" +
                      actualServer.isRemoteBackupUpToDate() + ")");
          }
          try

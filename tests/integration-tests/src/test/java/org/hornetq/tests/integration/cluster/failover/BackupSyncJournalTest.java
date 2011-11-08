@@ -65,12 +65,12 @@ public class BackupSyncJournalTest extends FailoverTestBase
       backupServer.start();
 
       // Deliver messages with Backup in-sync
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
       sendMessages(session, producer, n_msgs);
 
       // Deliver messages with Backup up-to-date
       syncDelay.deliverUpToDateMsg();
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
       // SEND more messages, now with the backup replicating
       sendMessages(session, producer, n_msgs);
 
@@ -114,14 +114,14 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       syncDelay.deliverUpToDateMsg();
       backupServer.start();
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
    }
 
    public void testReplicationDuringSync() throws Exception
    {
       createProducerSendSomeMessages();
       backupServer.start();
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, false, backupServer.getServer());
 
       sendMessages(session, producer, n_msgs);
       session.commit();
@@ -136,7 +136,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    private void finishSyncAndFailover() throws Exception
    {
       syncDelay.deliverUpToDateMsg();
-      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true);
+      waitForBackup(sessionFactory, BACKUP_WAIT_TIME, true, backupServer.getServer());
       assertFalse("should not be initialized", backupServer.getServer().isInitialised());
       crash(session);
       waitForServerInitialization(backupServer, 5);
