@@ -82,6 +82,7 @@ public class BridgeConfiguration implements Serializable
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
                               final List<String> staticConnectors,
                               final boolean ha,
                               final String user,
@@ -93,7 +94,7 @@ public class BridgeConfiguration implements Serializable
            filterString,
            transformerClassName,
            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+           clientFailureCheckPeriod,
            HornetQClient.DEFAULT_CONNECTION_TTL,
            retryInterval,
            retryInterval,
@@ -148,8 +149,9 @@ public class BridgeConfiguration implements Serializable
 
    /**
     *  For backward compatibility on the API... no MinLareMessage, checkPeriod and TTL  on this constructor
-    */
-   public BridgeConfiguration(final String name,
+    */            
+   
+    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
                               final String filterString,
@@ -159,6 +161,7 @@ public class BridgeConfiguration implements Serializable
                               final int reconnectAttempts,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
                               final String discoveryGroupName,
                               final boolean ha,
                               final String user,
@@ -170,7 +173,7 @@ public class BridgeConfiguration implements Serializable
            filterString,
            transformerClassName,
            HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+           clientFailureCheckPeriod,
            HornetQClient.DEFAULT_CONNECTION_TTL,
            retryInterval,
            retryInterval,
