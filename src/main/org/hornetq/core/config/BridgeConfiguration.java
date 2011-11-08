@@ -16,6 +16,8 @@ package org.hornetq.core.config;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hornetq.api.core.client.HornetQClient;
+
 /**
  * A BridgeConfiguration
  *
@@ -40,7 +42,7 @@ public class BridgeConfiguration implements Serializable
    private List<String> staticConnectors;
 
    private String discoveryGroupName;
-   
+
    private boolean ha;
 
    private String transformerClassName;
@@ -56,17 +58,55 @@ public class BridgeConfiguration implements Serializable
    private int confirmationWindowSize;
 
    private final long clientFailureCheckPeriod;
-   
+
    private String user;
-   
+
    private String password;
 
    private final long connectionTTL;
-   
+
    private final long maxRetryInterval;
-   
+
    private final int minLargeMessageSize;
 
+   /**
+    *  For backward compatibility on the API... no MinLareMessage on this constructor
+    */
+   public BridgeConfiguration(final String name,
+                              final String queueName,
+                              final String forwardingAddress,
+                              final String filterString,
+                              final String transformerClassName,
+                              final long retryInterval,
+                              final long maxRetryInterval,
+                              final double retryIntervalMultiplier,
+                              final int reconnectAttempts,
+                              final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
+                              final List<String> staticConnectors,
+                              final boolean ha,
+                              final String user,
+                              final String password)
+   {
+      this(name,
+           queueName,
+           forwardingAddress,
+           filterString,
+           transformerClassName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+           HornetQClient.DEFAULT_CONNECTION_TTL,
+           retryInterval,
+           maxRetryInterval,
+           retryIntervalMultiplier,
+           reconnectAttempts,
+           useDuplicateDetection,
+           confirmationWindowSize,
+           staticConnectors,
+           ha,
+           user,
+           password);
+   }
 
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -100,11 +140,50 @@ public class BridgeConfiguration implements Serializable
       this.confirmationWindowSize = confirmationWindowSize;
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.staticConnectors = staticConnectors;
-      this. user = user;
+      this.user = user;
       this.password = password;
       this.connectionTTL = connectionTTL;
       this.maxRetryInterval = maxRetryInterval;
       discoveryGroupName = null;
+   }
+
+   /**
+    *  For backward compatibility on the API... no MinLareMessage, checkPeriod and TTL  on this constructor
+    */
+   public BridgeConfiguration(final String name,
+                              final String queueName,
+                              final String forwardingAddress,
+                              final String filterString,
+                              final String transformerClassName,
+                              final long retryInterval,
+                              final long maxRetryInterval,
+                              final double retryIntervalMultiplier,
+                              final int reconnectAttempts,
+                              final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
+                              final String discoveryGroupName,
+                              final boolean ha,
+                              final String user,
+                              final String password)
+   {
+      this(name,
+           queueName,
+           forwardingAddress,
+           filterString,
+           transformerClassName,
+           HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+           HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+           HornetQClient.DEFAULT_CONNECTION_TTL,
+           retryInterval,
+           maxRetryInterval,
+           retryIntervalMultiplier,
+           reconnectAttempts,
+           useDuplicateDetection,
+           confirmationWindowSize,
+           discoveryGroupName,
+           ha,
+           user,
+           password);
    }
 
    public BridgeConfiguration(final String name,
@@ -197,7 +276,7 @@ public class BridgeConfiguration implements Serializable
    {
       return discoveryGroupName;
    }
-   
+
    public boolean isHA()
    {
       return ha;
@@ -288,7 +367,7 @@ public class BridgeConfiguration implements Serializable
    {
       this.discoveryGroupName = discoveryGroupName;
    }
-   
+
    /**
     * 
     * @param ha is the bridge supporting HA?
