@@ -609,10 +609,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactory createSessionFactory(String nodeID) throws Exception
    {
-      log.info(topology.describe("full topology"));
       TopologyMember topologyMember = topology.getMember(nodeID);
 
-      log.info("Creating connection factory towards " + nodeID + " = " + topologyMember);
+      if (log.isTraceEnabled())
+      {
+         log.trace("Creating connection factory towards " + nodeID + " = " + topologyMember + ", topology=" + topology.describe());
+      }
 
       if (topologyMember == null)
       {
@@ -662,8 +664,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       addToConnecting(factory);
       try
       {
-         factory.connect(reconnectAttempts, failoverOnInitialConnection);
-         addFactory(factory);
+          try
+          {
+             factory.connect(reconnectAttempts, failoverOnInitialConnection);
+          }
+          catch (HornetQException e1)
+          {
+             //we need to make sure is closed just for garbage collection
+              factory.close();
+              throw e1;
+          }
+          addFactory(factory);
          return factory;
       }
       finally
