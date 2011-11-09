@@ -662,8 +662,17 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       addToConnecting(factory);
       try
       {
-         factory.connect(reconnectAttempts, failoverOnInitialConnection);
-         addFactory(factory);
+          try
+          {
+             factory.connect(reconnectAttempts, failoverOnInitialConnection);
+          }
+          catch (HornetQException e1)
+          {
+             //we need to make sure is closed just for garbage collection
+              factory.close();
+              throw e1;
+          }
+          addFactory(factory);
          return factory;
       }
       finally
@@ -675,7 +684,6 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    private void removeFromConnecting(ClientSessionFactoryInternal factory)
    {
       connectingFactories.remove(factory);
-      factory.close();
    }
 
    private void addToConnecting(ClientSessionFactoryInternal factory)
