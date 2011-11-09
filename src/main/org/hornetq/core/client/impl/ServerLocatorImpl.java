@@ -609,10 +609,12 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactory createSessionFactory(String nodeID) throws Exception
    {
-      log.trace(topology.describe("full topology"));
       TopologyMember topologyMember = topology.getMember(nodeID);
 
-      log.trace("Creating connection factory towards " + nodeID + " = " + topologyMember);
+      if (log.isTraceEnabled())
+      {
+         log.trace("Creating connection factory towards " + nodeID + " = " + topologyMember + ", topology=" + topology.describe());
+      }
 
       if (topologyMember == null)
       {
