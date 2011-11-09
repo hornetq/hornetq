@@ -139,7 +139,10 @@ public class ReplicationTest extends ServiceTestBase
       backupServer = new HornetQServerImpl(backupConfig);
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       backupServer.start();
-      waitForComponent(backupServer);
+      if (backup)
+      {
+         FailoverTestBase.waitForBackup(null, 5, true, backupServer);
+      }
       int count = 0;
       waitForReplication(count);
    }
@@ -209,7 +212,7 @@ public class ReplicationTest extends ServiceTestBase
 
       blockOnReplication(storage, manager);
 
-      Assert.assertEquals(0, manager.getActiveTokens().size());
+      Assert.assertTrue("Expecting no active tokens:" + manager.getActiveTokens(), manager.getActiveTokens().isEmpty());
 
       ServerMessage msg = new ServerMessageImpl(1, 1024);
 
@@ -433,7 +436,6 @@ public class ReplicationTest extends ServiceTestBase
       StorageManager storage = getStorage();
       manager = liveServer.getReplicationManager();
       waitForComponent(manager);
-      FailoverTestBase.waitForBackup(null, 5, true, backupServer);
 
       Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
