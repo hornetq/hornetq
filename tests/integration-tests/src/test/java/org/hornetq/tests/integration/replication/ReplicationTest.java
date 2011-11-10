@@ -141,7 +141,7 @@ public class ReplicationTest extends ServiceTestBase
       backupServer.start();
       if (backup)
       {
-         FailoverTestBase.waitForBackup(null, 5, true, backupServer);
+         FailoverTestBase.waitForRemoteBackup(null, 5, true, backupServer);
       }
       int count = 0;
       waitForReplication(count);

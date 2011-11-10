@@ -48,8 +48,11 @@ public class PagingFailoverTest extends FailoverTestBase
 
    private static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
-   // Attributes ----------------------------------------------------
    private ServerLocator locator;
+
+   private ClientSession session;
+
+   private ClientSessionFactoryInternal sf;
 
    // Static --------------------------------------------------------
 
@@ -67,8 +70,18 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
-      super.tearDown();
+      try
+      {
+         if (session != null)
+            session.close();
+         if (sf != null)
+            sf.close();
+      }
+      finally
+      {
+      closeServerLocator(locator);
+         super.tearDown();
+      }
    }
 
    public void testPageFailBeforeConsume() throws Exception
@@ -98,11 +111,8 @@ public class PagingFailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setReconnectAttempts(-1);
 
-      ClientSessionFactoryInternal sf = createSessionFactoryAndWaitForTopology(locator, 2);
-      ClientSession session = sf.createSession(!transacted, !transacted, 0);
-
-      try
-      {
+      sf = createSessionFactoryAndWaitForTopology(locator, 2);
+      session = sf.createSession(!transacted, !transacted, 0);
 
          session.createQueue(PagingFailoverTest.ADDRESS, PagingFailoverTest.ADDRESS, true);
 
@@ -144,7 +154,6 @@ public class PagingFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < MIDDLE; i++)
          {
-            System.out.println("msg " + i);
             ClientMessage msg = cons.receive(20000);
             Assert.assertNotNull(msg);
             msg.acknowledge();
@@ -184,17 +193,6 @@ public class PagingFailoverTest extends FailoverTestBase
             int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
             Assert.assertEquals(i, result);
          }
-      }
-      finally
-      {
-         try
-         {
-            session.close();
-         }
-         catch (Exception ignored)
-         {
-         }
-      }
    }
 
    // Package protected ---------------------------------------------

@@ -282,8 +282,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    }
 
    /**
-    * This method will Waits for backup to be in the "started" state and to finish synchronization
-    * with the live.
+    * Waits for backup to be in the "started" state and to finish synchronization with its live.
     * @param sessionFactory
     * @param seconds
     * @throws Exception
@@ -291,7 +290,14 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected void waitForBackup(ClientSessionFactoryInternal sessionFactory, int seconds) throws Exception
    {
       final HornetQServerImpl actualServer = (HornetQServerImpl)backupServer.getServer();
-      waitForBackup(sessionFactory, seconds, true, actualServer);
+      if (actualServer.getConfiguration().isSharedStore())
+      {
+         waitForServer(actualServer);
+      }
+      else
+      {
+         waitForRemoteBackup(sessionFactory, seconds, true, actualServer);
+      }
    }
 
    /**
@@ -300,7 +306,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
     * @param waitForSync
     * @param actualServer
     */
-   public static void waitForBackup(ClientSessionFactoryInternal sessionFactory,
+   public static void waitForRemoteBackup(ClientSessionFactoryInternal sessionFactory,
                                     int seconds,
                                     boolean waitForSync,
                                     final HornetQServer backup)
