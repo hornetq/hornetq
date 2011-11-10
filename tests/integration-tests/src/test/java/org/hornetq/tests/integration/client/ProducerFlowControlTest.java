@@ -43,7 +43,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A ProducerFlowControlTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> fox
@@ -54,6 +54,12 @@ public class ProducerFlowControlTest extends ServiceTestBase
    private static final Logger log = Logger.getLogger(ProducerFlowControlTest.class);
 
    private ServerLocator locator;
+
+   private ClientSessionFactory sf;
+
+   private ClientSession session;
+
+   private HornetQServer server;
 
    protected boolean isNetty()
    {
@@ -70,7 +76,12 @@ public class ProducerFlowControlTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
+      stopComponent(server);
+      if (sf != null)
+      {
+         sf.close();
+      }
+      closeServerLocator(locator);
 
       super.tearDown();
    }
@@ -207,7 +218,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      HornetQServer server = createServer(realFiles, isNetty());
+      server = createServer(realFiles, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(maxSize);
@@ -219,10 +230,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      try
-      {
-
-         locator.setProducerWindowSize(producerWindowSize);
+      locator.setProducerWindowSize(producerWindowSize);
          locator.setConsumerWindowSize(consumerWindowSize);
          locator.setAckBatchSize(ackBatchSize);
 
@@ -231,8 +239,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
             locator.setMinLargeMessageSize(minLargeMessageSize);
          }
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-         ClientSession session = sf.createSession(false, true, true, true);
+         sf = locator.createSessionFactory();
+         session = sf.createSession(false, true, true, true);
 
          session.start();
 
@@ -346,22 +354,13 @@ public class ProducerFlowControlTest extends ServiceTestBase
          double rate = 1000 * (double)numMessages / (end - start);
 
          ProducerFlowControlTest.log.info("rate is " + rate + " msgs / sec");
-
-         session.close();
-
-         sf.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testClosingSessionUnblocksBlockedProducer() throws Exception
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -373,15 +372,12 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      try
-      {
-
          locator.setProducerWindowSize(1024);
          locator.setConsumerWindowSize(1024);
          locator.setAckBatchSize(1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-         final ClientSession session = sf.createSession(false, true, true, true);
+         sf = locator.createSessionFactory();
+         session = sf.createSession(false, true, true, true);
 
          final SimpleString queueName = new SimpleString("testqueue");
 
@@ -423,18 +419,13 @@ public class ProducerFlowControlTest extends ServiceTestBase
          Assert.assertTrue(closed.get());
 
          t.join();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testFlowControlMessageNotRouted() throws Exception
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -446,16 +437,13 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      try
-      {
-
          locator.setProducerWindowSize(1024);
          locator.setConsumerWindowSize(1024);
          locator.setAckBatchSize(1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         sf = locator.createSessionFactory();
 
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          ClientProducer producer = session.createProducer(address);
 
@@ -471,29 +459,19 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
             producer.send(message);
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    // Not technically a flow control test, but what the hell
    public void testMultipleConsumers() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+      sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
          session.createQueue("address", "queue2", null, false);
@@ -546,28 +524,18 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
             Assert.assertNotNull(msg);
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching1() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+      sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -590,28 +558,17 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                    .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching2() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
+      sf = locator.createSessionFactory();
 
-      try
-      {
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -636,28 +593,18 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                    .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching3() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+         sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -680,28 +627,17 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                    .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching4() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
+      sf = locator.createSessionFactory();
 
-      try
-      {
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -726,28 +662,18 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(i + 1, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                        .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching5() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+      sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -800,28 +726,17 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                    .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsCaching6() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
+         sf = locator.createSessionFactory();
 
-      try
-      {
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -835,29 +750,18 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager()
                                                                    .unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
-
    }
 
    public void testProducerCreditsCaching7() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+      sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -895,28 +799,18 @@ public class ProducerFlowControlTest extends ServiceTestBase
             Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE,
                                 ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
          }
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
    public void testProducerCreditsRefCounting() throws Exception
    {
-      HornetQServer server = createServer(false, isNetty());
+      server = createServer(false, isNetty());
 
       server.start();
       waitForServer(server);
 
-      try
-      {
+         sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         final ClientSession session = sf.createSession(false, true, true, true);
+         session = sf.createSession(false, true, true, true);
 
          session.createQueue("address", "queue1", null, false);
 
@@ -946,13 +840,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
          Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
          Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().unReferencedCreditsSize());
-
-         session.close();
-      }
-      finally
-      {
-         server.stop();
-      }
    }
 
 }

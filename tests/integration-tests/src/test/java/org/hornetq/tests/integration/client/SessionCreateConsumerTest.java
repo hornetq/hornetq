@@ -30,56 +30,52 @@ public class SessionCreateConsumerTest extends ServiceTestBase
    private final String queueName = "ClientSessionCreateConsumerTestQ";
 
    private ServerLocator locator;
+   private HornetQServer service;
+   private ClientSessionInternal clientSession;
+   private ClientSessionFactory cf;
 
    @Override
    protected void setUp() throws Exception
    {
       locator = createInVMNonHALocator();
-      
-      super.setUp();   
+      super.setUp();
+
+      service = createServer(false);
+      service.start();
+      locator.setProducerMaxRate(99);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
+      cf = locator.createSessionFactory();
+      clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
-      
-      super.tearDown();
+      stopComponent(service);
+      try
+      {
+         if (clientSession != null)
+            clientSession.close();
+         if (cf != null)
+            cf.close();
+      }
+      finally
+      {
+         closeServerLocator(locator);
+         super.tearDown();
+      }
    }
 
    public void testCreateConsumer() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName);
          Assert.assertNotNull(consumer);
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
    public void testCreateConsumerNoQ() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          try
          {
             clientSession.createConsumer(queueName);
@@ -89,47 +85,17 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          {
             Assert.assertEquals(e.getCode(), HornetQException.QUEUE_DOES_NOT_EXIST);
          }
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
    public void testCreateConsumerWithFilter() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, "foo=bar");
          Assert.assertNotNull(consumer);
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
    public void testCreateConsumerWithInvalidFilter() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          try
          {
@@ -140,56 +106,20 @@ public class SessionCreateConsumerTest extends ServiceTestBase
          {
             Assert.assertEquals(e.getCode(), HornetQException.INVALID_FILTER_EXPRESSION);
          }
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
    public void testCreateConsumerWithBrowseOnly() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, true);
          Assert.assertNotNull(consumer);
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
    public void testCreateConsumerWithOverrides() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientConsumer consumer = clientSession.createConsumer(queueName, null, 100, 100, false);
          Assert.assertNotNull(consumer);
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
    }
 
 }
