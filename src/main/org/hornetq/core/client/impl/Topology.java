@@ -60,7 +60,7 @@ public class Topology implements Serializable
     */
    private final Map<String, TopologyMember> topology = new ConcurrentHashMap<String, TopologyMember>();
 
-   private transient final Map<String, Long> mapDelete = new ConcurrentHashMap<String, Long>();
+   private transient Map<String, Long> mapDelete;
 
    public Topology(final Object owner)
    {
@@ -158,7 +158,7 @@ public class Topology implements Serializable
    public boolean updateMember(final long uniqueEventID, final String nodeId, final TopologyMember memberInput)
    {
 
-      Long deleteTme = mapDelete.get(nodeId);
+      Long deleteTme = getMapDelete().get(nodeId);
       if (deleteTme != null && uniqueEventID < deleteTme)
       {
          log.debug("Update uniqueEvent=" + uniqueEventID +
@@ -306,7 +306,7 @@ public class Topology implements Serializable
             }
             else
             {
-               mapDelete.put(nodeId, uniqueEventID);
+               getMapDelete().put(nodeId, uniqueEventID);
                member = topology.remove(nodeId);
             }
          }
@@ -534,6 +534,15 @@ public class Topology implements Serializable
       {
          return "Topology@" + Integer.toHexString(System.identityHashCode(this)) + "[owner=" + owner + "]";
       }
+   }
+
+   private synchronized Map<String, Long> getMapDelete()
+   {
+      if (mapDelete == null)
+      {
+         mapDelete = new ConcurrentHashMap<String, Long>();      
+      }
+      return mapDelete;
    }
 
 }
