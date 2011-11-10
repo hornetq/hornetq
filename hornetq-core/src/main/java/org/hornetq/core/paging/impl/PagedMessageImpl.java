@@ -163,9 +163,6 @@ public class PagedMessageImpl implements PagedMessage
              DataConstants.SIZE_INT + queueIDs.length * DataConstants.SIZE_LONG;
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -176,8 +173,8 @@ public class PagedMessageImpl implements PagedMessage
              message +
              "]";
    }
-   
-   
+
+
 
    // Package protected ---------------------------------------------
 

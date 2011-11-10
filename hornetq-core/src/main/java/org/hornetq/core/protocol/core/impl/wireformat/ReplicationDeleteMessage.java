@@ -83,12 +83,4 @@ public class ReplicationDeleteMessage extends PacketImpl
       return journalID;
    }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

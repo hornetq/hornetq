@@ -41,7 +41,7 @@ public class PageImpl implements Page, Comparable<Page>
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PageImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
    private static final boolean isDebug = log.isDebugEnabled();
 
@@ -111,7 +111,7 @@ public class PageImpl implements Page, Comparable<Page>
 	  {
 	     log.debug("reading page " + this.pageId + " on address = " + storeName);
 	  }
-      
+
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       size.set((int)file.size());
@@ -238,7 +238,7 @@ public class PageImpl implements Page, Comparable<Page>
       {
          storageManager.pageDeleted(storeName, pageId);
       }
-      
+
       if (isDebug)
       {
          log.debug("Deleting pageId=" + pageId + " on store " + storeName);
@@ -301,18 +301,11 @@ public class PageImpl implements Page, Comparable<Page>
    }
 
 
-   /* (non-Javadoc)
-    * @see java.lang.Comparable#compareTo(java.lang.Object)
-    */
    public int compareTo(Page otherPage)
    {
       return otherPage.getPageId() - this.pageId;
    }
 
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#hashCode()
-    */
    @Override
    public int hashCode()
    {
@@ -322,16 +315,6 @@ public class PageImpl implements Page, Comparable<Page>
       return result;
    }
 
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
    @Override
    public boolean equals(Object obj)
    {
@@ -346,6 +329,12 @@ public class PageImpl implements Page, Comparable<Page>
          return false;
       return true;
    }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
 
    /**
     * @param position

@@ -18,21 +18,19 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.server.ServerMessage;
 
 /**
- * 
- * A Paged message
- * 
- * We can't just record the ServerMessage as we need other information (such as the TransactionID used during paging)
- * 
+ * A Paged message.
+ * <p>
+ * We can't just record the ServerMessage as we need other information (such as the TransactionID
+ * used during paging)
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- *
  */
 public interface PagedMessage extends EncodingSupport
 {
    ServerMessage getMessage();
-   
+
    /** The queues that were routed during paging */
    long[] getQueueIDs();
-   
+
    void initMessage(StorageManager storageManager);
 
    long getTransactionID();

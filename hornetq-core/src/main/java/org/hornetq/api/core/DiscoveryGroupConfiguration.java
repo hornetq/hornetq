@@ -16,7 +16,6 @@ package org.hornetq.api.core;
 import java.io.Serializable;
 
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -32,9 +31,6 @@ public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
    
-   private static final Logger log = Logger.getLogger(DiscoveryGroupConfiguration.class);
-
-
    private String name;
    
    private String localBindAddress;

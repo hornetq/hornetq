@@ -35,7 +35,7 @@ public class SecurityDeployer extends XmlDeployer
 
    private static final String MATCH = "match";
 
-   private final FileConfigurationParser parser = new FileConfigurationParser(); 
+   private final FileConfigurationParser parser = new FileConfigurationParser();
 
    /**
     * The repository to add to
@@ -68,8 +68,7 @@ public class SecurityDeployer extends XmlDeployer
    }
 
    /**
-    * the key attribute for theelement, usually 'name' but can be overridden
-    *
+    * the key attribute for the element, usually 'name' but can be overridden
     * @return the key attribute
     */
    @Override

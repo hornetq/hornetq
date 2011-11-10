@@ -33,9 +33,6 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class PagedReferenceImpl implements PagedReference
 {
-
-   private static final long serialVersionUID = -8640232251318264710L;
-
    private static final Logger log = Logger.getLogger(PagedReferenceImpl.class);
 
    private static final boolean isTrace = log.isTraceEnabled();
@@ -50,7 +47,7 @@ public class PagedReferenceImpl implements PagedReference
    
    private int messageEstimate;
 
-   private AtomicInteger deliveryCount = new AtomicInteger(0);
+   private final AtomicInteger deliveryCount = new AtomicInteger(0);
 
    private final PageSubscription subscription;
 
