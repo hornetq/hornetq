@@ -233,6 +233,8 @@
       <path refid="org.jboss.security.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.msc.classpath"/>
+      <pathelement location="${org.jboss.logging.lib}/jboss-logging.jar"/>
    </path>
 
    <path id="twitter.integration.compilation.classpath">

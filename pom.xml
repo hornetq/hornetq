@@ -244,10 +244,16 @@ Copyright 2009 Red Hat, Inc.
          <artifactId>log4j</artifactId>
          <version>1.2.14</version>
       </dependency>
+      <!--needed to compile the integration jar-->
       <dependency>
          <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-spi</artifactId>
-         <version>2.1.0.GA</version>
+         <artifactId>jboss-logging</artifactId>
+         <version>3.1.0.CR1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.msc</groupId>
+         <artifactId>jboss-msc</artifactId>
+         <version>1.0.1.GA</version>
       </dependency>
       <!--needed to compile twitter support-->
       <dependency>

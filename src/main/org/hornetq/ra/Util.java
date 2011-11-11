@@ -243,46 +243,4 @@ public class Util
 
       return res;
    }
-   
-
-   /** The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
-    *  transaction manager during startup. 
-    *  
-    *  
-    *  TODO: https://jira.jboss.org/browse/HORNETQ-417 
-    *        We should use a proper SPI instead of reflection
-    *        We would need to define a proper SPI package for this.
-    *  */
-   public static TransactionManager locateTM(final String locatorClass, final String locatorMethod)
-   {
-      try
-      {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         Class<?> aClass = loader.loadClass(locatorClass);
-         Object o = aClass.newInstance();
-         Method m = aClass.getMethod(locatorMethod);
-         return (TransactionManager)m.invoke(o);
-      }
-      catch (Throwable e)
-      {
-         log.debug(e.getMessage(), e);
-         return null;
-      }
-   }
-
-   public static RecoveryRegistry locateRecoveryRegistry(final String locatorClass)
-   {
-      try
-      {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         Class<?> aClass = loader.loadClass(locatorClass);
-         Object o = aClass.newInstance();
-         return (RecoveryRegistry)o;
-      }
-      catch (Throwable e)
-      {
-         log.debug(e.getMessage(), e);
-         return null;
-      }
-   }
 }

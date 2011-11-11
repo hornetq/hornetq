@@ -30,6 +30,8 @@ import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.Util;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +45,7 @@ public class RecoveryManager
 
    private RecoveryRegistry registry;
 
-   private String resourceRecoveryClassNames = "org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
+   private String resourceRecoveryClassNames = "org.hornetq.integration.jboss.recovery.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
 
    private Map<XARecoveryConfig, HornetQResourceRecovery> configMap = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
 
@@ -87,7 +89,7 @@ public class RecoveryManager
 
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
-         registry = Util.locateRecoveryRegistry(locatorClasses[i]);
+         registry = (RecoveryRegistry) safeInitNewInstance(locatorClasses[i]);
          if (registry != null)
          {
             break;
@@ -159,6 +161,44 @@ public class RecoveryManager
          }
       }
       return false;
+   }
+
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static Object safeInitNewInstance(final String className)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(className);
+               return clazz.newInstance();
+            }
+            catch (Throwable t)
+            {
+                try
+                {
+                    loader = Thread.currentThread().getContextClassLoader();
+                    if (loader != null)
+                        return loader.loadClass(className).newInstance();
+                }
+                catch (RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                }
+
+                throw new IllegalArgumentException("Could not find class " + className);
+            }
+         }
+      });
    }
 
 }

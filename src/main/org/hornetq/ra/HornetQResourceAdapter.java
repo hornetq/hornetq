@@ -13,6 +13,9 @@
 package org.hornetq.ra;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -212,7 +215,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          HornetQResourceAdapter.log.trace("start(" + ctx + ")");
       }
       
-      locateTM();
+      initialiseTransactionManager();
 
       recoveryManager.start();
 
@@ -1560,14 +1563,14 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return map;
    }
    
-   private void locateTM()
+   private void initialiseTransactionManager()
    {
       String locatorClasses[] = raProperties.getTransactionManagerLocatorClass().split(";");
       String locatorMethods[] = raProperties.getTransactionManagerLocatorMethod().split(";");
       
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
-         tm = Util.locateTM(locatorClasses[i], locatorMethods[i]);
+         tm = initialiseTransactionManager(locatorClasses[i], locatorMethods[i]);
          if (tm != null)
          {
             break;
@@ -1734,5 +1737,69 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setConnectionLoadBalancingPolicyClassName(val5);
       }
+   }
+
+   /** The Resource adapter can't depend on any provider's specific library. Because of that we use reflection to locate the
+    *  transaction manager during startup.
+    *
+    *
+    *  TODO: https://jira.jboss.org/browse/HORNETQ-417
+    *        We should use a proper SPI instead of reflection
+    *        We would need to define a proper SPI package for this.
+    * */
+   public static TransactionManager initialiseTransactionManager(final String locatorClass, final String locatorMethod)
+   {
+      try
+      {
+         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+         Class<?> aClass = loader.loadClass(locatorClass);
+         Object o = safeInitNewInstance(locatorClass);
+         Method m = aClass.getMethod(locatorMethod);
+         return (TransactionManager)m.invoke(o);
+      }
+      catch (Throwable e)
+      {
+         log.debug(e.getMessage(), e);
+         return null;
+      }
+   }
+
+
+   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
+    *  utility class, as it would be a door to load anything you like in a safe VM.
+    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
+    */
+   private static Object safeInitNewInstance(final String className)
+   {
+      return AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            ClassLoader loader = getClass().getClassLoader();
+            try
+            {
+               Class<?> clazz = loader.loadClass(className);
+               return clazz.newInstance();
+            }
+            catch (Throwable t)
+            {
+                try
+                {
+                    loader = Thread.currentThread().getContextClassLoader();
+                    if (loader != null)
+                        return loader.loadClass(className).newInstance();
+                }
+                catch (RuntimeException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                }
+
+                throw new IllegalArgumentException("Could not find class " + className);
+            }
+         }
+      });
    }
 }
