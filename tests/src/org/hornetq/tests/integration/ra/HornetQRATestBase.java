@@ -16,8 +16,13 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.integration.jboss.recovery.AS7RecoveryRegistry;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.jboss.msc.service.*;
+import org.jboss.msc.value.Value;
+import org.jboss.tm.XAResourceRecovery;
+import org.jboss.tm.XAResourceRecoveryRegistry;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -29,9 +34,14 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.*;
 import javax.transaction.xa.XAResource;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -60,6 +70,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
       server = createServer(true, configuration);
       server.start();
       server.createQueue(MDBQUEUEPREFIXEDSIMPLE, MDBQUEUEPREFIXEDSIMPLE, null, true, false);
+      AS7RecoveryRegistry.container = new DummyServiceContainer();
    }
 
    @Override
@@ -83,6 +94,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
       super.tearDown();
    }
     public abstract boolean isSecure();
+
 
    class DummyMessageEndpointFactory implements MessageEndpointFactory
    {
@@ -209,6 +221,249 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
          public void scheduleWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
          {
          }
+      }
+   }
+
+
+   private static class DummyServiceContainer implements ServiceContainer
+   {
+      public void shutdown()
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public boolean isShutdownComplete()
+      {
+         return false;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void addTerminateListener(TerminateListener terminateListener)
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void awaitTermination() throws InterruptedException
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void dumpServices()
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public void dumpServices(PrintStream printStream)
+      {
+         //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public String getName()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceController<?> getRequiredService(ServiceName serviceName) throws ServiceNotFoundException
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceController<?> getService(ServiceName serviceName)
+      {
+         ServiceController<XAResourceRecoveryRegistry> controller = new ServiceController<XAResourceRecoveryRegistry>()
+         {
+            public ServiceController<?> getParent()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ServiceContainer getServiceContainer()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Mode getMode()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public boolean compareAndSetMode(Mode mode, Mode mode1)
+            {
+               return false;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void setMode(Mode mode)
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public State getState()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Substate getSubstate()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public XAResourceRecoveryRegistry getValue() throws IllegalStateException
+            {
+               XAResourceRecoveryRegistry registry = new XAResourceRecoveryRegistry()
+               {
+                  public void addXAResourceRecovery(XAResourceRecovery xaResourceRecovery)
+                  {
+                     //To change body of implemented methods use File | Settings | File Templates.
+                  }
+
+                  public void removeXAResourceRecovery(XAResourceRecovery xaResourceRecovery)
+                  {
+                     //To change body of implemented methods use File | Settings | File Templates.
+                  }
+               };
+               return registry;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Service<XAResourceRecoveryRegistry> getService() throws IllegalStateException
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ServiceName getName()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public ServiceName[] getAliases()
+            {
+               return new ServiceName[0];  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void addListener(ServiceListener<? super XAResourceRecoveryRegistry> serviceListener)
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void addListener(ServiceListener.Inheritance inheritance, ServiceListener<Object> objectServiceListener)
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void removeListener(ServiceListener<? super XAResourceRecoveryRegistry> serviceListener)
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public StartException getStartException()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public void retry()
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+
+            public Set<ServiceName> getImmediateUnavailableDependencies()
+            {
+               return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+         };
+         return controller;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public List<ServiceName> getServiceNames()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public <T> ServiceBuilder<T> addServiceValue(ServiceName serviceName, Value<? extends Service<T>> value)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public <T> ServiceBuilder<T> addService(ServiceName serviceName, Service<T> tService)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(ServiceListener<Object> objectServiceListener)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(ServiceListener<Object>... serviceListeners)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(Collection<ServiceListener<Object>> serviceListeners)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(ServiceListener.Inheritance inheritance, ServiceListener<Object> objectServiceListener)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(ServiceListener.Inheritance inheritance, ServiceListener<Object>... serviceListeners)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addListener(ServiceListener.Inheritance inheritance, Collection<ServiceListener<Object>> serviceListeners)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget removeListener(ServiceListener<Object> objectServiceListener)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public Set<ServiceListener<Object>> getListeners()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addDependency(ServiceName serviceName)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addDependency(ServiceName... serviceNames)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget addDependency(Collection<ServiceName> serviceNames)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget removeDependency(ServiceName serviceName)
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public Set<ServiceName> getDependencies()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public ServiceTarget subTarget()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
+      public BatchServiceTarget batchTarget()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
       }
    }
 }
