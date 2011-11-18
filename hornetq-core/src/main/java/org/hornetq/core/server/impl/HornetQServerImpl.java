@@ -577,36 +577,39 @@ public class HornetQServerImpl implements HornetQServer
             postOffice.stop();
          }
 
-         List<Runnable> tasks = scheduledPool.shutdownNow();
-
-         for (Runnable task : tasks)
-         {
-               HornetQServerImpl.log.info(this + "::Waiting for " + task);
-         }
+            if (scheduledPool != null)
+            {
+               List<Runnable> tasks = scheduledPool.shutdownNow();
+               for (Runnable task : tasks)
+            {
+                  HornetQServerImpl.log.info(this + "::Waiting for " + task);
+            }
+            }
 
          if (memoryManager != null)
          {
             memoryManager.stop();
          }
 
-            threadPool.shutdown();
 
-            scheduledPool.shutdown();
-
-         try
-         {
-            if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+            if (threadPool != null)
             {
-               HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
+               threadPool.shutdown();
+               try
+               {
+                  if (!threadPool.awaitTermination(10, TimeUnit.SECONDS))
+                  {
+                     HornetQServerImpl.log.warn("Timed out waiting for pool to terminate");
+                  }
+               }
+               catch (InterruptedException e)
+               {
+                  // Ignore
+               }
+               threadPool = null;
             }
-         }
-         catch (InterruptedException e)
-         {
-            // Ignore
-         }
-         threadPool = null;
 
-         try
+            try
          {
             if (!scheduledPool.awaitTermination(10, TimeUnit.SECONDS))
             {
@@ -621,7 +624,6 @@ public class HornetQServerImpl implements HornetQServer
          securityStore.stop();
 
          threadPool = null;
-
          scheduledPool = null;
 
          pagingManager = null;
