@@ -121,6 +121,7 @@ import org.hornetq.spi.core.logging.LogDelegateFactory;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.spi.core.protocol.SessionCallback;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -2109,30 +2110,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          public Object run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+            return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }

@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.spi.core.logging.LogDelegate;
 import org.hornetq.spi.core.logging.LogDelegateFactory;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * 
@@ -202,46 +203,16 @@ public class Logger
       delegate.trace(message, t);
    }
    
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
-    * @param className
-    * @return
-    */
+   
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
          public Object run()
          {
-            ClassLoader loader = this.getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+            return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
-
-
 
 }

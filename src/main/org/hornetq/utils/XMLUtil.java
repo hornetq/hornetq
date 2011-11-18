@@ -18,8 +18,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -483,7 +481,7 @@ public class XMLUtil
    {
       SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-      Schema schema = factory.newSchema(findResource(schemaFile));
+      Schema schema = factory.newSchema(ClassloadingUtil.findResource(schemaFile));
       Validator validator = schema.newValidator();
 
       // validate the DOM tree
@@ -529,40 +527,6 @@ public class XMLUtil
          nodes.add(n);
       }
       return nodes;
-   }
-
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
-    */
-   private static URL findResource(final String resourceName)
-   {
-      return AccessController.doPrivileged(new PrivilegedAction<URL>()
-      {
-         public URL run()
-         {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               URL resource = loader.getResource(resourceName);
-               if (resource != null)
-                   return resource;
-            }
-            catch (Throwable t)
-            {
-            }
-
-            loader = Thread.currentThread().getContextClassLoader();
-            if (loader == null)
-                return null;
-
-            URL resource = loader.getResource(resourceName);
-            if (resource != null)
-                return resource;
-
-             return null;
-         }
-      });
    }
 
    // Inner classes --------------------------------------------------------------------------------

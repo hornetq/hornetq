@@ -56,6 +56,7 @@ import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.utils.ClassloadingUtil;
 
 /**
  * 
@@ -2003,6 +2004,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
       }
    }
+   
 
    /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
     *  utility class, as it would be a door to load anything you like in a safe VM.
@@ -2014,33 +2016,9 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       {
          public Object run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+            return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
-
 
 }

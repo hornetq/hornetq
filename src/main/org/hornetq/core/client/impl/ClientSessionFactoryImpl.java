@@ -59,6 +59,7 @@ import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
 import org.hornetq.spi.core.remoting.Connector;
 import org.hornetq.spi.core.remoting.ConnectorFactory;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
@@ -1351,18 +1352,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       {
          public ConnectorFactory run()
          {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(connectorFactoryClassName);
-               return (ConnectorFactory)clazz.newInstance();
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Error instantiating connector factory \"" + connectorFactoryClassName +
-                                                           "\"",
-                                                  e);
-            }
+            return (ConnectorFactory) ClassloadingUtil.newInstanceFromClassLoader(connectorFactoryClassName);
          }
       });
    }

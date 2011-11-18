@@ -52,6 +52,7 @@ import org.hornetq.spi.core.remoting.AcceptorFactory;
 import org.hornetq.spi.core.remoting.BufferHandler;
 import org.hornetq.spi.core.remoting.Connection;
 import org.hornetq.spi.core.remoting.ConnectionLifeCycleListener;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -640,44 +641,15 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
    
-   
-   /** This seems duplicate code all over the place, but for security reasons we can't let something like this to be open in a
-    *  utility class, as it would be a door to load anything you like in a safe VM.
-    *  For that reason any class trying to do a privileged block should do with the AccessController directly.
-    */
    private static Object safeInitNewInstance(final String className)
    {
       return AccessController.doPrivileged(new PrivilegedAction<Object>()
       {
          public Object run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+         	return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
-
 
 }
