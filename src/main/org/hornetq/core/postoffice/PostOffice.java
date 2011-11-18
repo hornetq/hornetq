@@ -42,7 +42,21 @@ public interface PostOffice extends HornetQComponent
    void addBinding(Binding binding) throws Exception;
 
    Binding removeBinding(SimpleString uniqueName) throws Exception;
+   
+   /**
+    * It will lookup the Binding without creating an item on the Queue if non-existent
+    * @param address
+    * @return
+    * @throws Exception
+    */
+   Bindings lookupBindingsForAddress(SimpleString address) throws Exception;
 
+   /**
+    * Differently to lookupBindings, this will always create a new element on the Queue if non-existent
+    * @param address
+    * @return
+    * @throws Exception
+    */
    Bindings getBindingsForAddress(SimpleString address) throws Exception;
 
    Binding getBinding(SimpleString uniqueName);

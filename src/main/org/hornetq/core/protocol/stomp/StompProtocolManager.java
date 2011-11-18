@@ -32,6 +32,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -536,10 +537,14 @@ class StompProtocolManager implements ProtocolManager
       String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
       long timestamp = System.currentTimeMillis();
-
+      
+      SimpleString address = SimpleString.toSimpleString(destination);
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
       message.setTimestamp(timestamp);
-      message.setAddress(SimpleString.toSimpleString(destination));
+      message.setAddress(address);
+
+      validateDestination(address);
+      
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
       if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
       {
@@ -569,6 +574,20 @@ class StompProtocolManager implements ProtocolManager
       stompSession.getSession().send(message, true);           
       
       return null;
+   }
+
+   /**
+    * @param address
+    * @throws Exception
+    * @throws HornetQException
+    */
+   private void validateDestination(SimpleString address) throws Exception, HornetQException
+   {
+      Bindings binding = server.getPostOffice().lookupBindingsForAddress(address);
+      if (binding == null || binding.getBindings().size() == 0)
+      {
+         throw new HornetQException(HornetQException.ADDRESS_DOES_NOT_EXIST, "Address " + address + " has not been deployed");
+      }
    }
 
    private StompFrame onConnect(StompFrame frame, final StompConnection connection) throws Exception

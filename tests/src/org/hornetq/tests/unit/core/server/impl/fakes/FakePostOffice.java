@@ -85,6 +85,12 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
+   public Bindings lookupBindingsForAddress(final SimpleString address) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
    /* (non-Javadoc)
     * @see org.hornetq.core.postoffice.PostOffice#getDuplicateIDCache(org.hornetq.utils.SimpleString)
     */
