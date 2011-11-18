@@ -311,10 +311,13 @@ public class ReplicationTest extends ServiceTestBase
       {
          TestInterceptor.value.set(false);
          if (!session.isClosed())
-            session.commit();
+            session.close();
          if (!session2.isClosed())
-            session2.commit();
+            session2.close();
+         if (sf != null)
+            sf.close();
       }
+
    }
 
    public void testExceptionSettingActionBefore() throws Exception
@@ -552,23 +555,21 @@ public class ReplicationTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-
       stopComponent(manager);
       manager = null;
-      stopComponent(liveServer);
-      liveServer = null;
       stopComponent(backupServer);
       backupServer = null;
+      stopComponent(liveServer);
+      liveServer = null;
+      closeServerLocator(locator);
 
-      executor.shutdown();
-
-      scheduledExecutor.shutdown();
+      executor.shutdownNow();
+      scheduledExecutor.shutdownNow();
 
       tFactory = null;
       scheduledExecutor = null;
 
       super.tearDown();
-
    }
 
    protected
