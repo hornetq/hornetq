@@ -108,13 +108,17 @@ import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.XidCodecSupport;
 
 /**
- *
- * A JournalStorageManager
- *
+ * Controls access to the journals and other storage files such as the ones used to store pages and
+ * large messages. This class must control writing of any non-transient data, as it is the key point
+ * for synchronizing a replicating backup server.
+ * <p>
+ * Notice that, turning on and off replication (on the live server side) is _mostly_ a matter of
+ * using {@link ReplicatedJournal}s instead of regular {@link JournalImpl}, and sync the existing
+ * data.
+ * <p>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
  */
 public class JournalStorageManager implements StorageManager
 {
