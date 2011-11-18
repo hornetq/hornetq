@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.security.AccessController;
+import java.security.InvalidParameterException;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -185,7 +186,7 @@ public class JournalStorageManager implements StorageManager
                 return MESSAGES;
             if (BINDINGS.typeByte == type)
                 return BINDINGS;
-            throw new RuntimeException("invalid byte");
+         throw new InvalidParameterException("invalid byte: " + type);
         }
     }
 
