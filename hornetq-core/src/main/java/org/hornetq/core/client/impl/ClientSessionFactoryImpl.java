@@ -81,8 +81,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final long serialVersionUID = 2512460695662741413L;
-
    private static final Logger log = Logger.getLogger(ClientSessionFactoryImpl.class);
 
    private static final boolean isTrace = ClientSessionFactoryImpl.log.isTraceEnabled();

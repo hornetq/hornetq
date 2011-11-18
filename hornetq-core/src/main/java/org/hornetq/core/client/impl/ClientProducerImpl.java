@@ -50,8 +50,6 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    // Attributes -----------------------------------------------------------------------------------
 
-   private final boolean trace = ClientProducerImpl.log.isTraceEnabled();
-
    private final SimpleString address;
 
    private final ClientSessionInternal session;

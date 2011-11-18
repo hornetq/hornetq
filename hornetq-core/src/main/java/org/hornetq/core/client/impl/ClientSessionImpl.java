@@ -109,8 +109,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private static final Logger log = Logger.getLogger(ClientSessionImpl.class);
 
-   private final boolean trace = ClientSessionImpl.log.isTraceEnabled();
-
    // Attributes ----------------------------------------------------------------------------
 
    private final Map<String, String> metadata = new HashMap<String, String>();

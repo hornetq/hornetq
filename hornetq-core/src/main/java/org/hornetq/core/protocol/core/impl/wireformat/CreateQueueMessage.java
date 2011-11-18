@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -25,11 +24,6 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class CreateQueueMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(CreateQueueMessage.class);
-
-   // Attributes ----------------------------------------------------
 
    private SimpleString address;
 
@@ -42,10 +36,6 @@ public class CreateQueueMessage extends PacketImpl
    private boolean temporary;
 
    private boolean requiresResponse;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
 
    public CreateQueueMessage(final SimpleString address,
                              final SimpleString queueName,

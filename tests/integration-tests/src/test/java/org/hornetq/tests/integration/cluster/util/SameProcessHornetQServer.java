@@ -19,7 +19,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.tests.util.CountDownSessionFailureListener;
@@ -31,8 +30,6 @@ import org.hornetq.tests.util.CountDownSessionFailureListener;
  */
 public class SameProcessHornetQServer implements TestableServer
 {
-   private static Logger log = Logger.getLogger(SameProcessHornetQServer.class);
-
    private final HornetQServer server;
 
    public SameProcessHornetQServer(HornetQServer server)
