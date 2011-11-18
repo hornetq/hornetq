@@ -119,6 +119,7 @@
 	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-mdr.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-reflect.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jbossxb.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/logging/lib/jboss-logging.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
@@ -133,5 +134,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-expression.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-jms.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/springframework/lib/spring-tx.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/msc/lib/jboss-msc.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
