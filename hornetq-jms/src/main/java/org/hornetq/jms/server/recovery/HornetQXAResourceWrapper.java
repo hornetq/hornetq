@@ -13,17 +13,13 @@
 
 package org.hornetq.jms.server.recovery;
 
-import java.util.Map;
-
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.logging.Logger;
@@ -58,7 +54,7 @@ public class HornetQXAResourceWrapper implements XAResource, SessionFailureListe
 
    private XAResource delegate;
 
-   private XARecoveryConfig[] xaRecoveryConfigs;
+   private final XARecoveryConfig[] xaRecoveryConfigs;
 
    //private TransportConfiguration currentConnection;
 
