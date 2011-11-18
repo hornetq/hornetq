@@ -243,6 +243,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
             }
       }
       }
+
+      @Override
+      public String toString()
+      {
+         return "id=" + id + ", consumer=" + consumer + ", session=" + session;
+      }
    }
 
    protected ClientConsumer getConsumer(final int node)

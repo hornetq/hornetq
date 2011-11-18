@@ -35,6 +35,8 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFailoverTestBase
 {
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
+   private ServerLocator locator2;
+   private ServerLocator locator;
 
    @Override
    protected void tearDown() throws Exception
@@ -53,6 +55,8 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
             }
          }
       }
+      closeServerLocator(locator);
+      closeServerLocator(locator2);
       super.tearDown();
    }
 
@@ -72,20 +76,20 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
 
       servers.get(3).start();
       waitForServer(servers.get(3).getServer());
-      
+
       servers.get(1).start();
       waitForServer(servers.get(1).getServer());
 
       servers.get(2).start();
-      
+
       servers.get(4).start();
       waitForServer(servers.get(4).getServer());
-      
+
       servers.get(5).start();
 
       waitForServer(servers.get(4).getServer());
 
-      ServerLocator locator = getServerLocator(0);
+      locator = getServerLocator(0);
 
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -100,7 +104,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
 
       int liveAfter0 = waitForNewLive(10000, true, servers, 1, 2);
 
-      ServerLocator locator2 = getServerLocator(3);
+      locator2 = getServerLocator(3);
       locator2.setBlockOnNonDurableSend(true);
       locator2.setBlockOnDurableSend(true);
       locator2.setBlockOnAcknowledge(true);
@@ -249,6 +253,7 @@ public class MultipleLivesMultipleBackupsFailoverTest extends MultipleBackupsFai
                   new SameProcessHornetQServer(createInVMFailoverServer(true, config0, nodeManager, liveNode)));
    }
 
+   @Override
    protected boolean isNetty()
    {
       return false;

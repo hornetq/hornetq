@@ -56,9 +56,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      //FailoverManagerImpl.enableDebug();
-
       setupServers();
    }
 
