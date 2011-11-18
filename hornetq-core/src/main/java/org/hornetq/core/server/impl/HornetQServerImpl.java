@@ -2022,7 +2022,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private final class SharedNothingBackupActivation implements Activation
    {
-      private ServerLocatorInternal serverLocator;
+      private ServerLocatorInternal serverLocator0;
       private volatile boolean failedConnection;
 
       public void run()
@@ -2042,11 +2042,11 @@ public class HornetQServerImpl implements HornetQServer
             clusterManager.start();
 
             final TransportConfiguration config = configuration.getConnectorConfigurations().get(liveConnectorName);
-            serverLocator = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
-            final QuorumManager quorumManager = new QuorumManager(serverLocator);
+            serverLocator0 = (ServerLocatorInternal)HornetQClient.createServerLocatorWithHA(config);
+            final QuorumManager quorumManager = new QuorumManager(serverLocator0);
             replicationEndpoint.setQuorumManager(quorumManager);
 
-            serverLocator.setReconnectAttempts(-1);
+            serverLocator0.setReconnectAttempts(-1);
 
             threadPool.execute(new Runnable()
             {
@@ -2055,7 +2055,7 @@ public class HornetQServerImpl implements HornetQServer
                {
                   try
                   {
-                     final ClientSessionFactory liveServerSessionFactory = serverLocator.connect();
+                     final ClientSessionFactory liveServerSessionFactory = serverLocator0.connect();
                      if (liveServerSessionFactory == null)
                      {
                         // XXX HORNETQ-768
@@ -2111,7 +2111,7 @@ public class HornetQServerImpl implements HornetQServer
                }
             }
 
-            serverLocator.close();
+            serverLocator0.close();
             replicationEndpoint.stop();
 
             if (failedConnection)
@@ -2148,10 +2148,10 @@ public class HornetQServerImpl implements HornetQServer
 
       public void close(final boolean permanently) throws Exception
       {
-         if (serverLocator != null)
+         if (serverLocator0 != null)
          {
-            serverLocator.close();
-            serverLocator = null;
+            serverLocator0.close();
+            serverLocator0 = null;
          }
 
          if (configuration.isBackup())
