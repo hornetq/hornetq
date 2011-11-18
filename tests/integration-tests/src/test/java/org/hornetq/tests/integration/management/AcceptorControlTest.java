@@ -17,6 +17,7 @@ import java.util.HashMap;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -25,10 +26,7 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.NotificationType;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -41,7 +39,7 @@ import org.hornetq.tests.util.RandomUtil;
  * A AcceptorControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  *
@@ -49,13 +47,8 @@ import org.hornetq.tests.util.RandomUtil;
 public class AcceptorControlTest extends ManagementTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(AcceptorControlTest.class);
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer service;
+   private ServerLocator locator;
 
    // Static --------------------------------------------------------
 
@@ -98,7 +91,9 @@ public class AcceptorControlTest extends ManagementTestBase
 
       // started by the server
       Assert.assertTrue(acceptorControl.isStarted());
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      locator =
+               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                     InVMConnectorFactory.class.getName()));
       ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession(false, true, true);
       Assert.assertNotNull(session);
@@ -113,7 +108,7 @@ public class AcceptorControlTest extends ManagementTestBase
          sf.createSession(false, true, true);
          Assert.fail("acceptor must not accept connections when stopped accepting");
       }
-      catch (Exception e)
+      catch (HornetQException e)
       {
       }
 
@@ -136,7 +131,7 @@ public class AcceptorControlTest extends ManagementTestBase
          sf.createSession(false, true, true);
          Assert.fail("acceptor must not accept connections when stopped accepting");
       }
-      catch (Exception e)
+      catch (HornetQException e)
       {
       }
 
@@ -186,11 +181,8 @@ public class AcceptorControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (service != null)
-      {
-         service.stop();
-      }
-
+      stopComponent(service);
+      closeServerLocator(locator);
       super.tearDown();
    }
 

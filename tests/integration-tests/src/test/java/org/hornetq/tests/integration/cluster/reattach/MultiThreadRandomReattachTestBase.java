@@ -45,7 +45,7 @@ import org.hornetq.tests.util.RandomUtil;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  *
  */
 public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReattachSupport
@@ -276,7 +276,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       ClientSession session = sf.createSession(false, false, false);
       session.addMetaData("someData", RandomUtil.randomString());
       session.addMetaData("someData2", RandomUtil.randomString());
-      
+
       return session;
    }
 
@@ -828,7 +828,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       ClientSession s = sf.createSession(false, false, false);
       s.addMetaData("data", RandomUtil.randomString());
-      
+
 
       final int numMessages = 100;
 
@@ -907,7 +907,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
          ClientSession sessConsume = sf.createSession(false, false, false);
          sessConsume.addMetaData("data", RandomUtil.randomString());
-         
+
 
          sessConsume.start();
 
@@ -1159,7 +1159,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, false, false);
-         
+
          session.addMetaData("data", RandomUtil.randomString());
 
          session.close();
@@ -1246,7 +1246,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    {
       return 2;
    }
-   
+
    protected int getNumThreads()
    {
       return 10;
@@ -1263,10 +1263,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    @Override
    protected void tearDown() throws Exception
    {
-      if (liveServer != null && liveServer.isStarted())
-      {
-         liveServer.stop();
-      }
+      stopComponent(liveServer);
 
       liveServer = null;
 
@@ -1306,7 +1303,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    @Override
    protected void stop() throws Exception
    {
-      liveServer.stop();
+      stopComponent(liveServer);
 
       System.gc();
 

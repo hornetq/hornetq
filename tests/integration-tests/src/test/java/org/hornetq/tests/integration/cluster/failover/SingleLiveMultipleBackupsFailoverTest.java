@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -38,6 +37,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
 {
 
    protected Map<Integer, TestableServer> servers = new HashMap<Integer, TestableServer>();
+   protected ServerLocatorImpl locator;
    private NodeManager nodeManager;
 
    Logger log = Logger.getLogger(SingleLiveMultipleBackupsFailoverTest.class);
@@ -71,7 +71,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
       servers.get(4).start();
       servers.get(5).start();
 
-      ServerLocatorImpl locator = (ServerLocatorImpl)getServerLocator(0);
+      locator = (ServerLocatorImpl)getServerLocator(0);
 
       Topology topology = locator.getTopology();
 
@@ -191,11 +191,11 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
    @Override
    protected void tearDown() throws Exception
    {
-      for (Entry<Integer, TestableServer> entry : servers.entrySet())
+      for (TestableServer server : servers.values())
       {
          try
          {
-            entry.getValue().stop();
+            stopComponent(server);
          }
          catch (Exception e)
          {
@@ -203,6 +203,7 @@ public class SingleLiveMultipleBackupsFailoverTest extends MultipleBackupsFailov
          }
       }
       servers.clear();
+      closeServerLocator(locator);
       super.tearDown();
    }
 

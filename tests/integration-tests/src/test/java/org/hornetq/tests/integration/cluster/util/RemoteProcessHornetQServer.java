@@ -70,7 +70,7 @@ public class RemoteProcessHornetQServer implements TestableServer
 
    public void destroy()
    {
-      if(serverProcess != null)
+      if (serverProcess != null)
       {
          serverProcess.destroy();
       }

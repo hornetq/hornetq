@@ -55,7 +55,6 @@ public class AddressControlTest extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
-
    protected ClientSession session;
    private ServerLocator locator;
 
@@ -104,13 +103,13 @@ public class AddressControlTest extends ManagementTestBase
 
       session.deleteQueue(anotherQueue);
    }
-   
+
    public void testGetBindingNames() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString queue = RandomUtil.randomSimpleString();
       String divertName = RandomUtil.randomString();
-      
+
       session.createQueue(address, queue, false);
 
       AddressControl addressControl = createManagementControl(address);
@@ -122,9 +121,9 @@ public class AddressControlTest extends ManagementTestBase
 
       bindingNames = addressControl.getBindingNames();
       Assert.assertEquals(2, bindingNames.length);
-      
+
       session.deleteQueue(queue);
-      
+
       bindingNames = addressControl.getBindingNames();
       assertEquals(1, bindingNames.length);
       assertEquals(divertName.toString(), bindingNames[0]);
@@ -316,11 +315,11 @@ public class AddressControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      session.close();
+      if (session != null)
+         session.close();
 
-      locator.close();
-
-      server.stop();
+      closeServerLocator(locator);
+      stopComponent(server);
 
       server = null;
 

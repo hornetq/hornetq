@@ -16,12 +16,11 @@ package org.hornetq.tests.integration.cluster.reattach;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServers;
 
 /**
- * 
+ *
  * A MultiThreadRandomReattachTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -43,9 +42,6 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
       liveServer.start();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#setBody(org.hornetq.api.core.client.ClientMessage)
-    */
    @Override
    protected void setBody(final ClientMessage message) throws Exception
    {
@@ -53,9 +49,6 @@ public class MultiThreadRandomReattachTest extends MultiThreadRandomReattachTest
       message.getBodyBuffer().writeBytes(new byte[250]);
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.tests.integration.cluster.failover.MultiThreadRandomReattachTestBase#checkSize(org.hornetq.api.core.client.ClientMessage)
-    */
    @Override
    protected boolean checkSize(final ClientMessage message)
    {
