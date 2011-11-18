@@ -82,23 +82,22 @@ public class RemoteFailoverTest extends FailoverTest
          }
          catch (Exception e)
          {
-            e.printStackTrace(); 
+            e.printStackTrace();
          }
       }
    }
 
    @Override
-   protected TestableServer createLiveServer()
+   protected TestableServer createServer(Configuration config)
    {
+      if (config.isBackup())
+      {
+         return new SameProcessHornetQServer(HornetQServers.newHornetQServer(config));
+      }
       return new RemoteProcessHornetQServer(SharedLiveServerConfiguration.class.getName());
    }
-   
+
    @Override
-   protected TestableServer createBackupServer()
-   {
-      return new SameProcessHornetQServer(HornetQServers.newHornetQServer(backupConfig));
-   }
-   
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live) {
       Map<String, Object> params = null;
       if (live)

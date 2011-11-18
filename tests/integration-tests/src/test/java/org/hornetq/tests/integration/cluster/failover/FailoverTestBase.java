@@ -128,14 +128,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
       }
    }
 
-   protected TestableServer createLiveServer()
+   protected TestableServer createServer(Configuration config)
    {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager, 1));
-   }
-
-   protected TestableServer createBackupServer()
-   {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager, 2));
+      return new SameProcessHornetQServer(
+                                          createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
    }
 
    /**
@@ -189,7 +185,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
                                                         liveConnector.getName());
-      backupServer = createBackupServer();
+      backupServer = createServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
@@ -199,11 +195,13 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setClustered(true);
       ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      liveServer = createLiveServer();
+      liveServer = createServer(liveConfig);
    }
 
-   protected void createReplicatedConfigs() throws Exception
+   protected void createReplicatedConfigs()
    {
+      nodeManager = new InVMNodeManager();
+
       final TransportConfiguration liveConnector = getConnectorTransportConfiguration(true);
       final TransportConfiguration backupConnector = getConnectorTransportConfiguration(false);
       final TransportConfiguration backupAcceptor = getAcceptorTransportConfiguration(false);
@@ -215,18 +213,18 @@ public abstract class FailoverTestBase extends ServiceTestBase
       ReplicatedBackupUtils.configureReplicationPair(backupConfig, backupConnector, backupAcceptor, liveConfig,
                                                      liveConnector);
 
-      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + "_backup");
-      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + "_backup");
-      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + "_backup");
-      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + "_backup");
+      final String sufix = "_backup";
+      backupConfig.setBindingsDirectory(backupConfig.getBindingsDirectory() + sufix);
+      backupConfig.setJournalDirectory(backupConfig.getJournalDirectory() + sufix);
+      backupConfig.setPagingDirectory(backupConfig.getPagingDirectory() + sufix);
+      backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + sufix);
       backupConfig.setSecurityEnabled(false);
 
-      backupServer = createBackupServer();
+      backupServer = createServer(backupConfig);
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-
-      liveServer = createLiveServer();
+      liveServer = createServer(liveConfig);
    }
 
    @Override

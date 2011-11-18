@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
+import org.hornetq.core.config.Configuration;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
@@ -24,30 +25,10 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
 public class NettyReplicatedFailoverTest extends NettyFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
-   protected TestableServer createLiveServer()
+   protected TestableServer createServer(Configuration config)
    {
-      return new SameProcessHornetQServer(createServer(true, liveConfig));
-   }
-
-   @Override
-   protected TestableServer createBackupServer()
-   {
-      return new SameProcessHornetQServer(createServer(true, backupConfig));
+      return new SameProcessHornetQServer(createServer(true, config));
    }
 
    @Override
@@ -55,9 +36,4 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
    {
       createReplicatedConfigs();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

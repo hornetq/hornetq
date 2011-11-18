@@ -13,8 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
-import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
  * A ReplicatedAsynchronousFailoverTest
@@ -23,19 +21,6 @@ import org.hornetq.tests.integration.cluster.util.TestableServer;
  */
 public class ReplicatedAsynchronousFailoverTest extends AsynchronousFailoverTest
 {
-
-   @Override
-   protected TestableServer createLiveServer()
-   {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, liveConfig, nodeManager, 1));
-   }
-
-   @Override
-   protected TestableServer createBackupServer()
-   {
-      return new SameProcessHornetQServer(createInVMFailoverServer(true, backupConfig, nodeManager, 2));
-   }
-
    @Override
    protected void createConfigs() throws Exception
    {

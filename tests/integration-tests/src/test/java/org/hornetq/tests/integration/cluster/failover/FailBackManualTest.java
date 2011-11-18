@@ -162,7 +162,7 @@ public class FailBackManualTest extends FailoverTestBase
             staticConnectors, false);
       backupConfig.getClusterConfigurations().add(cccLive);
       backupConfig.setAllowAutoFailBack(false);
-      backupServer = createBackupServer();
+      backupServer = createServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
@@ -178,7 +178,7 @@ public class FailBackManualTest extends FailoverTestBase
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
       liveConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       liveConfig.setAllowAutoFailBack(false);
-      liveServer = createLiveServer();
+      liveServer = createServer(liveConfig);
    }
 
    @Override
@@ -246,6 +246,7 @@ public class FailBackManualTest extends FailoverTestBase
     * @param message
     * @throws Exception
     */
+   @Override
    protected void setBody(final int i, final ClientMessage message) throws Exception
    {
       message.getBodyBuffer().writeString("message" + i);

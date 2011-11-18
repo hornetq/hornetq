@@ -220,15 +220,9 @@ public class PagingFailoverTest extends FailoverTestBase
    }
 
    @Override
-   protected TestableServer createBackupServer()
+   protected TestableServer createServer(Configuration config)
    {
-      return new SameProcessHornetQServer(createServer(true, backupConfig));
-   }
-
-   @Override
-   protected TestableServer createLiveServer()
-   {
-      return new SameProcessHornetQServer(createServer(true, liveConfig));
+      return new SameProcessHornetQServer(createServer(true, config));
    }
 
    // Private -------------------------------------------------------
