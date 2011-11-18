@@ -29,6 +29,7 @@ import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.hornetq.jms.server.recovery.XARecoveryConfig;
 import org.hornetq.ra.Util;
+import org.hornetq.utils.ClassloadingUtil;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -173,30 +174,7 @@ public class RecoveryManager
       {
          public Object run()
          {
-            ClassLoader loader = getClass().getClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(className);
-               return clazz.newInstance();
-            }
-            catch (Throwable t)
-            {
-                try
-                {
-                    loader = Thread.currentThread().getContextClassLoader();
-                    if (loader != null)
-                        return loader.loadClass(className).newInstance();
-                }
-                catch (RuntimeException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                }
-
-                throw new IllegalArgumentException("Could not find class " + className);
-            }
+            return ClassloadingUtil.newInstanceFromClassLoader(className);
          }
       });
    }
