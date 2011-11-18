@@ -21,7 +21,6 @@
 */
 package org.hornetq.integration.jboss.recovery;
 
-
 import org.hornetq.jms.server.recovery.HornetQResourceRecovery;
 import org.hornetq.jms.server.recovery.RecoveryRegistry;
 import org.jboss.msc.service.ServiceName;
@@ -36,6 +35,7 @@ import org.jboss.tm.XAResourceRecoveryRegistry;
 public class AS7RecoveryRegistry implements RecoveryRegistry
 {
    public static final ServiceName RECOVERY_MANAGER = ServiceName.JBOSS.append("txn").append("ArjunaRecoveryManager");
+
    public static volatile ServiceContainer container;
 
    private XAResourceRecoveryRegistry registry;
@@ -61,8 +61,15 @@ public class AS7RecoveryRegistry implements RecoveryRegistry
 
    private static XAResourceRecoveryRegistry getXAResourceRecoveryRegistry()
    {
-      @SuppressWarnings("unchecked")
-      ServiceController<XAResourceRecoveryRegistry> service = (ServiceController<XAResourceRecoveryRegistry>) container.getService(RECOVERY_MANAGER);
-      return service == null ? null : service.getValue();
+      if (container == null)
+      {
+         return null;
+      }
+      else
+      {
+         @SuppressWarnings("unchecked")
+         ServiceController<XAResourceRecoveryRegistry> service = (ServiceController<XAResourceRecoveryRegistry>) container.getService(RECOVERY_MANAGER);
+         return service == null ? null : service.getValue();
+      }
    }
 }
