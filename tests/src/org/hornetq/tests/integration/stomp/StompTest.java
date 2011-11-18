@@ -74,6 +74,23 @@ public class StompTest extends StompTestBase
       assertTrue(latch.await(60, TimeUnit.SECONDS));
    }
 
+   public void testSendInvalidDestination() throws Exception
+   {
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+      frame = receiveFrame(10000);
+
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+ 
+      frame = "SEND\n" + "destination:" + getQueuePrefix() + getQueueName()+"IdontExist" + "\n\n" + "Hello World" + Stomp.NULL;
+      sendFrame(frame);
+      
+      String frameReceived = receiveFrame(1000);
+      System.out.println(frameReceived);
+      
+      Assert.assertTrue(frameReceived.startsWith("ERROR"));
+   }
+
    public void testConnect() throws Exception
    {
 
@@ -124,7 +141,6 @@ public class StompTest extends StompTestBase
       {
       }
    }
-
    public void testSendMessage() throws Exception
    {
 

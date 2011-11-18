@@ -541,6 +541,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       return bindings;
    }
 
+
+   public Bindings lookupBindingsForAddress(final SimpleString address) throws Exception
+   {
+      return addressManager.getBindingsForRoutingAddress(address);
+   }
+
    public Binding getBinding(final SimpleString name)
    {
       return addressManager.getBinding(name);

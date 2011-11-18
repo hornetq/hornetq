@@ -35,8 +35,14 @@ public class SimpleAddressManager implements AddressManager
 {
    private static final Logger log = Logger.getLogger(SimpleAddressManager.class);
 
+   /**
+    * HashMap<Address, Binding>
+    */
    private final ConcurrentMap<SimpleString, Bindings> mappings = new ConcurrentHashMap<SimpleString, Bindings>();
 
+   /**
+    * HashMap<QueueName, Binding>
+    */
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
 
    private final BindingsFactory bindingsFactory;
