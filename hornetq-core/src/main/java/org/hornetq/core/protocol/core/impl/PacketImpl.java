@@ -147,7 +147,7 @@ public class PacketImpl implements Packet
    public static final byte SESS_PRODUCER_REQUEST_CREDITS = 79;
 
    public static final byte SESS_PRODUCER_CREDITS = 80;
-   
+
    public static final byte SESS_INDIVIDUAL_ACKNOWLEDGE = 81;
 
    // Replication
@@ -179,14 +179,14 @@ public class PacketImpl implements Packet
    public static final byte REPLICATION_COMPARE_DATA = 102;
 
    public static final byte REPLICATION_SYNC_FILE = 103;
-   
+
    public static final byte SESS_ADD_METADATA = 104;
-   
+
    public static final byte SESS_ADD_METADATA2 = 105;
-   
+
    public static final byte SESS_UNIQUE_ADD_METADATA = 106;
-   
-   
+
+
 
    // HA
 
@@ -195,7 +195,7 @@ public class PacketImpl implements Packet
    public static final byte NODE_ANNOUNCE = 111;
 
    public static final byte SUBSCRIBE_TOPOLOGY = 112;
-   
+
    // For newer versions
 
    public static final byte SUBSCRIBE_TOPOLOGY_V2 = 113;
@@ -203,9 +203,10 @@ public class PacketImpl implements Packet
    public static final byte CLUSTER_TOPOLOGY_V2 = 114;
 
    public static final byte BACKUP_REGISTRATION = 115;
+   public static final byte BACKUP_REGISTRATION_FAILED = 116;
 
    public static final byte REPLICATION_START_FINISH_SYNC = 120;
- 
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -288,7 +289,7 @@ public class PacketImpl implements Packet
    {
       return true;
    }
-   
+
    public boolean isAsyncExec()
    {
       return false;

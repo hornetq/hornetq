@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.hornetq.api.core.HornetQBuffer;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
@@ -32,6 +34,7 @@ import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.ServerSessionPacketHandler;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
@@ -208,10 +211,33 @@ class CoreProtocolManager implements ProtocolManager
             } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
                BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
-               if (server.startReplication(rc, acceptorUsed.getClusterConnection(), getPair(msg.getConnector(), true)))
-               {
-                  // XXX if it fails, the backup should get to know it
+
+               try {
+                  server.startReplication(rc, acceptorUsed.getClusterConnection(), getPair(msg.getConnector(), true));
+               } catch (HornetQException e){
+                 channel0.send(new BackupRegistrationFailedMessage(e));
                }
+            }
+            else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION_FAILED)
+            {
+               assert server.getConfiguration().isBackup();
+               assert !server.getConfiguration().isSharedStore();
+               log.warn("Replication failed to start because of exception with error " +
+                        ((BackupRegistrationFailedMessage)packet).getCause());
+               Executors.newSingleThreadExecutor().execute(new Runnable()
+               {
+                  public void run()
+                  {
+                     try
+                     {
+                        server.stop();
+                     }
+                     catch (Exception e)
+                     {
+                        log.error("Error while stopping server: " + server, e);
+                     }
+                  }
+               });
             }
          }
 

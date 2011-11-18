@@ -136,11 +136,11 @@ public class HornetQException extends Exception
 
 
    /**
-    * A Session Metadata was set in duplication 
+    * A Session Metadata was set in duplication
     */
    public static final int DUPLICATE_METADATA = 114;
 
-   
+
    // Native Error codes ----------------------------------------------
 
    /**
@@ -192,6 +192,8 @@ public class HornetQException extends Exception
     * AIO is full
     */
    public static final int NATIVE_ERROR_AIO_FULL = 211;
+
+   public static final int ALREADY_REPLICATING = 212;
 
    private int code;
 

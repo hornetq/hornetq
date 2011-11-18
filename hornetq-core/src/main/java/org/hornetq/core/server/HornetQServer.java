@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
@@ -185,8 +186,8 @@ public interface HornetQServer extends HornetQComponent
     * @param rc
     * @param pair
     * @param clusterConnection
-    * @return {@code true} if replication started successfully, {@code false} otherwise
+    * @throws HornetQException
     */
-   boolean startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-      Pair<TransportConfiguration, TransportConfiguration> pair);
+   void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
+                         Pair<TransportConfiguration, TransportConfiguration> pair) throws HornetQException;
 }

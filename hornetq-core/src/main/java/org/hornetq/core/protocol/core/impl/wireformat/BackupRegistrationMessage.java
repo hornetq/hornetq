@@ -13,7 +13,7 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  * After registration the live server will initiate synchronization of its state with the new backup
  * node.
  */
-public class BackupRegistrationMessage extends PacketImpl
+public final class BackupRegistrationMessage extends PacketImpl
 {
 
    private TransportConfiguration connector;

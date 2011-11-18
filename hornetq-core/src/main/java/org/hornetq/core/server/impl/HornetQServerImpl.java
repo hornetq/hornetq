@@ -2256,12 +2256,12 @@ public class HornetQServerImpl implements HornetQServer
 
 
    @Override
-   public boolean startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
-      Pair<TransportConfiguration, TransportConfiguration> pair)
+   public void startReplication(CoreRemotingConnection rc, ClusterConnection clusterConnection,
+                             Pair<TransportConfiguration, TransportConfiguration> pair) throws HornetQException
    {
       if (replicationManager != null)
       {
-         return false;
+         throw new HornetQException(HornetQException.ALREADY_REPLICATING);
       }
 
       replicationManager = new ReplicationManagerImpl(rc, executorFactory);
@@ -2270,7 +2270,6 @@ public class HornetQServerImpl implements HornetQServer
          replicationManager.start();
          storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(), clusterConnection,
                                          pair);
-         return true;
       }
       catch (Exception e)
       {
@@ -2279,10 +2278,16 @@ public class HornetQServerImpl implements HornetQServer
           * the backup, or (2) by an IO Error at the storage. If (1), we can swallow the exception
           * and ignore the replication request. If (2) the live will crash shortly.
           */
-         // HORNETQ-720 Need to verify whether swallowing the exception here is acceptable
          log.warn("Exception when trying to start replication", e);
          replicationManager = null;
-         return false;
+         if (e instanceof HornetQException)
+         {
+            throw (HornetQException)e;
+         }
+         else
+         {
+            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
+         }
       }
    }
 
