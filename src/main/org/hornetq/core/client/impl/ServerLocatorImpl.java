@@ -47,6 +47,7 @@ import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.utils.ClassloadingUtil;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -310,6 +311,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    }
 
+
    private void instantiateLoadBalancingPolicy()
    {
       if (connectionLoadBalancingPolicyClassName == null)
@@ -317,25 +319,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
       }
 
-      AccessController.doPrivileged(new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clazz = loader.loadClass(connectionLoadBalancingPolicyClassName);
-               loadBalancingPolicy = (ConnectionLoadBalancingPolicy)clazz.newInstance();
-               return null;
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Unable to instantiate load balancing policy \"" + connectionLoadBalancingPolicyClassName +
-                                                           "\"",
-                                                  e);
-            }
-         }
-      });
+      loadBalancingPolicy = (ConnectionLoadBalancingPolicy) ClassloadingUtil.newInstanceFromClassLoader(connectionLoadBalancingPolicyClassName);
    }
 
    private synchronized void initialise() throws HornetQException

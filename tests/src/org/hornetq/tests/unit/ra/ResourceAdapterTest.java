@@ -43,6 +43,7 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.netty.NettyConnector;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.integration.jboss.recovery.AS7RecoveryRegistry;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.ra.ConnectionFactoryProperties;
@@ -50,6 +51,7 @@ import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.integration.ra.HornetQRATestBase;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -465,6 +467,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
+         AS7RecoveryRegistry.container = new HornetQRATestBase.DummyServiceContainer();
          ra.start(fakeCTX);
 
          Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();

@@ -225,7 +225,7 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
    }
 
 
-   private static class DummyServiceContainer implements ServiceContainer
+   public static class DummyServiceContainer implements ServiceContainer
    {
       public void shutdown()
       {
