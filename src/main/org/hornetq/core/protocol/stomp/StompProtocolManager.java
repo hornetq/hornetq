@@ -61,6 +61,8 @@ class StompProtocolManager implements ProtocolManager
    // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
+   
+   private final SimpleString managementAddress;
 
    private final Executor executor;
 
@@ -106,6 +108,7 @@ class StompProtocolManager implements ProtocolManager
    public StompProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
+      this.managementAddress = server.getConfiguration().getManagementAddress();
       this.executor = server.getExecutorFactory().getExecutor();
    }
 
@@ -341,6 +344,8 @@ class StompProtocolManager implements ProtocolManager
          }
          subscriptionID = "subscription/" + destination;
       }
+      
+      validateDestination(new SimpleString(destination));
       StompSession stompSession = getSession(connection);
       stompSession.setNoLocal(noLocal);
       if (stompSession.containsSubscription(subscriptionID))
@@ -583,10 +588,15 @@ class StompProtocolManager implements ProtocolManager
     */
    private void validateDestination(SimpleString address) throws Exception, HornetQException
    {
-      Bindings binding = server.getPostOffice().lookupBindingsForAddress(address);
-      if (binding == null || binding.getBindings().size() == 0)
+      if (!address.equals(managementAddress))
       {
-         throw new HornetQException(HornetQException.ADDRESS_DOES_NOT_EXIST, "Address " + address + " has not been deployed");
+         Bindings binding = server.getPostOffice().lookupBindingsForAddress(address);
+         if (binding == null || binding.getBindings().size() == 0)
+         {
+            throw new HornetQException(HornetQException.ADDRESS_DOES_NOT_EXIST, "Address " + address +
+                                                                                " has not been deployed");
+         }
+
       }
    }
 

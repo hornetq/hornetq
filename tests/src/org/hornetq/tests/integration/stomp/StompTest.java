@@ -1061,6 +1061,29 @@ public class StompTest extends StompTestBase
       sendFrame(frame);
    }
 
+   public void testSubscribeToInvalidTopic() throws Exception
+   {
+
+      String frame = "CONNECT\n" + "login: brianm\n" + "passcode: wombats\n\n" + Stomp.NULL;
+      sendFrame(frame);
+
+      frame = receiveFrame(100000);
+      Assert.assertTrue(frame.startsWith("CONNECTED"));
+
+      frame = "SUBSCRIBE\n" + "destination:" +
+              getTopicPrefix() +
+              getTopicName()+"IDontExist" +
+              "\n" +
+              "receipt: 12\n" +
+              "\n\n" +
+              Stomp.NULL;
+      sendFrame(frame);
+      frame = receiveFrame(10000);
+      
+      System.out.println(frame);
+      Assert.assertTrue(frame.startsWith("ERROR"));
+   }
+
    public void testDurableSubscriberWithReconnection() throws Exception
    {
 
