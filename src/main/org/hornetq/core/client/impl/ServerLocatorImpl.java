@@ -318,8 +318,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       {
          throw new IllegalStateException("Please specify a load balancing policy class name on the session factory");
       }
-
-      loadBalancingPolicy = (ConnectionLoadBalancingPolicy) ClassloadingUtil.newInstanceFromClassLoader(connectionLoadBalancingPolicyClassName);
+      AccessController.doPrivileged(new PrivilegedAction<Object>()
+      {
+         public Object run()
+         {
+            loadBalancingPolicy = (ConnectionLoadBalancingPolicy)ClassloadingUtil.newInstanceFromClassLoader(connectionLoadBalancingPolicyClassName);
+            return null;
+         }
+      });
    }
 
    private synchronized void initialise() throws HornetQException
