@@ -53,6 +53,10 @@ class StompProtocolManager implements ProtocolManager
 {
    // Constants -----------------------------------------------------
 
+   private static final SimpleString JMS_TOPIC_PREFIX = new SimpleString("jms.topic");
+
+   private static final SimpleString JMS_QUEUE_PREFIX = new SimpleString("jms.queue");
+
    private static final Logger log = Logger.getLogger(StompProtocolManager.class);
 
    // TODO use same value than HornetQConnection
@@ -588,7 +592,7 @@ class StompProtocolManager implements ProtocolManager
     */
    private void validateDestination(SimpleString address) throws Exception, HornetQException
    {
-      if (!address.equals(managementAddress))
+      if ((address.startsWith(JMS_QUEUE_PREFIX) || address.startsWith(JMS_TOPIC_PREFIX)) && !address.equals(managementAddress))
       {
          Bindings binding = server.getPostOffice().lookupBindingsForAddress(address);
          if (binding == null || binding.getBindings().size() == 0)
