@@ -16,7 +16,6 @@ package org.hornetq.core.server.cluster;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 
