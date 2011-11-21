@@ -569,7 +569,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    {
       ServerConsumer consumer = consumers.get(consumerID);
 
-      consumer.forceDelivery(sequence);
+      // this would be possible if the server consumer was closed by pings/pongs.. etc
+      if (consumer != null)
+      {
+         consumer.forceDelivery(sequence);
+      }
    }
 
    public void acknowledge(final long consumerID, final long messageID) throws Exception
