@@ -398,9 +398,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      SessionForceConsumerDelivery request = new SessionForceConsumerDelivery(consumerID, sequence);
-
-      channel.send(request);
+      // JBPAPP-6030 - Using the executor to avoid distributed dead locks 
+      executor.execute(new Runnable()
+      {
+         public void run()
+         {
+            SessionForceConsumerDelivery request = new SessionForceConsumerDelivery(consumerID, sequence);
+            channel.send(request);
+         }
+      });
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName) throws HornetQException
