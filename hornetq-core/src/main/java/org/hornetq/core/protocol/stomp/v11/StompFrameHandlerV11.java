@@ -166,29 +166,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
       }
       return null;
    }
-   
-   @Override
-   public StompFrame postprocess(StompFrame request)
-   {
-      StompFrame response = null;
-      if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED))
-      {
-         response = handleReceipt(request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
-         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
-         {
-            response.setNeedsDisconnect(true);
-         }
-      }
-      else
-      {
-         //request null, disconnect if so.
-         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
-         {
-            this.connection.disconnect();
-         }         
-      }
-      return response;
-   }
 
    @Override
    public StompFrame onUnsubscribe(StompFrame request)

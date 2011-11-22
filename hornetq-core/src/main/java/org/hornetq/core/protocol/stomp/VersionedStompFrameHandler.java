@@ -132,8 +132,6 @@ public abstract class VersionedStompFrameHandler
       
       return receipt;
    }
-   
-   public abstract StompFrame postprocess(StompFrame request);
 
    public abstract StompFrame createMessageFrame(ServerMessage serverMessage,
          StompSubscription subscription, int deliveryCount) throws Exception;
@@ -275,6 +273,28 @@ public abstract class VersionedStompFrameHandler
          response = e.getFrame();
       }
       
+      return response;
+   }
+
+   public StompFrame postprocess(StompFrame request)
+   {
+      StompFrame response = null;
+      if (request.hasHeader(Stomp.Headers.RECEIPT_REQUESTED))
+      {
+         response = handleReceipt(request.getHeader(Stomp.Headers.RECEIPT_REQUESTED));
+         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
+         {
+            response.setNeedsDisconnect(true);
+         }
+      }
+      else
+      {
+         //request null, disconnect if so.
+         if (request.getCommand().equals(Stomp.Commands.DISCONNECT))
+         {
+            this.connection.disconnect();
+         }         
+      }
       return response;
    }
 
