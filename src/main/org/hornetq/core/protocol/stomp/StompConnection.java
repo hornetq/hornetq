@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -66,6 +67,8 @@ public class StompConnection implements RemotingConnection
 
    private final Object failLock = new Object();
    
+   private final Executor executor;
+   
    private volatile boolean dataReceived;
 
    public StompDecoder getDecoder()
@@ -73,7 +76,7 @@ public class StompConnection implements RemotingConnection
       return decoder;
    }
 
-   StompConnection(final Acceptor acceptorUsed, final Connection transportConnection, final StompProtocolManager manager)
+   StompConnection(final Acceptor acceptorUsed, final Connection transportConnection, final StompProtocolManager manager, final Executor executor)
    {
       this.transportConnection = transportConnection;
 
@@ -82,6 +85,8 @@ public class StompConnection implements RemotingConnection
       this.creationTime = System.currentTimeMillis();
       
       this.acceptorUsed = acceptorUsed;
+      
+      this.executor = executor;
    }
 
    public void addFailureListener(final FailureListener listener)
@@ -322,7 +327,6 @@ public class StompConnection implements RemotingConnection
    private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
-
       for (final FailureListener listener : listenersClone)
       {
          try
@@ -343,20 +347,26 @@ public class StompConnection implements RemotingConnection
    {
       final List<CloseListener> listenersClone = new ArrayList<CloseListener>(closeListeners);
 
-      for (final CloseListener listener : listenersClone)
-      {
-         try
+      // avoiding a dead lock
+      executor.execute(new Runnable(){
+         public void run()
          {
-            listener.connectionClosed();
+            for (final CloseListener listener : listenersClone)
+            {
+               try
+               {
+                  listener.connectionClosed();
+               }
+               catch (final Throwable t)
+               {
+                  // Failure of one listener to execute shouldn't prevent others
+                  // from
+                  // executing
+                  log.error("Failed to execute failure listener", t);
+               }
+            }
          }
-         catch (final Throwable t)
-         {
-            // Failure of one listener to execute shouldn't prevent others
-            // from
-            // executing
-            log.error("Failed to execute failure listener", t);
-         }
-      }
+      });
    }
 
 }
