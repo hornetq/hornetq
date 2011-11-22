@@ -41,8 +41,8 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
-import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 
 /**
  * A BridgeReconnectTest

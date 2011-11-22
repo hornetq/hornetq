@@ -57,7 +57,7 @@ import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 

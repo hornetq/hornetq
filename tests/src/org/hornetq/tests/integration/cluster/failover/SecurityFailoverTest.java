@@ -24,8 +24,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.impl.InVMNodeManager;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 
 /**
