@@ -246,7 +246,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new StaticClusterConnector(tcConfigs);
 
-      backupServerLocator = clusterConnector.createServerLocator(false);
+      backupServerLocator = clusterConnector.createServerLocator();
 
       if (backupServerLocator != null)
       {
@@ -356,7 +356,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
       clusterConnector = new DiscoveryClusterConnector(dg);
 
-      backupServerLocator = clusterConnector.createServerLocator(true);
+      backupServerLocator = clusterConnector.createServerLocator();
 
       if (backupServerLocator != null)
       {
@@ -507,7 +507,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       return topology.getMember(manager.getNodeId());
    }
 
-   public void addClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)
+   public void addClusterTopologyListener(final ClusterTopologyListener listener)
    {
       topology.addClusterTopologyListener(listener);
 
@@ -515,7 +515,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       topology.sendTopology(listener);
    }
 
-   public void removeClusterTopologyListener(final ClusterTopologyListener listener, final boolean clusterConnection)
+   public void removeClusterTopologyListener(final ClusterTopologyListener listener)
    {
       topology.removeClusterTopologyListener(listener);
    }
@@ -642,7 +642,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          backupServerLocator = null;
       }
 
-      serverLocator = clusterConnector.createServerLocator(true);
+      serverLocator = clusterConnector.createServerLocator();
 
       if (serverLocator != null)
       {
@@ -680,7 +680,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             this.serverLocator.setRetryInterval(retryInterval);
          }
 
-         serverLocator.addClusterTopologyListener(this);
+         addClusterTopologyListener(this);
 
          serverLocator.setAfterConnectionInternalListener(this);
 
@@ -1567,7 +1567,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
 
    interface ClusterConnector
    {
-      ServerLocatorInternal createServerLocator(boolean includeTopology);
+      ServerLocatorInternal createServerLocator();
    }
 
    private class StaticClusterConnector implements ClusterConnector
@@ -1579,7 +1579,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          this.tcConfigs = tcConfigs;
       }
 
-      public ServerLocatorInternal createServerLocator(boolean includeTopology)
+      public ServerLocatorInternal createServerLocator()
       {
          if (tcConfigs != null && tcConfigs.length > 0)
          {
@@ -1587,7 +1587,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             {
                log.debug(ClusterConnectionImpl.this + "Creating a serverLocator for " + Arrays.toString(tcConfigs));
             }
-            ServerLocatorImpl locator = new ServerLocatorImpl(includeTopology ? topology : null, true, tcConfigs);
+            ServerLocatorImpl locator = new ServerLocatorImpl(topology, true, tcConfigs);
             locator.setClusterConnection(true);
             return locator;
          }
@@ -1617,9 +1617,9 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          this.dg = dg;
       }
 
-      public ServerLocatorInternal createServerLocator(boolean includeTopology)
+      public ServerLocatorInternal createServerLocator()
       {
-         ServerLocatorImpl locator = new ServerLocatorImpl(includeTopology ? topology : null, true, dg);
+         ServerLocatorImpl locator = new ServerLocatorImpl(topology, true, dg);
          return locator;
 
       }

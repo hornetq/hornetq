@@ -177,17 +177,16 @@ public class CoreProtocolManager implements ProtocolManager
                      return "Remote Proxy on channel " + Integer.toHexString(System.identityHashCode(this));
                   }
                };
-               
-               final boolean isCC = msg.isClusterConnection();
+
                if (acceptorUsed.getClusterConnection() != null)
                {
-                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener, isCC);
+                  acceptorUsed.getClusterConnection().addClusterTopologyListener(listener);
                   
                   rc.addCloseListener(new CloseListener()
                   {
                      public void connectionClosed()
                      {
-                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener, isCC);
+                        acceptorUsed.getClusterConnection().removeClusterTopologyListener(listener);
                      }
                   });
                }
