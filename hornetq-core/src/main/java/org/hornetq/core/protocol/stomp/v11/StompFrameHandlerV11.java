@@ -247,53 +247,6 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    }
 
    @Override
-   public StompFrame createMessageFrame(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount)
-         throws Exception
-   {
-      StompFrame frame = new StompFrameV11(Stomp.Responses.MESSAGE);
-      
-      if (subscription.getID() != null)
-      {
-         frame.addHeader(Stomp.Headers.Message.SUBSCRIPTION, subscription.getID());
-      }
-      
-      HornetQBuffer buffer = serverMessage.getBodyBuffer();
-
-      int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer.writerIndex()
-                                                              : serverMessage.getEndOfBodyPosition();
-      int size = bodyPos - buffer.readerIndex();
-      buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
-      byte[] data = new byte[size];
-      if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH) || serverMessage.getType() == Message.BYTES_TYPE)
-      {
-         frame.addHeader(Stomp.Headers.CONTENT_LENGTH, String.valueOf(data.length));
-         buffer.readBytes(data);
-      }
-      else
-      {
-         SimpleString text = buffer.readNullableSimpleString();
-         if (text != null)
-         {
-            data = text.toString().getBytes("UTF-8");
-         }
-         else
-         {
-            data = new byte[0];
-         }
-      }
-      
-      frame.setByteBody(data);
-      
-      serverMessage.getBodyBuffer().resetReaderIndex();
-
-      StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame, deliveryCount);
-      
-      return frame;
-
-   }
-
-   @Override
    public void replySent(StompFrame reply)
    {
       if (reply.getCommand().equals(Stomp.Responses.CONNECTED))

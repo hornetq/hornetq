@@ -16,10 +16,13 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.protocol.stomp.Stomp.Headers;
 import org.hornetq.core.protocol.stomp.v10.StompFrameHandlerV10;
 import org.hornetq.core.protocol.stomp.v11.StompFrameHandlerV11;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.utils.DataConstants;
 
 /**
  *
@@ -132,9 +135,6 @@ public abstract class VersionedStompFrameHandler
       
       return receipt;
    }
-
-   public abstract StompFrame createMessageFrame(ServerMessage serverMessage,
-         StompSubscription subscription, int deliveryCount) throws Exception;
 
    public abstract StompFrame createStompFrame(String command);
 
@@ -296,6 +296,58 @@ public abstract class VersionedStompFrameHandler
          }         
       }
       return response;
+   }
+
+   public StompFrame createMessageFrame(ServerMessage serverMessage,
+         StompSubscription subscription, int deliveryCount) throws Exception
+   {
+      StompFrame frame = createStompFrame(Stomp.Responses.MESSAGE);
+
+      if (subscription.getID() != null)
+      {
+         frame.addHeader(Stomp.Headers.Message.SUBSCRIPTION,
+               subscription.getID());
+      }
+
+      synchronized (serverMessage)
+      {
+
+         HornetQBuffer buffer = serverMessage.getBodyBuffer();
+
+         int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
+               .writerIndex() : serverMessage.getEndOfBodyPosition();
+         int size = bodyPos - buffer.readerIndex();
+         buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE
+               + DataConstants.SIZE_INT);
+         byte[] data = new byte[size];
+
+         if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH)
+               || serverMessage.getType() == Message.BYTES_TYPE)
+         {
+            frame.addHeader(Headers.CONTENT_LENGTH, String.valueOf(data.length));
+            buffer.readBytes(data);
+         }
+         else
+         {
+            SimpleString text = buffer.readNullableSimpleString();
+            if (text != null)
+            {
+               data = text.toString().getBytes("UTF-8");
+            }
+            else
+            {
+               data = new byte[0];
+            }
+         }
+         frame.setByteBody(data);
+
+         serverMessage.getBodyBuffer().resetReaderIndex();
+
+         StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame,
+               deliveryCount);
+      }
+
+      return frame;
    }
 
 }
