@@ -1658,62 +1658,62 @@
       </javac>
    </target>
 
-   <target name="performance-tests" depends="jar, compile-unit-tests">
+   <target name="performance-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/performance/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-   <target name="integration-tests" depends="jar, compile-unit-tests">
+   <target name="integration-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-    <target name="management-tests" depends="jar, compile-unit-tests">
+    <target name="management-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/management/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
 
-    <target name="jms-management-tests" depends="jar, compile-unit-tests">
+    <target name="jms-management-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/jms/server/management/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-    <target name="spring-tests" depends="jar, compile-unit-tests">
+    <target name="spring-tests" depends="compile-unit-tests">
        <antcall inheritall="true" inheritrefs="true" target="tests">
           <param name="tests.param" value="**/org/hornetq/tests/integration/spring/*${test-mask}.class"/>
        </antcall>
     </target>
 
-   <target name="failover-tests" depends="jar, compile-unit-tests">
+   <target name="failover-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/failover/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-   <target name="distribution-tests" depends="jar, compile-unit-tests">
+   <target name="distribution-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/distribution/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-    <target name="cluster-tests" depends="jar, compile-unit-tests">
+    <target name="cluster-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-   <target name="concurrent-tests" depends="jar, compile-unit-tests">
+   <target name="concurrent-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/concurrent/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-   <target name="unit-tests" depends="jar, compile-unit-tests">
+   <target name="unit-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/unit/**/*${test-mask}.class"/>
          <!-- if tests.validate.error is defined, it will fail the build in case of any test failure -->
@@ -1721,13 +1721,13 @@
       </antcall>
    </target>
 
-   <target name="timing-tests" depends="jar, compile-unit-tests">
+   <target name="timing-tests" depends="compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
          <param name="tests.param" value="**/org/hornetq/tests/timing/**/*${test-mask}.class"/>
       </antcall>
    </target>
 
-   <target name="tests" depends="jar, compile-unit-tests">
+   <target name="tests">
       <echo message=""/>
       <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
       <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
@@ -1955,9 +1955,9 @@
       </junit>
    </target>
 
-   <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests, rest-tests"/>
+   <target name="all-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests, rest-tests"/>
 
-   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+   <target name="hudson-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
 
    <target name="compile-reports">
       <mkdir dir="${test.stylesheets.dir}"/>
