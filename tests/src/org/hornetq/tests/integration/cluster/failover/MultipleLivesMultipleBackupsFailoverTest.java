@@ -26,7 +26,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 

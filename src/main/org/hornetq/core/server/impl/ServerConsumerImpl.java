@@ -399,12 +399,29 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                // We execute this on the same executor to make sure the force delivery message is written after
                // any delivery is completed
 
-               ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
-
-               forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-               forcedDeliveryMessage.setAddress(messageQueue.getName());
-
-               callback.sendMessage(forcedDeliveryMessage, id, 0);
+               synchronized (lock)
+               {
+                  if (transferring)
+                  {
+                     // Case it's transferring (reattach), we will retry later
+                     messageQueue.getExecutor().execute(new Runnable()
+                     {
+                        public void run()
+                        {
+                           forceDelivery(sequence);
+                        }
+                     });
+                  }
+                  else
+                  {
+                     ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+      
+                     forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+                     forcedDeliveryMessage.setAddress(messageQueue.getName());
+      
+                     callback.sendMessage(forcedDeliveryMessage, id, 0);
+                  }
+               }
             }
             catch (Exception e)
             {

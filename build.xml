@@ -303,6 +303,7 @@ Copyright 2009 Red Hat, Inc.
    </target>
 
    <target name="jms-tests" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="jar"/>
       <ant antfile="build-hornetq.xml" target="jms-tests"/>
       <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>

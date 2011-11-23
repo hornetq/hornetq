@@ -42,9 +42,9 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    
    void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
 
-   void addClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   void addClusterTopologyListener(ClusterTopologyListener listener);
    
-   void removeClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
+   void removeClusterTopologyListener(ClusterTopologyListener listener);
    
    /**
     * @return a Map of node ID and addresses
