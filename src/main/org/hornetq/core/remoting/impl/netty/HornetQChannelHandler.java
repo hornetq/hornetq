@@ -96,19 +96,20 @@ class HornetQChannelHandler extends SimpleChannelHandler
    @Override
    public void exceptionCaught(final ChannelHandlerContext ctx, final ExceptionEvent e) throws Exception
    {
-      synchronized (this)
+      if (!active)
       {
-         if (!active)
-         {
-            return;
-         }
+         return;
+      }
 
-         // We don't want to log this - since it is normal for this to happen during failover/reconnect
-         // and we don't want to spew out stack traces in that event
-         // The user has access to this exeception anyway via the HornetQException initial cause
+      // We don't want to log this - since it is normal for this to happen during failover/reconnect
+      // and we don't want to spew out stack traces in that event
+      // The user has access to this exeception anyway via the HornetQException initial cause
 
-         HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
-         me.initCause(e.getCause());
+      HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
+      me.initCause(e.getCause());
+      
+      synchronized (listener)
+      {
          try
          {
             listener.connectionException(e.getChannel().getId(), me);

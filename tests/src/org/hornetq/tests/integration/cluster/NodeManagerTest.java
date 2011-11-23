@@ -14,7 +14,7 @@
 package org.hornetq.tests.integration.cluster;
 
 import org.hornetq.core.server.NodeManager;
-import org.hornetq.core.server.impl.InVMNodeManager;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 import org.hornetq.tests.util.ServiceTestBase;
 
 import java.util.ArrayList;

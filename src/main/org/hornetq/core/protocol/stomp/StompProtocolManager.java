@@ -32,6 +32,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -52,6 +53,10 @@ class StompProtocolManager implements ProtocolManager
 {
    // Constants -----------------------------------------------------
 
+   private static final SimpleString JMS_TOPIC_PREFIX = new SimpleString("jms.topic");
+
+   private static final SimpleString JMS_QUEUE_PREFIX = new SimpleString("jms.queue");
+
    private static final Logger log = Logger.getLogger(StompProtocolManager.class);
 
    // TODO use same value than HornetQConnection
@@ -60,6 +65,8 @@ class StompProtocolManager implements ProtocolManager
    // Attributes ----------------------------------------------------
 
    private final HornetQServer server;
+   
+   private final SimpleString managementAddress;
 
    private final Executor executor;
 
@@ -105,6 +112,7 @@ class StompProtocolManager implements ProtocolManager
    public StompProtocolManager(final HornetQServer server, final List<Interceptor> interceptors)
    {
       this.server = server;
+      this.managementAddress = server.getConfiguration().getManagementAddress();
       this.executor = server.getExecutorFactory().getExecutor();
    }
 
@@ -112,7 +120,7 @@ class StompProtocolManager implements ProtocolManager
 
    public ConnectionEntry createConnectionEntry(final Acceptor acceptorUsed, final Connection connection)
    {
-      StompConnection conn = new StompConnection(acceptorUsed, connection, this);
+      StompConnection conn = new StompConnection(acceptorUsed, connection, this, server.getExecutorFactory().getExecutor());
 
       // Note that STOMP has no heartbeat, so if connection ttl is non zero, data must continue to be sent or connection
       // will be timed out and closed!
@@ -340,6 +348,8 @@ class StompProtocolManager implements ProtocolManager
          }
          subscriptionID = "subscription/" + destination;
       }
+      
+      validateDestination(new SimpleString(destination));
       StompSession stompSession = getSession(connection);
       stompSession.setNoLocal(noLocal);
       if (stompSession.containsSubscription(subscriptionID))
@@ -536,10 +546,14 @@ class StompProtocolManager implements ProtocolManager
       String destination = (String)headers.remove(Stomp.Headers.Send.DESTINATION);
       String txID = (String)headers.remove(Stomp.Headers.TRANSACTION);
       long timestamp = System.currentTimeMillis();
-
+      
+      SimpleString address = SimpleString.toSimpleString(destination);
       ServerMessageImpl message = new ServerMessageImpl(server.getStorageManager().generateUniqueID(), 512);
       message.setTimestamp(timestamp);
-      message.setAddress(SimpleString.toSimpleString(destination));
+      message.setAddress(address);
+
+      validateDestination(address);
+      
       StompUtils.copyStandardHeadersFromFrameToMessage(frame, message);
       if (headers.containsKey(Stomp.Headers.CONTENT_LENGTH))
       {
@@ -569,6 +583,25 @@ class StompProtocolManager implements ProtocolManager
       stompSession.getSession().send(message, true);           
       
       return null;
+   }
+
+   /**
+    * @param address
+    * @throws Exception
+    * @throws HornetQException
+    */
+   private void validateDestination(SimpleString address) throws Exception, HornetQException
+   {
+      if ((address.startsWith(JMS_QUEUE_PREFIX) || address.startsWith(JMS_TOPIC_PREFIX)) && !address.equals(managementAddress))
+      {
+         Bindings binding = server.getPostOffice().lookupBindingsForAddress(address);
+         if (binding == null || binding.getBindings().size() == 0)
+         {
+            throw new HornetQException(HornetQException.ADDRESS_DOES_NOT_EXIST, "Address " + address +
+                                                                                " has not been deployed");
+         }
+
+      }
    }
 
    private StompFrame onConnect(StompFrame frame, final StompConnection connection) throws Exception

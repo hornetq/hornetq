@@ -11,7 +11,7 @@
  *  permissions and limitations under the License.
  */
 
-package org.hornetq.core.server.impl;
+package org.hornetq.tests.integration.cluster.util;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.server.NodeManager;
@@ -19,7 +19,7 @@ import org.hornetq.utils.UUIDGenerator;
 
 import java.util.concurrent.Semaphore;
 
-import static org.hornetq.core.server.impl.InVMNodeManager.State.*;
+import static org.hornetq.tests.integration.cluster.util.InVMNodeManager.State.*;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>

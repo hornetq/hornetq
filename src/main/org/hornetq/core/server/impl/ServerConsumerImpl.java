@@ -389,33 +389,47 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    {
       promptDelivery();
 
-      Future future = new Future();
-
-      messageQueue.getExecutor().execute(future);
-
-      boolean ok = future.await(10000);
-
-      if (!ok)
+      // JBPAPP-6030 - Using the executor to avoid distributed dead locks 
+      messageQueue.getExecutor().execute(new Runnable()
       {
-         log.warn("Timed out waiting for executor");
-      }
+         public void run()
+         {
+            try
+            {
+               // We execute this on the same executor to make sure the force delivery message is written after
+               // any delivery is completed
 
-      try
-      {
-         // We execute this on the same executor to make sure the force delivery message is written after
-         // any delivery is completed
+               synchronized (lock)
+               {
+                  if (transferring)
+                  {
+                     // Case it's transferring (reattach), we will retry later
+                     messageQueue.getExecutor().execute(new Runnable()
+                     {
+                        public void run()
+                        {
+                           forceDelivery(sequence);
+                        }
+                     });
+                  }
+                  else
+                  {
+                     ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
+      
+                     forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+                     forcedDeliveryMessage.setAddress(messageQueue.getName());
+      
+                     callback.sendMessage(forcedDeliveryMessage, id, 0);
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
+            }
+         }
+      });
 
-         ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID(), 50);
-
-         forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
-         forcedDeliveryMessage.setAddress(messageQueue.getName());
-
-         callback.sendMessage(forcedDeliveryMessage, id, 0);
-      }
-      catch (Exception e)
-      {
-         ServerConsumerImpl.log.error("Failed to send forced delivery message", e);
-      }
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean failed,

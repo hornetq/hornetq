@@ -13,10 +13,14 @@
 
 package org.hornetq.tests.integration.cluster.reattach;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServers;
 
 /**
@@ -37,8 +41,12 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
       liveConf.setJMXManagementEnabled(false);
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations().clear();
+      
+      Map<String, Object> connectionParams = new HashMap<String, Object>();
+      connectionParams.put(TransportConstants.USE_NIO_PROP_NAME, true);
+
       liveConf.getAcceptorConfigurations()
-              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory"));
+              .add(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory", connectionParams));
       liveServer = HornetQServers.newHornetQServer(liveConf, false);
       liveServer.start();
    }
@@ -46,11 +54,15 @@ public class NettyMultiThreadRandomReattachTest extends MultiThreadRandomReattac
    @Override
    protected ServerLocator createLocator() throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory")) ;
+      Map<String, Object> connectionParams = new HashMap<String, Object>();
+      connectionParams.put(TransportConstants.USE_NIO_PROP_NAME, true);
+
+
+      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory", connectionParams)) ;
       locator.setReconnectAttempts(-1);
       locator.setConfirmationWindowSize(1024 * 1024);
       locator.setAckBatchSize(0);
       return  locator;
    }
-
+   
 }
