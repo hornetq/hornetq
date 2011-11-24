@@ -32,7 +32,6 @@ final class ReplicationError implements Interceptor
    @Override
    public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
    {
-      System.out.println(packet);
       if (packet.getType() != PacketImpl.BACKUP_REGISTRATION_FAILED)
          return true;
       log.warn("Failed to register as backup. Stopping the server.");
