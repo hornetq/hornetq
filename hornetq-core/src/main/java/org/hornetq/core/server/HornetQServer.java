@@ -48,19 +48,28 @@ import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.utils.ExecutorFactory;
 
 /**
- * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
- * external management interface of the HornetQ Server is defined by the HornetQServerManagement interface This
- * interface is never exposed outside the HornetQ server, e.g. by JMX or other means
- *
+ * This interface defines the internal interface of the HornetQ Server exposed to other components
+ * of the server.
+ * <p>
+ * The external management interface of the HornetQ Server is defined by the HornetQServerManagement
+ * interface.
+ * <p>
+ * This interface is never exposed outside the HornetQ server, e.g. by JMX or other means
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public interface HornetQServer extends HornetQComponent
 {
 
-   /** This method was created mainly for testing but it may be used in scenarios where
-    *  you need to have more than one Server inside the same VM.
-    *  This identity will be exposed on logs what may help you to debug issues on the log traces and debugs.*/
+   /**
+    * Sets the server identity.
+    * <p>
+    * The identity will be exposed on logs. It may help to debug issues on the log traces and
+    * debugs.
+    * <p>
+    * This method was created mainly for testing but it may be used in scenarios where you need to
+    * have more than one Server inside the same VM.
+    */
    void setIdentity(String identity);
 
    String getIdentity();
@@ -85,9 +94,7 @@ public interface HornetQServer extends HornetQComponent
 
    /**
     * Returns the resource to manage this HornetQ server.
-    *
-    * Using this control will throw IllegalStateException if the
-    * server is not properly started.
+    * @throws IllegalStateException if the server is not properly started.
     */
    HornetQServerControlImpl getHornetQServerControl();
 

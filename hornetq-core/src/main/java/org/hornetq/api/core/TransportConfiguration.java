@@ -19,19 +19,21 @@ import java.util.Map;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
- * A TransportConfiguration is used by a client to specify a connections to a server and its backup if one exists.<br><br>
+ * A TransportConfiguration is used by a client to specify connections to a server and its backup if
+ * one exists.
+ * <p>
+ * Typically the constructors take the class name and parameters for needed to create the
+ * connection. These will be different dependent on which connector is being used, i.e. Netty or
+ * InVM etc. For example:
  * <p/>
- * Typically the constructors take the class name and parameters for needed to create the connection. These will be
- * different dependent on which connector is being used, i.e. Netty or InVM etc. For example:<br><br>
- * <p/>
- * <code>
- * HashMap<String, Object> map = new HashMap<String, Object>();<br>
- * map.put("host", "localhost");<br>
- * map.put("port", 5445);<br>
- * TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map); <br>
- * ClientSessionFactory sf = new ClientSessionFactoryImpl(config);  <br>
- * </code><br><br>
- *
+ * 
+ * <pre>
+ * HashMap&lt;String, Object&gt; map = new HashMap&lt;String, Object&gt;();
+ * map.put(&quot;host&quot;, &quot;localhost&quot;);
+ * map.put(&quot;port&quot;, 5445);
+ * TransportConfiguration config = new TransportConfiguration(InVMConnectorFactory.class.getName(), map);
+ * ClientSessionFactory sf = new ClientSessionFactoryImpl(config);
+ * </pre>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class TransportConfiguration implements Serializable

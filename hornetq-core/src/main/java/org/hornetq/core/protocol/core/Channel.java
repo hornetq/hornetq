@@ -36,7 +36,7 @@ public interface Channel
     * @return the id
     */
    long getID();
-   
+
    /** For protocol check */
    boolean supports(byte packetID);
 
@@ -46,7 +46,7 @@ public interface Channel
     * @param packet the packet to send
     */
    void send(Packet packet);
-   
+
    /**
     * sends a packet on this channel using batching algorithm if appropriate
     *
@@ -71,8 +71,8 @@ public interface Channel
    Packet sendBlocking(Packet packet) throws HornetQException;
 
    /**
-    * sets the {@link org.hornetq.core.protocol.core.ChannelHandler} that this channel should forward received packets to.
-    *
+    * Sets the {@link org.hornetq.core.protocol.core.ChannelHandler} that this channel should
+    * forward received packets to.
     * @param handler the handler
     */
    void setHandler(ChannelHandler handler);
@@ -134,7 +134,7 @@ public interface Channel
    Lock getLock();
 
    /**
-    * returns the Remoting Connection being used by the channel
+    * returns the {@link CoreRemotingConnection} being used by the channel
     */
    CoreRemotingConnection getConnection();
 
