@@ -43,6 +43,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
       syncDelay = new BackupSyncDelay(backupServer, liveServer);
    }
 
+
    public void testNodeID() throws Exception
    {
       startBackupFinishSyncing();
