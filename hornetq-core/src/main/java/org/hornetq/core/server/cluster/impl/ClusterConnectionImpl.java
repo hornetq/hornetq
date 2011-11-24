@@ -1502,7 +1502,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    @Override
    public String toString()
    {
-      return "ClusterConnectionImpl@" + System.identityHashCode(this)  + 
+      return "ClusterConnectionImpl@" + System.identityHashCode(this)  +
              "[nodeUUID=" + nodeUUID +
              ", connector=" +
              connector +
@@ -1563,9 +1563,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          }
       }
 
-      /* (non-Javadoc)
-       * @see java.lang.Object#toString()
-       */
       @Override
       public String toString()
       {
@@ -1589,5 +1586,11 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          return locator;
 
       }
+   }
+
+   @Override
+   public boolean verify(String clusterUser0, String clusterPassword0)
+   {
+      return clusterUser.equals(clusterUser0) && clusterPassword.equals(clusterPassword0);
    }
 }

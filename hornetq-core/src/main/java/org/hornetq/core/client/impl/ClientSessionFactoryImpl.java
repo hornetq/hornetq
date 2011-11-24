@@ -1408,7 +1408,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
       }
    }
 
-   private class Channel0Handler implements ChannelHandler
+   private final class Channel0Handler implements ChannelHandler
    {
       private final CoreRemotingConnection conn;
 
@@ -1498,8 +1498,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
                serverLocator.notifyNodeUp(topMessage.getUniqueEventID(), topMessage.getNodeID(), topMessage.getPair(), topMessage.isLast());
             }
          }
+         else if (type == PacketImpl.BACKUP_REGISTRATION_FAILED)
+         {
+            // no-op
+         }
       }
-
 
    }
 

@@ -1287,7 +1287,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (ConfigurationImpl.DEFAULT_CLUSTER_USER.equals(configuration.getClusterUser()) && ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(configuration.getClusterPassword()))
       {
-         log.warn("Security risk! It has been detected that the cluster admin user and password " + "have not been changed from the installation default. "
+         log.warn("Security risk! HornetQ is running with the default cluster admin user and default password. "
                   + "Please see the HornetQ user guide, cluster chapter, for instructions on how to do this.");
       }
 
@@ -2047,7 +2047,7 @@ public class HornetQServerImpl implements HornetQServer
             replicationEndpoint.setQuorumManager(quorumManager);
 
             serverLocator0.setReconnectAttempts(-1);
-
+            serverLocator0.addInterceptor(new ReplicationError(HornetQServerImpl.this));
             threadPool.execute(new Runnable()
             {
                @Override
@@ -2064,7 +2064,6 @@ public class HornetQServerImpl implements HornetQServer
                      CoreRemotingConnection liveConnection = liveServerSessionFactory.getConnection();
                      Channel pingChannel = liveConnection.getChannel(CHANNEL_ID.PING.id, -1);
                      Channel replicationChannel = liveConnection.getChannel(CHANNEL_ID.REPLICATION.id, -1);
-
                      connectToReplicationEndpoint(replicationChannel);
                      replicationEndpoint.start();
                      clusterManager.announceReplicatingBackup(pingChannel);

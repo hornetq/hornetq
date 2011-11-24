@@ -13,6 +13,7 @@
 
 package org.hornetq.core.protocol.core.impl;
 
+import java.util.EnumSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -59,10 +60,18 @@ public class ChannelImpl implements Channel
       {
          this.id = id;
       }
+
+      protected static String idToString(long code)
+      {
+         for (CHANNEL_ID channel:EnumSet.allOf(CHANNEL_ID.class)){
+            if (channel.id==code) return channel.toString();
+         }
+         return Long.toString(code);
+      }
    }
 
    private static final Logger log = Logger.getLogger(ChannelImpl.class);
-   
+
    private static final boolean isTrace = log.isTraceEnabled();
 
    private volatile long id;
@@ -118,11 +127,11 @@ public class ChannelImpl implements Channel
          resendCache = null;
       }
    }
-   
+
    public boolean supports(final byte packetType)
    {
       int version = connection.getClientVersion();
-      
+
       switch (packetType)
       {
          case PacketImpl.CLUSTER_TOPOLOGY_V2:
@@ -198,7 +207,7 @@ public class ChannelImpl implements Channel
       synchronized (sendLock)
       {
          packet.setChannelID(id);
-         
+
          if (isTrace)
          {
             log.trace("Sending packet nonblocking " + packet + " on channeID=" + id);
@@ -237,7 +246,7 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
-         
+
          if (isTrace)
          {
             log.trace("Writing buffer for channelID=" + id);
@@ -351,7 +360,10 @@ public class ChannelImpl implements Channel
    {
       if (confWindowSize < 0)
       {
-         throw new IllegalStateException("You can't set confirmationHandler on a connection with confirmation-window-size < 0. Look at the documentation for more information.");
+         final String msg =
+                  "You can't set confirmationHandler on a connection with confirmation-window-size < 0."
+                           + " Look at the documentation for more information.";
+         throw new IllegalStateException(msg);
       }
       commandConfirmationHandler = handler;
    }
@@ -574,5 +586,11 @@ public class ChannelImpl implements Channel
       }
 
       firstStoredCommandID += numberToClear;
+   }
+
+   @Override
+   public String toString()
+   {
+      return "Channel[id=" + CHANNEL_ID.idToString(id) + ", handler=" + handler + "]";
    }
 }

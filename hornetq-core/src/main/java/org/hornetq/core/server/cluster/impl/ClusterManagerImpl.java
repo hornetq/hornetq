@@ -381,7 +381,8 @@ public class ClusterManagerImpl implements ClusterManagerInternal
             log.warn("No connector with name '" + config.getConnectorName() + "'. backup cannot be announced.");
             return;
          }
-         liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector));
+         liveChannel.send(new BackupRegistrationMessage(nodeUUID.toString(), connector, configuration.getClusterUser(),
+                                                        configuration.getClusterPassword()));
       }
       else
       {

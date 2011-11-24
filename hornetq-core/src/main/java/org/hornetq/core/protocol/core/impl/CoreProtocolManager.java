@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
@@ -44,6 +43,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUp
 import org.hornetq.core.protocol.core.impl.wireformat.SubscribeClusterTopologyUpdatesMessageV2;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.spi.core.protocol.ConnectionEntry;
 import org.hornetq.spi.core.protocol.ProtocolManager;
 import org.hornetq.spi.core.protocol.RemotingConnection;
@@ -211,33 +211,23 @@ class CoreProtocolManager implements ProtocolManager
             } else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
             {
                BackupRegistrationMessage msg = (BackupRegistrationMessage)packet;
+               ClusterConnection clusterConnection = acceptorUsed.getClusterConnection();
 
-               try {
-                  server.startReplication(rc, acceptorUsed.getClusterConnection(), getPair(msg.getConnector(), true));
-               } catch (HornetQException e){
-                 channel0.send(new BackupRegistrationFailedMessage(e));
-               }
-            }
-            else if (packet.getType() == PacketImpl.BACKUP_REGISTRATION_FAILED)
-            {
-               assert server.getConfiguration().isBackup();
-               assert !server.getConfiguration().isSharedStore();
-               log.warn("Replication failed to start because of exception with error " +
-                        ((BackupRegistrationFailedMessage)packet).getCause());
-               Executors.newSingleThreadExecutor().execute(new Runnable()
+               if (clusterConnection.verify(msg.getClusterUser(), msg.getClusterPassword()))
                {
-                  public void run()
+                  try
                   {
-                     try
-                     {
-                        server.stop();
-                     }
-                     catch (Exception e)
-                     {
-                        log.error("Error while stopping server: " + server, e);
-                     }
+                     server.startReplication(rc, clusterConnection, getPair(msg.getConnector(), true));
                   }
-               });
+                  catch (HornetQException e)
+                  {
+                     channel0.send(new BackupRegistrationFailedMessage(e));
+                  }
+               }
+               else
+               {
+                  channel0.send(new BackupRegistrationFailedMessage(null));
+               }
             }
          }
 

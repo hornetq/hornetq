@@ -27,7 +27,7 @@ import org.hornetq.core.server.HornetQServer;
  * A ClusterConnection
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 23 Jan 2009 14:51:55
  *
  *
@@ -37,32 +37,40 @@ public interface ClusterConnection extends HornetQComponent, ClusterTopologyList
    SimpleString getName();
 
    String getNodeID();
-   
+
    HornetQServer getServer();
-   
+
    void nodeAnnounced(long eventUID, String nodeID, Pair<TransportConfiguration, TransportConfiguration> connectorPair, boolean backup);
 
    void addClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
-   
+
    void removeClusterTopologyListener(ClusterTopologyListener listener, boolean clusterConnection);
-   
+
    /**
     * @return a Map of node ID and addresses
     */
    Map<String, String> getNodes();
 
    void activate() throws Exception;
-   
+
    TransportConfiguration getConnector();
-   
+
    Topology getTopology();
-   
+
    void flushExecutor();
 
    // for debug
    String describe();
 
    void informTopology();
-   
+
    void announceBackup();
+
+   /**
+    * Verifies whether user and password match the ones configured for this ClusterConnection.
+    * @param clusterUser
+    * @param clusterPassword
+    * @return
+    */
+   boolean verify(String clusterUser, String clusterPassword);
 }

@@ -88,6 +88,7 @@ import static org.hornetq.core.protocol.core.impl.PacketImpl.SUBSCRIBE_TOPOLOGY_
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.Packet;
+import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationFailedMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.BackupRegistrationMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ClusterTopologyChangeMessage_V2;
@@ -545,6 +546,11 @@ public final class PacketDecoder
          case PacketImpl.BACKUP_REGISTRATION:
          {
             packet = new BackupRegistrationMessage();
+            break;
+         }
+         case PacketImpl.BACKUP_REGISTRATION_FAILED:
+         {
+            packet = new BackupRegistrationFailedMessage();
             break;
          }
          case PacketImpl.REPLICATION_START_FINISH_SYNC:

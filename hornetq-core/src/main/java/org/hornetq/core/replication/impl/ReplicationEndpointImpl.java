@@ -243,7 +243,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    public synchronized void start() throws Exception
    {
       Configuration config = server.getConfiguration();
-
+      try
+      {
       storage = server.getStorageManager();
       storage.start();
 
@@ -270,7 +271,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       pageManager.start();
 
       started = true;
-
+      }
+      catch (Exception e)
+      {
+         if (!server.isStopped())
+            throw e;
+      }
    }
 
    public synchronized void stop() throws Exception
