@@ -2008,7 +2008,6 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       if (replicationSync)
       {
          assert filesRepository.getDataFiles().isEmpty();
-         filesRepository.ensureMinFiles();
          setJournalState(JournalState.SYNCING);
          return new JournalLoadInformation(0, -1);
       }
