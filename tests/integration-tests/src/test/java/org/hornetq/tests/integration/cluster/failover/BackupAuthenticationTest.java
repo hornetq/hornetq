@@ -68,7 +68,6 @@ public class BackupAuthenticationTest extends FailoverTestBase
       @Override
       public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
       {
-         System.out.println("intercept? wtf " + packet);
          if (packet.getType() == PacketImpl.BACKUP_REGISTRATION)
          {
             latch.countDown();
