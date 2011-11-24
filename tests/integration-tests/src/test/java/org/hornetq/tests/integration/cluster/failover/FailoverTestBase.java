@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.cluster.failover;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected NodeManager nodeManager;
 
    protected boolean startBackupServer = true;
+   private final Collection<ServerLocator> serverLocators = new ArrayList<ServerLocator>();
 
    // Static --------------------------------------------------------
 
@@ -234,6 +236,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
       stopComponent(backupServer);
       stopComponent(liveServer);
 
+      synchronized (serverLocators)
+      {
+         for (ServerLocator locator : serverLocators)
+         {
+            closeServerLocator(locator);
+         }
+         serverLocators.clear();
+      }
+
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
       backupServer = null;
@@ -371,6 +382,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(getConnectorTransportConfiguration(true), getConnectorTransportConfiguration(false));
+      synchronized (serverLocators)
+      {
+         serverLocators.add(locator);
+      }
       return (ServerLocatorInternal) locator;
    }
 
