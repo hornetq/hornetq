@@ -30,9 +30,10 @@ public class ReplicationStartSyncMessage extends PacketImpl
       this.nodeID = nodeID;
    }
 
-   public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType)
+   public ReplicationStartSyncMessage(JournalFile[] datafiles, JournalContent contentType, String nodeID)
    {
       this();
+      this.nodeID = nodeID;
       synchronizationIsFinished = false;
       ids = new long[datafiles.length];
       for (int i = 0; i < datafiles.length; i++)
@@ -46,11 +47,9 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public void encodeRest(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(synchronizationIsFinished);
+      buffer.writeString(nodeID);
       if (synchronizationIsFinished)
-      {
-         buffer.writeString(nodeID);
          return;
-      }
       buffer.writeByte(journalType.typeByte);
       buffer.writeInt(ids.length);
       for (long id : ids)
@@ -63,9 +62,9 @@ public class ReplicationStartSyncMessage extends PacketImpl
    public void decodeRest(final HornetQBuffer buffer)
    {
       synchronizationIsFinished = buffer.readBoolean();
+      nodeID = buffer.readString();
       if (synchronizationIsFinished)
       {
-         nodeID = buffer.readString();
          return;
       }
       journalType = JournalContent.getType(buffer.readByte());

@@ -131,6 +131,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Public --------------------------------------------------------
 
+   @Override
    public void registerJournal(final byte id, final Journal journal)
    {
       if (journals == null || id >= journals.length)
@@ -150,6 +151,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       journals[id] = journal;
    }
 
+   @Override
    public void handlePacket(final Packet packet)
    {
       PacketImpl response = new ReplicationResponseMessage();
@@ -341,17 +343,13 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       started = false;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationEndpoint#getChannel()
-    */
+   @Override
    public Channel getChannel()
    {
       return channel;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationEndpoint#setChannel(org.hornetq.core.remoting.Channel)
-    */
+   @Override
    public void setChannel(final Channel channel)
    {
       this.channel = channel;
@@ -568,7 +566,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       synchronized (this)
       {
          if (!started)
-               return;
+            return;
+         if (packet.getNodeID() != null)
+         {
+            quorumManager.setLiveID(packet.getNodeID());
+         }
          Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
          log.info("Journal " + packet.getJournalContentType() + ". Reserving fileIDs for synchronization: " +
                   Arrays.toString(packet.getFileIds()));
@@ -580,7 +582,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          FileWrapperJournal syncJournal = new FileWrapperJournal(journal);
          registerJournal(packet.getJournalContentType().typeByte, syncJournal);
       }
-     }
+   }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {

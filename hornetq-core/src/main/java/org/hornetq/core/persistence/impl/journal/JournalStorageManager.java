@@ -396,8 +396,8 @@ public class JournalStorageManager implements StorageManager
             pagingManager.lock();
             try
             {
-               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES);
-               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS);
+               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES, nodeID);
+               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS, nodeID);
                pageFilesToSync = getPageInformationForSync(pagingManager);
                largeMessageFilesToSync = getLargeMessageInformation();
             }
@@ -527,11 +527,12 @@ public class JournalStorageManager implements StorageManager
             }
     }
 
-    private JournalFile[] prepareJournalForCopy(Journal journal, JournalContent contentType) throws Exception
+   private JournalFile[]
+            prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID) throws Exception
     {
         journal.forceMoveNextFile();
         JournalFile[] datafiles = journal.getDataFiles();
-        replicator.sendStartSyncMessage(datafiles, contentType);
+      replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
         return datafiles;
     }
 
