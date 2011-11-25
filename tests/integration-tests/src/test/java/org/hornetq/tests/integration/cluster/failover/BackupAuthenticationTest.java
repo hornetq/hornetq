@@ -39,7 +39,7 @@ public class BackupAuthenticationTest extends FailoverTestBase
       assertFalse("backup should have stopped", backupServer.isStarted());
       backupConfig.setClusterPassword(CLUSTER_PASSWORD);
       backupServer.start();
-      waitForServer(backupServer.getServer());
+      waitForRemoteBackup(null, 5, true, backupServer.getServer());
    }
 
    @Override
