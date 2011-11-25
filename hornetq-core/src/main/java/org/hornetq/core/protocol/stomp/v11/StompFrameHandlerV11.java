@@ -17,10 +17,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.api.core.Message;
-import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.protocol.stomp.FrameEventListener;
 import org.hornetq.core.protocol.stomp.HornetQStompException;
 import org.hornetq.core.protocol.stomp.SimpleBytes;
@@ -28,11 +25,7 @@ import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.protocol.stomp.StompConnection;
 import org.hornetq.core.protocol.stomp.StompDecoder;
 import org.hornetq.core.protocol.stomp.StompFrame;
-import org.hornetq.core.protocol.stomp.StompSubscription;
-import org.hornetq.core.protocol.stomp.StompUtils;
 import org.hornetq.core.protocol.stomp.VersionedStompFrameHandler;
-import org.hornetq.core.server.ServerMessage;
-import org.hornetq.utils.DataConstants;
 
 /**
  * 
@@ -331,6 +324,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
          lastPingTime.set(System.currentTimeMillis());
       }
 
+      @Override
       public void run()
       {
          lastAccepted.set(System.currentTimeMillis());
@@ -434,6 +428,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
    }
    
    //all frame except CONNECT are decoded here.
+   @Override
    public StompFrame decode(StompDecoder decoder, final HornetQBuffer buffer) throws HornetQStompException
    {
       int readable = buffer.readableBytes();

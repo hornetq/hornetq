@@ -27,7 +27,6 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.journal.impl.dataformat.ByteArrayEncoding;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.replication.ReplicationManager;
@@ -41,10 +40,6 @@ import org.hornetq.core.replication.ReplicationManager;
  */
 public class ReplicatedJournal implements Journal
 {
-
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(ReplicatedJournal.class);
 
    // Attributes ----------------------------------------------------
 
