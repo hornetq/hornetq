@@ -292,7 +292,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          channel.close();
       }
-      storage.stop();
 
       for (ConcurrentMap<Integer, Page> map : pageIndex.values())
       {
