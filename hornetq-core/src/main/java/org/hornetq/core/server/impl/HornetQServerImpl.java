@@ -88,6 +88,7 @@ import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.CoreRemotingConnection;
 import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.replication.ReplicationEndpoint;
@@ -227,6 +228,7 @@ public class HornetQServerImpl implements HornetQServer
    private final Object initialiseLock = new Object();
    private boolean initialised;
    private final Object startUpLock = new Object();
+   private final Object replicationLock = new Object();
 
    /**
     * Only applicable to 'remote backup servers'. If this flag is false the backup may not become
@@ -1201,7 +1203,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (configuration.isPersistenceEnabled())
       {
-         return new JournalStorageManager(configuration, executorFactory, replicationManager, shutdownOnCriticalIO);
+         return new JournalStorageManager(configuration, executorFactory, shutdownOnCriticalIO);
       }
       else
       {
@@ -2265,29 +2267,59 @@ public class HornetQServerImpl implements HornetQServer
          throw new HornetQException(HornetQException.ALREADY_REPLICATING);
       }
 
-      replicationManager = new ReplicationManagerImpl(rc, executorFactory);
-      try
+      if (!isStarted())
       {
-         replicationManager.start();
-         storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(), clusterConnection,
-                                         pair);
+         throw new IllegalStateException();
       }
-      catch (Exception e)
+
+      synchronized (replicationLock)
       {
-         /*
-          * The reasoning here is that the exception was either caused by (1) the (interaction with)
-          * the backup, or (2) by an IO Error at the storage. If (1), we can swallow the exception
-          * and ignore the replication request. If (2) the live will crash shortly.
-          */
-         log.warn("Exception when trying to start replication", e);
-         replicationManager = null;
-         if (e instanceof HornetQException)
+
+         if (replicationManager != null)
          {
-            throw (HornetQException)e;
+            throw new HornetQException(HornetQException.ALREADY_REPLICATING);
          }
-         else
+
+         rc.addFailureListener(new ReplicationFailureListener());
+         replicationManager = new ReplicationManagerImpl(rc, executorFactory);
+
+         try
          {
-            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
+            replicationManager.start();
+            storageManager.startReplication(replicationManager, pagingManager, getNodeID().toString(),
+                                            clusterConnection, pair);
+         }
+         catch (Exception e)
+         {
+            /*
+             * The reasoning here is that the exception was either caused by (1) the (interaction
+             * with) the backup, or (2) by an IO Error at the storage. If (1), we can swallow the
+             * exception and ignore the replication request. If (2) the live will crash shortly.
+             */
+            log.warn("Exception when trying to start replication", e);
+
+            try
+            {
+               if (replicationManager != null)
+                  replicationManager.stop();
+            }
+            catch (Exception hqe)
+            {
+               log.warn("Exception while trying to close replicationManager", hqe);
+            }
+            finally
+            {
+               replicationManager = null;
+            }
+
+            if (e instanceof HornetQException)
+            {
+               throw (HornetQException)e;
+            }
+            else
+            {
+               throw new HornetQException(HornetQException.INTERNAL_ERROR, "Error trying to start replication", e);
+            }
          }
       }
    }
@@ -2309,4 +2341,28 @@ public class HornetQServerImpl implements HornetQServer
       nodeManager.setNodeID(nodeID);
       backupUpToDate = true;
    }
+
+   private final class ReplicationFailureListener implements FailureListener
+   {
+
+      @Override
+      public void connectionFailed(HornetQException exception, boolean failedOver)
+      {
+         Executors.newSingleThreadExecutor().execute(new Runnable()
+         {
+            public void run()
+            {
+               synchronized (replicationLock)
+
+               {
+                  if (replicationManager != null)
+                  {
+                     storageManager.stopReplication();
+                  }
+               }
+            }
+         });
+      }
+   }
+
 }

@@ -269,4 +269,11 @@ public interface StorageManager extends HornetQComponent
       ServerMessage message,
       RoutingContext ctx,
       RouteContextList listCtx) throws Exception;
+
+   /**
+    * Stops the replication of data from the live to the backup.
+    * <p>
+    * Typical scenario is a broken connection.
+    */
+   void stopReplication();
 }

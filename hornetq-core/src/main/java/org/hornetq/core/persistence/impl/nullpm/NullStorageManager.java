@@ -618,4 +618,10 @@ public class NullStorageManager implements StorageManager
    {
       return false;
    }
+
+   @Override
+   public void stopReplication()
+   {
+      // no-op
+   }
  }

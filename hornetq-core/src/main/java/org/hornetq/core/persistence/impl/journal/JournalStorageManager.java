@@ -194,9 +194,11 @@ public class JournalStorageManager implements StorageManager
         }
     }
 
-    private Journal messageJournal;
-    private Journal bindingsJournal;
-    private final SequentialFileFactory largeMessagesFactory;
+   private Journal messageJournal;
+   private Journal bindingsJournal;
+   private final Journal originalMessageJournal;
+   private final Journal originalBindingsJournal;
+   private final SequentialFileFactory largeMessagesFactory;
 
     private volatile boolean started;
 
@@ -235,17 +237,9 @@ public class JournalStorageManager implements StorageManager
    public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
                                 final IOCriticalErrorListener criticalErrorListener)
    {
-      this(config, executorFactory, null, criticalErrorListener);
-   }
-
-   public JournalStorageManager(final Configuration config, final ExecutorFactory executorFactory,
-                                final ReplicationManager replicator, final IOCriticalErrorListener criticalErrorListener)
-   {
       this.executorFactory = executorFactory;
 
       executor = executorFactory.getExecutor();
-
-      this.replicator = replicator;
 
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
@@ -274,19 +268,13 @@ public class JournalStorageManager implements StorageManager
                                                 "bindings",
                                                 1);
 
-        if (replicator != null)
-            {
-                bindingsJournal = new ReplicatedJournal((byte)0, localBindings, replicator);
-            }
-        else
-            {
-                bindingsJournal = localBindings;
-            }
+      bindingsJournal = localBindings;
+      originalBindingsJournal = localBindings;
 
-        if (journalDir == null)
-            {
-                throw new NullPointerException("journal-dir is null");
-            }
+      if (journalDir == null)
+      {
+         throw new NullPointerException("journal-dir is null");
+      }
 
         createJournalDir = config.isCreateJournalDir();
 
@@ -332,14 +320,8 @@ public class JournalStorageManager implements StorageManager
                                                config.getJournalType() == JournalType.ASYNCIO ? config.getJournalMaxIO_AIO()
                                                : config.getJournalMaxIO_NIO());
 
-      if (replicator != null)
-      {
-         messageJournal = new ReplicatedJournal((byte)1, localMessage, replicator);
-      }
-      else
-      {
-         messageJournal = localMessage;
-      }
+      messageJournal = localMessage;
+      originalMessageJournal = localMessage;
 
       largeMessagesDirectory = config.getLargeMessagesDirectory();
       largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
@@ -380,8 +362,8 @@ public class JournalStorageManager implements StorageManager
       JournalFile[] messageFiles = null;
       JournalFile[] bindingsFiles = null;
 
-      final Journal localMessageJournal = messageJournal;
-      final Journal localBindingsJournal = bindingsJournal;
+      try
+      {
 
       Map<String, Long> largeMessageFilesToSync;
       Map<SimpleString, Collection<Integer>> pageFilesToSync;
@@ -389,15 +371,15 @@ public class JournalStorageManager implements StorageManager
       try
       {
          replicator = replicationManager;
-         localMessageJournal.synchronizationLock();
-         localBindingsJournal.synchronizationLock();
+         originalMessageJournal.synchronizationLock();
+         originalBindingsJournal.synchronizationLock();
          try
          {
             pagingManager.lock();
             try
             {
-               messageFiles = prepareJournalForCopy(localMessageJournal, JournalContent.MESSAGES, nodeID);
-               bindingsFiles = prepareJournalForCopy(localBindingsJournal, JournalContent.BINDINGS, nodeID);
+               messageFiles = prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID);
+               bindingsFiles = prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID);
                pageFilesToSync = getPageInformationForSync(pagingManager);
                largeMessageFilesToSync = getLargeMessageInformation();
             }
@@ -408,11 +390,11 @@ public class JournalStorageManager implements StorageManager
          }
          finally
          {
-            localMessageJournal.synchronizationUnlock();
-            localBindingsJournal.synchronizationUnlock();
+            originalMessageJournal.synchronizationUnlock();
+            originalBindingsJournal.synchronizationUnlock();
          }
-         bindingsJournal = new ReplicatedJournal(((byte)0), localBindingsJournal, replicator);
-         messageJournal = new ReplicatedJournal((byte)1, localMessageJournal, replicator);
+         bindingsJournal = new ReplicatedJournal(((byte)0), originalBindingsJournal, replicator);
+         messageJournal = new ReplicatedJournal((byte)1, originalMessageJournal, replicator);
       }
       finally
       {
@@ -433,10 +415,35 @@ public class JournalStorageManager implements StorageManager
       }
       finally
       {
-         storageManagerLock.writeLock().unlock();
+            storageManagerLock.writeLock().unlock();
+         }
+      }
+      catch (Exception e)
+      {
+         stopReplication();
+         throw e;
       }
    }
 
+   /**
+    * Stops replication by resetting replication-related fields to their 'unreplicated' state.
+    */
+   @Override
+   public void stopReplication()
+   {
+
+      storageManagerLock.writeLock().lock();
+      try
+      {
+         bindingsJournal = originalBindingsJournal;
+         messageJournal = originalMessageJournal;
+         replicator = null;
+      }
+      finally
+      {
+         storageManagerLock.writeLock().unlock();
+      }
+   }
 
    /**
     * @param pageFilesToSync
@@ -530,10 +537,10 @@ public class JournalStorageManager implements StorageManager
    private JournalFile[]
             prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID) throws Exception
     {
-        journal.forceMoveNextFile();
-        JournalFile[] datafiles = journal.getDataFiles();
+      journal.forceMoveNextFile();
+      JournalFile[] datafiles = journal.getDataFiles();
       replicator.sendStartSyncMessage(datafiles, contentType, nodeID);
-        return datafiles;
+      return datafiles;
     }
 
     public void waitOnOperations() throws Exception
@@ -4104,5 +4111,6 @@ public class JournalStorageManager implements StorageManager
        }
 
    }
+
 
 }
