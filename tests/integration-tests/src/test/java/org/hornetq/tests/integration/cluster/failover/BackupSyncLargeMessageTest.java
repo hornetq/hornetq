@@ -35,9 +35,13 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
 
    public void testDeleteLargeMessages() throws Exception
    {
+      File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      assertEquals("Should not have any large messages... previous test failed to clean up?", 0,
+                   getAllMessageFileIds(dir).size());
       createProducerSendSomeMessages();
       startBackupFinishSyncing();
-      File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      // File dir = new
+      // File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
       receiveMsgsInRange(0, n_msgs / 2);
       assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
    }
@@ -45,11 +49,15 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
    private Set<Long> getAllMessageFileIds(File dir)
    {
       Set<Long> idsOnBkp = new HashSet<Long>();
-      for (String filename : dir.list())
+      String[] fileList = dir.list();
+      if (fileList != null)
       {
-         if (filename.endsWith(".msg"))
+         for (String filename : fileList)
          {
-            idsOnBkp.add(Long.valueOf(filename.split("\\.")[0]));
+            if (filename.endsWith(".msg"))
+            {
+               idsOnBkp.add(Long.valueOf(filename.split("\\.")[0]));
+            }
          }
       }
       return idsOnBkp;
