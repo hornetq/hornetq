@@ -17,6 +17,10 @@
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
+   <condition property="maven.executable" value="mvn.bat" else="mvn">
+      <os family="windows"/>
+   </condition>
+
    <target name="uploadHornetQBootstrap">
       <antcall target="upload">
          <param name="artifact.id" value="hornetq-bootstrap"/>
@@ -162,7 +166,7 @@
 
    <target name="upload-local-target">
        <!-- install the jar -->
-       <exec executable="mvn" dir="./build">
+       <exec executable="${maven.executable}" dir="./build">
         <arg value="install:install-file"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
         <!-- <arg value="-Dmaven.repo.local=/work/eap-51/maven-repository"/> -->
@@ -173,7 +177,7 @@
         <arg value="-Dfile=./jars/${file-name}.jar"/>
        </exec>
        <!-- install the sources jar -->
-       <exec executable="mvn" dir="./build">
+       <exec executable="${maven.executable}" dir="./build">
         <arg value="install:install-file"/>
         <arg value="-DgroupId=org.hornetq"/>
         <!-- uncomment the following line to deploy to the JBoss 5 repository -->
@@ -188,7 +192,7 @@
 
    <target name="upload">
    	<!-- upload the jar -->
-      <exec executable="mvn">
+      <exec executable="${maven.executable}">
          <arg value="deploy:deploy-file"/>
       	 <arg value="-e"/>
          <arg value="-DgroupId=org.hornetq"/>
@@ -201,7 +205,7 @@
          <arg value="-Durl=dav:https://snapshots.jboss.org/maven2"/>
       </exec>
       <!-- upload the corresponding sources jar -->
-      <exec executable="mvn">
+      <exec executable="${maven.executable}">
          <arg value="deploy:deploy-file"/>
       	 <arg value="-e"/>
          <arg value="-DgroupId=org.hornetq"/>
@@ -283,7 +287,7 @@
  &lt;version&gt;${hornetq.version}&lt;/version&gt;${line.separator}&lt;/project&gt;"/>
    	
     <!-- deploy the jar -->
-    <exec executable="mvn">
+    <exec executable="${maven.executable}">
      <arg value="-e"/>
      <arg value="deploy:deploy-file"/>
      <arg value="-DpomFile=${temporary.pom}"/>
@@ -296,7 +300,7 @@
      <arg value="-Durl=https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/"/>
     </exec>
     <!-- deploy the sources jar -->
-    <exec executable="mvn">
+    <exec executable="${maven.executable}">
      <arg value="-e"/>
      <arg value="deploy:deploy-file"/>
      <arg value="-DpomFile=${temporary.pom}"/>
