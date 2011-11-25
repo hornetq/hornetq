@@ -317,46 +317,23 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
-    */
    public JournalLoadInformation[] loadInternalOnly() throws Exception
    {
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#isReplicated()
-    */
-   public boolean isReplicated()
-   {
-      return false;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#completeReplication()
-    */
    public void completeOperations()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
-    */
    public void pageClosed(final SimpleString storeName, final int pageNumber)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
-    */
    public void pageDeleted(final SimpleString storeName, final int pageNumber)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
-    */
    public void pageWrite(final PagedMessage message, final int pageNumber)
    {
    }
@@ -369,9 +346,6 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
-    */
    public boolean waitOnOperations(final long timeout) throws Exception
    {
       return true;

@@ -87,8 +87,6 @@ public interface StorageManager extends HornetQComponent
 
    void pageWrite(PagedMessage message, int pageNumber);
 
-   boolean isReplicated();
-
    void afterCompleteOperations(IOAsyncTask run);
 
    /** Block until the operations are done.
