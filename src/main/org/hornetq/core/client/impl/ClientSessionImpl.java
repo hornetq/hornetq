@@ -594,13 +594,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          stop();
       }
 
-      synchronized (consumers)
+      
+      // We need to make sure we don't get any inflight messages
+      for (ClientConsumerInternal consumer : cloneConsumers())
       {
-         // We need to make sure we don't get any inflight messages
-         for (ClientConsumerInternal consumer : consumers.values())
-         {
-            consumer.clear(true);
-         }
+         consumer.clear(true);
       }
 
       // Acks must be flushed here *after connection is stopped and all onmessages finished executing
@@ -675,7 +673,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (!started)
       {
-         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         for (ClientConsumerInternal clientConsumerInternal : cloneConsumers())
          {
             clientConsumerInternal.start();
          }
@@ -697,12 +695,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (started)
       {
-         synchronized (consumers)
+         for (ClientConsumerInternal clientConsumerInternal : cloneConsumers())
          {
-            for (ClientConsumerInternal clientConsumerInternal : consumers.values())
-            {
-               clientConsumerInternal.stop(waitForOnMessage);
-            }
+            clientConsumerInternal.stop(waitForOnMessage);
          }
 
          channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
@@ -1102,7 +1097,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                   // Now start the session if it was already started
                   if (started)
                   {
-                     for (ClientConsumerInternal consumer : consumers.values())
+                     for (ClientConsumerInternal consumer : cloneConsumers())
                      {
                         consumer.clearAtFailover();
                         consumer.start();
@@ -1538,13 +1533,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             stop(false);
          }
 
-         synchronized (consumers)
+         // We need to make sure we don't get any inflight messages
+         for (ClientConsumerInternal consumer : cloneConsumers())
          {
-            // We need to make sure we don't get any inflight messages
-            for (ClientConsumerInternal consumer : consumers.values())
-            {
-               consumer.clear(false);
-            }
+            consumer.clear(false);
          }
 
          flushAcks();
@@ -1928,24 +1920,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void cleanUpChildren() throws Exception
    {
-      Set<ClientConsumerInternal> consumersClone;
-      
-      synchronized (consumers)
-      {
-         consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
-      }
+      Set<ClientConsumerInternal> consumersClone = cloneConsumers();
 
       for (ClientConsumerInternal consumer : consumersClone)
       {
          consumer.cleanUp();
       }
 
-      Set<ClientProducerInternal> producersClone;
-      
-      synchronized (producers)
-      {
-         producersClone = new HashSet<ClientProducerInternal>(producers);
-      }
+      Set<ClientProducerInternal> producersClone = cloneProducers();
 
       for (ClientProducerInternal producer : producersClone)
       {
@@ -1953,25 +1935,41 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   private void closeChildren() throws HornetQException
+   /**
+    * @return
+    */
+   private Set<ClientProducerInternal> cloneProducers()
    {
-      Set<ClientConsumer> consumersClone;
+      Set<ClientProducerInternal> producersClone;
+      
+      synchronized (producers)
+      {
+         producersClone = new HashSet<ClientProducerInternal>(producers);
+      }
+      return producersClone;
+   }
+
+   /**
+    * @return
+    */
+   private Set<ClientConsumerInternal> cloneConsumers()
+   {
       synchronized (consumers)
       {
-         consumersClone = new HashSet<ClientConsumer>(consumers.values());
+         return new HashSet<ClientConsumerInternal>(consumers.values());
       }
+   }
+
+   private void closeChildren() throws HornetQException
+   {
+      Set<ClientConsumerInternal> consumersClone = cloneConsumers();
 
       for (ClientConsumer consumer : consumersClone)
       {
          consumer.close();
       }
 
-      Set<ClientProducer> producersClone;
-
-      synchronized (producers)
-      {
-         producersClone =  new HashSet<ClientProducer>(producers);
-      }
+      Set<ClientProducerInternal> producersClone = cloneProducers();
 
       for (ClientProducer producer : producersClone)
       {
@@ -1981,12 +1979,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void flushAcks() throws HornetQException
    {
-      synchronized (consumers)
+      for (ClientConsumerInternal consumer : cloneConsumers())
       {
-         for (ClientConsumerInternal consumer : consumers.values())
-         {
-            consumer.flushAcks();
-         }
+         consumer.flushAcks();
       }
    }
 
