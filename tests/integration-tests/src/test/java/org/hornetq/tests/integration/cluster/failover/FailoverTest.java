@@ -1342,6 +1342,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setReconnectAttempts(-1);
 
       locator.setBlockOnAcknowledge(true);
+
       sf = createSessionFactoryAndWaitForTopology(locator, 2);
 
       final ClientSession session = createSession(sf, false, false);
@@ -1400,7 +1401,7 @@ public class FailoverTest extends FailoverTestBase
                   }
                   catch (HornetQException e2)
                   {
-
+                     throw new RuntimeException(e2);
                   }
 
                }
@@ -1457,6 +1458,7 @@ public class FailoverTest extends FailoverTestBase
       try
       {
          session2.commit();
+         fail("expecting DUPLICATE_ID_REJECTED exception");
       }
       catch (HornetQException e)
       {
