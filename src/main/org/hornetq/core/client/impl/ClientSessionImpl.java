@@ -594,10 +594,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          stop();
       }
 
-      // We need to make sure we don't get any inflight messages
-      for (ClientConsumerInternal consumer : consumers.values())
+      synchronized (consumers)
       {
-         consumer.clear(true);
+         // We need to make sure we don't get any inflight messages
+         for (ClientConsumerInternal consumer : consumers.values())
+         {
+            consumer.clear(true);
+         }
       }
 
       // Acks must be flushed here *after connection is stopped and all onmessages finished executing
@@ -694,9 +697,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (started)
       {
-         for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+         synchronized (consumers)
          {
-            clientConsumerInternal.stop(waitForOnMessage);
+            for (ClientConsumerInternal clientConsumerInternal : consumers.values())
+            {
+               clientConsumerInternal.stop(waitForOnMessage);
+            }
          }
 
          channel.sendBlocking(new PacketImpl(PacketImpl.SESS_STOP));
@@ -816,7 +822,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addProducer(final ClientProducerInternal producer)
    {
-      producers.add(producer);
+      synchronized (producers)
+      {
+         producers.add(producer);
+      }
    }
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
@@ -829,12 +838,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeProducer(final ClientProducerInternal producer)
    {
-      producers.remove(producer);
+      synchronized (producers)
+      {
+         producers.remove(producer);
+      }
    }
 
    public void handleReceiveMessage(final long consumerID, final SessionReceiveMessage message) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -850,7 +862,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void handleReceiveLargeMessage(final long consumerID, final SessionReceiveLargeMessage message) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -860,7 +872,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void handleReceiveContinuation(final long consumerID, final SessionReceiveContinuationMessage continuation) throws Exception
    {
-      ClientConsumerInternal consumer = consumers.get(consumerID);
+      ClientConsumerInternal consumer = getConsumer(consumerID);
 
       if (consumer != null)
       {
@@ -1526,10 +1538,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             stop(false);
          }
 
-         // We need to make sure we don't get any inflight messages
-         for (ClientConsumerInternal consumer : consumers.values())
+         synchronized (consumers)
          {
-            consumer.clear(false);
+            // We need to make sure we don't get any inflight messages
+            for (ClientConsumerInternal consumer : consumers.values())
+            {
+               consumer.clear(false);
+            }
          }
 
          flushAcks();
@@ -1871,6 +1886,19 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       });
 
    }
+   
+   /**
+    * @param consumerID
+    * @return
+    */
+   private ClientConsumerInternal getConsumer(final long consumerID)
+   {
+      synchronized (consumers)
+      {
+         ClientConsumerInternal consumer = consumers.get(consumerID);
+         return consumer;
+      }
+   }
 
    private void doCleanup(boolean failingOver)
    {
@@ -1900,14 +1928,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void cleanUpChildren() throws Exception
    {
-      Set<ClientConsumerInternal> consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
+      Set<ClientConsumerInternal> consumersClone;
+      
+      synchronized (consumers)
+      {
+         consumersClone = new HashSet<ClientConsumerInternal>(consumers.values());
+      }
 
       for (ClientConsumerInternal consumer : consumersClone)
       {
          consumer.cleanUp();
       }
 
-      Set<ClientProducerInternal> producersClone = new HashSet<ClientProducerInternal>(producers);
+      Set<ClientProducerInternal> producersClone;
+      
+      synchronized (producers)
+      {
+         producersClone = new HashSet<ClientProducerInternal>(producers);
+      }
 
       for (ClientProducerInternal producer : producersClone)
       {
@@ -1917,14 +1955,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private void closeChildren() throws HornetQException
    {
-      Set<ClientConsumer> consumersClone = new HashSet<ClientConsumer>(consumers.values());
+      Set<ClientConsumer> consumersClone;
+      synchronized (consumers)
+      {
+         consumersClone = new HashSet<ClientConsumer>(consumers.values());
+      }
 
       for (ClientConsumer consumer : consumersClone)
       {
          consumer.close();
       }
 
-      Set<ClientProducer> producersClone = new HashSet<ClientProducer>(producers);
+      Set<ClientProducer> producersClone;
+
+      synchronized (producers)
+      {
+         producersClone =  new HashSet<ClientProducer>(producers);
+      }
 
       for (ClientProducer producer : producersClone)
       {
