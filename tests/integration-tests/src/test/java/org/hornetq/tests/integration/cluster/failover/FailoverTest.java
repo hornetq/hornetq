@@ -1745,6 +1745,12 @@ public class FailoverTest extends FailoverTestBase
       // To reload security or other settings that are read during startup
       beforeRestart(backupServer);
 
+      if (!backupServer.getServer().getConfiguration().isSharedStore())
+      {
+         // this test would not make sense in the remote replication use case, without the following
+         backupServer.getServer().getConfiguration().setBackup(false);
+      }
+
       backupServer.start();
 
       assertTrue("session failure listener", listener.getLatch().await(5, TimeUnit.SECONDS));
