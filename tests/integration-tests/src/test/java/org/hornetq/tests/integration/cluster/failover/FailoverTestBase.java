@@ -165,7 +165,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
       for (int j = 0; j < LARGE_MESSAGE_SIZE; j++)
       {
-         Assert.assertTrue("expecting " + LARGE_MESSAGE_SIZE + " bytes, got " + j, buffer.readable());
+         Assert.assertTrue("msg " + i + ", expecting " + LARGE_MESSAGE_SIZE + " bytes, got " + j, buffer.readable());
          Assert.assertEquals("equal at " + j, UnitTestCase.getSamplebyte(j), buffer.readByte());
       }
    }

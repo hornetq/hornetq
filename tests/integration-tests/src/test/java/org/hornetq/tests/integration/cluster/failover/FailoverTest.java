@@ -428,7 +428,7 @@ public class FailoverTest extends FailoverTestBase
 
       message = consumer.receiveImmediate();
 
-      Assert.assertNotNull(message);
+      Assert.assertNotNull("expecting a message", message);
       Assert.assertEquals(counter, message.getIntProperty("counter").intValue());
 
       session.close();
@@ -1427,7 +1427,7 @@ public class FailoverTest extends FailoverTestBase
 
       committer.join();
 
-      Assert.assertFalse(committer.failed);
+      Assert.assertFalse("second attempt succeed?", committer.failed);
 
       session.close();
 
@@ -1462,13 +1462,13 @@ public class FailoverTest extends FailoverTestBase
       }
       catch (HornetQException e)
       {
-         assertEquals(HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
+         assertEquals(e.getMessage(), HornetQException.DUPLICATE_ID_REJECTED, e.getCode());
       }
 
-      ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
 
       session2.start();
 
+      ClientConsumer consumer = session2.createConsumer(FailoverTestBase.ADDRESS);
       receiveMessages(consumer);
 
       ClientMessage message = consumer.receiveImmediate();
