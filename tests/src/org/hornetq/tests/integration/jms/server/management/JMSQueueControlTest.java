@@ -1177,7 +1177,6 @@ public class JMSQueueControlTest extends ManagementTestBase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf.setFileDeploymentEnabled(false);
       server = HornetQServers.newHornetQServer(conf, mbeanServer, true);
-      server.start();
 
       serverManager = new JMSServerManagerImpl(server);
       context = new InVMContext();

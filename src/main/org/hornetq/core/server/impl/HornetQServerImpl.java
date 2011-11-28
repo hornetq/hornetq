@@ -317,6 +317,12 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         log.debug("Server already started!");
+         return;
+      }
+
       log.debug("Starting server " + this);
       OperationContextImpl.clearContext();
 
