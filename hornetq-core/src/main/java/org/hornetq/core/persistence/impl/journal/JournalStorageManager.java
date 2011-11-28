@@ -553,9 +553,7 @@ public class JournalStorageManager implements StorageManager
         waitOnOperations(0);
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#blockOnReplication()
-     */
+   @Override
     public boolean waitOnOperations(final long timeout) throws Exception
     {
         if (!started)
@@ -566,12 +564,8 @@ public class JournalStorageManager implements StorageManager
         return getContext().waitCompletion(timeout);
     }
 
-    /*
-     *
-     * (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
-     */
-    public void pageClosed(final SimpleString storeName, final int pageNumber)
+   @Override
+   public void pageClosed(final SimpleString storeName, final int pageNumber)
     {
         if (isReplicated())
             {
@@ -579,9 +573,6 @@ public class JournalStorageManager implements StorageManager
             }
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
-     */
     public void pageDeleted(final SimpleString storeName, final int pageNumber)
     {
         if (isReplicated())
@@ -590,11 +581,6 @@ public class JournalStorageManager implements StorageManager
             }
     }
 
-   /*
-    * (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.utils.SimpleString,
-    * int, org.hornetq.api.core.buffers.ChannelBuffer)
-    */
    public void pageWrite(final PagedMessage message, final int pageNumber)
    {
       if (isReplicated())
@@ -603,9 +589,6 @@ public class JournalStorageManager implements StorageManager
       }
    }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#getContext()
-     */
     public OperationContext getContext()
     {
         return OperationContextImpl.getContext(executorFactory);
@@ -626,9 +609,6 @@ public class JournalStorageManager implements StorageManager
         return newContext(singleThreadExecutor);
     }
 
-    /* (non-Javadoc)
-     * @see org.hornetq.core.persistence.StorageManager#newContext()
-     */
     public OperationContext newContext(final Executor executor)
     {
         return new OperationContextImpl(executor);
@@ -4074,16 +4054,10 @@ public class JournalStorageManager implements StorageManager
        {
        }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#beforeRollback(org.hornetq.core.transaction.Transaction)
-        */
        public void beforeRollback(Transaction tx) throws Exception
        {
        }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.transaction.TransactionOperation#afterRollback(org.hornetq.core.transaction.Transaction)
-        */
        public void afterRollback(Transaction tx)
        {
            for (Long msg : confirmedMessages)
