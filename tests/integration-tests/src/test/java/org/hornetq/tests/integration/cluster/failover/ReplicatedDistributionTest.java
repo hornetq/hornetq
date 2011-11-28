@@ -66,7 +66,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
             Assert.assertNotNull(msg);
 
-            System.out.println(i + " msg = " + msg);
+         // System.out.println(i + " msg = " + msg);
 
             int received = msg.getIntProperty("key");
 
@@ -101,7 +101,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
             Assert.assertNotNull(msg);
 
-            System.out.println(i + " msg = " + msg);
+         // System.out.println(i + " msg = " + msg);
 
             int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
@@ -131,7 +131,7 @@ public class ReplicatedDistributionTest extends ClusterTestBase
 
             Assert.assertNotNull(msg);
 
-            System.out.println(i + " msg = " + msg);
+         // System.out.println(i + " msg = " + msg);
 
             int received = msg.getIntProperty("key");
 
