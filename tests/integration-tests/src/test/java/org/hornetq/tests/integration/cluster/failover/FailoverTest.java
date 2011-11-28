@@ -1077,16 +1077,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      for (int i = 0; i < NUM_MESSAGES; i++)
-      {
-         ClientMessage message = consumer.receive(1000);
-
-         Assert.assertNotNull(message);
-
-         assertMessageBody(i, message);
-
-         Assert.assertEquals(i, message.getIntProperty("counter").intValue());
-      }
+      receiveMessages(consumer, 0, NUM_MESSAGES, false);
 
       crash(session);
 
@@ -1209,7 +1200,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       // Should get the same ones after failover since we didn't ack
-      receiveMessagesAndAck(consumer, NUM_MESSAGES, NUM_MESSAGES * 2);
+      receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
 
       session.close();
 
@@ -1218,7 +1209,7 @@ public class FailoverTest extends FailoverTestBase
 
    private void receiveMessages(ClientConsumer consumer) throws HornetQException
    {
-      receiveMessagesAndAck(consumer, 0, NUM_MESSAGES);
+      receiveMessages(consumer, 0, NUM_MESSAGES, true);
    }
 
    public void testSimpleSendAfterFailoverDurableTemporary() throws Exception

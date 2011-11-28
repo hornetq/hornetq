@@ -182,7 +182,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
    {
       session.start();
       ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
-      receiveMessagesAndAck(consumer, start, end);
+      receiveMessages(consumer, start, end, true);
       consumer.close();
       session.commit();
    }
