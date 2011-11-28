@@ -142,7 +142,7 @@ public class JournalStorageManager implements StorageManager
     // Message journal record types
 
     // This is used when a large message is created but not yet stored on the system.
-    // We use this to avoid temporary files missing
+   // Used to avoid temporary files missing
     public static final byte ADD_LARGE_MESSAGE_PENDING = 29;
 
     private static final byte ADD_LARGE_MESSAGE = 30;
@@ -543,7 +543,8 @@ public class JournalStorageManager implements StorageManager
       return datafiles;
     }
 
-    public void waitOnOperations() throws Exception
+   @Override
+   public void waitOnOperations() throws Exception
     {
         if (!started)
             {
@@ -568,24 +569,52 @@ public class JournalStorageManager implements StorageManager
    public void pageClosed(final SimpleString storeName, final int pageNumber)
     {
         if (isReplicated())
-            {
-                replicator.pageClosed(storeName, pageNumber);
-            }
+      {
+         readLock();
+         try
+         {
+            replicator.pageClosed(storeName, pageNumber);
+         }
+         finally
+         {
+            readUnLock();
+         }
+      }
     }
 
-    public void pageDeleted(final SimpleString storeName, final int pageNumber)
-    {
-        if (isReplicated())
-            {
-                replicator.pageDeleted(storeName, pageNumber);
-            }
-    }
+   @Override
+   public void pageDeleted(final SimpleString storeName, final int pageNumber)
+   {
+      if (isReplicated())
+      {
+         readLock();
+         try
+         {
+            replicator.pageDeleted(storeName, pageNumber);
+         }
+         finally
+         {
+            readUnLock();
+         }
+      }
+   }
 
+   @Override
    public void pageWrite(final PagedMessage message, final int pageNumber)
    {
       if (isReplicated())
       {
-         replicator.pageWrite(message, pageNumber);
+         if (!message.getMessage().isDurable())
+            return;
+         readLock();
+         try
+         {
+            replicator.pageWrite(message, pageNumber);
+         }
+         finally
+         {
+            readUnLock();
+         }
       }
    }
 
