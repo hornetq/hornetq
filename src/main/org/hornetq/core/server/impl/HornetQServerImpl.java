@@ -498,12 +498,24 @@ public class HornetQServerImpl implements HornetQServer
       // But at least we will do our best to avoid it on regular shutdowns
       for (ServerSession session : sessions.values())
       {
-         session.close(true);
-         if (!criticalIOError)
+         try
          {
-            session.waitContextCompletion();
+            storageManager.setContext(session.getSessionContext());
+            session.close(true);
+            if (!criticalIOError)
+            {
+               session.waitContextCompletion();
+            }
+         }
+         catch (Exception e)
+         {
+            // If anything went wrong with closing sessions.. we should ignore it
+            // such as transactions.. etc.
+            log.warn(e.getMessage(), e);
          }
       }
+      
+      storageManager.clearContext();
 
       remotingService.stop();
 

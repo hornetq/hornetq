@@ -289,7 +289,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          // We only rollback local txs on close, not XA tx branches
 
-         rollback(failed);
+         try
+         {
+            rollback(failed);
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
       }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -605,7 +612,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void commit() throws Exception
+   public synchronized void commit() throws Exception
    {
       if (isTrace)
       {
@@ -621,7 +628,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
+   public synchronized void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
       if (tx == null)
       {
@@ -642,7 +649,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaCommit(final Xid xid, final boolean onePhase) throws Exception
+   public synchronized void xaCommit(final Xid xid, final boolean onePhase) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -690,7 +697,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaEnd(final Xid xid) throws Exception
+   public synchronized void xaEnd(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -735,7 +742,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaForget(final Xid xid) throws Exception
+   public synchronized void xaForget(final Xid xid) throws Exception
    {
       long id = resourceManager.removeHeuristicCompletion(xid);
 
@@ -758,7 +765,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaJoin(final Xid xid) throws Exception
+   public synchronized void xaJoin(final Xid xid) throws Exception
    {
       Transaction theTx = resourceManager.getTransaction(xid);
 
@@ -781,7 +788,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaResume(final Xid xid) throws Exception
+   public synchronized void xaResume(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -816,7 +823,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaRollback(final Xid xid) throws Exception
+   public synchronized void xaRollback(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
@@ -865,7 +872,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaStart(final Xid xid) throws Exception
+   public synchronized void xaStart(final Xid xid) throws Exception
    {
       if (tx != null)
       {
@@ -888,7 +895,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaSuspend() throws Exception
+   public synchronized void xaSuspend() throws Exception
    {
       if (tx == null)
       {
@@ -913,7 +920,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   public void xaPrepare(final Xid xid) throws Exception
+   public synchronized void xaPrepare(final Xid xid) throws Exception
    {
       if (tx != null && tx.getXid().equals(xid))
       {
