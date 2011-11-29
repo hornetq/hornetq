@@ -128,6 +128,9 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
          }
 
          server.stop(false);
+         
+         forceGC();
+         
          server.start();
 
          server.stop();
