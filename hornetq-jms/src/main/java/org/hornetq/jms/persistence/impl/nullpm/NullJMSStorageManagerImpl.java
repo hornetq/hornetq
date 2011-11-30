@@ -16,7 +16,7 @@ package org.hornetq.jms.persistence.impl.nullpm;
 import java.util.Collections;
 import java.util.List;
 
-import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.replication.impl.ReplicationEndpoint;
 import org.hornetq.jms.persistence.JMSStorageManager;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;
@@ -38,7 +38,7 @@ public class NullJMSStorageManagerImpl implements JMSStorageManager
     */
    public void deleteConnectionFactory(String connectionFactory) throws Exception
    {
-      
+
    }
 
    /* (non-Javadoc)

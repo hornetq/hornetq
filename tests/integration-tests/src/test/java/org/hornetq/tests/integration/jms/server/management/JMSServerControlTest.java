@@ -44,12 +44,11 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.replication.impl.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnection;
@@ -73,17 +72,13 @@ import org.hornetq.utils.json.JSONArray;
  * A JMSServerControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 14 nov. 2008 13:35:10
  *
  *
  */
 public class JMSServerControlTest extends ManagementTestBase
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JMSServerControlTest.class);
-
    // Attributes ----------------------------------------------------
 
    protected InVMContext context;
@@ -519,10 +514,10 @@ public class JMSServerControlTest extends ManagementTestBase
                                       1, // reconnectAttempts
                                       true, // failoverOnInitialConnection
                                       "tst"); // groupID
-      
-      
+
+
       HornetQQueueConnectionFactory cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -551,15 +546,15 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
       stopServer();
-      
+
       startServer();
-      
+
       control = createManagementControl();
-     
+
       cf = (HornetQQueueConnectionFactory)context.lookup("tst");
-      
+
       assertEquals(true, cf.isHA());
       assertEquals("tst", cf.getClientID());
       assertEquals(1, cf.getClientFailureCheckPeriod());
@@ -588,19 +583,19 @@ public class JMSServerControlTest extends ManagementTestBase
       assertEquals(1, cf.getReconnectAttempts());
       assertEquals(true, cf.isFailoverOnInitialConnection());
       assertEquals("tst", cf.getGroupID());
-      
+
       control.destroyConnectionFactory("test");
-      
+
       ObjectNameBuilder nameBuilder = ObjectNameBuilder.create(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
-      
+
       stopServer();
-      
+
       startServer();
-      
+
       assertFalse(mbeanServer.isRegistered(nameBuilder.getConnectionFactoryObjectName("test")));
-      
-     
+
+
       try
       {
          cf = (HornetQQueueConnectionFactory)context.lookup("tst");
@@ -609,8 +604,8 @@ public class JMSServerControlTest extends ManagementTestBase
       catch (NamingException e)
       {
       }
-      
-    
+
+
    }
 
    public void testListPreparedTransactionDetails() throws Exception
@@ -737,9 +732,9 @@ public class JMSServerControlTest extends ManagementTestBase
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
-      
+
       this.fakeJMSStorageManager = new FakeJMSStorageManager(serverManager.getJMSStorageManager());
-      
+
       serverManager.replaceStorageManager(fakeJMSStorageManager);
    }
 
@@ -819,9 +814,9 @@ public class JMSServerControlTest extends ManagementTestBase
       Map<String, PersistedConnectionFactory> connectionFactoryMap = new HashMap<String, PersistedConnectionFactory>();
 
       ConcurrentHashMap<String, List<String>> persistedJNDIMap = new ConcurrentHashMap<String, List<String>>();
-      
+
       JMSStorageManager delegate;
-      
+
       public FakeJMSStorageManager(JMSStorageManager delegate)
       {
          this.delegate = delegate;

@@ -45,6 +45,7 @@ import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
 import org.hornetq.core.protocol.core.Channel;
+import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.HornetQExceptionMessage;
@@ -64,7 +65,7 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
-import org.hornetq.core.replication.ReplicationEndpoint;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
@@ -76,12 +77,12 @@ import org.hornetq.core.server.impl.QuorumManager;
  *
  *
  */
-public class ReplicationEndpointImpl implements ReplicationEndpoint
+public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ReplicationEndpointImpl.class);
+   private static final Logger log = Logger.getLogger(ReplicationEndpoint.class);
 
    // Attributes ----------------------------------------------------
 
@@ -123,7 +124,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private QuorumManager quorumManager;
 
    // Constructors --------------------------------------------------
-   public ReplicationEndpointImpl(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
+   public ReplicationEndpoint(final HornetQServerImpl server, IOCriticalErrorListener criticalErrorListener)
    {
       this.server = server;
       this.criticalErrorListener = criticalErrorListener;
@@ -131,7 +132,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    // Public --------------------------------------------------------
 
-   @Override
    public void registerJournal(final byte id, final Journal journal)
    {
       if (journals == null || id >= journals.length)
@@ -228,7 +228,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
       catch (Exception e)
       {
-         ReplicationEndpointImpl.log.warn(e.getMessage(), e);
+         ReplicationEndpoint.log.warn(e.getMessage(), e);
          response = new HornetQExceptionMessage((HornetQException)e);
       }
 
@@ -348,13 +348,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       started = false;
    }
 
-   @Override
+
    public Channel getChannel()
    {
       return channel;
    }
 
-   @Override
    public void setChannel(final Channel channel)
    {
       this.channel = channel;
@@ -760,7 +759,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
       if (packet.isUpdate())
       {
-         if (ReplicationEndpointImpl.trace)
+         if (ReplicationEndpoint.trace)
          {
             log.trace("Endpoint appendUpdate id = " + packet.getId());
          }
@@ -768,7 +767,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
       else
       {
-         if (ReplicationEndpointImpl.trace)
+         if (ReplicationEndpoint.trace)
          {
             log.trace("Endpoint append id = " + packet.getId());
          }
@@ -915,7 +914,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
    }
 
-   @Override
+   /**
+    * Sets the quorumManager used by the server in the replicationEndpoint. It is used to inform the
+    * backup server of the live's nodeID.
+    * @param quorumManager
+    */
    public void setQuorumManager(QuorumManager quorumManager)
    {
       this.quorumManager = quorumManager;

@@ -91,9 +91,8 @@ import org.hornetq.core.protocol.core.impl.ChannelImpl.CHANNEL_ID;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
-import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.core.replication.impl.ReplicationEndpointImpl;
+import org.hornetq.core.replication.impl.ReplicationEndpoint;
 import org.hornetq.core.replication.impl.ReplicationManagerImpl;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
@@ -402,7 +401,7 @@ public class HornetQServerImpl implements HornetQServer
             {
                assert replicationEndpoint == null;
                backupUpToDate = false;
-               replicationEndpoint = new ReplicationEndpointImpl(this, shutdownOnCriticalIO);
+               replicationEndpoint = new ReplicationEndpoint(this, shutdownOnCriticalIO);
                activation = new SharedNothingBackupActivation();
             }
 
