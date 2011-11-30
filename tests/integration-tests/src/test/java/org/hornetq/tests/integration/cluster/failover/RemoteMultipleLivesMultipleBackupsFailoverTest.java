@@ -21,7 +21,6 @@ import java.util.Map;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.integration.cluster.util.RemoteProcessHornetQServer;
 import org.hornetq.tests.integration.cluster.util.RemoteServerConfiguration;
@@ -68,6 +67,7 @@ public class RemoteMultipleLivesMultipleBackupsFailoverTest extends MultipleLive
       backups.put(5, SharedBackupServerConfiguration5.class.getName());
    }
 
+   @Override
    protected boolean isNetty()
    {
       return true;

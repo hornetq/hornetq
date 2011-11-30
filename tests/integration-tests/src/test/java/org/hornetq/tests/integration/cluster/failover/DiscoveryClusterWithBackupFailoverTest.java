@@ -22,7 +22,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A DiscoveryClusterWithBackupFailoverTest
@@ -33,7 +32,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class DiscoveryClusterWithBackupFailoverTest extends ClusterWithBackupFailoverTestBase
 {
-   private static final Logger log = Logger.getLogger(DiscoveryClusterWithBackupFailoverTest.class);
 
    protected final String groupAddress = getUDPDiscoveryAddress();
 

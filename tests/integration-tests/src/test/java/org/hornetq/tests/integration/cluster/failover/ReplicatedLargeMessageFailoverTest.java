@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A ReplicatedLargeMessageFailoverTest
@@ -24,17 +23,7 @@ import org.hornetq.core.logging.Logger;
  */
 public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
 {
-   private static final Logger log = Logger.getLogger(ReplicatedLargeMessageFailoverTest.class);
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-  
    public ReplicatedLargeMessageFailoverTest()
    {
       super();
@@ -45,19 +34,9 @@ public class ReplicatedLargeMessageFailoverTest extends LargeMessageFailoverTest
       super(name);
    }
 
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
    @Override
    protected void createConfigs() throws Exception
    {
       createReplicatedConfigs();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
