@@ -7,7 +7,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.NodeManager;
 import org.hornetq.core.settings.impl.AddressSettings;
 
-public class ReplicatedPagedFailverOverTest extends ReplicatedFailoverTest
+public class ReplicatedPagedFailoverTest extends ReplicatedFailoverTest
 {
    @Override
    protected HornetQServer createInVMFailoverServer(final boolean realFiles, final Configuration configuration,
