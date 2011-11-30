@@ -149,6 +149,13 @@ public class JMSPagingFileDeleteTest extends JMSTestBase
          producer.send(bytesMessage);
 
          printPageStoreInfo(pagingStore);
+         
+         timeout = System.currentTimeMillis() + 10000;
+         
+         while (timeout > System.currentTimeMillis() && pagingStore.getNumberOfPages() != 1)
+         {
+            Thread.sleep(100);
+         }
 
          assertEquals(1, pagingStore.getNumberOfPages()); //I expected number of the page is 1, but It was not.
       }
