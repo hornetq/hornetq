@@ -15,7 +15,7 @@ package org.hornetq.jms.persistence;
 
 import java.util.List;
 
-import org.hornetq.core.replication.impl.ReplicationEndpoint;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.persistence.config.PersistedConnectionFactory;
 import org.hornetq.jms.persistence.config.PersistedDestination;

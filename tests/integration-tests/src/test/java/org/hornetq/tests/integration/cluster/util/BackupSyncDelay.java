@@ -15,7 +15,7 @@ import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
-import org.hornetq.core.replication.impl.ReplicationEndpoint;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**

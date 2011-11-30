@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.replication.impl;
+package org.hornetq.core.replication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,10 +72,7 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
 
 /**
- *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 {
