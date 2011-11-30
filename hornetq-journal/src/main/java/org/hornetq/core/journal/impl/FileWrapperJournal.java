@@ -123,6 +123,7 @@ public class FileWrapperJournal extends JournalBase implements Journal
    @Override
    public void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception
    {
+      count(txID);
       JournalInternalRecord deleteRecordTX = new JournalDeleteRecordTX(txID, id, record);
       writeRecord(deleteRecordTX, false, null);
    }
