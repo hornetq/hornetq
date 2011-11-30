@@ -204,7 +204,6 @@ public class FailoverTest extends FailoverTestBase
       session.close();
 
       Assert.assertTrue(retry <= 5);
-      closeSessionFactory();
    }
 
    public void testNonTransacted() throws Exception
@@ -229,8 +228,6 @@ public class FailoverTest extends FailoverTestBase
       receiveDurableMessages(consumer);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    private void createSessionFactory() throws Exception
@@ -377,7 +374,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
+
    }
 
    /**
@@ -432,8 +429,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(counter, message.getIntProperty("counter").intValue());
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testTransactedMessagesNotSentSoNoRollback() throws Exception
@@ -470,7 +465,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
+
    }
 
    public void testTransactedMessagesWithConsumerStartedBeforeFailover() throws Exception
@@ -514,8 +509,6 @@ public class FailoverTest extends FailoverTestBase
       session.commit();
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testTransactedMessagesConsumedSoRollback() throws Exception
@@ -558,8 +551,6 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    public void testTransactedMessagesNotConsumedSoNoRollback() throws Exception
@@ -636,8 +627,6 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    public void testXAMessagesSentSoRollbackOnEnd() throws Exception
@@ -680,8 +669,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testXAMessagesSentSoRollbackOnPrepare() throws Exception
@@ -729,8 +716,6 @@ public class FailoverTest extends FailoverTestBase
       producer.close();
       consumer.close();
       session.close();
-
-      closeSessionFactory();
    }
 
    // This might happen if 1PC optimisation kicks in
@@ -821,8 +806,6 @@ public class FailoverTest extends FailoverTestBase
       session.commit(xid2, false);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testXAMessagesConsumedSoRollbackOnEnd() throws Exception
@@ -867,8 +850,6 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    public void testXAMessagesConsumedSoRollbackOnPrepare() throws Exception
@@ -915,8 +896,6 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    // 1PC optimisation
@@ -966,8 +945,6 @@ public class FailoverTest extends FailoverTestBase
       session1.close();
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    public void testCreateNewFactoryAfterFailover() throws Exception
@@ -990,8 +967,6 @@ public class FailoverTest extends FailoverTestBase
       session = sendAndConsume(sf, true);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void testFailoverMultipleSessionsWithConsumers() throws Exception
@@ -1055,8 +1030,6 @@ public class FailoverTest extends FailoverTestBase
       }
 
       sendSession.close();
-
-      closeSessionFactory();
    }
 
    /*
@@ -1084,8 +1057,6 @@ public class FailoverTest extends FailoverTestBase
       receiveDurableMessages(consumer);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    private void sendMessagesSomeDurable(ClientSession session, ClientProducer producer) throws Exception, HornetQException
@@ -1136,8 +1107,6 @@ public class FailoverTest extends FailoverTestBase
       receiveDurableMessages(consumer);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    private void receiveDurableMessages(ClientConsumer consumer) throws HornetQException
@@ -1203,8 +1172,6 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer, NUM_MESSAGES, NUM_MESSAGES * 2, true);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    private void receiveMessages(ClientConsumer consumer) throws HornetQException
@@ -1264,8 +1231,6 @@ public class FailoverTest extends FailoverTestBase
       receiveMessages(consumer);
 
       session.close();
-
-      closeSessionFactory();
    }
 
    public void _testForceBlockingReturn() throws Exception
@@ -1323,7 +1288,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertEquals(sender.e.getCode(), HornetQException.UNBLOCKED);
 
       session.close();
-
    }
 
    public void testCommitOccurredUnblockedAndResendNoDuplicates() throws Exception
@@ -1467,15 +1431,13 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
 
       session2.close();
-
-      closeSessionFactory();
    }
 
    private void closeSessionFactory()
    {
       if (sf == null)
          return;
-      sf.close();
+      closeSessionFactory(sf);
       Assert.assertEquals(0, sf.numSessions());
       Assert.assertEquals(0, sf.numConnections());
    }
@@ -1715,7 +1677,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
+
    }
 
    public void testLiveAndBackupBackupComesBackNewFactory() throws Exception
@@ -1776,7 +1738,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.close();
 
-      closeSessionFactory();
+
    }
 
    // Package protected ---------------------------------------------

@@ -181,7 +181,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
          }
       for (int i = 0; i < MAX_SERVERS; i++)
-         {
+      {
          stopComponent(nodeManagers[i]);
       }
       UnitTestCase.checkFreePort(ClusterTestBase.PORTS);
@@ -575,8 +575,6 @@ public abstract class ClusterTestBase extends ServiceTestBase
          if (holder != null)
          {
             holder.close();
-            // holder.session.close();
-
             consumers[i] = null;
          }
       }
@@ -586,14 +584,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < sfs.length; i++)
       {
-         ClientSessionFactory sf = sfs[i];
-
-         if (sf != null)
-         {
-            sf.close();
-
-            sfs[i] = null;
-         }
+         closeSessionFactory(sfs[i]);
+         sfs[i] = null;
       }
    }
 
@@ -601,14 +593,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       for (int i = 0; i < locators.length; i++)
       {
-         ServerLocator sf = locators[i];
-
-         if (sf != null)
-         {
-            sf.close();
-
-            locators[i] = null;
-         }
+         closeServerLocator(locators[i]);
+         locators[i] = null;
       }
    }
 

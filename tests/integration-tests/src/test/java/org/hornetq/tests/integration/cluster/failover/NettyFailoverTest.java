@@ -29,20 +29,6 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 public class NettyFailoverTest extends FailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(final boolean live)
    {
@@ -70,9 +56,4 @@ public class NettyFailoverTest extends FailoverTest
 
       return new TransportConfiguration(NETTY_CONNECTOR_FACTORY, server1Params);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

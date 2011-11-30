@@ -88,14 +88,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       for (ServerLocator locator : locators)
       {
-         try
-         {
-            locator.close();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
+         closeServerLocator(locator);
       }
       locators.clear();
       super.tearDown();
@@ -115,6 +108,20 @@ public abstract class ServiceTestBase extends UnitTestCase
       try
       {
          locator.close();
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+   }
+
+   public static final void closeSessionFactory(final ClientSessionFactory sf)
+   {
+      if (sf == null)
+         return;
+      try
+      {
+         sf.close();
       }
       catch (Exception e)
       {
