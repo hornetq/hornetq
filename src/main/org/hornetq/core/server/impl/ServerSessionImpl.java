@@ -291,7 +291,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          try
          {
-            rollback(failed);
+            rollback(false);
          }
          catch (Exception e)
          {
