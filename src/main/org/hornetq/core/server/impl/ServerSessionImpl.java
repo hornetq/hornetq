@@ -586,6 +586,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void acknowledge(final long consumerID, final long messageID) throws Exception
    {
       ServerConsumer consumer = consumers.get(consumerID);
+      
+      if (consumer == null)
+      {
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Consumer " + consumerID + " wasn't created on the server");
+      }
 
       consumer.acknowledge(autoCommitAcks, tx, messageID);
    }

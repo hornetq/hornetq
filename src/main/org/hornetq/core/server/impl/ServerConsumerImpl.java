@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
@@ -586,7 +587,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
       return messageQueue;
    }
 
-   public void acknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
+   public void acknowledge(final boolean autoCommitAcks, Transaction tx, final long messageID) throws Exception
    {
       if (browseOnly)
       {
@@ -595,34 +596,73 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
       // Acknowledge acknowledges all refs delivered by the consumer up to and including the one explicitly
       // acknowledged
-
-      MessageReference ref;
-      do
+      
+      // We use a transaction here as if the message is not found, we should rollback anything done
+      // This could eventually happen on retries during transactions, and we need to make sure we don't ACK things we are not supposed to acknowledge
+      
+      boolean startedTransaction = false;
+      
+      if (tx == null || autoCommitAcks)
       {
-         ref = deliveringRefs.poll();
-
-         if (ref == null)
+         startedTransaction = true;
+         tx = new TransactionImpl(storageManager);
+      }
+      
+      try
+      {
+   
+         MessageReference ref;
+         do
          {
-            throw new IllegalStateException(System.identityHashCode(this) + " Could not find reference on consumerID=" +
-                                            id +
-                                            ", messageId = " +
-                                            messageID +
-                                            " queue = " +
-                                            messageQueue.getName() +
-                                            " closed = " +
-                                            closed);
+            ref = deliveringRefs.poll();
+   
+            if (ref == null)
+            {
+               
+               HornetQException e = new HornetQException(HornetQException.ILLEGAL_STATE, "Could not find reference on consumerID=" +
+                                id +
+                                ", messageId = " +
+                                messageID +
+                                " queue = " +
+                                messageQueue.getName());
+               throw e;
+            }
+   
+            ref.getQueue().acknowledge(tx, ref);
          }
-
-         if (autoCommitAcks || tx == null)
+         while (ref.getMessage().getMessageID() != messageID);
+         
+         if (startedTransaction)
          {
-            ref.getQueue().acknowledge(ref);
+            tx.commit();
+         }
+      }
+      catch (HornetQException e)
+      {
+         if (startedTransaction)
+         {
+            tx.rollback();
          }
          else
          {
-            ref.getQueue().acknowledge(tx, ref);
+            tx.markAsRollbackOnly(e);
          }
+         throw e;
       }
-      while (ref.getMessage().getMessageID() != messageID);
+      catch (Throwable e)
+      {
+         log.error(e.getMessage(), e);
+         HornetQException hqex = new HornetQException(HornetQException.ILLEGAL_STATE, e.getMessage());
+         if (startedTransaction)
+         {
+            tx.rollback();
+         }
+         else
+         {
+            tx.markAsRollbackOnly(hqex);
+         }
+         throw hqex;
+      }
    }
 
    public void individualAcknowledge(final boolean autoCommitAcks, final Transaction tx, final long messageID) throws Exception
