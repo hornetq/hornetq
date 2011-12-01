@@ -615,6 +615,11 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
          do
          {
             ref = deliveringRefs.poll();
+            
+            if (log.isTraceEnabled())
+            {
+               log.trace("ACKing ref " + ref + " on " + this);
+            }
    
             if (ref == null)
             {

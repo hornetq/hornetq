@@ -2328,6 +2328,10 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
+            if (log.isTraceEnabled())
+            {
+            	log.trace("rolling back " + ref);
+            }
             try
             {
                if (ref.getQueue().checkRedelivery(ref, timeBase))
