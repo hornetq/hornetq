@@ -48,7 +48,7 @@ import org.hornetq.utils.UUID;
  * A BindingImplTest
  *
  * @author clebert
- * 
+ *
  * Created Mar 12, 2009 9:14:46 PM
  *
  *
@@ -137,7 +137,7 @@ public class BindingsImplTest extends UnitTestCase
 
       public boolean hasTimedOut(long currentTime, int defaultTimeout)
       {
-         return false;  
+         return false;
       }
 
       /* (non-Javadoc)
@@ -284,13 +284,13 @@ public class BindingsImplTest extends UnitTestCase
 
       public void setContainsPersistent()
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void setTimeout(int timeout)
       {
-         
+
       }
 
       public Transaction copy()
@@ -327,7 +327,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public boolean isContainsPersistent()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
@@ -344,7 +344,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public boolean isWaitBeforeCommit()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
@@ -353,8 +353,8 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void setWaitBeforeCommit(boolean waitBeforeCommit)
       {
-         // TODO Auto-generated method stub
-         
+
+
       }
 
    }
@@ -364,614 +364,589 @@ public class BindingsImplTest extends UnitTestCase
 
       public ServerMessage copy()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public ServerMessage copy(final long newID)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public MessageReference createReference(final Queue queue)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int decrementDurableRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int decrementRefCount() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public void encodeMessageIDToBuffer()
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public int getMemoryEstimate()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public PagingStore getPagingStore()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int incrementDurableRefCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int incrementRefCount() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public ServerMessage makeCopyForExpiryOrDLA(final long newID, final boolean expiry) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public boolean page() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean page(final long transactionID) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void setMessageID(final long id)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void setPagingStore(final PagingStore store)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public boolean storeIsPaging()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void bodyChanged()
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void checkCopy()
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public boolean containsProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean containsProperty(final String key)
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void decodeFromBuffer(final HornetQBuffer buffer)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void decodeHeadersAndProperties(final HornetQBuffer buffer)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void encodeHeadersAndProperties(final HornetQBuffer buffer)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public HornetQBuffer getBodyBuffer()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public BodyEncoder getBodyEncoder() throws HornetQException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public InputStream getBodyInputStream()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Boolean getBooleanProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Boolean getBooleanProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Byte getByteProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public byte[] getBytesProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public SimpleString getAddress()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Double getDoubleProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public HornetQBuffer getEncodedBuffer()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getEncodeSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getEndOfBodyPosition()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getEndOfMessagePosition()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getExpiration()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Float getFloatProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getHeadersAndPropertiesEncodeSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Integer getIntProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Long getLongProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Long getLongProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public long getMessageID()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public Object getObjectProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Object getObjectProperty(final String key)
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public byte getPriority()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public TypedProperties getProperties()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Set<SimpleString> getPropertyNames()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Short getShortProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Short getShortProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public SimpleString getSimpleStringProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getStringProperty(final SimpleString key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getStringProperty(final String key) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public long getTimestamp()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public byte getType()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public HornetQBuffer getWholeBuffer()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public boolean isDurable()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isExpired()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isLargeMessage()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void putBooleanProperty(final SimpleString key, final boolean value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putBooleanProperty(final String key, final boolean value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putByteProperty(final SimpleString key, final byte value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putByteProperty(final String key, final byte value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putBytesProperty(final SimpleString key, final byte[] value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putBytesProperty(final String key, final byte[] value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putDoubleProperty(final SimpleString key, final double value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putDoubleProperty(final String key, final double value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putFloatProperty(final SimpleString key, final float value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putFloatProperty(final String key, final float value)
       {
-         // TODO Auto-generated method stub
+
 
       }
 
       public void putIntProperty(final SimpleString key, final int value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putIntProperty(final String key, final int value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putLongProperty(final SimpleString key, final long value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putLongProperty(final String key, final long value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putObjectProperty(final String key, final Object value) throws PropertyConversionException
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putShortProperty(final SimpleString key, final short value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putShortProperty(final String key, final short value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putStringProperty(final SimpleString key, final SimpleString value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putStringProperty(final String key, final String value)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void putTypedProperties(final TypedProperties properties)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public Object removeProperty(final SimpleString key)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public Object removeProperty(final String key)
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void resetCopied()
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setAddress(final SimpleString destination)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setDurable(final boolean durable)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setExpiration(final long expiration)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setPriority(final byte priority)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setTimestamp(final long timestamp)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public Map<String, Object> toMap()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void decode(final HornetQBuffer buffer)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void encode(final HornetQBuffer buffer)
       {
-         // TODO Auto-generated method stub
 
       }
 
       public void setAddressTransient(SimpleString address)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public UUID getUserID()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
       public void setUserID(UUID userID)
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       /* (non-Javadoc)
@@ -979,7 +954,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public boolean isServerMessage()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
@@ -988,7 +962,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public TypedProperties getTypedProperties()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -997,7 +970,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public byte[] getDuplicateIDBytes()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -1006,7 +978,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public Object getDuplicateProperty()
       {
-         // TODO Auto-generated method stub
          return null;
       }
 
@@ -1015,7 +986,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public boolean hasInternalProperties()
       {
-         // TODO Auto-generated method stub
          return false;
       }
 
@@ -1047,8 +1017,8 @@ public class BindingsImplTest extends UnitTestCase
 
       public void close() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
+
       }
 
       final SimpleString name;
@@ -1060,7 +1030,6 @@ public class BindingsImplTest extends UnitTestCase
 
       public SimpleString getAddress()
       {
-
          return null;
       }
 
@@ -1087,7 +1056,6 @@ public class BindingsImplTest extends UnitTestCase
        */
       public int getDistance()
       {
-
          return 0;
       }
 
@@ -1099,12 +1067,8 @@ public class BindingsImplTest extends UnitTestCase
          return new FakeFilter();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#getID()
-       */
       public long getID()
       {
-
          return 0;
       }
 
@@ -1130,34 +1094,21 @@ public class BindingsImplTest extends UnitTestCase
        */
       public SimpleString getUniqueName()
       {
-
          return null;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#isExclusive()
-       */
       public boolean isExclusive()
       {
-
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#isHighAcceptPriority(org.hornetq.core.server.ServerMessage)
-       */
       public boolean isHighAcceptPriority(final ServerMessage message)
       {
-
          return false;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
-       */
       public void route(final ServerMessage message, final RoutingContext context) throws Exception
       {
-         // TODO Auto-generated method stub
 
       }
 
