@@ -225,6 +225,11 @@ public class Topology implements Serializable
             }
             else
             {
+               /*always add the backup, better to try to reconnect to something thats not there then to not know about it at all*/
+               if(currentMember.getB() == null && memberInput.getB() != null)
+               {
+                  currentMember.setB(memberInput.getB());
+               }
                return false;
             }
          }
