@@ -49,6 +49,10 @@ public interface ClusterConnectionControl extends HornetQComponentControl
    boolean isForwardWhenNoConsumers();
 
    /**
+    * Return the Topology that this Cluster Connection knows about
+    */
+   String getTopology();
+   /**
     * Returns the maximum number of hops used by this cluster connection.
     */
    int getMaxHops();
