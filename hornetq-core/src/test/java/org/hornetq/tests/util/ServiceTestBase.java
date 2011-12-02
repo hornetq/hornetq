@@ -101,34 +101,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
-   public static final void closeServerLocator(ServerLocator locator)
-   {
-      if (locator == null)
-         return;
-      try
-      {
-         locator.close();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
-   public static final void closeSessionFactory(final ClientSessionFactory sf)
-   {
-      if (sf == null)
-         return;
-      try
-      {
-         sf.close();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-
    protected void waitForTopology(final HornetQServer server, final int nodes) throws Exception
    {
       waitForTopology(server, nodes, WAIT_TIMEOUT);
@@ -226,21 +198,6 @@ public abstract class ServiceTestBase extends UnitTestCase
             fail("component did not start within timeout of " + seconds);
          }
       }
-   }
-
-   protected static final void stopComponent(HornetQComponent component)
-   {
-      if (component == null)
-         return;
-      if (component.isStarted())
-         try
-         {
-            component.stop();
-         }
-         catch (Exception e)
-         {
-            // no-op
-         }
    }
 
    protected static Map<String, Object> generateParams(final int node, final boolean netty)
