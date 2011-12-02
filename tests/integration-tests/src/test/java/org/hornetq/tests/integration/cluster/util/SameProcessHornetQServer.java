@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.util;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
@@ -84,9 +85,10 @@ public class SameProcessHornetQServer implements TestableServer
 
    public void crash(boolean waitFailure, ClientSession... sessions) throws Exception
    {
-      CountDownSessionFailureListener listener = new CountDownSessionFailureListener(sessions.length);
+      CountDownLatch latch = new CountDownLatch(sessions.length);
       for (ClientSession session : sessions)
       {
+         CountDownSessionFailureListener listener = new CountDownSessionFailureListener(latch);
          session.addFailureListener(listener);
       }
 
@@ -99,8 +101,8 @@ public class SameProcessHornetQServer implements TestableServer
       if (waitFailure)
       {
          // Wait to be informed of failure
-         boolean ok = listener.getLatch().await(10000, TimeUnit.MILLISECONDS);
-         Assert.assertTrue("Failed to stop the server! Latch count is " + listener.getLatch().getCount() + " out of " +
+         boolean ok = latch.await(10000, TimeUnit.MILLISECONDS);
+         Assert.assertTrue("Failed to stop the server! Latch count is " + latch.getCount() + " out of " +
                   sessions.length, ok);
       }
    }
