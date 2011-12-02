@@ -492,6 +492,8 @@ public class HornetQServerImpl implements HornetQServer
 
       }
 
+      remotingService.stop();
+
       // We close all the exception in an attempt to let any pending IO to finish
       // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
       // It may still be possible to have this scenario on a real failure (without the use of XA)
@@ -516,8 +518,6 @@ public class HornetQServerImpl implements HornetQServer
       }
       
       storageManager.clearContext();
-
-      remotingService.stop();
 
       synchronized (this)
       {
