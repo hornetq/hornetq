@@ -57,6 +57,7 @@ public class AddressControlTest extends ManagementTestBase
    private HornetQServer server;
    protected ClientSession session;
    private ServerLocator locator;
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -213,20 +214,22 @@ public class AddressControlTest extends ManagementTestBase
    {
       session.close();
       server.stop();
+      server.getConfiguration().setPersistenceEnabled(true);
 
       SimpleString address = RandomUtil.randomSimpleString();
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setPageSizeBytes(1024);
       addressSettings.setMaxSizeBytes(10 * 1024);
-      int NUMBER_MESSAGES_BEFORE_PAGING = 5;
+      final int NUMBER_MESSAGES_BEFORE_PAGING = 5;
 
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
-
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
-      session = sf.createSession(false, true, false);
+      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf2 = locator2.createSessionFactory();
+      try
+      {
+      session = sf2.createSession(false, true, false);
       session.start();
       session.createQueue(address, address, true);
 
@@ -262,7 +265,13 @@ public class AddressControlTest extends ManagementTestBase
       producer.send(msg);
 
       session.commit();
-      Assert.assertEquals(2, addressControl.getNumberOfPages());
+         Assert.assertEquals("# of pages is 2", 2, addressControl.getNumberOfPages());
+      }
+      finally
+      {
+         closeSessionFactory(sf2);
+         closeServerLocator(locator2);
+      }
    }
 
    public void testGetNumberOfBytesPerPage() throws Exception
@@ -281,11 +290,19 @@ public class AddressControlTest extends ManagementTestBase
 
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
       server.start();
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
-      session = sf.createSession(false, true, false);
-      session.createQueue(address, address, true);
-      Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
+      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ClientSessionFactory sf2 = locator2.createSessionFactory();
+      try
+      {
+         session = sf2.createSession(false, true, false);
+         session.createQueue(address, address, true);
+         Assert.assertEquals(1024, addressControl.getNumberOfBytesPerPage());
+      }
+      finally
+      {
+         closeServerLocator(locator2);
+         closeSessionFactory(sf2);
+      }
    }
 
    // Package protected ---------------------------------------------
@@ -307,7 +324,7 @@ public class AddressControlTest extends ManagementTestBase
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      sf = locator.createSessionFactory();
       session = sf.createSession(false, true, false);
       session.start();
    }
@@ -317,12 +334,11 @@ public class AddressControlTest extends ManagementTestBase
    {
       if (session != null)
          session.close();
-
+      closeSessionFactory(sf);
       closeServerLocator(locator);
       stopComponent(server);
 
       server = null;
-
       session = null;
 
       super.tearDown();
