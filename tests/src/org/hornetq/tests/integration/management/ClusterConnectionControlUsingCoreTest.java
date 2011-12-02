@@ -141,6 +141,12 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
             proxy.invokeOperation("stop");
          }
 
+         public String getTopology()
+         {
+            // TODO Auto-generated method stub
+            return null;
+         }
+
       };
    }
 
