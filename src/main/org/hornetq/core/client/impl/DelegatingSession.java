@@ -373,6 +373,11 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getXAResource();
    }
 
+   public void preHandleFailover(CoreRemotingConnection connection)
+   {
+      session.preHandleFailover(connection);
+   }
+
    public void handleFailover(final CoreRemotingConnection backupConnection)
    {
       session.handleFailover(backupConnection);
