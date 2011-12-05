@@ -257,11 +257,6 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
          session.close();
       }
 
-      if (server.isStarted())
-      {
-         server.stop();
-      }
-
       super.tearDown();
    }
 

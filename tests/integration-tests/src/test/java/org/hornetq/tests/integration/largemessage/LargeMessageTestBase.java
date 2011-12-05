@@ -56,8 +56,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
-   protected HornetQServer server;
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -69,26 +67,6 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e)
-         {
-            LargeMessageTestBase.log.warn(e.getMessage(), e);
-         }
-      }
-
-      server = null;
-
-      super.tearDown();
-   }
 
    protected void testChunks(final boolean isXA,
                              final boolean restartOnXA,
@@ -139,7 +117,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
    {
       clearData();
 
-      server = createServer(realFiles);
+      HornetQServer server = createServer(realFiles);
       server.start();
 
       ServerLocator locator = createInVMNonHALocator();

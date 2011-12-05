@@ -27,6 +27,7 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -65,7 +66,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -108,14 +109,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -132,7 +125,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -187,14 +180,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -211,7 +196,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -264,14 +249,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -290,7 +267,7 @@ public class LargeMessageCompressTest extends LargeMessageTest
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -367,14 +344,6 @@ public class LargeMessageCompressTest extends LargeMessageTest
       }
       finally
       {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
          try
          {
             session.close();

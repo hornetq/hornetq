@@ -71,14 +71,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       locator = createFactory(isNetty());
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
-
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
@@ -97,61 +89,54 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void testReceiveImmediateWithZeroWindow() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
-      try
+
+      server.start();
+
+      locator.setConsumerWindowSize(0);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, false, false);
+      session.createQueue("testWindow", "testWindow", true);
+      session.close();
+
+      int numConsumers = 5;
+
+      ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+      ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
+      for (int i = 0; i < numConsumers; i++)
       {
-         server.start();
-
-         locator.setConsumerWindowSize(0);
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(false, false, false);
-         session.createQueue("testWindow", "testWindow", true);
-         session.close();
-
-         int numConsumers = 5;
-
-         ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
-         ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
-         for (int i = 0; i < numConsumers; i++)
-         {
-            ClientSession session1 = sf.createSession();
-            ClientConsumer consumer = session1.createConsumer("testWindow");
-            consumers.add(consumer);
-            session1.start();
-            sessions.add(session1);
-            consumer.receiveImmediate();
-
-         }
-
-         ClientSession senderSession = sf.createSession(false, false);
-
-         ClientProducer producer = senderSession.createProducer("testWindow");
-
-         ClientMessage sent = senderSession.createMessage(true);
-         sent.putStringProperty("hello", "world");
-         producer.send(sent);
-
-         senderSession.commit();
-
-         senderSession.start();
-
-         ClientConsumer consumer = consumers.get(2);
-         ClientMessage received = consumer.receive(1000);
-         assertNotNull(received);
-
-         for (ClientSession tmpSess : sessions)
-         {
-            tmpSess.close();
-         }
-
-         senderSession.close();
+         ClientSession session1 = sf.createSession();
+         ClientConsumer consumer = session1.createConsumer("testWindow");
+         consumers.add(consumer);
+         session1.start();
+         sessions.add(session1);
+         consumer.receiveImmediate();
 
       }
-      finally
+
+      ClientSession senderSession = sf.createSession(false, false);
+
+      ClientProducer producer = senderSession.createProducer("testWindow");
+
+      ClientMessage sent = senderSession.createMessage(true);
+      sent.putStringProperty("hello", "world");
+      producer.send(sent);
+
+      senderSession.commit();
+
+      senderSession.start();
+
+      ClientConsumer consumer = consumers.get(2);
+      ClientMessage received = consumer.receive(1000);
+      assertNotNull(received);
+
+      for (ClientSession tmpSess : sessions)
       {
-         server.stop();
+         tmpSess.close();
       }
+
+      senderSession.close();
 
    }
 
@@ -204,7 +189,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       finally
       {
          locator.close();
-         server.stop();
       }
    }
 
@@ -212,125 +196,109 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void testReceiveImmediateWithZeroWindow3() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
-      try
+
+      server.start();
+
+      locator.setConsumerWindowSize(0);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, false, false);
+      session.createQueue("testWindow", "testWindow", true);
+      session.close();
+
+      int numConsumers = 5;
+
+      ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+      ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
+      for (int i = 0; i < numConsumers; i++)
       {
-         server.start();
-
-         locator.setConsumerWindowSize(0);
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(false, false, false);
-         session.createQueue("testWindow", "testWindow", true);
-         session.close();
-
-         int numConsumers = 5;
-
-         ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
-         ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
-         for (int i = 0; i < numConsumers; i++)
-         {
-            ClientSession session1 = sf.createSession();
-            ClientConsumer consumer = session1.createConsumer("testWindow");
-            consumers.add(consumer);
-            session1.start();
-            sessions.add(session1);
-            consumer.receive(10);
-
-         }
-
-         ClientSession senderSession = sf.createSession(false, false);
-
-         ClientProducer producer = senderSession.createProducer("testWindow");
-
-         ClientMessage sent = senderSession.createMessage(true);
-         sent.putStringProperty("hello", "world");
-
-         producer.send(sent);
-
-         senderSession.commit();
-
-         senderSession.start();
-
-         ClientConsumer consumer = consumers.get(2);
-         ClientMessage received = consumer.receive(1000);
-         assertNotNull(received);
-
-         for (ClientSession tmpSess : sessions)
-         {
-            tmpSess.close();
-         }
-
-         senderSession.close();
+         ClientSession session1 = sf.createSession();
+         ClientConsumer consumer = session1.createConsumer("testWindow");
+         consumers.add(consumer);
+         session1.start();
+         sessions.add(session1);
+         consumer.receive(10);
 
       }
-      finally
+
+      ClientSession senderSession = sf.createSession(false, false);
+
+      ClientProducer producer = senderSession.createProducer("testWindow");
+
+      ClientMessage sent = senderSession.createMessage(true);
+      sent.putStringProperty("hello", "world");
+
+      producer.send(sent);
+
+      senderSession.commit();
+
+      senderSession.start();
+
+      ClientConsumer consumer = consumers.get(2);
+      ClientMessage received = consumer.receive(1000);
+      assertNotNull(received);
+
+      for (ClientSession tmpSess : sessions)
       {
-         server.stop();
+         tmpSess.close();
       }
 
+      senderSession.close();
    }
 
    public void testReceiveImmediateWithZeroWindow4() throws Exception
    {
       HornetQServer server = createServer(false, isNetty());
-      try
+
+      server.start();
+
+      locator.setConsumerWindowSize(0);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, false, false);
+      session.createQueue("testWindow", "testWindow", true);
+      session.close();
+
+      int numConsumers = 5;
+
+      ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
+      ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
+      for (int i = 0; i < numConsumers; i++)
       {
-         server.start();
-
-         locator.setConsumerWindowSize(0);
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(false, false, false);
-         session.createQueue("testWindow", "testWindow", true);
-         session.close();
-
-         int numConsumers = 5;
-
-         ArrayList<ClientConsumer> consumers = new ArrayList<ClientConsumer>();
-         ArrayList<ClientSession> sessions = new ArrayList<ClientSession>();
-         for (int i = 0; i < numConsumers; i++)
-         {
-            ClientSession session1 = sf.createSession();
-            ClientConsumer consumer = session1.createConsumer("testWindow");
-            consumers.add(consumer);
-            session1.start();
-            sessions.add(session1);
-            consumer.receive(10);
-
-         }
-
-         ClientSession senderSession = sf.createSession(false, false);
-
-         ClientProducer producer = senderSession.createProducer("testWindow");
-
-         ClientMessage sent = senderSession.createMessage(true);
-         sent.putStringProperty("hello", "world");
-
-         producer.send(sent);
-
-         senderSession.commit();
-
-         senderSession.start();
-
-         ClientConsumer consumer = consumers.get(2);
-         ClientMessage received = consumer.receiveImmediate();
-         assertNotNull(received);
-
-         for (ClientSession tmpSess : sessions)
-         {
-            tmpSess.close();
-         }
-
-         senderSession.close();
+         ClientSession session1 = sf.createSession();
+         ClientConsumer consumer = session1.createConsumer("testWindow");
+         consumers.add(consumer);
+         session1.start();
+         sessions.add(session1);
+         consumer.receive(10);
 
       }
-      finally
+
+      ClientSession senderSession = sf.createSession(false, false);
+
+      ClientProducer producer = senderSession.createProducer("testWindow");
+
+      ClientMessage sent = senderSession.createMessage(true);
+      sent.putStringProperty("hello", "world");
+
+      producer.send(sent);
+
+      senderSession.commit();
+
+      senderSession.start();
+
+      ClientConsumer consumer = consumers.get(2);
+      ClientMessage received = consumer.receiveImmediate();
+      assertNotNull(received);
+
+      for (ClientSession tmpSess : sessions)
       {
-         server.stop();
+         tmpSess.close();
       }
 
+      senderSession.close();
    }
 
    /*
@@ -342,55 +310,45 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       HornetQServer messagingService = createServer(false, isNetty());
       locator.setBlockOnNonDurableSend(false);
-      try
+
+      messagingService.start();
+      int numMessage = 100;
+      locator.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession receiveSession = cf.createSession(false, true, true);
+      sendSession.createQueue(addressA, queueA, false);
+      ClientConsumer receivingConsumer = receiveSession.createConsumer(queueA);
+
+      ClientSession session = cf.createSession(false, true, true);
+      ClientProducer cp = sendSession.createProducer(addressA);
+      ClientConsumer cc = session.createConsumer(queueA);
+      session.start();
+      receiveSession.start();
+      for (int i = 0; i < numMessage * 4; i++)
       {
-         messagingService.start();
-         int numMessage = 100;
-         locator.setConsumerWindowSize(numMessage * getMessageEncodeSize(addressA));
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession receiveSession = cf.createSession(false, true, true);
-         sendSession.createQueue(addressA, queueA, false);
-         ClientConsumer receivingConsumer = receiveSession.createConsumer(queueA);
-
-         ClientSession session = cf.createSession(false, true, true);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientConsumer cc = session.createConsumer(queueA);
-         session.start();
-         receiveSession.start();
-         for (int i = 0; i < numMessage * 4; i++)
-         {
-            cp.send(sendSession.createMessage(false));
-         }
-
-         for (int i = 0; i < numMessage * 2; i++)
-         {
-            ClientMessage m = receivingConsumer.receive(5000);
-            Assert.assertNotNull(m);
-            m.acknowledge();
-         }
-         receiveSession.close();
-
-         for (int i = 0; i < numMessage * 2; i++)
-         {
-            ClientMessage m = cc.receive(5000);
-            Assert.assertNotNull(m);
-            m.acknowledge();
-         }
-
-         session.close();
-         sendSession.close();
-
-         Assert.assertEquals(0, getMessageCount(messagingService, queueA.toString()));
-
+         cp.send(sendSession.createMessage(false));
       }
-      finally
+
+      for (int i = 0; i < numMessage * 2; i++)
       {
-         if (messagingService.isStarted())
-         {
-            messagingService.stop();
-         }
+         ClientMessage m = receivingConsumer.receive(5000);
+         Assert.assertNotNull(m);
+         m.acknowledge();
       }
+      receiveSession.close();
+
+      for (int i = 0; i < numMessage * 2; i++)
+      {
+         ClientMessage m = cc.receive(5000);
+         Assert.assertNotNull(m);
+         m.acknowledge();
+      }
+
+      session.close();
+      sendSession.close();
+
+      Assert.assertEquals(0, getMessageCount(messagingService, queueA.toString()));
    }
 
    public void testSlowConsumerBufferingOne() throws Exception
@@ -467,11 +425,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
-         }
-
-         if (server.isStarted())
-         {
-            server.stop();
          }
       }
    }
@@ -599,11 +552,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
-         }
-
-         if (server.isStarted())
-         {
-            server.stop();
          }
       }
    }
@@ -796,11 +744,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          catch (Exception ignored)
          {
          }
-
-         if (server.isStarted())
-         {
-            server.stop();
-         }
       }
    }
 
@@ -874,11 +817,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
-         }
-
-         if (server.isStarted())
-         {
-            server.stop();
          }
       }
    }
@@ -1011,11 +949,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          catch (Exception ignored)
          {
          }
-
-         if (server.isStarted())
-         {
-            server.stop();
-         }
       }
    }
 
@@ -1023,7 +956,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
    {
-
       HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionB = null;
@@ -1174,11 +1106,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
-         }
-
-         if (server.isStarted())
-         {
-            server.stop();
          }
       }
    }
@@ -1347,11 +1274,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          {
             ignored.printStackTrace();
          }
-
-         if (server.isStarted())
-         {
-            server.stop();
-         }
       }
    }
 
@@ -1484,11 +1406,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
          }
          catch (Exception ignored)
          {
-         }
-
-         if (server.isStarted())
-         {
-            server.stop();
          }
       }
    }

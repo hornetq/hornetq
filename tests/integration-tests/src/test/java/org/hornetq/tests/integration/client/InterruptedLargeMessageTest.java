@@ -79,13 +79,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       locator = createFactory(isNetty());
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -101,7 +94,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.getConfiguration()
                .getInterceptorClassNames()
@@ -144,14 +137,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -170,7 +155,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -231,14 +216,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -257,7 +234,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
+         HornetQServer server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
          
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -340,14 +317,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -366,7 +335,7 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
+         HornetQServer server = createServer(true, createDefaultConfig(isNetty()), 10000, 20000, new HashMap<String, AddressSettings>());
          
          // server.getConfiguration()
          // .getInterceptorClassNames()
@@ -482,14 +451,6 @@ public class InterruptedLargeMessageTest extends LargeMessageTestBase
       }
       finally
       {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
          try
          {
             session.close();

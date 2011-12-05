@@ -107,107 +107,93 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final ClientSession session;
 
-      try
+      HornetQServer server = createServer(true, isNetty());
+
+      AddressSettings settings = new AddressSettings();
+      if (redeliveryDelay)
       {
-         server = createServer(true, isNetty());
-
-         AddressSettings settings = new AddressSettings();
-         if (redeliveryDelay)
+         settings.setRedeliveryDelay(1000);
+         if (locator.isCompressLargeMessage())
          {
-            settings.setRedeliveryDelay(1000);
-            if (locator.isCompressLargeMessage())
-            {
-               locator.setConsumerWindowSize(0);
-            }
+            locator.setConsumerWindowSize(0);
          }
-         settings.setMaxDeliveryAttempts(-1);
+      }
+      settings.setMaxDeliveryAttempts(-1);
 
-         server.getAddressSettingsRepository().addMatch("#", settings);
+      server.getAddressSettingsRepository().addMatch("#", settings);
 
-         server.start();
+      server.start();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = locator.createSessionFactory();
 
-         session = sf.createSession(false, false, false);
+      session = sf.createSession(false, false, false);
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+      session.createQueue(ADDRESS, ADDRESS, true);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         for (int i = 0 ; i < 20; i++)
+      for (int i = 0 ; i < 20; i++)
+      {
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+         clientFile.putIntProperty("value", i);
+
+         producer.send(clientFile);
+      }
+
+      session.commit();
+
+      session.start();
+
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      final AtomicInteger errors = new AtomicInteger(0);
+
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+
+      consumer.setMessageHandler(new MessageHandler()
+      {
+         int counter = 0;
+         public void onMessage(ClientMessage message)
          {
-            Message clientFile = createLargeClientMessage(session, messageSize, true);
-
-            clientFile.putIntProperty("value", i);
-
-            producer.send(clientFile);
-         }
-
-         session.commit();
-
-         session.start();
-
-         final CountDownLatch latch = new CountDownLatch(1);
-
-         final AtomicInteger errors = new AtomicInteger(0);
-
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-
-         consumer.setMessageHandler(new MessageHandler()
-         {
-            int counter = 0;
-            public void onMessage(ClientMessage message)
+            message.getBodyBuffer().readByte();
+            // System.out.println("message:" + message);
+            try
             {
-               message.getBodyBuffer().readByte();
-               // System.out.println("message:" + message);
-               try
+               if (counter ++ <  20)
                {
-                  if (counter ++ <  20)
-                  {
-                     Thread.sleep(100);
-                     // System.out.println("Rollback");
-                     message.acknowledge();
-                     session.rollback();
-                  }
-                  else
-                  {
-                     message.acknowledge();
-                     session.commit();
-                  }
-
-                  if (counter == 40)
-                  {
-                     latch.countDown();
-                  }
+                  Thread.sleep(100);
+                  // System.out.println("Rollback");
+                  message.acknowledge();
+                  session.rollback();
                }
-               catch (Exception e)
+               else
+               {
+                  message.acknowledge();
+                  session.commit();
+               }
+
+               if (counter == 40)
                {
                   latch.countDown();
-                  e.printStackTrace();
-                  errors.incrementAndGet();
                }
             }
-         });
-
-         assertTrue(latch.await(40, TimeUnit.SECONDS));
-
-         consumer.close();
-
-         session.close();
-
-         validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
+            catch (Exception e)
+            {
+               latch.countDown();
+               e.printStackTrace();
+               errors.incrementAndGet();
+            }
          }
-         catch (Throwable ignored)
-         {
-         }
-      }
+      });
 
+      assertTrue(latch.await(40, TimeUnit.SECONDS));
+
+      consumer.close();
+
+      session.close();
+
+      validateNoFilesOnLargeDir();
    }
 
    public void testCloseConsumer() throws Exception
@@ -218,7 +204,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -268,14 +254,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          catch (Throwable ignored)
          {
          }
-
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
       }
    }
 
@@ -305,7 +283,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          config.setJournalBufferSize_AIO(10 * 1024);
          config.setJournalBufferSize_NIO(10 * 1024);
 
-         server = createServer(true, config);
+         HornetQServer server = createServer(true, config);
 
          server.start();
 
@@ -362,14 +340,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -386,7 +356,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -489,14 +459,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -513,7 +475,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -572,14 +534,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -596,7 +550,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -708,14 +662,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -732,7 +678,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -843,14 +789,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -867,7 +805,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -950,14 +888,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -983,7 +913,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -1039,14 +969,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       {
          try
          {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
             session.close();
          }
          catch (Throwable ignored)
@@ -1071,7 +993,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true, isNetty());
+         HornetQServer server = createServer(true, isNetty());
 
          server.start();
 
@@ -1124,14 +1046,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
       finally
       {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
          try
          {
             session.close();
@@ -2002,73 +1916,58 @@ public class LargeMessageTest extends LargeMessageTestBase
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
 
-      try
-      {
+      HornetQServer server = createServer(true, isNetty());
 
-         server = createServer(true, isNetty());
+      server.start();
 
-         server.start();
+      SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-         SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+      ClientSessionFactory sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+      session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
+      session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
 
-         session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
-         session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
+      int numberOfBytes = 400000;
 
-         int numberOfBytes = 400000;
+      Message clientFile = createLargeClientMessage(session, numberOfBytes);
 
-         Message clientFile = createLargeClientMessage(session, numberOfBytes);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      session.start();
 
-         session.start();
+      producer.send(clientFile);
 
-         producer.send(clientFile);
+      producer.close();
 
-         producer.close();
+      ClientConsumer consumer = session.createConsumer(queue[1]);
+      ClientMessage msg = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+      msg.getBodyBuffer().readByte();
+      Assert.assertNull(consumer.receiveImmediate());
+      Assert.assertNotNull(msg);
 
-         ClientConsumer consumer = session.createConsumer(queue[1]);
-         ClientMessage msg = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-         msg.getBodyBuffer().readByte();
-         Assert.assertNull(consumer.receiveImmediate());
-         Assert.assertNotNull(msg);
+      msg.acknowledge();
+      consumer.close();
 
-         msg.acknowledge();
-         consumer.close();
+      log.debug("Stopping");
 
-         log.debug("Stopping");
+      session.stop();
 
-         session.stop();
+      ClientConsumer consumer1 = session.createConsumer(queue[0]);
 
-         ClientConsumer consumer1 = session.createConsumer(queue[0]);
+      session.start();
 
-         session.start();
+      msg = consumer1.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+      Assert.assertNotNull(msg);
+      msg.acknowledge();
+      consumer1.close();
 
-         msg = consumer1.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-         Assert.assertNotNull(msg);
-         msg.acknowledge();
-         consumer1.close();
+      session.commit();
 
-         session.commit();
+      session.close();
 
-         session.close();
-
-         validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
+      validateNoFilesOnLargeDir();
    }
 
    public void testTwoBindingsAndRestart() throws Exception
@@ -2085,66 +1984,50 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
+      HornetQServer server = createServer(true, isNetty());
 
-      try
+      server.start();
+
+      SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+      session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
+      session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
+
+      int numberOfBytes = 400000;
+
+      Message clientFile = createLargeClientMessage(session, numberOfBytes);
+
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      producer.send(clientFile);
+
+      producer.close();
+
+      readMessage(session, queue[1], numberOfBytes);
+
+      if (restart)
       {
+         session.close();
+
+         server.stop();
 
          server = createServer(true, isNetty());
 
          server.start();
 
-         SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
+         sf = locator.createSessionFactory();
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
-
-         session.createQueue(LargeMessageTest.ADDRESS, queue[0], null, true);
-         session.createQueue(LargeMessageTest.ADDRESS, queue[1], null, true);
-
-         int numberOfBytes = 400000;
-
-         Message clientFile = createLargeClientMessage(session, numberOfBytes);
-
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-         producer.send(clientFile);
-
-         producer.close();
-
-         readMessage(session, queue[1], numberOfBytes);
-
-         if (restart)
-         {
-            session.close();
-
-            server.stop();
-
-            server = createServer(true, isNetty());
-
-            server.start();
-
-            sf = locator.createSessionFactory();
-
-            session = sf.createSession(null, null, false, true, true, false, 0);
-         }
-
-         readMessage(session, queue[0], numberOfBytes);
-
-         session.close();
-
-         validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
+         session = sf.createSession(null, null, false, true, true, false, 0);
       }
 
+      readMessage(session, queue[0], numberOfBytes);
+
+      session.close();
+
+      validateNoFilesOnLargeDir();
    }
 
    public void testSendRollbackXADurable() throws Exception
@@ -2171,75 +2054,53 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       ClientSession session = null;
 
-      try
+      HornetQServer server = createServer(true, isNetty());
+
+      server.start();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      session = sf.createSession(isXA, false, false);
+
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+      Xid xid = null;
+
+      if (isXA)
       {
-         server = createServer(true, isNetty());
+         xid = RandomUtil.randomXid();
+         session.start(xid, XAResource.TMNOFLAGS);
+      }
 
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+      Message clientFile = createLargeClientMessage(session, 50000, durable);
+
+      for (int i = 0; i < 1; i++)
+      {
+         producer.send(clientFile);
+      }
+
+      if (isXA)
+      {
+         session.end(xid, XAResource.TMSUCCESS);
+         session.prepare(xid);
+         session.close();
+         server.stop();
          server.start();
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
+         sf = locator.createSessionFactory();
          session = sf.createSession(isXA, false, false);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
-
-         Xid xid = null;
-
-         if (isXA)
-         {
-            xid = RandomUtil.randomXid();
-            session.start(xid, XAResource.TMNOFLAGS);
-         }
-
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-
-         Message clientFile = createLargeClientMessage(session, 50000, durable);
-
-         for (int i = 0; i < 1; i++)
-         {
-            producer.send(clientFile);
-         }
-
-         if (isXA)
-         {
-            session.end(xid, XAResource.TMSUCCESS);
-            session.prepare(xid);
-            session.close();
-            server.stop();
-            server.start();
-            sf = locator.createSessionFactory();
-            session = sf.createSession(isXA, false, false);
-
-            session.rollback(xid);
-         }
-         else
-         {
-            session.rollback();
-         }
-
-         session.close();
-
-         validateNoFilesOnLargeDir();
+         session.rollback(xid);
       }
-      finally
+      else
       {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
+         session.rollback();
       }
 
+      session.close();
+
+      validateNoFilesOnLargeDir();
    }
 
    public void testSimpleRollback() throws Exception
@@ -2256,132 +2117,116 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       // there are two bindings.. one is ACKed, the other is not, the server is restarted
       // The other binding is acked... The file must be deleted
+       HornetQServer server = createServer(true, isNetty());
 
-      try
+      server.start();
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(isXA, false, false);
+
+      Xid xid = null;
+
+      if (isXA)
       {
+         xid = newXID();
+         session.start(xid, XAResource.TMNOFLAGS);
+      }
 
-         server = createServer(true, isNetty());
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
 
-         server.start();
+      int numberOfBytes = 200000;
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      session.start();
 
-         ClientSession session = sf.createSession(isXA, false, false);
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         Xid xid = null;
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+
+      for (int n = 0; n < 10; n++)
+      {
+         Message clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
+
+         producer.send(clientFile);
+
+         Assert.assertNull(consumer.receiveImmediate());
 
          if (isXA)
          {
+            session.end(xid, XAResource.TMSUCCESS);
+            session.rollback(xid);
             xid = newXID();
             session.start(xid, XAResource.TMNOFLAGS);
          }
-
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
-
-         int numberOfBytes = 200000;
-
-         session.start();
-
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-
-         for (int n = 0; n < 10; n++)
+         else
          {
-            Message clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
+            session.rollback();
+         }
 
-            producer.send(clientFile);
+         clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
 
-            Assert.assertNull(consumer.receiveImmediate());
+         producer.send(clientFile);
+
+         Assert.assertNull(consumer.receiveImmediate());
+
+         if (isXA)
+         {
+            session.end(xid, XAResource.TMSUCCESS);
+            session.commit(xid, true);
+            xid = newXID();
+            session.start(xid, XAResource.TMNOFLAGS);
+         }
+         else
+         {
+            session.commit();
+         }
+
+         for (int i = 0; i < 2; i++)
+         {
+
+            ClientMessage clientMessage = consumer.receive(5000);
+
+            Assert.assertNotNull(clientMessage);
+
+            Assert.assertEquals(numberOfBytes, clientMessage.getBodySize());
+
+            clientMessage.acknowledge();
 
             if (isXA)
             {
-               session.end(xid, XAResource.TMSUCCESS);
-               session.rollback(xid);
-               xid = newXID();
-               session.start(xid, XAResource.TMNOFLAGS);
-            }
-            else
-            {
-               session.rollback();
-            }
-
-            clientFile = createLargeClientMessage(session, numberOfBytes, n % 2 == 0);
-
-            producer.send(clientFile);
-
-            Assert.assertNull(consumer.receiveImmediate());
-
-            if (isXA)
-            {
-               session.end(xid, XAResource.TMSUCCESS);
-               session.commit(xid, true);
-               xid = newXID();
-               session.start(xid, XAResource.TMNOFLAGS);
-            }
-            else
-            {
-               session.commit();
-            }
-
-            for (int i = 0; i < 2; i++)
-            {
-
-               ClientMessage clientMessage = consumer.receive(5000);
-
-               Assert.assertNotNull(clientMessage);
-
-               Assert.assertEquals(numberOfBytes, clientMessage.getBodySize());
-
-               clientMessage.acknowledge();
-
-               if (isXA)
+               if (i == 0)
                {
-                  if (i == 0)
-                  {
-                     session.end(xid, XAResource.TMSUCCESS);
-                     session.prepare(xid);
-                     session.rollback(xid);
-                     xid = newXID();
-                     session.start(xid, XAResource.TMNOFLAGS);
-                  }
-                  else
-                  {
-                     session.end(xid, XAResource.TMSUCCESS);
-                     session.commit(xid, true);
-                     xid = newXID();
-                     session.start(xid, XAResource.TMNOFLAGS);
-                  }
+                  session.end(xid, XAResource.TMSUCCESS);
+                  session.prepare(xid);
+                  session.rollback(xid);
+                  xid = newXID();
+                  session.start(xid, XAResource.TMNOFLAGS);
                }
                else
                {
-                  if (i == 0)
-                  {
-                     session.rollback();
-                  }
-                  else
-                  {
-                     session.commit();
-                  }
+                  session.end(xid, XAResource.TMSUCCESS);
+                  session.commit(xid, true);
+                  xid = newXID();
+                  session.start(xid, XAResource.TMNOFLAGS);
+               }
+            }
+            else
+            {
+               if (i == 0)
+               {
+                  session.rollback();
+               }
+               else
+               {
+                  session.commit();
                }
             }
          }
-
-         session.close();
-
-         validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
       }
 
+      session.close();
+
+      validateNoFilesOnLargeDir();
    }
 
    public void testBufferMultipleLargeMessages() throws Exception
@@ -2604,144 +2449,128 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       AddressSettings value = new AddressSettings();
       map.put(LargeMessageTest.ADDRESS.toString(), value);
-      server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
       final int numberOfBytes = 1024;
 
       final int numberOfBytesBigMessage = 400000;
 
-      try
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+      ClientMessage message = null;
+
+      for (int i = 0; i < 100; i++)
       {
+         message = session.createMessage(true);
 
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnDurableSend(true);
-         locator.setBlockOnAcknowledge(true);
+         message.getBodyBuffer().writerIndex(0);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+         for (int j = 1; j <= numberOfBytes; j++)
+         {
+            message.getBodyBuffer().writeInt(j);
+         }
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+         producer.send(message);
+      }
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+      clientFile.putBooleanProperty("TestLarge", true);
+      producer.send(clientFile);
 
-         ClientMessage message = null;
+      for (int i = 0; i < 100; i++)
+      {
+         message = session.createMessage(true);
+
+         message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+
+         producer.send(message);
+      }
+
+      session.close();
+
+      server.stop();
+
+      server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+      server.start();
+
+      sf = locator.createSessionFactory();
+
+      for (int ad = 0; ad < 2; ad++)
+      {
+         session = sf.createSession(false, false, false);
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+
+         session.start();
 
          for (int i = 0; i < 100; i++)
          {
-            message = session.createMessage(true);
+            ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
 
-            message.getBodyBuffer().writerIndex(0);
+            Assert.assertNotNull(message2);
 
-            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+            message2.acknowledge();
 
-            for (int j = 1; j <= numberOfBytes; j++)
+            Assert.assertNotNull(message2);
+         }
+
+         session.commit();
+
+         for (int i = 0; i < 5; i++)
+         {
+            ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
+
+            assertTrue(messageLarge.getBooleanProperty("TestLarge"));
+
+            Assert.assertNotNull(messageLarge);
+
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            messageLarge.acknowledge();
+            messageLarge.saveToOutputStream(bout);
+            byte[] body = bout.toByteArray();
+            assertEquals(numberOfBytesBigMessage, body.length);
+            for (int bi = 0; bi < body.length; bi++)
             {
-               message.getBodyBuffer().writeInt(j);
+               assertEquals(getSamplebyte(bi), body[bi]);
             }
 
-            producer.send(message);
+            if (i < 4)
+               session.rollback();
+            else
+               session.commit();
          }
-
-         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
-         clientFile.putBooleanProperty("TestLarge", true);
-         producer.send(clientFile);
 
          for (int i = 0; i < 100; i++)
          {
-            message = session.createMessage(true);
+            ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
 
-            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+            Assert.assertNotNull(message2);
 
-            producer.send(message);
+            message2.acknowledge();
+
+            Assert.assertNotNull(message2);
          }
+
+         session.commit();
+
+         consumer.close();
 
          session.close();
-
-         server.stop();
-
-         server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
-         server.start();
-
-         sf = locator.createSessionFactory();
-
-         for (int ad = 0; ad < 2; ad++)
-         {
-            session = sf.createSession(false, false, false);
-
-            ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
-
-            session.start();
-
-            for (int i = 0; i < 100; i++)
-            {
-               ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-
-               Assert.assertNotNull(message2);
-
-               message2.acknowledge();
-
-               Assert.assertNotNull(message2);
-            }
-
-            session.commit();
-
-            for (int i = 0; i < 5; i++)
-            {
-               ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
-
-               assertTrue(messageLarge.getBooleanProperty("TestLarge"));
-
-               Assert.assertNotNull(messageLarge);
-
-               ByteArrayOutputStream bout = new ByteArrayOutputStream();
-               messageLarge.acknowledge();
-               messageLarge.saveToOutputStream(bout);
-               byte[] body = bout.toByteArray();
-               assertEquals(numberOfBytesBigMessage, body.length);
-               for (int bi = 0; bi < body.length; bi++)
-               {
-                  assertEquals(getSamplebyte(bi), body[bi]);
-               }
-
-               if (i < 4)
-                  session.rollback();
-               else
-                  session.commit();
-            }
-
-            for (int i = 0; i < 100; i++)
-            {
-               ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-
-               Assert.assertNotNull(message2);
-
-               message2.acknowledge();
-
-               Assert.assertNotNull(message2);
-            }
-
-            session.commit();
-
-            consumer.close();
-
-            session.close();
-
-         }
       }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
 
@@ -2758,128 +2587,111 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       AddressSettings value = new AddressSettings();
       map.put(LargeMessageTest.ADDRESS.toString(), value);
-      server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
       final int numberOfBytes = 1024;
 
       final int numberOfBytesBigMessage = 400000;
 
-      try
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setBlockOnAcknowledge(true);
+      locator.setCompressLargeMessage(true);
+
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+      int msgId = 0;
+
+      for (int i = 0; i < 100; i++)
       {
+         ClientMessage message = session.createMessage(true);
 
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnDurableSend(true);
-         locator.setBlockOnAcknowledge(true);
-         locator.setCompressLargeMessage(true);
+         message.putIntProperty("msgID", msgId++);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         message.putBooleanProperty("TestLarge", false);
 
-         ClientSession session = sf.createSession(false, true, true);
+         message.getBodyBuffer().writerIndex(0);
 
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-0"), null, true);
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS.concat("-1"), null, true);
+         message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
 
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-         int msgId = 0;
-
-         for (int i = 0; i < 100; i++)
+         for (int j = 1; j <= numberOfBytes; j++)
          {
-            ClientMessage message = session.createMessage(true);
+            message.getBodyBuffer().writeInt(j);
+         }
 
-            message.putIntProperty("msgID", msgId++);
+         producer.send(message);
+      }
 
-            message.putBooleanProperty("TestLarge", false);
 
-            message.getBodyBuffer().writerIndex(0);
+      for (int i = 0; i < 10; i++)
+      {
+         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+         clientFile.putBooleanProperty("TestLarge", true);
+         producer.send(clientFile);
+      }
 
-            message.getBodyBuffer().writeBytes(new byte[numberOfBytes]);
+      session.close();
 
-            for (int j = 1; j <= numberOfBytes; j++)
+      for (int ad = 0; ad < 2; ad++)
+      {
+         session = sf.createSession(false, false, false);
+
+         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
+
+         session.start();
+
+         for (int received = 0 ; received < 5; received++)
+         {
+            for (int i = 0; i < 100; i++)
             {
-               message.getBodyBuffer().writeInt(j);
+               ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+
+               Assert.assertNotNull(message2);
+
+               assertFalse(message2.getBooleanProperty("TestLarge"));
+
+               message2.acknowledge();
+
+               Assert.assertNotNull(message2);
             }
 
-            producer.send(message);
+            for (int i = 0; i < 10; i++)
+            {
+               ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
+
+               Assert.assertNotNull(messageLarge);
+
+               assertTrue(messageLarge.getBooleanProperty("TestLarge"));
+
+               ByteArrayOutputStream bout = new ByteArrayOutputStream();
+
+               messageLarge.acknowledge();
+
+               messageLarge.saveToOutputStream(bout);
+               byte[] body = bout.toByteArray();
+               assertEquals(numberOfBytesBigMessage, body.length);
+               for (int bi = 0; bi < body.length; bi++)
+               {
+                  assertEquals(getSamplebyte(bi), body[bi]);
+               }
+            }
+
+            session.rollback();
          }
 
+         session.commit();
 
-         for (int i = 0; i < 10; i++)
-         {
-            ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
-            clientFile.putBooleanProperty("TestLarge", true);
-            producer.send(clientFile);
-         }
+         consumer.close();
 
          session.close();
-
-         for (int ad = 0; ad < 2; ad++)
-         {
-            session = sf.createSession(false, false, false);
-
-            ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
-
-            session.start();
-
-            for (int received = 0 ; received < 5; received++)
-            {
-               for (int i = 0; i < 100; i++)
-               {
-                  ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-
-                  Assert.assertNotNull(message2);
-
-                  assertFalse(message2.getBooleanProperty("TestLarge"));
-
-                  message2.acknowledge();
-
-                  Assert.assertNotNull(message2);
-               }
-
-               for (int i = 0; i < 10; i++)
-               {
-                  ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
-
-                  Assert.assertNotNull(messageLarge);
-
-                  assertTrue(messageLarge.getBooleanProperty("TestLarge"));
-
-                  ByteArrayOutputStream bout = new ByteArrayOutputStream();
-
-                  messageLarge.acknowledge();
-
-                  messageLarge.saveToOutputStream(bout);
-                  byte[] body = bout.toByteArray();
-                  assertEquals(numberOfBytesBigMessage, body.length);
-                  for (int bi = 0; bi < body.length; bi++)
-                  {
-                     assertEquals(getSamplebyte(bi), body[bi]);
-                  }
-               }
-
-               session.rollback();
-            }
-
-            session.commit();
-
-            consumer.close();
-
-            session.close();
-
-         }
       }
-      finally
-      {
-         locator.close();
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
    public void testSendStreamingSingleMessage() throws Exception
@@ -3135,110 +2947,96 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       AddressSettings value = new AddressSettings();
       map.put(LargeMessageTest.ADDRESS.toString(), value);
-      server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
+      HornetQServer server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
       final int numberOfBytes = 1024;
 
       final int numberOfBytesBigMessage = 400000;
 
-      try
+      ClientSessionFactory sf = locator.createSessionFactory();
+
+      if (sendBlocking)
       {
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         if (sendBlocking)
-         {
-            sf.getServerLocator().setBlockOnNonDurableSend(true);
-            sf.getServerLocator().setBlockOnDurableSend(true);
-            sf.getServerLocator().setBlockOnAcknowledge(true);
-         }
-
-         ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
-
-         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
-
-         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
-
-         ClientMessage message = null;
-
-         for (int i = 0; i < 100; i++)
-         {
-            message = session.createMessage(true);
-
-            // TODO: Why do I need to reset the writerIndex?
-            message.getBodyBuffer().writerIndex(0);
-
-            for (int j = 1; j <= numberOfBytes; j++)
-            {
-               message.getBodyBuffer().writeInt(j);
-            }
-
-            producer.send(message);
-         }
-
-         ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
-
-         producer.send(clientFile);
-
-         session.close();
-
-         if (realFiles)
-         {
-            server.stop();
-
-            server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
-            server.start();
-
-            sf = locator.createSessionFactory();
-         }
-
-         session = sf.createSession(null, null, false, true, true, false, 0);
-
-         ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-
-         session.start();
-
-         for (int i = 0; i < 100; i++)
-         {
-            ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-
-            Assert.assertNotNull(message2);
-
-            message2.acknowledge();
-
-            Assert.assertNotNull(message2);
-
-            message.getBodyBuffer().readerIndex(0);
-
-            for (int j = 1; j <= numberOfBytes; j++)
-            {
-               Assert.assertEquals(j, message.getBodyBuffer().readInt());
-            }
-         }
-
-         consumer.close();
-
-         session.close();
-
-         session = sf.createSession(null, null, false, true, true, false, 0);
-
-         readMessage(session, LargeMessageTest.ADDRESS, numberOfBytesBigMessage);
-
-         // printBuffer("message received : ", message2.getBody());
-
-         session.close();
+         sf.getServerLocator().setBlockOnNonDurableSend(true);
+         sf.getServerLocator().setBlockOnDurableSend(true);
+         sf.getServerLocator().setBlockOnAcknowledge(true);
       }
-      finally
+
+      ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
+
+      session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+      ClientMessage message = null;
+
+      for (int i = 0; i < 100; i++)
       {
-         try
+         message = session.createMessage(true);
+
+         // TODO: Why do I need to reset the writerIndex?
+         message.getBodyBuffer().writerIndex(0);
+
+         for (int j = 1; j <= numberOfBytes; j++)
          {
-            server.stop();
+            message.getBodyBuffer().writeInt(j);
          }
-         catch (Throwable ignored)
+
+         producer.send(message);
+      }
+
+      ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
+
+      producer.send(clientFile);
+
+      session.close();
+
+      if (realFiles)
+      {
+         server.stop();
+
+         server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
+         server.start();
+
+         sf = locator.createSessionFactory();
+      }
+
+      session = sf.createSession(null, null, false, true, true, false, 0);
+
+      ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
+
+      session.start();
+
+      for (int i = 0; i < 100; i++)
+      {
+         ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
+
+         Assert.assertNotNull(message2);
+
+         message2.acknowledge();
+
+         Assert.assertNotNull(message2);
+
+         message.getBodyBuffer().readerIndex(0);
+
+         for (int j = 1; j <= numberOfBytes; j++)
          {
+            Assert.assertEquals(j, message.getBodyBuffer().readInt());
          }
       }
 
+      consumer.close();
+
+      session.close();
+
+      session = sf.createSession(null, null, false, true, true, false, 0);
+
+      readMessage(session, LargeMessageTest.ADDRESS, numberOfBytesBigMessage);
+
+      // printBuffer("message received : ", message2.getBody());
+
+      session.close();
    }
 
    // Private -------------------------------------------------------
