@@ -18,7 +18,13 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -36,6 +42,8 @@ public class MessageHandlerTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   private ClientSessionFactory sf;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -46,24 +54,12 @@ public class MessageHandlerTest extends ServiceTestBase
       server.start();
 
       locator = createInVMNonHALocator();
-   }
+      sf = createSessionFactory(locator);
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
    }
 
    public void testSetMessageHandlerWithMessagesPending() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
-
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -123,8 +119,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
    public void testSetResetMessageHandler() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
-
       final ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -136,7 +130,7 @@ public class MessageHandlerTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage(session, "m" + i);
-         
+
          message.putIntProperty(new SimpleString("i"), i);
 
          producer.send(message);
@@ -172,19 +166,19 @@ public class MessageHandlerTest extends ServiceTestBase
                {
                   failed = true;
                }
-               
+
                messageReceived++;
-               
+
                log.info("got message " + messageReceived);
-               
+
                latch.countDown();
 
                if (latch.getCount() == 0)
                {
                   message.acknowledge();
-                  
+
                   started = false;
-                  
+
                   consumer.setMessageHandler(null);
                }
 
@@ -198,7 +192,7 @@ public class MessageHandlerTest extends ServiceTestBase
       MyHandler handler = new MyHandler(latch);
 
       consumer.setMessageHandler(handler);
-      
+
       session.start();
 
 
@@ -225,8 +219,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
    public void testSetUnsetMessageHandler() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
-
       final ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -313,8 +305,6 @@ public class MessageHandlerTest extends ServiceTestBase
 
    public void testSetUnsetResetMessageHandler() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
-
       final ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);

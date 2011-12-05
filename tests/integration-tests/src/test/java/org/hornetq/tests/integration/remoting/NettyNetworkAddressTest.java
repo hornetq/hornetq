@@ -26,20 +26,6 @@ import org.hornetq.core.remoting.impl.netty.TransportConstants;
 public class NettyNetworkAddressTest extends NetworkAddressTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    @Override
    protected String getAcceptorFactoryClassName()
    {

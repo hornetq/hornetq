@@ -15,8 +15,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -26,8 +30,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class MessageCounterTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(MessageCounterTest.class);
-
    private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
@@ -40,22 +42,9 @@ public class MessageCounterTest extends ServiceTestBase
       super.setUp();
 
       server = createServer(false);
-
       server.start();
 
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
    }
 
    public void testMessageCounter() throws Exception
@@ -64,7 +53,7 @@ public class MessageCounterTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(null, null, false, false, false, false, 0);
 
       session.createQueue(QUEUE, QUEUE, null, false);

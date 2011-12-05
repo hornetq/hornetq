@@ -21,17 +21,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -40,7 +38,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A NetworkAddressTest
  *
  * @author jmesnil
- * 
+ *
  * Created 26 janv. 2009 15:06:58
  *
  *
@@ -65,7 +63,6 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
          {
             s.append(entry.getKey().getDisplayName() + ": " + entry.getValue().getHostAddress() + "\n");
          }
-         System.out.println(s);
       }
       catch (Exception e)
       {
@@ -201,42 +198,26 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
       params = new HashMap<String, Object>();
       params.put(getHostPropertyKey(), connectorHost);
       TransportConfiguration connectorConfig = new TransportConfiguration(getConnectorFactoryClassName(), params);
-      ServerLocator locator = null;
-      try
-      {
-         locator = HornetQClient.createServerLocatorWithoutHA(connectorConfig);
-
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(connectorConfig));
 
          if (mustConnect)
          {
-            ClientSessionFactory sf = locator.createSessionFactory();
-            sf.close();
+         ClientSessionFactory sf = createSessionFactory(locator);
+         sf.close();
             System.out.println("connection OK");
          }
          else
          {
             try
             {
-               ClientSessionFactory sf = locator.createSessionFactory();
+            locator.createSessionFactory();
                Assert.fail("session creation must fail because connector must not be able to connect to the server bound to another network interface");
             }
             catch (Exception e)
             {
             }
          }
-      }
-      finally
-      {
-         if(locator != null)
-         {
-            locator.close();
          }
-         if (messagingService != null)
-         {
-            messagingService.stop();
-         }
-      }
-   }
 
    // Package protected ---------------------------------------------
 

@@ -25,9 +25,15 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -94,7 +100,7 @@ public class MessageGroupingTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       SimpleString groupId = new SimpleString("grp1");
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
@@ -122,10 +128,10 @@ public class MessageGroupingTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       //need to wait a bit or consumers might be busy
       Thread.sleep(200);
-      
+
       SimpleString groupId = new SimpleString("grp1");
       SimpleString groupId2 = new SimpleString("grp2");
       int numMessages = 100;
@@ -210,10 +216,10 @@ public class MessageGroupingTest extends UnitTestCase
       ClientSession clientSession = sessionFactory.createSession(false, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
       clientSession.start();
-      
+
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
-      
+
       //Wait a bit otherwise consumers might be busy
       Thread.sleep(200);
 
@@ -274,10 +280,10 @@ public class MessageGroupingTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       //need to wait a bit or consumers might be busy
       Thread.sleep(200);
-      
+
       SimpleString groupId = new SimpleString("grp1");
       SimpleString groupId2 = new SimpleString("grp2");
       int numMessages = 100;
@@ -294,7 +300,7 @@ public class MessageGroupingTest extends UnitTestCase
          }
          clientProducer.send(message);
       }
- 
+
       CountDownLatch latch = new CountDownLatch(numMessages);
       DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(latch, true);
       consumer.setMessageHandler(dummyMessageHandler);
@@ -349,7 +355,7 @@ public class MessageGroupingTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       Xid xid = new XidImpl("bq".getBytes(), 4, "gtid".getBytes());
       clientSession.start(xid, XAResource.TMNOFLAGS);
 
@@ -408,7 +414,7 @@ public class MessageGroupingTest extends UnitTestCase
       ClientSession clientSession = sessionFactory.createSession(true, false, false);
       ClientProducer clientProducer = this.clientSession.createProducer(qName);
       clientSession.start();
-      
+
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       Xid xid = new XidImpl("bq".getBytes(), 4, "gtid".getBytes());
@@ -487,7 +493,7 @@ public class MessageGroupingTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       SimpleString groupId = new SimpleString("grp1");
       SimpleString groupId2 = new SimpleString("grp2");
       int numMessages = 4;

@@ -21,7 +21,6 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -36,12 +35,6 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class OrderTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(OrderTest.class);
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
 
    private ServerLocator locator;
@@ -50,17 +43,9 @@ public class OrderTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
       locator = createNettyNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      server.stop();
-      super.tearDown();
-   }
 
    // Static --------------------------------------------------------
 
@@ -87,12 +72,10 @@ public class OrderTest extends ServiceTestBase
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnAcknowledge(true);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(true, true, 0);
 
-      try
-      {
          session.createQueue("queue", "queue", true);
 
          ClientProducer prod = session.createProducer("queue");
@@ -116,7 +99,7 @@ public class OrderTest extends ServiceTestBase
                started = true;
                server.stop();
                server.start();
-               sf = locator.createSessionFactory();
+               sf = createSessionFactory(locator);
             }
 
             session = sf.createSession(true, true);
@@ -151,14 +134,6 @@ public class OrderTest extends ServiceTestBase
 
             session.close();
          }
-
-      }
-      finally
-      {
-         sf.close();
-         session.close();
-      }
-
    }
 
    public void testOrderOverSessionClosePersistent() throws Exception
@@ -181,14 +156,11 @@ public class OrderTest extends ServiceTestBase
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnAcknowledge(false);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, true, 0);
 
       int numberOfMessages = 500;
-
-      try
-      {
-         session.createQueue("queue", "queue", true);
+      session.createQueue("queue", "queue", true);
 
          ClientProducer prod = session.createProducer("queue");
 
@@ -232,13 +204,6 @@ public class OrderTest extends ServiceTestBase
             session.close();
 
          }
-      }
-      finally
-      {
-         sf.close();
-         session.close();
-      }
-
    }
 
    public void testOrderOverSessionClosePersistentWithRedeliveryDelay() throws Exception
@@ -272,9 +237,7 @@ public class OrderTest extends ServiceTestBase
 
       int numberOfMessages = 500;
 
-      try
-      {
-         session.createQueue("queue", "queue", true);
+      session.createQueue("queue", "queue", true);
 
          ClientProducer prod = session.createProducer("queue");
 
@@ -288,11 +251,11 @@ public class OrderTest extends ServiceTestBase
          session.close();
 
          session = sf.createSession(false, false);;
-         
+
          session.start();
-         
+
          ClientConsumer cons = session.createConsumer("queue");
-         
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons.receive(5000);
@@ -301,14 +264,14 @@ public class OrderTest extends ServiceTestBase
          }
          session.close();
 
-         
+
          session = sf.createSession(false, false);;
-         
+
          session.start();
-         
+
          cons = session.createConsumer("queue");
-         
-         
+
+
          for (int i = 0 ; i < numberOfMessages; i++)
          {
             ClientMessage msg = cons.receive(5000);
@@ -316,17 +279,10 @@ public class OrderTest extends ServiceTestBase
             msg.acknowledge();
             assertEquals(i, msg.getIntProperty("id").intValue());
          }
-         
+
          // receive again
          session.commit();
          session.close();
-      }
-      finally
-      {
-         sf.close();
-         session.close();
-      }
-
    }
 
    // Package protected ---------------------------------------------

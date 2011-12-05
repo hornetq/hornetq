@@ -15,49 +15,22 @@ package org.hornetq.tests.integration.client;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.api.jms.HornetQJMSClient;
-import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
-import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerSession;
-import org.hornetq.core.server.impl.QueueImpl;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.jms.client.HornetQJMSConnectionFactory;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A PagingOrderTest.
- * 
+ *
  * PagingTest has a lot of tests already. I decided to create a newer one more specialized on Ordering and counters
  *
  * @author clebertsuconic
@@ -66,33 +39,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class PagingSyncTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   private ServerLocator locator;
-
-   public PagingSyncTest(final String name)
-   {
-      super(name);
-   }
-
-   public PagingSyncTest()
-   {
-      super();
-   }
-
-   // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PagingTest.class);
-
-   private static final int RECEIVE_TIMEOUT = 30000;
 
    private static final int PAGE_MAX = 100 * 1024;
 
@@ -104,24 +50,6 @@ public class PagingSyncTest extends ServiceTestBase
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
    public void testOrder1() throws Throwable
    {
       boolean persistentMessages = true;
@@ -138,8 +66,6 @@ public class PagingSyncTest extends ServiceTestBase
 
       final int numberOfMessages = 500;
 
-      try
-      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
@@ -151,11 +77,11 @@ public class PagingSyncTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(false);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
-         Queue queue = server.createQueue(ADDRESS, ADDRESS, null, true, false);
+      server.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -184,24 +110,7 @@ public class PagingSyncTest extends ServiceTestBase
          session.commit();
 
          session.close();
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
          }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
-   }
 
    // Package protected ---------------------------------------------
 

@@ -21,10 +21,15 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -36,8 +41,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class MessageGroupingConnectionFactoryTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(MessageGroupingTest.class);
-
    private HornetQServer server;
 
    private ClientSession clientSession;
@@ -60,7 +63,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
@@ -87,7 +90,7 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ClientConsumer consumer = clientSession.createConsumer(qName);
       ClientConsumer consumer2 = clientSession.createConsumer(qName);
       clientSession.start();
-      
+
       int numMessages = 100;
       for (int i = 0; i < numMessages; i++)
       {
@@ -157,8 +160,8 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       locator.setGroupID("grp1");
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
-      clientSession = sessionFactory.createSession(false, true, true);
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
+      clientSession = addClientSession(sessionFactory.createSession(false, true, true));
       clientSession.createQueue(qName, qName, null, false);
    }
 

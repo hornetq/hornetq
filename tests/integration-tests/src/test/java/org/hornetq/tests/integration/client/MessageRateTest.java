@@ -20,7 +20,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -52,8 +58,6 @@ public class MessageRateTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-      try
-      {
          server.start();
 
          locator.setProducerMaxRate(10);
@@ -73,24 +77,13 @@ public class MessageRateTest extends ServiceTestBase
          Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
 
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-
    }
 
    public void testConsumeRate() throws Exception
    {
       HornetQServer server = createServer(false);
 
-      try
-      {
-         server.start();
+      server.start();
 
          locator.setConsumerMaxRate(10);
          ClientSessionFactory sf = locator.createSessionFactory();
@@ -122,24 +115,13 @@ public class MessageRateTest extends ServiceTestBase
          Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
 
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-
    }
 
    public void testConsumeRateListener() throws Exception
    {
       HornetQServer server = createServer(false);
 
-      try
-      {
-         server.start();
+      server.start();
 
          locator.setConsumerMaxRate(10);
          ClientSessionFactory sf = locator.createSessionFactory();
@@ -188,28 +170,7 @@ public class MessageRateTest extends ServiceTestBase
          Assert.assertTrue("TotalTime = " + (end - start), end - start >= 1000);
 
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
 
    @Override
    protected void setUp() throws Exception
@@ -218,9 +179,5 @@ public class MessageRateTest extends ServiceTestBase
 
       locator = createInVMNonHALocator();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

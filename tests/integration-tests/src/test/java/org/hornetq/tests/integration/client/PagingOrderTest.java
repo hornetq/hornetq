@@ -36,17 +36,13 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -57,7 +53,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A PagingOrderTest.
- * 
+ *
  * PagingTest has a lot of tests already. I decided to create a newer one more specialized on Ordering and counters
  *
  * @author clebertsuconic
@@ -77,8 +73,6 @@ public class PagingOrderTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   private ServerLocator locator;
-
    public PagingOrderTest(final String name)
    {
       super(name);
@@ -89,11 +83,6 @@ public class PagingOrderTest extends ServiceTestBase
       super();
    }
 
-   // Constants -----------------------------------------------------
-   private static final Logger log = Logger.getLogger(PagingTest.class);
-
-   private static final int RECEIVE_TIMEOUT = 30000;
-
    private static final int PAGE_MAX = 100 * 1024;
 
    private static final int PAGE_SIZE = 10 * 1024;
@@ -103,25 +92,6 @@ public class PagingOrderTest extends ServiceTestBase
    // Static --------------------------------------------------------
 
    static final SimpleString ADDRESS = new SimpleString("SimpleAddress");
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
 
    public void testOrder1() throws Throwable
    {
@@ -138,10 +108,7 @@ public class PagingOrderTest extends ServiceTestBase
       final int messageSize = 1024;
 
       final int numberOfMessages = 500;
-
-      try
-      {
-         ServerLocator locator = createInVMNonHALocator();
+      ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
          locator.setConnectionTTL(2000);
@@ -152,7 +119,7 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -210,11 +177,11 @@ public class PagingOrderTest extends ServiceTestBase
          }
 
          session.close();
-         
+
          session = null;
 
          sf.close();
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          locator = createInVMNonHALocator();
 
@@ -231,28 +198,8 @@ public class PagingOrderTest extends ServiceTestBase
             assertEquals(i, message.getIntProperty("id").intValue());
             message.acknowledge();
          }
-         
+
          session.close();
-         
-         sf.close();
-
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-
    }
 
    public void testPageCounter() throws Throwable
@@ -284,7 +231,7 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -307,6 +254,7 @@ public class PagingOrderTest extends ServiceTestBase
 
          Thread t1 = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -455,7 +403,7 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -478,6 +426,7 @@ public class PagingOrderTest extends ServiceTestBase
 
          Thread t1 = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -589,11 +538,11 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(1024 * 1024);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
-         QueueImpl queue = (QueueImpl)server.createQueue(ADDRESS, ADDRESS, null, true, false);
+         server.createQueue(ADDRESS, ADDRESS, null, true, false);
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 
@@ -696,8 +645,6 @@ public class PagingOrderTest extends ServiceTestBase
 
       final int numberOfMessages = 200;
 
-      try
-      {
          ServerLocator locator = createInVMNonHALocator();
 
          locator.setClientFailureCheckPeriod(1000);
@@ -709,7 +656,7 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(0);
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, false, false);
 
@@ -809,7 +756,7 @@ public class PagingOrderTest extends ServiceTestBase
          locator.setBlockOnAcknowledge(true);
          locator.setConsumerWindowSize(0);
 
-         sf = locator.createSessionFactory();
+         sf = createSessionFactory(locator);
 
          session = sf.createSession(false, false, 0);
 
@@ -828,25 +775,6 @@ public class PagingOrderTest extends ServiceTestBase
          session.commit();
 
          session.close();
-
-         locator.close();
-
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
    }
 
    public void testPagingOverCreatedDestinationTopics() throws Exception
@@ -886,12 +814,12 @@ public class PagingOrderTest extends ServiceTestBase
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Topic topic = (Topic)context.lookup("/topic/TT");
       sess.createDurableSubscriber(topic, "t1");
-      
+
       MessageProducer prod = sess.createProducer(topic);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       TextMessage txt = sess.createTextMessage("TST");
       prod.send(txt);
-      
+
       PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.topic.TT"));
 
       assertEquals(1024 * 1024, store.getMaxSize());
@@ -913,7 +841,7 @@ public class PagingOrderTest extends ServiceTestBase
       assertEquals(AddressFullMessagePolicy.PAGE, settings.getAddressFullMessagePolicy());
 
       store = server.getPagingManager().getPageStore(new SimpleString("TT"));
-      
+
       conn.close();
 
       server.stop();
@@ -956,18 +884,18 @@ public class PagingOrderTest extends ServiceTestBase
       conn.setClientID("tst");
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       javax.jms.Queue queue = (javax.jms.Queue)context.lookup("/queue/Q1");
-      
+
       MessageProducer prod = sess.createProducer(queue);
       prod.setDeliveryMode(DeliveryMode.PERSISTENT);
       BytesMessage bmt = sess.createBytesMessage();
-      
+
       bmt.writeBytes(new byte[1024]);
-      
+
       for (int i = 0 ; i < 500; i++)
       {
          prod.send(bmt);
       }
-      
+
       PagingStore store = server.getPagingManager().getPageStore(new SimpleString("jms.queue.Q1"));
 
       assertEquals(100 * 1024, store.getMaxSize());
@@ -993,18 +921,5 @@ public class PagingOrderTest extends ServiceTestBase
       assertEquals(100 * 1024, store.getMaxSize());
       assertEquals(10 * 1024, store.getPageSizeBytes());
       assertEquals(AddressFullMessagePolicy.PAGE, store.getAddressFullMessagePolicy());
-
-
-      server.stop();
-
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
