@@ -293,4 +293,128 @@ public class ExtraStompTest extends StompTestBase2
       }
    }
 
+   public void testNoGarbageAfterPersistentMessageV11() throws Exception
+   {
+      StompClientConnection connV11 = StompClientConnectionFactory
+            .createClientConnection("1.1", hostname, port);
+      try
+      {
+         connV11.connect(defUser, defPass);
+
+         ClientStompFrame subFrame = connV11.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "auto");
+
+         connV11.sendFrame(subFrame);
+
+         ClientStompFrame frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-length", "11");
+         frame.addHeader("persistent", "true");
+         frame.setBody("Hello World");
+
+         connV11.sendFrame(frame);
+
+         frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-length", "11");
+         frame.addHeader("persistent", "true");
+         frame.setBody("Hello World");
+
+         connV11.sendFrame(frame);
+
+         frame = connV11.receiveFrame(10000);
+         
+         System.out.println("received: " + frame);
+         
+         assertEquals("Hello World", frame.getBody());
+
+         //if hornetq sends trailing garbage bytes, the second message
+         //will not be normal
+         frame = connV11.receiveFrame(10000);
+         
+         System.out.println("received: " + frame);
+         
+         assertEquals("Hello World", frame.getBody());
+
+         //unsub
+         ClientStompFrame unsubFrame = connV11.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         connV11.sendFrame(unsubFrame);
+      }
+      finally
+      {
+         connV11.disconnect();
+      }
+   }
+   
+   public void testNoGarbageOnPersistentRedeliveryV11() throws Exception
+   {
+      StompClientConnection connV11 = StompClientConnectionFactory
+            .createClientConnection("1.1", hostname, port);
+      try
+      {
+         connV11.connect(defUser, defPass);
+
+         ClientStompFrame frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-length", "11");
+         frame.addHeader("persistent", "true");
+         frame.setBody("Hello World");
+
+         connV11.sendFrame(frame);
+
+         frame = connV11.createFrame("SEND");
+         frame.addHeader("destination", getQueuePrefix() + getQueueName());
+         frame.addHeader("content-length", "11");
+         frame.addHeader("persistent", "true");
+         frame.setBody("Hello World");
+
+         connV11.sendFrame(frame);
+
+         ClientStompFrame subFrame = connV11.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "client");
+
+         connV11.sendFrame(subFrame);
+
+         // receive but don't ack
+         frame = connV11.receiveFrame(10000);
+         frame = connV11.receiveFrame(10000);
+         
+         System.out.println("received: " + frame);
+
+         //unsub
+         ClientStompFrame unsubFrame = connV11.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         connV11.sendFrame(unsubFrame);
+
+         subFrame = connV11.createFrame("SUBSCRIBE");
+         subFrame.addHeader("id", "a-sub");
+         subFrame.addHeader("destination", getQueuePrefix() + getQueueName());
+         subFrame.addHeader("ack", "auto");
+
+         connV11.sendFrame(subFrame);
+         
+         frame = connV11.receiveFrame(10000);
+         frame = connV11.receiveFrame(10000);
+         
+         //second receive will get problem if trailing bytes
+         assertEquals("Hello World", frame.getBody());
+         
+         System.out.println("received again: " + frame);
+
+         //unsub
+         unsubFrame = connV11.createFrame("UNSUBSCRIBE");
+         unsubFrame.addHeader("id", "a-sub");
+         connV11.sendFrame(unsubFrame);
+      }
+      finally
+      {
+         connV11.disconnect();
+      }
+   }
+
 }
