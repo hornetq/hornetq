@@ -41,20 +41,8 @@ import org.hornetq.tests.util.TransportConfigurationUtils;
  */
 public class FailoverOnFlowControlTest extends FailoverTestBase
 {
-
    
    private static Logger log = Logger.getLogger(FailoverOnFlowControlTest.class);
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
 
    public void testOverflowSend() throws Exception
    {
@@ -129,8 +117,6 @@ public class FailoverOnFlowControlTest extends FailoverTestBase
       }
 
       session.close();
-
-      locator.close();
    }
 
 

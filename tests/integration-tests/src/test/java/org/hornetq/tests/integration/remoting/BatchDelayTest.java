@@ -17,18 +17,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A BatchDelayTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -38,12 +41,8 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class BatchDelayTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(BatchDelayTest.class);
-
    private static final long DELAY = 500;
-   
+
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
@@ -76,16 +75,6 @@ public class BatchDelayTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
    protected ClientSessionFactory createSessionFactory() throws Exception
    {
       Map<String, Object> params = new HashMap<String, Object>();
@@ -93,7 +82,7 @@ public class BatchDelayTest extends ServiceTestBase
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.NETTY_CONNECTOR_FACTORY, params));
 
       ClientSessionFactory sf = locator.createSessionFactory();
-
+      addSessionFactory(sf);
       return sf;
    }
 
@@ -130,8 +119,6 @@ public class BatchDelayTest extends ServiceTestBase
 
          msg.acknowledge();
       }
-
-      sf.close();
    }
 
    public void testSendReceiveOne() throws Exception
@@ -157,10 +144,8 @@ public class BatchDelayTest extends ServiceTestBase
       msg = cons.receive(10000);
 
       assertNotNull(msg);
-      
-      msg.acknowledge();
 
-      sf.close();
+      msg.acknowledge();
    }
 
    // Private -------------------------------------------------------

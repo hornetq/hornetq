@@ -227,14 +227,10 @@ public class BackupSyncJournalTest extends FailoverTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (sessionFactory != null)
-         sessionFactory.close();
       if (session != null)
          session.close();
       if (producer != null)
          producer.close();
-      closeServerLocator(locator);
-
       super.tearDown();
    }
 

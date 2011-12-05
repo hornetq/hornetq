@@ -19,7 +19,13 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -43,9 +49,7 @@ public class AcknowledgeTest extends ServiceTestBase
    public void testReceiveAckLastMessageOnly() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+      server.start();
          ServerLocator locator = createInVMNonHALocator();
          locator.setAckBatchSize(0);
          locator.setBlockOnAcknowledge(true);
@@ -73,21 +77,12 @@ public class AcknowledgeTest extends ServiceTestBase
          Assert.assertEquals(0, q.getDeliveringCount());
          session.close();
          sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testAsyncConsumerNoAck() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
+
          server.start();
          ServerLocator locator = createInVMNonHALocator();
          ClientSessionFactory cf = locator.createSessionFactory();;
@@ -101,10 +96,10 @@ public class AcknowledgeTest extends ServiceTestBase
          {
             cp.send(sendSession.createMessage(false));
          }
-         
+
          Thread.sleep(500);
          log.info("woke up");
-         
+
          final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
          cc.setMessageHandler(new MessageHandler()
@@ -121,22 +116,12 @@ public class AcknowledgeTest extends ServiceTestBase
          Assert.assertEquals(numMessages, q.getDeliveringCount());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testAsyncConsumerAck() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+      server.start();
          ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnAcknowledge(true);
          locator.setAckBatchSize(0);
@@ -180,22 +165,12 @@ public class AcknowledgeTest extends ServiceTestBase
          Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testAsyncConsumerAckLastMessageOnly() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+      server.start();
          ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnAcknowledge(true);
          locator.setAckBatchSize(0);
@@ -242,14 +217,6 @@ public class AcknowledgeTest extends ServiceTestBase
          Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
 }

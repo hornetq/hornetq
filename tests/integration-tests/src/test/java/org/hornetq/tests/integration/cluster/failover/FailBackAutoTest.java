@@ -55,13 +55,6 @@ public class FailBackAutoTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      closeServerLocator(locator);
-      super.tearDown();
-   }
-
    public void testAutoFailback() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);

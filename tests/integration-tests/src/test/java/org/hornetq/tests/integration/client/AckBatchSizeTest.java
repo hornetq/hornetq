@@ -15,8 +15,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -26,8 +30,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class AckBatchSizeTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(AckBatchSizeTest.class);
-
    public final SimpleString addressA = new SimpleString("addressA");
 
    public final SimpleString queueA = new SimpleString("queueA");
@@ -59,9 +61,6 @@ public class AckBatchSizeTest extends ServiceTestBase
    public void testAckBatchSize() throws Exception
    {
       HornetQServer server = createServer(false);
-
-      try
-      {
          server.start();
          ServerLocator locator = createInVMNonHALocator();
          int numMessages = 100;
@@ -94,14 +93,6 @@ public class AckBatchSizeTest extends ServiceTestBase
          Assert.assertEquals(0, q.getDeliveringCount());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    /*
@@ -111,8 +102,6 @@ public class AckBatchSizeTest extends ServiceTestBase
    {
       HornetQServer server = createServer(false);
 
-      try
-      {
          server.start();
          ServerLocator locator = createInVMNonHALocator();
          locator.setAckBatchSize(0);
@@ -145,13 +134,5 @@ public class AckBatchSizeTest extends ServiceTestBase
          }
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 }

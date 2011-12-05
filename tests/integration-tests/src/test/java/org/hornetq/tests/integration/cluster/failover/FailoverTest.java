@@ -90,30 +90,22 @@ public class FailoverTest extends FailoverTestBase
       locator = getServerLocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      closeSessionFactory();
-      closeServerLocator(locator);
-      super.tearDown();
-   }
-
    protected ClientSession createSession(ClientSessionFactory sf,
                                          boolean autoCommitSends,
                                          boolean autoCommitAcks,
                                          int ackBatchSize) throws Exception
    {
-      return sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize);
+      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks, ackBatchSize));
    }
 
    protected ClientSession createSession(ClientSessionFactory sf, boolean autoCommitSends, boolean autoCommitAcks) throws Exception
    {
-      return sf.createSession(autoCommitSends, autoCommitAcks);
+      return addClientSession(sf.createSession(autoCommitSends, autoCommitAcks));
    }
 
    protected ClientSession createSession(ClientSessionFactory sf) throws Exception
    {
-      return sf.createSession();
+      return addClientSession(sf.createSession());
    }
 
    protected ClientSession createSession(ClientSessionFactory sf,
@@ -121,7 +113,7 @@ public class FailoverTest extends FailoverTestBase
                                          boolean autoCommitSends,
                                          boolean autoCommitAcks) throws Exception
    {
-      return sf.createSession(xa, autoCommitSends, autoCommitAcks);
+      return addClientSession(sf.createSession(xa, autoCommitSends, autoCommitAcks));
    }
 
    @Override
@@ -143,7 +135,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setAckBatchSize(0);
       locator.setReconnectAttempts(-1);
 
-      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      createClientSessionFactory();
 
       ClientSession session = createSession(sf, true, true);
 
@@ -204,6 +196,15 @@ public class FailoverTest extends FailoverTestBase
       session.close();
 
       Assert.assertTrue(retry <= 5);
+   }
+
+   /**
+    * @throws Exception
+    */
+   private void createClientSessionFactory() throws Exception
+   {
+      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      addSessionFactory(sf);
    }
 
    public void testNonTransacted() throws Exception
@@ -962,7 +963,7 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(5000);
 
-      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      createClientSessionFactory();
 
       session = sendAndConsume(sf, true);
 
@@ -1239,7 +1240,7 @@ public class FailoverTest extends FailoverTestBase
       locator.setBlockOnDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setReconnectAttempts(-1);
-      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      createClientSessionFactory();
 
       // Add an interceptor to delay the send method so we can get time to cause failover before it returns
 
@@ -1431,15 +1432,6 @@ public class FailoverTest extends FailoverTestBase
       Assert.assertNull(message);
 
       session2.close();
-   }
-
-   private void closeSessionFactory()
-   {
-      if (sf == null)
-         return;
-      closeSessionFactory(sf);
-      Assert.assertEquals(0, sf.numSessions());
-      Assert.assertEquals(0, sf.numConnections());
    }
 
    public void testCommitDidNotOccurUnblockedAndResend() throws Exception
@@ -1661,7 +1653,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      createClientSessionFactory();
 
       session = createSession(sf);
 
@@ -1722,7 +1714,7 @@ public class FailoverTest extends FailoverTestBase
 
       sf.close();
 
-      sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+      createClientSessionFactory();
 
       session = createSession(sf);
 

@@ -26,20 +26,7 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 public class AlmostLargeAsynchronousFailoverTest extends AsynchronousFailoverTest
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
+   @Override
    protected void createConfigs() throws Exception
    {
       super.createConfigs();
@@ -47,6 +34,7 @@ public class AlmostLargeAsynchronousFailoverTest extends AsynchronousFailoverTes
       backupServer.getServer().getConfiguration().setJournalFileSize(1024 * 1024);
    }
 
+   @Override
    protected ServerLocatorInternal getServerLocator() throws Exception
    {
       ServerLocatorInternal locator = super.getServerLocator();
@@ -55,13 +43,10 @@ public class AlmostLargeAsynchronousFailoverTest extends AsynchronousFailoverTes
       return locator;
    }
 
+   @Override
    protected void addPayload(ClientMessage message)
    {
       message.putBytesProperty("payload", new byte[20 * 1024]);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

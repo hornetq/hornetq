@@ -57,13 +57,16 @@ public class SecurityFailoverTest extends FailoverTest
                                          boolean autoCommitAcks,
                                          int ackBatchSize) throws Exception
    {
-      return sf.createSession("a",
+      ClientSession session =
+               sf.createSession("a",
                               "b",
                               isXA,
                               autoCommitSends,
                               autoCommitAcks,
                               sf.getServerLocator().isPreAcknowledge(),
                               ackBatchSize);
+      addClientSession(session);
+      return session;
    }
 
    @Override
@@ -72,8 +75,11 @@ public class SecurityFailoverTest extends FailoverTest
                                          boolean autoCommitAcks,
                                          int ackBatchSize) throws Exception
    {
-      return sf.createSession("a", "b", false, autoCommitSends, autoCommitAcks, sf.getServerLocator()
+      ClientSession session =
+               sf.createSession("a", "b", false, autoCommitSends, autoCommitAcks, sf.getServerLocator()
                                                                                   .isPreAcknowledge(), ackBatchSize);
+      addClientSession(session);
+      return session;
    }
 
    @Override

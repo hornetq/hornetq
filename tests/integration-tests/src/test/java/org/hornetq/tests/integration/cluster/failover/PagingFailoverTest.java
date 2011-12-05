@@ -214,9 +214,8 @@ public class PagingFailoverTest extends FailoverTestBase
    @Override
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createInVMFailoverServer(true, configuration, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>(),
-                                      nodeManager,
-                                      2);
+      return addServer(createInVMFailoverServer(true, configuration, PAGE_SIZE, PAGE_MAX,
+                                                new HashMap<String, AddressSettings>(), nodeManager, 2));
    }
 
    @Override

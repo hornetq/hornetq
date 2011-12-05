@@ -16,7 +16,6 @@ package org.hornetq.tests.integration.cluster.failover;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ServerLocatorInternal;
-import org.hornetq.core.logging.Logger;
 
 /**
  * A LargeMessageFailoverTest
@@ -27,22 +26,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class LargeMessageFailoverTest extends FailoverTest
 {
-
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(LargeMessageFailoverTest.class);
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    public LargeMessageFailoverTest(final String name)
    {

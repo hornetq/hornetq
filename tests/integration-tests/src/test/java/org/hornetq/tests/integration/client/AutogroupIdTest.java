@@ -18,7 +18,13 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -49,8 +55,7 @@ public class AutogroupIdTest extends ServiceTestBase
    public void testGroupIdAutomaticallySet() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
+
          server.start();
 
          ServerLocator locator = createInVMNonHALocator();
@@ -73,7 +78,7 @@ public class AutogroupIdTest extends ServiceTestBase
          consumer2.setMessageHandler(myMessageHandler2);
 
          log.info("starting session");
-         
+
          session.start();
 
          final int numMessages = 100;
@@ -85,19 +90,11 @@ public class AutogroupIdTest extends ServiceTestBase
          latch.await();
 
          session.close();
-         
+
          log.info(myMessageHandler2.messagesReceived);
 
          Assert.assertEquals(100, myMessageHandler.messagesReceived);
          Assert.assertEquals(0, myMessageHandler2.messagesReceived);
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
 
    }
 
@@ -107,8 +104,7 @@ public class AutogroupIdTest extends ServiceTestBase
    public void testGroupIdAutomaticallySetMultipleProducers() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
+
          server.start();
 
 
@@ -154,15 +150,6 @@ public class AutogroupIdTest extends ServiceTestBase
          Assert.assertEquals(myMessageHandler.messagesReceived, 100);
          Assert.assertEquals(myMessageHandler2.messagesReceived, 100);
          Assert.assertEquals(myMessageHandler3.messagesReceived, 0);
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-
    }
 
    /*
@@ -171,8 +158,7 @@ public class AutogroupIdTest extends ServiceTestBase
    public void testGroupIdAutomaticallyNotSet() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
+
          server.start();
 
 
@@ -209,14 +195,6 @@ public class AutogroupIdTest extends ServiceTestBase
 
          Assert.assertEquals(50, myMessageHandler.messagesReceived);
          Assert.assertEquals(50, myMessageHandler2.messagesReceived);
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
 
    }
 

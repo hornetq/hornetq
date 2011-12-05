@@ -13,10 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.core.config.Configuration;
-import org.hornetq.tests.integration.cluster.util.SameProcessHornetQServer;
-import org.hornetq.tests.integration.cluster.util.TestableServer;
-
 /**
  * A ReplicatedNettyAsynchronousFailoverTest
  *
