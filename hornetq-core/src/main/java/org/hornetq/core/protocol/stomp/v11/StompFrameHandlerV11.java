@@ -829,7 +829,7 @@ public class StompFrameHandlerV11 extends VersionedStompFrameHandler implements 
 
             System.arraycopy(decoder.workingBuffer, decoder.pos, content, 0, decoder.contentLength);
 
-            decoder.pos += decoder.contentLength + 1;
+            decoder.pos += decoder.contentLength;
             
             //drain all the rest
             if (decoder.bodyStart == -1)
