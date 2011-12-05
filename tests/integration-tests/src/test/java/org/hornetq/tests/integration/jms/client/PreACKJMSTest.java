@@ -15,9 +15,7 @@ package org.hornetq.tests.integration.jms.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -26,13 +24,10 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.JMSTestBase;
-import org.hornetq.tests.util.RandomUtil;
 
 /**
  * A PreACKJMSTest
@@ -73,9 +68,7 @@ public class PreACKJMSTest extends JMSTestBase
 
    public void internalTestPreACK(final int sessionType) throws Exception
    {
-      Connection conn = cf.createConnection();
-      try
-      {
+      conn = cf.createConnection();
          Session sess = conn.createSession(false, sessionType);
 
          MessageProducer prod = sess.createProducer(queue);
@@ -107,25 +100,11 @@ public class PreACKJMSTest extends JMSTestBase
          msg2 = (TextMessage)cons.receiveNoWait();
 
          Assert.assertNull("ConnectionFactory is on PreACK mode, the message shouldn't be received", msg2);
-      }
-      finally
-      {
-         try
-         {
-            conn.close();
-         }
-         catch (Throwable igonred)
-         {
-         }
-      }
-
    }
 
    public void disabled_testPreACKTransactional() throws Exception
    {
-      Connection conn = cf.createConnection();
-      try
-      {
+      conn = cf.createConnection();
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
 
          MessageProducer prod = sess.createProducer(queue);
@@ -161,18 +140,6 @@ public class PreACKJMSTest extends JMSTestBase
          msg2 = (TextMessage)cons.receive(10);
 
          Assert.assertNotNull("ConnectionFactory is on PreACK mode but it is transacted", msg2);
-      }
-      finally
-      {
-         try
-         {
-            conn.close();
-         }
-         catch (Throwable igonred)
-         {
-         }
-      }
-
    }
 
    // Package protected ---------------------------------------------
@@ -201,7 +168,7 @@ public class PreACKJMSTest extends JMSTestBase
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
       int callTimeout = 30000;
-     
+
       ArrayList<String> connectors = registerConnectors(server, connectorConfigs);
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",

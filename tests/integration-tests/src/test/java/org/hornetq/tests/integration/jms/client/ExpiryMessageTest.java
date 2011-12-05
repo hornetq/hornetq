@@ -25,7 +25,7 @@ import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
- * 
+ *
  * A MessageTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -48,60 +48,60 @@ public class ExpiryMessageTest extends JMSTestBase
    protected Configuration createDefaultConfig(boolean netty)
    {
       Configuration conf = super.createDefaultConfig(netty);
- 
+
       conf.setMessageExpiryScanPeriod(1000);
-      
+
       return conf;
    }
-   
+
    public void testSendTopicNoSubscription() throws Exception
    {
-      
+
       Topic topic = createTopic("test-topic");
       TopicControl control = ManagementControlHelper.createTopicControl(topic, mbeanServer);
-      
+
       System.out.println("size = " + control.getMessageCount());
-      
+
       Connection conn2 = cf.createConnection();
-      
+
       conn2.setClientID("client1");
-      
+
       Session sess2 = conn2.createSession(true, Session.SESSION_TRANSACTED);
-      
+
       sess2.createDurableSubscriber(topic, "client-sub1");
       sess2.createDurableSubscriber(topic, "client-sub2");
-      
+
       conn2.close();
 
-      Connection conn = cf.createConnection();
+      conn = cf.createConnection();
       Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
       MessageProducer prod = sess.createProducer(topic);
       prod.setTimeToLive(1000);
-      
+
       for (int i = 0 ; i < 100; i++)
       {
          TextMessage txt = sess.createTextMessage("txt");
          prod.send(txt);
       }
-      
+
       sess.commit();
-      
+
       conn.close();
 
       // minimal time needed
       Thread.sleep(2000);
-      
+
       long timeout = System.currentTimeMillis() + 10000;
-      
+
       // We will wait some time, but we will wait as minimal as possible
       while (control.getMessageCount() != 0 && System.currentTimeMillis() > timeout)
       {
          Thread.sleep(100);
       }
-      
+
       assertEquals(0, control.getMessageCount());
-      
-      
+
+
    }
 
    // Package protected ---------------------------------------------

@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.jms.client;
 
-import javax.jms.Connection;
 import javax.jms.Session;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
@@ -30,47 +29,23 @@ import org.hornetq.tests.util.JMSTestBase;
 public class ConnectionTest extends JMSTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-   
-
    public void testGetSetConnectionFactory() throws Exception
    {
-      Connection conn = cf.createConnection();
-      
+      conn = cf.createConnection();
+
       conn.getClientID();
-      
+
       conn.setClientID("somethingElse");
 
-      conn.close();
    }
-   
+
    public void testXAInstanceof() throws Exception
    {
-      Connection conn = cf.createConnection();
-      
+      conn = cf.createConnection();
+
       assertFalse(conn instanceof XAConnection);
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       assertFalse(sess instanceof XASession);
-      
-      conn.close();
    }
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

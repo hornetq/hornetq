@@ -16,6 +16,7 @@ package org.hornetq.tests.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -49,6 +50,7 @@ public abstract class JMSTestBase extends ServiceTestBase
    protected MBeanServer mbeanServer;
 
    protected ConnectionFactory cf;
+   protected Connection conn;
 
    protected InVMContext context;
 
@@ -127,7 +129,7 @@ public abstract class JMSTestBase extends ServiceTestBase
       conf.getConnectorConfigurations().put("invm", new TransportConfiguration(INVM_CONNECTOR_FACTORY));
 
       server = HornetQServers.newHornetQServer(conf, mbeanServer, usePersistence());
-
+      addServer(server);
       jmsServer = new JMSServerManagerImpl(server);
       context = new InVMContext();
       jmsServer.setContext(context);
@@ -164,13 +166,17 @@ public abstract class JMSTestBase extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-
-      jmsServer.stop();
-
-      server.stop();
-
+      try
+      {
+         if (conn != null)
+            conn.close();
+      }
+      catch (Exception e)
+      {
+         // no-op
+      }
       context.close();
-
+      jmsServer.stop();
       server = null;
 
       jmsServer = null;

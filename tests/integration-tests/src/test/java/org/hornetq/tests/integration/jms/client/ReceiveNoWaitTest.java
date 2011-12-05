@@ -21,7 +21,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
@@ -34,10 +33,9 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class ReceiveNoWaitTest extends JMSTestBase
 {
-   private static final Logger log = Logger.getLogger(ReceiveNoWaitTest.class);
-
    private Queue queue;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -45,6 +43,7 @@ public class ReceiveNoWaitTest extends JMSTestBase
       queue = createQueue("TestQueue");
    }
    
+   @Override
    protected void tearDown() throws Exception
    {
       jmsServer.destroyQueue("TestQueue");

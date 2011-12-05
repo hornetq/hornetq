@@ -30,59 +30,45 @@ import org.hornetq.tests.util.JMSTestBase;
 public class JMSMessageCounterTest extends JMSTestBase
 {
 
+   @Override
    protected boolean usePersistence()
    {
       return true;
    }
-   
+
    public void testMessageCounter() throws Exception
    {
-
-      try
-      {
          Connection conn = cf.createConnection();
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-   
+
          Queue queue = createQueue(true, "Test");
-         
+
          MessageProducer producer = sess.createProducer(queue);
          producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-   
+
          final int numMessages = 100;
-   
+
          for (int i = 0; i < numMessages; i++)
          {
             TextMessage mess = sess.createTextMessage("msg" + i);
             producer.send(mess);
          }
-         
+
          conn.close();
-         
+
          JMSQueueControl control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
          assertNotNull(control);
-         
+
          System.out.println(control.listMessageCounterAsHTML());
-         
+
          jmsServer.stop();
-         
+
          restartServer();
-         
+
          control = (JMSQueueControl)server.getManagementService().getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
          assertNotNull(control);
-         
+
          System.out.println(control.listMessageCounterAsHTML());
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-         throw e;
-      }
-      finally
-      {
-         jmsServer.stop();
-      }
-
-
    }
 
 }

@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageNotWriteableException;
@@ -33,7 +32,6 @@ import junit.framework.Assert;
 
 import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.UUID;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -79,10 +77,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
    public void testSimpleLargeMessage() throws Exception
    {
-      Connection conn = null;
 
-      try
-      {
          conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -122,24 +117,10 @@ public class JMSLargeMessageTest extends JMSTestBase
          }
 
          Assert.assertNotNull(rm);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
    }
 
    public void testSimpleLargeMessage2() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
          conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -176,25 +157,11 @@ public class JMSLargeMessageTest extends JMSTestBase
          }
 
          Assert.assertNotNull(rm);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
    }
 
    public void testExceptionsOnSettingNonStreaming() throws Exception
    {
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -249,25 +216,12 @@ public class JMSLargeMessageTest extends JMSTestBase
          Assert.assertNotNull(rm);
 
       }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
-   }
 
    public void testWaitOnOutputStream() throws Exception
    {
       int msgSize = 1024 * 1024;
 
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -330,49 +284,36 @@ public class JMSLargeMessageTest extends JMSTestBase
          Assert.assertEquals(0, numberOfErrors.get());
 
       }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-
-   }
 
 
    public void testHugeString() throws Exception
    {
       int msgSize = 1024 * 1024;
 
-      Connection conn = null;
-
-      try
-      {
-         conn = cf.createConnection();
+      conn = cf.createConnection();
 
          Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = session.createProducer(queue1);
 
          TextMessage m = session.createTextMessage();
-         
+
          StringBuffer buffer = new StringBuffer();
          while(buffer.length() < msgSize)
          {
             buffer.append(UUIDGenerator.getInstance().generateStringUUID());
          }
-         
+
          final String originalString = buffer.toString();
-         
+
          m.setText(originalString);
-         
+
          buffer = null;
 
          prod.send(m);
 
          conn.close();
-         
+
          validateNoFilesOnLargeDir(1);
 
          conn = cf.createConnection();
@@ -388,16 +329,7 @@ public class JMSLargeMessageTest extends JMSTestBase
 
          String str = rm.getText();
          assertEquals(originalString, str);
-
-      }
-      finally
-      {
-         if (conn != null)
-         {
-            conn.close();
-         }
-      }
-      
+      conn.close();
       validateNoFilesOnLargeDir(0);
 
    }

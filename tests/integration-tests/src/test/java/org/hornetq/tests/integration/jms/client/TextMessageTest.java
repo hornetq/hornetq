@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.jms.client;
 
 import java.util.List;
 
-import javax.jms.Connection;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
@@ -31,7 +30,7 @@ import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * 
+ *
  * A TextMessageTest
  *
  * @author Tim Fox
@@ -55,10 +54,8 @@ public class TextMessageTest extends JMSTestBase
 
    public void testSendReceiveNullBody() throws Exception
    {
-      Connection conn = cf.createConnection();
+      conn = cf.createConnection();
 
-      try
-      {
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue);
@@ -85,18 +82,6 @@ public class TextMessageTest extends JMSTestBase
          TextMessage received3 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received3);
          Assert.assertNull(received3.getText());
-      }
-      finally
-      {
-         try
-         {
-            conn.close();
-         }
-         catch (Throwable igonred)
-         {
-         }
-      }
-
    }
 
    public void testSendReceiveWithBody0() throws Exception
@@ -141,10 +126,7 @@ public class TextMessageTest extends JMSTestBase
 
    private void testSendReceiveWithBody(final int bodyLength) throws Exception
    {
-      Connection conn = cf.createConnection();
-
-      try
-      {
+      conn = cf.createConnection();
          char[] chrs = new char[bodyLength];
 
          for (int i = 0; i < bodyLength; i++)
@@ -173,7 +155,7 @@ public class TextMessageTest extends JMSTestBase
          TextMessage received2 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received2);
          Assert.assertEquals(str, received2.getText());
-         
+
          assertEquals(str, msg2.getText());
 
          // Now resend it
@@ -190,19 +172,6 @@ public class TextMessageTest extends JMSTestBase
          TextMessage received4 = (TextMessage)cons.receive(1000);
          Assert.assertNotNull(received4);
          assertEquals(str, received4.getText());
-
-      }
-      finally
-      {
-         try
-         {
-            conn.close();
-         }
-         catch (Throwable igonred)
-         {
-         }
-      }
-
    }
 
    // Package protected ---------------------------------------------
@@ -267,9 +236,4 @@ public class TextMessageTest extends JMSTestBase
                                         null,
                                         jndiBindings);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
