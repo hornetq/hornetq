@@ -20,9 +20,15 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.BindingQuery;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -39,6 +45,8 @@ public class SessionTest extends ServiceTestBase
    private final String queueName = "ClientSessionTestQ";
 
    private ServerLocator locator;
+   private HornetQServer server;
+   private ClientSessionFactory cf;
 
    @Override
    protected void setUp() throws Exception
@@ -46,23 +54,23 @@ public class SessionTest extends ServiceTestBase
       super.setUp();
 
       locator = createInVMNonHALocator();
+      server = createServer(false);
+      server.start();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      locator.close();
-      
+      stopComponent(server);
+      closeSessionFactory(cf);
+      closeServerLocator(locator);
       super.tearDown();
    }
 
    public void testFailureListener() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new SessionFailureListener()
@@ -84,23 +92,11 @@ public class SessionTest extends ServiceTestBase
          // not really part of the test,
          // we still clean up resources left in the VM
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testFailureListenerRemoved() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          class MyFailureListener implements SessionFailureListener
          {
@@ -123,28 +119,18 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          server.stop();
          Assert.assertFalse(listener.called);
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    // Closing a session if the underlying remoting connection is deaad should cleanly
    // release all resources
    public void testCloseSessionOnDestroyedConnection() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
          // Make sure we have a short connection TTL so sessions will be quickly closed on the server
-         long ttl = 500;
+      server.stop();
+      long ttl = 500;
          server.getConfiguration().setConnectionTTLOverride(ttl);
          server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer producer = clientSession.createProducer();
@@ -178,23 +164,11 @@ public class SessionTest extends ServiceTestBase
 
             Thread.sleep(50);
          }
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testBindingQuery() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", "q1", false);
          clientSession.createQueue("a1", "q2", false);
@@ -216,23 +190,11 @@ public class SessionTest extends ServiceTestBase
          Assert.assertTrue(queues.contains(new SimpleString("q4")));
          Assert.assertTrue(queues.contains(new SimpleString("q5")));
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testQueueQuery() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, false);
          clientSession.createConsumer(queueName);
@@ -246,23 +208,11 @@ public class SessionTest extends ServiceTestBase
          Assert.assertEquals(2, resp.getMessageCount());
          Assert.assertEquals(null, resp.getFilterString());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testQueueQueryWithFilter() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, "foo=bar", false);
          clientSession.createConsumer(queueName);
@@ -273,45 +223,21 @@ public class SessionTest extends ServiceTestBase
          Assert.assertEquals(0, resp.getMessageCount());
          Assert.assertEquals(new SimpleString("foo=bar"), resp.getFilterString());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testQueueQueryNoQ() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
          Assert.assertFalse(resp.isExists());
          Assert.assertEquals(null, resp.getAddress());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testClose() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer p = clientSession.createProducer();
@@ -324,86 +250,38 @@ public class SessionTest extends ServiceTestBase
          Assert.assertTrue(p1.isClosed());
          Assert.assertTrue(c.isClosed());
          Assert.assertTrue(c1.isClosed());
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testCreateMessageNonDurable() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage(false);
          Assert.assertFalse(clientMessage.isDurable());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testCreateMessageDurable() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage(true);
          Assert.assertTrue(clientMessage.isDurable());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testCreateMessageType() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage((byte)99, false);
          Assert.assertEquals((byte)99, clientMessage.getType());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testCreateMessageOverrides() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage((byte)88, false, 100l, 300l, (byte)33);
          Assert.assertEquals((byte)88, clientMessage.getType());
@@ -411,86 +289,38 @@ public class SessionTest extends ServiceTestBase
          Assert.assertEquals(300l, clientMessage.getTimestamp());
          Assert.assertEquals((byte)33, clientMessage.getPriority());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testGetVersion() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          Assert.assertEquals(server.getVersion().getIncrementingVersion(), clientSession.getVersion());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testStart() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testStop() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
          clientSession.stop();
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testCommitWithSend() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
@@ -509,23 +339,11 @@ public class SessionTest extends ServiceTestBase
          clientSession.commit();
          Assert.assertEquals(10, q.getMessageCount());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRollbackWithSend() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
@@ -547,25 +365,13 @@ public class SessionTest extends ServiceTestBase
          clientSession.commit();
          Assert.assertEquals(2, q.getMessageCount());
          clientSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testCommitWithReceive() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
@@ -618,25 +424,13 @@ public class SessionTest extends ServiceTestBase
          Assert.assertEquals(0, q.getMessageCount());
          clientSession.close();
          sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRollbackWithReceive() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
+      cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
@@ -690,12 +484,4 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          sendSession.close();
       }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
 }
