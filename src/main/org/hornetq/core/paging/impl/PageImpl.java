@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,8 +115,8 @@ public class PageImpl implements Page, Comparable<Page>
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       size.set((int)file.size());
-      
-      ByteBuffer buffer2 = allocateBuffer();
+      // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
+      ByteBuffer buffer2 = ByteBuffer.allocateDirect(size.get());
       
       file.position(0);
       file.read(buffer2);
@@ -174,38 +173,6 @@ public class PageImpl implements Page, Comparable<Page>
       numberOfMessages.set(messages.size());
 
       return messages;
-   }
-
-   /**
-    * @return
-    * @throws InterruptedException
-    */
-   private ByteBuffer allocateBuffer() throws InterruptedException
-   {
-      // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer buffer2 = null;
-      try
-      {
-         buffer2 = ByteBuffer.allocateDirect(size.get());
-      }
-      catch (OutOfMemoryError error)
-      {
-         // This is a workaround for the way the JDK will deal with native buffers.
-         // the main portion is outside of the VM heap
-         // and the JDK will not have any reference about it to take GC into account
-         // so we force a GC and try again.
-         WeakReference<Object> obj = new WeakReference<Object>(new Object());
-         long timeout = System.currentTimeMillis() + 5000;
-         while (System.currentTimeMillis() > timeout && obj.get() != null)
-         {
-            System.gc();
-            Thread.sleep(100);
-         }
-         
-         buffer2 = ByteBuffer.allocateDirect(size.get());
-         
-      }
-      return buffer2;
    }
 
    public void write(final PagedMessage message) throws Exception
