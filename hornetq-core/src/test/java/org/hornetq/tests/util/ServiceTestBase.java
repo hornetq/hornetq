@@ -34,7 +34,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.Topology;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
@@ -86,11 +85,14 @@ public abstract class ServiceTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      for (ServerLocator locator : locators)
+      synchronized (locators)
       {
-         closeServerLocator(locator);
+         for (ServerLocator locator : locators)
+         {
+            closeServerLocator(locator);
+         }
+         locators.clear();
       }
-      locators.clear();
       super.tearDown();
 //      checkFreePort(5445);
 //      checkFreePort(5446);
@@ -584,15 +586,25 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       ServerLocator locatorWithoutHA = isNetty ? HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NETTY_CONNECTOR_FACTORY))
                                               : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      locators.add(locatorWithoutHA);
+      addServerLocator(locatorWithoutHA);
       return locatorWithoutHA;
+   }
+
+   private void addServerLocator(ServerLocator locator)
+   {
+      synchronized (locators)
+      {
+         locators.add(locator);
+      }
    }
 
    protected ServerLocator createInVMLocator(final int serverID)
    {
       TransportConfiguration tnspConfig = createInVMTransportConnectorConfig(serverID, UUIDGenerator.getInstance().generateStringUUID());
 
-      return HornetQClient.createServerLocatorWithHA(tnspConfig);
+      ServerLocator locator = HornetQClient.createServerLocatorWithHA(tnspConfig);
+      addServerLocator(locator);
+      return locator;
    }
 
    /**
@@ -612,13 +624,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       return tnspConfig;
    }
 
-   // XXX unused
-   protected ClientSessionFactoryImpl createFactory(final String connectorClass) throws Exception
-   {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(connectorClass));
-      return (ClientSessionFactoryImpl)locator.createSessionFactory();
-
-   }
    public String getTextMessage(final ClientMessage m)
    {
       m.getBodyBuffer().resetReaderIndex();

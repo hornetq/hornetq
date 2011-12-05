@@ -31,6 +31,7 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ClusterTopologyListener;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
@@ -83,6 +84,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    protected boolean startBackupServer = true;
    private final Collection<ServerLocator> serverLocators = new ArrayList<ServerLocator>();
+   private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
 
    // Static --------------------------------------------------------
 
@@ -236,6 +238,15 @@ public abstract class FailoverTestBase extends ServiceTestBase
       stopComponent(backupServer);
       stopComponent(liveServer);
 
+      synchronized (sessionFactories)
+      {
+         for (ClientSessionFactory sf : sessionFactories)
+         {
+            closeSessionFactory(sf);
+         }
+         sessionFactories.clear();
+      }
+
       synchronized (serverLocators)
       {
          for (ServerLocator locator : serverLocators)
@@ -244,6 +255,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
          }
          serverLocators.clear();
       }
+
 
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
@@ -285,7 +297,10 @@ public abstract class FailoverTestBase extends ServiceTestBase
       locator.addClusterTopologyListener(new LatchClusterTopologyListener(countDownLatch));
 
       sf = (ClientSessionFactoryInternal) locator.createSessionFactory();
-
+      synchronized (sessionFactories)
+      {
+         sessionFactories.add(sf);
+      }
       assertTrue("topology members expected " + topologyMembers, countDownLatch.await(5, TimeUnit.SECONDS));
       return sf;
    }
