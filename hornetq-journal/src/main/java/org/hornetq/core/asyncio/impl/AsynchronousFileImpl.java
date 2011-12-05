@@ -34,9 +34,9 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.ReusableLatch;
 
 /**
- * 
+ *
  * AsynchronousFile implementation
- * 
+ *
  * @author clebert.suconic@jboss.com
  * Warning: Case you refactor the name or the package of this class
  *          You need to make sure you also rename the C++ native calls
@@ -62,7 +62,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
     *  This is accessed from a single thread (the Poller Thread) */
    private long nextReadSequence = 0;
 
-   /** 
+   /**
     * AIO can't guarantee ordering over callbacks.
     * We use thie PriorityQueue to hold values until they are in order
     */
@@ -161,7 +161,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private Semaphore maxIOSemaphore;
 
    private BufferCallback bufferCallback;
-   
+
    /** A callback for IO errors when they happen */
    private final IOExceptionListener ioExceptionListener;
 
@@ -282,8 +282,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
          writeLock.unlock();
       }
    }
-   
-   
+
+
    public void writeInternal(long positionToWrite, long size, ByteBuffer bytes) throws HornetQException
    {
       try
@@ -426,7 +426,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    }
 
    /**
-    * This needs to be synchronized because of 
+    * This needs to be synchronized because of
     * http://bugs.sun.com/view_bug.do?bug_id=6791815
     * http://mail.openjdk.java.net/pipermail/hotspot-runtime-dev/2009-January/000386.html
     */
@@ -470,8 +470,6 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    // Private ---------------------------------------------------------------------------
 
-   /** */
-   @SuppressWarnings("unused")
    private void callbackDone(final AIOCallback callback, final long sequence, final ByteBuffer buffer)
    {
       maxIOSemaphore.release();
@@ -540,7 +538,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
                               final String errorMessage)
    {
       AsynchronousFileImpl.log.warn("CallbackError: " + errorMessage);
-      
+
       fireExceptionListener(errorCode, errorMessage);
 
       maxIOSemaphore.release();
@@ -648,7 +646,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       // completely done, or we might get beautiful GPFs
       pollerLatch.await();
    }
-   
+
    public static FileLock lock(int handle)
    {
       if (flock(handle))
@@ -662,13 +660,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
    }
 
    // Native ----------------------------------------------------------------------------
-   
-   
+
+
    // Functions used for locking files .....
    public static native int openFile(String fileName);
-   
+
    public static native void closeFile(int handle);
-   
+
    private static native boolean flock(int handle);
    // Functions used for locking files ^^^^^^^^
 
