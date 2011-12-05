@@ -74,7 +74,7 @@ public abstract class StompTestBase2 extends UnitTestCase
    
    protected String defPass = "wombats";
    
-   
+   protected boolean persistenceEnabled = false;
 
    // Implementation methods
    // -------------------------------------------------------------------------
@@ -101,7 +101,9 @@ public abstract class StompTestBase2 extends UnitTestCase
    {
       Configuration config = createBasicConfig();
       config.setSecurityEnabled(false);
-      config.setPersistenceEnabled(false);
+      config.setPersistenceEnabled(persistenceEnabled);
+      
+      System.out.println("-----------------server persist: " + persistenceEnabled);
 
       Map<String, Object> params = new HashMap<String, Object>();
       params.put(TransportConstants.PROTOCOL_PROP_NAME, ProtocolType.STOMP.toString());
@@ -113,7 +115,7 @@ public abstract class StompTestBase2 extends UnitTestCase
 
       JMSConfiguration jmsConfig = new JMSConfigurationImpl();
       jmsConfig.getQueueConfigurations()
-               .add(new JMSQueueConfigurationImpl(getQueueName(), null, false, getQueueName()));
+               .add(new JMSQueueConfigurationImpl(getQueueName(), null, true, getQueueName()));
       jmsConfig.getTopicConfigurations().add(new TopicConfigurationImpl(getTopicName(), getTopicName()));
       server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
       server.setContext(new InVMContext());

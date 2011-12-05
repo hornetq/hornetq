@@ -316,9 +316,12 @@ public abstract class VersionedStompFrameHandler
 
          int bodyPos = serverMessage.getEndOfBodyPosition() == -1 ? buffer
                .writerIndex() : serverMessage.getEndOfBodyPosition();
-         int size = bodyPos - buffer.readerIndex();
+
          buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE
-               + DataConstants.SIZE_INT);
+                     + DataConstants.SIZE_INT);
+         
+         int size = bodyPos - buffer.readerIndex();
+
          byte[] data = new byte[size];
 
          if (serverMessage.containsProperty(Stomp.Headers.CONTENT_LENGTH)
@@ -341,7 +344,10 @@ public abstract class VersionedStompFrameHandler
          }
          frame.setByteBody(data);
 
-         serverMessage.getBodyBuffer().resetReaderIndex();
+         // Reset indexes so they are in order when
+         // StompSession.sendMessage is called again with the same
+         // ServerMessage instance
+         buffer.setIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT, bodyPos);
 
          StompUtils.copyStandardHeadersFromMessageToFrame(serverMessage, frame,
                deliveryCount);
