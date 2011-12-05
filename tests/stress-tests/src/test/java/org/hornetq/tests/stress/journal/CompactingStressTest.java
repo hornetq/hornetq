@@ -20,7 +20,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -135,7 +140,7 @@ public class CompactingStressTest extends ServiceTestBase
       session.close();
 
       server.stop();
-      
+
       setupServer(journalType);
 
       server.start();
@@ -182,8 +187,6 @@ public class CompactingStressTest extends ServiceTestBase
       try
       {
          ClientProducer producer = session.createProducer(CompactingStressTest.AD3);
-
-         byte[] buffer = new byte[10 * 1024];
 
          ClientMessage msg = session.createMessage(true);
 

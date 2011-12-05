@@ -12,22 +12,15 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.client.ClientMessage;
-import org.hornetq.api.core.client.ClientProducer;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.postoffice.impl.LocalQueueBinding;
-import org.hornetq.core.security.Role;
-import org.hornetq.core.server.impl.QueueImpl;
-import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.inflow.HornetQActivationSpec;
-
-import javax.resource.ResourceException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+
+import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.impl.LocalQueueBinding;
+import org.hornetq.core.security.Role;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -70,9 +63,9 @@ public class HornetQMessageHandlerSecurityTest extends HornetQRATestBase
       server.getSecurityManager().addUser("testuser", "testpassword");
       server.getSecurityManager().addRole("testuser", "arole");
       Role role = new Role("arole", false, true, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-       server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
       HornetQResourceAdapter qResourceAdapter = new HornetQResourceAdapter();
       MyBootstrapContext ctx = new MyBootstrapContext();
       qResourceAdapter.start(ctx);

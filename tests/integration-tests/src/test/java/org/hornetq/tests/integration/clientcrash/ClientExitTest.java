@@ -18,7 +18,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.RandomUtil;
@@ -81,7 +85,7 @@ public class ClientExitTest extends ClientTestBase
 
       // FIXME https://jira.jboss.org/jira/browse/JBMESSAGING-1421
       // Thread.sleep(1000);
-      //      
+      //
       // // the local session
       // assertActiveConnections(1);
       // // assertActiveSession(1);
@@ -102,17 +106,11 @@ public class ClientExitTest extends ClientTestBase
       super.setUp();
 
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      addServerLocator(locator);
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
       session.createQueue(ClientExitTest.QUEUE, ClientExitTest.QUEUE, null, false);
       consumer = session.createConsumer(ClientExitTest.QUEUE);
       session.start();
    }
-
-   // Protected ------------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
-
 }

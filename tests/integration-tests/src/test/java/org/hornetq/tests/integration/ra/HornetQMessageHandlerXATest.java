@@ -12,6 +12,15 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.resource.ResourceException;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -19,14 +28,6 @@ import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.utils.UUIDGenerator;
-
-import javax.resource.ResourceException;
-import javax.transaction.xa.XAException;
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.lang.reflect.Method;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -55,7 +56,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
+      ClientSession session = createSessionFactory(locator).createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -87,7 +88,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
       XADummyEndpoint endpoint = new XADummyEndpoint(latch);
       DummyMessageEndpointFactory endpointFactory = new DummyMessageEndpointFactory(endpoint, true);
       qResourceAdapter.endpointActivation(endpointFactory, spec);
-      ClientSession session = locator.createSessionFactory().createSession();
+      ClientSession session = createSessionFactory(locator).createSession();
       ClientProducer clientProducer = session.createProducer(MDBQUEUEPREFIXED);
       ClientMessage message = session.createMessage(true);
       message.getBodyBuffer().writeString("teststring");
@@ -110,7 +111,7 @@ public class HornetQMessageHandlerXATest extends HornetQRATestBase
 
    class XADummyEndpoint extends DummyMessageEndpoint
    {
-      private Xid xid;
+      private final Xid xid;
 
       public XADummyEndpoint(CountDownLatch latch)
       {

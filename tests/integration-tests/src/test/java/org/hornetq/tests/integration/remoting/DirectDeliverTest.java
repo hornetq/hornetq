@@ -26,8 +26,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -38,7 +36,7 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A DirectDeliverTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -48,25 +46,9 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class DirectDeliverTest extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(DirectDeliverTest.class);
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
-   
+
    private ServerLocator locator;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
@@ -84,43 +66,27 @@ public class DirectDeliverTest extends ServiceTestBase
       config.setSecurityEnabled(false);
       server = createServer(false, config);
       server.start();
-      
+
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
-   protected ClientSessionFactory createSessionFactory() throws Exception
-   {
-      return locator.createSessionFactory();
+      addServerLocator(locator);
    }
 
    public void testDirectDeliver() throws Exception
    {
       final String foo = "foo";
-      
-      ClientSessionFactory sf = createSessionFactory();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession();
 
       session.createQueue(foo, foo);
 
       Binding binding = server.getPostOffice().getBinding(new SimpleString(foo));
-      
+
       Queue queue = (Queue)binding.getBindable();
-      
+
       assertTrue(queue.isDirectDeliver());
-           
+
       ClientProducer prod = session.createProducer(foo);
 
       ClientConsumer cons = session.createConsumer(foo);
@@ -133,12 +99,12 @@ public class DirectDeliverTest extends ServiceTestBase
 
          prod.send(msg);
       }
-      
+
       queue.flushExecutor();
-      
+
       //Consumer is not started so should go queued
       assertFalse(queue.isDirectDeliver());
-      
+
       session.start();
 
       for (int i = 0; i < numMessages; i++)
@@ -149,18 +115,18 @@ public class DirectDeliverTest extends ServiceTestBase
 
          msg.acknowledge();
       }
-      
+
       Thread.sleep((long)(QueueImpl.CHECK_QUEUE_SIZE_PERIOD * 1.5));
-      
+
       //Add another message, should go direct
       ClientMessage msg = session.createMessage(true);
 
       prod.send(msg);
-      
+
       queue.flushExecutor();
-            
+
       assertTrue(queue.isDirectDeliver());
-      
+
       //Send some more
       for (int i = 0; i < numMessages; i++)
       {
@@ -168,7 +134,7 @@ public class DirectDeliverTest extends ServiceTestBase
 
          prod.send(msg);
       }
-      
+
       for (int i = 0; i < numMessages + 1; i++)
       {
          msg = cons.receive(10000);
@@ -177,26 +143,19 @@ public class DirectDeliverTest extends ServiceTestBase
 
          msg.acknowledge();
       }
-      
+
       assertTrue(queue.isDirectDeliver());
-      
+
       session.stop();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          msg = session.createMessage(true);
 
          prod.send(msg);
       }
-      
+
       assertFalse(queue.isDirectDeliver());
-      
-
-      sf.close();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

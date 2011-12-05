@@ -50,7 +50,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class OutgoingConnectionTest extends HornetQRATestBase
 {
    private HornetQResourceAdapter resourceAdapter;
-   
+
    @Override
    public boolean isSecure()
    {
@@ -71,7 +71,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
          roles.add(role);
        server.getSecurityRepository().addMatch(MDBQUEUEPREFIXED, roles);
    }
-   
+
    @Override
    protected void tearDown() throws Exception
    {
@@ -103,7 +103,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       TextMessage textMessage = (TextMessage) consumer.receive(1000);
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
-      
+
       ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
       mc.destroy();
@@ -175,7 +175,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       assertNotNull(textMessage);
       assertEquals(textMessage.getText(), "test");
       s.commit();
-      
+
       ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
       mc.destroy();
@@ -195,14 +195,14 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       Session s = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       try
       {
-         Session s2 = queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         queueConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          fail("should throw javax,jms.IllegalStateException: Only allowed one session per connection. See the J2EE spec, e.g. J2EE1.4 Section 6.6");
       }
       catch (JMSException e)
       {
          assertTrue(e.getLinkedException() instanceof IllegalStateException);
       }
-      
+
       ManagedConnection mc = ((HornetQRASession)s).getManagedConnection();
       s.close();
       mc.destroy();
@@ -227,7 +227,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
 
       queueConnection = qraConnectionFactory.createQueueConnection("testuser", "testpassword");
       session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       mc = ((HornetQRASession)session).getManagedConnection();
       queueConnection.close();
       mc.destroy();
@@ -246,7 +246,7 @@ public class OutgoingConnectionTest extends HornetQRATestBase
       HornetQRAConnectionFactory qraConnectionFactory = new HornetQRAConnectionFactoryImpl(mcf, qraConnectionManager);
       QueueConnection queueConnection = qraConnectionFactory.createQueueConnection();
       QueueSession session = queueConnection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
-      
+
       ManagedConnection mc = ((HornetQRASession)session).getManagedConnection();
       queueConnection.close();
       mc.destroy();

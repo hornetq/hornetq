@@ -12,18 +12,18 @@
  */
 package org.hornetq.tests.integration.ra;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.jms.Message;
+
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
-
-import javax.jms.Message;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class HornetQMessageHandlerTest extends HornetQRATestBase
 {
-   
+
    @Override
    public boolean isSecure()
    {

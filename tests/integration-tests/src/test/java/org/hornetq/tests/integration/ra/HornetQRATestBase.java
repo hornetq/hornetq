@@ -12,12 +12,9 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.tests.util.ServiceTestBase;
+import java.lang.reflect.Method;
+import java.util.Timer;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -27,11 +24,19 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.XATerminator;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.*;
+import javax.resource.spi.work.ExecutionContext;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
+import javax.resource.spi.work.WorkListener;
+import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.concurrent.CountDownLatch;
+
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -62,31 +67,11 @@ public abstract class HornetQRATestBase  extends ServiceTestBase
       server.createQueue(MDBQUEUEPREFIXEDSIMPLE, MDBQUEUEPREFIXEDSIMPLE, null, true, false);
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      
-      locator = null;
-      if (server != null)
-      {
-         try
-         {
-            server.stop();
-            server = null;
-         }
-         catch (Exception e)
-         {
-            // ignore
-         }
-      }
-      super.tearDown();
-   }
     public abstract boolean isSecure();
 
    class DummyMessageEndpointFactory implements MessageEndpointFactory
    {
-      private DummyMessageEndpoint endpoint;
+      private final DummyMessageEndpoint endpoint;
 
       private final boolean isDeliveryTransacted;
 

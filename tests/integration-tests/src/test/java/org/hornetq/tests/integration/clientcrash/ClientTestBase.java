@@ -29,21 +29,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 public abstract class ClientTestBase extends ServiceTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private HornetQServer server;
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
 
    @Override
    protected void setUp() throws Exception
@@ -56,16 +42,6 @@ public abstract class ClientTestBase extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
    protected void assertActiveConnections(final int expectedActiveConnections) throws Exception
    {
       Assert.assertEquals(expectedActiveConnections, server.getHornetQServerControl().getConnectionCount());
@@ -75,9 +51,5 @@ public abstract class ClientTestBase extends ServiceTestBase
    {
       Assert.assertEquals(expectedActiveSession, server.getSessions().size());
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }
