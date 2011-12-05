@@ -58,19 +58,10 @@ public class SessionTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopComponent(server);
-      closeSessionFactory(cf);
-      closeServerLocator(locator);
-      super.tearDown();
-   }
-
    public void testFailureListener() throws Exception
    {
 
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new SessionFailureListener()
@@ -96,7 +87,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testFailureListenerRemoved() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          class MyFailureListener implements SessionFailureListener
          {
@@ -130,7 +121,7 @@ public class SessionTest extends ServiceTestBase
       long ttl = 500;
          server.getConfiguration().setConnectionTTLOverride(ttl);
          server.start();
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer producer = clientSession.createProducer();
@@ -168,7 +159,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testBindingQuery() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", "q1", false);
          clientSession.createQueue("a1", "q2", false);
@@ -194,7 +185,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testQueueQuery() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, false);
          clientSession.createConsumer(queueName);
@@ -212,7 +203,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testQueueQueryWithFilter() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue("a1", queueName, "foo=bar", false);
          clientSession.createConsumer(queueName);
@@ -227,7 +218,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testQueueQueryNoQ() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          QueueQuery resp = clientSession.queueQuery(new SimpleString(queueName));
          Assert.assertFalse(resp.isExists());
@@ -237,7 +228,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testClose() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer p = clientSession.createProducer();
@@ -254,7 +245,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateMessageNonDurable() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage(false);
          Assert.assertFalse(clientMessage.isDurable());
@@ -263,7 +254,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateMessageDurable() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage(true);
          Assert.assertTrue(clientMessage.isDurable());
@@ -272,7 +263,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateMessageType() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage((byte)99, false);
          Assert.assertEquals((byte)99, clientMessage.getType());
@@ -281,7 +272,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateMessageOverrides() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          ClientMessage clientMessage = clientSession.createMessage((byte)88, false, 100l, 300l, (byte)33);
          Assert.assertEquals((byte)88, clientMessage.getType());
@@ -293,7 +284,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testGetVersion() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          Assert.assertEquals(server.getVersion().getIncrementingVersion(), clientSession.getVersion());
          clientSession.close();
@@ -301,7 +292,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testStart() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
@@ -310,7 +301,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testStop() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
@@ -320,7 +311,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCommitWithSend() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
@@ -343,7 +334,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testRollbackWithSend() throws Exception
    {
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
@@ -371,7 +362,7 @@ public class SessionTest extends ServiceTestBase
    {
       locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);
@@ -430,7 +421,7 @@ public class SessionTest extends ServiceTestBase
    {
          locator.setBlockOnNonDurableSend(true);
          locator.setBlockOnDurableSend(true);
-      cf = locator.createSessionFactory();
+      cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
          ClientSession clientSession = cf.createSession(false, true, false);

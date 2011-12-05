@@ -14,14 +14,18 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A SimpleSendMultipleQueues
  *
  * @author Tim Fox
@@ -30,8 +34,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class SimpleSendMultipleQueues extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(SimpleSendMultipleQueues.class);
-
    public static final String address = "testaddress";
 
    public static final String queueName = "testqueue";
@@ -89,7 +91,7 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
 
       locator = createNettyNonHALocator();
 
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       session = cf.createSession();
 
@@ -124,13 +126,6 @@ public class SimpleSendMultipleQueues extends ServiceTestBase
          session.deleteQueue("queue3");
 
          session.close();
-
-         locator.close();
-      }
-
-      if (server.isStarted())
-      {
-         server.stop();
       }
 
       super.tearDown();

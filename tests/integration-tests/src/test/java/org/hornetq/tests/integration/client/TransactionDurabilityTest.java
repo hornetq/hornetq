@@ -16,29 +16,33 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A TransactionDurabilityTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 16 Jan 2009 11:00:33
  *
  *
  */
 public class TransactionDurabilityTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(TransactionDurabilityTest.class);
 
    /*
     * This tests the following situation:
-    * 
+    *
     * (With the old implementation)
     * Currently when a new persistent message is routed to persistent queues, the message is first stored, then the message is routed.
     * Let's say it has been routed to two different queues A, B.
@@ -46,10 +50,10 @@ public class TransactionDurabilityTest extends ServiceTestBase
     * transactionally, but it's not committed yet.
     * Ref R2 then gets consumed and acknowledged by non transacted session S2, this causes a delete record to be written to storage.
     * R1 then rolls back, and the server is restarted - unfortunatelt since the delete record was written R1 is not ready to be consumed again.
-    * 
+    *
     * It's therefore crucial the messages aren't deleted from storage until AFTER any ack records are committed to storage.
-    * 
-    * 
+    *
+    *
     */
    public void testRolledBackAcknowledgeWithSameMessageAckedByOtherSession() throws Exception
    {
@@ -65,9 +69,11 @@ public class TransactionDurabilityTest extends ServiceTestBase
 
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session1 = sf.createSession(false, true, true);
 

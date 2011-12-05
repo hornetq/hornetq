@@ -42,25 +42,14 @@ public class TransactionalSendTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
    }
 
    public void testSendWithCommit() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
          server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = session.createProducer(addressA);
@@ -82,23 +71,13 @@ public class TransactionalSendTest extends ServiceTestBase
          session.commit();
          Assert.assertEquals(q.getMessageCount(), numMessages * 2);
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testSendWithRollback() throws Exception
    {
       HornetQServer server = createServer(false);
-      try
-      {
          server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
          ClientProducer cp = session.createProducer(addressA);
@@ -120,14 +99,6 @@ public class TransactionalSendTest extends ServiceTestBase
          session.commit();
          Assert.assertEquals(q.getMessageCount(), numMessages);
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
 }

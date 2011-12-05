@@ -18,7 +18,13 @@ import java.util.concurrent.TimeUnit;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -42,27 +48,13 @@ public class SessionStopStartTest extends ServiceTestBase
       super.setUp();
 
       server = createServer(false);
-
       server.start();
-
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
    }
 
    public void testStopStartConsumerSyncReceiveImmediate() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -106,7 +98,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerSyncReceive() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -153,7 +145,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncSyncStoppedByHandler() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -243,7 +235,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncSync() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -341,7 +333,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncASyncStoppeeByHandler() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -443,7 +435,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartConsumerAsyncASync() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -560,7 +552,7 @@ public class SessionStopStartTest extends ServiceTestBase
    public void testStopStartMultipleConsumers() throws Exception
    {
       locator.setConsumerWindowSize(getMessageEncodeSize(QUEUE) * 33);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -613,7 +605,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopStartAlreadyStartedSession() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -654,7 +646,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
    public void testStopAlreadyStoppedSession() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 

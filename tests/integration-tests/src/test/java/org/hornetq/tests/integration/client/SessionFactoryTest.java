@@ -30,7 +30,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -38,7 +37,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A ClientSessionFactoryTest
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -48,9 +47,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class SessionFactoryTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(SessionFactoryTest.class);
-
-   private DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort());
+   private final DiscoveryGroupConfiguration groupConfiguration =
+            new DiscoveryGroupConfiguration(getUDPDiscoveryAddress(), getUDPDiscoveryPort());
 
    private HornetQServer liveService;
 
@@ -62,20 +60,6 @@ public class SessionFactoryTest extends ServiceTestBase
       super.setUp();
 
       startServer();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (liveService != null)
-      {
-         liveService.stop();
-      }
-
-      liveService = null;
-      liveTC = null;
-
-      super.tearDown();
    }
 
    public void testSerializable() throws Exception
@@ -101,7 +85,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Assert.assertNotNull(csi);
 
       csi.close();
-      
+
       locator.close();
    }
 
@@ -141,15 +125,15 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL,
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
-      
+
       ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
       testSettersThrowException(cf);
-      
+
       cf.close();
-      
+
       locator.close();
    }
 
@@ -182,13 +166,13 @@ public class SessionFactoryTest extends ServiceTestBase
                           HornetQClient.DEFAULT_RETRY_INTERVAL,
                           HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           HornetQClient.DEFAULT_RECONNECT_ATTEMPTS);
-      
+
       ClientSessionFactory cf = locator.createSessionFactory();
       ClientSession session = cf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
       testSettersThrowException(cf);
-      
+
       cf.close();
    }
 

@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientProducerCreditsImpl;
 import org.hornetq.core.client.impl.ClientProducerImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
@@ -105,7 +104,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       session.close();
    }
-   
+
 
    public void testMemoryLeakOnAddressSettingForTemporaryQueue() throws Exception
    {
@@ -114,21 +113,21 @@ public class TemporaryQueueTest extends ServiceTestBase
          SimpleString queue = RandomUtil.randomSimpleString();
          SimpleString address = RandomUtil.randomSimpleString();
          session.createTemporaryQueue(address, queue);
-         
+
          session.close();
          session = sf.createSession();
       }
-      
-      
+
+
       session.close();
-      
+
       sf.close();
-      
+
       System.out.println("size = " + server.getAddressSettingsRepository().getCacheSize());
-      
+
       assertTrue(server.getAddressSettingsRepository().getCacheSize() < 10);
    }
-   
+
    public void testPaginStoreIsRemovedWhenQueueIsDeleted() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -148,7 +147,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       message.acknowledge();
 
       SimpleString[] storeNames = server.getPostOffice().getPagingManager().getStoreNames();
-      assertTrue(Arrays.asList(storeNames).contains(address));      
+      assertTrue(Arrays.asList(storeNames).contains(address));
 
       consumer.close();
       session.deleteQueue(queue);
@@ -158,7 +157,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       session.close();
    }
-   
+
    public void testConsumeFromTemporaryQueueCreatedByOtherSession() throws Exception
    {
       SimpleString queue = RandomUtil.randomSimpleString();
@@ -204,7 +203,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       // wait for the closing listeners to be fired
       Assert.assertTrue("connection close listeners not fired", latch.await(2 * TemporaryQueueTest.CONNECTION_TTL,
                                                                             TimeUnit.MILLISECONDS));
-      
+
       sf = locator.createSessionFactory();
       session = sf.createSession(false, true, true);
       session.start();
@@ -228,37 +227,37 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.createQueue("a.b", "queue1");
       session.createTemporaryQueue("a.#", "queue2");
       session.createTemporaryQueue("a.#", "queue3");
-      
+
       ClientProducer producer = session.createProducer("a.b");
       producer.send(session.createMessage(false));
-      
+
       ClientConsumer cons = session.createConsumer("queue2");
 
       session.start();
-      
+
       ClientMessage msg = cons.receive(5000);
-      
+
       assertNotNull(msg);
-      
+
       msg.acknowledge();
-      
+
       cons.close();
 
       cons = session.createConsumer("queue3");
 
       session.start();
-      
+
       msg = cons.receive(5000);
-      
+
       assertNotNull(msg);
-      
+
       msg.acknowledge();
-      
+
       cons.close();
 
       session.deleteQueue("queue2");
       session.deleteQueue("queue3");
-      
+
       session.close();
    }
 
@@ -268,37 +267,37 @@ public class TemporaryQueueTest extends ServiceTestBase
       session.createQueue("a.b", "queue1");
       session.createTemporaryQueue("a.#", "queue2");
       session.createTemporaryQueue("a.#", "queue3");
-      
+
       ClientProducer producer = session.createProducer("a.b");
       producer.send(session.createMessage(false));
-      
+
       ClientConsumer cons = session.createConsumer("queue2");
 
       session.start();
-      
+
       ClientMessage msg = cons.receive(5000);
-      
+
       assertNotNull(msg);
-      
+
       msg.acknowledge();
-      
+
       cons.close();
 
       cons = session.createConsumer("queue3");
 
       session.start();
-      
+
       msg = cons.receive(5000);
-      
+
       assertNotNull(msg);
-      
+
       msg.acknowledge();
-      
+
       cons.close();
 
       session.deleteQueue("queue2");
       session.deleteQueue("queue3");
-      
+
       session.close();
    }
 
@@ -312,7 +311,7 @@ public class TemporaryQueueTest extends ServiceTestBase
    }
 
    /**
-    * @see org.hornetq.core.server.impl.ServerSessionImpl#doHandleCreateQueue(org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage) 
+    * @see org.hornetq.core.server.impl.ServerSessionImpl#doHandleCreateQueue(org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage)
     */
    public void testDeleteTemporaryQueueAfterConnectionIsClosed_2() throws Exception
    {
@@ -333,11 +332,11 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       session2.start();
 
-      ClientConsumer consumer = session2.createConsumer(queue);
+      session2.createConsumer(queue);
 
       session2.close();
    }
-   
+
    public void testRecreateConsumerOverServerFailure() throws Exception
    {
       ServerLocator serverWithReattach = createLocator();
@@ -345,60 +344,60 @@ public class TemporaryQueueTest extends ServiceTestBase
       serverWithReattach.setRetryInterval(1000);
       serverWithReattach.setConfirmationWindowSize(-1);
       ClientSessionFactory reattachSF = serverWithReattach.createSessionFactory();
-      
+
       ClientSession session = reattachSF.createSession(false, false);
       session.createTemporaryQueue("tmpAd", "tmpQ");
       ClientConsumer consumer = session.createConsumer("tmpQ");
-      
+
       ClientProducer prod = session.createProducer("tmpAd");
-      
+
       session.start();
-      
+
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
 
       conn.fail(new HornetQException(HornetQException.IO_ERROR));
-      
+
       prod.send(session.createMessage(false));
       session.commit();
-      
+
       assertNotNull(consumer.receive(1000));
-      
+
       session.close();
-      
+
       reattachSF.close();
-      
+
       serverWithReattach.close();
-      
-      
+
+
    }
-   
+
    public void testTemoraryQueuesWithFilter() throws Exception
    {
-      
+
       int countTmpQueue=0;
-      
+
       final AtomicInteger errors = new AtomicInteger(0);
-      
+
       class MyHandler implements MessageHandler
       {
          final String color;
-         
+
          final CountDownLatch latch;
-         
+
          final ClientSession sess;
-         
+
          public MyHandler(ClientSession sess, String color, int expectedMessages)
          {
             this.sess = sess;
             latch = new CountDownLatch(expectedMessages);
             this.color = color;
          }
-         
+
          public boolean waitCompletion() throws Exception
          {
             return latch.await(10, TimeUnit.SECONDS);
          }
-         
+
          public void onMessage(ClientMessage message)
          {
             try
@@ -406,7 +405,7 @@ public class TemporaryQueueTest extends ServiceTestBase
                message.acknowledge();
                sess.commit();
                latch.countDown();
-               
+
                if (!message.getStringProperty("color").equals(color))
                {
                   log.warn("Unexpected color " + message.getStringProperty("color") + " when we were expecting " + color);
@@ -419,28 +418,28 @@ public class TemporaryQueueTest extends ServiceTestBase
                errors.incrementAndGet();
             }
          }
-         
+
       }
-      
+
       String address = "AD_test";
       int iterations = 100;
       int msgs = 100;
-      
+
       // Will be using a single Session as this is how an issue was raised
       for (int i = 0 ; i < iterations; i++)
       {
          ClientSessionFactory clientsConnecton = locator.createSessionFactory();
          ClientSession localSession = clientsConnecton.createSession();
-         
+
          ClientProducer prod = localSession.createProducer(address);
-         
+
          localSession.start();
-         
+
 
          log.info("Iteration " + i);
          String queueRed = address + "_red_" + (countTmpQueue++);
          String queueBlue = address + "_blue_" + (countTmpQueue++);
-         
+
          //ClientSession sessConsumerRed = clientsConnecton.createSession();
          ClientSession sessConsumerRed = localSession;
          sessConsumerRed.createTemporaryQueue(address, queueRed, "color='red'");
@@ -448,7 +447,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          ClientConsumer redClientConsumer = sessConsumerRed.createConsumer(queueRed);
          redClientConsumer.setMessageHandler(redHandler);
          //sessConsumerRed.start();
-         
+
          //ClientSession sessConsumerBlue = clientsConnecton.createSession();
          ClientSession sessConsumerBlue = localSession;
          sessConsumerBlue.createTemporaryQueue(address, queueBlue, "color='blue'");
@@ -456,7 +455,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          ClientConsumer blueClientConsumer = sessConsumerBlue.createConsumer(queueBlue);
          blueClientConsumer.setMessageHandler(blueHandler);
          //sessConsumerBlue.start();
-         
+
          try
          {
             ClientMessage msgBlue = session.createMessage(false);
@@ -468,17 +467,17 @@ public class TemporaryQueueTest extends ServiceTestBase
             for (int nmsg = 0; nmsg < msgs; nmsg++)
             {
                prod.send(msgBlue);
-               
+
                prod.send(msgRed);
-               
+
                session.commit();
             }
-            
+
             blueHandler.waitCompletion();
             redHandler.waitCompletion();
-            
+
             assertEquals(0, errors.get());
-            
+
          }
          finally
          {
@@ -488,14 +487,14 @@ public class TemporaryQueueTest extends ServiceTestBase
             clientsConnecton.close();
          }
       }
-       
+
    }
 
    public void testDeleteTemporaryQueueWhenClientCrash() throws Exception
    {
       session.close();
       sf.close();
-      
+
       final SimpleString queue = RandomUtil.randomSimpleString();
       SimpleString address = RandomUtil.randomSimpleString();
 
@@ -568,33 +567,34 @@ public class TemporaryQueueTest extends ServiceTestBase
 
       locator2.close();
    }
-   
+
    public void testBlockingWithTemporaryQueue() throws Exception
    {
-      
+
       AddressSettings setting = new AddressSettings();
       setting.setAddressFullMessagePolicy(AddressFullMessagePolicy.BLOCK);
       setting.setMaxSizeBytes(1024 * 1024);
-      
+
       server.getAddressSettingsRepository().addMatch("TestAD", setting);
-      
+
       ClientSessionFactory consumerCF = locator.createSessionFactory();
       ClientSession consumerSession = consumerCF.createSession(true, true);
       consumerSession.addMetaData("consumer", "consumer");
       consumerSession.createTemporaryQueue("TestAD", "Q1");
-      ClientConsumer consumer = consumerSession.createConsumer("Q1");
+      consumerSession.createConsumer("Q1");
       consumerSession.start();
-      
+
       final ClientProducerImpl prod = (ClientProducerImpl)session.createProducer("TestAD");
-      
+
       final AtomicInteger errors = new AtomicInteger(0);
-      
+
       final AtomicInteger msgs = new AtomicInteger(0);
-      
+
       final int TOTAL_MSG = 1000;
-      
+
       Thread t = new Thread()
       {
+         @Override
          public void run()
          {
             try
@@ -612,23 +612,23 @@ public class TemporaryQueueTest extends ServiceTestBase
                e.printStackTrace();
                errors.incrementAndGet();
             }
-            
+
             System.out.println("done");
          }
       };
-      
+
       t.start();
 
       while (msgs.get() == 0)
       {
          Thread.sleep(100);
       }
-      
+
       while (t.isAlive() && errors.get() == 0 && !prod.getProducerCredits().isBlocked())
       {
          Thread.sleep(100);
       }
-      
+
       assertEquals(0, errors.get());
 
       ClientSessionFactory newConsumerCF = locator.createSessionFactory();
@@ -636,7 +636,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       newConsumerSession.createTemporaryQueue("TestAD", "Q2");
       ClientConsumer newConsumer = newConsumerSession.createConsumer("Q2");
       newConsumerSession.start();
-      
+
       int toReceive = TOTAL_MSG - msgs.get() - 1;
 
       for (ServerSession sessionIterator: server.getSessions())
@@ -648,24 +648,24 @@ public class TemporaryQueueTest extends ServiceTestBase
             impl.getRemotingConnection().fail(new HornetQException(HornetQException.DISCONNECTED, "failure e"));
          }
       }
-      
+
       int secondReceive = 0;
-      
+
       ClientMessage msg = null;
       while (secondReceive < toReceive && (msg = newConsumer.receive(5000)) != null)
       {
          msg.acknowledge();
          secondReceive++;
       }
-      
+
       assertNull(newConsumer.receiveImmediate());
-      
+
       assertEquals(toReceive, secondReceive);
-      
+
       t.join();
-      
-      
-      
+
+
+
    }
 
    // Package protected ---------------------------------------------
@@ -683,39 +683,17 @@ public class TemporaryQueueTest extends ServiceTestBase
       server.start();
 
       locator = createLocator();
-      sf = locator.createSessionFactory();
-      session = sf.createSession(false, true, true);
+      sf = createSessionFactory(locator);
+      session = addClientSession(sf.createSession(false, true, true));
    }
 
    protected ServerLocator createLocator()
    {
       ServerLocator retlocator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      addServerLocator(retlocator);
       retlocator.setConnectionTTL(TemporaryQueueTest.CONNECTION_TTL);
       retlocator.setClientFailureCheckPeriod(TemporaryQueueTest.CONNECTION_TTL / 3);
       return retlocator;
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-
-      sf.close();
-
-      session.close();
-
-      locator.close();
-
-      locator = null;
-
-      server.stop();
-
-      session = null;
-
-      server = null;
-
-      sf = null;
-
-      super.tearDown();
    }
 
    // Private -------------------------------------------------------

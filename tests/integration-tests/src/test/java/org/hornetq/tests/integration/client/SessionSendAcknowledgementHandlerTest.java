@@ -20,8 +20,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.SendAcknowledgementHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -29,15 +33,13 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A SendAcknowledgementsTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Feb 2009 13:29:19
  *
  *
  */
 public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(SessionSendAcknowledgementHandlerTest.class);
-
    private HornetQServer server;
 
    private final SimpleString address = new SimpleString("address");
@@ -53,26 +55,13 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (server != null && server.isStarted())
-      {
-         server.stop();
-      }
-
-      server = null;
-
-      super.tearDown();
-   }
-
    public void testSetInvalidSendACK() throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
 
       locator.setConfirmationWindowSize(-1);
 
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
 
       try
@@ -119,7 +108,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 
       locator.setConfirmationWindowSize(windowSize);
 
-      ClientSessionFactory csf = locator.createSessionFactory();
+      ClientSessionFactory csf = createSessionFactory(locator);
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
 
       session.createQueue(address, queueName, false);
