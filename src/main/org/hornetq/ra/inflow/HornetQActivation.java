@@ -368,6 +368,13 @@ public class HornetQActivation
                                    spec.isUseLocalTx(),
                                    spec.getTransactionTimeout());
 
+         result.addMetaData("resource-adapter", "inbound");
+         result.addMetaData("jms-session", "");
+         if (spec.getClientID() != null)
+         {
+            result.addMetaData("jms-client-id", spec.getClientID());
+         }
+
          HornetQActivation.log.debug("Using queue connection " + result);
 
          return result;
