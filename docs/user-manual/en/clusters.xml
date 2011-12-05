@@ -511,6 +511,16 @@ ClientSession session = factory.createSession();
                         >false</literal>.</para>
                 </listitem>
                 <listitem>
+                    <para><literal>min-large-message-size</literal>. This parameters determines when a 
+                               message should be splitted with multiple packages when sent over the cluster.</para>
+                    <para>This parameter is optional and its default is at 100K.</para>
+                </listitem>
+                <listitem>
+                    <para><literal>reconnect-attempts"</literal>.The number of times the system will 
+                        try to connect a node on the cluster. If the max-retry is achieved this node will be considered permanently down and the system will stop routing messages to this node.</para>
+                    <para>This parameter is optional and its default is at -1 (infinite retries).</para>
+                </listitem>
+                <listitem>
                     <para><literal>max-hops</literal>. When a cluster connection decides the set of
                         nodes to which it might load balance a message, those nodes do not have to
                         be directly connected to it via a cluster connection. HornetQ can be
