@@ -393,7 +393,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    protected ClientSession addClientSession(ClientSession session)
    {
       synchronized (clientSessions)
-   {
+      {
          clientSessions.add(session);
       }
       return session;
