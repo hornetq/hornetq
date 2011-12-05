@@ -22,20 +22,15 @@ import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.AcceptorControl;
 import org.hornetq.api.core.management.NotificationType;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.management.Notification;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
-
-import javax.management.MBeanServer;
 
 /**
  * A AcceptorControlTest
@@ -178,9 +173,4 @@ public class AcceptorControlTest extends ManagementTestBase
    {
       return ManagementControlHelper.createAcceptorControl(name, mbeanServer);
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

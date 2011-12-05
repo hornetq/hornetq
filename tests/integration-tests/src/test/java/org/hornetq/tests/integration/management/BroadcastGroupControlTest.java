@@ -23,20 +23,18 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.management.BroadcastGroupControl;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.json.JSONArray;
-import org.hornetq.utils.json.JSONObject;
 
 /**
  * A AcceptorControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  *
@@ -86,7 +84,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      service = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, false));
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -99,7 +97,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
       Object[] connectorPairs = broadcastGroupControl.getConnectorPairs();
       Assert.assertEquals(1, connectorPairs.length);
-      System.out.println(connectorPairs);
+
       String connectorPairData = (String)connectorPairs[0];
       Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0), connectorPairData);
       String jsonString = broadcastGroupControl.getConnectorPairsAsJSON();
@@ -107,7 +105,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       JSONArray array = new JSONArray(jsonString);
       Assert.assertEquals(1, array.length());
       Assert.assertEquals(broadcastGroupConfig.getConnectorInfos().get(0), array.getString(0));
-      
+
       Assert.assertTrue(broadcastGroupControl.isStarted());
    }
 
@@ -125,7 +123,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      service = addServer(HornetQServers.newHornetQServer(conf, mbeanServer, false));
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -138,22 +136,6 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
       broadcastGroupControl.start();
       Assert.assertTrue(broadcastGroupControl.isStarted());
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (service != null)
-      {
-         service.stop();
-      }
-      service = null;
-
-      super.tearDown();
    }
 
    protected BroadcastGroupControl createManagementControl(final String name) throws Exception

@@ -23,7 +23,6 @@ import javax.management.MBeanServerFactory;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
@@ -47,7 +46,7 @@ import org.hornetq.tests.util.RandomUtil;
  * A BridgeControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  */
@@ -196,25 +195,12 @@ public class BridgeControlTest extends ManagementTestBase
       conf_0.getBridgeConfigurations().add(bridgeConfig);
 
       server_1 = HornetQServers.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      addServer(server_1);
       server_1.start();
 
       server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
+      addServer(server_0);
       server_0.start();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server_0.stop();
-      server_1.stop();
-
-      server_0 = null;
-
-      bridgeConfig = null;
-
-      server_1 = null;
-
-      super.tearDown();
    }
 
    protected BridgeControl createBridgeControl(final String name, final MBeanServer mbeanServer) throws Exception

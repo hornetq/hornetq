@@ -50,8 +50,10 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
    protected AcceptorControl createManagementControl(final String name) throws Exception
    {
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      addServerLocator(locator);
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
+      addClientSession(session);
       session.start();
 
       return new AcceptorControl()
@@ -69,6 +71,7 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
             return (String)proxy.retrieveAttributeValue("name");
          }
 
+         @SuppressWarnings("unchecked")
          public Map<String, Object> getParameters()
          {
             return (Map<String, Object>)proxy.retrieveAttributeValue("parameters");
@@ -100,24 +103,5 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
       // this test does not make sense when using core messages:
       // the acceptor must be started to receive the management messages
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (session != null)
-      {
-         session.close();
-      }
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

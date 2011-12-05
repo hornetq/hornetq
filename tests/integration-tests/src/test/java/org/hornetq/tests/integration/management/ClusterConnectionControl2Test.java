@@ -30,7 +30,6 @@ import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.ClusterConnectionConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.TransportConstants;
@@ -42,7 +41,7 @@ import org.hornetq.tests.util.RandomUtil;
  * A BridgeControlTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 11 dec. 2008 17:38:58
  *
  */
@@ -176,9 +175,9 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       conf_0.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
 
       mbeanServer_1 = MBeanServerFactory.createMBeanServer();
-      server_1 = HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false);
+      server_1 = addServer(HornetQServers.newHornetQServer(conf_1, mbeanServer_1, false));
 
-      server_0 = HornetQServers.newHornetQServer(conf_0, mbeanServer, false);
+      server_0 = addServer(HornetQServers.newHornetQServer(conf_0, mbeanServer, false));
       server_0.start();
    }
 

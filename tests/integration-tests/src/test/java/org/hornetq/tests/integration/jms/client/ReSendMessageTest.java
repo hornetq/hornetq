@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.BytesMessage;
-import javax.jms.Connection;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
@@ -30,7 +29,6 @@ import javax.jms.TextMessage;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.Pair;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.jms.HornetQJMSConstants;
@@ -62,9 +60,7 @@ public class ReSendMessageTest extends JMSTestBase
 
    public void testResendWithLargeMessage() throws Exception
    {
-      Connection conn = cf.createConnection();
-      try
-      {
+      conn = cf.createConnection();
          conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
@@ -96,21 +92,12 @@ public class ReSendMessageTest extends JMSTestBase
          }
 
          internalTestResend(msgs, sess);
-
-      }
-      finally
-      {
-         conn.close();
-      }
-
    }
 
    public void testResendWithMapMessagesOnly() throws Exception
    {
-      Connection conn = cf.createConnection();
-      try
-      {
-         conn.start();
+      conn = cf.createConnection();
+      conn.start();
 
          Session sess = conn.createSession(true, Session.SESSION_TRANSACTED);
          ArrayList<Message> msgs = new ArrayList<Message>();
@@ -137,13 +124,6 @@ public class ReSendMessageTest extends JMSTestBase
          }
 
          internalTestResend(msgs, sess);
-
-      }
-      finally
-      {
-         conn.close();
-      }
-
    }
 
    public void internalTestResend(final ArrayList<Message> msgs, final Session sess) throws Exception
@@ -227,16 +207,10 @@ public class ReSendMessageTest extends JMSTestBase
 
    public static class SomeSerializable implements Serializable
    {
-      /**
-       * 
-       */
       private static final long serialVersionUID = -8576054940441747312L;
 
       final String txt;
 
-      /* (non-Javadoc)
-       * @see java.lang.Object#hashCode()
-       */
       @Override
       public int hashCode()
       {
@@ -246,9 +220,6 @@ public class ReSendMessageTest extends JMSTestBase
          return result;
       }
 
-      /* (non-Javadoc)
-       * @see java.lang.Object#equals(java.lang.Object)
-       */
       @Override
       public boolean equals(final Object obj)
       {
