@@ -60,7 +60,7 @@ public class AutogroupIdTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
          locator.setAutoGroup(true);
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(groupTestQ, groupTestQ, null, false);
@@ -110,7 +110,7 @@ public class AutogroupIdTest extends ServiceTestBase
 
          ServerLocator locator = createInVMNonHALocator();
          locator.setAutoGroup(true);
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
          ClientSession session = sf.createSession(false, true, true);
 
          session.createQueue(groupTestQ, groupTestQ, null, false);
@@ -163,7 +163,7 @@ public class AutogroupIdTest extends ServiceTestBase
 
 
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory sf = locator.createSessionFactory();
+         ClientSessionFactory sf = createSessionFactory(locator);
 
          ClientSession session = sf.createSession(false, true, true);
 

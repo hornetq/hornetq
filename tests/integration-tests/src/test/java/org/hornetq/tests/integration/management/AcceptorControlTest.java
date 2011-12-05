@@ -35,6 +35,8 @@ import org.hornetq.core.server.management.Notification;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.tests.util.RandomUtil;
 
+import javax.management.MBeanServer;
+
 /**
  * A AcceptorControlTest
  *
@@ -46,10 +48,6 @@ import org.hornetq.tests.util.RandomUtil;
  */
 public class AcceptorControlTest extends ManagementTestBase
 {
-
-   private HornetQServer service;
-   private ServerLocator locator;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -66,7 +64,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
@@ -84,17 +82,15 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
       // started by the server
       Assert.assertTrue(acceptorControl.isStarted());
-      locator =
-               HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
-                                                                                     InVMConnectorFactory.class.getName()));
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ServerLocator locator = createInVMNonHALocator();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
@@ -116,8 +112,8 @@ public class AcceptorControlTest extends ManagementTestBase
 
       Assert.assertTrue(acceptorControl.isStarted());
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      sf = locator.createSessionFactory();
+      locator = createInVMNonHALocator();
+      sf = createSessionFactory(locator);
       session = sf.createSession(false, true, true);
       Assert.assertNotNull(session);
       session.close();
@@ -146,7 +142,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      HornetQServer service = createServer(false, conf, mbeanServer);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
@@ -177,14 +173,6 @@ public class AcceptorControlTest extends ManagementTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopComponent(service);
-      closeServerLocator(locator);
-      super.tearDown();
-   }
 
    protected AcceptorControl createManagementControl(final String name) throws Exception
    {

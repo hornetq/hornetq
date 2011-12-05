@@ -47,7 +47,7 @@ public class AckBatchSizeTest extends ServiceTestBase
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
@@ -66,7 +66,7 @@ public class AckBatchSizeTest extends ServiceTestBase
          int numMessages = 100;
          locator.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
          locator.setBlockOnAcknowledge(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
 
          ClientSession session = cf.createSession(false, true, true);
@@ -106,7 +106,7 @@ public class AckBatchSizeTest extends ServiceTestBase
          ServerLocator locator = createInVMNonHALocator();
          locator.setAckBatchSize(0);
          locator.setBlockOnAcknowledge(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          int numMessages = 100;
 

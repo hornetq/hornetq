@@ -457,6 +457,15 @@ public abstract class ServiceTestBase extends UnitTestCase
       }
    }
 
+
+
+   protected HornetQServer createServer(final boolean realFiles,
+                                        Configuration conf,
+                                        MBeanServer mbeanServer)
+   {
+      return createServer(realFiles, conf, mbeanServer, new HashMap<String, AddressSettings>());
+   }
+
    protected HornetQServer createServer(final boolean realFiles,
                                         final Configuration configuration,
                                         final MBeanServer mbeanServer,

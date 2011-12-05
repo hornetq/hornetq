@@ -53,7 +53,7 @@ public class AcknowledgeTest extends ServiceTestBase
          ServerLocator locator = createInVMNonHALocator();
          locator.setAckBatchSize(0);
          locator.setBlockOnAcknowledge(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -85,7 +85,7 @@ public class AcknowledgeTest extends ServiceTestBase
 
          server.start();
          ServerLocator locator = createInVMNonHALocator();
-         ClientSessionFactory cf = locator.createSessionFactory();;
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -125,7 +125,7 @@ public class AcknowledgeTest extends ServiceTestBase
          ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnAcknowledge(true);
          locator.setAckBatchSize(0);
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          final ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -174,7 +174,7 @@ public class AcknowledgeTest extends ServiceTestBase
          ServerLocator locator = createInVMNonHALocator();
          locator.setBlockOnAcknowledge(true);
          locator.setAckBatchSize(0);
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSessionFactory cf = createSessionFactory(locator);
          ClientSession sendSession = cf.createSession(false, true, true);
          final ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);

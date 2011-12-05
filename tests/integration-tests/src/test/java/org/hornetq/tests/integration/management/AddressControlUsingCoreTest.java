@@ -182,13 +182,13 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQServers.newHornetQServer(conf, mbeanServer, false);
+      server = createServer(false, conf, mbeanServer);
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       session = sf.createSession(false, true, false);
       session.start();
    }
@@ -204,13 +204,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
    protected void tearDown() throws Exception
    {
       session.close();
-
-      server.stop();
-
       session = null;
-
-      server = null;
-
       super.tearDown();
    }
 
