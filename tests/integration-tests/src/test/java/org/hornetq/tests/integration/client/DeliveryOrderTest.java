@@ -101,7 +101,7 @@ public class DeliveryOrderTest extends ServiceTestBase
       try
       {
          server.start();
-         ServerLocator locator = createInVMNonHALocator();
+         locator = createInVMNonHALocator();
          ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, false);
          ClientProducer cp = sendSession.createProducer(addressA);
