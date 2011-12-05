@@ -77,6 +77,10 @@ public interface JMSQueueControl extends DestinationControl
     */
    @Operation(desc = "Adds the queue to another JNDI binding")
    void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+   
+   @Operation(desc = "Adds the queue to another JNDI binding")
+   void removeJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+   
 
    /**
     * Lists all the JMS messages in this queue matching the specified filter.
