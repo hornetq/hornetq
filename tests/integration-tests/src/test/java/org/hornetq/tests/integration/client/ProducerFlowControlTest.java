@@ -76,12 +76,13 @@ public class ProducerFlowControlTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      stopComponent(server);
       if (sf != null)
       {
          sf.close();
       }
       closeServerLocator(locator);
+
+      stopComponent(server);
 
       super.tearDown();
    }
@@ -535,29 +536,29 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       sf = locator.createSessionFactory();
 
-         session = sf.createSession(false, true, true, true);
+      session = sf.createSession(false, true, true, true);
 
-         session.createQueue("address", "queue1", null, false);
+      session.createQueue("address", "queue1", null, false);
 
-         ClientProducerCredits credits = null;
+      ClientProducerCredits credits = null;
 
-         for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      for (int i = 0; i < ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE * 2; i++)
+      {
+         ClientProducer prod = session.createProducer("address");
+
+         ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
+
+         if (credits != null)
          {
-            ClientProducer prod = session.createProducer("address");
-
-            ClientProducerCredits newCredits = ((ClientProducerInternal)prod).getProducerCredits();
-
-            if (credits != null)
-            {
-               Assert.assertTrue(newCredits == credits);
-            }
-
-            credits = newCredits;
-
-            Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
-            Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
-                                                                   .unReferencedCreditsSize());
+            Assert.assertTrue(newCredits == credits);
          }
+
+         credits = newCredits;
+
+         Assert.assertEquals(1, ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
+         Assert.assertEquals(0, ((ClientSessionInternal)session).getProducerCreditManager()
+                                                                .unReferencedCreditsSize());
+      }
    }
 
    public void testProducerCreditsCaching2() throws Exception
