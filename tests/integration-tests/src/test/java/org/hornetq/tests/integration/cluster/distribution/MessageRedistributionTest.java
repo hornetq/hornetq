@@ -71,19 +71,6 @@ public class MessageRedistributionTest extends ClusterTestBase
       setRedistributionDelay(0);
    }
 
-   private void stop() throws Exception
-   {
-      stopServers();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stop();
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -296,7 +283,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
          ByteBuffer bb = ByteBuffer.wrap(bytes);
 
-         bb.putLong((long)i);
+         bb.putLong(i);
 
          msg.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID, bytes);
 
@@ -575,7 +562,7 @@ public class MessageRedistributionTest extends ClusterTestBase
          verifyNotReceive(1);
          removeConsumer(1);
 
-         stop();
+         stopServers();
          start();
       }
 
@@ -641,7 +628,7 @@ public class MessageRedistributionTest extends ClusterTestBase
 
          verifyReceiveAll(20, 1);
 
-         stop();
+         stopServers();
          start();
       }
 
