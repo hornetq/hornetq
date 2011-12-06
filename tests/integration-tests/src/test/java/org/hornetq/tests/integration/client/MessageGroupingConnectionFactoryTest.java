@@ -160,8 +160,8 @@ public class MessageGroupingConnectionFactoryTest extends UnitTestCase
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
 
       locator.setGroupID("grp1");
-      ClientSessionFactory sessionFactory = createSessionFactory(locator);
-      clientSession = addClientSession(sessionFactory.createSession(false, true, true));
+      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      clientSession = sessionFactory.createSession(false, true, true);
       clientSession.createQueue(qName, qName, null, false);
    }
 
