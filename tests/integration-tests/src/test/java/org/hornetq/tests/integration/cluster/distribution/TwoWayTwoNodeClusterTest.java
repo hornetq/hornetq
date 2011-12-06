@@ -49,21 +49,6 @@ public class TwoWayTwoNodeClusterTest extends ClusterTestBase
       setupClusterConnection("cluster1", 1, 0, "queues", false, 1, isNetty(), false);
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      log.info("#test tearDown");
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1);
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;

@@ -36,14 +36,6 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupServers();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServers();
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -162,16 +154,4 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupServer(3, isFileStorage(), isNetty());
       setupServer(4, isFileStorage(), isNetty());
    }
-
-   protected void stopServers() throws Exception
-   {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1, 2, 3, 4);
-   }
-
 }

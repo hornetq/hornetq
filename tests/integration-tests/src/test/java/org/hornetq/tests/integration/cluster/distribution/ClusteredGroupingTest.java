@@ -1047,12 +1047,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      super.tearDown();    //To change body of overridden methods use File | Settings | File Templates.
-   }
-
    public boolean isNetty()
    {
       return true;

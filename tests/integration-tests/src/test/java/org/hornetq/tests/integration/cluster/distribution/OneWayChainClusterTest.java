@@ -13,13 +13,13 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A OneWayChainClusterTest
@@ -44,20 +44,6 @@ public class OneWayChainClusterTest extends ClusterTestBase
       setupServer(2, isFileStorage(), isNetty());
       setupServer(3, isFileStorage(), isNetty());
       setupServer(4, isFileStorage(), isNetty());
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1, 2, 3, 4);
-
-      super.tearDown();
    }
 
    protected boolean isNetty()
@@ -396,6 +382,5 @@ public class OneWayChainClusterTest extends ClusterTestBase
       records =  ccon.getRecords();
       assertNotNull(records);
       assertEquals(records.size(), 1);
-      System.out.println("OneWayChainClusterTest.testChainClusterConnections");
    }
 }

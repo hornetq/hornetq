@@ -18,7 +18,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 
 /**
  * A TemporaryQueueClusterTest
@@ -30,31 +29,12 @@ import org.hornetq.core.logging.Logger;
 public class TemporaryQueueClusterTest extends ClusterTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-   private static final Logger log = Logger.getLogger(ClusteredRequestResponseTest.class);
-
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       setupServers();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServers();
-
-      super.tearDown();
    }
 
    protected boolean isNetty()
@@ -124,24 +104,4 @@ public class TemporaryQueueClusterTest extends ClusterTestBase
       setupServer(0, isFileStorage(), isNetty());
       setupServer(1, isFileStorage(), isNetty());
    }
-
-   protected void stopServers() throws Exception
-   {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1);
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

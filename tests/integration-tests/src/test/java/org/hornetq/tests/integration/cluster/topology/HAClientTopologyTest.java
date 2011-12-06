@@ -16,20 +16,19 @@ package org.hornetq.tests.integration.cluster.topology;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class HAClientTopologyTest extends TopologyClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(HAClientTopologyTest.class);
-
+   @Override
    protected boolean isNetty()
    {
       return false;
    }
 
+   @Override
    protected void setupCluster() throws Exception
    {
       setupCluster(false);
@@ -44,6 +43,7 @@ public class HAClientTopologyTest extends TopologyClusterTestBase
       setupClusterConnection("cluster4", "queues", forwardWhenNoConsumers, 1, isNetty(), 4, 0, 1, 2, 3);
    }
 
+   @Override
    protected void setupServers() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());

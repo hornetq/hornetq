@@ -16,24 +16,23 @@ package org.hornetq.tests.integration.cluster.topology;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(HAClientTopologyWithDiscoveryTest.class);
-
    protected final String groupAddress = getUDPDiscoveryAddress();
 
    protected final int groupPort = getUDPDiscoveryPort();
 
+   @Override
    protected boolean isNetty()
    {
       return false;
    }
 
+   @Override
    protected void setupCluster() throws Exception
    {
       setupCluster(false);
@@ -48,6 +47,7 @@ public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
       setupDiscoveryClusterConnection("cluster4", 4, "dg1", "queues", forwardWhenNoConsumers, 1, isNetty());
    }
 
+   @Override
    protected void setupServers() throws Exception
    {
       setupLiveServerWithDiscovery(0, groupAddress, groupPort, isFileStorage(), isNetty(), false);

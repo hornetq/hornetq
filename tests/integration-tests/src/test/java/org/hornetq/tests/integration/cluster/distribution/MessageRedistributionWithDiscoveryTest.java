@@ -22,7 +22,6 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.impl.AddressSettings;
 
 /**
@@ -34,8 +33,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
  */
 public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(SymmetricClusterWithDiscoveryTest.class);
-
    protected final String groupAddress = getUDPDiscoveryAddress();
 
    protected final int groupPort = getUDPDiscoveryPort();
@@ -45,23 +42,11 @@ public class MessageRedistributionWithDiscoveryTest extends ClusterTestBase
       return false;
    }
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       setupCluster();
-   }
-
-   protected void tearDown() throws Exception
-   {
-      for (int i = 0; i < servers.length; i++)
-      {
-         if (servers[i] != null)
-         {
-            servers[i].stop();
-            servers[i] = null;
-         }
-      }
-      super.tearDown();
    }
 
    protected void setupCluster() throws Exception

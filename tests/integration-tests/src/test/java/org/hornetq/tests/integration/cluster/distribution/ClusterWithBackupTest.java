@@ -46,14 +46,6 @@ public class ClusterWithBackupTest extends ClusterTestBase
       setupServers();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServers();
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -134,16 +126,4 @@ public class ClusterWithBackupTest extends ClusterTestBase
       setupLiveServer(5, isFileStorage(), true, isNetty());
 
    }
-
-   protected void stopServers() throws Exception
-   {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1, 2, 3, 4, 5);
-   }
-
 }

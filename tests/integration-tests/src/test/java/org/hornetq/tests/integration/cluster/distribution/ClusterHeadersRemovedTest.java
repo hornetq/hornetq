@@ -18,13 +18,10 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 
 public class ClusterHeadersRemovedTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(ClusterHeadersRemovedTest.class);
-
    @Override
    protected void setUp() throws Exception
    {
@@ -34,25 +31,11 @@ public class ClusterHeadersRemovedTest extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      closeAllConsumers();
-
-      closeAllSessionFactories();
-
-      closeAllServerLocatorsFactories();
-
-      stopServers(0, 1);
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
    }
-   
+
    public void testHeadersRemoved() throws Exception
    {
       setupClusterConnection("cluster1", 0, 1, "queues", false, 1, isNetty(), false);
@@ -64,14 +47,14 @@ public class ClusterHeadersRemovedTest extends ClusterTestBase
 
       createQueue(0, "queues.testaddress", "queue0", null, false);
       createQueue(1, "queues.testaddress", "queue0", null, false);
-      
+
       addConsumer(1, 1, "queue0", null);
-      
+
       waitForBindings(0, "queues.testaddress", 1, 0, true);
       waitForBindings(0, "queues.testaddress", 1, 1, false);
-      
+
       waitForBindings(1, "queues.testaddress", 1, 1, true);
-      
+
       ClientSessionFactory sf = sfs[0];
 
       ClientSession session0 = sf.createSession(false, true, true);
@@ -91,15 +74,15 @@ public class ClusterHeadersRemovedTest extends ClusterTestBase
       {
          session0.close();
       }
-      
+
       ClientConsumer consumer = super.getConsumer(1);
-      
+
       for (int i = 0; i < 10; i++)
       {
          ClientMessage message = consumer.receive(5000);
-         
+
          assertNotNull(message);
-         
+
          assertFalse(message.containsProperty(MessageImpl.HDR_ROUTE_TO_IDS));
       }
    }

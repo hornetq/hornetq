@@ -236,12 +236,21 @@ public class ReplicatedDistributionTest extends ClusterTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (sessionOne != null)
-         sessionOne.close();
-      if (sessionThree != null)
-         sessionThree.close();
-
-      super.tearDown();
+      try
+      {
+         if (consThree != null)
+            consThree.close();
+         if (producer != null)
+            producer.close();
+         if (sessionOne != null)
+            sessionOne.close();
+         if (sessionThree != null)
+            sessionThree.close();
+      }
+      finally
+      {
+         super.tearDown();
+      }
    }
 
    protected boolean isShared()

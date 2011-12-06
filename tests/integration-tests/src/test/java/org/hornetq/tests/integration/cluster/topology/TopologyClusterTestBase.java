@@ -44,20 +44,6 @@ import org.hornetq.tests.util.RandomUtil;
 public abstract class TopologyClusterTestBase extends ClusterTestBase
 {
 
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
    private static final Logger log = Logger.getLogger(TopologyClusterTestBase.class);
 
    private static final long WAIT_TIMEOUT = 5000;
@@ -110,9 +96,9 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
             continue;
          }
          boolean ok = true;
-         for (int i = 0; i < expected.length; i++)
+         for (int element : expected)
          {
-            ok = (ok && actual.contains(nodeIDs[expected[i]]));
+            ok = (ok && actual.contains(nodeIDs[element]));
          }
          if (ok) 
          {
@@ -480,9 +466,8 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       assertTrue("Was not notified that all servers are Down", ok);
       checkContains(new int[] { 0 }, nodeIDs, nodes);
       
-      for (int i = 0; i < sfs.length; i++)
+      for (ClientSessionFactory sf : sfs)
       {
-         ClientSessionFactory sf = sfs[i];
          sf.close();
       }
       

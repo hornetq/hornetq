@@ -168,18 +168,23 @@ public abstract class ClusterTestBase extends ServiceTestBase
       {
          if (servers[i] == null)
             continue;
-
-         final ClusterManager clusterManager = servers[i].getClusterManager();
-         if (clusterManager != null)
+         try
          {
-            for (ClusterConnection cc : clusterManager.getClusterConnections())
+            final ClusterManager clusterManager = servers[i].getClusterManager();
+            if (clusterManager != null)
             {
-               cc.stop();
+               for (ClusterConnection cc : clusterManager.getClusterConnections())
+               {
+                  cc.stop();
+               }
             }
          }
-         stopComponent(servers[i]);
-
+         catch (Exception e)
+         {
+            // no-op
          }
+         stopComponent(servers[i]);
+      }
       for (int i = 0; i < MAX_SERVERS; i++)
       {
          stopComponent(nodeManagers[i]);
