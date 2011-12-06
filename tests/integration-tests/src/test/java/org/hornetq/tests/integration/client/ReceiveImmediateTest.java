@@ -25,9 +25,7 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -37,8 +35,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ReceiveImmediateTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ReceiveImmediateTest.class);
-
    private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ReceiveImmediateTest.queue");
@@ -53,23 +49,9 @@ public class ReceiveImmediateTest extends ServiceTestBase
       super.setUp();
 
       Configuration config = createDefaultConfig(false);
-      server = HornetQServers.newHornetQServer(config, false);
-
+      server = createServer(false, config);
       server.start();
-
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
    }
 
    private ClientSessionFactory sf;
@@ -78,7 +60,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
    {
       doConsumerReceiveImmediateWithNoMessages(false);
    }
-   
+
    public void testConsumerReceiveImmediate() throws Exception
    {
       doConsumerReceiveImmediate(false);
@@ -96,11 +78,10 @@ public class ReceiveImmediateTest extends ServiceTestBase
 
    public void testConsumerReceiveImmediateWithSessionStop() throws Exception
    {
-
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
@@ -122,75 +103,70 @@ public class ReceiveImmediateTest extends ServiceTestBase
       consumer.close();
 
       session.close();
-
-      sf.close();
-
    }
-   
+
    // https://jira.jboss.org/browse/HORNETQ-450
    public void testReceivedImmediateFollowedByReceive() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
-      
+
       ClientProducer producer = session.createProducer(ADDRESS);
 
       ClientMessage message = session.createMessage(false);
-      
+
       producer.send(message);
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
-      
+
       session.start();
-      
+
       ClientMessage received = consumer.receiveImmediate();
 
       assertNotNull(received);
-      
+
       received.acknowledge();
-      
+
       received = consumer.receive(1);
-      
-      assertNull(received);      
+
+      assertNull(received);
 
       session.close();
-
-      sf.close();
    }
-   
+
    // https://jira.jboss.org/browse/HORNETQ-450
    public void testReceivedImmediateFollowedByAsyncConsume() throws Exception
    {
-      
+
       locator.setBlockOnNonDurableSend(true);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
-      
+
       ClientProducer producer = session.createProducer(ADDRESS);
 
       ClientMessage message = session.createMessage(false);
-      
+
       producer.send(message);
 
       ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
-      
+
       session.start();
-      
+
       ClientMessage received = consumer.receiveImmediate();
 
       assertNotNull(received);
-      
+
       received.acknowledge();
-      
+
       final AtomicBoolean receivedAsync = new AtomicBoolean(false);
-      
+
       consumer.setMessageHandler(new MessageHandler()
       {
          public void onMessage(ClientMessage message)
@@ -198,14 +174,12 @@ public class ReceiveImmediateTest extends ServiceTestBase
             receivedAsync.set(true);
          }
       });
-      
+
       Thread.sleep(1000);
-                  
-      assertFalse(receivedAsync.get());      
+
+      assertFalse(receivedAsync.get());
 
       session.close();
-
-      sf.close();
    }
 
    private void doConsumerReceiveImmediateWithNoMessages(final boolean browser) throws Exception
@@ -213,7 +187,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, false);
 
@@ -226,8 +200,6 @@ public class ReceiveImmediateTest extends ServiceTestBase
       Assert.assertNull(message);
 
       session.close();
-
-      sf.close();
    }
 
    private void doConsumerReceiveImmediate(final boolean browser) throws Exception
@@ -236,7 +208,7 @@ public class ReceiveImmediateTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnAcknowledge(true);
       locator.setAckBatchSize(0);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, QUEUE, null, false);
@@ -277,9 +249,6 @@ public class ReceiveImmediateTest extends ServiceTestBase
       consumer.close();
 
       session.close();
-
-      sf.close();
-
    }
 
 }

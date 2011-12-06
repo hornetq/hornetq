@@ -119,15 +119,6 @@ public class PagingTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopComponent(server);
-      closeSessionFactory(sf);
-      closeServerLocator(locator);
-      super.tearDown();
-   }
-
    public void testPreparePersistent() throws Exception
    {
       clearData();
@@ -4075,7 +4066,7 @@ public class PagingTest extends ServiceTestBase
 
          PagingStore pgStoreAddress = server.getPagingManager().getPageStore(ADDRESS);
          pgStoreAddress.startPaging();
-         PagingStore pgStoreDLA = server.getPagingManager().getPageStore(new SimpleString("DLA"));
+      server.getPagingManager().getPageStore(new SimpleString("DLA"));
 
          ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
 

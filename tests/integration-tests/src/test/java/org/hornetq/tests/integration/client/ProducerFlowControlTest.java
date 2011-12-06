@@ -73,20 +73,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
       locator = createFactory(isNetty());
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (sf != null)
-      {
-         sf.close();
-      }
-      closeServerLocator(locator);
-
-      stopComponent(server);
-
-      super.tearDown();
-   }
-
    // TODO need to test crashing a producer with unused credits returns them to the pool
 
    public void testFlowControlSingleConsumer() throws Exception
@@ -240,7 +226,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
             locator.setMinLargeMessageSize(minLargeMessageSize);
          }
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
          session = sf.createSession(false, true, true, true);
 
          session.start();
@@ -377,7 +363,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          locator.setConsumerWindowSize(1024);
          locator.setAckBatchSize(1024);
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
          session = sf.createSession(false, true, true, true);
 
          final SimpleString queueName = new SimpleString("testqueue");
@@ -442,7 +428,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          locator.setConsumerWindowSize(1024);
          locator.setAckBatchSize(1024);
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -470,7 +456,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -534,7 +520,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       session = sf.createSession(false, true, true, true);
 
@@ -567,7 +553,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
       waitForServer(server);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -603,7 +589,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -636,7 +622,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
       waitForServer(server);
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -672,7 +658,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -720,7 +706,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
          for (int i = 0; i < 10; i++)
          {
-            ClientProducer prod = session.createProducer("address" + (i + ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE));
+         session.createProducer("address" + (i + ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE));
 
             Assert.assertEquals(ClientProducerCreditManagerImpl.MAX_UNREFERENCED_CREDITS_CACHE_SIZE + i + 1,
                                 ((ClientSessionInternal)session).getProducerCreditManager().creditsMapSize());
@@ -735,7 +721,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
       waitForServer(server);
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -760,7 +746,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 
@@ -809,7 +795,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       server.start();
       waitForServer(server);
 
-         sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
          session = sf.createSession(false, true, true, true);
 

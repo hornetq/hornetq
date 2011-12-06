@@ -23,7 +23,6 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
@@ -36,7 +35,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  * @version <tt>$Revision$</tt>
  */
 public class PingStressTest extends ServiceTestBase
@@ -66,17 +65,6 @@ public class PingStressTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (server != null && server.isStarted())
-      {
-         server.stop();
-         server = null;
-      }
-      super.tearDown();
-   }
-
    protected int getNumberOfIterations()
    {
       return 20;
@@ -91,7 +79,6 @@ public class PingStressTest extends ServiceTestBase
             tearDown();
             setUp();
          }
-         System.out.println("Run " + i);
          internalTest();
       }
 
@@ -122,7 +109,7 @@ public class PingStressTest extends ServiceTestBase
       };
 
       server.getRemotingService().addInterceptor(noPongInterceptor);
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
       locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
       locator.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
@@ -153,12 +140,12 @@ public class PingStressTest extends ServiceTestBase
             try
             {
 
-               ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+               ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
                locator.setClientFailureCheckPeriod(PingStressTest.PING_INTERVAL);
                locator.setConnectionTTL((long)(PingStressTest.PING_INTERVAL * 1.5));
                locator.setCallTimeout(PingStressTest.PING_INTERVAL * 10);
 
-               final ClientSessionFactory csf2 = locator.createSessionFactory();
+               final ClientSessionFactory csf2 = createSessionFactory(locator);
 
                // Start all at once to make concurrency worst
                flagAligned.countDown();
@@ -186,9 +173,9 @@ public class PingStressTest extends ServiceTestBase
                   Thread.sleep(PingStressTest.PING_INTERVAL * (threadNumber % 3));
 
                   session.close();
-                  
+
                   csf2.close();
-                  
+
                   locator.close();
                }
             }
@@ -225,19 +212,10 @@ public class PingStressTest extends ServiceTestBase
       {
          throw new Exception("Test Failed", e);
       }
-      
+
       csf1.close();
-      
+
       locator.close();
 
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

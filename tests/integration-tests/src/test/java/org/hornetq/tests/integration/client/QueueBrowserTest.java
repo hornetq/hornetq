@@ -15,9 +15,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -28,8 +31,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class QueueBrowserTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(QueueBrowserTest.class);
-
    private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
@@ -48,25 +49,13 @@ public class QueueBrowserTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
    private ClientSessionFactory sf;
 
    public void testSimpleConsumerBrowser() throws Exception
    {
       locator.setBlockOnNonDurableSend(true);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
@@ -105,14 +94,13 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
 
    }
 
    public void testConsumerBrowserWithSelector() throws Exception
    {
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -153,14 +141,13 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
 
    }
 
    public void testConsumerBrowserWithStringSelector() throws Exception
    {
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -191,14 +178,13 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
 
    }
 
    public void testConsumerMultipleBrowser() throws Exception
    {
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -229,14 +215,13 @@ public class QueueBrowserTest extends ServiceTestBase
       }
 
       session.close();
-      sf.close();
 
    }
 
    public void testConsumerMultipleBrowserWithSelector() throws Exception
    {
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -275,7 +260,6 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
 
    }
 
@@ -291,7 +275,7 @@ public class QueueBrowserTest extends ServiceTestBase
 
    private void testConsumerBrowserMessagesArentAcked(final boolean preACK) throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
 
@@ -321,12 +305,11 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
    }
 
    public void testConsumerBrowserMessageAckDoesNothing() throws Exception
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -358,14 +341,13 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
-      sf.close();
    }
-   
+
    public void testBrowseWithZeroConsumerWindowSize() throws Exception
    {
       locator.setConsumerWindowSize(0);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -376,23 +358,23 @@ public class QueueBrowserTest extends ServiceTestBase
       final int numMessages = 100;
 
       byte[] bytes = new byte[240];
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
-         
+
          message.getBodyBuffer().writeBytes(bytes);
-         
+
          message.putIntProperty("foo", i);
-         
+
          producer.send(message);
       }
 
       //Create a normal non browsing consumer
-      ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+      session.createConsumer(QUEUE);
+
       session.start();
-      
+
       ClientConsumer browser = session.createConsumer(QUEUE, true);
 
       for (int i = 0; i < numMessages; i++)
@@ -403,8 +385,6 @@ public class QueueBrowserTest extends ServiceTestBase
       }
 
       session.close();
-
-      sf.close();
    }
 
 }

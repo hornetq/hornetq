@@ -47,12 +47,6 @@ public class PageStressTest extends ServiceTestBase
 
    private ServerLocator locator;
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
    public void testStopDuringDepage() throws Exception
    {
       Configuration config = createDefaultConfig();
@@ -69,7 +63,7 @@ public class PageStressTest extends ServiceTestBase
       messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
       ClientSession session = null;
 
       try
@@ -130,7 +124,7 @@ public class PageStressTest extends ServiceTestBase
 
          messagingService.start();
 
-         factory = locator.createSessionFactory();
+         factory = createSessionFactory(locator);
 
          session = factory.createSession(false, false, false);
 
@@ -161,13 +155,6 @@ public class PageStressTest extends ServiceTestBase
       finally
       {
          session.close();
-         try
-         {
-            messagingService.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
       }
 
    }
@@ -185,7 +172,7 @@ public class PageStressTest extends ServiceTestBase
       messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
       ClientSession session = null;
 
       try
@@ -296,9 +283,6 @@ public class PageStressTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      clearData();
-
       locator = createInVMNonHALocator();
 
       locator.setBlockOnAcknowledge(true);
@@ -306,17 +290,4 @@ public class PageStressTest extends ServiceTestBase
       locator.setBlockOnNonDurableSend(false);
 
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

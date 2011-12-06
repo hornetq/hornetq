@@ -25,7 +25,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -77,14 +82,6 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      stopServer();
-      super.tearDown();
-   }
-
    public void testMultiThreadCompact() throws Throwable
    {
       setupServer(getJournalType());
@@ -120,11 +117,11 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
          if (i % 2 == 0 && i > 0)
          {
             System.out.println("DataFiles = " + journal.getDataFilesCount());
-            
+
             journal.forceMoveNextFile();
             journal.debugWait();
             journal.checkReclaimStatus();
-            
+
             if (journal.getDataFilesCount() != 0)
             {
                System.out.println("DebugJournal:"  + journal.debug());
@@ -155,7 +152,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
     */
    private void addEmptyTransaction(final Xid xid) throws Exception, XAException
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
@@ -166,7 +163,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 
    private void checkEmptyXID(final Xid xid) throws Exception, XAException
    {
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
       ClientSession session = sf.createSession(true, false, false);
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
@@ -379,7 +376,7 @@ public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
       locator.setBlockOnDurableSend(false);
       locator.setBlockOnAcknowledge(false);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession sess = sf.createSession();
 

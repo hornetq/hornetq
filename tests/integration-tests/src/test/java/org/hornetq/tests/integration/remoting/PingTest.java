@@ -22,7 +22,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
@@ -38,10 +42,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * @version <tt>$Revision$</tt>
  */
 public class PingTest extends ServiceTestBase
 {
@@ -70,14 +71,6 @@ public class PingTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-      server = null;
-      super.tearDown();
-   }
-
    class Listener implements SessionFailureListener
    {
       volatile HornetQException me;
@@ -103,7 +96,7 @@ public class PingTest extends ServiceTestBase
    public void testNoFailureWithPinging() throws Exception
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
 
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
@@ -165,7 +158,7 @@ public class PingTest extends ServiceTestBase
    public void testNoFailureNoPinging() throws Exception
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(-1);
       locator.setConnectionTTL(-1);
       ClientSessionFactory csf = locator.createSessionFactory();
@@ -223,7 +216,7 @@ public class PingTest extends ServiceTestBase
    public void testServerFailureNoPing() throws Exception
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
       ClientSessionFactoryImpl csf = (ClientSessionFactoryImpl) locator.createSessionFactory();
@@ -318,7 +311,7 @@ public class PingTest extends ServiceTestBase
       });
 
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.core.remoting.impl.netty.NettyConnectorFactory");
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfig);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithoutHA(transportConfig));
       locator.setClientFailureCheckPeriod(PingTest.CLIENT_FAILURE_CHECK_PERIOD);
       locator.setConnectionTTL(PingTest.CLIENT_FAILURE_CHECK_PERIOD * 2);
       ClientSessionFactory csf = locator.createSessionFactory();
@@ -402,13 +395,4 @@ public class PingTest extends ServiceTestBase
 
       locator.close();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

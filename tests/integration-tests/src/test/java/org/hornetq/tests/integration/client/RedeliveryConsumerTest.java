@@ -41,7 +41,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  * A RedeliveryConsumerTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 17, 2009 6:06:11 PM
  *
  *
@@ -150,7 +150,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
          session.close();
          server.stop();
          server.start();
-         factory = locator.createSessionFactory();
+         factory = createSessionFactory(locator);
          session = factory.createSession(false, false, false);
          session.start();
          consumer = session.createConsumer(ADDRESS);
@@ -173,7 +173,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
                session.close();
                server.stop();
                server.start();
-               factory = locator.createSessionFactory();
+               factory = createSessionFactory(locator);
                session = factory.createSession(false, false, false);
                session.start();
                consumer = session.createConsumer(ADDRESS);
@@ -226,7 +226,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       server.start();
 
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
 
       session = factory.createSession(false, true, false);
       session.start();
@@ -242,7 +242,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    {
       internaltestInfiniteDedeliveryMessageOnPersistent(false);
    }
-   
+
    private void internaltestInfiniteDedeliveryMessageOnPersistent(final boolean strict) throws Exception
    {
       setUp(strict);
@@ -255,7 +255,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       session.commit();
       session.close();
 
-      
+
       int expectedCount = 1;
       for (int i = 0 ; i < 700; i++)
       {
@@ -277,9 +277,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       factory.close();
       server.stop();
-      
+
       setUp(false);
-      
+
       for (int i = 0 ; i < 700; i++)
       {
          session = factory.createSession(false, false, false);
@@ -293,27 +293,27 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       server.stop();
 
-      
-      JournalImpl journal = new JournalImpl(server.getConfiguration().getJournalFileSize(), 
-                                            2, 
+
+      JournalImpl journal = new JournalImpl(server.getConfiguration().getJournalFileSize(),
+                                            2,
                                             0,
-                                            0, 
+                                            0,
                                             new NIOSequentialFileFactory(server.getConfiguration().getJournalDirectory()),
                                             "hornetq-data",
                                             "hq",
                                             1);
-      
-      
+
+
       final AtomicInteger updates = new AtomicInteger();
-      
+
       journal.start();
       journal.load(new LoaderCallback()
       {
-         
+
          public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
          {
          }
-         
+
          public void updateRecord(RecordInfo info)
          {
             if (info.userRecordType == JournalStorageManager.UPDATE_DELIVERY_COUNT)
@@ -321,23 +321,23 @@ public class RedeliveryConsumerTest extends ServiceTestBase
                updates.incrementAndGet();
             }
          }
-         
+
          public void deleteRecord(long id)
          {
          }
-         
+
          public void addRecord(RecordInfo info)
          {
          }
-         
+
          public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
          {
          }
       });
-      
+
       journal.stop();
-      
-      
+
+
       assertEquals(7, updates.get());
 
    }
@@ -360,7 +360,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       server.start();
       locator = createInVMNonHALocator();
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
 
       ClientSession session = factory.createSession(false, false, false);
       try
@@ -374,30 +374,4 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       session.close();
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      if (factory != null)
-      {
-         factory.close();
-      }
-
-      if (server != null && server.isStarted())
-      {
-         server.stop();
-      }
-
-      factory = null;
-
-      server = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

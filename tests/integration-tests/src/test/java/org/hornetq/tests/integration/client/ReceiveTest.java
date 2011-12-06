@@ -16,7 +16,13 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -31,28 +37,20 @@ public class ReceiveTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   private HornetQServer server;
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
+      server = createServer(false);
+      server.start();
    }
 
    public void testBasicReceive() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
          ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(addressA);
@@ -64,22 +62,11 @@ public class ReceiveTest extends ServiceTestBase
          Assert.assertNotNull(cc.receive());
          session.close();
          sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testReceiveTimesoutCorrectly() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+
          ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
@@ -89,23 +76,11 @@ public class ReceiveTest extends ServiceTestBase
          cc.receive(1000);
          Assert.assertTrue(System.currentTimeMillis() - time >= 1000);
          session.close();
-
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testReceiveOnClosedException() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+
          ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
@@ -121,24 +96,12 @@ public class ReceiveTest extends ServiceTestBase
          {
             Assert.assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
          }
-         session.close();
-
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      session.close();
    }
 
    public void testReceiveThrowsExceptionWhenHandlerSet() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+
          ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession session = cf.createSession(false, true, true);
          session.createQueue(addressA, queueA, false);
@@ -160,23 +123,11 @@ public class ReceiveTest extends ServiceTestBase
             Assert.assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
          }
          session.close();
-
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testReceiveImmediate() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
+
          // forces perfect round robin
          locator.setConsumerWindowSize(1);
          ClientSessionFactory cf = locator.createSessionFactory();
@@ -199,13 +150,5 @@ public class ReceiveTest extends ServiceTestBase
          }
          session.close();
          sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 }

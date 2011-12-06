@@ -20,8 +20,11 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -33,8 +36,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ProducerTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ConsumerTest.class);
-
    private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
@@ -47,16 +48,6 @@ public class ProducerTest extends ServiceTestBase
       server = createServer(false);
 
       server.start();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
    }
 
    public void testProducerWithSmallWindowSizeAndLargeMessage() throws Exception

@@ -57,7 +57,7 @@ public class PagingCounterTest extends ServiceTestBase
 
    public void testCounter() throws Exception
    {
-      ClientSessionFactory sf = sl.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(sl);
       ClientSession session = sf.createSession();
 
       try
@@ -89,7 +89,7 @@ public class PagingCounterTest extends ServiceTestBase
 
    public void testCleanupCounter() throws Exception
    {
-      ClientSessionFactory sf = sl.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(sl);
       ClientSession session = sf.createSession();
 
       try
@@ -106,25 +106,25 @@ public class PagingCounterTest extends ServiceTestBase
          {
 
             counter.increment(tx, 1);
-   
+
             if (i % 200 == 0)
             {
                tx.commit();
-      
+
                storage.waitOnOperations();
 
                assertEquals(i + 1, counter.getValue());
-               
+
                tx = new TransactionImpl(server.getStorageManager());
             }
          }
 
          tx.commit();
-         
+
          storage.waitOnOperations();
-         
+
          assertEquals(2100, counter.getValue());
-         
+
          server.stop();
 
          server = newHornetQServer();
@@ -150,7 +150,7 @@ public class PagingCounterTest extends ServiceTestBase
 
    public void testCleanupCounterNonPersistent() throws Exception
    {
-      ClientSessionFactory sf = sl.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(sl);
       ClientSession session = sf.createSession();
 
       try
@@ -158,7 +158,7 @@ public class PagingCounterTest extends ServiceTestBase
          Queue queue = server.createQueue(new SimpleString("A1"), new SimpleString("A1"), null, true, false);
 
          PageSubscriptionCounter counter = locateCounter(queue);
-         
+
          ((PageSubscriptionCounterImpl)counter).setPersistent(false);
 
          StorageManager storage = server.getStorageManager();
@@ -169,25 +169,25 @@ public class PagingCounterTest extends ServiceTestBase
          {
 
             counter.increment(tx, 1);
-   
+
             if (i % 200 == 0)
             {
                tx.commit();
-      
+
                storage.waitOnOperations();
 
                assertEquals(i + 1, counter.getValue());
-               
+
                tx = new TransactionImpl(server.getStorageManager());
             }
          }
 
          tx.commit();
-         
+
          storage.waitOnOperations();
-         
+
          assertEquals(2100, counter.getValue());
-         
+
          server.stop();
 
          server = newHornetQServer();
@@ -288,65 +288,50 @@ public class PagingCounterTest extends ServiceTestBase
       storage.waitOnOperations();
 
       assertEquals(0, counter.getValue());
-      
+
       server.stop();
-      
+
       server = newHornetQServer();
-      
+
       server.start();
-      
+
       storage = server.getStorageManager();
-      
+
       queue = server.locateQueue(new SimpleString("A1"));
-      
+
       assertNotNull(queue);
-      
+
       counter = locateCounter(queue);
-      
+
       tx = server.getResourceManager().removeTransaction(xid);
-      
+
       assertNotNull(tx);
-      
+
       assertEquals(0, counter.getValue());
-      
+
       tx.commit(false);
-      
+
       storage.waitOnOperations();
-      
+
       assertEquals(2000, counter.getValue());
-      
-      
+
+
    }
 
-   // Package protected ---------------------------------------------
 
-   // Protected -----------------------------------------------------
-
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
       server = newHornetQServer();
-
       server.start();
-
       sl = createInVMNonHALocator();
    }
 
-   protected void tearDown() throws Exception
-   {
-      sl.close();
-
-      server.stop();
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
    private HornetQServer newHornetQServer()
    {
-      
+
       OperationContextImpl.clearContext();
 
       HornetQServer server = super.createServer(true, false);

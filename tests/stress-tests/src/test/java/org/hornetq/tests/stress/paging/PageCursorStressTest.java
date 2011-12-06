@@ -1121,8 +1121,6 @@ public class PageCursorStressTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      server.stop();
-      server = null;
       queue = null;
       queueList = null;
       super.tearDown();
@@ -1133,8 +1131,6 @@ public class PageCursorStressTest extends ServiceTestBase
    {
       super.setUp();
       OperationContextImpl.clearContext();
-      System.out.println("Tmp:" + getTemporaryDir());
-
       queueList = new ArrayList<Queue>();
 
       createServer();

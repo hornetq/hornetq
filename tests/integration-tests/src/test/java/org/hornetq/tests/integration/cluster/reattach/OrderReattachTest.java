@@ -20,11 +20,16 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
-import junit.framework.TestSuite;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.RemotingConnectionImpl;
@@ -71,7 +76,7 @@ public class OrderReattachTest extends ServiceTestBase
       locator.setConfirmationWindowSize(1024 * 1024);
       locator.setBlockOnNonDurableSend(false);
       locator.setBlockOnAcknowledge(false);
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       final ClientSession session = sf.createSession(false, true, true);
 
@@ -79,7 +84,7 @@ public class OrderReattachTest extends ServiceTestBase
 
       final CountDownLatch ready = new CountDownLatch(1);
 
-      
+
       // this test will use a queue. Whenever the test wants a failure.. it can just send TRUE to failureQueue
       // This Thread will be reading the queue
       Thread failer = new Thread()
@@ -171,8 +176,6 @@ public class OrderReattachTest extends ServiceTestBase
 
    public void doSend2(final int order, final ClientSessionFactory sf, final LinkedBlockingDeque<Boolean> failureQueue) throws Exception
    {
-      long start = System.currentTimeMillis();
-
       ClientSession s = sf.createSession(false, false, false);
 
       final int numMessages = 500;
@@ -229,7 +232,7 @@ public class OrderReattachTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
 
          volatile int count;
-         
+
          Exception failure;
 
          public void onMessage(final ClientMessage message)
@@ -239,7 +242,7 @@ public class OrderReattachTest extends ServiceTestBase
                failure = new Exception("too many messages");
                latch.countDown();
             }
-            
+
             if (message.getIntProperty("count") != count)
             {
                failure = new Exception("counter " + count + " was not as expected (" + message.getIntProperty("count") + ")");
@@ -278,7 +281,7 @@ public class OrderReattachTest extends ServiceTestBase
          boolean ok = handler.latch.await(60000, TimeUnit.MILLISECONDS);
 
          Assert.assertTrue(ok);
-         
+
          if (handler.failure != null)
          {
             throw handler.failure;
@@ -306,34 +309,5 @@ public class OrderReattachTest extends ServiceTestBase
       }
 
       s.close();
-
-      long end = System.currentTimeMillis();
-
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (server != null && server.isStarted())
-      {
-         server.stop();
-      }
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

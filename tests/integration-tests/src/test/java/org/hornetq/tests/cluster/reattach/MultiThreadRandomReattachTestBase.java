@@ -44,7 +44,7 @@ import org.hornetq.jms.client.HornetQTextMessage;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  *
  */
 public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReattachSupport
@@ -1198,7 +1198,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    {
       return 2;
    }
-   
+
    protected int getNumThreads()
    {
       return 10;
@@ -1211,21 +1211,6 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
       log.info("************ Starting test " + getName());
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (liveServer != null && liveServer.isStarted())
-      {
-         liveServer.stop();
-      }
-
-      liveServer = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
 
    private void runTestMultipleThreads(final RunnableT runnable,
                                        final int numThreads,
@@ -1252,7 +1237,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       locator.setReconnectAttempts(-1);
       locator.setConfirmationWindowSize(1024 * 1024);
-      return locator;
+      return addServerLocator(locator);
    }
 
    @Override

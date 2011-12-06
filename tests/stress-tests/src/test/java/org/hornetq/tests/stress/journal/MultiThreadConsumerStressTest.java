@@ -20,7 +20,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -29,7 +34,7 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A MultiThreadConsumerStressTest
- * 
+ *
  * This test validates consuming / sending messages while compacting is working
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -146,25 +151,6 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      try
-      {
-         if (server != null && server.isStarted())
-         {
-            server.stop();
-         }
-      }
-      catch (Throwable e)
-      {
-         e.printStackTrace(System.out); // System.out => junit reports
-      }
-
-      server = null;
-      sf = null;
-   }
-
    private void setupServer(final JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig(true);
@@ -190,7 +176,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
 
       locator.setBlockOnAcknowledge(false);
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
       ClientSession sess = sf.createSession();
 
@@ -205,7 +191,7 @@ public class MultiThreadConsumerStressTest extends ServiceTestBase
       sess.close();
       locator.close();
       locator = createInVMNonHALocator();
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
    }
 
    // Static --------------------------------------------------------
