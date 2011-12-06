@@ -1233,7 +1233,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
          Assert.assertTrue(counts.contains(messageCount));
       }
 
-      List<LinkedList<Integer>> lists = new ArrayList<LinkedList<Integer>>(consumerIDs.length);
+      @SuppressWarnings("unchecked")
+      LinkedList<Integer>[] lists = new LinkedList[consumerIDs.length];
 
       for (int i = 0; i < messageCounts.length; i++)
       {
@@ -1243,7 +1244,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
             if (elem == messageCounts[i])
             {
-               lists.set(i, list);
+               lists[i] = list;
 
                break;
             }
@@ -1253,7 +1254,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       for (int messageCount : messageCounts)
       {
-         LinkedList<Integer> list = lists.get(index);
+         LinkedList<Integer> list = lists[index];
 
          Assert.assertNotNull(list);
 
