@@ -28,6 +28,7 @@ import javax.naming.Context;
 
 import junit.framework.Assert;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -428,6 +429,24 @@ public class JMSQueueControlTest extends ManagementTestBase
       Assert.assertEquals(expiryAddress, queueControl.getExpiryAddress());
    }
 
+   public void testDuplicateJNDI() throws Exception
+   {
+      String someQueue = RandomUtil.randomString();
+      String someOtherQueue = RandomUtil.randomString();
+      serverManager.createQueue(false, someQueue, null, true, someQueue, "/duplicate");
+      boolean exception = false;
+      try
+      {
+         serverManager.createQueue(false, someOtherQueue, null, true, someOtherQueue, "/duplicate");
+      }
+      catch (Exception e)
+      {
+         exception = true;
+      }
+      
+      assertTrue(exception);
+   }
+   
    public void testExpireMessage() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();

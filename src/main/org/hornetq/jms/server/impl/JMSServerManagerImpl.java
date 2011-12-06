@@ -1407,7 +1407,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       if (registry != null)
       {
-         registry.unbind(jndiName);
+         if (registry.lookup(jndiName) != null)
+         {
+            throw new NamingException(jndiName + " already has an object bound");
+         }
          registry.bind(jndiName, objectToBind);
       }
       return true;
