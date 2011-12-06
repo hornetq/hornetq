@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
@@ -22,9 +25,6 @@ import org.hornetq.core.client.impl.ServerLocatorInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * User: andy
@@ -45,16 +45,8 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-      super.tearDown();
-   }
-
    public void testSingleConnectorSingleServer() throws Exception
    {
-
       ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
       ClientSessionFactory csf = locator.createSessionFactory();
       csf.close();
@@ -64,7 +56,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
    public void testSingleConnectorSingleServerConnect() throws Exception
    {
       ServerLocatorInternal locator = (ServerLocatorInternal) HornetQClient.createServerLocatorWithoutHA(createTransportConfiguration(isNetty(), false, generateParams(0, isNetty())));
-      ClientSessionFactoryInternal csf = (ClientSessionFactoryInternal) locator.connect();
+      ClientSessionFactoryInternal csf = locator.connect();
       assertNotNull(csf);
       assertEquals(csf.numConnections(), 1);
       locator.close();
@@ -79,7 +71,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
             createTransportConfiguration(isNetty(), false, generateParams(3, isNetty())),
             createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
       );
-      ClientSessionFactoryInternal csf = (ClientSessionFactoryInternal) locator.connect();
+      ClientSessionFactoryInternal csf = locator.connect();
       assertNotNull(csf);
       assertEquals(csf.numConnections(), 1);
       locator.close();
@@ -95,7 +87,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
             createTransportConfiguration(isNetty(), false, generateParams(4, isNetty()))
       );
       locator.setReconnectAttempts(-1);
-      ClientSessionFactoryInternal csf = (ClientSessionFactoryInternal) locator.connect();
+      ClientSessionFactoryInternal csf = locator.connect();
       assertNotNull(csf);
       assertEquals(csf.numConnections(), 1);
       locator.close();
@@ -113,7 +105,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
       ClientSessionFactoryInternal csf = null;
       try
       {
-         csf = (ClientSessionFactoryInternal) locator.connect();
+         csf = locator.connect();
       }
       catch (Exception e)
       {
@@ -134,7 +126,6 @@ public class ServerLocatorConnectTest extends ServiceTestBase
             createTransportConfiguration(isNetty(), false, generateParams(5, isNetty()))
       );
       locator.setReconnectAttempts(-1);
-      ClientSessionFactoryInternal csf = null;
       CountDownLatch countDownLatch = new CountDownLatch(1);
       Connector target = new Connector(locator, countDownLatch);
       Thread t = new Thread(target);
@@ -153,7 +144,7 @@ public class ServerLocatorConnectTest extends ServiceTestBase
 
    static class Connector implements Runnable
    {
-      private ServerLocatorInternal locator;
+      private final ServerLocatorInternal locator;
       ClientSessionFactory csf = null;
       CountDownLatch latch;
       Exception e;

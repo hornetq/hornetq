@@ -15,7 +15,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -25,39 +30,27 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class RoutingTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
-
    public final SimpleString queueA = new SimpleString("queueA");
-
    public final SimpleString queueB = new SimpleString("queueB");
-
    public final SimpleString queueC = new SimpleString("queueC");
 
    private ServerLocator locator;
+   private HornetQServer server;
+   private ClientSessionFactory cf;
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-
       locator = createInVMNonHALocator();
-   }
+      server = createServer(false);
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
+      server.start();
+      cf = createSessionFactory(locator);
    }
 
    public void testRouteToMultipleQueues() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          sendSession.createQueue(addressA, queueB, false);
@@ -90,24 +83,10 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c3.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRouteToSingleNonDurableQueue() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          int numMessages = 300;
@@ -128,25 +107,11 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRouteToSingleDurableQueue() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, true);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
@@ -166,25 +131,11 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRouteToSingleQueueWithFilter() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
@@ -206,25 +157,11 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRouteToMultipleQueueWithFilters() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, new SimpleString("foo = 'bar'"), false);
          sendSession.createQueue(addressA, queueB, new SimpleString("x = 1"), false);
          sendSession.createQueue(addressA, queueC, new SimpleString("b = false"), false);
@@ -269,25 +206,11 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c3.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
 
    public void testRouteToSingleTemporaryQueue() throws Exception
    {
-      HornetQServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
+      ClientSession sendSession = cf.createSession(false, true, true);
          sendSession.createTemporaryQueue(addressA, queueA);
          int numMessages = 300;
          ClientProducer p = sendSession.createProducer(addressA);
@@ -307,14 +230,5 @@ public class RoutingTest extends ServiceTestBase
          Assert.assertNull(c1.receiveImmediate());
          sendSession.close();
          session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
    }
-
 }

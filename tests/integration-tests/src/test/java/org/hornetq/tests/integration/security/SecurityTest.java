@@ -65,6 +65,7 @@ public class SecurityTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   private Configuration configuration;
 
    @Override
    protected void setUp() throws Exception
@@ -74,669 +75,456 @@ public class SecurityTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-   }
-
    public void testCreateSessionWithNullUserPass() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
+      server.start();
+      ClientSessionFactory cf = locator.createSessionFactory();
+
       try
       {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSession session = cf.createSession(false, true, true);
 
-         try
-         {
-            ClientSession session = cf.createSession(false, true, true);
-
-            session.close();
-         }
-         catch (HornetQException e)
-         {
-            Assert.fail("should not throw exception");
-         }
+         session.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.fail("should not throw exception");
       }
+   }
+
+   /**
+    * @return
+    */
+   private HornetQServer createServer()
+   {
+      configuration = createDefaultConfig(false);
+      configuration.setSecurityEnabled(true);
+      HornetQServer server = createServer(false, configuration);
+      return server;
    }
 
    public void testCreateSessionWithNullUserPassNoGuest() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
+      server.start();
+      ClientSessionFactory cf = locator.createSessionFactory();
       try
       {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-         try
-         {
-            cf.createSession(false, true, true);
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
+         cf.createSession(false, true, true);
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
    }
 
    public void testCreateSessionWithCorrectUserWrongPass() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
+      server.start();
+      ClientSessionFactory cf = locator.createSessionFactory();
+
       try
       {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
-
-         try
-         {
-            cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
-            Assert.fail("should not throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
+         cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
+         Assert.fail("should not throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
    }
 
    public void testCreateSessionWithCorrectUserCorrectPass() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
+      server.start();
+      ClientSessionFactory cf = locator.createSessionFactory();
+
       try
       {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSession session = cf.createSession("newuser", "apass", false, true, true, false, -1);
 
-         try
-         {
-            ClientSession session = cf.createSession("newuser", "apass", false, true, true, false, -1);
-
-            session.close();
-         }
-         catch (HornetQException e)
-         {
-            Assert.fail("should not throw exception");
-         }
+         session.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.fail("should not throw exception");
       }
    }
 
    public void testCreateDurableQueueWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      session.close();
    }
 
    public void testCreateDurableQueueWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         try
-         {
-            session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
    }
 
    public void testDeleteDurableQueueWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, true, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         session.deleteQueue(SecurityTest.queueA);
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, true, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      session.deleteQueue(SecurityTest.queueA);
+      session.close();
    }
 
    public void testDeleteDurableQueueWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         try
-         {
-            session.deleteQueue(SecurityTest.queueA);
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
+         session.deleteQueue(SecurityTest.queueA);
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
    }
 
    public void testCreateTempQueueWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, true, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, true, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
+      session.close();
    }
 
    public void testCreateTempQueueWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         try
-         {
-            session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
+         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
    }
 
    public void testDeleteTempQueueWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, true, true, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
-         session.deleteQueue(SecurityTest.queueA);
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, true, true, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
+      session.deleteQueue(SecurityTest.queueA);
+      session.close();
    }
 
    public void testDeleteTempQueueWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, true, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, true, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, false);
-         try
-         {
-            session.deleteQueue(SecurityTest.queueA);
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
+         session.deleteQueue(SecurityTest.queueA);
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
    }
 
    public void testSendWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
+      server.start();
+
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+
+      securityManager.addUser("auser", "pass");
+
+      Role role = new Role("arole", true, true, true, false, false, false, false);
+
+      Set<Role> roles = new HashSet<Role>();
+
+      roles.add(role);
+
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+
+      securityManager.addRole("auser", "arole");
+
+      locator.setBlockOnNonDurableSend(true);
+
+      ClientSessionFactory cf = locator.createSessionFactory();
+
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+
+      ClientProducer cp = session.createProducer(SecurityTest.addressA);
+
+      cp.send(session.createMessage(false));
+
+      session.start();
+
+      ClientConsumer cons = session.createConsumer(queueA);
+
+      ClientMessage receivedMessage = cons.receive(5000);
+
+      assertNotNull(receivedMessage);
+
+      receivedMessage.acknowledge();
+
+      role = new Role("arole", false, false, true, false, false, false, false);
+
+      roles = new HashSet<Role>();
+
+      roles.add(role);
+
+      // This was added to validate https://issues.jboss.org/browse/SOA-3363
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      boolean failed = false;
       try
       {
-         server.start();
-
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-
-         securityManager.addUser("auser", "pass");
-
-         Role role = new Role("arole", true, true, true, false, false, false, false);
-
-         Set<Role> roles = new HashSet<Role>();
-
-         roles.add(role);
-
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-
-         securityManager.addRole("auser", "arole");
-
-         locator.setBlockOnNonDurableSend(true);
-
-         ClientSessionFactory cf = locator.createSessionFactory();
-
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-
-         ClientProducer cp = session.createProducer(SecurityTest.addressA);
-
-         cp.send(session.createMessage(false));
-
-         session.start();
-
-         ClientConsumer cons = session.createConsumer(queueA);
-
-         ClientMessage receivedMessage = cons.receive(5000);
-
-         assertNotNull(receivedMessage);
-
-         receivedMessage.acknowledge();
-
-         role = new Role("arole", false, false, true, false, false, false, false);
-
-         roles = new HashSet<Role>();
-
-         roles.add(role);
-
-
-         // This was added to validate https://issues.jboss.org/browse/SOA-3363
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         boolean failed = false;
-         try
-         {
-            cp.send(session.createMessage(true));
-         }
-         catch (HornetQException e)
-         {
-            failed = true;
-         }
-         // This was added to validate https://issues.jboss.org/browse/SOA-3363 ^^^^^
-
-         assertTrue("Failure expected on send after removing the match", failed);
-
-
-         session.close();
-
+         cp.send(session.createMessage(true));
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         failed = true;
       }
+      // This was added to validate https://issues.jboss.org/browse/SOA-3363 ^^^^^
+
+      assertTrue("Failure expected on send after removing the match", failed);
    }
 
    public void testSendWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      locator.setBlockOnNonDurableSend(true);
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = session.createProducer(SecurityTest.addressA);
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         try
-         {
-            cp.send(session.createMessage(false));
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
+         cp.send(session.createMessage(false));
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
    }
 
    public void testNonBlockSendWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = session.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         session.close();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = session.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
+      session.close();
 
-         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
-         Assert.assertEquals(0, binding.getMessageCount());
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+      Assert.assertEquals(0, binding.getMessageCount());
    }
 
    public void testCreateConsumerWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         securityManager.addUser("guest", "guest");
-         securityManager.addRole("guest", "guest");
-         securityManager.setDefaultUser("guest");
-         Role role = new Role("arole", false, true, false, false, false, false, false);
-         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(sendRole);
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession senSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         session.createConsumer(SecurityTest.queueA);
-         session.close();
-         senSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      Role role = new Role("arole", false, true, false, false, false, false, false);
+      Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(sendRole);
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession senSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
+      session.createConsumer(SecurityTest.queueA);
+      session.close();
+      senSession.close();
    }
 
    public void testCreateConsumerWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-
+      HornetQServer server = createServer();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(sendRole);
+      roles.add(role);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession senSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         securityManager.addUser("guest", "guest");
-         securityManager.addRole("guest", "guest");
-         securityManager.setDefaultUser("guest");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(sendRole);
-         roles.add(role);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession senSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         try
-         {
-            session.createConsumer(SecurityTest.queueA);
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
-         senSession.close();
+         session.createConsumer(SecurityTest.queueA);
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
+      senSession.close();
    }
 
    public void testSendMessageUpdateRoleCached() throws Exception
@@ -745,60 +533,49 @@ public class SecurityTest extends ServiceTestBase
       configuration.setSecurityEnabled(true);
       configuration.setSecurityInvalidationInterval(10000);
       HornetQServer server = createServer(false, configuration);
-
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+      Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(sendRole);
+      roles.add(role);
+      roles.add(receiveRole);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession senSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         securityManager.addUser("guest", "guest");
-         securityManager.addRole("guest", "guest");
-         securityManager.setDefaultUser("guest");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(sendRole);
-         roles.add(role);
-         roles.add(receiveRole);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession senSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         try
-         {
-            session.createConsumer(SecurityTest.queueA);
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-
-         securityManager.addRole("auser", "receiver");
-
          session.createConsumer(SecurityTest.queueA);
-
-         // Removing the Role... the check should be cached, so the next createConsumer shouldn't fail
-         securityManager.removeRole("auser", "receiver");
-
-         session.createConsumer(SecurityTest.queueA);
-
-         session.close();
-
-         senSession.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+
+      securityManager.addRole("auser", "receiver");
+
+      session.createConsumer(SecurityTest.queueA);
+
+      // Removing the Role... the check should be cached, so the next createConsumer shouldn't fail
+      securityManager.removeRole("auser", "receiver");
+
+      session.createConsumer(SecurityTest.queueA);
+
+      session.close();
+
+      senSession.close();
    }
 
    public void testSendMessageUpdateRoleCached2() throws Exception
@@ -808,67 +585,58 @@ public class SecurityTest extends ServiceTestBase
       configuration.setSecurityInvalidationInterval(0);
       HornetQServer server = createServer(false, configuration);
 
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+      Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(sendRole);
+      roles.add(role);
+      roles.add(receiveRole);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession senSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         securityManager.addUser("guest", "guest");
-         securityManager.addRole("guest", "guest");
-         securityManager.setDefaultUser("guest");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(sendRole);
-         roles.add(role);
-         roles.add(receiveRole);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession senSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         try
-         {
-            session.createConsumer(SecurityTest.queueA);
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-
-         securityManager.addRole("auser", "receiver");
-
          session.createConsumer(SecurityTest.queueA);
-
-         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
-         // next createConsumer should fail
-         securityManager.removeRole("auser", "receiver");
-
-         try
-         {
-            session.createConsumer(SecurityTest.queueA);
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-
-         session.close();
-
-         senSession.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+
+      securityManager.addRole("auser", "receiver");
+
+      session.createConsumer(SecurityTest.queueA);
+
+      // Removing the Role... the check should be cached... but we used
+      // setSecurityInvalidationInterval(0), so the
+      // next createConsumer should fail
+      securityManager.removeRole("auser", "receiver");
+
+      try
+      {
+         session.createConsumer(SecurityTest.queueA);
+      }
+      catch (HornetQException e)
+      {
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+      }
+
+      session.close();
+
+      senSession.close();
    }
 
    public void testSendMessageUpdateSender() throws Exception
@@ -877,220 +645,176 @@ public class SecurityTest extends ServiceTestBase
       configuration.setSecurityEnabled(true);
       configuration.setSecurityInvalidationInterval(-1);
       HornetQServer server = createServer(false, configuration);
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      securityManager.addUser("guest", "guest");
+      securityManager.addRole("guest", "guest");
+      securityManager.setDefaultUser("guest");
+      Role role = new Role("arole", false, false, false, false, false, false, false);
+      System.out.println("guest:" + role);
+      Role sendRole = new Role("guest", true, false, true, false, false, false, false);
+      System.out.println("guest:" + sendRole);
+      Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
+      System.out.println("guest:" + receiveRole);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(sendRole);
+      roles.add(role);
+      roles.add(receiveRole);
+      securityRepository.addMatch(SecurityTest.addressA, roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+
+      ClientSession senSession = cf.createSession(false, true, true);
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
+      ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
+      cp.send(session.createMessage(false));
+      try
+      {
+         session.createConsumer(SecurityTest.queueA);
+      }
+      catch (HornetQException e)
+      {
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
+      }
+
+      securityManager.addRole("auser", "receiver");
+
+      session.createConsumer(SecurityTest.queueA);
+
+      // Removing the Role... the check should be cached... but we used
+      // setSecurityInvalidationInterval(0), so the
+      // next createConsumer should fail
+      securityManager.removeRole("auser", "guest");
+
+      ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
+      ClientProducer prod = sendingSession.createProducer(SecurityTest.addressA);
+      prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+      prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+      try
+      {
+         sendingSession.commit();
+         Assert.fail("Expected exception");
+      }
+      catch (HornetQException e)
+      {
+         // I would expect the commit to fail, since there were failures registered
+      }
+
+      sendingSession.close();
+
+      Xid xid = newXID();
+
+      sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
+      sendingSession.start(xid, XAResource.TMNOFLAGS);
+
+      prod = sendingSession.createProducer(SecurityTest.addressA);
+      prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+      prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
+      sendingSession.end(xid, XAResource.TMSUCCESS);
 
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         securityManager.addUser("guest", "guest");
-         securityManager.addRole("guest", "guest");
-         securityManager.setDefaultUser("guest");
-         Role role = new Role("arole", false, false, false, false, false, false, false);
-         System.out.println("guest:" + role);
-         Role sendRole = new Role("guest", true, false, true, false, false, false, false);
-         System.out.println("guest:" + sendRole);
-         Role receiveRole = new Role("receiver", false, true, false, false, false, false, false);
-         System.out.println("guest:" + receiveRole);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(sendRole);
-         roles.add(role);
-         roles.add(receiveRole);
-         securityRepository.addMatch(SecurityTest.addressA, roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-
-         ClientSession senSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         senSession.createQueue(SecurityTest.addressA, SecurityTest.queueA, true);
-         ClientProducer cp = senSession.createProducer(SecurityTest.addressA);
-         cp.send(session.createMessage(false));
-         try
-         {
-            session.createConsumer(SecurityTest.queueA);
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-
-         securityManager.addRole("auser", "receiver");
-
-         session.createConsumer(SecurityTest.queueA);
-
-         // Removing the Role... the check should be cached... but we used setSecurityInvalidationInterval(0), so the
-         // next createConsumer should fail
-         securityManager.removeRole("auser", "guest");
-
-         ClientSession sendingSession = cf.createSession("auser", "pass", false, false, false, false, 0);
-         ClientProducer prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
-         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
-         try
-         {
-            sendingSession.commit();
-            Assert.fail("Expected exception");
-         }
-         catch (HornetQException e)
-         {
-            // I would expect the commit to fail, since there were failures registered
-         }
-
-         sendingSession.close();
-
-         Xid xid = newXID();
-
-         sendingSession = cf.createSession("auser", "pass", true, false, false, false, 0);
-         sendingSession.start(xid, XAResource.TMNOFLAGS);
-
-         prod = sendingSession.createProducer(SecurityTest.addressA);
-         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
-         prod.send(CreateMessage.createTextMessage(sendingSession, "Test", true));
-         sendingSession.end(xid, XAResource.TMSUCCESS);
-
-         try
-         {
-            sendingSession.prepare(xid);
-            Assert.fail("Exception was expected");
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-
-         // A prepare shouldn't mark any recoverable resources
-         Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
-         Assert.assertEquals(0, xids.length);
-
-         session.close();
-
-         senSession.close();
-
-         sendingSession.close();
+         sendingSession.prepare(xid);
+         Assert.fail("Exception was expected");
       }
-      finally
+      catch (Exception e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         e.printStackTrace();
       }
+
+      // A prepare shouldn't mark any recoverable resources
+      Xid[] xids = sendingSession.recover(XAResource.TMSTARTRSCAN);
+      Assert.assertEquals(0, xids.length);
+
+      session.close();
+
+      senSession.close();
+
+      sendingSession.close();
    }
 
    public void testSendManagementWithRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, false, false, false, false, true);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
-         securityManager.addRole("auser", "arole");
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         ClientProducer cp = session.createProducer(configuration.getManagementAddress());
-         cp.send(session.createMessage(false));
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, false, false, false, false, true);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
+      securityManager.addRole("auser", "arole");
+      locator.setBlockOnNonDurableSend(true);
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      ClientProducer cp = session.createProducer(configuration.getManagementAddress());
+      cp.send(session.createMessage(false));
+      session.close();
    }
 
    public void testSendManagementWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
+      ClientProducer cp = session.createProducer(configuration.getManagementAddress());
+      cp.send(session.createMessage(false));
       try
       {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
-         ClientProducer cp = session.createProducer(configuration.getManagementAddress());
          cp.send(session.createMessage(false));
-         try
-         {
-            cp.send(session.createMessage(false));
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
-         }
-         session.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
       }
+      session.close();
+
    }
 
    public void testNonBlockSendManagementWithoutRole() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
+      HornetQServer server = createServer();
 
-      try
-      {
-         server.start();
-         HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         HornetQSecurityManager securityManager = server.getSecurityManager();
-         securityManager.addUser("auser", "pass");
-         Role role = new Role("arole", false, false, true, false, false, false, false);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(role);
-         securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
-         securityManager.addRole("auser", "arole");
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
-         session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
-         ClientProducer cp = session.createProducer(configuration.getManagementAddress());
-         cp.send(session.createMessage(false));
-         session.close();
+      server.start();
+      HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
+      securityManager.addUser("auser", "pass");
+      Role role = new Role("arole", false, false, true, false, false, false, false);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(role);
+      securityRepository.addMatch(configuration.getManagementAddress().toString(), roles);
+      securityManager.addRole("auser", "arole");
+      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSession session = cf.createSession("auser", "pass", false, true, true, false, -1);
+      session.createQueue(configuration.getManagementAddress().toString(), SecurityTest.queueA, true);
+      ClientProducer cp = session.createProducer(configuration.getManagementAddress());
+      cp.send(session.createMessage(false));
+      session.close();
 
-         Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
-         Assert.assertEquals(0, binding.getMessageCount());
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+      Queue binding = (Queue)server.getPostOffice().getBinding(new SimpleString(SecurityTest.queueA)).getBindable();
+      Assert.assertEquals(0, binding.getMessageCount());
+
    }
 
    /*
-   * basic JAAS tests
-   * */
+    * basic JAAS tests
+    */
 
    public void testJaasCreateSessionSucceeds() throws Exception
    {
@@ -1111,29 +835,20 @@ public class SecurityTest extends ServiceTestBase
       Map<String, Object> options = new HashMap<String, Object>();
       options.put("authenticated", Boolean.TRUE);
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
+      server.start();
+      ClientSessionFactory cf = locator.createSessionFactory();
+
       try
       {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
+         ClientSession session = cf.createSession(false, true, true);
 
-         try
-         {
-            ClientSession session = cf.createSession(false, true, true);
-
-            session.close();
-         }
-         catch (HornetQException e)
-         {
-            Assert.fail("should not throw exception");
-         }
+         session.close();
       }
-      finally
+      catch (HornetQException e)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.fail("should not throw exception");
       }
+
    }
 
    public void testJaasCreateSessionFails() throws Exception
@@ -1155,9 +870,7 @@ public class SecurityTest extends ServiceTestBase
       Map<String, Object> options = new HashMap<String, Object>();
       options.put("authenticated", Boolean.FALSE);
       securityManager.setConfiguration(new SimpleConfiguration(domainName, options));
-      try
-      {
-         server.start();
+      server.start();
          ClientSessionFactory cf = locator.createSessionFactory();
 
          try
@@ -1169,24 +882,13 @@ public class SecurityTest extends ServiceTestBase
          {
             Assert.assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+
    }
 
    public void testComplexRoles() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-      try
-      {
-         server.start();
+      HornetQServer server = createServer();
+      server.start();
          HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
          securityManager.addUser("bill", "hornetq");
@@ -1274,16 +976,20 @@ public class SecurityTest extends ServiceTestBase
          checkUserSendAndReceive(genericQueueName, frankConnection);
          checkUserSendAndReceive(genericQueueName, samConnection);
 
-         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
+         // receive
          checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
+         // receive
          checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
+         // receive
          checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
+         // receive
          checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
          // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
@@ -1307,24 +1013,13 @@ public class SecurityTest extends ServiceTestBase
          samConnection.close();
 
          adminSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+
    }
 
    public void _testComplexRoles2() throws Exception
    {
-      Configuration configuration = createDefaultConfig(false);
-      configuration.setSecurityEnabled(true);
-      HornetQServer server = createServer(false, configuration);
-      try
-      {
-         server.start();
+      HornetQServer server = createServer();
+      server.start();
          HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
          securityManager.addUser("bill", "hornetq");
@@ -1412,16 +1107,20 @@ public class SecurityTest extends ServiceTestBase
          checkUserSendAndReceive(genericQueueName, frankConnection);
          checkUserSendAndReceive(genericQueueName, samConnection);
 
-         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't receive
+         // Step 11. Check permissions on news.europe.europeTopic for bill: can't send and can't
+         // receive
          checkUserNoSendNoReceive(eurQueueName, billConnection, adminSession);
 
-         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't receive
+         // Step 12. Check permissions on news.europe.europeTopic for andrew: can send but can't
+         // receive
          checkUserSendNoReceive(eurQueueName, andrewConnection);
 
-         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can receive
+         // Step 13. Check permissions on news.europe.europeTopic for frank: can't send but can
+         // receive
          checkUserReceiveNoSend(eurQueueName, frankConnection, adminSession);
 
-         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can receive
+         // Step 14. Check permissions on news.europe.europeTopic for sam: can't send but can
+         // receive
          checkUserReceiveNoSend(eurQueueName, samConnection, adminSession);
 
          // Step 15. Check permissions on news.us.usTopic for bill: can't send and can't receive
@@ -1435,14 +1134,7 @@ public class SecurityTest extends ServiceTestBase
 
          // Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
          checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
+
    }
 
    // Check the user connection has both send and receive permissions on the queue
@@ -1466,8 +1158,7 @@ public class SecurityTest extends ServiceTestBase
    }
 
    // Check the user can receive message but cannot send message.
-   private void checkUserReceiveNoSend(final String queue,
-                                       final ClientSession connection,
+   private void checkUserReceiveNoSend(final String queue, final ClientSession connection,
                                        final ClientSession sendingConn) throws Exception
    {
       connection.start();
@@ -1498,8 +1189,7 @@ public class SecurityTest extends ServiceTestBase
       }
    }
 
-   private void checkUserNoSendNoReceive(final String queue,
-                                         final ClientSession connection,
+   private void checkUserNoSendNoReceive(final String queue, final ClientSession connection,
                                          final ClientSession sendingConn) throws Exception
    {
       connection.start();
@@ -1574,10 +1264,8 @@ public class SecurityTest extends ServiceTestBase
          return true;
       }
 
-      public void initialize(final Subject subject,
-                             final CallbackHandler callbackHandler,
-                             final Map<String, ?> sharedState,
-                             final Map<String, ?> options)
+      public void initialize(final Subject subject, final CallbackHandler callbackHandler,
+                             final Map<String, ?> sharedState, final Map<String, ?> options)
       {
          this.subject = subject;
          this.options = options;
@@ -1622,9 +1310,9 @@ public class SecurityTest extends ServiceTestBase
       @Override
       public AppConfigurationEntry[] getAppConfigurationEntry(final String name)
       {
-         AppConfigurationEntry entry = new AppConfigurationEntry(loginModuleName,
-                                                                 AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
-                                                                 options);
+         AppConfigurationEntry entry =
+                  new AppConfigurationEntry(loginModuleName, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
+                                            options);
          return new AppConfigurationEntry[] { entry };
       }
 

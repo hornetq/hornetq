@@ -17,7 +17,12 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -28,7 +33,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * A SelfExpandingBufferTest
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- * 
+ *
  * Created Feb 23, 2009 4:27:16 PM
  *
  *
@@ -80,7 +85,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
       ServerLocator locator = createFactory(netty);
 
-      factory = locator.createSessionFactory();
+      factory = createSessionFactory(locator);
 
       ClientSession session = factory.createSession(false, true, true);
 
@@ -118,9 +123,9 @@ public class SelfExpandingBufferTest extends ServiceTestBase
          byte[] receivedBytes = new byte[bytes.length];
 
          // log.info("buffer start pos should be at " + PacketImpl.PACKET_HEADERS_SIZE + DataConstants.SIZE_INT);
-         //         
+         //
          // log.info("buffer pos at " + msg2.getBodyBuffer().readerIndex());
-         //         
+         //
          // log.info("buffer length should be " + msg2.getBodyBuffer().readInt(PacketImpl.PACKET_HEADERS_SIZE));
 
          msg2.getBodyBuffer().readBytes(receivedBytes);
@@ -138,7 +143,6 @@ public class SelfExpandingBufferTest extends ServiceTestBase
       finally
       {
          session.close();
-         locator.close();
       }
    }
 
@@ -151,22 +155,4 @@ public class SelfExpandingBufferTest extends ServiceTestBase
       service = createServer(persistent, createDefaultConfig(netty));
       service.start();
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (service != null && service.isStarted())
-      {
-         service.stop();
-      }
-
-      service = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }
