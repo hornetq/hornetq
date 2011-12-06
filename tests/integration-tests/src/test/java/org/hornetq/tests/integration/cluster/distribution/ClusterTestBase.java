@@ -551,7 +551,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
    }
 
-   protected void removeConsumer(final int consumerID) throws Exception
+   protected void removeConsumer(final int consumerID)
    {
       ConsumerHolder holder = consumers[consumerID];
 
@@ -560,13 +560,12 @@ public abstract class ClusterTestBase extends ServiceTestBase
          throw new IllegalArgumentException("No consumer at " + consumerID);
       }
 
-      holder.consumer.close();
-      holder.session.close();
+      holder.close();
 
       consumers[consumerID] = null;
    }
 
-   protected void closeAllConsumers() throws Exception
+   protected void closeAllConsumers()
    {
       for (int i = 0; i < consumers.length; i++)
       {
@@ -580,7 +579,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
    }
 
-   protected void closeAllSessionFactories() throws Exception
+   protected void closeAllSessionFactories()
    {
       for (int i = 0; i < sfs.length; i++)
       {
@@ -589,7 +588,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
    }
 
-   protected void closeAllServerLocatorsFactories() throws Exception
+   protected void closeAllServerLocatorsFactories()
    {
       for (int i = 0; i < locators.length; i++)
       {
