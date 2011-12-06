@@ -408,6 +408,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          public void runException() throws Exception
          {
+            checkJNDI(jndi);
+            
             if (internalCreateQueue(queueName, selectorString, durable))
             {
 
@@ -462,6 +464,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          public void runException() throws Exception
          {
+            checkJNDI(jndi);
+            
             if (internalCreateTopic(topicName))
             {
                HornetQDestination destination = topics.get(topicName);
@@ -501,6 +505,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public boolean addTopicToJndi(final String topicName, final String jndiBinding) throws Exception
    {
       checkInitialised();
+    
+      checkJNDI(jndiBinding);
 
       HornetQTopic destination = topics.get(topicName);
       if (destination == null)
@@ -540,6 +546,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
+      checkJNDI(jndiBinding);
+
       HornetQQueue destination = queues.get(queueName);
       if (destination == null)
       {
@@ -561,6 +569,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public boolean addConnectionFactoryToJNDI(final String name, final String jndiBinding) throws Exception
    {
       checkInitialised();
+      
+      checkJNDI(jndiBinding);
 
       HornetQConnectionFactory factory = connectionFactories.get(name);
       if (factory == null)
@@ -954,7 +964,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       runAfterActive(new RunnableException()
       {
-
+  
          public String toString()
          {
             return "createConnectionFactory for " + cfConfig.getName();
@@ -962,6 +972,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
          public void runException() throws Exception
          {
+            checkJNDI(jndi);
 
             HornetQConnectionFactory cf = internalCreateCF(storeConfig, cfConfig);
 
@@ -1402,15 +1413,24 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          list.add(jndiItem);
       }
    }
-
-   private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
+   
+   private void checkJNDI(final String ... jndiNames) throws NamingException
    {
-      if (registry != null)
+      
+      for (String jndiName : jndiNames)
       {
          if (registry.lookup(jndiName) != null)
          {
             throw new NamingException(jndiName + " already has an object bound");
          }
+      }
+   }
+
+   private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
+   {
+      if (registry != null)
+      {
+         registry.unbind(jndiName);
          registry.bind(jndiName, objectToBind);
       }
       return true;
