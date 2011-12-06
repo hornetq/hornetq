@@ -24,7 +24,7 @@ import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A ConsumerFilterTest
  *
  * @author Tim Fox
@@ -36,6 +36,9 @@ public class ConsumerFilterTest extends ServiceTestBase
    private static final Logger log = Logger.getLogger(ConsumerFilterTest.class);
 
    private HornetQServer server;
+   private ClientSession session;
+   private ClientProducer producer;
+   private ClientConsumer consumer;
 
    @Override
    protected void setUp() throws Exception
@@ -45,33 +48,22 @@ public class ConsumerFilterTest extends ServiceTestBase
       server = createServer(false);
 
       server.start();
-   }
+      ServerLocator locator = createInVMNonHALocator();
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
-      server = null;
+      session = sf.createSession();
 
-      super.tearDown();
+      session.start();
+      session.createQueue("foo", "foo");
+
+      producer = session.createProducer("foo");
+      consumer = session.createConsumer("foo", "animal='giraffe'");
    }
 
    public void testNonMatchingMessagesFollowedByMatchingMessages() throws Exception
    {
-      ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory sf = locator.createSessionFactory();
-
-      ClientSession session = sf.createSession();
-
-      session.start();
-
-      session.createQueue("foo", "foo");
-
-      ClientProducer producer = session.createProducer("foo");
-
-      ClientConsumer consumer = session.createConsumer("foo", "animal='giraffe'");
 
       ClientMessage message = session.createMessage(false);
 
@@ -96,29 +88,12 @@ public class ConsumerFilterTest extends ServiceTestBase
       assertEquals("giraffe", received.getStringProperty("animal"));
 
       assertNull(consumer.receiveImmediate());
-      
+
       session.close();
-      
-      sf.close();
-      
-      locator.close();
    }
 
    public void testNonMatchingMessagesFollowedByMatchingMessagesMany() throws Exception
    {
-      ServerLocator locator = createInVMNonHALocator();
-
-      ClientSessionFactory sf = locator.createSessionFactory();
-
-      ClientSession session = sf.createSession();
-
-      session.start();
-
-      session.createQueue("foo", "foo");
-
-      ClientProducer producer = session.createProducer("foo");
-
-      ClientConsumer consumer = session.createConsumer("foo", "animal='giraffe'");
 
       for (int i = 0; i < QueueImpl.MAX_DELIVERIES_IN_LOOP * 2; i++)
       {
@@ -148,105 +123,83 @@ public class ConsumerFilterTest extends ServiceTestBase
 
          assertEquals("giraffe", received.getStringProperty("animal"));
       }
-      
+
       assertNull(consumer.receiveImmediate());
 
       session.close();
-      
-      sf.close();
-      
-      locator.close();
    }
-   
+
    public void testTwoConsumers() throws Exception
    {
-      ServerLocator locator = createInVMNonHALocator();
-
-      ClientSessionFactory sf = locator.createSessionFactory();
-
-      ClientSession session = sf.createSession();
-
-      session.start();
-
-      session.createQueue("foo", "foo");
-
-      ClientProducer producer = session.createProducer("foo");
-
-      ClientConsumer consumer1 = session.createConsumer("foo", "animal='giraffe'");
-      
       ClientConsumer consumer2 = session.createConsumer("foo", "animal='elephant'");
 
       //Create and consume message that matches the first consumer's filter
-      
+
       ClientMessage message = session.createMessage(false);
 
       message.putStringProperty("animal", "giraffe");
 
       producer.send(message);
-      
-      ClientMessage received = consumer1.receive(10000);
-      
+
+      ClientMessage received = consumer.receive(10000);
+
       assertNotNull(received);
-      
+
       assertEquals("giraffe", received.getStringProperty("animal"));
-      
-      assertNull(consumer1.receiveImmediate());
+
+      assertNull(consumer.receiveImmediate());
       assertNull(consumer2.receiveImmediate());
-      
+
       //Create and consume another message that matches the first consumer's filter
       message = session.createMessage(false);
 
       message.putStringProperty("animal", "giraffe");
-      
+
       producer.send(message);
-      
-      received = consumer1.receive(10000);
-      
+
+      received = consumer.receive(10000);
+
       assertNotNull(received);
-      
+
       assertEquals("giraffe", received.getStringProperty("animal"));
-      
-      assertNull(consumer1.receiveImmediate());
+
+      assertNull(consumer.receiveImmediate());
       assertNull(consumer2.receiveImmediate());
-      
+
       //Create and consume a message that matches the second consumer's filter
-      
+
       message = session.createMessage(false);
-      
+
       message.putStringProperty("animal", "elephant");
-      
+
       producer.send(message);
-      
+
       received = consumer2.receive(10000);
-      
+
       assertNotNull(received);
-      
+
       assertEquals("elephant", received.getStringProperty("animal"));
-      
-      assertNull(consumer1.receiveImmediate());
+
+      assertNull(consumer.receiveImmediate());
       assertNull(consumer2.receiveImmediate());
-      
+
       //Create and consume another message that matches the second consumer's filter
-      
+
       message = session.createMessage(false);
-      
+
       message.putStringProperty("animal", "elephant");
-      
+
       producer.send(message);
-      
+
       received = consumer2.receive(1000);
-      
+
       assertNotNull(received);
-      
+
       assertEquals("elephant", received.getStringProperty("animal"));
-      
-      assertNull(consumer1.receiveImmediate());
+
+      assertNull(consumer.receiveImmediate());
       assertNull(consumer2.receiveImmediate());
-      
+
       session.close();
-      
-      sf.close();
-      
-      locator.close();
    }
 }

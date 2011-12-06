@@ -36,7 +36,6 @@ import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.BridgeConfiguration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -63,7 +62,6 @@ import org.hornetq.utils.LinkedListIterator;
  */
 public class BridgeTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(BridgeTest.class);
 
    protected boolean isNetty()
    {
@@ -1714,19 +1712,4 @@ public class BridgeTest extends ServiceTestBase
 
 
    }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      clearData();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      clearData();
-      super.tearDown();
-   }
-
 }

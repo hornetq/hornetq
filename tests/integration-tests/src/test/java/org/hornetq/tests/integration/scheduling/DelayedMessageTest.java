@@ -14,7 +14,12 @@ package org.hornetq.tests.integration.scheduling;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
@@ -44,7 +49,6 @@ public class DelayedMessageTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      clearData();
       initServer();
    }
 
@@ -67,29 +71,9 @@ public class DelayedMessageTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (server != null)
-      {
-         try
-         {
-            server.getAddressSettingsRepository().removeMatch(qName);
-
-            server.stop();
-            server = null;
-         }
-         catch (Exception e)
-         {
-            // ignore
-         }
-      }
-      super.tearDown();
-   }
-
    public void testDelayedRedeliveryDefaultOnClose() throws Exception
    {
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       ClientSession session = sessionFactory.createSession(false, false, false);
 
       session.createQueue(qName, qName, null, true);
@@ -155,12 +139,12 @@ public class DelayedMessageTest extends ServiceTestBase
       session3.commit();
       session3.close();
 
-      sessionFactory.close();
+
    }
 
    public void testDelayedRedeliveryDefaultOnRollback() throws Exception
    {
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       ClientSession session = sessionFactory.createSession(false, false, false);
 
       session.createQueue(qName, qName, null, true);
@@ -214,12 +198,12 @@ public class DelayedMessageTest extends ServiceTestBase
       session2.commit();
       session2.close();
 
-      sessionFactory.close();
+
    }
 
    public void testDelayedRedeliveryWithStart() throws Exception
    {
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
       ClientSession session = sessionFactory.createSession(false, false, false);
 
       session.createQueue(qName, qName, null, true);
@@ -251,7 +235,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
       // Now rollback
       long now = System.currentTimeMillis();
-      
+
 
       session2.rollback();
 
@@ -265,12 +249,12 @@ public class DelayedMessageTest extends ServiceTestBase
 
       initServer();
 
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
 
       session2 = sessionFactory.createSession(false, false, false);
-      
+
       consumer2 = session2.createConsumer(qName);
-      
+
       Thread.sleep(3000);
 
       session2.start();
@@ -292,7 +276,7 @@ public class DelayedMessageTest extends ServiceTestBase
       session2.commit();
       session2.close();
 
-      sessionFactory.close();
+
    }
 
    // Private -------------------------------------------------------

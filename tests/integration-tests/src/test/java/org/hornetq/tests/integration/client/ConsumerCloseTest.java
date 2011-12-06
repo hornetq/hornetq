@@ -26,7 +26,6 @@ import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -35,17 +34,13 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ConsumerCloseTest extends ServiceTestBase
 {
-   // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(ConsumerCloseTest.class);
-
-   // Attributes ----------------------------------------------------
-
+   private ClientSessionFactory sf;
    private HornetQServer server;
 
    private ClientSession session;
@@ -156,45 +151,21 @@ public class ConsumerCloseTest extends ServiceTestBase
       Configuration config = createDefaultConfig();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = HornetQServers.newHornetQServer(config, false);
+
+      server = addServer(HornetQServers.newHornetQServer(config, false));
       server.start();
 
       address = RandomUtil.randomSimpleString();
       queue = RandomUtil.randomSimpleString();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      ServiceTestBase.INVM_CONNECTOR_FACTORY)));
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
-      session = sf.createSession(false, true, true);
+      session = addClientSession(sf.createSession(false, true, true));
       session.createQueue(address, queue, false);
-
    }
-
-   private ClientSessionFactory sf;
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      session.deleteQueue(queue);
-
-      session.close();
-
-      sf.close();
-
-      locator.close();
-
-      server.stop();
-
-      session = null;
-      sf = null;
-      server = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 
 }

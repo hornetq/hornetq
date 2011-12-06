@@ -817,19 +817,4 @@ public class BridgeStartTest extends ServiceTestBase
       }
 
    }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-      clearData();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      clearData();
-      super.tearDown();
-   }
-
 }

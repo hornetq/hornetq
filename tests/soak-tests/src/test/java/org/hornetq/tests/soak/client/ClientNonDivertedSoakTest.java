@@ -72,8 +72,8 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
 
       ServerLocator locator = createFactory(ClientNonDivertedSoakTest.IS_NETTY);
 
-      ClientSessionFactory sf = locator.createSessionFactory();
-      
+      ClientSessionFactory sf = createSessionFactory(locator);
+
       ClientSession session = sf.createSession();
 
       session.createQueue(ClientNonDivertedSoakTest.ADDRESS, ClientNonDivertedSoakTest.ADDRESS, true);
@@ -81,23 +81,16 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
       session.close();
 
       sf.close();
-      
+
       locator.close();
 
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-      server = null;
    }
 
    public void testSoakClient() throws Exception
    {
       ServerLocator locator = createFactory(ClientNonDivertedSoakTest.IS_NETTY);
 
-      final ClientSessionFactory sf = locator.createSessionFactory();
+      final ClientSessionFactory sf = createSessionFactory(locator);
 
       ClientSession session = sf.createSession(false, false);
 
@@ -137,7 +130,7 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
             System.out.println("There are sequence errors in some of the clients, please look at the logs");
             break;
          }
-         
+
          System.out.println("count = " + send.msgs);
          Thread.sleep(10000);
       }
@@ -150,7 +143,7 @@ public class ClientNonDivertedSoakTest extends ServiceTestBase
 
       assertEquals(0, send.getErrorsCount());
       assertEquals(0, rec1.getErrorsCount());
-      
+
       locator.close();
 
    }

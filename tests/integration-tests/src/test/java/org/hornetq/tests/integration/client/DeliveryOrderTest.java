@@ -20,7 +20,13 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -39,28 +45,22 @@ public class DeliveryOrderTest extends ServiceTestBase
 
    private ServerLocator locator;
 
+   private HornetQServer server;
+
+   private ClientSessionFactory cf;
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      locator = null;
-      super.tearDown();
+      server = createServer(false);
+      server.start();
+      cf = createSessionFactory(locator);
    }
 
    public void testSendDeliveryOrderOnCommit() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, false, true);
          ClientProducer cp = sendSession.createProducer(addressA);
          int numMessages = 1000;
@@ -85,24 +85,10 @@ public class DeliveryOrderTest extends ServiceTestBase
             Assert.assertEquals(i, cm.getBodyBuffer().readInt());
          }
          sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testReceiveDeliveryOrderOnRollback() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         locator = createInVMNonHALocator();
-         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          int numMessages = 1000;
@@ -131,24 +117,10 @@ public class DeliveryOrderTest extends ServiceTestBase
             Assert.assertEquals(i, cm.getBodyBuffer().readInt());
          }
          sendSession.close();
-      }
-      finally
-      {
-         locator.close();
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    public void testMultipleConsumersMessageOrder() throws Exception
    {
-      HornetQServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = locator.createSessionFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
          ClientSession recSession = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
@@ -179,15 +151,7 @@ public class DeliveryOrderTest extends ServiceTestBase
          }
          sendSession.close();
          recSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
          }
-      }
-   }
 
    class Receiver implements MessageHandler
    {

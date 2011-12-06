@@ -80,73 +80,19 @@ public class BasicXaTest extends ServiceTestBase
       messagingService.start();
 
       locator = createInVMNonHALocator();
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
 
-      clientSession = sessionFactory.createSession(true, false, false);
+      clientSession = addClientSession(sessionFactory.createSession(true, false, false));
 
       clientSession.createQueue(atestq, atestq, null, true);
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (clientSession != null)
-      {
-         try
-         {
-            clientSession.close();
-         }
-         catch (HornetQException e1)
-         {
-            //
-         }
-      }
-      if(sessionFactory != null)
-      {
-         try
-         {
-            sessionFactory.close();
-         }
-         catch (Exception e)
-         {
-            //
-         }
-      }
-      if(locator != null)
-      {
-         try
-         {
-            locator.close();
-         }
-         catch (Exception e)
-         {
-            //
-         }
-      }
-      if (messagingService != null && messagingService.isStarted())
-      {
-         try
-         {
-            messagingService.stop();
-         }
-         catch (Exception e1)
-         {
-            //
-         }
-      }
-      messagingService = null;
-      clientSession = null;
-
-      super.tearDown();
-   }
-
 
    public void testSendWithoutXID() throws Exception
    {
       // Since both resources have same RM, TM will probably use 1PC optimization
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
 
       ClientSession session = null;
 
@@ -181,7 +127,7 @@ public class BasicXaTest extends ServiceTestBase
       // Since both resources have same RM, TM will probably use 1PC optimization
 
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
 
       ClientSession session = null;
 
@@ -228,8 +174,6 @@ public class BasicXaTest extends ServiceTestBase
       }
       finally
       {
-         factory.close();
-
          session.close();
       }
    }
@@ -239,7 +183,7 @@ public class BasicXaTest extends ServiceTestBase
    public void testIsSameRM() throws Exception
    {
       ServerLocator locator = createNettyNonHALocator();
-      ClientSessionFactory nettyFactory = locator.createSessionFactory();
+      ClientSessionFactory nettyFactory = createSessionFactory(locator);
       validateRM(nettyFactory, nettyFactory);
       validateRM(sessionFactory, sessionFactory);
       validateRM(nettyFactory, sessionFactory);
@@ -532,7 +476,7 @@ public class BasicXaTest extends ServiceTestBase
 
       messagingService.start();
 
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
 
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
@@ -559,7 +503,7 @@ public class BasicXaTest extends ServiceTestBase
 
       messagingService.start();
 
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
 
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
@@ -573,7 +517,7 @@ public class BasicXaTest extends ServiceTestBase
       messagingService.start();
 
       // This is not really necessary... But since the server has stopped, I would prefer to keep recreating the factory
-      sessionFactory = locator.createSessionFactory();
+      sessionFactory = createSessionFactory(locator);
 
       session = sessionFactory.createSession(true, false, false);
 

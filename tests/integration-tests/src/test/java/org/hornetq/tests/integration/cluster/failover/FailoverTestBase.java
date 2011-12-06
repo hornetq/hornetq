@@ -129,7 +129,8 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    }
 
-   protected TestableServer createServer(Configuration config)
+   @Override
+   protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(
                                           createInVMFailoverServer(true, config, nodeManager, config.isBackup() ? 2 : 1));
@@ -186,7 +187,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.getConnectorConfigurations().put(backupConnector.getName(), backupConnector);
       ReplicatedBackupUtils.createClusterConnectionConf(backupConfig, backupConnector.getName(),
                                                         liveConnector.getName());
-      backupServer = createServer(backupConfig);
+      backupServer = createTestableServer(backupConfig);
 
       liveConfig = super.createDefaultConfig();
       liveConfig.getAcceptorConfigurations().clear();
@@ -196,7 +197,7 @@ public abstract class FailoverTestBase extends ServiceTestBase
       liveConfig.setClustered(true);
       ReplicatedBackupUtils.createClusterConnectionConf(liveConfig, liveConnector.getName());
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      liveServer = createServer(liveConfig);
+      liveServer = createTestableServer(liveConfig);
    }
 
    protected void createReplicatedConfigs()
@@ -221,11 +222,11 @@ public abstract class FailoverTestBase extends ServiceTestBase
       backupConfig.setLargeMessagesDirectory(backupConfig.getLargeMessagesDirectory() + sufix);
       backupConfig.setSecurityEnabled(false);
 
-      backupServer = createServer(backupConfig);
+      backupServer = createTestableServer(backupConfig);
       liveConfig.getAcceptorConfigurations().clear();
       liveConfig.getAcceptorConfigurations().add(getAcceptorTransportConfiguration(true));
 
-      liveServer = createServer(liveConfig);
+      liveServer = createTestableServer(liveConfig);
    }
 
    @Override
