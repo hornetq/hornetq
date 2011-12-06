@@ -1025,7 +1025,7 @@ public abstract class UnitTestCase extends TestCase
          checkThread = true;
       }
 
-
+      clearData();
       super.tearDown();
    }
 
