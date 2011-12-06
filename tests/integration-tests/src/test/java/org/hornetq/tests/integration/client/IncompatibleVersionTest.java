@@ -83,7 +83,11 @@ public class IncompatibleVersionTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       connection.destroy();
-      super.tearDown();
+
+      locator.close();
+
+      server.stop();
+      // You CANNOT CALL super.tearDown();
    }
 
    public void testCompatibleClientVersion() throws Exception
