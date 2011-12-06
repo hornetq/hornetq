@@ -21,6 +21,15 @@
 */
 package org.hornetq.tests.unit.ra;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Document;
@@ -28,14 +37,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -273,18 +274,18 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "         <config-property-type>long</config-property-type>\n" +
          "         <config-property-value></config-property-value>\n" +
          "      </config-property>\n" +
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
-         "      <config-property>" + 
-         "         <description></description>" + 
-         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" + 
-         "         <config-property-type>java.lang.String</config-property-type>" + 
-         "         <config-property-value></config-property-value>" + 
-         "      </config-property>" + 
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorMethod</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
+         "      <config-property>" +
+         "         <description></description>" +
+         "         <config-property-name>TransactionManagerLocatorClass</config-property-name>" +
+         "         <config-property-type>java.lang.String</config-property-type>" +
+         "         <config-property-value></config-property-value>" +
+         "      </config-property>" +
          "      <config-property>\n" +
          "         <description>How many attempts should be made when connecting the MDB</description>\n" +
          "         <config-property-name>SetupAttempts</config-property-name>\n" +
@@ -322,10 +323,9 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          assertEquals(el.toString(), elementsByTagName.getLength(), 1);
          Node configPropertyNameNode = elementsByTagName.item(0);
          String configPropertyName = configPropertyNameNode.getTextContent();
-         System.out.println("configPropertyName = " + configPropertyName);
          Method setter = methodList.remove("set" + configPropertyName);
          assertNotNull("setter " + configPropertyName + " does not exist", setter);
-         Class c = setter.getParameterTypes()[0];
+         Class<?> c = setter.getParameterTypes()[0];
          elementsByTagName = el.getElementsByTagName("config-property-type");
          assertEquals("setter " + configPropertyName + " has no type set", elementsByTagName.getLength(), 1);
          Node configPropertyTypeNode = elementsByTagName.item(0);
@@ -345,12 +345,7 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
             newConfig.append("\"         <config-property-value></config-property-value>\" + \n");
             newConfig.append("\"      </config-property>\" + \n");
          }
-         System.out.println(newConfig);
          fail("methods not shown please see previous and add");
-      }
-      else
-      {
-         System.out.println(commentedOutConfigs);
       }
    }
 }
