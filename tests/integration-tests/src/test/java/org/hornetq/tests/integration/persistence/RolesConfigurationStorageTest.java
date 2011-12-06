@@ -40,14 +40,6 @@ public class RolesConfigurationStorageTest extends StorageManagerTestBase
       mapExpectedSets = new HashMap<SimpleString, PersistedRoles>();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      mapExpectedSets = null;
-
-      super.tearDown();
-   }
-
    protected void addSetting(PersistedRoles setting) throws Exception
    {
       mapExpectedSets.put(setting.getAddressMatch(), setting);

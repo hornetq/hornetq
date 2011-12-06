@@ -172,23 +172,4 @@ public class JMSConnectionFactoryConfigurationStorageTest extends StorageManager
 
       assertEquals(config.getCallTimeout(), cfs.get(0).getConfig().getCallTimeout());
    }
-
-   /**
-    * @param journal
-    * @throws Exception
-    */
-   private void checkSettings() throws Exception
-   {
-      List<PersistedConnectionFactory> listSetting = jmsJournal.recoverConnectionFactories();
-
-      assertEquals(mapExpectedCFs.size(), listSetting.size());
-
-      for (PersistedConnectionFactory el : listSetting)
-      {
-         PersistedConnectionFactory el2 = mapExpectedCFs.get(el.getName());
-
-         assertEquals(el, el2);
-      }
-   }
-
 }

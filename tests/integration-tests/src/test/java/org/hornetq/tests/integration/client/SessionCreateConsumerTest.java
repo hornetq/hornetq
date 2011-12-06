@@ -45,26 +45,8 @@ public class SessionCreateConsumerTest extends ServiceTestBase
       locator.setProducerMaxRate(99);
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnNonDurableSend(true);
-      cf = locator.createSessionFactory();
-      clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopComponent(service);
-      try
-      {
-         if (clientSession != null)
-            clientSession.close();
-         if (cf != null)
-            cf.close();
-      }
-      finally
-      {
-         closeServerLocator(locator);
-         super.tearDown();
-      }
+      cf = createSessionFactory(locator);
+      clientSession = (ClientSessionInternal)addClientSession(cf.createSession(false, true, true));
    }
 
    public void testCreateConsumer() throws Exception

@@ -23,10 +23,14 @@ import javax.transaction.xa.Xid;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -36,17 +40,11 @@ import org.hornetq.tests.util.ServiceTestBase;
 
 /**
  * A HeuristicXATest
- *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class HeuristicXATest extends ServiceTestBase
 {
    // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HeuristicXATest.class);
-
    final SimpleString ADDRESS = new SimpleString("ADDRESS");
 
    final String body = "this is the body";
@@ -69,23 +67,11 @@ public class HeuristicXATest extends ServiceTestBase
       configuration.setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
+      server.start();
 
-      try
-      {
-         server.start();
+      HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
-         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-
-         Assert.assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-
+      Assert.assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
    }
 
    public void testHeuristicCommit() throws Exception
@@ -104,93 +90,81 @@ public class HeuristicXATest extends ServiceTestBase
       configuration.setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
-      try
+      server.start();
+      Xid xid = newXID();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage msg = session.createMessage(true);
+
+      msg.getBodyBuffer().writeString(body);
+
+      producer.send(msg);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.close();
+
+      HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+
+      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+
+      Assert.assertEquals(1, preparedTransactions.length);
+
+      System.out.println(preparedTransactions[0]);
+
+      Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
+      Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
+
+      if (isCommit)
       {
-         server.start();
-         Xid xid = newXID();
+         jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
+      }
+      else
+      {
+         jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
+      }
 
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(true, false, false);
-
-         session.createQueue(ADDRESS, ADDRESS, true);
-
-         session.start(xid, XAResource.TMNOFLAGS);
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         ClientMessage msg = session.createMessage(true);
-
-         msg.getBodyBuffer().writeString(body);
-
-         producer.send(msg);
-
-         session.end(xid, XAResource.TMSUCCESS);
-
-         session.prepare(xid);
-
-         session.close();
-
-         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-
-         String preparedTransactions[] = jmxServer.listPreparedTransactions();
-
-         Assert.assertEquals(1, preparedTransactions.length);
-
-         System.out.println(preparedTransactions[0]);
-
-         Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
+      Assert.assertEquals(0, jmxServer.listPreparedTransactions().length);
+      if (isCommit)
+      {
+         Assert.assertEquals(1, jmxServer.listHeuristicCommittedTransactions().length);
          Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
-
-         if (isCommit)
-         {
-            jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-         else
-         {
-            jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-
-         Assert.assertEquals(0, jmxServer.listPreparedTransactions().length);
-         if (isCommit)
-         {
-            Assert.assertEquals(1, jmxServer.listHeuristicCommittedTransactions().length);
-            Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
-         }
-         else
-         {
-            Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
-            Assert.assertEquals(1, jmxServer.listHeuristicRolledBackTransactions().length);
-         }
-
-         if (isCommit)
-         {
-            Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
-            session = sf.createSession(false, false, false);
-
-            session.start();
-            ClientConsumer consumer = session.createConsumer(ADDRESS);
-            msg = consumer.receive(1000);
-            Assert.assertNotNull(msg);
-            msg.acknowledge();
-            Assert.assertEquals(body, msg.getBodyBuffer().readString());
-
-            session.commit();
-            session.close();
-         }
-
-         Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
       }
-      finally
+      else
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
+         Assert.assertEquals(1, jmxServer.listHeuristicRolledBackTransactions().length);
       }
 
+      if (isCommit)
+      {
+         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         msg = consumer.receive(1000);
+         Assert.assertNotNull(msg);
+         msg.acknowledge();
+         Assert.assertEquals(body, msg.getBodyBuffer().readString());
+
+         session.commit();
+         session.close();
+      }
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
    }
 
    public void testHeuristicCommitWithRestart() throws Exception
@@ -209,95 +183,85 @@ public class HeuristicXATest extends ServiceTestBase
       configuration.setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
-      try
+      server.start();
+      Xid xid = newXID();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage msg = session.createMessage(true);
+
+      msg.getBodyBuffer().writeString(body);
+
+      producer.send(msg);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.close();
+
+      HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+
+      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+
+      Assert.assertEquals(1, preparedTransactions.length);
+      System.out.println(preparedTransactions[0]);
+
+      if (isCommit)
       {
-         server.start();
-         Xid xid = newXID();
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(true, false, false);
-
-         session.createQueue(ADDRESS, ADDRESS, true);
-
-         session.start(xid, XAResource.TMNOFLAGS);
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         ClientMessage msg = session.createMessage(true);
-
-         msg.getBodyBuffer().writeString(body);
-
-         producer.send(msg);
-
-         session.end(xid, XAResource.TMSUCCESS);
-
-         session.prepare(xid);
-
-         session.close();
-
-         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-
-         String preparedTransactions[] = jmxServer.listPreparedTransactions();
-
-         Assert.assertEquals(1, preparedTransactions.length);
-         System.out.println(preparedTransactions[0]);
-
-         if (isCommit)
-         {
-            jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-         else
-         {
-            jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-
-         preparedTransactions = jmxServer.listPreparedTransactions();
-         Assert.assertEquals(0, preparedTransactions.length);
-
-         if (isCommit)
-         {
-            Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
-            session = sf.createSession(false, false, false);
-
-            session.start();
-            ClientConsumer consumer = session.createConsumer(ADDRESS);
-            msg = consumer.receive(1000);
-            Assert.assertNotNull(msg);
-            msg.acknowledge();
-            Assert.assertEquals(body, msg.getBodyBuffer().readString());
-
-            session.commit();
-            session.close();
-         }
-
-         Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
-         server.stop();
-
-         server.start();
-
-         jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-         if (isCommit)
-         {
-            String[] listHeuristicCommittedTransactions = jmxServer.listHeuristicCommittedTransactions();
-            Assert.assertEquals(1, listHeuristicCommittedTransactions.length);
-            System.out.println(listHeuristicCommittedTransactions[0]);
-         }
-         else
-         {
-            String[] listHeuristicRolledBackTransactions = jmxServer.listHeuristicRolledBackTransactions();
-            Assert.assertEquals(1, listHeuristicRolledBackTransactions.length);
-            System.out.println(listHeuristicRolledBackTransactions[0]);
-         }
+         jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
       }
-      finally
+      else
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
+      }
+
+      preparedTransactions = jmxServer.listPreparedTransactions();
+      Assert.assertEquals(0, preparedTransactions.length);
+
+      if (isCommit)
+      {
+         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         msg = consumer.receive(1000);
+         Assert.assertNotNull(msg);
+         msg.acknowledge();
+         Assert.assertEquals(body, msg.getBodyBuffer().readString());
+
+         session.commit();
+         session.close();
+      }
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+      server.stop();
+
+      server.start();
+
+      jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+      if (isCommit)
+      {
+         String[] listHeuristicCommittedTransactions = jmxServer.listHeuristicCommittedTransactions();
+         Assert.assertEquals(1, listHeuristicCommittedTransactions.length);
+         System.out.println(listHeuristicCommittedTransactions[0]);
+      }
+      else
+      {
+         String[] listHeuristicRolledBackTransactions = jmxServer.listHeuristicRolledBackTransactions();
+         Assert.assertEquals(1, listHeuristicRolledBackTransactions.length);
+         System.out.println(listHeuristicRolledBackTransactions[0]);
       }
    }
 
@@ -317,105 +281,95 @@ public class HeuristicXATest extends ServiceTestBase
       configuration.setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
-      try
+      server.start();
+      Xid xid = newXID();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage msg = session.createMessage(true);
+
+      msg.getBodyBuffer().writeString(body);
+
+      producer.send(msg);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      session.close();
+
+      HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+
+      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+
+      Assert.assertEquals(1, preparedTransactions.length);
+      System.out.println(preparedTransactions[0]);
+
+      if (heuristicCommit)
       {
-         server.start();
-         Xid xid = newXID();
+         jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
+      }
+      else
+      {
+         jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
+      }
 
-         ClientSessionFactory sf = locator.createSessionFactory();
+      preparedTransactions = jmxServer.listPreparedTransactions();
+      Assert.assertEquals(0, preparedTransactions.length);
 
-         ClientSession session = sf.createSession(true, false, false);
+      if (heuristicCommit)
+      {
+         Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
 
-         session.createQueue(ADDRESS, ADDRESS, true);
+         session = sf.createSession(false, false, false);
 
-         session.start(xid, XAResource.TMNOFLAGS);
+         session.start();
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         msg = consumer.receive(1000);
+         Assert.assertNotNull(msg);
+         msg.acknowledge();
+         Assert.assertEquals(body, msg.getBodyBuffer().readString());
 
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         ClientMessage msg = session.createMessage(true);
-
-         msg.getBodyBuffer().writeString(body);
-
-         producer.send(msg);
-
-         session.end(xid, XAResource.TMSUCCESS);
-
-         session.prepare(xid);
-
-         session.close();
-
-         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-
-         String preparedTransactions[] = jmxServer.listPreparedTransactions();
-
-         Assert.assertEquals(1, preparedTransactions.length);
-         System.out.println(preparedTransactions[0]);
-
-         if (heuristicCommit)
-         {
-            jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-         else
-         {
-            jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-
-         preparedTransactions = jmxServer.listPreparedTransactions();
-         Assert.assertEquals(0, preparedTransactions.length);
-
-         if (heuristicCommit)
-         {
-            Assert.assertEquals(1, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
-            session = sf.createSession(false, false, false);
-
-            session.start();
-            ClientConsumer consumer = session.createConsumer(ADDRESS);
-            msg = consumer.receive(1000);
-            Assert.assertNotNull(msg);
-            msg.acknowledge();
-            Assert.assertEquals(body, msg.getBodyBuffer().readString());
-
-            session.commit();
-            session.close();
-         }
-
-         Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
-
-         server.stop();
-
-         server.start();
-         //we need to recreate the locator and session factory
-         sf = locator.createSessionFactory();
-         jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-         if (heuristicCommit)
-         {
-            String[] listHeuristicCommittedTransactions = jmxServer.listHeuristicCommittedTransactions();
-            Assert.assertEquals(1, listHeuristicCommittedTransactions.length);
-            System.out.println(listHeuristicCommittedTransactions[0]);
-         }
-         else
-         {
-            String[] listHeuristicRolledBackTransactions = jmxServer.listHeuristicRolledBackTransactions();
-            Assert.assertEquals(1, listHeuristicRolledBackTransactions.length);
-            System.out.println(listHeuristicRolledBackTransactions[0]);
-         }
-
-         session = sf.createSession(true, false, false);
-         Xid[] recoveredXids = session.recover(XAResource.TMSTARTRSCAN);
-         Assert.assertEquals(1, recoveredXids.length);
-         Assert.assertEquals(xid, recoveredXids[0]);
-         Assert.assertEquals(0, session.recover(XAResource.TMENDRSCAN).length);
-
+         session.commit();
          session.close();
       }
-      finally
+
+      Assert.assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
+
+      server.stop();
+
+      server.start();
+      // we need to recreate the locator and session factory
+      sf = createSessionFactory(locator);
+      jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+      if (heuristicCommit)
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         String[] listHeuristicCommittedTransactions = jmxServer.listHeuristicCommittedTransactions();
+         Assert.assertEquals(1, listHeuristicCommittedTransactions.length);
+         System.out.println(listHeuristicCommittedTransactions[0]);
       }
+      else
+      {
+         String[] listHeuristicRolledBackTransactions = jmxServer.listHeuristicRolledBackTransactions();
+         Assert.assertEquals(1, listHeuristicRolledBackTransactions.length);
+         System.out.println(listHeuristicRolledBackTransactions[0]);
+      }
+
+      session = sf.createSession(true, false, false);
+      Xid[] recoveredXids = session.recover(XAResource.TMSTARTRSCAN);
+      Assert.assertEquals(1, recoveredXids.length);
+      Assert.assertEquals(xid, recoveredXids[0]);
+      Assert.assertEquals(0, session.recover(XAResource.TMENDRSCAN).length);
+
+      session.close();
    }
 
    public void testForgetHeuristicCommitAndRestart() throws Exception
@@ -434,90 +388,80 @@ public class HeuristicXATest extends ServiceTestBase
       configuration.setJMXManagementEnabled(true);
 
       HornetQServer server = createServer(true, configuration, mbeanServer, new HashMap<String, AddressSettings>());
-      try
+      server.start();
+      Xid xid = newXID();
+
+      ClientSessionFactory sf = createSessionFactory(locator);
+
+      ClientSession session = sf.createSession(true, false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, true);
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      ClientMessage msg = session.createMessage(true);
+
+      msg.getBodyBuffer().writeBytes(new byte[123]);
+
+      producer.send(msg);
+
+      session.end(xid, XAResource.TMSUCCESS);
+
+      session.prepare(xid);
+
+      HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+
+      String preparedTransactions[] = jmxServer.listPreparedTransactions();
+
+      Assert.assertEquals(1, preparedTransactions.length);
+      System.out.println(preparedTransactions[0]);
+
+      if (heuristicCommit)
       {
-         server.start();
-         Xid xid = newXID();
-
-         ClientSessionFactory sf = locator.createSessionFactory();
-
-         ClientSession session = sf.createSession(true, false, false);
-
-         session.createQueue(ADDRESS, ADDRESS, true);
-
-         session.start(xid, XAResource.TMNOFLAGS);
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         ClientMessage msg = session.createMessage(true);
-
-         msg.getBodyBuffer().writeBytes(new byte[123]);
-
-         producer.send(msg);
-
-         session.end(xid, XAResource.TMSUCCESS);
-
-         session.prepare(xid);
-
-         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-
-         String preparedTransactions[] = jmxServer.listPreparedTransactions();
-
-         Assert.assertEquals(1, preparedTransactions.length);
-         System.out.println(preparedTransactions[0]);
-
-         if (heuristicCommit)
-         {
-            jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-         else
-         {
-            jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
-         }
-
-         preparedTransactions = jmxServer.listPreparedTransactions();
-         Assert.assertEquals(0, preparedTransactions.length);
-
-         session.forget(xid);
-
-         session.close();
-
-         if (heuristicCommit)
-         {
-            Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
-         }
-         else
-         {
-            Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
-         }
-
-         server.stop();
-
-         server.start();
-         //we need to recreate the sf
-         sf = locator.createSessionFactory();
-         session = sf.createSession(true, false, false);
-         Xid[] recoveredXids = session.recover(XAResource.TMSTARTRSCAN);
-         Assert.assertEquals(0, recoveredXids.length);
-         jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
-         if (heuristicCommit)
-         {
-            Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
-         }
-         else
-         {
-            Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
-         }
-
-         session.close();
+         jmxServer.commitPreparedTransaction(XidImpl.toBase64String(xid));
       }
-      finally
+      else
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
+         jmxServer.rollbackPreparedTransaction(XidImpl.toBase64String(xid));
       }
+
+      preparedTransactions = jmxServer.listPreparedTransactions();
+      Assert.assertEquals(0, preparedTransactions.length);
+
+      session.forget(xid);
+
+      session.close();
+
+      if (heuristicCommit)
+      {
+         Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
+      }
+      else
+      {
+         Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
+      }
+
+      server.stop();
+
+      server.start();
+      // we need to recreate the sf
+      sf = createSessionFactory(locator);
+      session = sf.createSession(true, false, false);
+      Xid[] recoveredXids = session.recover(XAResource.TMSTARTRSCAN);
+      Assert.assertEquals(0, recoveredXids.length);
+      jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
+      if (heuristicCommit)
+      {
+         Assert.assertEquals(0, jmxServer.listHeuristicCommittedTransactions().length);
+      }
+      else
+      {
+         Assert.assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);
+      }
+
+      session.close();
    }
 
    // Package protected ---------------------------------------------

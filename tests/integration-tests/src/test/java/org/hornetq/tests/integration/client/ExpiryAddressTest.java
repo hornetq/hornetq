@@ -14,16 +14,19 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -310,49 +313,16 @@ public class ExpiryAddressTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = HornetQServers.newHornetQServer(configuration, false);
+      server = createServer(false, configuration);
       // start the server
       server.start();
       // then we create a client as normal
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-
-      locator.setBlockOnAcknowledge(true); 
-      ClientSessionFactory sessionFactory = locator.createSessionFactory();
-// There are assertions over sizes that needs to be done after the ACK
+      locator = createInVMNonHALocator();
+      locator.setBlockOnAcknowledge(true);
+      ClientSessionFactory sessionFactory = createSessionFactory(locator);
+      // There are assertions over sizes that needs to be done after the ACK
       // was received on server
-      clientSession = sessionFactory.createSession(null, null, false, true, true, false, 0);
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (clientSession != null)
-      {
-         try
-         {
-            clientSession.close();
-         }
-         catch (HornetQException e1)
-         {
-            //
-         }
-      }
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e1)
-         {
-            //
-         }
-      }
-      locator.close();
-      server = null;
-      clientSession = null;
-
-      super.tearDown();
+      clientSession = addClientSession(sessionFactory.createSession(null, null, false, true, true, false, 0));
    }
 
 }

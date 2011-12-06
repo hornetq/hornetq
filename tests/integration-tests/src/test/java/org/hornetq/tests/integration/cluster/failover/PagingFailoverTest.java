@@ -74,12 +74,9 @@ public class PagingFailoverTest extends FailoverTestBase
       {
          if (session != null)
             session.close();
-         if (sf != null)
-            sf.close();
       }
       finally
       {
-      closeServerLocator(locator);
          super.tearDown();
       }
    }
@@ -219,7 +216,7 @@ public class PagingFailoverTest extends FailoverTestBase
    }
 
    @Override
-   protected TestableServer createServer(Configuration config)
+   protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(createServer(true, config));
    }

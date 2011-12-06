@@ -28,98 +28,54 @@ import org.hornetq.tests.util.ServiceTestBase;
 public class SessionCreateProducerTest extends ServiceTestBase
 {
    private ServerLocator locator;
+   private ClientSessionInternal clientSession;
+   private ClientSessionFactory cf;
 
    @Override
    protected void setUp() throws Exception
    {
+      super.setUp();
       locator = createInVMNonHALocator();
-      
-      super.setUp();  
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      
-      super.tearDown();
+      HornetQServer service = createServer(false);
+      service.start();
+      locator.setProducerMaxRate(99);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnNonDurableSend(true);
+      cf = createSessionFactory(locator);
+      clientSession = (ClientSessionInternal)addClientSession(cf.createSession(false, true, true));
    }
 
    public void testCreateAnonProducer() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
-         ClientProducer producer = clientSession.createProducer();
-         Assert.assertNull(producer.getAddress());
-         Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
-         Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
-         Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
-         Assert.assertFalse(producer.isClosed());
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
+      ClientProducer producer = clientSession.createProducer();
+      Assert.assertNull(producer.getAddress());
+      Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
+      Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
+      Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
+      Assert.assertFalse(producer.isClosed());
    }
 
    public void testCreateProducer1() throws Exception
    {
-      HornetQServer service = createServer(false);
-      try
-      {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
-         ClientProducer producer = clientSession.createProducer("testAddress");
-         Assert.assertNotNull(producer.getAddress());
-         Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
-         Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
-         Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
-         Assert.assertFalse(producer.isClosed());
-         clientSession.close();
-      }
-      finally
-      {
-         service.stop();
-      }
+      ClientProducer producer = clientSession.createProducer("testAddress");
+      Assert.assertNotNull(producer.getAddress());
+      Assert.assertEquals(cf.getServerLocator().getProducerMaxRate(), producer.getMaxRate());
+      Assert.assertEquals(cf.getServerLocator().isBlockOnNonDurableSend(), producer.isBlockOnNonDurableSend());
+      Assert.assertEquals(cf.getServerLocator().isBlockOnDurableSend(), producer.isBlockOnDurableSend());
+      Assert.assertFalse(producer.isClosed());
    }
 
    public void testProducerOnClosedSession() throws Exception
    {
-      HornetQServer service = createServer(false);
+      clientSession.close();
       try
       {
-         service.start();
-         locator.setProducerMaxRate(99);
-         locator.setBlockOnNonDurableSend(true);
-         locator.setBlockOnNonDurableSend(true);
-         ClientSessionFactory cf = locator.createSessionFactory();
-         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
-         clientSession.close();
-         try
-         {
-            clientSession.createProducer();
-            Assert.fail("should throw exception");
-         }
-         catch (HornetQException e)
-         {
-            Assert.assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
-         }
+         clientSession.createProducer();
+         Assert.fail("should throw exception");
       }
-      finally
+      catch (HornetQException e)
       {
-         service.stop();
+         Assert.assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
       }
    }
 

@@ -129,7 +129,6 @@ public abstract class FailoverTestBase extends ServiceTestBase
 
    }
 
-   @Override
    protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(

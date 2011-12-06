@@ -21,14 +21,11 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A SynchronousCloseTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -37,12 +34,6 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class SynchronousCloseTest extends ServiceTestBase
 {
-
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(SynchronousCloseTest.class);
-
-   // Attributes ----------------------------------------------------
 
    private HornetQServer server;
 
@@ -67,16 +58,6 @@ public class SynchronousCloseTest extends ServiceTestBase
       server.start();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
    protected boolean isNetty()
    {
       return false;
@@ -94,7 +75,7 @@ public class SynchronousCloseTest extends ServiceTestBase
          locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
       }
 
-      return locator.createSessionFactory();
+      return createSessionFactory(locator);
    }
 
    /*
@@ -118,9 +99,4 @@ public class SynchronousCloseTest extends ServiceTestBase
 
       sf.getServerLocator().close();
    }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

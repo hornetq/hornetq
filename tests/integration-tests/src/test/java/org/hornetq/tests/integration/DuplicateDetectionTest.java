@@ -23,11 +23,16 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.UUIDGenerator;
@@ -36,7 +41,7 @@ import org.hornetq.utils.UUIDGenerator;
  * A DuplicateDetectionTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 9 Dec 2008 12:31:48
  *
  *
@@ -528,7 +533,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.start();
 
       final SimpleString queueName = new SimpleString("DuplicateDetectionTestQueue");
-      
+
       final SimpleString queue2 = new SimpleString("queue2");
 
       session.createQueue(queueName, queueName, null, false);
@@ -541,7 +546,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       SimpleString dupID = new SimpleString("abcdefg");
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      
+
       ClientMessage message2 = createMessage(session,0);
       ClientProducer producer2 = session.createProducer(queue2);
       producer2.send(message2);
@@ -553,7 +558,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session = sf.createSession(false, false, false);
 
       session.start();
-      
+
       ClientConsumer consumer2 = session.createConsumer(queue2);
 
       producer = session.createProducer(queueName);
@@ -570,11 +575,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = createMessage(session, 4);
       producer.send(message);
-      
+
       message = consumer2.receive(5000);
       assertNotNull(message);
       message.acknowledge();
-      
+
 
       try
       {
@@ -593,13 +598,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receiveImmediate();
       Assert.assertNull(message);
-      
-      
+
+
       message = consumer2.receive(5000);
       assertNotNull(message);
-      
+
       message.acknowledge();
-      
+
       session.commit();
 
       session.close();
@@ -903,7 +908,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       session.close();
 
       session = sf.createSession(false, false, false);
-      
+
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queueName);
@@ -1113,7 +1118,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1153,7 +1158,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1200,7 +1205,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(theCacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1236,7 +1241,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1282,7 +1287,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(initialCacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1320,7 +1325,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(subsequentCacheSize);
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1375,7 +1380,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(initialCacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1413,7 +1418,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(subsequentCacheSize);
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1423,7 +1428,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(initialCacheSize);
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1477,7 +1482,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setPersistIDCache(false);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1517,7 +1522,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1564,7 +1569,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setPersistIDCache(false);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1606,7 +1611,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1653,7 +1658,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1699,7 +1704,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1735,7 +1740,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 2);
       message.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      
+
       try
       {
          session.commit();
@@ -1768,7 +1773,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setPersistIDCache(false);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1812,7 +1817,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1871,7 +1876,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1913,7 +1918,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -1972,7 +1977,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      HornetQServer messagingService2 = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -2016,7 +2021,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       messagingService2.stop();
 
-      messagingService2 = HornetQServers.newHornetQServer(conf);
+      messagingService2 = createServer(conf);
 
       messagingService2.start();
 
@@ -2053,7 +2058,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       catch (XAException expected)
       {
       }
-      
+
       session.rollback(xid2);
 
 
@@ -2087,21 +2092,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       conf.setIDCacheSize(cacheSize);
 
-      messagingService = HornetQServers.newHornetQServer(conf, true);
+      messagingService = createServer(true, conf);
 
       messagingService.start();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      if (messagingService.isStarted())
-      {
-         messagingService.stop();
-      }
-
-      messagingService = null;
-
-      super.tearDown();
    }
 }

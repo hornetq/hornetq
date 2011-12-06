@@ -14,8 +14,12 @@ package org.hornetq.tests.integration.client;
 
 import junit.framework.Assert;
 
-import org.hornetq.api.core.client.*;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
@@ -24,8 +28,6 @@ import org.hornetq.utils.DataConstants;
 
 public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(InVMNonPersistentMessageBufferTest.class);
-
    public static final String address = "testaddress";
 
    public static final String queueName = "testqueue";
@@ -232,7 +234,7 @@ public class InVMNonPersistentMessageBufferTest extends ServiceTestBase
 
       ServerLocator locator = createFactory();
 
-      ClientSessionFactory cf = locator.createSessionFactory();
+      ClientSessionFactory cf = createSessionFactory(locator);
 
       session = cf.createSession();
 

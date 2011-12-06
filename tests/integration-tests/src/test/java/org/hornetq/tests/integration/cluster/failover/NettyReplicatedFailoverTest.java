@@ -26,7 +26,7 @@ public class NettyReplicatedFailoverTest extends NettyFailoverTest
 {
 
    @Override
-   protected TestableServer createServer(Configuration config)
+   protected TestableServer createTestableServer(Configuration config)
    {
       return new SameProcessHornetQServer(createServer(true, config));
    }

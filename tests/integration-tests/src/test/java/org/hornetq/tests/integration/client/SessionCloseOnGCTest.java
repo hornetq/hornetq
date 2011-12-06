@@ -20,13 +20,12 @@ import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A SessionCloseOnGCTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
@@ -36,10 +35,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class SessionCloseOnGCTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(SessionCloseOnGCTest.class);
-
    private HornetQServer server;
-
    private ServerLocator locator;
 
    @Override
@@ -53,24 +49,10 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       locator = createInVMNonHALocator();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      //locator.close();
-      
-      server.stop();
-
-      server = null;
-
-      super.tearDown();
-   }
-
    /** Make sure Sessions are not leaking after closed..
     *  Also... we want to make sure the SessionFactory will close itself when there are not references into it */
    public void testValidateFactoryGC1() throws Exception
    {
-      try
-      {
          ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
@@ -97,26 +79,11 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-
-         }
-      }
    }
 
    public void testValidateFactoryGC2() throws Exception
    {
-      try
-      {
-
-         locator.setUseGlobalPools(false);
+      locator.setUseGlobalPools(false);
 
          ClientSessionFactory factory = locator.createSessionFactory();
 
@@ -144,24 +111,10 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
          }
-         catch (Throwable ignored)
-         {
-
-         }
-      }
-   }
 
    public void testValidateFactoryGC3() throws Exception
    {
-      try
-      {
          ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
@@ -186,25 +139,11 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-
-         }
-      }
    }
 
    public void testValidateFactoryGC4() throws Exception
    {
-      try
-      {
-         ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
 
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
@@ -225,25 +164,11 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          UnitTestCase.checkWeakReferences(fref, wrs1, wrs2);
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-
-         }
-      }
    }
 
    public void testValidateFactoryGC5() throws Exception
    {
-      try
-      {
-         ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = locator.createSessionFactory();
 
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
 
@@ -253,19 +178,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
          locator = null;
          UnitTestCase.checkWeakReferences(fref);
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
          }
-         catch (Throwable ignored)
-         {
-
-         }
-      }
-   }
 
    public void testCloseOneSessionOnGC() throws Exception
    {

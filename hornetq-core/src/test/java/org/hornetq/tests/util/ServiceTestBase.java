@@ -516,6 +516,12 @@ public abstract class ServiceTestBase extends UnitTestCase
       return createServer(realFiles, configuration, -1, -1, new HashMap<String, AddressSettings>());
    }
 
+   protected HornetQServer createServer(final Configuration configuration)
+   {
+      return createServer(configuration.isPersistenceEnabled(), configuration, -1, -1,
+                          new HashMap<String, AddressSettings>());
+   }
+
    protected HornetQServer createInVMFailoverServer(final boolean realFiles,
                                                     final Configuration configuration,
                                                     final NodeManager nodeManager,

@@ -23,20 +23,18 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQServers;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A FailureDeadlockTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -62,9 +60,8 @@ public class FailureDeadlockTest extends ServiceTestBase
 
       Configuration conf = createDefaultConfig();
       conf.setSecurityEnabled(false);
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = HornetQServers.newHornetQServer(conf, false);
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
+      server = createServer(false, conf);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
@@ -77,35 +74,15 @@ public class FailureDeadlockTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      if (jmsServer != null && jmsServer.isStarted())
-      {
-         jmsServer.stop();
-      }
-
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-
-      }
 
       cf1.close();
 
       cf2.close();
-      
-      server = null;
 
-      jmsServer = null;
-
-      cf1 = null;
-
-      cf2 = null;
+      if (jmsServer != null && jmsServer.isStarted())
+      {
+         jmsServer.stop();
+      }
 
       super.tearDown();
    }
@@ -196,7 +173,7 @@ public class FailureDeadlockTest extends ServiceTestBase
 
          try
          {
-            Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
             fail("should throw exception");
          }
          catch (JMSException e)

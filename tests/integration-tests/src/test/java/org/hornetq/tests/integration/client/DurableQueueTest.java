@@ -16,8 +16,12 @@ package org.hornetq.tests.integration.client;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -66,8 +70,6 @@ public class DurableQueueTest extends ServiceTestBase
 
       consumer.close();
       session.deleteQueue(queue);
-
-      session.close();
    }
 
    public void testConsumeFromDurableQueueAfterServerRestart() throws Exception
@@ -96,8 +98,6 @@ public class DurableQueueTest extends ServiceTestBase
 
       consumer.close();
       session.deleteQueue(queue);
-
-      session.close();
    }
 
    public void testProduceAndConsumeFromDurableQueueAfterServerRestart() throws Exception
@@ -127,8 +127,6 @@ public class DurableQueueTest extends ServiceTestBase
 
       consumer.close();
       session.deleteQueue(queue);
-
-      session.close();
    }
 
    // Package protected ---------------------------------------------
@@ -146,33 +144,8 @@ public class DurableQueueTest extends ServiceTestBase
 
       locator = createInVMNonHALocator();
 
-      sf = locator.createSessionFactory();
+      sf = createSessionFactory(locator);
 
-      session = sf.createSession(false, true, true);
+      session = addClientSession(sf.createSession(false, true, true));
    }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      session.close();
-
-      locator.close();
-
-      server.stop();
-
-      sf.close();
-
-      session = null;
-
-      server = null;
-
-      sf = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

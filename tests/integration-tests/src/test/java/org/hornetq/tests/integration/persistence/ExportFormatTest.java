@@ -72,30 +72,14 @@ public class ExportFormatTest extends ServiceTestBase
          "operation@Update,id@16,userRecordType@32,length@8,isUpdate@true,compactCount@0,data@AAAAAAAAAAI=\n" +
          "#File,JournalFileImpl: (hornetq-data-2.hq id = 2, recordID = 2)";
 
-   // Static --------------------------------------------------------
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
-   protected void tearDown() throws Exception
-   {
-
-   }
-
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-   }
-
    public void _testCreateFormat() throws Exception
    {
       HornetQServer server = createServer(true);
       server.start();
-      
+
       ServerLocator locator = createInVMNonHALocator();
 
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
       ClientSession session = factory.createSession(false, false, false);
       session.createQueue("A1", "A1");
 
@@ -147,7 +131,7 @@ public class ExportFormatTest extends ServiceTestBase
       server.start();
 
       ServerLocator locator = createInVMNonHALocator();
-      ClientSessionFactory factory = locator.createSessionFactory();
+      ClientSessionFactory factory = createSessionFactory(locator);
       ClientSession session = factory.createSession();
       session.start();
 
@@ -161,10 +145,6 @@ public class ExportFormatTest extends ServiceTestBase
       }
 
       session.commit();
-
-      locator.close();
-      
-      server.stop();
    }
 
    // Package protected ---------------------------------------------

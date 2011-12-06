@@ -135,7 +135,7 @@ public class SecurityFailoverTest extends FailoverTest
                                                                                   staticConnectors,
                                                                                   false);
       backupConfig.getClusterConfigurations().add(cccLive);
-      backupServer = createServer(backupConfig);
+      backupServer = createTestableServer(backupConfig);
 
       HornetQSecurityManager securityManager = installSecurity(backupServer);
 
@@ -160,7 +160,7 @@ public class SecurityFailoverTest extends FailoverTest
                                                                                false);
       liveConfig.getClusterConfigurations().add(ccc0);
       liveConfig.getConnectorConfigurations().put(liveConnector.getName(), liveConnector);
-      liveServer = createServer(liveConfig);
+      liveServer = createTestableServer(liveConfig);
 
       installSecurity(liveServer);
    }

@@ -41,7 +41,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testDurableFalse() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
       Queue q = (Queue)binding.getBindable();
@@ -52,7 +52,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testDurableTrue() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, true);
       Binding binding = server.getPostOffice().getBinding(queueName);
       Queue q = (Queue)binding.getBindable();
@@ -63,7 +63,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testTemporaryFalse() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
       Queue q = (Queue)binding.getBindable();
@@ -74,7 +74,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testTemporaryTrue() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createTemporaryQueue(address, queueName);
       Binding binding = server.getPostOffice().getBinding(queueName);
       Queue q = (Queue)binding.getBindable();
@@ -85,7 +85,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testcreateWithFilter() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       SimpleString filterString = new SimpleString("x=y");
       session.createQueue(address, queueName, filterString, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
@@ -100,7 +100,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setLastValueQueue(true);
       server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       SimpleString filterString = new SimpleString("x=y");
       session.createQueue(address, queueName, filterString, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
@@ -111,7 +111,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testDeleteQueue() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       session.createQueue(address, queueName, false);
       Binding binding = server.getPostOffice().getBinding(queueName);
       Assert.assertNotNull(binding);
@@ -123,7 +123,7 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 
    public void testDeleteQueueNotExist() throws Exception
    {
-      ClientSession session = locator.createSessionFactory().createSession(false, true, true);
+      ClientSession session = createSessionFactory(locator).createSession(false, true, true);
       try
       {
          session.deleteQueue(queueName);
@@ -143,21 +143,5 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
       server = createServer(false);
       server.start();
       locator = createInVMNonHALocator();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-      
-      if (server != null && server.isStarted())
-      {
-         server.stop();
-      }
-
-      server = null;
-
-      super.tearDown();
-
    }
 }
