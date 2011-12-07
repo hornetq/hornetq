@@ -81,7 +81,6 @@ public abstract class ServiceTestBase extends UnitTestCase
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
    private final Collection<ServerLocator> locators = new ArrayList<ServerLocator>();
-   private final Collection<HornetQServer> servers = new ArrayList<HornetQServer>();
    private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
    private final Collection<ClientSession> clientSessions = new ArrayList<ClientSession>();
 
@@ -94,15 +93,6 @@ public abstract class ServiceTestBase extends UnitTestCase
 
       closeAllServerLocatorsFactories();
 
-      synchronized (servers)
-      {
-         for (HornetQServer server : servers)
-         {
-            stopComponent(server);
-         }
-         servers.clear();
-      }
-
       super.tearDown();
 //      checkFreePort(5445);
 //      checkFreePort(5446);
@@ -114,7 +104,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * 
+    *
     */
    protected void closeAllServerLocatorsFactories()
    {
@@ -129,7 +119,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * 
+    *
     */
    protected void closeAllSessionFactories()
    {
@@ -144,7 +134,7 @@ public abstract class ServiceTestBase extends UnitTestCase
    }
 
    /**
-    * 
+    *
     */
    protected void closeAllClientSessions()
    {
@@ -403,15 +393,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       {
          addServer(server);
       }
-   }
-
-   protected HornetQServer addServer(HornetQServer server)
-   {
-      synchronized (servers)
-      {
-         servers.add(server);
-      }
-      return server;
    }
 
    protected ClientSession addClientSession(ClientSession session)
@@ -705,15 +686,22 @@ public abstract class ServiceTestBase extends UnitTestCase
       addSessionFactory(sf);
       return sf;
    }
+
    protected void createQueue(final String address, final String queue) throws Exception
    {
       ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
       ClientSession session = sf.createSession();
-      session.createQueue(address, queue);
-      session.close();
-      sf.close();
-      locator.close();
+      try
+      {
+         session.createQueue(address, queue);
+      }
+      finally
+      {
+         session.close();
+         sf.close();
+         locator.close();
+      }
    }
 
    protected ServerLocator createInVMNonHALocator()

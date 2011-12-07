@@ -31,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -124,6 +125,8 @@ public abstract class UnitTestCase extends TestCase
 
    // There is a verification about thread leakages. We only fail a single thread when this happens
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
+
+   private final Collection<HornetQServer> servers = new ArrayList<HornetQServer>();
 
    private boolean checkThread = true;
 
@@ -923,6 +926,16 @@ public abstract class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+
+      synchronized (servers)
+      {
+         for (HornetQServer server : servers)
+         {
+            stopComponent(server);
+         }
+         servers.clear();
+      }
+
       List<ClientSessionFactoryImpl.CloseRunnable> closeRunnables = new ArrayList<ClientSessionFactoryImpl.CloseRunnable>(ClientSessionFactoryImpl.CLOSE_RUNNABLES);
       ArrayList<Exception> exceptions = new ArrayList<Exception>();
       try
@@ -1426,6 +1439,14 @@ public abstract class UnitTestCase extends TestCase
 
    }
 
+   protected HornetQServer addServer(HornetQServer server)
+   {
+      synchronized (servers)
+      {
+         servers.add(server);
+      }
+      return server;
+   }
    protected static final void stopComponent(HornetQComponent component)
    {
       if (component == null)
