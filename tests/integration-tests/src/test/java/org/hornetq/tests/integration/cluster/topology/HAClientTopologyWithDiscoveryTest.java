@@ -63,6 +63,7 @@ public class HAClientTopologyWithDiscoveryTest extends TopologyClusterTestBase
       ServerLocator locator = HornetQClient.createServerLocatorWithHA(new DiscoveryGroupConfiguration(groupAddress, groupPort));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
+      addServerLocator(locator);
       return locator;
    }
 }
