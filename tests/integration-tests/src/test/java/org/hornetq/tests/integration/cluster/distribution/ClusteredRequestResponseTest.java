@@ -13,20 +13,18 @@
 
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.logging.Logger;
 
 /**
  * A ClusteredRequestResponseTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 3 Feb 2009 09:10:43
  *
  *
  */
 public class ClusteredRequestResponseTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(ClusteredRequestResponseTest.class);
 
    @Override
    protected void setUp() throws Exception
@@ -46,7 +44,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupCluster();
 
       startServers(0, 1, 2, 3, 4);
-      
+
       for (int i = 0 ; i < 5; i++)
       {
          waitForTopology(servers[i], 5);
@@ -94,7 +92,7 @@ public class ClusteredRequestResponseTest extends ClusterTestBase
       setupCluster();
 
       startServers(0, 1, 2, 3, 4);
-      
+
       for (int i = 0 ; i < 5; i++)
       {
          waitForTopology(servers[i], 5);

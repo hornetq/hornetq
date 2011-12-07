@@ -531,7 +531,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No sf at " + node);
          }
 
-         ClientSession session = sf.createSession(false, true, true);
+         ClientSession session = addClientSession(sf.createSession(false, true, true));
 
          String filterString = null;
 
@@ -572,6 +572,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
    protected void closeAllConsumers()
    {
+      if (consumers == null)
+         return;
       for (int i = 0; i < consumers.length; i++)
       {
          ConsumerHolder holder = consumers[i];
@@ -589,10 +591,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
    {
       if (sfs != null)
       {
-      for (int i = 0; i < sfs.length; i++)
-      {
-         closeSessionFactory(sfs[i]);
-         sfs[i] = null;
+         for (int i = 0; i < sfs.length; i++)
+         {
+            closeSessionFactory(sfs[i]);
+            sfs[i] = null;
          }
       }
       super.closeAllSessionFactories();
@@ -1413,7 +1415,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       locators[node].setBlockOnNonDurableSend(true);
       locators[node].setBlockOnDurableSend(true);
-      ClientSessionFactory sf = locators[node].createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locators[node]);
 
       ClientSession session = sf.createSession();
       session.close();

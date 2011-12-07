@@ -66,6 +66,14 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       setupCluster();
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      stopServers(0, 1, 2, 3, 4);
+
+      super.tearDown();
+   }
+
    /**
     * Check that the actual list of received nodeIDs correspond to the expected order of nodes
     */
