@@ -35,7 +35,6 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
@@ -90,6 +89,8 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    };
 
    private Listener listener;
+
+   private HornetQServer server;
 
    // Static --------------------------------------------------------
 
@@ -160,7 +161,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      server = HornetQServers.newHornetQServer(conf, false);
 
       JMSConfiguration configuration = new JMSConfigurationImpl();
       context = new InVMContext();
@@ -190,9 +191,12 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       serverManager.stop();
-
+      stopComponent(server);
       serverManager = null;
-
+      if (connection != null)
+      {
+         connection.close();
+      }
       connection = null;
 
       super.tearDown();
@@ -286,7 +290,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
          try
          {
-            int counter = msg.getIntProperty("counter");
+            msg.getIntProperty("counter");
          }
          catch (JMSException e)
          {

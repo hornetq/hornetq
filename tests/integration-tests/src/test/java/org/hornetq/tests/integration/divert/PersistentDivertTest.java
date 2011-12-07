@@ -19,11 +19,15 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -33,15 +37,13 @@ import org.hornetq.tests.util.UnitTestCase;
  * A PersistentDivertTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 14 Jan 2009 14:05:01
  *
  *
  */
 public class PersistentDivertTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(DivertTest.class);
-
    final int minLargeMessageSize = HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
 
    public void testPersistentDivert() throws Exception
@@ -100,11 +102,11 @@ public class PersistentDivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
 
       locator.setBlockOnAcknowledge(true);
       locator.setBlockOnNonDurableSend(true);
@@ -234,8 +236,6 @@ public class PersistentDivertTest extends ServiceTestBase
       session.close();
 
       sf.close();
-
-      messagingService.stop();
    }
 
    /**
@@ -305,11 +305,11 @@ public class PersistentDivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       locator.setBlockOnAcknowledge(true);
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
@@ -362,7 +362,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ServerLocator locator2 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator2 = createInVMNonHALocator();
       locator2.setBlockOnDurableSend(true);
 
       sf = locator2.createSessionFactory();
@@ -458,7 +458,7 @@ public class PersistentDivertTest extends ServiceTestBase
 
       messagingService.start();
 
-      ServerLocator locator3 = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator3 = createInVMNonHALocator();
       locator3.setBlockOnDurableSend(true);
 
       sf = locator3.createSessionFactory();
@@ -484,14 +484,6 @@ public class PersistentDivertTest extends ServiceTestBase
       session.close();
 
       sf.close();
-
-      locator3.close();
-
-      locator2.close();
-
-      locator.close();
-
-      messagingService.stop();
    }
 
 }
