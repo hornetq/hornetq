@@ -355,7 +355,7 @@ public class DeadLetterAddressTest extends ServiceTestBase
          clientSession.rollback();
       }
       ClientMessage m = clientConsumer.receive(500);
-      Assert.assertNull(m);
+      Assert.assertNull("not expecting a message", m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(deadLetterQueue);

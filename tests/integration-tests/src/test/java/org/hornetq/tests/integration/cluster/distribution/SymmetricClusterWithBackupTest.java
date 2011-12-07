@@ -248,7 +248,7 @@ public class SymmetricClusterWithBackupTest extends SymmetricClusterTest
       verifyReceiveRoundRobinInSomeOrder(10, 26, 27);
    }
 
-   //@Override
+   @Override
    public void _testStartStopServers() throws Exception
    {
       setupCluster();

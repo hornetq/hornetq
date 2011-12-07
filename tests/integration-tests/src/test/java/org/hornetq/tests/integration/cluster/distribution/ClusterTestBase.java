@@ -183,7 +183,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          {
             // no-op
          }
-         stopComponent(servers[i]);
+         stopServers(i);
       }
       for (int i = 0; i < MAX_SERVERS; i++)
       {

@@ -17,16 +17,13 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.SpawnedVMSupport;
 
@@ -148,7 +145,7 @@ public class ClientCrashTest extends ClientTestBase
       Assert.assertNotNull("no message received", messageFromClient);
       Assert.assertEquals(ClientCrashTest.MESSAGE_TEXT_FROM_CLIENT, messageFromClient.getBodyBuffer().readString());
 
-      assertEquals(2, messageFromClient.getDeliveryCount());
+      assertEquals("delivery count", 2, messageFromClient.getDeliveryCount());
 
       session.close();
 
@@ -161,7 +158,7 @@ public class ClientCrashTest extends ClientTestBase
    {
       super.setUp();
 
-      locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(NettyConnectorFactory.class.getName()));
+      locator = createNettyNonHALocator();
       addServerLocator(locator);
       locator.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
       locator.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
