@@ -1119,6 +1119,9 @@ public class ReattachTest extends ServiceTestBase
    {
       InVMConnector.resetFailures();
 
+      closeServerLocator(locator);
+      stopComponent(service);
+
       Assert.assertEquals(0, InVMRegistry.instance.size());
 
       super.tearDown();

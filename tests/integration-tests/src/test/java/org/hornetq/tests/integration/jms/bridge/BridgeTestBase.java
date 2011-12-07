@@ -45,6 +45,7 @@ import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
@@ -63,7 +64,7 @@ import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A BridgeTestBase
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -114,8 +115,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setJournalDirectory(getJournalDir(0, false));
       conf0.setBindingsDirectory(getBindingsDir(0, false));
       conf0.setSecurityEnabled(false);
-      conf0.getAcceptorConfigurations()
-           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
+      conf0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       server0 = HornetQServers.newHornetQServer(conf0, false);
 
       context0 = new InVMContext();
@@ -129,8 +129,8 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.setBindingsDirectory(getBindingsDir(1, false));
       params1 = new HashMap<String, Object>();
       params1.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-      conf1.getAcceptorConfigurations()
-           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params1));
+      conf1.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(),
+                                                                       params1));
 
       server1 = HornetQServers.newHornetQServer(conf1, false);
 
@@ -177,13 +177,10 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       checkNoSubscriptions(sourceTopic, 0);
 
-      jmsServer0.stop();
-
-      jmsServer1.stop();
-
-      server1.stop();
-
-      server0.stop();
+      stopComponent(jmsServer0);
+      stopComponent(jmsServer1);
+      stopComponent(server1);
+      stopComponent(server0);
 
       cff0 = cff1 = null;
 
@@ -210,10 +207,10 @@ public abstract class BridgeTestBase extends UnitTestCase
       context0 = null;
 
       context1 = null;
-      
+
       // Shutting down Arjuna threads
       TxControl.disable(true);
-      
+
       TransactionReaper.terminate(false);
 
       super.tearDown();
@@ -225,7 +222,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          public ConnectionFactory createConnectionFactory() throws Exception
          {
-            HornetQConnectionFactory cf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+            HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
                                                                                                                       new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
             // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection

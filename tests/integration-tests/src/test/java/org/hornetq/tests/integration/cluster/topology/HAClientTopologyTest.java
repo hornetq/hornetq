@@ -57,7 +57,7 @@ public class HAClientTopologyTest extends TopologyClusterTestBase
    protected ServerLocator createHAServerLocator()
    {
       TransportConfiguration tc = createTransportConfiguration(isNetty(), false, generateParams(0, isNetty()));
-      ServerLocator locator = HornetQClient.createServerLocatorWithHA(tc);
+      ServerLocator locator = addServerLocator(HornetQClient.createServerLocatorWithHA(tc));
       locator.setBlockOnNonDurableSend(true);
       locator.setBlockOnDurableSend(true);
       return locator;

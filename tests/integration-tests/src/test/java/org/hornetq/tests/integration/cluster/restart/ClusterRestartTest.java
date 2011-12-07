@@ -26,7 +26,7 @@ import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 public class ClusterRestartTest extends ClusterTestBase
 {
    Logger log = Logger.getLogger(ClusterRestartTest.class);
-     
+
    public void testRestartWithQueuesCreateInDiffOrder() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -40,9 +40,6 @@ public class ClusterRestartTest extends ClusterTestBase
 
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
-
-      try
-      {
 
          setupSessionFactory(0, isNetty(), -1);
          setupSessionFactory(1, isNetty());
@@ -79,30 +76,19 @@ public class ClusterRestartTest extends ClusterTestBase
          // Waiting some time after stopped
          Thread.sleep(2000);
          startServers(0);
-         
+
          waitForBindings(0, "queues.testaddress", 1, 1, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);
 
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
-         
+
          printBindings(2);
 
          sendInRange(1, "queues.testaddress", 10, 20, false, null);
 
          verifyReceiveAllInRange(0, 20, 0);
          System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1);
-      }
    }
 
    public void testRestartWithQueuesCreateInDiffOrder2() throws Exception
@@ -118,11 +104,7 @@ public class ClusterRestartTest extends ClusterTestBase
 
       System.out.println("server 0 = " + getServer(0).getNodeID());
       System.out.println("server 1 = " + getServer(1).getNodeID());
-
-      try
-      {
-
-         setupSessionFactory(0, isNetty(), -1);
+      setupSessionFactory(0, isNetty(), -1);
          setupSessionFactory(1, isNetty());
 
          // create some dummy queues to ensure that the test queue has a high numbered binding
@@ -160,24 +142,13 @@ public class ClusterRestartTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 0, true);
          waitForBindings(0, "queues.testaddress", 1, 0, false);
          waitForBindings(1, "queues.testaddress", 1, 0, false);
-         
+
          printBindings(2);
          addConsumer(0, 1, "queue10", null);
          addConsumer(1, 0, "queue10", null);
 
          verifyReceiveRoundRobin(0, 20, 0, 1);
          System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         closeAllServerLocatorsFactories();
-
-         stopServers(0, 1);
-      }
    }
 
    private void printBindings(final int num) throws Exception

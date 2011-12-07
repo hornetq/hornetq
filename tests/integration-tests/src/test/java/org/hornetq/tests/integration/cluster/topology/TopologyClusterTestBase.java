@@ -66,14 +66,6 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       setupCluster();
    }
 
-   @Override
-   protected void tearDown() throws Exception
-   {
-      stopServers(0, 1, 2, 3, 4);
-
-      super.tearDown();
-   }
-
    /**
     * Check that the actual list of received nodeIDs correspond to the expected order of nodes
     */
@@ -100,7 +92,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          {
             ok = (ok && actual.contains(nodeIDs[element]));
          }
-         if (ok) 
+         if (ok)
          {
             return;
          }
@@ -131,7 +123,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
          if (e.getCode() == HornetQException.OBJECT_CLOSED || e.getCode() == HornetQException.UNBLOCKED)
          {
-         ClientSessionFactory sf = locator.createSessionFactory();
+            ClientSessionFactory sf = createSessionFactory(locator);
          return sf.createSession();
          }
          else
@@ -171,17 +163,17 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
- 
+
       log.error(clusterDescription(servers[node]));
       throw new IllegalStateException("Timed out waiting for cluster connections ");
    }
-   
+
    public void testReceiveNotificationsWhenOtherNodesAreStartedAndStopped() throws Throwable
    {
       startServers(0);
 
       ServerLocator locator = createHAServerLocator();
-      
+
       ((ServerLocatorImpl)locator).getTopology().setOwner("testReceive");
 
       final List<String> nodes = new ArrayList<String>();
@@ -190,7 +182,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       locator.addClusterTopologyListener(new ClusterTopologyListener()
       {
-         public void nodeUP(final long uniqueEventID, 
+         public void nodeUP(final long uniqueEventID,
                             String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             boolean last)
@@ -226,7 +218,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
       });
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       startServers(1, 4, 3, 2);
       String[] nodeIDs = getNodeIDs(0, 1, 2, 3, 4);
@@ -246,9 +238,9 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       checkContains(new int[] { 0 }, nodeIDs, nodes);
 
       sf.close();
-      
+
       locator.close();
-      
+
       stopServers(0);
    }
 
@@ -265,7 +257,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       locator.addClusterTopologyListener(new ClusterTopologyListener()
       {
-         public void nodeUP(final long uniqueEventID, 
+         public void nodeUP(final long uniqueEventID,
                             String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             boolean last)
@@ -287,13 +279,13 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
       });
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
       checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
 
       ClientSession session = sf.createSession();
-      
+
       waitForClusterConnections(0, 4);
       waitForClusterConnections(1, 4);
       waitForClusterConnections(2, 4);
@@ -317,12 +309,12 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       checkContains(new int[] { 1 }, nodeIDs, nodes);
 
       stopServers(1);
-      
+
       assertTrue("Was not notified that all servers are DOWN", downLatch.await(10, SECONDS));
       checkContains(new int[] {}, nodeIDs, nodes);
 
       sf.close();
-      
+
       locator.close();
    }
 
@@ -358,7 +350,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
          }
       });
 
-      ClientSessionFactory sf = locator.createSessionFactory();
+      ClientSessionFactory sf = createSessionFactory(locator);
 
       assertTrue("Was not notified that all servers are UP", upLatch.await(10, SECONDS));
       checkContains(new int[] { 0, 1, 2, 3, 4 }, nodeIDs, nodes);
@@ -370,7 +362,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       waitForClusterConnections(4, 4);
 
       ClientSession session = sf.createSession();
-      
+
       stopServers(0);
       assertFalse(servers[0].isStarted());
       session = checkSessionOrReconnect(session, locator);
@@ -403,10 +395,10 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       {
 
       }
-      
+
       locator.close();
    }
-   
+
    public void testMultipleClientSessionFactories() throws Throwable
    {
       startServers(0, 1, 2, 3, 4);
@@ -420,7 +412,7 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
 
       locator.addClusterTopologyListener(new ClusterTopologyListener()
       {
-         public void nodeUP(final long uniqueEventID, String nodeID, 
+         public void nodeUP(final long uniqueEventID, String nodeID,
                             Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                             boolean last)
          {
@@ -465,12 +457,12 @@ public abstract class TopologyClusterTestBase extends ClusterTestBase
       }
       assertTrue("Was not notified that all servers are Down", ok);
       checkContains(new int[] { 0 }, nodeIDs, nodes);
-      
+
       for (ClientSessionFactory sf : sfs)
       {
          sf.close();
       }
-      
+
       locator.close();
 
       stopServers(0);
