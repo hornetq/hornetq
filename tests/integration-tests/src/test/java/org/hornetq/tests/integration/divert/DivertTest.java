@@ -19,29 +19,29 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.DivertConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A DivertTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 14 Jan 2009 14:05:01
  *
  *
  */
 public class DivertTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(DivertTest.class);
-
    private static final int TIMEOUT = 500;
 
    public void testSingleNonExclusiveDivert() throws Exception
@@ -68,12 +68,12 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+      ServerLocator locator = createInVMNonHALocator();
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -113,7 +113,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -126,7 +126,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -164,12 +164,12 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
-      
+      ServerLocator locator = createInVMNonHALocator();
+
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -221,7 +221,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -234,7 +234,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -247,7 +247,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -260,7 +260,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -298,11 +298,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -336,7 +336,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -374,11 +374,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -428,7 +428,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -492,11 +492,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -645,11 +645,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -787,11 +787,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -921,11 +921,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -976,11 +976,11 @@ public class DivertTest extends ServiceTestBase
       // for (int i = 0; i < numMessages; i++)
       // {
       // ClientMessage message = consumer1.receive(200);
-      //         
+      //
       // assertNotNull(message);
-      //         
+      //
       // assertEquals((Integer)i, (Integer)message.getProperty(propKey));
-      //         
+      //
       // message.acknowledge();
       // }
 
@@ -992,7 +992,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1005,7 +1005,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1018,7 +1018,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1042,7 +1042,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1106,11 +1106,11 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
@@ -1162,7 +1162,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1177,7 +1177,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1192,7 +1192,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1209,7 +1209,7 @@ public class DivertTest extends ServiceTestBase
 
          Assert.assertNotNull(message);
 
-         Assert.assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         Assert.assertEquals(i, message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1267,13 +1267,13 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      HornetQServer messagingService = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer messagingService = addServer(HornetQServers.newHornetQServer(conf, false));
 
       messagingService.start();
 
       // Only the first and third should be deployed
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();;
       ClientSessionFactory sf = locator.createSessionFactory();
 
       ClientSession session = sf.createSession(false, true, true);
