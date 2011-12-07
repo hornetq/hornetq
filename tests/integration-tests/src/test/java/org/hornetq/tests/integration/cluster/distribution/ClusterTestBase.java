@@ -587,10 +587,13 @@ public abstract class ClusterTestBase extends ServiceTestBase
    @Override
    protected void closeAllSessionFactories()
    {
+      if (sfs != null)
+      {
       for (int i = 0; i < sfs.length; i++)
       {
          closeSessionFactory(sfs[i]);
          sfs[i] = null;
+         }
       }
       super.closeAllSessionFactories();
    }
