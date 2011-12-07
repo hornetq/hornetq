@@ -584,6 +584,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
    }
 
+   @Override
    protected void closeAllSessionFactories()
    {
       for (int i = 0; i < sfs.length; i++)
@@ -591,8 +592,10 @@ public abstract class ClusterTestBase extends ServiceTestBase
          closeSessionFactory(sfs[i]);
          sfs[i] = null;
       }
+      super.closeAllSessionFactories();
    }
 
+   @Override
    protected void closeAllServerLocatorsFactories()
    {
       for (int i = 0; i < locators.length; i++)
@@ -600,6 +603,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          closeServerLocator(locators[i]);
          locators[i] = null;
       }
+      super.closeAllServerLocatorsFactories();
    }
 
    protected void closeSessionFactory(final int node)

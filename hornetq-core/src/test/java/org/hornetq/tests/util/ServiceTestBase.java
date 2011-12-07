@@ -88,42 +88,11 @@ public abstract class ServiceTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      synchronized (clientSessions)
-      {
-         for (ClientSession cs : clientSessions)
-         {
-            try
-            {
-               if (cs != null)
-               {
-                  cs.close();
-               }
-            }
-            catch (Exception e)
-            {
-               // no-op
-            }
-         }
-         clientSessions.clear();
-      }
+      closeAllClientSessions();
 
-      synchronized (sessionFactories)
-      {
-         for (ClientSessionFactory sf : sessionFactories)
-         {
-            closeSessionFactory(sf);
-         }
-         sessionFactories.clear();
-      }
+      closeAllSessionFactories();
 
-      synchronized (locators)
-      {
-         for (ServerLocator locator : locators)
-         {
-            closeServerLocator(locator);
-         }
-         locators.clear();
-      }
+      closeAllServerLocatorsFactories();
 
       synchronized (servers)
       {
@@ -141,6 +110,61 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (InVMRegistry.instance.size() > 0)
       {
          fail("InVMREgistry size > 0");
+      }
+   }
+
+   /**
+    * 
+    */
+   protected void closeAllServerLocatorsFactories()
+   {
+      synchronized (locators)
+      {
+         for (ServerLocator locator : locators)
+         {
+            closeServerLocator(locator);
+         }
+         locators.clear();
+      }
+   }
+
+   /**
+    * 
+    */
+   protected void closeAllSessionFactories()
+   {
+      synchronized (sessionFactories)
+      {
+         for (ClientSessionFactory sf : sessionFactories)
+         {
+            closeSessionFactory(sf);
+         }
+         sessionFactories.clear();
+      }
+   }
+
+   /**
+    * 
+    */
+   protected void closeAllClientSessions()
+   {
+      synchronized (clientSessions)
+      {
+         for (ClientSession cs : clientSessions)
+         {
+            try
+            {
+               if (cs != null)
+               {
+                  cs.close();
+               }
+            }
+            catch (Exception e)
+            {
+               // no-op
+            }
+         }
+         clientSessions.clear();
       }
    }
 
