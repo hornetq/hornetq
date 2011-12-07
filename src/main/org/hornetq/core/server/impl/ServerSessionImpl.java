@@ -1074,7 +1074,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       if (consumer == null)
       {
-         ServerSessionImpl.log.error("There is no consumer with id " + consumerID);
+         ServerSessionImpl.log.debug("There is no consumer with id " + consumerID);
 
          return;
       }
