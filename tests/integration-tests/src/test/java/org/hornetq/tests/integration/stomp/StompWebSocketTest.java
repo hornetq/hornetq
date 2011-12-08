@@ -40,7 +40,7 @@ public class StompWebSocketTest extends UnitTestCase {
     private static final transient Logger log = Logger.getLogger(StompWebSocketTest.class);
     private JMSServerManager server;
 
-    /** 
+    /**
      * to test the Stomp over Web Sockets protocol,
      * uncomment the sleep call and run the stomp-websockets Javascript test suite
      * from http://github.com/jmesnil/stomp-websocket
@@ -51,14 +51,15 @@ public class StompWebSocketTest extends UnitTestCase {
 
     // Implementation methods
     //-------------------------------------------------------------------------
-    protected void setUp() throws Exception {
+    @Override
+   protected void setUp() throws Exception {
        server = createServer();
        server.start();
     }
 
     /**
     * @return
-    * @throws Exception 
+    * @throws Exception
     */
    private JMSServerManager createServer() throws Exception
    {
@@ -73,14 +74,15 @@ public class StompWebSocketTest extends UnitTestCase {
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       config.getQueueConfigurations().add(new CoreQueueConfiguration(getQueueName(), getQueueName(), null, false));
-       HornetQServer hornetQServer = HornetQServers.newHornetQServer(config);
-       
+      HornetQServer hornetQServer = addServer(HornetQServers.newHornetQServer(config));
+
        JMSConfiguration jmsConfig = new JMSConfigurationImpl();
        server = new JMSServerManagerImpl(hornetQServer, jmsConfig);
        server.setContext(null);
        return server;
    }
 
+   @Override
    protected void tearDown() throws Exception {
         server.stop();
     }

@@ -25,8 +25,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -38,17 +36,15 @@ import org.hornetq.tests.util.UnitTestCase;
 
 public class StompStressTest extends UnitTestCase
 {
-   private static final transient Logger log = Logger.getLogger(StompStressTest.class);
-
    private static final int COUNT = 1000;
 
-   private int port = 61613;
+   private final int port = 61613;
 
    private Socket stompSocket;
 
    private ByteArrayOutputStream inputBuffer;
 
-   private String destination = "stomp.stress.queue";
+   private final String destination = "stomp.stress.queue";
 
    private HornetQServer server;
 
@@ -86,6 +82,7 @@ public class StompStressTest extends UnitTestCase
 
    // Implementation methods
    // -------------------------------------------------------------------------
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -110,17 +107,16 @@ public class StompStressTest extends UnitTestCase
       config.getAcceptorConfigurations().add(stompTransport);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       config.getQueueConfigurations().add(new CoreQueueConfiguration(destination, destination, null, false));
-      return HornetQServers.newHornetQServer(config);
+      return addServer(HornetQServers.newHornetQServer(config));
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
       if (stompSocket != null)
       {
          stompSocket.close();
       }
-      server.stop();
-
       super.tearDown();
    }
 
@@ -133,9 +129,9 @@ public class StompStressTest extends UnitTestCase
    {
       byte[] bytes = data.getBytes("UTF-8");
       OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < bytes.length; i++)
+      for (byte b : bytes)
       {
-         outputStream.write(bytes[i]);
+         outputStream.write(b);
       }
       outputStream.flush();
    }
@@ -143,9 +139,9 @@ public class StompStressTest extends UnitTestCase
    public void sendFrame(byte[] data) throws Exception
    {
       OutputStream outputStream = stompSocket.getOutputStream();
-      for (int i = 0; i < data.length; i++)
+      for (byte element : data)
       {
-         outputStream.write(data[i]);
+         outputStream.write(element);
       }
       outputStream.flush();
    }

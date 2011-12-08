@@ -25,9 +25,9 @@ import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * From https://jira.jboss.org/jira/browse/HORNETQ-144
- * 
+ *
  */
 public class HornetQCrashTest extends UnitTestCase
 {
@@ -45,7 +45,7 @@ public class HornetQCrashTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
-      server = HornetQServers.newHornetQServer(configuration);
+      server = addServer(HornetQServers.newHornetQServer(configuration));
 
       server.start();
 
@@ -105,6 +105,7 @@ public class HornetQCrashTest extends UnitTestCase
 
                new Thread()
                {
+                  @Override
                   public void run()
                   {
                      try
@@ -134,18 +135,7 @@ public class HornetQCrashTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-
-
       locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-      locator.close();
-
-      super.tearDown();
-
-      server = null;
+      addServerLocator(locator);
    }
 }

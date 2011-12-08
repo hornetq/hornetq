@@ -683,8 +683,8 @@ public abstract class ServiceTestBase extends UnitTestCase
       finally
       {
          session.close();
-         sf.close();
-         locator.close();
+         closeSessionFactory(sf);
+         closeServerLocator(locator);
       }
    }
 

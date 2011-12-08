@@ -21,7 +21,13 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.logging.Logger;
@@ -31,11 +37,11 @@ import org.hornetq.core.server.HornetQServers;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
- * 
+ *
  * A PredefinedQueueTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
+ *
  * Created 19 Jan 2009 15:44:52
  *
  *
@@ -216,7 +222,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       final String queueName3 = "queue3";
 
-      HornetQServer server = HornetQServers.newHornetQServer(conf);
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(conf));
 
       server.start();
 
@@ -333,11 +339,11 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
 
-      HornetQServer server = HornetQServers.newHornetQServer(conf);
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(conf));
 
       server.start();
 
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(ServiceTestBase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator = createInVMNonHALocator();
 
       ClientSessionFactory sf = locator.createSessionFactory();
 
