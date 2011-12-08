@@ -127,6 +127,7 @@ public abstract class UnitTestCase extends TestCase
    private static Set<Thread> alreadyFailedThread = new HashSet<Thread>();
 
    private final Collection<HornetQServer> servers = new ArrayList<HornetQServer>();
+   private final Collection<ServerLocator> locators = new ArrayList<ServerLocator>();
 
    private boolean checkThread = true;
 
@@ -1460,6 +1461,27 @@ public abstract class UnitTestCase extends TestCase
          {
             // no-op
          }
+   }
+
+   protected final ServerLocator addServerLocator(ServerLocator locator)
+   {
+      synchronized (locators)
+      {
+         locators.add(locator);
+      }
+      return locator;
+   }
+
+   protected void closeAllServerLocatorsFactories()
+   {
+      synchronized (locators)
+      {
+         for (ServerLocator locator : locators)
+         {
+            closeServerLocator(locator);
+         }
+         locators.clear();
+      }
    }
 
    public static final void closeServerLocator(ServerLocator locator)

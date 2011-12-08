@@ -80,7 +80,6 @@ public abstract class ServiceTestBase extends UnitTestCase
 
    protected static final String NETTY_CONNECTOR_FACTORY = NettyConnectorFactory.class.getCanonicalName();
 
-   private final Collection<ServerLocator> locators = new ArrayList<ServerLocator>();
    private final Collection<ClientSessionFactory> sessionFactories = new ArrayList<ClientSessionFactory>();
    private final Collection<ClientSession> clientSessions = new ArrayList<ClientSession>();
 
@@ -100,21 +99,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       if (InVMRegistry.instance.size() > 0)
       {
          fail("InVMREgistry size > 0");
-      }
-   }
-
-   /**
-    *
-    */
-   protected void closeAllServerLocatorsFactories()
-   {
-      synchronized (locators)
-      {
-         for (ServerLocator locator : locators)
-         {
-            closeServerLocator(locator);
-         }
-         locators.clear();
       }
    }
 
@@ -720,15 +704,6 @@ public abstract class ServiceTestBase extends UnitTestCase
                                               : HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       return addServerLocator(locatorWithoutHA);
 
-   }
-
-   protected ServerLocator addServerLocator(ServerLocator locator)
-   {
-      synchronized (locators)
-      {
-         locators.add(locator);
-      }
-      return locator;
    }
 
    protected ServerLocator createInVMLocator(final int serverID)
