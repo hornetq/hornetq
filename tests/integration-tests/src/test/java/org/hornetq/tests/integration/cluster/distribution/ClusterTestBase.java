@@ -1415,6 +1415,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
       locators[node].setBlockOnNonDurableSend(true);
       locators[node].setBlockOnDurableSend(true);
+      addServerLocator(locators[node]);
       ClientSessionFactory sf = createSessionFactory(locators[node]);
 
       ClientSession session = sf.createSession();
@@ -1443,11 +1444,11 @@ public abstract class ClusterTestBase extends ServiceTestBase
       }
 
       locators[node] = HornetQClient.createServerLocatorWithoutHA(serverTotc);
-
       locators[node].setBlockOnNonDurableSend(true);
       locators[node].setBlockOnDurableSend(true);
       locators[node].setReconnectAttempts(reconnectAttempts);
-      ClientSessionFactory sf = locators[node].createSessionFactory();
+      addServerLocator(locators[node]);
+      ClientSessionFactory sf = createSessionFactory(locators[node]);
 
       sfs[node] = sf;
    }
@@ -1478,8 +1479,8 @@ public abstract class ClusterTestBase extends ServiceTestBase
       locators[node].setReconnectAttempts(-1);
       locators[node].setBlockOnNonDurableSend(blocking);
       locators[node].setBlockOnDurableSend(blocking);
-
-      ClientSessionFactory sf = locators[node].createSessionFactory();
+      addServerLocator(locators[node]);
+      ClientSessionFactory sf = createSessionFactory(locators[node]);
       sfs[node] = sf;
    }
 
@@ -1534,7 +1535,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = HornetQServers.newHornetQServer(configuration);
+            server = addServer(HornetQServers.newHornetQServer(configuration));
          }
       }
       else
@@ -1545,7 +1546,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = HornetQServers.newHornetQServer(configuration, false);
+            server = addServer(HornetQServers.newHornetQServer(configuration, false));
          }
       }
 
@@ -1592,7 +1593,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       else
       {
          boolean enablePersistency = fileStorage ? true : configuration.isPersistenceEnabled();
-         server = HornetQServers.newHornetQServer(configuration, enablePersistency);
+         server = addServer(HornetQServers.newHornetQServer(configuration, enablePersistency));
       }
       server.setIdentity(this.getClass().getSimpleName() + "/Backup(" + node + " of live " + liveNode + ")");
       servers[node] = server;
@@ -1656,7 +1657,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = HornetQServers.newHornetQServer(configuration);
+            server = addServer(HornetQServers.newHornetQServer(configuration));
             server.setIdentity("Server " + node);
          }
       }
@@ -1668,7 +1669,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
          }
          else
          {
-            server = HornetQServers.newHornetQServer(configuration, false);
+            server = addServer(HornetQServers.newHornetQServer(configuration, false));
             server.setIdentity("Server " + node);
          }
       }
@@ -1733,7 +1734,7 @@ public abstract class ClusterTestBase extends ServiceTestBase
       else
       {
          boolean enablePersistency = fileStorage ? configuration.isPersistenceEnabled() : false;
-         server = HornetQServers.newHornetQServer(configuration, enablePersistency);
+         server = addServer(HornetQServers.newHornetQServer(configuration, enablePersistency));
       }
       servers[node] = server;
    }
