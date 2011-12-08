@@ -86,7 +86,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       Configuration conf = createBasicConfig();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(conf, false));
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();

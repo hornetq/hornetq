@@ -39,6 +39,15 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupServers();
    }
 
+   @Override
+   protected void tearDown() throws Exception
+   {
+      log.info("#test tearDown");
+      stopServers();
+
+      super.tearDown();
+   }
+
    protected boolean isNetty()
    {
       return false;

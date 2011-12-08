@@ -16,11 +16,15 @@ package org.hornetq.tests.integration.management;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientRequestor;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.ManagementHelper;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -71,7 +75,9 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
    protected void doSendManagementMessage(final String user, final String password, final boolean expectSuccess) throws Exception
    {
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY));
+      ServerLocator locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      UnitTestCase.INVM_CONNECTOR_FACTORY)));
       ClientSessionFactory sf = locator.createSessionFactory();
       try
       {
@@ -111,6 +117,10 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
             Assert.fail("got unexpected exception " + e.getClass() + ": " + e.getMessage());
             e.printStackTrace();
          }
+      }
+      finally
+      {
+         sf.close();
       }
    }
 

@@ -56,7 +56,7 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
       conf.setClusterPassword(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD);
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQServers.newHornetQServer(conf, false);
+      HornetQServer server = addServer(HornetQServers.newHornetQServer(conf, false));
       server.start();
 
       return server;
