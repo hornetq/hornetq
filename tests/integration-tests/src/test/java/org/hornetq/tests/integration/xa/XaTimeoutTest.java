@@ -29,7 +29,13 @@ import junit.framework.Assert;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -65,6 +71,8 @@ public class XaTimeoutTest extends UnitTestCase
 
    private final SimpleString atestq = new SimpleString("atestq");
 
+   private ServerLocator locator;
+
    @Override
    protected void setUp() throws Exception
    {
@@ -76,11 +84,13 @@ public class XaTimeoutTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(UnitTestCase.INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = HornetQServers.newHornetQServer(configuration, false);
+      messagingService = addServer(HornetQServers.newHornetQServer(configuration, false));
       // start the server
       messagingService.start();
       // then we create a client as normal
-      ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      locator =
+               addServerLocator(HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
+                                                                                                      InVMConnectorFactory.class.getName())));
       sessionFactory = locator.createSessionFactory();
       clientSession = sessionFactory.createSession(true, false, false);
       clientSession.createQueue(atestq, atestq, null, true);
@@ -102,17 +112,11 @@ public class XaTimeoutTest extends UnitTestCase
             //
          }
       }
-      if (messagingService != null && messagingService.isStarted())
-      {
-         try
-         {
-            messagingService.stop();
-         }
-         catch (Exception e1)
-         {
-            //
-         }
-      }
+      closeSessionFactory(sessionFactory);
+      closeServerLocator(locator);
+
+      stopComponent(messagingService);
+
       messagingService = null;
       clientSession = null;
 
@@ -505,7 +509,7 @@ public class XaTimeoutTest extends UnitTestCase
       for(int i = 0; i < clientSessions.length/2; i++)
       {
          ClientMessage m = clientConsumer.receiveImmediate();
-         Assert.assertNotNull(m);   
+         Assert.assertNotNull(m);
       }
       ClientMessage m = clientConsumer.receiveImmediate();
       Assert.assertNull(m);
@@ -549,7 +553,7 @@ public class XaTimeoutTest extends UnitTestCase
       {
          return Collections.emptySet();
       }
-      
+
       public List<MessageReference> getRelatedMessageReferences()
       {
          return null;
