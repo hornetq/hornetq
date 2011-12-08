@@ -195,7 +195,7 @@ public class FailoverTest extends FailoverTestBase
          ClientMessage m = consumer.receive(1000);
          assertNotNull(m);
          System.out.println("received message " + i);
- //        assertEquals(i, m.getIntProperty("counter").intValue());
+         // assertEquals(i, m.getIntProperty("counter").intValue());
       }
    }
 
@@ -271,7 +271,122 @@ public class FailoverTest extends FailoverTestBase
       crash(session);
       endLatch.await(60, TimeUnit.SECONDS);
       assertTrue("received only " + received.size(), received.size() == 500);
-      
+
+      session.close();
+   }
+   
+   public void testTimeoutOnFailoverConsumeBlocked() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setConsumerWindowSize(0);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(500);
+      locator.setAckBatchSize(0);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+         message.putBooleanProperty("end", i == 499);
+         producer.send(message);
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch endLatch = new CountDownLatch(1);
+
+      final ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      final Map<Integer, ClientMessage> received = new HashMap<Integer, ClientMessage>();
+
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            ClientMessage message = null;
+            try
+            {
+               while ((message = getMessage()) != null)
+               {
+                  Integer counter = message.getIntProperty("counter");
+                  received.put(counter, message);
+                  try
+                  {
+                     log.info("acking message = id = " + message.getMessageID() +
+                              ", counter = " +
+                              message.getIntProperty("counter"));
+                     message.acknowledge();
+                  }
+                  catch (HornetQException e)
+                  {
+                     e.printStackTrace();
+                     continue;
+                  }
+                  log.info("Acked counter = " + counter);
+                  if (counter.equals(10))
+                  {
+                     latch.countDown();
+                  }
+                  if (received.size() == 500)
+                  {
+                     endLatch.countDown();
+                  }
+                  
+                  if (message.getBooleanProperty("end"))
+                  {
+                     break;
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+
+         }
+         
+         private ClientMessage getMessage()
+         {
+            while (true)
+            {
+               try
+               {
+                  ClientMessage msg = consumer.receive(20000);
+                  if (msg == null)
+                  {
+                     log.info("Returning null message on consuming");
+                  }
+                  return msg;
+               }
+               catch (Exception ignored)
+               {
+                  // retry
+                  ignored.printStackTrace();
+               }
+            }
+         }
+      };
+      t.start();
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      endLatch.await(60, TimeUnit.SECONDS);
+      t.join();
+      assertTrue("received only " + received.size(), received.size() == 500);
+
       session.close();
    }
 

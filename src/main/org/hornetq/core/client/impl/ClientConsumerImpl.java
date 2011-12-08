@@ -104,6 +104,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean closed;
 
    private volatile int creditsToSend;
+   
+   private volatile boolean failedOver;
 
    private volatile Exception lastException;
 
@@ -165,7 +167,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   private ClientMessage receive(long timeout, final boolean forcingDelivery) throws HornetQException
+   private ClientMessage receive(final long timeout, final boolean forcingDelivery) throws HornetQException
    {
       checkClosed();
 
@@ -194,17 +196,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       receiverThread = Thread.currentThread();
 
-      if (timeout == 0)
-      {
-         // Effectively infinite
-         timeout = Long.MAX_VALUE;
-      }
-
+      // To verify if deliveryForced was already call
       boolean deliveryForced = false;
+      // To control when to call deliveryForce
+      boolean callForceDelivery = false;
 
       long start = -1;
 
-      long toWait = timeout;
+      long toWait = timeout == 0 ? Long.MAX_VALUE : timeout;
 
       try
       {
@@ -231,13 +230,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
-                        if (isTrace)
-                        {
-                           log.trace("Forcing delivery");
-                        }
-                        session.forceDelivery(id, forceDeliveryCount++);
-
-                        deliveryForced = true;
+                        callForceDelivery = true;
+                        break;
                      }
                   }
 
@@ -260,6 +254,35 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
                   start = now;
                }
+            }
+
+            if (failedOver)
+            {
+               if (m == null)
+               {
+                  // if failed over and the buffer is null, we reset the state and try it again
+                  failedOver = false;
+                  deliveryForced = false;
+                  toWait = timeout == 0 ? Long.MAX_VALUE : timeout;
+                  continue;
+               }
+               else
+               {
+                  failedOver = false;
+               }
+            }
+            
+            if (callForceDelivery)
+            {
+               if (isTrace)
+               {
+                  log.trace("Forcing delivery");
+               }
+               // JBPAPP-6030 - Calling forceDelivery outside of the lock to avoid distributed dead locks
+               session.forceDelivery(id, forceDeliveryCount++);
+               callForceDelivery = false;
+               deliveryForced = true;
+               continue;
             }
 
             if (m != null)
@@ -351,19 +374,14 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    public ClientMessage receive(final long timeout) throws HornetQException
    {
-      if (isBrowseOnly())
+      ClientMessage msg = receive(timeout, false);
+      
+      if (msg == null && !closed)
       {
-         ClientMessage msg = receive(timeout, false);
-         if (msg == null)
-         {
-            msg = receive(0, true);
-         }
-         return msg;
+         msg = receive(0, true);
       }
-      else
-      {
-         return receive(timeout, false);
-      }
+      
+      return msg;
    }
 
    public ClientMessage receive() throws HornetQException
@@ -465,6 +483,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       lastAckedMessage = null;
 
       creditsToSend = 0;
+      
+      failedOver = true;
 
       ackIndividually = false;
    }
@@ -887,6 +907,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          {
             rateLimiter.limit();
          }
+         
+         failedOver = false;
 
          synchronized (this)
          {
