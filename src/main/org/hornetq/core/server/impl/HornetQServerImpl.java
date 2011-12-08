@@ -1624,7 +1624,7 @@ public class HornetQServerImpl implements HornetQServer
 
       for (Pair<Long, Long> msgToDelete : pendingLargeMessages)
       {
-         log.info("Deleting pending large message as it wasn't completed:" + msgToDelete);
+         log.info("Deleting pending large message as it wasn't completed: LargeMessageID:" + msgToDelete.getB());
          LargeServerMessage msg = storageManager.createLargeMessage();
          msg.setMessageID(msgToDelete.getB());
          msg.setPendingRecordID(msgToDelete.getA());
