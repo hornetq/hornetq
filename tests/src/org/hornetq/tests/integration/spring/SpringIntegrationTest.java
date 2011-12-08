@@ -1,5 +1,7 @@
 package org.hornetq.tests.integration.spring;
 
+import java.util.concurrent.TimeUnit;
+
 import junit.framework.Assert;
 
 import org.hornetq.core.logging.Logger;
@@ -34,9 +36,12 @@ public class SpringIntegrationTest extends UnitTestCase
       {
          MessageSender sender = (MessageSender)context.getBean("MessageSender");
          System.out.println("Sending message...");
+         ExampleListener.latch.countUp();
          sender.send("Hello world");
-         Thread.sleep(100);
+         ExampleListener.latch.await(10, TimeUnit.SECONDS);
+         Thread.sleep(500);
          Assert.assertEquals(ExampleListener.lastMessage, "Hello world");
+         System.out.println("done!");
          ((HornetQConnectionFactory)sender.getConnectionFactory()).close();
       }
       finally
