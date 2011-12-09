@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -154,7 +155,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    private final Object waitLock = new Object();
 
-   public final static List<CloseRunnable> CLOSE_RUNNABLES = new ArrayList<CloseRunnable>();
+   public final static List<CloseRunnable> CLOSE_RUNNABLES =  Collections.synchronizedList(new ArrayList<CloseRunnable>());
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -1506,10 +1507,13 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    }
 
+   private static int size = 0;
    public class CloseRunnable implements Runnable
    {
       private final CoreRemotingConnection conn;
-
+      private int i = 0;
+      private boolean  removed = false;
+      private boolean  actuallRemoved = false;
       private CloseRunnable(CoreRemotingConnection conn)
       {
          this.conn = conn;
@@ -1533,8 +1537,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
       public ClientSessionFactoryImpl stop()
       {
-         CLOSE_RUNNABLES.remove(this);
          causeExit();
+         CLOSE_RUNNABLES.remove(this);
          return ClientSessionFactoryImpl.this;
       }
 
