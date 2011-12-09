@@ -57,6 +57,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       super.setUp();
       clearData();
       startServer();
+      forceGC();
    }
 
    /**
@@ -507,7 +508,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       long time = System.currentTimeMillis();
       time += 1000;
       
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 10; i++)
       {
          ClientMessage message = session.createMessage(true);
          message.putIntProperty("value", i);
@@ -521,7 +522,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start();
       ClientConsumer consumer = session.createConsumer(atestq);
       
-      for (int i = 0 ; i < 1000; i++)
+      for (int i = 0 ; i < 10; i++)
       {
          ClientMessage message = consumer.receive(15000);
          assertNotNull(message);

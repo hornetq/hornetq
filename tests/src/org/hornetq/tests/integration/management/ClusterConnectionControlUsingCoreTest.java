@@ -101,6 +101,11 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
             return (String)proxy.retrieveAttributeValue("staticConnectorNamePairsAsJSON");
          }
 
+         public String getTopology()
+         {
+            return (String)proxy.retrieveAttributeValue("topology");
+         }
+
          public Map<String, String> getNodes() throws Exception
          {
             return (Map<String, String>)proxy.retrieveAttributeValue("nodes");

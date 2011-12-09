@@ -44,6 +44,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
+import org.hornetq.tests.integration.cluster.util.InVMNodeManager;
 import org.hornetq.tests.integration.cluster.util.TestableServer;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -127,6 +128,361 @@ public class FailoverTest extends FailoverTestBase
                                          boolean autoCommitAcks) throws Exception
    {
       return sf.createSession(xa, autoCommitSends, autoCommitAcks);
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailover() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      final CountDownLatch latch = new CountDownLatch(10);
+
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            for (int i = 0; i < 500; i++)
+            {
+               ClientMessage message = session.createMessage(true);
+               message.putIntProperty("counter", i);
+               try
+               {
+                  System.out.println("sending message: " + i);
+                  producer.send(message);
+                  if (i < 10)
+                  {
+                     latch.countDown();
+                  }
+               }
+               catch (HornetQException e)
+               {
+                  // this is our retry
+                  try
+                  {
+                     producer.send(message);
+                  }
+                  catch (HornetQException e1)
+                  {
+                     e1.printStackTrace();
+                  }
+               }
+            }
+         }
+      };
+      Thread t = new Thread(r);
+      t.start();
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      t.join(5000);
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage m = consumer.receive(1000);
+         assertNotNull(m);
+         System.out.println("received message " + i);
+         // assertEquals(i, m.getIntProperty("counter").intValue());
+      }
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverConsume() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(500);
+      locator.setAckBatchSize(0);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+         producer.send(message);
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch endLatch = new CountDownLatch(1);
+
+      final ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      final Map<Integer, ClientMessage> received = new HashMap<Integer, ClientMessage>();
+
+      consumer.setMessageHandler(new MessageHandler()
+      {
+
+         public void onMessage(ClientMessage message)
+         {
+            Integer counter = message.getIntProperty("counter");
+            received.put(counter, message);
+            try
+            {
+               log.info("acking message = id = " + message.getMessageID() +
+                        ", counter = " +
+                        message.getIntProperty("counter"));
+               message.acknowledge();
+            }
+            catch (HornetQException e)
+            {
+               e.printStackTrace();
+               return;
+            }
+            log.info("Acked counter = " + counter);
+            if (counter.equals(10))
+            {
+               latch.countDown();
+            }
+            if (received.size() == 500)
+            {
+               endLatch.countDown();
+            }
+         }
+
+      });
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      endLatch.await(60, TimeUnit.SECONDS);
+      assertTrue("received only " + received.size(), received.size() == 500);
+
+      session.close();
+   }
+   
+   public void testTimeoutOnFailoverConsumeBlocked() throws Exception
+   {
+      locator.setCallTimeout(5000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setConsumerWindowSize(0);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setBlockOnAcknowledge(true);
+      locator.setReconnectAttempts(-1);
+      locator.setRetryInterval(500);
+      locator.setAckBatchSize(0);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+         message.putBooleanProperty("end", i == 499);
+         producer.send(message);
+      }
+
+      final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch endLatch = new CountDownLatch(1);
+
+      final ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      final Map<Integer, ClientMessage> received = new HashMap<Integer, ClientMessage>();
+
+      Thread t = new Thread()
+      {
+         public void run()
+         {
+            ClientMessage message = null;
+            try
+            {
+               while ((message = getMessage()) != null)
+               {
+                  Integer counter = message.getIntProperty("counter");
+                  received.put(counter, message);
+                  try
+                  {
+                     log.info("acking message = id = " + message.getMessageID() +
+                              ", counter = " +
+                              message.getIntProperty("counter"));
+                     message.acknowledge();
+                  }
+                  catch (HornetQException e)
+                  {
+                     e.printStackTrace();
+                     continue;
+                  }
+                  log.info("Acked counter = " + counter);
+                  if (counter.equals(10))
+                  {
+                     latch.countDown();
+                  }
+                  if (received.size() == 500)
+                  {
+                     endLatch.countDown();
+                  }
+                  
+                  if (message.getBooleanProperty("end"))
+                  {
+                     break;
+                  }
+               }
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+
+         }
+         
+         private ClientMessage getMessage()
+         {
+            while (true)
+            {
+               try
+               {
+                  ClientMessage msg = consumer.receive(20000);
+                  if (msg == null)
+                  {
+                     log.info("Returning null message on consuming");
+                  }
+                  return msg;
+               }
+               catch (Exception ignored)
+               {
+                  // retry
+                  ignored.printStackTrace();
+               }
+            }
+         }
+      };
+      t.start();
+      latch.await(10, TimeUnit.SECONDS);
+      log.info("crashing session");
+      crash(session);
+      endLatch.await(60, TimeUnit.SECONDS);
+      t.join();
+      assertTrue("received only " + received.size(), received.size() == 500);
+
+      session.close();
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverTransactionCommit() throws Exception
+   {
+      locator.setCallTimeout(2000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, false, false);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+
+         System.out.println("sending message: " + i);
+         producer.send(message);
+
+      }
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      System.out.println("crashing session");
+      crash(false, session);
+
+      session.commit(xid, false);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage m = consumer.receive(1000);
+         assertNotNull(m);
+         System.out.println("received message " + i);
+         assertEquals(i, m.getIntProperty("counter").intValue());
+      }
+   }
+
+   // https://issues.jboss.org/browse/HORNETQ-685
+   public void testTimeoutOnFailoverTransactionRollback() throws Exception
+   {
+      locator.setCallTimeout(2000);
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+      ((InVMNodeManager)nodeManager).failoverPause = 5000l;
+
+      ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, false, false);
+
+      session.createQueue(FailoverTestBase.ADDRESS, FailoverTestBase.ADDRESS, null, true);
+
+      final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+      Xid xid = new XidImpl("uhuhuhu".getBytes(), 126512, "auhsduashd".getBytes());
+
+      session.start(xid, XAResource.TMNOFLAGS);
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage message = session.createMessage(true);
+         message.putIntProperty("counter", i);
+
+         System.out.println("sending message: " + i);
+         producer.send(message);
+      }
+
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      System.out.println("crashing session");
+      crash(false, session);
+
+      session.rollback(xid);
+
+      ClientConsumer consumer = session.createConsumer(FailoverTestBase.ADDRESS);
+      session.start();
+
+      ClientMessage m = consumer.receive(1000);
+      assertNull(m);
+
    }
 
    // https://jira.jboss.org/browse/HORNETQ-522
@@ -1334,7 +1690,7 @@ public class FailoverTest extends FailoverTestBase
 
       session2.end(xid, XAResource.TMSUCCESS);
 
-     // session2.prepare(xid);
+      // session2.prepare(xid);
 
       crash(session2);
 

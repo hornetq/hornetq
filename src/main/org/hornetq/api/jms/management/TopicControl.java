@@ -13,7 +13,6 @@
 
 package org.hornetq.api.jms.management;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanOperationInfo;
@@ -64,8 +63,13 @@ public interface TopicControl extends DestinationControl
    /**
     * Add the JNDI binding to this destination
     */
-   @Operation(desc = "Adds the queue to another JNDI binding")
+   @Operation(desc = "Add the queue to another JNDI binding")
    void addJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+   
+   @Operation(desc = "Add the queue to another JNDI binding")
+   void removeJNDI(@Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndi) throws Exception;
+   
+   
 
 
 

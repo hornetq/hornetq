@@ -5,6 +5,8 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
+import org.hornetq.utils.ReusableLatch;
+
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
@@ -12,6 +14,8 @@ import javax.jms.TextMessage;
 public class ExampleListener implements MessageListener
 {
    public static String lastMessage = null;
+   
+   public static ReusableLatch latch = new ReusableLatch();
 
    public void onMessage(Message message)
    {
@@ -24,5 +28,6 @@ public class ExampleListener implements MessageListener
          throw new RuntimeException(e);
       }
       System.out.println("MESSAGE RECEIVED: " + lastMessage);
+      latch.countDown();
    }
 }

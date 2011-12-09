@@ -138,6 +138,13 @@ public class UnitTestCase extends TestCase
       checkThread = false;
    }
 
+   private String osType = System.getProperty("os.name").toLowerCase();
+   
+   protected boolean isWindows()
+   {
+      return (osType.indexOf("win") >= 0);
+   }
+
    // Static --------------------------------------------------------
 
    protected Configuration createDefaultConfig()

@@ -233,16 +233,15 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       consumer = session.createConsumer(ADDRESS);
       msg = consumer.receive(1000);
       Assert.assertNotNull(msg);
-      Assert.assertEquals(2, msg.getDeliveryCount());
+      Assert.assertEquals(strictUpdate ? 1 : 2, msg.getDeliveryCount());
       session.close();
    }
-
 
    public void testInfiniteDedeliveryMessageOnPersistent() throws Exception
    {
       internaltestInfiniteDedeliveryMessageOnPersistent(false);
    }
-   
+
    private void internaltestInfiniteDedeliveryMessageOnPersistent(final boolean strict) throws Exception
    {
       setUp(strict);
@@ -255,9 +254,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       session.commit();
       session.close();
 
-      
       int expectedCount = 1;
-      for (int i = 0 ; i < 700; i++)
+      for (int i = 0; i < 700; i++)
       {
          session = factory.createSession(false, false, false);
          session.start();
@@ -277,10 +275,10 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       factory.close();
       server.stop();
-      
+
       setUp(false);
-      
-      for (int i = 0 ; i < 700; i++)
+
+      for (int i = 0; i < 700; i++)
       {
          session = factory.createSession(false, false, false);
          session.start();
@@ -293,27 +291,26 @@ public class RedeliveryConsumerTest extends ServiceTestBase
 
       server.stop();
 
-      
-      JournalImpl journal = new JournalImpl(server.getConfiguration().getJournalFileSize(), 
-                                            2, 
+      JournalImpl journal = new JournalImpl(server.getConfiguration().getJournalFileSize(),
+                                            2,
                                             0,
-                                            0, 
-                                            new NIOSequentialFileFactory(server.getConfiguration().getJournalDirectory()),
+                                            0,
+                                            new NIOSequentialFileFactory(server.getConfiguration()
+                                                                               .getJournalDirectory()),
                                             "hornetq-data",
                                             "hq",
                                             1);
-      
-      
+
       final AtomicInteger updates = new AtomicInteger();
-      
+
       journal.start();
       journal.load(new LoaderCallback()
       {
-         
+
          public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
          {
          }
-         
+
          public void updateRecord(RecordInfo info)
          {
             if (info.userRecordType == JournalStorageManager.UPDATE_DELIVERY_COUNT)
@@ -321,23 +318,22 @@ public class RedeliveryConsumerTest extends ServiceTestBase
                updates.incrementAndGet();
             }
          }
-         
+
          public void deleteRecord(long id)
          {
          }
-         
+
          public void addRecord(RecordInfo info)
          {
          }
-         
+
          public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
          {
          }
       });
-      
+
       journal.stop();
-      
-      
+
       assertEquals(7, updates.get());
 
    }

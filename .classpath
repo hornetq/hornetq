@@ -113,7 +113,7 @@
 	<classpathentry kind="lib" path="thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jaspi-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jca-api.jar"/>
-	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jms-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jms-api.jar" sourcepath="/Users/clebertsuconic/.m2/repository/org/jboss/javaee/jboss-jms-api/1.1.0.GA/jboss-jms-api-1.1.0.GA-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-transaction-api.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-common-core.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-mdr.jar"/>

@@ -4536,7 +4536,7 @@ public class PagingTest extends ServiceTestBase
          for (int i = 0; i < 500; i++)
          {
             log.info("Received message " + i);
-            message = cons.receive(5000);
+            message = cons.receive(10000);
             assertNotNull(message);
             message.acknowledge();
 

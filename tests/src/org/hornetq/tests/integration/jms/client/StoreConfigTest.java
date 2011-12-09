@@ -74,14 +74,17 @@ public class StoreConfigTest extends JMSTestBase
       jmsServer.createConnectionFactory(false, nonPersisted, "/nonPersisted" );
       
       
+      boolean ex = false;
       try
       {
          jmsServer.addConnectionFactoryToJNDI("np", "/someCF");
-         fail("Failure expected and the API let duplicates");
       }
-      catch (HornetQException expected)
+      catch (Exception expected)
       {
+         ex = true;
       }
+      
+      assertTrue(ex);
 
 
       openCon("/someCF");
@@ -101,14 +104,18 @@ public class StoreConfigTest extends JMSTestBase
       jmsServer.start();
       
       jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
+      
+      ex = false;
       try
       {
          jmsServer.addConnectionFactoryToJNDI("tst", "/newJNDI");
-         fail("Failure expected and the API let duplicates");
       }
-      catch (HornetQException expected)
+      catch (Exception expected)
       {
+         ex = true;
       }
+      assertTrue(ex);
+      
       openCon("/someCF");
       openCon("/someCF2");
       openCon("/newJNDI");
