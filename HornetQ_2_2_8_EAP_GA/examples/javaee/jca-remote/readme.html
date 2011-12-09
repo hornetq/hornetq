@@ -1,0 +1,140 @@
+<html>
+  <head>
+    <title>HornetQ Java EE JCA Remote Server Configuration Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Java EE Resource Adapter Remote Server Configuration Example</h1>
+     <p>This example demonstrates how to configure the Resource adapter to connect to a remote HornetQ server</p>
+     <p>This example is composed of a message driven bean and a client<p>
+     <p>MDBRemoteServerClientExample will send a message to the MDB via a queue and wait for the MDB to send a response via
+     a reply queue</p>
+     <h2>configuring the incoming Adapter</h2>
+     <p>MDB's will consume messages via the incoming resource adapter. This can be found under hornetq-ra.rar/META-INF
+     and is called ra.xml. simply update the connector to use the netty connector instead of an invm connector and configure the transport params, as such</p>
+        <pre class="prettyprint">
+              &lt;resourceadapter-class&gt;org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class&gt;
+              &lt;config-property&gt;
+                 &lt;description&gt;The transport type&lt;/description&gt;
+                 &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
+                 &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+                 &lt;config-property-value&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property-value&gt;
+              &lt;/config-property&gt;
+              &lt;config-property&gt;
+                 &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;
+                 &lt;config-property-name&gt;ConnectionParameters&lt;/config-property-name&gt;
+                 &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
+                 &lt;config-property-value&gt;host=127.0.0.1;port=5446&lt;/config-property-value&gt;
+              &lt;/config-property>
+        </pre>
+
+     <h2>configuring the outgoing Adapter</h2>
+     <p>This configures a JCA connection factory the JEE components can use to look up the remote HornetQ Server</p>
+     <p>The default connection factory is found in jms-ds.xml. In this example we have changed this and renamed it as follows</p>
+     
+        <pre class="prettyprint">
+        &lt;tx-connection-factory&gt;
+              &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
+              &lt;xa-transaction/&gt;
+              &lt;rar-name&gt;hornetq-ra.rar&lt;/rar-name&gt;
+              &lt;connection-definition&gt;org.hornetq.ra.HornetQRAConnectionFactory&lt;/connection-definition&gt;
+              &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
+              &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/config-property&gt;
+              &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;host=127.0.0.1;port=5446&lt;/config-property&gt;
+              &lt;max-pool-size&gt;20&lt;/max-pool-size&gt;
+           &lt;/tx-connection-factory&gt;
+        </pre>
+     <h2>Example step-by-step</h2>
+     <p><i>To deploy and start the HornetQ server, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from the example directory</i></p>
+     <p><i>After the HornetQ server has started start the Application server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from the example directory</i></p>
+     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
+
+     <ol>
+         <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+         <pre class="prettyprint">
+            initialContext = new InitialContext();
+         </pre>
+         <li>Look up the MDB's queue</li>
+         <pre class="prettyprint">
+            Queue queue = (Queue) initialContext.lookup("queue/mdbQueue");
+         </pre>
+         <li>look up the connection factory</li>
+         <pre class="prettyprint">
+            ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("ConnectionFactory");
+         </pre>
+         <li>We then create a connection</li>
+         <pre class="prettyprint">
+            connection = cf.createConnection();
+         </pre>
+         <li>we then create a session</li>
+         <pre class="prettyprint">
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         </pre>
+         <li>we now create a message producer to send the message</li>
+         <pre class="prettyprint">
+            MessageProducer producer = session.createProducer(queue);
+         </pre>
+         <li>create a text message and send it</li>
+         <pre class="prettyprint">
+            producer.send(session.createTextMessage("a message"));
+         </pre>
+         <li>The MDB receives the text message</li>
+         <pre class="prettyprint">
+            TextMessage tm = (TextMessage)message;
+         </pre>
+         <li>The MDB looks up the reply queue</li>
+         <pre class="prettyprint">
+            Queue destQueue = HornetQJMSClient.createQueue("mdbReplyQueue");
+         </pre>
+         <li>The MDB creates a connection</li>
+         <pre class="prettyprint">
+            Connection connection = connectionFactory.createConnection();
+         </pre>
+         <li>The MDB creates a session</li>
+         <pre class="prettyprint">
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         </pre>
+         <li>The MDB creates a message producer to send the message</li>
+         <pre class="prettyprint">
+            MessageProducer producer = session.createProducer(destQueue);
+         </pre>
+         <li>The MDB creates and sends a text message</li>
+         <pre class="prettyprint">
+            producer.send(session.createTextMessage("A reply message"));
+         </pre>
+         <li>The MDB closes the connection which returns it to the pool</li>
+         <pre class="prettyprint">
+            connection.close();
+         </pre>
+         <li>The client now looks up the reply queue</li>
+         <pre class="prettyprint">
+            Queue replyQueue = (Queue) initialContext.lookup("queue/mdbReplyQueue");
+         </pre>
+         <li>and creates a message consumer to receive the message</li>
+         <pre class="prettyprint">
+            MessageConsumer consumer = session.createConsumer(replyQueue);
+         </pre>
+         <li>starting the connection starts delivery</li>
+         <pre class="prettyprint">
+            connection.start();
+         </pre>
+         <li>The message consumer receives the text message</li>
+         <pre class="prettyprint">
+            TextMessage textMessage = (TextMessage) consumer.receive(5000);
+         </pre>
+         <li>and we always clear up out JMS resources</li>
+         <pre class="prettyprint">
+            if (initialContext != null)
+            {
+               initialContext.close();
+            }
+            if (connection != null)
+            {
+               connection.close();
+             }
+         </pre>
+      </ol>
+  </body>
+</html>

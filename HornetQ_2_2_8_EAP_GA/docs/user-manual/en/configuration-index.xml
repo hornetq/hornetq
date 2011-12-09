@@ -1,0 +1,1386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                    a                              -->
+<!-- ============================================================================= -->
+
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="configuration-index">
+    <title>Configuration Reference</title>
+    <para>This section is a quick index for looking up configuration. Click on the element name to
+        go to the specific chapter.</para>
+    <section id="server.configuration">
+        <title>Server Configuration</title>
+        <section>
+            <title>hornetq-configuration.xml</title>
+            <para>This is the main core server configuration file.</para>
+            <table frame="topbot" border="2">
+                <title>Server Configuration</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>Element Name</entry>
+                            <entry>Element Type</entry>
+                            <entry>Description</entry>
+                            <entry>Default</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><link linkend="ha.allow-fail-back">allow-failback</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Will this server automatically shutdown if the original live server comes back up</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha/mode.shared.configuration">backup</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Is this server a backup server</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.bindings.journal"
+                                    >bindings-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>the directory to store the persisted bindings to</entry>
+                            <entry>data/bindings</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters">clustered</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the server is clustered</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="connection-ttl"
+                                >connection-ttl-override</link></entry>
+                            <entry>Long</entry>
+                            <entry>if set, this will override how long (in ms) to keep a connection
+                                alive without receiving a ping. </entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.bindings.journal"
+                                    >create-bindings-dir</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the server will create the bindings directory on
+                                start up</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.create-journal-dir"
+                                    >create-journal-dir</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the journal directory will be created</entry>
+                            <entry>true</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para></para>
+            <para></para>
+            <para>Continued..</para>
+            <informaltable frame="topbot">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
+                        <row>
+                            <entry><link linkend="using-server.configuration"
+                                    >file-deployment-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the server will load configuration from the
+                                configuration files</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.allow-fail-back">failover-on-shutdown</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Will this backup server come live on a normal server shutdown</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the cache for pre creating message id's</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-buffer-size"
+                                    >journal-buffer-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>The size of the internal buffer on the journal.</entry>
+                            <entry>128 KiB</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-buffer-timeout"
+                                    >journal-buffer-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>The timeout (in nanoseconds) used to flush internal
+                                buffers on the journal.</entry>
+                            <entry>20000</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-compact-min-files"
+                                    >journal-compact-min-files</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The minimal number of data files before we can start
+                                compacting</entry>
+                            <entry>10</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-compact-percentage"
+                                    >journal-compact-percentage</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The percentage of live data on which we consider compacting the
+                                journal</entry>
+                            <entry>30</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-directory"
+                                    >journal-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>the directory to store the journal files in</entry>
+                            <entry>data/journal</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-file-size"
+                                    >journal-file-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>the size (in bytes) of each journal file</entry>
+                            <entry>10 * 1024 * 1024 (10 MiB)</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-max-io"
+                                    >journal-max-io</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the maximum number of write requests that can be in the AIO queue
+                                at any one time</entry>
+                            <entry>500</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-min-files"
+                                    >journal-min-files</link></entry>
+                            <entry>Integer</entry>
+                            <entry>how many journal files to pre-create</entry>
+                            <entry>2</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-sync-transactional"
+                                    >journal-sync-transactional</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>if true wait for transaction data to be synchronized to the
+                                journal before returning response to client</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-sync-non-transactional"
+                                    >journal-sync-non-transactional</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>if true wait for non transaction data to be synced to the journal
+                                before returning response to client.</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-type"
+                                    >journal-type</link></entry>
+                            <entry>ASYNCIO|NIO</entry>
+                            <entry>the type of journal to use</entry>
+                            <entry>ASYNCIO</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.jmx.configuration"
+                                    >jmx-management-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the management API is available via JMX</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.jmx.configuration"
+                                >jmx-domain</link></entry>
+                            <entry>String</entry>
+                            <entry>the JMX domain used to registered HornetQ MBeans in the
+                                MBeanServer</entry>
+                            <entry>org.hornetq</entry>
+                        </row>
+                        <row>
+                            <entry>log-delegate-factory-class-name</entry>
+                            <entry>String</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="large.message.configuring"
+                                    >large-messages-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>the directory to store large messages</entry>
+                            <entry>data/largemessages</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.core.configuration"
+                                    >management-address</link></entry>
+                            <entry>String</entry>
+                            <entry>the name of the management address to send management messages
+                                to</entry>
+                            <entry>jms.queue.hornetq.management</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.clusteruser"
+                                    >cluster-user</link></entry>
+                            <entry>String</entry>
+                            <entry>the user used by cluster connections to communicate between the
+                                clustered nodes</entry>
+                            <entry>HORNETQ.CLUSTER.ADMIN.USER</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.clusteruser"
+                                    >cluster-password</link></entry>
+                            <entry>String</entry>
+                            <entry>the password used by cluster connections to communicate between the
+                                clustered nodes</entry>
+                            <entry>CHANGE ME!!</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="management.notifications.core.configuration"
+                                    >management-notification-address</link></entry>
+                            <entry>String</entry>
+                            <entry>the name of the address that consumers bind to receive management
+                                notifications</entry>
+                            <entry>hornetq.notifications</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that message counters are enabled</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-max-day-history</link></entry>
+                            <entry>Integer</entry>
+                            <entry>how many days to keep message counter history</entry>
+                            <entry>10</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.counters"
+                                    >message-counter-sample-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>the sample period (in ms) to use for message counters</entry>
+                            <entry>10000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.expiry.reaper"
+                                    >message-expiry-scan-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>how often (in ms) to scan for expired messages</entry>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.expiry.reaper"
+                                    >message-expiry-thread-priority</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the priority of the thread expiring messages</entry>
+                            <entry>3</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="paging.main.config"
+                                >paging-directory</link></entry>
+                            <entry>String</entry>
+                            <entry>the directory to store paged messages in</entry>
+                            <entry>data/paging</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.delivery.count.persistence">
+                                    persist-delivery-count-before-delivery</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the delivery count is persisted before delivery.
+                                False means that this only happens after a message has been
+                                cancelled.</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="persistence.enabled"
+                                >persistence-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the server will use the file based journal for
+                                persistence.</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="duplicate.id.cache"
+                                >persist-id-cache</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that id's are persisted to the journal</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry>remoting-interceptors</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                            <entry>todo</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.mode.shared">shared-store</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>is this server using a shared store for failover</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="server.scheduled.thread.pool"
+                                    >scheduled-thread-pool-max-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the number of threads that the main scheduled thread pool
+                                has.</entry>
+                            <entry>5</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="security">security-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that security is enabled</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="security"
+                                >security-invalidation-interval</link></entry>
+                            <entry>Long</entry>
+                            <entry>how long (in ms) to wait before invalidating the security
+                                cache</entry>
+                            <entry>10000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="server.scheduled.thread.pool"
+                                    >thread-pool-max-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the number of threads that the main thread pool has. -1 means no
+                                limit</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="connection-ttl.async-connection-execution"
+                                    >async-connection-execution-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Should incoming packets on the server be handed off to a thread
+                                from the thread pool for processing or should they be handled on the
+                                remoting thread?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="transaction-config"
+                                >transaction-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>how long (in ms) before a transaction can be removed from the
+                                resource manager after create time</entry>
+                            <entry>60000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="transaction-config"
+                                    >transaction-timeout-scan-period</link></entry>
+                            <entry>Long</entry>
+                            <entry>how often (in ms) to scan for timeout transactions</entry>
+                            <entry>1000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="wildcard-routing"
+                                >wild-card-routing-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>true means that the server supports wild card routing</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="perf-tuning.memory"
+                                >memory-measure-interval</link></entry>
+                            <entry>Long</entry>
+                            <entry>frequency to sample JVM memory in ms (or -1 to disable memory sampling)</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="perf-tuning.memory"
+                                >memory-warning-threshold</link></entry>
+                            <entry>Integer</entry>
+                            <entry>Percentage of available memory which threshold a warning log</entry>
+                            <entry>25</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring-transports.connectors"
+                                >connectors</link></entry>
+                            <entry>Connector</entry>
+                            <entry>a list of remoting connectors configurations to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">connector.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.factory-class</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the ConnectorFactory implementation - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param</link></entry>
+                            <entry>A connector configuration parameter</entry>
+                            <entry>A key-value pair used to configure the connector. A connector can have many param</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param.key (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Key of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.connectors">connector.param.value (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Value of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptors</link></entry>
+                            <entry>Acceptor</entry>
+                            <entry>a list of remoting acceptors to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the acceptor - optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.factory-class</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the AcceptorFactory implementation - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param</link></entry>
+                            <entry>An acceptor configuration parameter</entry>
+                            <entry>A key-value pair used to configure the acceptor. An acceptor can have many param</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param.key (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Key of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="configuring-transports.acceptors">acceptor.param.value (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Value of a configuration parameter - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.broadcast-groups"
+                                >broadcast-groups</link></entry>
+                            <entry>BroadcastGroup</entry>
+                            <entry>a list of broadcast groups to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>a unique name for the broadcast group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.local-bind-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>local bind address that the datagram socket is bound to</entry>
+                            <entry>wildcard IP address chosen by the kernel</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.local-bind-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>local port to which the datagram socket is bound to</entry>
+                            <entry>-1 (anonymous port)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.group-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>multicast address to which the data will be broadcast - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.group-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>UDP port number used for broadcasting - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.broadcast-period</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>period in milliseconds between consecutive broadcasts</entry>
+                            <entry>2000 (in milliseconds)</entry>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref</link>
+                            </entry>
+                            <entry>A pair of connector</entry>
+                            <entry>A pair  connector and
+                                 optional backup connector that will be broadcasted. A broadcast-group can have multiple connector-ref</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref.connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the live connector - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.broadcast-groups">broadcast-group.connector-ref.backup-connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the backup connector - optional</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.discovery-groups"
+                                >discovery-groups</link></entry>
+                            <entry>DiscoveryGroup</entry>
+                            <entry>a list of discovery groups to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.discovery-groups"
+                                >discovery-group.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>a unique name for the discovery group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry>
+                               <link linkend="clusters.discovery-groups">discovery-group.local-bind-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>the discovery group will be bound only to this local address</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry id="configuration.discovery-group.group-address">
+                               <link linkend="clusters.discovery-groups">discovery-group.group-address</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Multicast IP address of the group to listen on - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry id="configuration.discovery-group.group-port">
+                               <link linkend="clusters.discovery-groups">discovery-group.group-port</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>UDP port of the multicast group - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry id="configuration.discovery-group.refresh-timeout">
+                               <link linkend="clusters.discovery-groups">discovery-group.refresh-timeout</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>Period the discovery group
+                                  waits after receiving the last broadcast from a particular server before
+                                  removing that servers connector pair entry from its list.</entry>
+                            <entry>5000 (in milliseconds)</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">diverts</link></entry>
+                            <entry>Divert</entry>
+                            <entry>a list of diverts to use</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>a unique name for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.routing-name</link></entry>
+                            <entry>String</entry>
+                            <entry>the routing name for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.address</link></entry>
+                            <entry>String</entry>
+                            <entry>the address this divert will divert from - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.forwarding-address</link></entry>
+                            <entry>String</entry>
+                            <entry>the forwarding address for the divert - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.exclusive</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>is this divert exclusive?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts">divert.filter</link></entry>
+                            <entry>String</entry>
+                            <entry>an optional core filter expression</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="diverts"
+                                >divert.transformer-class-name</link></entry>
+                            <entry>String</entry>
+                            <entry>an optional class name of a transformer</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues</link></entry>
+                            <entry>Queue</entry>
+                            <entry>a list of pre configured queues to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues.name
+                                (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>unique name of this queue</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues.address</link></entry>
+                            <entry>String</entry>
+                            <entry>address for this queue - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues.filter</link></entry>
+                            <entry>String</entry>
+                            <entry>optional core filter expression for this queue</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="predefined.queues">queues.durable</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>is this queue durable?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges</link></entry>
+                            <entry>Bridge</entry>
+                            <entry>a list of bridges to create</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges.name
+                                (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>unique name for this bridge</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges.queue-name</link></entry>
+                            <entry>String</entry>
+                            <entry>name of queue that this bridge consumes from - mandatory</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                >bridges.forwarding-address</link></entry>
+                            <entry>String</entry>
+                            <entry>address to forward to. If omitted original address is
+                                used</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges.filter</link></entry>
+                            <entry>String</entry>
+                            <entry>optional core filter expression</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                    >bridges.transformer-class-name</link></entry>
+                            <entry>String</entry>
+                            <entry>optional name of transformer class</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                >bridges.retry-interval</link></entry>
+                            <entry>Long</entry>
+                            <entry>period (in ms) between successive retries</entry>
+                            <entry>2000 ms</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                    >bridges.retry-interval-multiplier</link></entry>
+                            <entry>Double</entry>
+                            <entry>multiplier to apply to successive retry intervals</entry>
+                            <entry>1.0</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                >bridges.reconnect-attempts</link></entry>
+                            <entry>Integer</entry>
+                            <entry>maximum number of retry attempts, -1 signifies infinite</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                    >bridges.failover-on-server-shutdown</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>should failover be prompted if target server is cleanly
+                                shutdown?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                    >bridges.use-duplicate-detection</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>should duplicate detection headers be inserted in forwarded
+                                messages?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                >bridges.discovery-group-ref</link></entry>
+                            <entry>String</entry>
+                            <entry>name of discovery group used by this bridge</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges">bridges.connector-ref.connector-name
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>name of connector to use for live connection</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="core-bridges"
+                                    >bridges.connector-ref.backup-connector-name
+                                (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>optional name of connector to use for backup connection</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections</link></entry>
+                            <entry>ClusterConnection</entry>
+                            <entry>a list of cluster connections</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>unique name for this cluster connection</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.address</link></entry>
+                            <entry>String</entry>
+                            <entry>name of address this cluster connection applies to</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.forward-when-no-consumers</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>should messages be load balanced if there are no matching
+                                consumers on target?</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.max-hops</link></entry>
+                            <entry>Integer</entry>
+                            <entry>maximum number of hops cluster topology is propagated</entry>
+                            <entry>1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.retry-interval</link></entry>
+                            <entry>Long</entry>
+                            <entry>period (in ms) between successive retries</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.use-duplicate-detection</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>should duplicate detection headers be inserted in forwarded
+                                messages?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.discovery-group-ref</link></entry>
+                            <entry>String</entry>
+                            <entry>name of discovery group used by this bridge</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.connector-ref.connector-name
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>name of connector to use for live connection</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.cluster-connections"
+                                    >cluster-connections.connector-ref.backup-connector-name
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>optional name of connector to use for backup connection</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles"
+                                >security-settings</link></entry>
+                            <entry>SecuritySetting</entry>
+                            <entry>a list of security settings</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles">security-settings.match
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>the string to use for matching security against an
+                                address</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles"
+                                    >security-settings.permission</link></entry>
+                            <entry>Security Permission</entry>
+                            <entry>a permision to add to the address</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles"
+                                    >security-settings.permission.type (attribute)</link></entry>
+                            <entry>Permission Type</entry>
+                            <entry>the type of permission</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="security.settings.roles"
+                                    >security-settings.permission.roles (attribute)</link></entry>
+                            <entry>Roles</entry>
+                            <entry>a comma-separated list of roles to apply the permission
+                                to</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="queue-attributes.address-settings"
+                                    >address-settings</link></entry>
+                            <entry>AddressSetting</entry>
+                            <entry>a list of address settings</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="undelivered-messages.configuring"
+                                    >address-settings.dead-letter-address</link></entry>
+                            <entry>String</entry>
+                            <entry>the address to send dead messages to</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="undelivered-messages.configuring"
+                                    >address-settings.max-delivery-attempts</link></entry>
+                            <entry>Integer</entry>
+                            <entry>how many times to attempt to deliver a message before sending to
+                                dead letter address</entry>
+                            <entry>10</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="message-expiry.configuring"
+                                    >address-settings.expiry-address</link></entry>
+                            <entry>String</entry>
+                            <entry>the address to send expired messages to</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="undelivered-messages.delay"
+                                    >address-settings.redelivery-delay</link></entry>
+                            <entry>Long</entry>
+                            <entry>the time (in ms) to wait before redelivering a cancelled
+                                message.</entry>
+                            <entry>0</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="last-value-queues"
+                                    >address-settings.last-value-queue</link></entry>
+                            <entry>boolean</entry>
+                            <entry>whether to treat the queue as a last value queue</entry>
+                            <entry>false</entry>
+                        </row>                        
+                        <row>
+                            <entry><link linkend="paging"
+                                >address-settings.page-size-bytes</link></entry>
+                            <entry>Long</entry>
+                            <entry>the page size (in bytes) to use for an address</entry>
+                            <entry>10 * 1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="paging"
+                                >address-settings.max-size-bytes</link></entry>
+                            <entry>Long</entry>
+                            <entry>the maximum size (in bytes) to use in paging for an
+                                address</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.message-redistribution"
+                                    >address-settings.redistribution-delay</link></entry>
+                            <entry>Long</entry>
+                            <entry>how long (in ms) to wait after the last consumer is closed on a
+                                queue before redistributing messages.</entry>
+                            <entry>-1</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </informaltable>
+        </section>
+        <section>
+            <title>hornetq-jms.xml</title>
+            <para>This is the configuration file used by the server side JMS service to load JMS
+                Queues, Topics and Connection Factories.</para>
+            <table frame="topbot" border="2">
+                <title>JMS Server Configuration</title>
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <thead>
+                        <row>
+                            <entry>Element Name</entry>
+                            <entry>Element Type</entry>
+                            <entry>Description</entry>
+                            <entry>Default</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry>
+                               <link linkend="using-jms.server.configuration">connection-factory</link>
+                            </entry>
+                            <entry>ConnectionFactory</entry>
+                            <entry>a list of connection factories to create and add to JNDI</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+            <para></para>
+            <para></para>
+            <para>Continued..</para>
+            <informaltable frame="topbot">
+                <tgroup cols="4">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <colspec colname="c4" colnum="4"/>
+                    <tbody>
+                        <row>
+                            <entry id="configuration.connection-factory.signature">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.signature (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Type of connection factory</entry>
+                            <entry>generic</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.signature.xa">
+                               <link linkend="using-jms.configure.factory.types">connection-factory.xa</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>If it is a XA connection factory</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.auto-group">
+                               <link linkend="message-grouping.jmsconfigure">connection-factory.auto-group</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not message grouping is automatically used</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.static.servers">connection-factory.connectors</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>A list of connectors used by the connection factory</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.static.servers"
+                                    >connection-factory.connectors.connector-ref.connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector to connect to the live server</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.static.servers"
+                                    >connection-factory.connectors.connector-ref.backup-connector-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector to connect to the backup server</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters-discovery.groups.clientside"
+                                    >connection-factory.discovery-group-ref.discovery-group-name (attribute)</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>Name of discovery group used by this connection factory</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.discovery-initial-wait-timeout">
+                               <link linkend="clusters-discovery.groups.clientside"
+                                    >connection-factory.discovery-initial-wait-timeout</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the initial time to wait (in ms) for discovery groups to wait for
+                                broadcasts</entry>
+                            <entry>10000</entry>
+                        </row>                        
+                        <row>
+                            <entry id="configuration.connection-factory.block-on-acknowledge">
+                               <link linkend="send-guarantees.nontrans.acks">connection-factory.block-on-acknowledge</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not messages are acknowledged synchronously</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.block-on-non-durable-send">
+                               <link linkend="non-transactional-sends">connection-factory.block-on-non-durable-send</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not non-durable messages are sent synchronously</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.block-on-durable-send">
+                               <link linkend="non-transactional-sends">connection-factory.block-on-durable-send</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not durable messages are sent synchronously</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.call-timeout">connection-factory.call-timeout</entry>
+                            <entry>Long</entry>
+                            <entry>the timeout (in ms) for remote calls</entry>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.client-failure-check-period">
+                               <link linkend="dead.connections">connection-factory.client-failure-check-period</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the period (in ms) after which the client will consider the
+                                connection failed after not receiving packets from the
+                                server</entry>
+                            <entry>5000</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.client-id">
+                               <link linkend="using-jms.clientid">connection-factory.client-id</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>the pre-configured client ID for the connection factory</entry>
+                            <entry>null</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.connection-load-balancing-policy-class-name">
+                               <link linkend="clusters.client.loadbalancing">
+                                  connection-factory.connection-load-balancing-policy-class-name</link>
+                            </entry>
+                            <entry>String</entry>
+                            <entry>the name of the load balancing class</entry>
+                            <entry>org.hornetq.api.core.client.loadbalance.RoundRobinConnectionLoadBalancingPolicy</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.connection-ttl">
+                               <link linkend="dead.connections">connection-factory.connection-ttl</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the time to live (in ms) for connections</entry>
+                            <entry>1 * 60000</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.consumer-max-rate">
+                               <link linkend="flow-control.rate.core.api">connection-factory.consumer-max-rate</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the fastest rate a consumer may consume messages per
+                                second</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.consumer-window-size">
+                               <link linkend="flow-control.core.api">connection-factory.consumer-window-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for consumer flow control</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.dups-ok-batch-size">
+                               <link linkend="using-jms.dupsokbatchsize">connection-factory.dups-ok-batch-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using
+                                DUPS_OK_ACKNOWLEDGE mode</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="ha.automatic.failover"
+                                    >connection-factory.failover-on-initial-connection</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to failover to backup on event that initial connection to live server fails</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.failover-on-server-shutdown">
+                               <link linkend="ha.automatic.failover">connection-factory.failover-on-server-shutdown</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to failover on server shutdown</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.min-large-message-size">
+                               <link linkend="large-messages.core.config">connection-factory.min-large-message-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the size (in bytes) before a message is treated as large</entry>
+                            <entry>100 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="large-messages.cache.client"
+                                    >connection-factory.cache-large-message-client</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>If true clients using this connection factory will hold the large
+                                message body on temporary files.</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.pre-acknowledge">
+                               <link linkend="pre-acknowledge.configure">connection-factory.pre-acknowledge</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>whether messages are pre acknowledged by the server before
+                                sending</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.producer-max-rate">
+                               <link linkend="flow-control.producer.rate.core.api">connection-factory.producer-max-rate</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the maximum rate of messages per second that can be sent</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="client-reconnection"
+                                >connection-factory.producer-window-size</link></entry>
+                            <entry>Integer</entry>
+                            <entry>the window size in bytes for producers sending messages</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.confirmation-window-size">
+                               <link linkend="client-reconnection">connection-factory.confirmation-window-size</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for reattachment confirmations</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.reconnect-attempts">
+                               <link linkend="client-reconnection">connection-factory.reconnect-attempts</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>maximum number of retry attempts, -1 signifies infinite</entry>
+                            <entry>0</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.retry-interval">
+                               <link linkend="client-reconnection">connection-factory.retry-interval</link>
+                            </entry>
+                            <entry>Long</entry>
+                            <entry>the time (in ms) to retry a connection after failing</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.retry-interval-multiplier">
+                               <link linkend="client-reconnection">connection-factory.retry-interval-multiplier</link>
+                            </entry>
+                            <entry>Double</entry>
+                            <entry>multiplier to apply to successive retry intervals</entry>
+                            <entry>1.0</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="client-reconnection"
+                                >connection-factory.max-retry-interval</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The maximum retry interval in the case a retry-interval-multiplier has been specified</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.scheduled-thread-pool-max-size">
+                               <link linkend="thread-pooling.client.side">connection-factory.scheduled-thread-pool-max-size</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the <emphasis>scheduled thread</emphasis> pool</entry>
+                            <entry>5</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.thread-pool-max-size">
+                               <link linkend="thread-pooling.client.side">connection-factory.thread-pool-max-size</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the thread pool</entry>
+                            <entry>-1</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.transaction-batch-size">
+                               <link linkend="using-jms.txbatchsize">
+                                  connection-factory.transaction-batch-size</link>
+                            </entry>
+                            <entry>Integer</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using a
+                                transactional session</entry>
+                            <entry>1024 * 1024</entry>
+                        </row>
+                        <row>
+                            <entry id="configuration.connection-factory.use-global-pools">
+                               <link linkend="thread-pooling.client.side">connection-factory.use-global-pools</link>
+                            </entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to use a global thread pool for threads</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >queue</link></entry>
+                            <entry>Queue</entry>
+                            <entry>a queue to create and add to JNDI</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration">queue.name
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>unique name of the queue</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >queue.entry</link></entry>
+                            <entry>String</entry>
+                            <entry>context where the queue will be bound in JNDI (there can be
+                                many)</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                    >queue.durable</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>is the queue durable?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                    >queue.filter</link></entry>
+                            <entry>String</entry>
+                            <entry>optional filter expression for the queue</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >topic</link></entry>
+                            <entry>Topic</entry>
+                            <entry>a topic to create and add to JNDI</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration">topic.name
+                                    (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>unique name of the topic</entry>
+                            <entry/>
+                        </row>
+                        <row>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >topic.entry</link></entry>
+                            <entry>String</entry>
+                            <entry>context where the topic will be bound in JNDI (there can be
+                                many)</entry>
+                            <entry/>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </informaltable>
+        </section>
+    </section>
+</chapter>

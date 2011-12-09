@@ -1,0 +1,2135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "thirdparty/libraries.ent">
+      ]>
+
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<project name="The HornetQ Project">
+
+   <property name="hornetq.run_script" value="false" />
+
+   <fail message="*** Please build by using the build.sh script (or build.bat on Windows) ***">
+      <condition>
+         <not>
+            <equals arg1="${hornetq.run_script}" arg2="true"/>
+         </not>
+      </condition>
+   </fail>
+
+   <!-- ======================================================================================== -->
+   <!-- javac + junit properties                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <property file="build-hornetq.properties" />
+
+   <property name="jdk5.home" value="${java.home}/../"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Module name(s) & version                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <property name="module.name" value="hornetq"/>
+	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
+   <property file="src/config/common/hornetq-version.properties"/>
+   <property name="hornetq.version.revision" value="0" />
+   <property name="twitter.consumerKey" value="null"/>
+   <property name="hornetq.version.svnurl" value="https://svn.jboss.org/repos/hornetq/branches/Branch_2_2_EAP"/>
+   <property name="hornetq.version.string"
+             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})"/>
+   <property name="module.version"
+             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.revision}.${hornetq.version.versionTag}"/>
+   <property name="build.artifact"
+             value="${module.name}-${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Jar names                                                                                -->
+   <!-- ======================================================================================== -->
+
+   <property name="core.jar.name" value="hornetq-core.jar"/>
+   <property name="core.sources.jar.name" value="hornetq-core-sources.jar"/>
+   <property name="jms.jar.name" value="hornetq-jms.jar"/>
+   <property name="jms.sources.jar.name" value="hornetq-jms-sources.jar"/>
+   <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
+   <property name="jms.client.sources.jar.name" value="hornetq-jms-client-sources.jar"/>
+   <property name="jms.client.java5.jar.name" value="hornetq-jms-client-java5.jar"/>
+   <property name="jms.client.java5.sources.jar.name" value="hornetq-jms-client-java5-sources.jar"/>
+   <property name="jnp.client.jar.name" value="jnp-client.jar"/>
+   <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
+   <property name="jboss.integration.sources.jar.name" value="hornetq-jboss-as-integration-sources.jar"/>
+   <property name="spring.integration.jar.name" value="hornetq-spring-integration.jar"/>
+   <property name="spring.integration.sources.jar.name" value="hornetq-spring-integration-sources.jar"/>
+   <property name="twitter.integration.jar.name" value="hornetq-twitter-integration.jar"/>
+   <property name="twitter.integration.sources.jar.name" value="hornetq-twitter-integration-sources.jar"/>
+   <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
+   <property name="bootstrap.sources.jar.name" value="hornetq-bootstrap-sources.jar"/>
+   <property name="logging.jar.name" value="hornetq-logging.jar"/>
+   <property name="logging.sources.jar.name" value="hornetq-logging-sources.jar"/>
+   <property name="core.client.jar.name" value="hornetq-core-client.jar"/>
+   <property name="core.client.sources.jar.name" value="hornetq-core-client-sources.jar"/>
+   <property name="core.client.java5.jar.name" value="hornetq-core-client-java5.jar"/>
+   <property name="core.client.java5.sources.jar.name" value="hornetq-core-client-java5-sources.jar"/>
+   <property name="ra.jar.name" value="hornetq-ra.jar"/>
+   <property name="ra.sources.jar.name" value="hornetq-ra-sources.jar"/>
+   <property name="ra.rar.name" value="hornetq-ra.rar"/>
+   <property name="netty.jar.name" value="netty.jar"/>
+   <property name="mc.jar.name" value="jboss-mc.jar"/>
+   <property name="service.sar.name" value="hornetq-service.sar"/>
+   <property name="service.sources.sar.name" value="hornetq-service-sources.sar"/>
+   <property name="resources.jar.name" value="hornetq-resources.jar"/>
+   <property name="resources.sources.jar.name" value="hornetq-resources-sources.jar"/>
+   <property name="twitter4j.jar.name" value="twitter4j-core.jar"/>
+   <property name="eap.examples.zip.name" value="hornetq-eap-examples.zip"/>
+
+   <!--source and build dirs-->
+   <property name="build.dir" value="build"/>
+   <property name="build.classes.dir" value="${build.dir}/classes"/>
+   <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
+   <property name="build.core.client.java5.classes.dir" value="${build.dir}/classes/core-client-java5"/>
+   <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
+   <property name="build.jms.java5.classes.dir" value="${build.dir}/classes/jms-java5"/>
+   <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
+   <property name="build.spring.integration.classes.dir" value="${build.dir}/classes/spring-integration"/>
+   <property name="build.twitter.integration.classes.dir" value="${build.dir}/classes/twitter-integration"/>
+   <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
+   <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
+   <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
+   <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
+   <property name="build.jars.dir" value="${build.dir}/jars"/>
+   <property name="build.src.dir" value="${build.dir}/src"/>
+   <property name="src.dir" value="src"/>
+   <property name="src.main.dir" value="${src.dir}/main"/>
+   <property name="src.config.dir" value="${src.dir}/config"/>
+   <property name="src.config.standalone.non-clustered.dir" value="${src.dir}/config/stand-alone/non-clustered"/>
+   <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
+   <property name="src.config.trunk.non-clustered.dir" value="${src.dir}/config/trunk/non-clustered"/>
+   <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
+   <property name="src.config.jbossas4.non-clustered.dir" value="${src.dir}/config/jboss-as-4/non-clustered"/>
+   <property name="src.config.jbossas4.clustered.dir" value="${src.dir}/config/jboss-as-4/clustered"/>
+   <property name="src.config.jbossas5.non-clustered.dir" value="${src.dir}/config/jboss-as-5/non-clustered"/>
+   <property name="src.config.jbossas5.clustered.dir" value="${src.dir}/config/jboss-as-5/clustered"/>
+   <property name="src.config.service.dir" value="${src.dir}/config/service"/>
+   <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
+   <property name="src.bin.dir" value="${src.dir}/bin"/>
+   <property name="doc.dir" value="docs"/>
+   <property name="logs.dir" value="logs"/>
+   <property name="licenses.dir" value="licenses"/>
+   <property name="doc.examples.dir" value="examples"/>
+   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/target/docbook/publish"/>
+   <property name="rest-manual.build.dir" value="hornetq-rest/docbook/target/docbook/publish/en-US"/>
+   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/target/docbook/publish"/>
+   <property name="build.api.dir" value="${build.dir}/api"/>
+   <property name="native.bin.dir" value="native/bin"/>
+   <property name="examples.dir" value="examples"/>
+   <property name="tools.dir" value="tools"/>
+   <property name="build.examples.dir" value="${build.dir}/examples"/>
+
+   <property name="build.distro.dir"
+             value="${build.dir}/${build.artifact}"/>
+   <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
+   <property name="build.distro.native.dir" value="${build.distro.dir}/native-src"/>
+   <!-- <property name="build.distro.client.dir" value="${build.distro.dir}/client"/> -->
+   <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
+   <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
+   <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
+   <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
+   <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
+   <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+   <property name="build.distro.tools.dir" value="${build.distro.dir}/tools"/>
+   <property name="artifacts.dir" value="${build.dir}/artifacts"/>
+
+   <!--default clustering server settings-->
+   <property name="hornetq.remoting.netty.port" value="5445"/>
+   <property name="jnp.port" value="1099"/>
+   <property name="jnp.rmiPort" value="1098"/>
+   <property name="hornetq.data.dir" value="data1"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Thirdparty Dependency                                                                    -->
+   <!-- ======================================================================================== -->
+
+   <property name="project.thirdparty" value="thirdparty"/>
+   <property name="sun.javacc.lib" value="${project.thirdparty}/net/java/dev/javacc/lib/"/>
+   &libraries;
+
+   <!--
+        Setting "external.project" to true makes jbossbuild use the current directory, and not its
+        parent, as project root. DO NOT change this.
+   -->
+   <property name="external.project" value="true"/>
+   <!--
+        Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
+   -->
+   <property name="nodownload" value="false"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Test properties                                                                          -->
+   <!-- ======================================================================================== -->
+
+   <property name="test.dir" value="tests"/>
+   <property name="thirdparty.dir" value="thirdparty"/>
+   <property name="test.build.dir" value="${test.dir}/build"/>
+   <property name="test.src.dir" value="${test.dir}/src"/>
+   <property name="test-mask" value="*Test"/>
+   <property name="test.classes.dir" value="${test.build.dir}/classes"/>
+   <property name="test.output.dir" value="${test.dir}/build"/>
+   <property name="test.reports.dir" value="${test.output.dir}/reports"/>
+   <property name="test.stylesheets.dir" value="${test.output.dir}/stylesheets"/>
+   <property name="test.src.stylesheets.dir" value="${test.src.dir}/stylesheets"/>
+   <property name="test.jms.dir" value="${test.dir}/jms-tests"/>
+   <property name="test.jms.build.dir" value="${test.jms.dir}/build"/>
+   <property name="test.jms.src.dir" value="${test.jms.dir}/src"/>
+   <property name="test.jms.classes.dir" value="${test.jms.dir}/build/classes"/>
+   <property name="test.joram.dir" value="${test.dir}/joram-tests"/>
+   <property name="test.joram.src.dir" value="${test.joram.dir}/src"/>
+   <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
+   <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
+   <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
+	
+	
+   <property name="test-udp-address" value="230.1.2.3"/> 
+   <property name="test-udp-port" value="6750"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Classpath definition                                                                     -->
+   <!-- ======================================================================================== -->
+
+   <path id="core.compilation.classpath">
+      <path refid="org.jboss.netty.classpath"/>
+   </path>
+
+   <path id="jms.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+   	  <path refid="org.jboss.netty.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+    </path>
+	
+   <path id="jms.compilation.jdk15.classpath">
+      <path location="${build.core.client.java5.classes.dir}"/>
+   	  <path refid="org.jboss.netty.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+    </path>
+		
+
+   <path id="jboss.integration.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.security.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+   </path>
+
+   <path id="twitter.integration.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.twitter4j.classpath"/>
+   </path>
+
+   <path id="spring.integration.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path location="${build.jms.classes.dir}"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.springframework.classpath"/>
+   </path>
+
+   <path id="jboss.service.compilation.classpath">
+      <path refid="org.jboss.javaee.classpath"/>
+      <path location="${build.core.classes.dir}"/>
+      <path location="${build.jboss.integration.classes.dir}"/>
+   </path>
+
+   <path id="bootstrap.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.microcontainer.classpath"/>
+      <path refid="org.jboss.classpath"/>
+   </path>
+
+   <path id="logging.compilation.classpath">
+      <path refid="log4j.log4j.classpath"/>
+   </path>
+
+   <path id="javadoc.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
+   	  <path location="${thirdparty.dir}/org/jboss/apiviz/lib/apiviz.jar" />
+      <path location="${build.classes.dir}"/>
+   </path>
+
+   <path id="test.compilation.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path refid="jboss.integration.compilation.classpath"/>
+      <path refid="bootstrap.compilation.classpath"/>
+      <path refid="junit.junit.classpath"/>
+      <path refid="org.twitter4j.classpath"/>
+      <path refid="org.springframework.classpath"/>
+      <path location="${build.jars.dir}/${ra.jar.name}"/>
+      <path location="${build.jars.dir}/${jms.jar.name}"/>
+      <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
+      <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+      <path location="${build.jars.dir}/${logging.jar.name}"/>
+      <path location="${build.jars.dir}/${spring.integration.jar.name}"/>
+      <path location="${build.jars.dir}/${twitter.integration.jar.name}"/>
+   </path>
+
+   <path id="jms.test.compilation.classpath">
+      <path refid="jboss.integration.compilation.classpath"/>
+      <path refid="bootstrap.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
+      <path refid="junit.junit.classpath"/>
+      <path refid="org.jboss.security.classpath"/>
+      <path location="${build.jars.dir}/${core.jar.name}"/>
+      <path location="${build.jars.dir}/${jms.jar.name}"/>
+      <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
+      <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+      <path location="${build.jars.dir}/${logging.jar.name}"/>
+   </path>
+
+   <path id="joram.test.compilation.classpath">
+      <path refid="jms.test.compilation.classpath"/>
+      <path location="${test.jms.classes.dir}" />
+      <path location="${test.classes.dir}" />
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+   </path>
+
+   <path id="findbugs.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      <path refid="junit.junit.classpath"/>
+   </path>
+
+   <path id="unit.test.execution.classpath">
+      <!-- ensure that the core client jar is included for
+           tests security tests which needs to read hornetq-version.properties
+	       from inside this jar
+	  -->
+      <fileset dir="${build.jars.dir}">
+         <include name="${core.client.jar.name}"/>
+      </fileset>
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
+ 	  <!-- we must include Apache commons logging   -->
+ 	  <!-- as a transitive dependency from JBoss TM -->
+ 	  <path refid="apache.logging.classpath"/>
+      <path refid="org.springframework.classpath"/>
+      <path refid="org.twitter4j.classpath"/>
+   </path>
+
+   <path id="emma.unit.test.execution.classpath">
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+   </path>
+
+   <path id="jms.test.execution.classpath">
+      <pathelement location="${src.schema.dir}"/>
+      <pathelement location="${test.jms.dir}/config"/>
+      <pathelement location="${test.jms.classes.dir}"/>
+      <path refid="jms.test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
+	  <!-- we must include Apache commons logging   -->
+	  <!-- as a transitive dependency from JBoss TM -->
+   	  <path refid="apache.logging.classpath"/>
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${src.config.dir}/common"/>
+   </path>
+
+   <path id="joram.test.execution.classpath">
+      <pathelement location="${test.joram.classes.dir}"/>
+      <pathelement location="${test.joram.config.dir}"/>
+      <path refid="joram.test.compilation.classpath"/>
+      <path refid="jms.test.execution.classpath"/>
+   </path>
+
+   <path id="jms.standalone.server.classpath">
+      <pathelement location="${src.schema.dir}"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path refid="jms.test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+	  <!-- we must include Apache commons logging   -->
+	  <!-- as a transitive dependency from JBoss TM -->
+   	  <path refid="apache.logging.classpath"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <path refid="org.jboss.naming.classpath"/>
+   </path>
+
+   <target name="clean">
+      <delete dir="${build.dir}" quiet="true"/>
+      <delete dir="${test.build.dir}" quiet="true"/>
+      <delete dir="${test.output.dir}" quiet="true"/>
+      <delete dir="${test.jms.build.dir}" quiet="true"/>
+      <delete dir="${test.joram.build.dir}" quiet="true"/>
+      <delete dir="${thirdparty.dir}" quiet="true"/>
+      <delete quiet="true">
+         <fileset dir="${logs.dir}" includes="*"/>
+      </delete>
+      <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+	<property name="maven.goal" value="clean"/>
+      </ant>
+   </target>
+
+   <target name="init" depends="createthirdparty">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${build.classes.dir}"/>
+      <mkdir dir="${build.core.classes.dir}"/>
+      <mkdir dir="${build.core.client.java5.classes.dir}"/>
+      <mkdir dir="${build.jms.classes.dir}"/>
+      <mkdir dir="${build.jms.java5.classes.dir}"/>
+      <mkdir dir="${build.jboss.integration.classes.dir}"/>
+      <mkdir dir="${build.spring.integration.classes.dir}"/>
+      <mkdir dir="${build.twitter.integration.classes.dir}"/>
+      <mkdir dir="${build.service.classes.dir}"/>
+      <mkdir dir="${build.bootstrap.classes.dir}"/>
+      <mkdir dir="${build.logging.classes.dir}"/>
+      <mkdir dir="${build.ra.classes.dir}"/>
+      <mkdir dir="${build.jars.dir}"/>
+      <mkdir dir="${build.src.dir}"/>
+   </target>
+
+
+   <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
+      <ant antfile="build-thirdparty.xml" target="maven-install"/>
+   </target>
+
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <or>
+            <uptodate property="dependencies.current"
+                      srcfile="build-thirdparty.xml"
+                      targetfile="./thirdparty/libraries.ent"/>
+            <istrue value="${nodownload}"/>
+         </or>
+      </condition>
+   </target>
+
+   <!-- ================================= -->
+   <!-- Compilation targets               -->
+   <!-- ================================= -->
+
+   <target name="compile" depends="compile-jms, compile-core-client-java5"/>
+
+   <target name="compile-core" depends="init">
+      <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
+      <javacc target="${src.main.dir}/org/hornetq/core/filter/impl/FilterParser.jj"
+              outputdirectory="${build.src.dir}/org/hornetq/core/filter/impl"
+              javacchome="${sun.javacc.lib}"
+              static="false"/>
+      <javac destdir="${build.core.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/hornetq/*.java"/>
+         <include name="**/hornetq/api/*.java"/>
+         <include name="**/hornetq/api/core/**/*.java"/>
+         <include name="**/hornetq/core/**/*.java"/>
+         <include name="**/hornetq/spi/**/*.java"/>
+         <include name="**/hornetq/utils/**/*.java"/>
+      	 <classpath refid="core.compilation.classpath"/>
+      </javac>
+      <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
+             classpath="${build.core.classes.dir}" destdir="./native/src"/>
+
+      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+            outputproperty="netty.version" fork="true"/>
+      <echo>setting netty version ${netty.version}</echo>
+      <copy file="${src.config.dir}/common/hornetq-version.properties"
+            tofile="${build.core.classes.dir}/hornetq-version.properties" overwrite="true">
+         <filterset>
+               <filter token="NETTY.VERSION" value="${netty.version}"/>
+         </filterset>
+      </copy>
+
+   </target>
+
+   <target name="compile-core-client-java5" depends="init">
+      <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
+      <javacc target="${src.main.dir}/org/hornetq/core/filter/impl/FilterParser.jj"
+              outputdirectory="${build.src.dir}/org/hornetq/core/filter/impl"
+              javacchome="${sun.javacc.lib}"
+              static="false"/>
+      <javac destdir="${build.core.client.java5.classes.dir}"
+             target="1.5"
+             source="1.5"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}" fork="true" executable="${jdk5.home}/bin/javac">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <exclude name="**/hornetq/**/server/**/*.java" />
+
+         <include name="**/hornetq/*.java"/>
+         <include name="**/hornetq/api/*.java"/>
+         <include name="**/hornetq/api/core/**/*.java"/>
+         <include name="**/hornetq/core/**/*.java"/>
+         <include name="**/hornetq/spi/**/*.java"/>
+         <include name="**/hornetq/utils/**/*.java"/>
+         <classpath refid="core.compilation.classpath"/>
+      </javac>
+      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+            outputproperty="netty.version" fork="true"/>
+      <echo>setting netty version ${netty.version}</echo>
+      <copy file="${src.config.dir}/common/hornetq-version.properties"
+            tofile="${build.core.client.java5.classes.dir}/hornetq-version.properties" overwrite="true">
+         <filterset>
+               <filter token="NETTY.VERSION" value="${netty.version}"/>
+         </filterset>
+      </copy>
+
+   </target>
+	
+   <target name="compile-jms" depends="compile-core">
+      <javac destdir="${build.jms.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/jms/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+	   <target name="compile-jms-java5" depends="compile-core-client-java5">
+	      <javac destdir="${build.jms.java5.classes.dir}"
+	             target="1.5"
+	             source="1.5"
+	             optimize="${javac.optimize}"
+	             debug="${javac.debug}"
+	             depend="${javac.depend}"
+	             verbose="${javac.verbose}"
+	             deprecation="${javac.deprecation}"
+	             includeAntRuntime="${javac.include.ant.runtime}"
+	             includeJavaRuntime="${javac.include.java.runtime}"
+                     encoding="${javac.encoding}"
+	             failonerror="${javac.fail.onerror}" fork="true" executable="${jdk5.home}/bin/javac">
+	         <src>
+	            <pathelement path="${src.main.dir}"/>
+	         </src>
+	         <include name="**/jms/**/*.java"/>
+	         <classpath refid="jms.compilation.jdk15.classpath"/>
+	      </javac>
+	   </target>
+	
+   <target name="compile-jboss-integration" depends="compile-core">
+      <javac destdir="${build.jboss.integration.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/jboss/**/*.java"/>
+         <classpath refid="jboss.integration.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-twitter-integration" depends="compile-core">
+      <javac destdir="${build.twitter.integration.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/twitter/**/*.java"/>
+         <classpath refid="twitter.integration.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-spring-integration" depends="compile-core">
+      <javac destdir="${build.spring.integration.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/spring/**/*.java"/>
+         <classpath refid="spring.integration.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <!-- author: Lucas Amador -->
+   <target name="compile-jboss-service" depends="compile-core">
+      <javac destdir="${build.service.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/service/**/*.java"/>
+         <classpath refid="jboss.service.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-bootstrap" depends="compile-core">
+      <javac destdir="${build.bootstrap.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/bootstrap/**/*.java"/>
+         <classpath refid="bootstrap.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-logging" depends="init">
+      <javac destdir="${build.logging.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/logging/**/*.java"/>
+         <classpath refid="logging.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-ra" depends="init">
+      <javac destdir="${build.ra.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             encoding="${javac.encoding}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**org/hornetq/ra/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="build-native" depends="jar">
+      <exec dir="native" executable="bash">
+         <arg line="bootstrap"/>
+      </exec>
+   </target>
+
+   <target name="validate-configuration">
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.non-clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.non-clustered.dir}/hornetq-users.xml">
+         <schema namespace="urn:hornetq"
+                 file="${src.schema.dir}/hornetq-users.xsd"/>
+      </schemavalidate>
+
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.clustered.dir}/hornetq-users.xml">
+         <schema namespace="urn:hornetq"
+                 file="${src.schema.dir}/hornetq-users.xsd"/>
+      </schemavalidate>
+
+    <!-- AS 4 configuration validation -->
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas4.non-clustered.dir}"/>
+      </antcall>
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas4.clustered.dir}"/>
+      </antcall>
+      <!-- AS 5 configuration validation -->
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas5.non-clustered.dir}"/>
+      </antcall>
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas5.clustered.dir}"/>
+      </antcall>
+   </target>
+
+   <target name="-validate-configuration">
+      <echo>validating configuration from ${conf.dir}</echo>
+      <schemavalidate file="${conf.dir}/hornetq-configuration.xml">
+         <schema namespace="urn:hornetq"
+                 file="${src.schema.dir}/hornetq-configuration.xsd"/>
+      </schemavalidate>
+      <schemavalidate file="${conf.dir}/hornetq-jms.xml">
+         <schema namespace="urn:hornetq"
+                 file="${src.schema.dir}/hornetq-jms.xsd"/>
+      </schemavalidate>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Jar Targets                                                                              -->
+   <!-- ======================================================================================== -->
+
+   <target name="sources-jar" description="create jar files containing source code"
+           depends="jar-core-sources, jar-core-client-sources, jar-core-client-java5-sources, jar-jms-sources, jar-jms-client-sources, jar-jms-client-java5-sources, jar-jboss-integration-sources, jar-jboss-service-sources, jar-bootstrap-sources, jar-logging-sources, jar-ra-sources, jar-resources-sources, jar-twitter-integration-sources, jar-spring-integration-sources">
+   </target>
+
+   <target name="jar"
+           depends="jar-core, jar-core-client, jar-core-client-java5, jar-jms, jar-jms-client, jar-jms-client-java5, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client, jar-resources, sources-jar, jar-twitter-integration, jar-spring-integration, jar-rest, eap-examples">
+   </target>
+
+   <target name="jar-jnp-client" depends="init">
+      <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
+         <zipfileset src="${org.jboss.naming.lib}/jnpserver.jar">
+            <include name="org/jnp/interfaces/**/*.class"/>
+            <include name="org/jboss/naming/**/*.class"/>
+            <include name="org/jnp/server/NamingServer_Stub.class"/>
+         </zipfileset>
+         <zipfileset src="${org.jboss.logging.lib}/jboss-logging-spi.jar">
+            <include name="org/jboss/logging/**/*.class"/>
+         </zipfileset>
+      </jar>
+   </target>
+
+   <target name="jar-mc" depends="init">
+      <jar jarfile="${build.jars.dir}/${mc.jar.name}">
+         <zipfileset src="./thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-reflect.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-common-core.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-mdr.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jbossxb.jar"/>
+         <zipfileset src="./thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
+      </jar>
+   </target>
+
+   <target name="jar-core" depends="compile-core">
+
+      <jar jarfile="${build.jars.dir}/${core.jar.name}">
+         <fileset dir="${build.core.classes.dir}" includes="**"/>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/*.xsd"/>
+            <exclude name="**/hornetq-jms.xsd"/>
+         </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+         </manifest>
+      </jar>
+
+   </target>
+
+   <target name="jar-core-sources">
+      <jar jarfile="${build.jars.dir}/${core.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="**/hornetq/*.java"/>
+            <include name="**/hornetq/api/*.java"/>
+            <include name="**/hornetq/api/core/**/*.java"/>
+            <include name="**/hornetq/core/**/*.java"/>
+            <include name="**/hornetq/spi/**/*.java"/>
+            <include name="**/hornetq/utils/**/*.java"/>
+         </fileset>
+        	<fileset dir="${src.config.dir}/common">
+            <include name="**/*.xsd"/>
+            <exclude name="**/hornetq-jms.xsd"/>
+         </fileset>
+         <manifest>
+            <attribute name="HornetQ-Version" value="${hornetq.version.string}"/>
+            <attribute name="HornetQ-SVN-URL" value="${hornetq.version.svnurl}"/>
+         </manifest>
+      </jar>
+   </target>
+
+   <target name="jar-jms" depends="compile-jms">
+
+      <jar jarfile="${build.jars.dir}/${jms.jar.name}">
+         <fileset dir="${build.jms.classes.dir}" includes="**"/>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/hornetq-jms.xsd"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jar-jms-sources">
+      <jar jarfile="${build.jars.dir}/${jms.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="**/jms/**/*.java"/>
+         </fileset>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/hornetq-jms.xsd"/>
+         </fileset>
+      </jar>
+	</target>
+
+   <target name="jar-jms-client" depends="compile-jms">
+
+      <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
+	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-jms-client-sources">
+      <jar jarfile="${build.jars.dir}/${jms.client.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/api/jms/**/*.*"/>
+            <include name="org/hornetq/jms/client/**/*.*"/>
+            <include name="org/hornetq/jms/referenceable/**/*.*"/>
+         </fileset>
+      </jar>
+   </target>
+
+	   <target name="jar-jms-client-java5" depends="compile-jms-java5">
+
+	      <jar jarfile="${build.jars.dir}/${jms.client.java5.jar.name}">
+	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/api/jms/**/*.class"/>
+		      <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+	         <fileset dir="${build.jms.java5.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+	      </jar>
+
+	   </target>
+
+	   <target name="jar-jms-client-java5-sources">
+	      <jar jarfile="${build.jars.dir}/${jms.client.java5.sources.jar.name}">
+	         <fileset dir="${src.main.dir}">
+	            <include name="org/hornetq/api/jms/**/*.*"/>
+	            <include name="org/hornetq/jms/client/**/*.*"/>
+	            <include name="org/hornetq/jms/referenceable/**/*.*"/>
+	         </fileset>
+	      </jar>
+	   </target>
+
+	<target name="jar-jboss-integration" depends="compile-jboss-integration">
+
+      <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
+         <fileset dir="${build.jboss.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-jboss-integration-sources">
+      <jar jarfile="${build.jars.dir}/${jboss.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/jboss/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+    <target name="jar-twitter-integration" depends="compile-twitter-integration">
+
+      <jar jarfile="${build.jars.dir}/${twitter.integration.jar.name}">
+         <fileset dir="${build.twitter.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-twitter-integration-sources">
+      <jar jarfile="${build.jars.dir}/${twitter.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/twitter/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+    <target name="jar-spring-integration" depends="compile-spring-integration">
+
+      <jar jarfile="${build.jars.dir}/${spring.integration.jar.name}">
+         <fileset dir="${build.spring.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-spring-integration-sources">
+      <jar jarfile="${build.jars.dir}/${spring.integration.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/spring/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+	<!-- author: Lucas Amador -->
+   <target name="jar-jboss-service" depends="compile-jboss-service">
+
+      <jar jarfile="${build.jars.dir}/${service.sar.name}">
+         <fileset dir="${build.service.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-jboss-service-sources">
+      <jar jarfile="${build.jars.dir}/${service.sources.sar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/service/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-bootstrap" depends="compile-bootstrap">
+
+      <jar jarfile="${build.jars.dir}/${bootstrap.jar.name}">
+         <fileset dir="${build.bootstrap.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-bootstrap-sources">
+      <jar jarfile="${build.jars.dir}/${bootstrap.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/bootstrap/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-logging" depends="compile-logging">
+
+      <jar jarfile="${build.jars.dir}/${logging.jar.name}">
+         <fileset dir="${build.logging.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-logging-sources">
+      <jar jarfile="${build.jars.dir}/${logging.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="org/hornetq/integration/logging/**/*.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-core-client" depends="compile-core">
+      <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
+         <fileset dir="${build.core.classes.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.class"/>
+            <include name="org/hornetq/*.class"/>
+            <include name="org/hornetq/core/buffers/**/*.class"/>
+            <include name="org/hornetq/core/client/**/*.class"/>
+            <include name="org/hornetq/core/filter/**/*.class"/>
+            <include name="org/hornetq/core/exception/**/*.class"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.class"/>
+            <include name="org/hornetq/utils/**/*.class"/>
+            <include name="org/hornetq/core/cluster/**/*.class"/>
+            <include name="org/hornetq/core/list/**/*.class"/>
+            <include name="org/hornetq/core/logging/**/*.class"/>
+            <include name="org/hornetq/core/message/**/*.class"/>
+            <include name="org/hornetq/core/protocol/core/**/*.class"/>
+            <include name="org/hornetq/core/remoting/**/*.class"/>
+            <include name="org/hornetq/core/version/**/*.class"/>
+            <include name="org/hornetq/core/management/*.class"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
+            <include name="org/hornetq/spi/core/logging/*.class"/>
+            <include name="org/hornetq/spi/core/protocol/*.class"/>
+            <include name="org/hornetq/spi/core/remoting/*.class"/>
+
+         	<!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.class"/>
+         	<include name="org/hornetq/core/journal/EncodingSupport.class"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jar-core-client-sources">
+      <jar jarfile="${build.jars.dir}/${core.client.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.*"/>
+            <include name="org/hornetq/*.*"/>
+            <include name="org/hornetq/core/buffers/**/*.*"/>
+            <include name="org/hornetq/core/client/**/*.*"/>
+            <include name="org/hornetq/core/filter/**/*.*"/>
+            <include name="org/hornetq/core/exception/**/*.*"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.*"/>
+            <include name="org/hornetq/utils/**/*.*"/>
+            <include name="org/hornetq/core/cluster/**/*.*"/>
+            <include name="org/hornetq/core/list/**/*.*"/>
+            <include name="org/hornetq/core/logging/**/*.*"/>
+            <include name="org/hornetq/core/message/**/*.*"/>
+            <include name="org/hornetq/core/protocol/core/**/*.*"/>
+            <include name="org/hornetq/core/remoting/**/*.*"/>
+            <include name="org/hornetq/core/version/**/*.*"/>
+            <include name="org/hornetq/core/management/*.*"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.java"/>
+            <include name="org/hornetq/spi/core/logging/*.*"/>
+            <include name="org/hornetq/spi/core/protocol/*.*"/>
+            <include name="org/hornetq/spi/core/remoting/*.*"/>
+
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.java"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.java"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-core-client-java5" depends="compile-core-client-java5">
+      <jar jarfile="${build.jars.dir}/${core.client.java5.jar.name}">
+         <fileset dir="${build.core.client.java5.classes.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.class"/>
+            <include name="org/hornetq/*.class"/>
+            <include name="org/hornetq/core/buffers/**/*.class"/>
+            <include name="org/hornetq/core/client/**/*.class"/>
+            <include name="org/hornetq/core/filter/**/*.class"/>
+            <include name="org/hornetq/core/exception/**/*.class"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.class"/>
+            <include name="org/hornetq/utils/**/*.class"/>
+            <include name="org/hornetq/core/cluster/**/*.class"/>
+            <include name="org/hornetq/core/list/**/*.class"/>
+            <include name="org/hornetq/core/logging/**/*.class"/>
+            <include name="org/hornetq/core/message/**/*.class"/>
+            <include name="org/hornetq/core/protocol/core/**/*.class"/>
+            <include name="org/hornetq/core/remoting/**/*.class"/>
+            <include name="org/hornetq/core/version/**/*.class"/>
+            <include name="org/hornetq/core/management/*.class"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
+            <include name="org/hornetq/spi/core/logging/*.class"/>
+            <include name="org/hornetq/spi/core/protocol/*.class"/>
+            <include name="org/hornetq/spi/core/remoting/*.class"/>
+
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.class"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.class"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jar-core-client-java5-sources">
+      <jar jarfile="${build.jars.dir}/${core.client.java5.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+            <include name="hornetq-version.properties"/>
+            <include name="org/hornetq/api/**/*.*"/>
+            <include name="org/hornetq/*.*"/>
+            <include name="org/hornetq/core/buffers/**/*.*"/>
+            <include name="org/hornetq/core/client/**/*.*"/>
+            <include name="org/hornetq/core/filter/**/*.*"/>
+            <include name="org/hornetq/core/exception/**/*.*"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.*"/>
+            <include name="org/hornetq/utils/**/*.*"/>
+            <include name="org/hornetq/core/cluster/**/*.*"/>
+            <include name="org/hornetq/core/list/**/*.*"/>
+            <include name="org/hornetq/core/logging/**/*.*"/>
+            <include name="org/hornetq/core/message/**/*.*"/>
+            <include name="org/hornetq/core/protocol/core/**/*.*"/>
+            <include name="org/hornetq/core/remoting/**/*.*"/>
+            <include name="org/hornetq/core/version/**/*.*"/>
+            <include name="org/hornetq/core/management/*.*"/>
+            <include name="org/hornetq/core/transaction/impl/XidImpl.java"/>
+            <include name="org/hornetq/spi/core/logging/*.*"/>
+            <include name="org/hornetq/spi/core/protocol/*.*"/>
+            <include name="org/hornetq/spi/core/remoting/*.*"/>
+
+            <!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.java"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.java"/>
+         </fileset>
+      </jar>
+   </target>
+	
+   <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
+      <jar jarfile="${build.jars.dir}/${ra.jar.name}">
+         <fileset dir="${build.ra.classes.dir}">
+           <include name="org/hornetq/ra/**/*.class"/>
+         </fileset>
+      </jar>
+      <jar jarfile="${build.jars.dir}/${ra.rar.name}">
+         <metainf dir="${src.config.dir}" includes="ra.xml"/>
+         <fileset file="${build.jars.dir}/${ra.jar.name}"/>
+         <fileset file="${build.jars.dir}/${core.client.jar.name}"/>
+         <fileset file="${build.jars.dir}/${jms.jar.name}"/>
+      </jar>
+   </target>
+
+   <target name="jar-ra-sources">
+      <jar jarfile="${build.jars.dir}/${ra.sources.jar.name}">
+         <fileset dir="${src.main.dir}">
+           <include name="org/hornetq/ra/**/*"/>
+         </fileset>
+      </jar>
+   </target>
+
+	<target name="jar-resources" depends="init">
+      <jar jarfile="${build.jars.dir}/${resources.jar.name}">
+         <fileset dir=".">
+           <include name="examples/**"/>
+           <exclude name="**/build"/>
+           <exclude name="**/data"/>
+         </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-as-4/**"/>
+           <include  name="jboss-as-5/**"/>
+           <include  name="jboss-as-6/**"/>
+           <include name="ra.xml"/>
+           <exclude  name="**/build.xml"/>
+         </fileset>
+         <fileset dir="${native.bin.dir}">
+           <include  name="**/*.so"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-resources-sources">
+      <jar jarfile="${build.jars.dir}/${resources.sources.jar.name}">
+         <fileset dir=".">
+           <include name="examples/**"/>
+           <exclude name="**/build"/>
+           <exclude name="**/data"/>
+         </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-as/**"/>
+           <include name="ra.xml"/>
+           <exclude  name="**/build.xml"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="jar-rest-init" depends="jar-jms">
+      <ant antfile="build-maven.xml" target="upload-local-target">
+	<property name="artifact.id" value="hornetq-core"/>
+	<property name="file-name" value="hornetq-core"/>
+      </ant>
+      <ant antfile="build-maven.xml" target="upload-local-target">
+	<property name="artifact.id" value="hornetq-jms"/>
+	<property name="file-name" value="hornetq-jms"/>
+      </ant>
+   </target>
+      
+
+   <target name="jar-rest" depends="jar-rest-init">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+        <property name="maven.opts" value="-Dmaven.test.skip=true"/>
+	<property name="maven.goal" value="install"/>
+	<property name="working.dir" value="hornetq-rest"/>
+      </ant>
+   </target>
+
+   <target name="rest-tests" depends="jar-rest">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value="-f hornetq-rest/pom.xml"/>
+	<property name="maven.goal" value="install"/>
+      </ant>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Distribution targets                                                                     -->
+   <!-- ======================================================================================== -->
+
+   <target name="bin-distro" depends="createthirdparty, jar, jar-core-client, jar-jms-client, validate-configuration">
+
+      <mkdir dir="${build.distro.dir}"/>
+      <mkdir dir="${build.distro.lib.dir}"/>
+      <mkdir dir="${build.distro.config.dir}"/>
+      <mkdir dir="${build.distro.bin.dir}"/>
+      <mkdir dir="${build.distro.api.dir}"/>
+      <mkdir dir="${build.distro.licenses.dir}"/>
+
+      <copy todir="${build.distro.lib.dir}/rest">
+	<fileset dir="hornetq-rest/hornetq-rest/target">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${org.jboss.resteasy.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${com.sun.xml.bind.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${com.sun.xml.stream.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${org.scannotation.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+	<fileset dir="${javax.annotation.lib}">
+	  <include name="*.jar"/>
+	</fileset>
+      </copy>
+      <copy todir="${build.distro.lib.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="${core.jar.name}"/>
+            <include name="${jms.jar.name}"/>
+            <include name="${jboss.integration.jar.name}"/>
+            <include name="${service.sar.name}"/>
+            <include name="${bootstrap.jar.name}"/>
+            <include name="${logging.jar.name}"/>
+            <include name="${mc.jar.name}"/>
+            <include name="${ra.rar.name}"/>
+         	<include name="${core.client.jar.name}"/>
+            <include name="${core.client.java5.jar.name}"/>
+         	<include name="${jms.client.jar.name}"/>
+         	<include name="${jms.client.java5.jar.name}"/>
+         	<include name="${jnp.client.jar.name}"/>
+         	<include name="${spring.integration.jar.name}"/>
+         	<include name="${twitter.integration.jar.name}"/>
+         </fileset>
+         <fileset dir="${org.jboss.naming.lib}">                                                   
+            <include name="jnpserver.jar"/>
+         </fileset>
+         <fileset dir="${org.jboss.javaee.lib}">
+            <include name="jboss-jms-api.jar"/>
+         </fileset>
+      </copy>
+      <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+      <copy file="${org.twitter4j.lib}/${twitter4j.jar.name}" tofile="${build.distro.lib.dir}/${twitter4j.jar.name}"/>
+      <copy todir="${build.distro.config.dir}">
+         <fileset dir="${src.config.dir}">
+            <include name="*.xml"/>
+            <include name="jndi.properties"/>
+            <include name="logging.properties"/>
+            <include name="stand-alone/**"/>
+            <include name="jboss-as-4/**"/>
+            <include name="jboss-as-5/**"/>
+            <exclude name="common/hornetq-version.properties" />
+            <exclude name="*examples-ant.properties"/>
+            <exclude name="trunk"/>
+         </fileset>
+      </copy>
+   	  <copy todir="${build.distro.native.dir}">
+   	     <fileset dir="./native" includes="**/*" excludes="**/bin/**"/>
+   	  </copy>
+      <copy todir="${build.distro.schema.dir}">
+         <fileset dir="${src.schema.dir}">
+            <include name="*.xsd"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.distro.bin.dir}">
+         <fileset dir="${src.bin.dir}">
+            <include name="run.sh"/>
+            <include name="run.bat"/>
+            <include name="stop.sh"/>
+            <include name="stop.bat"/>
+            <include name="build.sh"/>
+            <include name="build.bat"/>
+         </fileset>
+      </copy>
+      <chmod file="${build.distro.bin.dir}/run.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.bin.dir}/stop.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.bin.dir}/build.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.config.dir}/jboss-as-4/build.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.config.dir}/jboss-as-5/build.sh" perm="ugo+rx"/>
+      <copy todir="${build.distro.bin.dir}">
+         <fileset dir="${native.bin.dir}">
+            <include name="*.so"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${build.distro.dir}/docs/">
+         <fileset dir="${doc.dir}">
+            <include name="README.html"/>
+         </fileset>
+      </copy>
+
+      <antcall target="dist-doc"/>
+
+      <copy todir="${build.distro.licenses.dir}/">
+         <fileset dir="${licenses.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${build.distro.examples.dir}"/>
+      <copy todir="${build.distro.examples.dir}">
+         <fileset dir="${doc.examples.dir}">
+            <exclude name="build.properties"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/data**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/*.dat"/>
+            <exclude name="**/*.svn"/>
+            <exclude name="**/*.iml"/>
+            <exclude name="**/*.*~"/>
+         </fileset>
+      </copy>
+
+      <chmod perm="ugo+rx" parallel="false" verbose="true">
+         <fileset dir="${build.distro.examples.dir}">
+            <include name="**/build.sh"/>
+         </fileset>
+      </chmod>
+
+      <mkdir dir="${build.distro.tools.dir}/ant"/>
+
+      <copy todir="${build.distro.tools.dir}/ant">
+         <fileset dir="${tools.dir}/ant">
+            <include name="**"/>
+         </fileset>
+      </copy>
+
+      <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
+      <!-- by configuring the correct lib/config location                                                -->
+      <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/javaee-examples-ant.properties" overwrite="true" />
+
+      <zip basedir="${build.dir}"
+           destfile="${build.dir}/${build.artifact}.zip">
+         <include name="${build.artifact}/**"/>
+         <!-- add run.sh, stop.sh and build.sh using a zipfileset to preserve file permissions -->
+         <exclude name="${build.artifact}/bin/*.sh"/>
+      	 <exclude name="${build.artifact}/examples/**/build.sh"/>
+         <zipfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      	 <zipfileset dir="${build.dir}/${build.artifact}/examples" includes="**/build.sh" filemode="755"
+      	 	prefix="${build.artifact}/examples" />
+      </zip>
+
+      <tar basedir="${build.dir}"
+           destfile="${build.dir}/${build.artifact}.tar"
+           longfile="gnu">
+         <include name="${build.artifact}/**"/>
+         <!-- add run.sh & stop.sh using a tarfileset to preserve file permissions -->
+         <exclude name="${build.artifact}/bin/*.sh"/>
+      	 <exclude name="${build.artifact}/examples/**/build.sh"/>
+         <tarfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      	 <tarfileset dir="${build.dir}/${build.artifact}/examples" includes="**/build.sh" filemode="755"
+      	      	 	prefix="${build.artifact}/examples" />
+      </tar>
+      <gzip src="${build.dir}/${build.artifact}.tar"
+            destfile="${build.dir}/${build.artifact}.tar.gz"/>
+   </target>
+	
+   <target name="eap-examples" description="Generates a file with examples tuned for the JBoss EAP" depends="init">
+   	  <mkdir dir="${build.dir}/eap-examples-tmp"/>
+   	   
+   	
+   	  <copy todir="${build.dir}/eap-examples-tmp">
+   	  	  <fileset dir="${examples.dir}" excludes="**/build.sh,**/build.bat, **/twitter-connector/**"/>
+   	  </copy>
+   	
+   	  <copy todir="${build.dir}/eap-examples-tmp" overwrite="true">
+   	  	   <fileset dir="examples-eap"/>
+   	  </copy>
+   	
+   	  <replace dir="${build.dir}/eap-examples-tmp" token="hornetq-ra.rar" value="jms-ra.rar"></replace>
+   	
+   	  <zip destfile="${build.jars.dir}/${eap.examples.zip.name}">
+   	  	 <zipfileset dir="${build.dir}/eap-examples-tmp" prefix="examples/hornetq"/>
+   	  </zip>
+   	
+   	  <delete dir="${build.dir}/eap-examples-tmp"/> 
+	</target>
+
+
+
+   <target name="source-distro">
+      <mkdir dir="${build.dir}"/>
+      <zip destfile="${build.dir}/${build.artifact}-src.zip">
+         <zipfileset dir="${basedir}" prefix="${build.artifact}-src">
+            <exclude name="**/.svn"/>
+            <exclude name="*.iml"/>
+            <exclude name="*.ipr"/>
+            <exclude name="*.iws"/>
+            <exclude name="**/output/**"/>
+            <exclude name="eclipse-output/**"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/target/**"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/ObjectStore/**"/>
+            <exclude name="junit*.properties"/>
+         </zipfileset>
+      </zip>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Documentation Targets                                                                    -->
+   <!-- ======================================================================================== -->
+
+   <target name="dist-doc" unless="no-doc">
+    <antcall target="restdoc"/>
+    <copy todir="${build.distro.dir}/docs/rest-interface-manual">
+       <fileset dir="${rest-manual.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <copy todir="${build.distro.dir}/docs/rest-api">
+       <fileset dir="hornetq-rest/hornetq-rest/target/site/apidocs">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <antcall target="userdoc"/>
+    <copy todir="${build.distro.dir}/docs/user-manual">
+       <fileset dir="${user-manual.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <copy todir="${build.distro.dir}/docs/quickstart-guide">
+       <fileset dir="${quickstart-guide.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <antcall target="javadoc"/>
+    <copy todir="${build.distro.api.dir}/">
+       <fileset dir="${build.api.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+   </target>
+
+   <target name="restdoc">
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value=""/>
+	<property name="maven.goal" value="javadoc:javadoc"/>
+	<property name="working.dir" value="hornetq-rest/hornetq-rest"/>
+      </ant>
+      <ant antfile="build-thirdparty.xml" target="maven-install">
+	<property name="maven.opts" value=""/>
+	<property name="maven.goal" value="install"/>
+	<property name="working.dir" value="hornetq-rest/docbook"/>
+      </ant>
+   </target>
+
+   <target name="userdoc">
+      <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
+      <ant dir="./docs/quickstart-guide" antfile="build.xml" target="all"/>
+    </target>
+
+   <target name="javadoc">
+
+      <javadoc
+      	doclet="org.jboss.apiviz.APIviz"
+         docletpath="${thirdparty.dir}/org/jboss/apiviz/lib/apiviz.jar"
+         destdir="${build.api.dir}"
+      	additionalparam="-author -version -use -public -linksource"
+   	   windowtitle="HornetQ ${module.version}">
+
+         <packageset dir="${src.main.dir}" defaultexcludes="false">
+            <include name="org/hornetq/api/**"/>
+            <include name="org/hornetq/spi/**"/>
+         </packageset>
+         <classpath refid="javadoc.classpath"/>
+         <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2009 Red Hat Inc. All Rights Reserved.</i>]]></bottom>
+         <group title="HornetQ Core" packages="org.hornetq.api, org.hornetq.api.core, org.hornetq.api.core.*"/>
+         <group title="JMS" packages="org.hornetq.api.jms, org.hornetq.api.jms.*"/>
+         <group title="HornetQ SPI" packages="org.hornetq.spi.*"/>
+      	<link href="http://java.sun.com/j2se/1.5.0/docs/api"/>
+      	<link href="http://java.sun.com/javaee/5/docs/api/"/>
+      </javadoc>
+   </target>
+
+   <target name="artifacts" depends="jar">
+      <delete dir="${artifacts.dir}"/>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-core"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-core-client"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-jms"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-jboss-as-integration"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-logging"/>
+      </antcall>
+
+      <property name="build.resources.dir" value="${build.dir}/resources"/>
+      <mkdir dir="${build.resources.dir}"/>
+      <copy todir="${build.resources.dir}">
+         <fileset dir="${src.config.dir}">
+            <exclude name="*cluster*"/>
+            <exclude name="*standalone*"/>
+            <exclude name="*.properties"/>
+            <exclude name="*multiplexer*"/>
+            <exclude name="ra.xml"/>
+         </fileset>
+      </copy>
+      <jar jarfile="${build.jars.dir}/hornetq-resources.jar">
+         <fileset dir="${build.core.classes.dir}" includes="**"/>
+      </jar>
+
+       <antcall target="artifact">
+         <param name="artifact.name" value="hornetq-resources"/>
+      </antcall>
+
+   </target>
+
+   <target name="artifact">
+      <echo message="${artifact.name}"/>
+      <property name="artifacts.version" value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}"/>
+      <property name="artifact.dir" value="${artifacts.dir}/${artifact.name}/${artifacts.version}"/>
+      <mkdir dir="${artifact.dir}"/>
+      <copy tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.jar"
+            file="${build.jars.dir}/${artifact.name}.jar">
+        <!-- <globmapper from="hornetq-core" to="hornetq-core-${hornetq.version.major}.${hornetq.version.minor}.${hornetq.version.micro}.${hornetq.version.suffix}*"/>-->
+      </copy>
+      <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.pom">
+         <filterset>
+            <filter token="artifactid" value="${artifact.name}"/>
+            <filter token="version" value="${artifacts.version}"/>
+         </filterset>
+      </copy>
+      <checksum algorithm="MD5">
+         <fileset dir="${artifact.dir}"/>
+      </checksum>
+       <checksum algorithm="SHA1">
+         <fileset dir="${artifact.dir}">
+            <exclude name="*.MD5"/>
+         </fileset>
+      </checksum>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Tests Targets (compilation + execution)                                                  -->
+   <!-- ======================================================================================== -->
+
+   <target name="compile-unit-tests">
+      <mkdir dir="${test.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
+             srcdir="${test.src.dir}"
+             destdir="${test.classes.dir}">
+         <classpath refid="test.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-jms-tests">
+      <mkdir dir="${test.jms.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="true"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
+             srcdir="${test.jms.src.dir}"
+             destdir="${test.jms.classes.dir}">
+         <classpath refid="jms.test.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-joram-tests" depends="compile-jms-tests, compile-unit-tests">
+      <mkdir dir="${test.joram.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="true"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             encoding="${javac.encoding}"
+             srcdir="${test.joram.src.dir}"
+             destdir="${test.joram.classes.dir}">
+          <classpath refid="joram.test.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="performance-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/performance/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="integration-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+    <target name="management-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/management/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+
+    <target name="jms-management-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/jms/server/management/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+    <target name="spring-tests" depends="compile-unit-tests">
+       <antcall inheritall="true" inheritrefs="true" target="tests">
+          <param name="tests.param" value="**/org/hornetq/tests/integration/spring/*${test-mask}.class"/>
+       </antcall>
+    </target>
+
+   <target name="failover-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/failover/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="distribution-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/distribution/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+    <target name="cluster-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="concurrent-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/concurrent/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="unit-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/unit/**/*${test-mask}.class"/>
+         <!-- if tests.validate.error is defined, it will fail the build in case of any test failure -->
+         <!-- <param name="tests.validate.error" value="Defined!"/> -->
+      </antcall>
+   </target>
+
+   <target name="timing-tests" depends="compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/timing/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <mkdir dir="${logs.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="perTest"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <sysproperty key="twitter.consumerKey" value="${twitter.consumerKey}"/>
+         <sysproperty key="twitter.consumerSecret" value="${twitter.consumerSecret}"/>
+         <sysproperty key="twitter.accessToken" value="${twitter.accessToken}"/>
+         <sysproperty key="twitter.accessTokenSecret" value="${twitter.accessTokenSecret}"/>
+     	 <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+     	 <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
+      	 <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+         <jvmarg value="-XX:+PrintClassHistogram"/>
+         <jvmarg value="-Xmx1024M"/>
+      	 <jvmarg value="-verbose:gc"/>
+         <!--
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>
+         -->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}"
+                    failureproperty="tests.failed">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <!-- excluded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
+               <exclude name="**/cluster/failover/*StaticClusterWithBackupFailoverTest.class" />
+
+                  <!--exclude any replication tests for now-->
+                <exclude name="**/cluster/failover/*ClusterWithBackupFailoverTestBase.class"/>
+                <exclude  name="**/cluster/**/*/class"/>
+                <exclude name="**/cluster/failover/*DiscoveryClusterWithBackupFailoverTest.class"/>
+                <exclude name="**/cluster/failover/*GroupingFailoverReplicationTest.class"/>
+                <exclude name="**/cluster/failover/*Replicated*.class"/>
+                <exclude name="**/cluster/replication/**.class"/>
+                <exclude name="**/cluster/failover/*ReplicatedDistributionTest.class"/>
+                <exclude name="**/cluster/failover/*SharedStoreDistributionTest.class"/>
+                <exclude name="**/cluster/failover/*ReplicatedNettyAsynchronousFailoverTest.class"/>
+                <exclude name="**/cluster/*ReplicatedJMSFailoverTest.class"/>
+                <exclude  name="**/integration/replication/*.class"/>
+                <exclude name="**/cluster/failover/Remote*.class"/>
+                <exclude name="**/failover/remote/**.class"/>
+               <include name="${tests.param}"/>
+            </fileset>
+         </batchtest>
+      </junit>
+      <antcall target="tests-validate-error" inheritall="true" inheritrefs="true"/>
+   </target>
+
+   <!-- ifs on ant are convoluted... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-validate-error" if="tests.validate.error">
+      <antcall target="tests-onerror" inheritall="true" inheritrefs="true"/>
+   </target>
+
+   <!-- ifs on ant are convoluted... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-onerror" if="tests.failed">
+      <antcall target="compile-reports"/>
+      <fail message="Test suite failed!"/>
+   </target>
+
+   <target name="jms-tests" depends="jar, compile-jms-tests">
+      <echo message=""/>
+      <echo message="Running jms tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:jms.test.execution.classpath}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <classpath refid="jms.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.jms.classes.dir}">
+               <include name="**/jms/tests/**/${test-mask}.class"/>
+               <exclude name="**/jms/tests/XARecoveryTest.class"/>
+               <exclude name="**/jms/tests/XAResourceRecoveryTest.class"/>
+               <exclude name="**/jms/tests/XATest.class"/>
+               <exclude name="**/jms/tests/stress/**"/>
+               <exclude name="**/jms/tests/manual/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="joram-tests" depends="jar, compile-joram-tests">
+      <echo message=""/>
+      <echo message="Running JORAM tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <classpath refid="joram.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.joram.classes.dir}">
+               <include name="**/JoramAggregationTest.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="stress-tests" depends="jar, compile-unit-tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="perTest"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${stress.junit.timeout}">
+
+          <sysproperty key="user.home" value="${user.home}"/>
+          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+     	  <sysproperty key="TEST-UDP-ADDRESS" value="${test-udp-address}"/>
+    	  <sysproperty key="TEST-UDP-PORT" value="${test-udp-port}"/>
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="**/org/hornetq/tests/stress/**/*${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+
+   <target name="soak-tests" depends="jar, compile-unit-tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="perTest"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}">
+
+          <sysproperty key="user.home" value="${user.home}"/>
+          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="**/org/hornetq/tests/soak/**/*${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="all-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests, rest-tests"/>
+
+   <target name="hudson-tests" depends="jar, unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+
+   <target name="compile-reports">
+      <mkdir dir="${test.stylesheets.dir}"/>
+      <copy todir="${test.stylesheets.dir}" filtering="yes">
+         <fileset dir="${test.src.stylesheets.dir}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>
+      <mkdir dir="${test.reports.dir}/html"/>
+      <junitreport todir="${test.reports.dir}">
+         <fileset dir="${test.reports.dir}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+                 todir="${test.reports.dir}/html"
+                 styledir="${test.stylesheets.dir}"/>
+      </junitreport>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Code coverage + find bugs targets                                                        -->
+   <!-- ======================================================================================== -->
+
+   <target name="emma" depends="jar, compile-unit-tests">
+      <property name="emma.dir" location="${build.dir}/emma"/>
+
+      <path id="emma.lib">
+         <pathelement location="${test.dir}/lib/emma.jar"/>
+         <pathelement location="${test.dir}/lib/emma_ant.jar"/>
+      </path>
+
+      <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+      <!-- Instrument the .class files. -->
+      <mkdir dir="${build.dir}/emmaclasses"/>
+      <emma enabled="true">
+         <instr instrpath="${build.dir}/classes"
+                destdir="${build.dir}/classes"
+                metadatafile="${emma.dir}/metadata.emma"
+                merge="true" mode="overwrite">
+         </instr>
+      </emma>
+
+      <path id="emma.execution.classpath">
+         <path refid="emma.lib"/>
+         <path refid="emma.unit.test.execution.classpath"/>
+      </path>
+
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="emma.coverage.out.file" value="${emma.dir}/coverage.emma"/>
+         <sysproperty key="emma.coverage.out.merge" value="true"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Xmx1024M"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="emma.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="${test-mask}"/>
+               <include name="**/org/hornetq/tests/integration/**/${test-mask}.class"/>
+               <include name="**/org/hornetq/tests/unit/**/${test-mask}.class"/>
+               <exclude name="**/org/hornetq/tests/local/**/${test-mask}.class"/>
+               <exclude name="**/org/hornetq/tests/performance/**/${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <!-- Generate Emma reports. -->
+      <emma enabled="true">
+         <report sourcepath="${src.main.dir}"
+                 sort="+name"
+                 metrics="method:70,block:80,line:80,class:100">
+            <fileset dir="${emma.dir}">
+               <include name="*.emma"/>
+            </fileset>
+            <xml outfile="${test.reports.dir}/emma/coverage.xml" depth="method"/>
+            <html outfile="${test.reports.dir}/emma/coverage.html"
+                  depth="method" columns="name,class,method,block,line"/>
+         </report>
+      </emma>
+
+   </target>
+
+
+   <target name="findbugs" depends="jar">
+      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+      <findbugs home="${findbugs.home}"
+                output="html"
+                outputFile="bugs.html">
+         <auxClasspath refid="findbugs.classpath"/>
+         <sourcePath path="${src.main.dir}"/>
+         <class location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      </findbugs>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Server execution targets                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <target name="runServer" depends="jar">
+      <mkdir dir="logs"/>
+   	  <property name="server.config" value="${src.config.trunk.non-clustered.dir}"/>
+      <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.non-clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
+         <arg line="hornetq-beans.xml"/>
+         <classpath path="${server.config}" />
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+   <target name="runClusteredServer" depends="jar">
+      <mkdir dir="logs"/>
+      <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg value="-Dhornetq.remoting.netty.port=${hornetq.remoting.netty.port}"/>
+         <jvmarg value="-Djnp.port=${jnp.port}"/>
+         <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
+         <jvmarg value="-Dhornetq.data.dir=${hornetq.data.dir}"/>
+         <arg line="hornetq-beans.xml"/>
+         <classpath path="${src.config.trunk.clustered.dir}" />
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+   <target name="debugServer" depends="jar">
+ 	  <property name="server.config" value="${src.config.trunk.non-clustered.dir}"/>
+      <mkdir dir="logs"/>
+      <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.non-clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+         <arg line="hornetq-beans.xml"/>
+         <classpath path="${server.config}" />
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+</project>

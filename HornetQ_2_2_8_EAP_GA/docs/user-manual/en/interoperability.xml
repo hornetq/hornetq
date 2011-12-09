@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "HornetQ_User_Manual.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="interoperability">
+  <title>Interoperability</title>
+  <section id="stomp">
+    <title>Stomp</title>
+    <para><ulink url="http://stomp.codehaus.org/">Stomp</ulink> is a text-orientated wire protocol
+      that allows Stomp clients to communicate with Stomp Brokers.</para>
+    <para><ulink url="http://stomp.codehaus.org/Clients">Stomp clients</ulink> are available for
+      several languages and platforms making it a good choice for interoperability.</para>
+    <section id="stomp.native">
+      <title>Native Stomp support</title>
+      <para>HornetQ provides native support for Stomp. To be able to send and receive Stomp
+        messages, you must configure a <literal>NettyAcceptor</literal> with a <literal
+          >protocol</literal> parameter set to <literal>stomp</literal>:</para>
+      <programlisting>
+&lt;acceptor name="stomp-acceptor">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol"  value="stomp"/>
+   &lt;param key="port"  value="61613"/>
+&lt;/acceptor>
+</programlisting>
+      <para>With this configuration, HornetQ will accept Stomp connections on the port <literal
+          >61613</literal> (which is the default port of the Stomp brokers).</para>
+      <para>See the <literal>stomp</literal> example which shows how to configure a HornetQ server
+        with Stomp.</para>
+      <section>
+        <title>Flow control</title>
+        <para>When consuming messages in stomp, it's preferrable to use Acknowledge consumers,
+          otherwise the server will send messages as fast as it can to the client (i.e. no flow
+          control). Refer to the parameter stomp-consumer-credits for more information.</para>
+      </section>
+      <section>
+        <title>Limitations</title>
+        <para>Message acknowledgements are not transactional. The ACK frame can not be part of a
+          transaction (it will be ignored if its <literal>transaction</literal> header is
+          set).</para>
+      </section>
+    </section>
+    <section>
+      <title>Mapping Stomp destinations to HornetQ addresses and queues</title>
+      <para>Stomp clients deals with <emphasis>destinations</emphasis> when sending messages and
+        subscribing. Destination names are simply strings which are mapped to some form of
+        destination on the server - how the server translates these is left to the server
+        implementation.</para>
+      <para>In HornetQ, these destinations are mapped to <emphasis>addresses</emphasis> and
+          <emphasis>queues</emphasis>. When a Stomp client sends a message (using a <literal
+          >SEND</literal> frame), the specified destination is mapped to an address. When a Stomp
+        client subscribes (or unsubscribes) for a destination (using a <literal>SUBSCRIBE</literal>
+        or <literal>UNSUBSCRIBE</literal> frame), the destination is mapped to a HornetQ
+        queue.</para>
+    </section>
+    <section>
+      <title>STOMP and connection-ttl</title>
+      <para>Well behaved STOMP clients will always send a DISCONNECT frame before closing their
+        connections. In this case the server will clear up any server side resources such as
+        sessions and consumers synchronously. However if STOMP clients exit without sending a
+        DISCONNECT frame or if they crash the server will have no way of knowing immediately whether
+        the client is still alive or not. STOMP connections therefore default to a connection-ttl
+        value of 1 minute (see chapter on <link linkend="connection-ttl">connection-ttl</link> for
+        more information. This value can be overridden using connection-ttl-override. </para>
+      <note>
+        <para>Please note that the STOMP protocol does not contain any heartbeat frame. It is
+          therefore the user's responsibility to make sure data is sent within connection-ttl or the
+          server will assume the client is dead and clean up server side resources.</para>
+      </note>
+    </section>
+    <section>
+      <title>Stomp and JMS interoperabilty</title>
+      <section>
+        <title>Using JMS destinations</title>
+        <para>As explained in <xref linkend="jms-core-mapping"/>, JMS destinations are also mapped
+          to HornetQ addresses and queues. If you want to use Stomp to send messages to JMS
+          destinations, the Stomp destinations must follow the same convention:</para>
+        <itemizedlist>
+          <listitem>
+            <para>send or subscribe to a JMS <emphasis>Queue</emphasis> by prepending the queue name
+              by <literal>jms.queue.</literal>.</para>
+            <para>For example, to send a message to the <literal>orders</literal> JMS Queue, the
+              Stomp client must send the frame:</para>
+            <programlisting>
+SEND
+destination:jms.queue.orders
+
+hello queue orders
+^@
+                </programlisting>
+          </listitem>
+          <listitem>
+            <para>send or subscribe to a JMS <emphasis>Topic</emphasis> by prepending the topic name
+              by <literal>jms.topic.</literal>.</para>
+            <para>For example to subscribe to the <literal>stocks</literal> JMS Topic, the Stomp
+              client must send the frame:</para>
+            <programlisting>
+SUBSCRIBE
+destination:jms.topic.stocks
+
+^@
+                </programlisting>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section>
+        <title>Send and consuming Stomp message from JMS or HornetQ Core API</title>
+        <para>Stomp is mainly a text-orientated protocol. To make it simpler to interoperate with
+          JMS and HornetQ Core API, our Stomp implementation checks for presence of the <literal
+            >content-length</literal> header to decide how to map a Stomp message to a JMS Message
+          or a Core message. </para>
+        <para>If the Stomp message does <emphasis>not</emphasis> have a <literal
+            >content-length</literal> header, it will be mapped to a JMS
+            <emphasis>TextMessage</emphasis> or a Core message with a <emphasis>single nullable
+            SimpleString in the body buffer</emphasis>.</para>
+        <para>Alternatively, if the Stomp message <emphasis>has</emphasis> a <literal
+            >content-length</literal> header, it will be mapped to a JMS
+            <emphasis>BytesMessage</emphasis> or a Core message with a <emphasis>byte[] in the body
+            buffer</emphasis>.</para>
+        <para>The same logic applies when mapping a JMS message or a Core message to Stomp. A Stomp
+          client can check the presence of the <literal>content-length</literal> header to determine
+          the type of the message body (String or bytes).</para>
+      </section>
+    </section>
+    <section id="stomp.websockets">
+      <title>Stomp Over Web Sockets</title>
+      <para>HornetQ also support Stomp over <ulink url="http://dev.w3.org/html5/websockets/">Web
+          Sockets</ulink>. Modern web browser which support Web Sockets can send and receive Stomp
+        messages from HornetQ.</para>
+      <para>To enable Stomp over Web Sockets, you must configure a <literal>NettyAcceptor</literal>
+        with a <literal>protocol</literal> parameter set to <literal>stomp_ws</literal>:</para>
+      <programlisting>
+&lt;acceptor name="stomp-ws-acceptor">
+	&lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+	&lt;param key="protocol" value="stomp_ws"/>
+	&lt;param key="port" value="61614"/>
+&lt;/acceptor>
+         </programlisting>
+      <para>With this configuration, HornetQ will accept Stomp connections over Web Sockets on the
+        port <literal>61614</literal> with the URL path <literal>/stomp</literal>. Web browser can
+        then connect to <literal>ws://&lt;server&gt;:61614/stomp</literal> using a Web Socket to
+        send and receive Stomp messages.</para>
+      <para>A companion JavaScript library to ease client-side development is available from <ulink
+          url="http://github.com/jmesnil/stomp-websocket">GitHub</ulink> (please see its <ulink
+          url="http://jmesnil.net/stomp-websocket/doc/">documentation</ulink> for a complete
+        description).</para>
+      <para>The <literal>stomp-websockets</literal> example shows how to configure HornetQ server to
+        have web browsers and Java applications exchanges messages on a JMS topic.</para>
+    </section>
+    <section id="stompconnect">
+      <title>StompConnect</title>
+      <para><ulink url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> is a server
+        that can act as a Stomp broker and proxy the Stomp protocol to the standard JMS API.
+        Consequently, using StompConnect it is possible to turn HornetQ into a Stomp Broker and use
+        any of the available stomp clients. These include clients written in C, C++, c# and .net
+        etc.</para>
+      <para>To run StompConnect first start the HornetQ server and make sure that it is using
+        JNDI.</para>
+      <para>Stomp requires the file <literal>jndi.properties</literal> to be available on the
+        classpath. This should look something like:</para>
+      <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+java.naming.provider.url=jnp://localhost:1099
+java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
+      <para>Make sure this file is in the classpath along with the StompConnect jar and the HornetQ
+        jars and simply run <literal>java org.codehaus.stomp.jms.Main</literal>.</para>
+    </section>
+  </section>
+  <section>
+    <title>REST</title>
+    <para>Refer to HornetQ Rest Manual for more information.</para>
+  </section>
+</chapter>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<project default="help" name="HornetQ JMS Bridge Example">
+
+   <import file="../../common/build.xml"/>
+
+   <path id="extra.classpath">
+      <dirset dir="build/classes" />
+      <fileset dir="build/lib">
+         <include name="**/*.jar"/>
+   </fileset>
+   </path>
+   <path id="jta.classpath">
+      <fileset dir="build/jta">
+         <include name="**/*.jar"/>
+      </fileset>
+   </path>
+
+   <target name="help">
+      <echo>
+1. make sure to configure source and target servers
+2. on one server, run "./build.sh source-server"
+3. on another server, run "./build.sh target-server"
+4. run the client with "./build.sh client -Dsource=&lt;source server> -Dtarget=&lt;target server>"
+      </echo>
+   </target>
+
+   <target name="init">
+      <mkdir dir="build/classes" />
+      <mkdir dir="build/lib" />
+      <copy todir="build/lib" flatten="true">
+         <fileset dir="${hornetq.jars.dir}">
+            <include name="hornetq-core.jar"/>
+            <include name="hornetq-jms.jar"/>
+            <include name="hornetq-bootstrap.jar"/>
+         </fileset>
+         <fileset dir="${jars.dir}">
+            <include name="**/jboss-jms-api.jar" />
+            <include name="**/netty.jar" />
+            <include name="**/jnpserver.jar" />
+            <include name="**/jboss-kernel.jar" />
+            <include name="**/jboss-dependency.jar" />
+            <include name="**/jboss-logging-spi.jar" />
+            <include name="**/jboss-common-core.jar" />
+            <include name="**/jboss-reflect.jar" />
+            <include name="**/jboss-mdr.jar" />
+            <include name="**/jbossxb.jar" />
+            <include name="**/jboss-mc.jar" />
+         </fileset>
+      </copy>
+      <mkdir dir="build/jta" />
+      <!-- Transaction libraries are required by the JMS bridge -->
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossjta.jar" dest="build/jta/jbossjta.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossts-common.jar" dest="build/jta/jbossts-common.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jboss-javaee/5.0.1.GA/lib/jboss-javaee.jar" dest="build/jta/jboss-javaee.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-log4j/1.2.14/lib/log4j.jar" dest="build/jta/log4j.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-logging/1.1/lib/commons-logging.jar" dest="build/jta/commons-logging.jar"/>
+   </target>
+
+   <target name="source-server" depends="compile">
+      <echo message="Start *SOURCE* server" />
+
+      <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer"  fork="true">
+         <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <sysproperty key="com.sun.management.jmxremote" value="" />
+         <classpath refid="extra.classpath"/>
+         <classpath path="server0/" />
+         <arg line="server0/hornetq-beans.xml"/>
+      </java>
+   </target>
+
+   <target name="target-server" depends="compile">
+      <echo message="Start *TARGET* server" />
+
+      <java classname="org.hornetq.integration.bootstrap.HornetQBootstrapServer"  fork="true">
+         <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <sysproperty key="com.sun.management.jmxremote" value="" />
+         <classpath refid="extra.classpath"/>
+         <classpath refid="jta.classpath"/>
+         <classpath path="server1/" />
+         <arg line="server1/hornetq-beans.xml"/>
+      </java>
+   </target>
+
+   <target name="client" depends="compile">
+      <echo message="Start client" />
+      <java classname="org.hornetq.jms.example.JMSBridgeExample"  fork="true">
+         <classpath refid="extra.classpath"/>
+         <arg line="${source} ${target}"/>
+      </java>
+   </target>
+</project>

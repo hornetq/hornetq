@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2009 Red Hat, Inc.
+ Red Hat licenses this file to you under the Apache License, version
+ 2.0 (the "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+   http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied.  See the License for the specific language governing
+ permissions and limitations under the License.
+  -->
+<project default="default" name="HornetQ integration with JBoss AS 5">
+   <property environment="ENV"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+   <property name="src.bin.dir" value="../../bin"/>
+   <property name="dest.bin.dir" value="${jboss.home}/bin"/>
+   <property name="lib.dir" value="../../lib"/>
+
+   <target name="default" description="Create JBoss AS 5 profiles to use HornetQ">
+    <antcall target="create-profile">
+       <!-- created from JBoss AS 5 default profile -->
+       <param name="jbossas.profile.source" value="default"/>
+       <!-- based on HornetQ jbossas/non-clustered config -->
+       <param name="hornetq.config.dir" value="./non-clustered"/>
+       <!-- new profile is named default-with-hornetq -->
+       <param name="hornetq.profile.target" value="default-with-hornetq"/>
+    </antcall>
+    <antcall target="create-profile">
+       <!-- created from JBoss AS 5 all profile -->
+       <param name="jbossas.profile.source" value="all"/>
+       <!-- based on HornetQ jbossas/clustered config -->
+       <param name="hornetq.config.dir" value="clustered"/>
+       <!-- new profile is named all-with-hornetq -->
+       <param name="hornetq.profile.target" value="all-with-hornetq"/>
+    </antcall>
+   <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x86"/>
+   <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x64"/>
+   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x86" file="${src.bin.dir}/libHornetQAIO32.so"/>
+   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x64" file="${src.bin.dir}/libHornetQAIO64.so"/>
+   </target>
+
+   <target name="create-profile">
+      <antcall target="validate-jboss"/>
+      <property name="src.dir" value="${jboss.home}/server/${jbossas.profile.source}"/>
+      <property name="dest.dir" value="${jboss.home}/server/${hornetq.profile.target}"/>
+
+      <mkdir dir="${dest.dir}"/>
+      <copy todir="${dest.dir}">
+         <fileset dir="${src.dir}">
+            <exclude name="**/messaging/**"/>
+            <exclude name="conf/login-config.xml"/>
+             <!--<exclude name="**/jms-ra.rar"/>-->
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/conf">
+         <fileset dir="${hornetq.config.dir}">
+            <include name="login-config.xml"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/conf/props">
+         <fileset dir="${hornetq.config.dir}">
+            <include name="hornetq-users.properties"/>
+            <include name="hornetq-roles.properties"/>
+         </fileset>
+      </copy>
+      <copy todir="${dest.dir}/lib">
+         <fileset dir="${lib.dir}">
+            <include name="hornetq-*.jar"/>
+            <include name="netty*.jar"/>
+            <include name="twitter4j*.jar"/>
+         </fileset>
+      </copy>
+      <property name="hornetq.sar.dir" value="${dest.dir}/deploy/hornetq.sar"/>
+      <mkdir dir="${hornetq.sar.dir}"/>
+      <copy todir="${hornetq.sar.dir}">
+        <fileset dir="${hornetq.config.dir}" includes="*" excludes="**/jboss-as-4/**"/>
+      </copy>
+   	  <unzip src="${lib.dir}/hornetq-ra.rar" dest="${dest.dir}/deploy/hornetq-ra.rar"/>
+   </target>
+
+   <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running
+        in JBoss 5.1 or later -->
+   <target name="validate-jboss">
+      <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
+      <available property="source-profile" type="dir" file="${jboss.home}/server/${jbossas.profile.source}"/>
+      <fail unless="source-profile" message="${jboss.home}/server/${jbossas.profile.source} profile not found!"/>
+      <available property="target-profile" type="dir" file="${jboss.home}/server/${hornetq.profile.target}"/>
+      <fail if="target-profile"
+            message="'${hornetq.profile.target}' profile already exists! Delete it manually and try again."/>
+   </target>
+
+</project>

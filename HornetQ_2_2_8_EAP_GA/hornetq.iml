@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="true">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/build/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/native/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/build/api" />
+      <excludeFolder url="file://$MODULE_DIR$/build/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/build/jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA1" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA1-SNAPSHOT" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA3" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.alpha1" />
+      <excludeFolder url="file://$MODULE_DIR$/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/quickstart-guide/build" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/user-manual/build" />
+      <excludeFolder url="file://$MODULE_DIR$/examples" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/jms/build" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/jms/common/build" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/jms/queue/build" />
+      <excludeFolder url="file://$MODULE_DIR$/journal-test" />
+      <excludeFolder url="file://$MODULE_DIR$/output" />
+      <excludeFolder url="file://$MODULE_DIR$/output/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/output/etc" />
+      <excludeFolder url="file://$MODULE_DIR$/output/jar" />
+      <excludeFolder url="file://$MODULE_DIR$/output/lib" />
+      <excludeFolder url="file://$MODULE_DIR$/output/scoped-sar" />
+      <excludeFolder url="file://$MODULE_DIR$/production" />
+      <excludeFolder url="file://$MODULE_DIR$/release" />
+      <excludeFolder url="file://$MODULE_DIR$/test" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/ObjectStore" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/jms-tests/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/lib/jdbc-drivers" />
+      <excludeFolder url="file://$MODULE_DIR$/tests/output" />
+    </content>
+    <orderEntry type="library" name="etc" level="project" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="messaging" level="project" />
+    <orderEntry type="library" name="messaging_jars" level="project" />
+    <orderEntry type="library" name="ant 1.7.1" level="project" />
+  </component>
+</module>
+

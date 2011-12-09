@@ -1,0 +1,8 @@
+grant {
+        //permission java.security.AllPermission;
+        
+        // allow to connect to localhost
+        permission java.net.SocketPermission "*:1024-", "connect";
+        // normally, we don't need this permission since the applet allows to read jars loaded by the applet
+        permission java.io.FilePermission "${user.dir}/build/jars/hornetq-core-client.jar", "read";
+};

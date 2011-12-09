@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2009 Red Hat, Inc.
+ Red Hat licenses this file to you under the Apache License, version
+ 2.0 (the "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+   http://www.apache.org/licenses/LICENSE-2.0
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ implied.  See the License for the specific language governing
+ permissions and limitations under the License.  
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.hornetq</groupId>
+   <artifactId>messaging</artifactId>
+   <packaging>pom</packaging>
+   <version>2.2.1.GA</version>
+
+    <properties>
+        <resteasy.version>2.1.0.GA</resteasy.version>
+    </properties>
+
+   <name>HornetQ</name>
+   <url>http://hornetq.org</url>
+   <description>
+      Putting the buzz in messaging
+   </description>
+
+   <organization>
+      <name>JBoss, a division of Red Hat</name>
+      <url>http://www.jboss.org/</url>
+   </organization>
+
+   <scm>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/messaging/trunk</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/messaging/trunk</developerConnection>
+   </scm>
+   <build>
+
+      <plugins>
+         <plugin>
+            <groupId>org.jboss.maven.plugins</groupId>
+            <artifactId>maven-buildmagic-thirdparty-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>build-thirdparty</id>
+                  <phase>initialize</phase>
+                  <goals>
+                     <goal>build-thirdparty</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>thirdparty</outputDirectory>
+                     <librariesEnt>thirdparty/libraries.ent</librariesEnt>
+                     <includedScopes>
+                        <scope>compile</scope>
+                     </includedScopes>
+                  </configuration>
+               </execution>
+            </executions>
+            <configuration>
+               <!--without this dummy entry we get a npe, just ignore-->
+               <mappedDependencies>
+                  <dependency>
+                     <groupId>id</groupId>
+                     <artifactId>art-id</artifactId>
+                     <mapping>
+                        <artifactId>1.0.0</artifactId>
+                     </mapping>
+                  </dependency>
+               </mappedDependencies>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.3</version>
+            <executions>
+               <execution>
+                  <id>clean</id>
+                  <phase>pre-clean</phase>
+                  <configuration>
+                     <tasks name="distro"/>
+                  </configuration>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+               <execution>
+                  <id>distro</id>
+                  <phase>package</phase>
+                  <configuration>
+                     <tasks>
+                        <property name="maven.build"  value="true"/>
+                        <ant target="distro"/>
+                     </tasks>
+                  </configuration>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant</artifactId>
+                  <version>1.7.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-launcher</artifactId>
+                  <version>1.7.1</version>
+               </dependency>
+                <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-nodeps</artifactId>
+                  <version>1.7.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>ant-contrib</groupId>
+                  <artifactId>ant-contrib</artifactId>
+                  <version>1.0b3</version>
+                  <exclusions>
+                     <exclusion>
+                        <groupId>ant</groupId>
+                        <artifactId>ant</artifactId>
+                     </exclusion>
+                  </exclusions>
+               </dependency>
+               <dependency>
+                  <groupId>sun.jdk</groupId>
+                  <artifactId>tools</artifactId>
+                  <version>1.5</version>
+                  <scope>system</scope>
+                  <systemPath>${java.home}/../lib/tools.jar</systemPath>
+               </dependency>
+               <dependency>
+                 <groupId>net.java.dev.javacc</groupId>
+                 <artifactId>javacc</artifactId>
+                 <version>4.0</version>
+               </dependency>
+               <dependency>
+                 <groupId>apache-xerces</groupId>
+                 <artifactId>xercesImpl</artifactId>
+                 <version>2.9.1</version>
+               </dependency>
+               <dependency>
+                 <groupId>apache-xerces</groupId>
+                 <artifactId>resolver</artifactId>
+                 <version>2.9.1</version>
+               </dependency>
+               <dependency>
+                 <groupId>apache-xerces</groupId>
+                 <artifactId>xml-apis</artifactId>
+                 <version>2.9.1</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+
+      </plugins>
+
+   </build>
+   <dependencies>
+     <dependency>
+       <groupId>org.jboss.resteasy</groupId>
+       <artifactId>resteasy-jaxrs</artifactId>
+       <version>${resteasy.version}</version>
+     </dependency>
+     <dependency>
+       <groupId>org.jboss.resteasy</groupId>
+       <artifactId>resteasy-jaxb-provider</artifactId>
+       <version>${resteasy.version}</version>
+     </dependency>
+      <!--needed for the filters-->
+      <dependency>
+        <groupId>net.java.dev.javacc</groupId>
+        <artifactId>javacc</artifactId>
+        <version>4.0</version>
+      </dependency>
+      <!-- needed to compile JMS-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-jms-api</artifactId>
+        <version>1.1.0.GA</version>
+      </dependency>
+      <!-- needed to compile JavaEE examples-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-ejb-api</artifactId>
+        <version>3.0.0.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-transaction-api</artifactId>
+        <version>1.0.1.GA</version>
+      </dependency>
+      <!--this specifically for the JMS Bridge-->
+      <dependency>
+        <groupId>org.jboss.integration</groupId>
+        <artifactId>jboss-transaction-spi</artifactId>
+        <version>5.1.0.GA</version>
+      </dependency>
+      <!--this for xa recovery-->
+      <dependency>
+        <groupId>jboss.jbossts</groupId>
+        <artifactId>jbossjts</artifactId>
+        <version>4.6.1.GA</version>
+      </dependency>
+      <!--needed to compile security-->
+      <dependency>
+        <groupId>org.jboss.security</groupId>
+        <artifactId>jboss-security-spi</artifactId>
+        <version>2.0.3.SP1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.security</groupId>
+        <artifactId>jbosssx</artifactId>
+        <version>2.0.3.SP1</version>
+      </dependency>
+      <!--needed to compile the bootstrap jar-->
+      <dependency>
+        <groupId>org.jboss.microcontainer</groupId>
+        <artifactId>jboss-kernel</artifactId>
+        <version>2.0.6.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-common-core</artifactId>
+        <version>2.2.14.GA</version>
+      </dependency>
+      <!--needed to compile transport jar-->
+      <dependency>
+         <groupId>org.jboss.netty</groupId>
+         <artifactId>netty</artifactId>
+         <version>3.2.5.Final</version>
+      </dependency>
+      <!--needed to compile the logging jar-->
+      <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+         <version>1.2.14</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-spi</artifactId>
+         <version>2.1.0.GA</version>
+      </dependency>
+      <!--needed to compile twitter support-->
+      <dependency>
+         <groupId>org.twitter4j</groupId>
+           <artifactId>twitter4j-core</artifactId>
+           <version>2.1.6</version>
+       </dependency>
+      <!-- needed to compile the tests-->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.2</version>
+      </dependency>
+      <!--needed to compile the jms tests-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-jaspi-api</artifactId>
+        <version>1.0.0.GA</version>
+      </dependency>
+
+      <!--needed to run the jms tests-->
+      <dependency>
+        <groupId>org.jboss.naming</groupId>
+        <artifactId>jnpserver</artifactId>
+        <version>5.0.3.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>jboss.jbossts</groupId>
+        <artifactId>jbossts-common</artifactId>
+        <version>4.6.1.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>apache-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.0.jboss</version>
+      </dependency>
+      
+      <!-- needed for javaee examples-->
+      <dependency>
+        <groupId>org.jboss.ejb3</groupId>
+        <artifactId>jboss-ejb3-ext-api</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+      
+     <!-- needed for javadoc graphics-->
+      <dependency>
+        <groupId>org.jboss.apiviz</groupId>
+        <artifactId>apiviz</artifactId>
+        <version>1.3.0.GA</version>
+      </dependency>
+       <!-- needed for spring integration -->
+       <dependency>
+           <groupId>org.springframework</groupId>
+           <artifactId>spring-core</artifactId>
+           <version>3.0.3.RELEASE</version>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework</groupId>
+           <artifactId>spring-beans</artifactId>
+           <version>3.0.3.RELEASE</version>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework</groupId>
+           <artifactId>spring-context</artifactId>
+           <version>3.0.3.RELEASE</version>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework</groupId>
+           <artifactId>spring-jms</artifactId>
+           <version>3.0.3.RELEASE</version>
+       </dependency>
+   </dependencies>
+
+
+   <repositories>
+      <repository>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:10080</updatePolicy>
+         </releases>
+         <id>jboss.release</id>
+         <name>JBoss releases</name>
+         <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+      </repository>
+   </repositories>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:10080</updatePolicy>
+         </releases>
+         <id>jboss.release</id>
+         <name>JBoss releases</name>
+         <url>https://repository.jboss.org/nexus/content/groups/public</url>
+      </pluginRepository>
+   </pluginRepositories>                     
+   <!--<profiles>
+      --><!-- This profile is used by the ant/buildmagic build --><!--
+      <profile>
+         <id>integrated-build</id>
+         <activation>
+            <property>
+               <name>integrated-build</name>
+            </property>
+         </activation>
+         <modules>
+            <module>thirdparty</module>
+         </modules>
+      </profile>
+
+   </profiles>-->
+
+
+</project>
+

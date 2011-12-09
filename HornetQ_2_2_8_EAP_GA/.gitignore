@@ -1,0 +1,13 @@
+/build
+/eclipse-output
+/thirdparty
+/logs
+/ObjectStore
+/tmp
+/data
+/junit*.properties
+/target
+.gitignore
+tests/build
+hornetq-rest/hornetq-rest/target
+tests/*/build/classes

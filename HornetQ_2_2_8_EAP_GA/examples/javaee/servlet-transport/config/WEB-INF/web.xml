@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+   <servlet>
+      <servlet-name>NettyServlet</servlet-name>
+      <servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet</servlet-class>
+      <init-param>
+             <param-name>endpoint</param-name>
+             <param-value>local:org.hornetq</param-value>
+           </init-param>
+           <load-on-startup>1</load-on-startup>
+   </servlet>
+
+   <servlet-mapping>
+      <servlet-name>NettyServlet</servlet-name>
+      <url-pattern>/HornetQServlet</url-pattern>
+   </servlet-mapping>
+</web-app>

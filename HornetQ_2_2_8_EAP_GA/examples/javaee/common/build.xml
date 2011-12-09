@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+<project default="compile" name="javaeeexample" basedir=".">
+   <dirname property="imported.basedir" file="${ant.file.javaeeexample}"/>
+   <property file="${imported.basedir}/config/ant.properties"/>
+   <property name="example.config.dir" value="config"/>
+   <property file="${example.config.dir}/ant.properties"/>
+    <property name="example.server.dir" value="server"/>
+   <property environment="ENV"/>
+   <property name="jboss.home" value="${ENV.JBOSS_HOME}"/>
+
+   <!--
+       This module is based on Java 1.5
+   -->
+
+   <property name="javac.target" value="1.5"/>
+   <property name="javac.source" value="1.5"/>
+
+   <property name="javac.debug" value="true"/>
+   <property name="javac.optimize" value="false"/>
+   <property name="javac.depend" value="false"/>
+   <property name="javac.verbose" value="false"/>
+   <property name="javac.deprecation" value="true"/>
+   <property name="javac.include.ant.runtime" value="false"/>
+   <property name="javac.include.java.runtime" value="true"/>
+   <property name="javac.fail.onerror" value="true"/>
+
+   <property name="src.dir" value="src"/>
+   <property name="example.classname" value="this.shouldn't.be.run.directly"/>
+   <property name="hornetq.example.runServer" value="true"/>
+   <property name="hornetq.example.beans.file" value="server0"/>
+
+   <property name="build.dir" value="build"/>
+   <property name="classes.dir" value="${build.dir}/classes"/>
+   <property name="config.dir" value="${imported.basedir}/config"/>
+   <property name="example.config.dir" value="config"/>
+
+   <path id="jms.compilation.classpath">
+      <fileset dir="${hornetq.jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${jboss.home}/client">
+         <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${jboss.home}/server/default/lib">
+         <include name="netty*.jar"/>
+      </fileset>
+   </path>
+
+   <path id="jms.runtime.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
+      <pathelement location="${classes.dir}"/>
+   </path>
+   <target name="init">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${classes.dir}"/>
+   </target>
+
+   <target name="compile" depends="init">
+      <javac destdir="${classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.dir}"/>
+            <pathelement path="../../common/src"/>
+         </src>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="jar" depends="compile">
+      <jar destfile="${build.dir}/${example.name}-example.jar"
+           basedir="${classes.dir}"
+           includes="org/hornetq/javaee/example/server/**/*">
+      </jar>
+   </target>
+
+   <target name="war" depends="jar">
+        <jar destfile="${build.dir}/${example.name}-example.war" basedir="${example.config.dir}"
+             includes="WEB-INF/**/*"/>
+   </target>
+
+   <target name="ear" depends="war">
+      <jar destfile="${build.dir}/${example.name}-example.ear" basedir="${build.dir}">
+         <include name="${example.name}-example.jar"/>
+         <include name="${example.name}-example.war"/>
+         <fileset dir="${example.config.dir}">
+            <include name="META-INF/**"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <target name="deploy" depends="validate-jboss, copy-profile, copy-resources, ear">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <copy todir="${example-profile}/deploy/hornetq.sar" overwrite="true">
+         <fileset dir="${example.server.dir}"/>
+      </copy>
+      <copy todir="${example-profile}/deploy/" overwrite="true">
+         <fileset dir="${build.dir}">
+            <include name="${example.name}-example.ear"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/log/**"/>
+            <exclude name="**/tmp/**"/>
+         </fileset>
+      </copy>
+      <exec dir="${jboss.home}/bin" executable="sh" osfamily="unix">
+         <arg line="run.sh -c ${example.name}-example-profile"/>
+      </exec>
+      <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
+         <arg line="/c run.bat -c ${example.name}-example-profile"/>
+      </exec>
+   </target>
+
+   <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
+      <property name="profile" value="${jboss.home}/server/default"/>
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <property name="deploy.dir" value="${example-profile}/deploy/"/>
+      <mkdir dir="${example-profile}"/>
+      <copy todir="${example-profile}">
+         <fileset dir="${profile}">
+            <exclude name="**/*hornetq-configuration.xml"/>
+            <exclude name="**/*hornetq-jms.xml"/>
+            <exclude name="**/*hornetq-users.xml"/>
+         </fileset>
+      </copy>
+   </target>
+   
+   <!-- can be overriden if the example requires to copy resources after the
+        profile is created and before the server is started -->
+   <target name="copy-resources">        
+   </target>
+
+   <target name="profile.check">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <condition property="donot.copy.profile">
+         <available  file="${example-profile}" type="dir"/>
+      </condition>
+   </target>
+
+   <target name="undeploy" depends="validate-jboss">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <delete dir="${example-profile}"/>
+   </target>
+
+   <target name="validate-jboss">
+      <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/default"/>
+      <fail unless="default-config" message="${jboss.home}/server/default not found!"/>
+   </target>
+
+   <target name="runExample" depends="validate-jboss,compile">
+      <java classname="${example.classname}" fork="true">
+         <classpath refid="jms.runtime.classpath"/>
+      </java>
+
+   </target>
+
+   <target name="clean">
+      <delete dir="./build" quiet="true"/>
+   </target>
+
+</project>

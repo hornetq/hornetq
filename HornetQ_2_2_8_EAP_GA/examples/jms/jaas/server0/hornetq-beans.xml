@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+   <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
+
+   <!-- JNDI server. Disable this if you don't want JNDI -->
+   <bean name="JNDIServer" class="org.jnp.server.Main">
+      <property name="namingInfo">
+         <inject bean="Naming"/>
+      </property>
+      <property name="port">1099</property>
+      <property name="bindAddress">localhost</property>
+      <property name="rmiPort">1098</property>
+      <property name="rmiBindAddress">localhost</property>
+   </bean>
+   
+   <!-- MBean server -->
+   <bean name="MBeanServer" class="javax.management.MBeanServer">
+      <constructor factoryClass="java.lang.management.ManagementFactory"
+                   factoryMethod="getPlatformMBeanServer"/>
+   </bean> 
+
+   <!-- The core configuration -->
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
+
+   <!-- The security manager using JAAS -->
+   <bean name="HornetQSecurityManager" class="org.hornetq.spi.core.security.JAASSecurityManager">
+      <property name="configurationName">org.hornetq.jms.example.ExampleLoginModule</property>
+      <property name="configuration">
+         <inject bean="ExampleConfiguration"/>
+      </property>
+      <property name="callbackHandler">
+        <inject bean="ExampleCallbackHandler" />
+      </property>
+   </bean>
+
+   <!-- JAAS uses a simple LoginModule where the user credentials and roles  are
+        specified as options in the constructor -->
+   <bean name="ExampleConfiguration" class="org.hornetq.jms.example.ExampleConfiguration">
+      <constructor>
+         <parameter>org.hornetq.jms.example.ExampleLoginModule</parameter>
+         <parameter>
+           <map class="java.util.HashMap" keyClass="java.lang.String"
+                                          valueClass="java.lang.String">
+               <entry>
+                  <key>user</key>
+                  <value>jboss</value>
+               </entry>
+               <entry>
+                  <key>pass</key>
+                  <value>redhat</value>
+               </entry>
+               <entry>
+                  <key>role</key>
+                  <value>guest</value>
+               </entry>
+            </map> 
+         </parameter>
+      </constructor>
+   </bean>
+
+   <!-- the CallbackHandler does nothing as we don't have any user interaction -->
+   <bean name="ExampleCallbackHandler" class="org.hornetq.jms.example.ExampleCallbackHandler" />                 
+      
+   <!-- The core server -->
+   <bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+      <constructor>
+         <parameter>
+            <inject bean="Configuration"/>
+         </parameter>
+         <parameter>
+            <inject bean="MBeanServer"/>
+         </parameter>
+         <parameter>
+            <inject bean="HornetQSecurityManager"/>
+         </parameter>        
+      </constructor>
+      <start ignored="true"/>
+      <stop ignored="true"/>
+   </bean>
+   
+   <!-- The JMS server -->
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
+      <constructor>         
+         <parameter>
+            <inject bean="HornetQServer"/>
+         </parameter>
+      </constructor>
+   </bean>
+
+</deployment>

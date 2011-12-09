@@ -1,0 +1,82 @@
+<html>
+  <head>
+    <title>HornetQ Stomp WebSockets Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script src="../../common/prettify.js"></script>
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js'></script>
+    <script>
+    $(document).ready(function() {
+       $("#live-web-sockets").html(supports("WebSocket" in window, "Web Sockets"));
+
+       function supports(bool, suffix) {
+         var s = "Your browser ";
+         if (bool) {
+           s += "supports " + suffix + ".";
+         } else {
+           s += "does not support " + suffix + ". :(";
+         }
+         return s;
+       }
+    });
+    </script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Stomp WebSockets Example</h1>
+
+     <p>This example shows you how to configure HornetQ to send and receive Stomp messages from modern web browser using Web Sockets.</p>
+
+     <p>At the moment, WebKit and Google Chrome are the only web browsers with Web Sockets support.</p>
+     <p><span id=live-web-sockets></span></p>
+     
+     <h2>Example Setup</h2>
+     <p>The example will start a HornetQ server configured with Stomp over Web Sockets and JMS. Web browsers clients and
+       Java application will exchange message using a JMS Topic.</p>
+     <para>To enable Stomp over Web Sockets, the server must have a <literal>NettyAcceptor</literal> configured with a <literal>protocol</literal>
+       parameter set to <literal>stomp_ws</literal>:</para>
+     <pre class="prettyprint">
+&lt;acceptor name="stomp-websocket">
+   &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory&lt;/factory-class>
+   &lt;param key="protocol" value="stomp_ws"/>
+   &lt;param key="port" value="61614"/>
+&lt;/acceptor>
+     </pre>
+     
+     <h2>Example step-by-step</h2>
+     <p>To run the example, you need to start HornetQ server from the <code>bin</code> directory and specify this example's
+       server configuration:</p>
+     <pre class="prettyprint">
+$ ./run.sh ../examples/jms/stomp-websockets/server0
+...
+[main] 17:45:03,498 INFO [org.hornetq.core.remoting.impl.netty.NettyAcceptor]  Started Netty Acceptor version 3.2.0.BETA1-r2215 localhost:61614 for STOMP_WS protocol
+[main] 17:45:03,505 INFO [org.hornetq.core.server.impl.HornetQServerImpl]  HornetQ Server version 2.1.0.CR1 (Hungry Hornet, 117) started
+    </pre>
+     
+     <p>To publish a message to a JMS topic from a Java application, simply type <code>./build.sh</code> 
+       (or <code>build.bat</code> on windows) from this directory:</p>
+     <pre class="prettyprint">
+$ ./build.sh
+...
+[java] Sent message: message sent from a Java application at Wed Apr 28 17:45:53 CEST 2010
+[java] Received message: message sent from a Java application at Wed Apr 28 17:45:53 CEST 2010
+[java] example complete
+[java] 
+[java] #####################
+[java] ###    SUCCESS!   ###
+[java] #####################
+    </pre>
+
+    <p>To subscribe to the topic from your web browser, open the <a href="chat/index.html">Chat Example</a> from another tab. 
+      The chat example is preconfigured to connect to the HornetQ server with the URL <code>ws://localhost:61614/stomp</code> and subscribe to the JMS Topic (through its core address
+      <code>jms.topic.chat</code>).
+    </p>
+    <p>You can open as many Web clients as you want and they will all exchange messages through the topic</p>
+    <p>If you run again the Java application (with <code>./build.sh</code>), the web clients will also receive its message</p>
+    
+    <h2>Documentation</h2>
+    
+    <p>A JavaScript library is used on the browser side to be able to use Stomp Over Web Sockets (please see its <a href="http://jmesnil.net/stomp-websocket/doc/">documentation</a>
+      for a complete description).
+
+  </body>
+</html>

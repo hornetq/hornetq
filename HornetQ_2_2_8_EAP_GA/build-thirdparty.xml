@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- $Id$ -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+<project name="main.build" default="maven-install">
+
+   <!-- ======================================================================================== -->
+   <!-- Configuration                                                                            -->
+   <!-- ======================================================================================== -->
+
+
+   <!--maven targets-->
+   <!-- Define a macro for calling maven -->
+   <!--<target name="createthirdparty" unless="inhibit.downloads"
+      depends="maven-init, init, check.inhibit.downloads, set.proxy">
+
+      <property name="maven.opts" value=""/>
+      <property name="thirdparty.maven.opts" value="${maven.opts}"/>
+
+      <maven basedir="${basedir}/thirdparty"
+             options="${thirdparty.maven.opts}"
+             goal="generate-resources"
+             resultproperty="maven.thirdparty.result"/>
+
+      <fail message="Unable to build thirdparty directory.  See maven output for details.">
+        <condition>
+          <not>
+            <equals arg1="${maven.thirdparty.result}" arg2="0"/>
+          </not>
+        </condition>
+      </fail>
+
+   </target>-->
+
+
+  <macrodef name="maven">
+    <attribute name="options" default="" />
+    <attribute name="goal" />
+    <attribute name="basedir" />
+    <attribute name="workingdir"/>
+    <attribute name="resultproperty" default="maven.result" />
+    <element name="args" implicit="true" optional="true" />
+    <sequential>
+      <java classname="org.codehaus.classworlds.Launcher" fork="true"
+            dir="@{workingdir}" resultproperty="@{resultproperty}">
+        <jvmarg value="-Xmx512m"/>
+        <classpath>
+          <fileset dir="${maven.home}/boot">
+            <include name="*.jar" />
+          </fileset>
+          <fileset dir="${maven.home}/lib">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
+        <sysproperty key="maven.home" value="${maven.home}" />
+        <arg line="--batch-mode @{options} @{goal}" />
+      </java>
+    </sequential>
+  </macrodef>
+
+   <target name="maven-init">
+    <property name="maven.home" location="${basedir}/tools/maven"/>
+    <echo message="Maven Home set to ${maven.home}"/>
+  </target>
+
+  <!--<target name="checkthirdparty">
+    <if>
+      <not>
+        <available file="${basedir}/thirdparty/libraries.ent"/>
+      </not>
+      <then>
+        <antcall target="createthirdparty"/>
+      </then>
+    </if>
+  </target>-->
+
+   <target name="maven-install" description="Run the install goal against the maven build"
+          depends="maven-init">
+     <property name="maven.opts" value=""/>
+     <property name="maven.goal" value="initialize"/>
+     <property name="maven.install.opts" value="-Dintegrated-build ${maven.opts}"/>
+     <property name="working.dir" value="${basedir}"/>
+     <maven basedir="${basedir}"
+	    workingdir="${working.dir}"
+            options="${maven.install.opts}"
+            goal="${maven.goal}"
+            resultproperty="maven.install.result"/>
+
+     <fail message="Unable to build maven modules.  See maven output for details.">
+       <condition>
+         <not>
+           <equals arg1="${maven.install.result}" arg2="0"/>
+         </not>
+       </condition>
+     </fail>
+
+  </target>
+
+   <target name="set.proxy" depends="set.proxy.withoutauth, set.proxy.auth"/>
+
+   <!-- set proxy settings without auth -->
+   <target name="set.proxy.withoutauth" if="hasproxy" unless="hasproxyauth" depends="check.proxy">
+      <echo>Proxy is set to ${proxy.host}:${proxy.port}</echo>
+      <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
+   </target>
+
+   <!-- set proxy settings using auth -->
+   <target name="set.proxy.auth" if="hasproxyauth" depends="check.proxy">
+      <echo>Auth Proxy is set to ${proxy.host}:${proxy.port} username=[${proxy.username}]</echo>
+      <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.username}" proxypassword="${proxy.password}"/>
+   </target>
+
+    <!-- check if the the user has specied proxy settings -->
+   <target name="check.proxy">
+      <condition property="hasproxy">
+         <and>
+            <isset property="proxy.host"/>
+            <isset property="proxy.port"/>
+            <not>
+               <equals arg1="" arg2="${proxy.host}" trim="true"/>
+            </not>
+            <not>
+               <equals arg1="" arg2="${proxy.port}" trim="true"/>
+            </not>
+         </and>
+      </condition>
+   </target>
+
+   <!-- check if thirdparty libraries are to be downloaded -->
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <istrue value="${nodownload}"/>
+      </condition>
+   </target>
+   
+</project>

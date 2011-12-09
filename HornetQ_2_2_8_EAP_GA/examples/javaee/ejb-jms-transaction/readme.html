@@ -1,0 +1,243 @@
+<html>
+  <head>
+    <title>HornetQ EJB/JMS Transaction Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>EJB/JMS Transaction Example</h1>
+
+     <p>The example application will invoke an EJB which within the JBoss AS (Application Server)  which will:</p>
+     <ol>
+        <li>send a JMS message</li>
+        <li>update a database from the same transaction</li>
+     </ol>
+     <p>The example application will then receive the message sent by the EJB.<br />
+        We will also check that the database has been updated as expected.</p>
+
+     <h2>Example configuration</h2>
+
+     <p>To run the example, you need to download JBoss AS 5.x and create a configuration for HornetQ.</p>
+     <p>The example also requires a database. The instructions are for MySQL. If you use another database, please refer
+         to the database documentation to configure it.</p>
+     <p>The example makes a copy of the default-with-hornetq profile so please configure this for the database</p>
+         
+
+     <h3>JBoss AS configuration</h3>
+     
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+     
+     <h3>Database configuration</h3>
+
+     <p>This example needs a database supporting XA transactions. The instructions are written for <a href="http://dev.mysql.com/">MySQL</a>. Please refer to your
+         database documentation to configure it appropriately.</p>
+     <p>To use MySQL with JBoss AS 5</p>
+     <ul>
+        <li>copy MySQL JDBC jar to <code>$JBOSS_HOME/server/default-with-hornetq/lib/</code></li>
+     </ul>
+     <p>During the deployment, the example will:</p>
+     <ul>
+        <li>remove HSQLDB configuration (<code>hsqldb-ds.xml</code>) from the profile</li>
+        <li>copy <a href="config/mysql-ds.xml"><code>mysql-ds.xml</a></code> to to the profile</li>
+     </ul>
+     
+     <p>MySQL is configured to connect to a <code>jbossdb</code> database using the <code>jboss</code>/<code>jboss</code> credentials<a href="#fn1" id="fnr1"><sup>1</sup></a>.
+     <p>MySQL configuration file defines two DataSources:</p>
+     <ul>
+         <li><code>DefaultDS</code>, the default DataSource (used to create a table from the example)</li>
+         <li><code>XADS</code>, the XA DataSource. This datasource will be used to send a JMS message and update the table within the same transaction</li>
+     </ul>
+     
+     <h2>Example step-by-step</h2>
+
+     <p><em>To deploy and run the server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from this directory</em>.</p>
+     <p><em>Once the second server has started, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) to run the example </em>.</p>
+     <p><em>Simply type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) to remove the profile from JBoss AS 5</em>.</p>
+     
+     The example code is composed of two main classes:
+     <ul>
+         <li><code>EJBExample</code></li> - the example application
+         <li><code>SendMessageBean</code></li> - a Stateless EJB
+     </ul>
+     
+     <h3>Example Application</h3>
+     
+     <p>Let's take a look at EJBClientExample first.</p>
+         
+     <ol>
+         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <a href="config/jndi.properties">jndi.properties</a></li>
+         </li>
+         <pre class="prettyprint">
+            InitialContext initialContext = new InitialContext();
+         </pre>
+
+         <li>We look up the EJB</li>
+         <pre class="prettyprint">
+            SendMessageService service = (SendMessageService)initialContext.lookup("mdb-example/SendMessageBean/remote");
+         </pre>
+
+         <li>We create the DB table which will be updated if it does not already exist</li>
+         <pre class="prettyprint">
+            service.createTable();
+         </pre>
+
+         <li>We invoke the EJB's <code>sendAndUpdate</code> method. This method will send a JMS text message (with the text passed in parameter)
+             and insert a row in the database table with the text and the message's JMS Message ID</li>
+         <pre class="prettyprint">
+            service.sendAndUpdate("This is a text message");
+         </pre>
+
+         <p><em>We will now consume the JMS message which was sent by the EJB at step 4.</em></p>
+         
+         <li>We look up the JMS connection factory</li>
+         <pre class="prettyprint">
+            ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+         </pre>
+
+         <li>We lookup the JMS queue</li>
+         <pre class="prettyprint">
+            Queue queue = (Queue)initialContext.lookup("queue/testQueue");
+         </pre>
+
+         <li>We create a connection, a session and a message consumer for the queue</li>
+         <pre class="prettyprint">
+            connection = cf.createConnection();
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageConsumer consumer = session.createConsumer(queue);
+         </pre>
+
+         <li>We start the JMS connection</li>
+         <pre class="prettyprint">
+            connection.start();
+         </pre>
+
+         <li>We receive a message from the queue. It corresponds to the message sent by the EJB</li>
+         <pre class="prettyprint">
+            TextMessage messageReceived = (TextMessage)consumer.receive(5000);
+            System.out.println("Received message: " + messageReceived.getText() +
+                                         " (" +  messageReceived.getJMSMessageID() + ")");
+         </pre>
+
+         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+         <pre class="prettyprint">
+            finally
+            {
+               if (initialContext != null)
+               {
+                  initialContext.close();
+               }
+               if (connection != null)
+               {
+                  connection.close();
+               }
+             }
+          </pre>
+     </ol>
+     
+     <h3>EJB Example</h3>
+          
+     <p>Let's now take a look at the EJB example</p>
+     
+     <ol>
+         <li>First, we create a new initial context</li>
+         <pre class="prettyprint">
+            ic = new InitialContext();
+        </pre>
+
+         <li>We look up the JMS <em>XA</em> Connection Factory (which is bound to <code>java:/JmsXA</code>)</li>
+         <pre class="prettyprint">
+            ConnectionFactory cf = (ConnectionFactory)ic.lookup("java:/JmsXA");
+        </pre>
+             
+         <li>We look up the JMS Queue</li>
+         <pre class="prettyprint">
+            Queue queue = (Queue)ic.lookup("queue/testQueue");
+        </pre>
+             
+         <li>We create a JMS connection, a session and a message producer for the queue</li>
+         <pre class="prettyprint">
+            jmsConnection = cf.createConnection();
+            Session session = jmsConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer messageProducer = session.createProducer(queue);
+        </pre>
+             
+         <li>We create a text message with the text passed in parameter of the EJB method</li>
+         <pre class="prettyprint">
+            TextMessage message = session.createTextMessage(text);
+        </pre>
+             
+         <li>We send the message to the queue</li>
+         <pre class="prettyprint">
+            messageProducer.send(message);
+            System.out.println("Sent message: " + message.getText() + "(" + message.getJMSMessageID() + ")");
+        </pre>
+             
+         <li>We now lookup the JDBC <em>XA</em> DataSource</li>
+         <pre class="prettyprint">
+            DataSource ds = (DataSource)ic.lookup("java:/XADS");
+        </pre>
+             
+         <li>We retrieve a JDBC connection</li>
+         <pre class="prettyprint">
+            jdbcConnection  = ds.getConnection();
+        </pre>
+             
+         <li>We create a prepared statement to insert the text and message's ID in the DB table</li>
+         <pre class="prettyprint">
+            PreparedStatement pr = jdbcConnection.prepareStatement("INSERT INTO " + TABLE
+                        + " (id, text) VALUES ('" + message.getJMSMessageID() + "', '" + text + "');");
+        </pre>
+             
+         <li>We execute the prepared statement</li>
+         <pre class="prettyprint">
+            pr.execute();
+        </pre>
+             
+         <li>We close the prepared statement</li>
+         <pre class="prettyprint">
+            pr.close();
+         </pre>
+             
+         <li>And finally, <b>always</b> remember to close all your connections and resources (for both JMS and JDBC) after use, in a <code>finally</code> block.</li>
+         <pre class="prettyprint">
+            finally
+            {
+                if (ic != null)
+                {
+                   ic.close();
+                }
+                if (jmsConnection != null)
+                {
+                   jmsConnection.close();
+                }
+                if (jdbcConnection != null)
+                {
+                   jdbcConnection.close();
+                }
+            }
+        </pre>
+     
+     <h2>More information</h2>
+     
+     <ul>
+         <li><a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">HornetQ deployment in JBoss AS 5</a></li>
+         <li><a href="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Administration_And_Configuration_Guide/5/html/alternative_DBs.html">Use Alternative Databases with JBoss AS</a></li>
+     </ul>
+
+     <hr>
+
+     <ol>         
+         <li><a name="fn1">Steps to create the MySQL DB</a><a href="#fnr1">&#8617;</a>
+             <ul>
+                 <li>connect as root to MySQL: <code>mysql</code>
+                 <li>create database jbossdb: <code>create database jbossdb;</code>
+                 <li>create user jboss/jboss: <code>GRANT ALL PRIVILEGES ON *.* TO 'jboss'@'%' IDENTIFIED BY 'jboss' WITH GRANT OPTION;</code>
+                 <li>disconnect from MySQL
+                 <li>check it works: <code>mysql -u jboss -p jbossdb</code> (and type <code>jboss</code> when prompted for the password)
+            </ul>
+        </li>
+    </ol>
+  </body>
+</html>

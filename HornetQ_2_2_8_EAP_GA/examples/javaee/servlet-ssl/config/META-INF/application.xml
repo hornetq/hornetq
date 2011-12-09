@@ -1,0 +1,11 @@
+<application>
+  <display-name>My Application</display-name>
+
+  <module>
+    <web>
+      <web-uri>servlet-ssl-transport-example.war</web-uri>
+      <context-root>/hornetq</context-root>
+    </web>
+  </module>
+   
+</application>

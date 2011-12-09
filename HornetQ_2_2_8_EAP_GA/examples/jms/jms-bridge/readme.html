@@ -1,0 +1,290 @@
+<html>
+  <head>
+    <title>HornetQ JMS Bridge Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>JMS Bridge Example</h1>
+     <p>This example shows you how to setup a JMS Bridge between two HornetQ servers.</p>
+     <img src="jms-bridge.png"  />
+     <p>The example will use two HornetQ servers:</p>
+     <ul>
+        <li>Server #0 &ndash; the <em>Source</em> server. It will be configured with a JMS Topic bound to JNDI under <code>/source/topic</code>
+        <li>Server #1 &ndash; the <em>Target</em> server. It will be configured with a JMS Queue bound to JNDI under <code>/target/queue</code><br />
+     </ul>
+     <p>Both HornetQ server will run their own JNDI server used by the JMS Bridge and the JMS Client to lookup JMS
+        resources (ConnectionFactory and Destination).</p>
+     <p>The JMS Bridge will run inside the target server and is configured to bridge messages from the <em>source</em> destination     
+     (the topic hosted on server #0) and the <em>target</em> destination (the queue hosted on server #1)</p>
+     <p>The client will check the bridge works by:</p>
+     <ol>
+        <li>sending a message to the <em>source</em> topic</li>
+        <li>receive a message from the <em>target</em> queue</li>
+        <li>check that both messages correspond to the same content.</li>
+     </ol>
+     <p>Please note that this example is meant to run on 2 different machines. If you want to run it on a single machine,
+        you will have also to make sure that the HornetQ servers do not share any ports.</p>
+     <h2>Example Configuration</h2>
+     <p>To run this example on 2 machines, you will need to adapt the configuration to your machines:</p>
+     <ol>
+        <li>Setup the source server address so that both the JMS bridge and the JMS
+           client can connect to its JNDI server and send/receive message from it</li>
+        <li>Setup the target server so that both the JMS bridge and the JMS
+           client can connect to its JNDI server and send/receive message from it</li>
+        <li>Setup the JMS Bridge configuration so that it can receive message from the source
+           topic and send them to the target queue</li>
+     </ol>
+     <p>As an example, I will use the following network addresses to show how to configure the example:</p>
+     <ul>
+        <li>Server #0 &ndash; <code>192.168.0.<strong>10</strong></code></li>
+        <li>Server #1 &ndash; <code>192.168.0.<strong>11</strong></code></li>
+     </ul>
+     <p>First, make sure that HornetQ <em>is setup and installed on both servers</em></p>
+     <p>Then, you will have to adapt each server configuration on their respective servers:
+     <ul>
+        <li>Server #0 configuration (located in <code>server0/</code>) must be changed on Server #0</li>
+        <li>Server #1 configuration (located in <code>server1/</code>) must be changed on Server #1</li>
+     </ul>
+     <h3>Source Server Configuration</h3>
+     <p>On server #0, in <code>server0/hornetq-beans.xml</code>, setup the JNDI server network address by replacing
+        <code>@SOURCE_SERVER@</code> by the source server address (e.g. <code>192.168.0.10</code>):</p>
+     <pre class="prettyprint">
+        &lt;bean name="JNDIServer" class="org.jnp.server.Main">
+           ...
+           &lt;!-- **************************************** -->
+           &lt;!-- Replace with the *source* server address -->
+           &lt;!-- **************************************** -->
+           &lt;property name="bindAddress">192.168.0.10&lt;/property>
+           &lt;!-- **************************************** -->
+           &lt;!-- Replace with the *source* server address -->
+           &lt;!-- **************************************** -->
+           &lt;property name="rmiBindAddress">192.168.0.10&lt;/property>
+           ...
+        &lt;/bean>
+     </pre>
+     <p>In <code>server0/hornetq-configuration.xml</code>, configure a Netty connector with the source
+        server address:</p>
+     <pre class="prettyprint">
+        &lt;connectors>
+           &lt;connector name="netty">
+              &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+              &lt;!-- **************************************** -->
+              &lt;!-- Replace with the *source* server address -->
+              &lt;!-- **************************************** -->
+              &lt;param key="hornetq.remoting.netty.host" value="192.168.0.10" type="String"/>
+           &lt;/connector>
+        &lt;/connectors>
+     </pre>
+     <p>Note that in <code>server0/hornetq-configuration.xml</code>, we also setup the Netty <em>acceptor</em> to accept connections from any of the source server addresses
+        (by specifying <code>0.0.0.0</code>)</p>
+     <p>The source server defines two JMS resources in <code>server0/hornetq-jms.xml</code>:</p>
+     <ul>
+        <li>A JMS ConnectionFactory bound to <code>/source/ConnectionFactory</code></li>
+        <li>A JMS Topic bound to <code>/source/topic</code></li>
+     </ul>
+     <h3>Target Server Configuration</h3>
+     <p>On server #1, in <code>server1/hornetq-beans.xml</code>, setup the JNDI server network address by replacing
+        <code>@TARGET_SERVER@</code> by the target server address (e.g. <code>192.168.0.11</code>):</p>
+     <pre class="prettyprint">
+        &lt;bean name="JNDIServer" class="org.jnp.server.Main">
+           ...
+           &lt;!-- **************************************** -->
+           &lt;!-- Replace with the *target* server address -->
+           &lt;!-- **************************************** -->
+           &lt;property name="bindAddress">192.168.0.11&lt;/property>
+           &lt;!-- **************************************** -->
+           &lt;!-- Replace with the *target* server address -->
+           &lt;!-- **************************************** -->
+           &lt;property name="rmiBindAddress">192.168.0.11&lt;/property>
+           ...
+        &lt;/bean>
+     </pre>
+     <p>In <code>server1/hornetq-configuration.xml</code>, configure a Netty connector with the target
+        server address:</p>
+     <pre class="prettyprint">
+        &lt;connectors>
+           &lt;connector name="netty">
+              &lt;factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory&lt;/factory-class>
+              &lt;!-- **************************************** -->
+              &lt;!-- Replace with the *target* server address -->
+              &lt;!-- **************************************** -->
+              &lt;param key="hornetq.remoting.netty.host" value="192.168.0.11" type="String"/>
+           &lt;/connector>
+        &lt;/connectors>
+     </pre>
+     <p>Note that in <code>server1/hornetq-configuration.xml</code>, we also setup the Netty <em>acceptor</em> to accept connections from any of the target server addresses
+        (by specifying <code>0.0.0.0</code>)</p>
+     <p>The target server defines two JMS resources in <code>server1/hornetq-jms.xml</code>:</p>
+     <ul>
+        <li>A JMS ConnectionFactory bound to <code>/target/ConnectionFactory</code></li>
+        <li>A JMS Queue bound to <code>/target/queue</code></li>
+     </ul>
+
+     <h3>JMS Bridge Configuration</h3>
+     <p>The JMS Bridge is a <abbr title="Plain Old Java Object">POJO</abbr> in which we inject JNDI configurations
+        so that it looks up its source and target JMS resources.
+        The JMS Bridge is defined a bean and setup by JBoss Microntainer in the same VM than Server #1, the target server.</p>
+
+      </p>The JMS Bridge is defined by the <code>JMSBridge</code> bean in <code>server1/hornetq-beans.xml</code>:</p>
+      <pre class="prettyprint">
+         &lt;!-- The JMS Bridge -->
+         &lt;bean name="JMSBridge" class="org.hornetq.jms.bridge.impl.JMSBridgeImpl">
+         ...
+         &lt;/bean>
+      </pre>
+      <p>the <code>JMSBridgeImpl</code> constructor is used to inject all the properties required to run the JMS Bridge.</p>
+      <p>Its first four arguments defines how the bridge will lookup:</p>
+      <ol>
+         <li>its <em>source</em> JMS ConnectionFactory</li>
+         <li>its <em>source</em> JMS Destination</li>
+         <li>its <em>target</em> JMS ConnectionFactory</li>
+         <li>its <em>target</em> JMS Destination</li>
+     </ol>
+     <p>Using other POJOs, the JMS Bridge is configured to retrieve:</p>
+     <ul>
+        <li>its <em>source</em> JMS ConnectionFactory by looking up <code>/source/ConnectionFactory</code> using
+           the <code>SourceJNDI</code> configuration</li>
+        <li>its <em>source</em> JMS Destination by looking up <code>/source/topic</code> using
+           the <code>SourceJNDI</code> configuration</li>
+        <li>its <em>target</em> JMS ConnectionFactory by looking up <code>/target/ConnectionFactory</code> using
+           the <code>TargetJNDI</code> configuration</li>
+           <li>its <em>target</em> JMS ConnectionFactory by looking up <code>/target/queue</code> using
+        the <code>TargetJNDI</code> configuration</li>
+     </ul>
+     <p>In turn, <code>SourceJNDI</code> and <code>TargetJNDI</code> are POJOs defining how to connect to JNDI server.
+        SourceJNDI URL must point to your source server, while LocalJNDI must point to your target server:</p>
+   <pre class="prettyprint">
+      &lt;bean name="SourceJNDI" class="java.util.Hashtable">
+         ...
+                &lt;entry>
+                   &lt;key>java.naming.provider.url&lt;/key>
+                   &lt;!-- **************************************** -->
+                   &lt;!-- Replace with the *source* server address -->
+                   &lt;!-- **************************************** -->
+                   &lt;value>jnp://192.168.0.10:1099&lt;/value>
+         ...
+       &lt;/bean>
+       &lt;bean name="TargetJNDI" class="java.util.Hashtable">
+         ...
+                &lt;ntry>
+                   &lt;key>java.naming.provider.url&lt;/key>
+                   &lt;!-- **************************************** -->
+                   &lt;!-- Replace with the *target* server address -->
+                   &lt;!-- **************************************** -->
+                   &lt;value>jnp://1192.168.0.11:1099&lt;/value>
+                &lt;/entry>
+         ...
+       &lt;/bean>
+      </pre>
+     <h2>Example step-by-step</h2>
+     <p>To run the example after having setup both HornetQ servers and the JMS bridge:</p>
+     <ol>
+        <li>on Server #0, run <code>./build.sh source-server</code></li>
+        <li>on Server #1, run <code>./build.sh target-server</code> (this will start the JMS Bridge too)</li>
+        <li>on either server, run the client: 
+           <code>./build.sh client -Dsource=&lt;source server address> -Dtarget=&lt;target server address></code>
+           (for example: 
+           <code>./build.sh client -Dsource=192.168.0.11 -Dtarget=192.168.0.11</code>)</li>
+      </ol>
+      <p>Let's look at the Client code (in <code>JMSBridgeExample</code> class):</p>
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS resources (using the source and target server
+           addresses passed as arguments to <code>./build.sh client</code>)</li>
+        <pre class="prettyprint">
+           InitialContext sourceContext = createContext(sourceServer);
+           InitialContext targetContext = createContext(targetServer);
+        </pre>
+
+        <li>We look up the JMS resources from the Source server</li>
+        <pre class="prettyprint">
+           ConnectionFactory sourceConnectionFactory = (ConnectionFactory)sourceContext.lookup("/source/ConnectionFactory");
+           Topic sourceTopic = (Topic)sourceContext.lookup("/source/topic");
+        </pre>
+
+        <li>We create JMS objects to send a message to the source destination</li>
+        <pre class="prettyprint">
+           sourceConnection = sourceConnectionFactory.createConnection();
+           Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageProducer sourceProducer = sourceSession.createProducer(sourceTopic);
+        </pre>
+
+        <li>We send a message to the source destination</li>
+        <pre class="prettyprint">
+           TextMessage message = sourceSession.createTextMessage("this is a text message sent at " + System.currentTimeMillis());
+           sourceProducer.send(message);
+        </pre>
+        
+        <li>We close the connection to the source server</li>
+        <pre class="prettyprint">
+           sourceConnection.close();
+        </pre>
+
+        <p>At this point, the JMS Bridge will consume the message from the source topic and
+           sends it to the target queue. 
+           The client will check the bridge works by consuming a message from the target queue.</p>
+
+        <li>We look up the JMS resources from the target server</li>
+        <pre class="prettyprint">
+           ConnectionFactory targetConnectionFactory = (ConnectionFactory)targetContext.lookup("/target/ConnectionFactory");
+           Queue targetQueue = (Queue)targetContext.lookup("/target/queue");
+        </pre>
+
+        <li>We create JMS objects to receive a message from the target destination</li>
+        <pre class="prettyprint">
+           targetConnection = targetConnectionFactory.createConnection();
+           Session targetSession = targetConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+           MessageConsumer targetConsumer = targetSession.createConsumer(targetQueue);
+       </pre>
+
+        <li>We start the target connection to start receiving messages
+        <pre class="prettyprint">
+           targetConnection.start();
+        </pre>
+
+        <li>We receive the message and print it. Its content is the same than the message
+           the client sent to the source topic</li>
+        <pre class="prettyprint">
+           TextMessage messageReceived = (TextMessage)targetConsumer.receive(5000);
+        </pre>
+
+        <li>We display the message ID and its "bridged" message ID</li>
+        <pre class="prettyprint">
+           System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
+           System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));
+        </pre>
+        
+        <p>Note that the message received from the target queue is <em>not the same message</em> sent to the source topic
+           (their message IDs are different) but they have the <em>same content</em>.
+
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre class="prettyprint">
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }</code>
+        </pre>
+
+
+
+     </ol>
+     
+     <h2>More information</h2>
+
+     <ul>
+        <li>User Manual's <a href="../../../docs/user-manual/en/html_single/appserver-integration.html#jms-bridge">JMS Bridge chapter</a></li>
+        <li>The <a href="../../javaee/jms-bridge/readme.html">Java EE JMS Bridge example</a> shows how to configure a JMS Bridge
+           inside JBoss Application Server to bridge destinations from the same server.</a>
+     </p>
+
+  </body>
+</html>

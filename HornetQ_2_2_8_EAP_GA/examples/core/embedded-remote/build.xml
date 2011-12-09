@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+
+<project default="run" name="HornetQ Embedded Example">
+
+   <import file="../../common/build.xml"/>
+	
+   <path id="remote.classpath">
+    <fileset dir="${hornetq.jars.dir}">
+      <include name="hornetq-core.jar"/>
+    </fileset>
+ 	  <fileset dir="${jars.dir}">
+      <include name="**/netty*jar"/>
+      <exclude name="**/*-sources.jar"/>
+ 	  </fileset>
+    <pathelement location="${classes.dir}"/>	   	
+   </path>
+
+   <target name="run" depends="compile">
+   	
+   	   <pathconvert refid="remote.classpath" property="remote-classpath"/>
+      <pathconvert refid="client.classpath" property="client-classpath"/>
+   	   <echo message="client path = ${client-classpath}"/>
+   	   <echo message="remote path = ${remote-classpath}"/>
+
+	   <java classname="org.hornetq.core.example.EmbeddedRemoteExample" fork="true" resultproperty="example-result">
+	      <jvmarg value="-Xms50M"/>      
+	      <jvmarg value="-Xmx50M"/>
+	   	  <sysproperty key="remote-classpath" value="${remote-classpath}"/>
+          <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+	      <classpath refid="client.classpath"/>
+	   </java>
+       <fail message="EmbeddedRemoteExample failed">
+          <condition>
+             <not>
+                <equals arg1="${example-result}" arg2="0"/>
+             </not>
+          </condition>
+       </fail>
+   </target>
+</project>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+       <bean name="JMSBridge" class="org.hornetq.jms.bridge.impl.JMSBridgeImpl">
+           <!-- HornetQ must be started before the bridge -->
+           <depends>HornetQServer</depends>
+           <constructor>
+               <!-- Source ConnectionFactory Factory -->
+               <parameter>
+                   <inject bean="SourceCFF"/>
+               </parameter>
+               <!-- Target ConnectionFactory Factory -->
+               <parameter>
+                   <inject bean="TargetCFF"/>
+               </parameter>
+               <!-- Source DestinationFactory -->
+               <parameter>
+                   <inject bean="SourceDestinationFactory"/>
+               </parameter>
+               <!-- Target DestinationFactory -->
+               <parameter>
+                   <inject bean="TargetDestinationFactory"/>
+               </parameter>
+               <!-- Source username (no username here) -->
+               <parameter><null /></parameter>
+               <!-- Source password (no password here)-->
+               <parameter><null /></parameter>
+               <!-- Target username (no username here)-->
+               <parameter><null /></parameter>
+               <!-- Target password (no password here)-->
+               <parameter><null /></parameter>
+               <!-- Selector -->
+               <parameter><null /></parameter>
+               <!-- Interval to retry in case of failure (in ms) -->
+               <parameter>5000</parameter>
+               <!-- Maximum number of retries to connect to the source and target -->
+               <parameter>10</parameter>
+               <!-- Quality of service -->
+               <parameter>ONCE_AND_ONLY_ONCE</parameter>
+               <!-- Maximum batch size -->
+               <parameter>1</parameter>
+               <!-- Maximum batch time (-1 means infinite) -->
+               <parameter>-1</parameter>
+               <!-- Subscription name (no subscription name here)-->
+               <parameter><null /></parameter>
+               <!-- client ID  (no client ID here)-->
+               <parameter><null /></parameter>
+               <!-- concatenate JMS messageID to the target's message header -->
+               <parameter>true</parameter>
+               <!-- register the JMS Bridge in the AS MBeanServer -->
+               <parameter>
+                   <inject bean="TheMBeanServer"/>
+               </parameter>
+               <parameter>org.hornetq:service=JMSBridge</parameter>
+           </constructor>
+           <property name="transactionManager">
+               <inject bean="RealTransactionManager"/>
+           </property>
+          <!--<property name="transactionManagerLocatorClass">org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator</property>
+          <property name="transactionManagerLocatorMethod">getTm</property>-->
+       </bean>
+
+       <!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
+       <bean name="SourceCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
+           <constructor>
+               <parameter>
+                   <inject bean="JNDI" />
+               </parameter>
+               <parameter>/ConnectionFactory</parameter>
+           </constructor>  
+       </bean>
+
+       <!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
+       <bean name="TargetCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
+           <constructor>
+               <parameter>
+                   <inject bean="JNDI" />
+               </parameter>
+               <parameter>/ConnectionFactory</parameter>
+           </constructor>  
+       </bean>
+
+       <!-- SourceDestinationFactory describes the Destination used as the source -->
+       <bean name="SourceDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
+           <constructor>
+               <parameter>
+                   <inject bean="JNDI" />
+               </parameter>
+               <parameter>/queue/source</parameter>
+           </constructor>  
+       </bean>
+
+       <!-- TargetDestinationFactory describes the Destination used as the target -->
+       <bean name="TargetDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
+           <constructor>
+               <parameter>
+                   <inject bean="JNDI" />
+               </parameter>
+               <parameter>/queue/target</parameter>
+           </constructor>  
+       </bean>
+       
+       <!-- JNDI is a Hashtable containing the JNDI properties required -->
+       <!-- to connect to the sources and targets JMS resrouces         -->       
+      <bean name="JNDI" class="java.util.Hashtable">
+         <constructor class="java.util.Map">
+            <map class="java.util.Hashtable" keyClass="java.lang.String"
+                                             valueClass="java.lang.String">
+               <entry>
+                  <key>java.naming.factory.initial</key>
+                  <value>org.jnp.interfaces.NamingContextFactory</value>
+               </entry>
+               <entry>
+                  <key>java.naming.provider.url</key>
+                  <value>jnp://localhost:1099</value>
+               </entry>
+               <entry>
+                  <key>java.naming.factory.url.pkgs</key>
+                  <value>org.jboss.naming:org.jnp.interfaces"</value>
+               </entry>
+               <entry>
+                  <key>jnp.timeout</key>
+                  <value>5000</value>
+               </entry>
+               <entry>
+                  <key>jnp.sotimeout</key>
+                  <value>5000</value>
+               </entry>
+            </map>
+         </constructor>
+      </bean>
+
+      <bean name="TheMBeanServer" class="javax.management.MBeanServer">
+         <constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
+                      factoryMethod="locateJBoss"/>
+      </bean>
+
+</deployment>

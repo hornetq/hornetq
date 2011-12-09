@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~  Red Hat licenses this file to you under the Apache License, version
+  ~  2.0 (the "License"); you may not use this file except in compliance
+  ~  with the License.  You may obtain a copy of the License at
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~  implied.  See the License for the specific language governing
+  ~  permissions and limitations under the License.
+  -->
+      
+<server>
+
+   <mbean code="org.hornetq.service.HornetQFileConfigurationService"
+      name="org.hornetq:service=HornetQFileConfigurationService">
+   </mbean>
+
+   <mbean code="org.hornetq.service.JBossASSecurityManagerService"
+      name="org.hornetq:service=JBossASSecurityManagerService">
+   </mbean>
+
+   <mbean code="org.hornetq.service.HornetQStarterService" 
+      name="org.hornetq:service=HornetQStarterService">
+      <!--lets let the JMS Server start us-->
+         <attribute name="Start">false</attribute>
+
+      <depends optional-attribute-name="SecurityManagerService"
+         proxy-type="attribute">org.hornetq:service=JBossASSecurityManagerService</depends>
+      <depends optional-attribute-name="ConfigurationService"
+         proxy-type="attribute">org.hornetq:service=HornetQFileConfigurationService</depends>
+   </mbean>
+
+   <mbean code="org.hornetq.service.HornetQJMSStarterService"
+      name="org.hornetq:service=HornetQJMSStarterService">
+      <depends optional-attribute-name="HornetQServer"
+         proxy-type="attribute">org.hornetq:service=HornetQStarterService</depends>
+   </mbean>
+   
+</server>

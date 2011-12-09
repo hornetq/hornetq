@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2009 Red Hat, Inc.
+  ~ Red Hat licenses this file to you under the Apache License, version
+  ~ 2.0 (the "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+  ~ implied.  See the License for the specific language governing
+  ~ permissions and limitations under the License.
+  -->
+<project default="run" name="HornetQ Java HAJNDI Example">
+
+   <import file="../common/build.xml"/>
+
+   <target name="deploy">
+       <property name="deploy.dir" value="${jboss.home}/server/all-with-hornetq/deploy/" />
+       <property name="deploy.dir2" value="${jboss.home}/server/all-with-hornetq_2/deploy/" />
+
+       <!-- copy 1st server resources  configuration -->
+       <copy file="${example.config.dir}/hornetq-queues.xml" todir="${deploy.dir}/hornetq.sar/" overwrite="yes"/>
+       <copy file="${example.config.dir}/hornetq-jms.xml" todir="${deploy.dir}/hornetq.sar/" overwrite="yes"/>
+
+       <!-- copy 2nd server resources configuration -->
+      <copy file="${example.config.dir}/hornetq-queues.xml" todir="${deploy.dir2}/hornetq.sar/" overwrite="yes"/>
+      <copy file="${example.config.dir}/hornetq-jms.xml" todir="${deploy.dir2}/hornetq.sar/" overwrite="yes"/>
+    </target>
+
+    <target name="undeploy">
+       <property name="deploy.dir" value="${jboss.home}/server/all-with-hornetq/deploy/" />
+       <property name="deploy.dir2" value="${jboss.home}/server/all-with-hornetq_2/deploy/" />
+
+       <!-- delete 1st server resources  configuration -->
+       <delete file="${deploy.dir}/hornetq.sar/hornetq-queues.xml" failonerror="false"/>
+       <delete file="${deploy.dir}/hornetq.sar/hornetq-jms.xml" failonerror="false"/>
+
+       <!-- delete 2nd server resources configuration -->
+       <delete file="${deploy.dir2}/hornetq.sar/hornetq-queues.xml" failonerror="false"/>
+       <delete file="${deploy.dir2}/hornetq.sar/hornetq-jms.xml" failonerror="false"/>
+    </target>
+
+   <target name="run">
+      <antcall target="runExample">
+         <param name="example.classname" value="org.hornetq.javaee.example.HAJNDIExample"/>
+      </antcall>
+   </target>
+
+</project>

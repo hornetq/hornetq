@@ -1,0 +1,114 @@
+<html>
+  <head>
+    <title>HornetQ Java EE MDB Bean Managed Transaction Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>Java EE MDB Bean Managed Transaction Example</h1>
+     
+     <p>This example shows you how to send a message to an MDB configured to use Bean Managed Transactions</p>
+     <p>
+         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
+     </p>
+     
+     <h2>JBoss AS configuration</h2>
+     
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+     
+     <h2>Example step-by-step</h2>
+     <p><i>To deploy and start the server, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from the example directory</i></p>
+     <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from the example directory</i></p>
+     <p><i>To remove the example profile, simply type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) from the example directory</i></p>
+     <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
+     
+     <ol>
+        <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+        <pre class="prettyprint">
+           initialContext = new InitialContext();
+        </pre>
+
+        <li>We look up the JMS queue object from JNDI</li>
+        <pre class="prettyprint">
+           Queue queue = (Queue) initialContext.lookup("/queue/testQueue");
+        </pre>
+
+        <li>We look up the JMS connection factory object from JNDI</li>
+        <pre class="prettyprint">
+           ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
+        </pre>
+
+        <li>We create a JMS connection</li>
+        <pre class="prettyprint">
+           connection = cf.createConnection();
+        </pre>
+
+        <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
+        <pre class="prettyprint">
+           Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        </pre>
+
+        <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
+        <pre class="prettyprint">
+          MessageProducer messageProducer = session.createProducer(queue);
+       </pre>
+
+        <li>We create a JMS text messages that we are going to send.</li>
+        <pre class="prettyprint">
+            TextMessage message = session.createTextMessage("This is a text message");
+        </pre>
+
+        <li>We send messages to the queue</li>
+        <pre class="prettyprint">
+           messageProducer.send(message);
+        </pre>
+        
+        <li>The MDB receives the message<br />
+            We know the message is a TextMessage so we cast to it.
+            </li>
+        <pre class="prettyprint">
+           TextMessage tm = (TextMessage)message;
+        </pre>
+            
+        <li>The MDB gets the text and prints it
+        </li>
+        <pre class="prettyprint">
+            String text = tm.getText();
+            System.out.println("message " + text + " received");
+        </pre>
+
+          <li>Now we can do something within a user transaction, lets just start and commit it
+        </li>
+        <pre class="prettyprint">
+            UserTransaction tx = ctx.getUserTransaction();
+
+             if(tx != null)
+             {
+                tx.begin();
+                System.out.println("we're in the middle of a transaction: " + tx);
+                tx.commit();
+             }            
+        </pre>
+
+        <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre class="prettyprint">
+           <code>finally
+           {
+              if (initialContext != null)
+              {
+                initialContext.close();
+              }
+              if (connection != null)
+              {
+                 connection.close();
+              }
+           }
+        </pre>
+
+
+
+     </ol>
+  </body>
+</html>
