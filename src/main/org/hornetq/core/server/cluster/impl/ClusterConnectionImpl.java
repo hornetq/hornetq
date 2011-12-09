@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.Pair;
@@ -497,6 +498,14 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             catch (Exception e)
             {
                log.warn("Unable to announce backup, retrying", e);
+
+               scheduledExecutor.schedule(new Runnable(){
+                  public void run()
+                  {
+                     announceBackup();
+                  }
+               
+               }, retryInterval, TimeUnit.MILLISECONDS);
             }
          }
       });
