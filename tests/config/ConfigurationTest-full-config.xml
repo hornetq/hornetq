@@ -36,6 +36,7 @@
       <create-bindings-dir>false</create-bindings-dir>
       <journal-directory>somedir2</journal-directory>
       <create-journal-dir>false</create-journal-dir>
+      <page-max-concurrent-io>17</page-max-concurrent-io>
       <journal-type>NIO</journal-type>
       <journal-compact-min-files>123</journal-compact-min-files>
       <journal-compact-percentage>33</journal-compact-percentage>      

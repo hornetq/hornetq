@@ -35,6 +35,14 @@ public interface SequentialFileFactory
    /** The SequentialFile will call this method when a disk IO Error happens during the live phase. */
    void onIOError(int errorCode, String message, SequentialFile file);
 
+   /** used for cases where you need direct buffer outside of the journal context.
+    *  This is because the native layer has a method that can be reused in certain cases like paging */
+   ByteBuffer allocateDirectBuffer(int size);
+   
+   /** used for cases where you need direct buffer outside of the journal context.
+    *  This is because the native layer has a method that can be reused in certain cases like paging */
+   void releaseDirectBuffer(ByteBuffer buffer);
+
    /**
     * Note: You need to release the buffer if is used for reading operations.
     *       You don't need to do it if using writing operations (AIO Buffer Lister will take of writing operations)

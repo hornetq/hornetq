@@ -6,7 +6,9 @@
  *    http://www.apache.org/licenses/LICENSE-2.0
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND   
+   private final Semaphore pageMaxConcurrentIO;
+, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
  */
@@ -31,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 import javax.transaction.xa.Xid;
 
@@ -157,6 +160,8 @@ public class JournalStorageManager implements StorageManager
    public static final byte PAGE_CURSOR_COUNTER_VALUE = 40;
 
    public static final byte PAGE_CURSOR_COUNTER_INC = 41;
+   
+   private final Semaphore pageMaxConcurrentIO;
 
    private final BatchingIDGenerator idGenerator;
 
@@ -167,6 +172,8 @@ public class JournalStorageManager implements StorageManager
    private final Journal bindingsJournal;
 
    private final SequentialFileFactory largeMessagesFactory;
+   
+   private SequentialFileFactory journalFF = null;
 
    private volatile boolean started;
 
@@ -270,8 +277,6 @@ public class JournalStorageManager implements StorageManager
 
       syncTransactional = config.isJournalSyncTransactional();
 
-      SequentialFileFactory journalFF = null;
-
       if (config.getJournalType() == JournalType.ASYNCIO)
       {
          JournalStorageManager.log.info("Using AIO Journal");
@@ -329,6 +334,15 @@ public class JournalStorageManager implements StorageManager
       largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false, criticalErrorListener);
 
       perfBlastPages = config.getJournalPerfBlastPages();
+      
+      if (config.getPageMaxConcurrentIO() != 1)
+      {
+         pageMaxConcurrentIO = new Semaphore(config.getPageMaxConcurrentIO());
+      }
+      else
+      {
+         pageMaxConcurrentIO = null;
+      }
    }
 
    public void clearContext()
@@ -1596,6 +1610,45 @@ public class JournalStorageManager implements StorageManager
       info[1] = messageJournal.loadInternalOnly();
 
       return info;
+   }
+
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#startPageRead()
+    */
+   public void beforePageRead() throws Exception
+   {
+      if (pageMaxConcurrentIO != null)
+      {
+         pageMaxConcurrentIO.acquire();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#finishPageRead()
+    */
+   public void afterPageRead() throws Exception
+   {
+      if (pageMaxConcurrentIO != null)
+      {
+         pageMaxConcurrentIO.release();
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#allocateDirectBuffer(long)
+    */
+   public ByteBuffer allocateDirectBuffer(int size)
+   {
+      return journalFF.allocateDirectBuffer(size);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
+    */
+   public void freeDirectuffer(ByteBuffer buffer)
+   {
+      journalFF.releaseBuffer(buffer);
    }
 
    // Public -----------------------------------------------------------------------------------

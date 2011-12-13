@@ -764,4 +764,19 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#newDirectBuffer(int)
+    */
+   public ByteBuffer allocateDirectBuffer(int size)
+   {
+      return ByteBuffer.allocateDirect(size);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#releaseDirectBuffer(java.nio.ByteBuffer)
+    */
+   public void releaseDirectBuffer(ByteBuffer buffer)
+   {
+   }
+
 }

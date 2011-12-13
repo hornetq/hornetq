@@ -1290,7 +1290,11 @@ public class PageSubscriptionImpl implements PageSubscription
       public void remove()
       {
          deliveredCount.incrementAndGet();
-         PageSubscriptionImpl.this.getPageInfo(position).remove(position);
+         PageCursorInfo info =  PageSubscriptionImpl.this.getPageInfo(position);
+         if (info != null)
+         {
+            info.remove(position);
+         }
       }
 
       /* (non-Javadoc)
