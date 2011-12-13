@@ -671,9 +671,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
          }
          else
          {
-            if (connection != null)
+            CoreRemotingConnection connectionToDestory = connection;
+            if (connectionToDestory != null)
             {
-               connection.destroy();
+               connectionToDestory.destroy();
             }
 
             connection = null;
