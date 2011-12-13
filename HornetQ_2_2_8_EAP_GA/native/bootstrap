@@ -1,4 +1,0 @@
-autoreconf --install
-./configure
-make clean
-make
