@@ -319,6 +319,13 @@
                             <entry>data/paging</entry>
                         </row>
                         <row>
+                            <entry><link linkend="paging.main.config"
+                                >page-max-concurrent-io</link></entry>
+                            <entry>integer</entry>
+                            <entry>The maximum number of concurrent reads the system will do on the paging files</entry>
+                            <entry>5</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="configuring.delivery.count.persistence">
                                     persist-delivery-count-before-delivery</link></entry>
                             <entry>Boolean</entry>
