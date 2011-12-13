@@ -129,6 +129,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean xa;
 
    private final Executor executor;
+   
+   // to be sent to consumers as consumers will need a separate consumer for flow control
+   private final Executor flowControlExecutor;
 
    private volatile CoreRemotingConnection remotingConnection;
 
@@ -228,7 +231,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final CoreRemotingConnection remotingConnection,
                             final int version,
                             final Channel channel,
-                            final Executor executor) throws HornetQException
+                            final Executor executor,
+                            final Executor flowControlExecutor) throws HornetQException
    {
       this.sessionFactory = sessionFactory;
 
@@ -241,6 +245,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.remotingConnection = remotingConnection;
 
       this.executor = executor;
+      
+      this.flowControlExecutor = flowControlExecutor;
 
       this.xa = xa;
 
@@ -1795,6 +1801,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                                 false)
                                                                                   : null,
                                                                executor,
+                                                               flowControlExecutor,
                                                                channel,
                                                                queueInfo,
                                                                lookupTCCL());

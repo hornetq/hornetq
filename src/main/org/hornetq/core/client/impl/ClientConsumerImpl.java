@@ -76,6 +76,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private final boolean browseOnly;
 
    private final Executor sessionExecutor;
+   
+   // For failover we can't send credits back
+   // while holding a lock or failover could dead lock eventually
+   // And we can't use the sessionExecutor as that's being used for message handlers
+   // for that reason we have a separate flowControlExecutor that's using the thread pool 
+   // Which is a OrderedExecutor
+   private final Executor flowControlExecutor;
 
    private final int clientWindowSize;
 
@@ -135,6 +142,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final int ackBatchSize,
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
+                             final Executor flowControlExecutor,
                              final Channel channel,
                              final SessionQueueQueryResponseMessage queueInfo,
                              final ClassLoader contextClassLoader)
@@ -162,6 +170,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.queueInfo = queueInfo;
       
       this.contextClassLoader = contextClassLoader;
+      
+      this.flowControlExecutor = flowControlExecutor;
    }
 
    // ClientConsumer implementation
@@ -846,7 +856,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    private void sendCredits(final int credits)
    {
-      channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+      flowControlExecutor.execute(new Runnable()
+      {
+         public void run()
+         {
+            channel.send(new SessionConsumerFlowCreditMessage(id, credits));
+         }
+      });
    }
 
    private void waitForOnMessageToComplete(boolean waitForOnMessage)
