@@ -105,9 +105,15 @@ public class PrintPages
 
          for (SimpleString store : stores)
          {
-            System.out.println("####################################################################################################");
-            System.out.println("Exploring store " + store);
             PagingStore pgStore = manager.getPageStore(store);
+            String folder = null;
+            
+            if (pgStore != null)
+            {
+               folder = pgStore.getFolder();
+            }
+            System.out.println("####################################################################################################");
+            System.out.println("Exploring store " + store + " folder = " + folder);
             int pgid = (int)pgStore.getFirstPage();
             for (int pg = 0; pg < pgStore.getNumberOfPages(); pg++)
             {

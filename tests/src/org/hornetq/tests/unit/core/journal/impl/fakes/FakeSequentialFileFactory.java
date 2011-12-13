@@ -779,4 +779,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#getDirectory()
+    */
+   public String getDirectory()
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
 }

@@ -63,6 +63,8 @@ public interface SequentialFileFactory
    int getAlignment();
 
    int calculateBlockSize(int bytes);
+   
+   String getDirectory();
 
    void clearBuffer(ByteBuffer buffer);
 

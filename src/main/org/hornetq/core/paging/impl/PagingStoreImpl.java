@@ -269,6 +269,19 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return pageSize;
    }
+   
+   public String getFolder()
+   {
+      SequentialFileFactory factoryUsed = this.fileFactory;
+      if (factoryUsed != null)
+      {
+         return factoryUsed.getDirectory();
+      }
+      else
+      {
+         return null;
+      }
+   }
 
    public boolean isPaging()
    {
