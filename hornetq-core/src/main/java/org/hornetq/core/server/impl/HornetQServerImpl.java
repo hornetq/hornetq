@@ -336,7 +336,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (started)
       {
-         log.debug("Server already started!");
+         log.info("Server already started! Ignoring the call to start.");
          return;
       }
 
@@ -354,12 +354,6 @@ public class HornetQServerImpl implements HornetQServer
          nodeManager = createNodeManager(configuration.getJournalDirectory());
 
          nodeManager.start();
-
-         if (started)
-         {
-            HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
-            return;
-         }
 
          HornetQServerImpl.log.info((configuration.isBackup() ? "backup" : "live") + " server is starting with configuration " +
                                     configuration);
