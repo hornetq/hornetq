@@ -359,7 +359,7 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       this.manager = manager;
    }
 
-       public void start() throws Exception
+   public void start() throws Exception
    {
       synchronized (this)
       {
@@ -368,7 +368,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             return;
          }
 
-
          started = true;
 
          if (!backup)
@@ -376,7 +375,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
             activate();
          }
       }
-
    }
 
    public void flushExecutor()
@@ -435,7 +433,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
                                                       props);
          managementService.sendNotification(notification);
       }
-
 
       if (backupServerLocator != null)
       {
@@ -614,8 +611,6 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          }
          backupServerLocator = null;
       }
-
-
 
       serverLocator = clusterConnector.createServerLocator(true);
 
