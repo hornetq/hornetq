@@ -1097,7 +1097,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    /**
     * @param value the useJNDI to set
     */
-   public void setUseJNDI(final boolean value)
+   public void setUseJNDI(final Boolean value)
    {
       raProperties.setUseJNDI(value);
    }
@@ -1190,7 +1190,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return raProperties.getSetupAttempts();
    }
 
-   public void setSetupAttempts(int setupAttempts)
+   public void setSetupAttempts(Integer setupAttempts)
    {
       if (HornetQResourceAdapter.trace)
       {
@@ -1208,7 +1208,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       return raProperties.getSetupInterval();
    }
 
-   public void setSetupInterval(long interval)
+   public void setSetupInterval(Long interval)
    {
       if (HornetQResourceAdapter.trace)
       {
