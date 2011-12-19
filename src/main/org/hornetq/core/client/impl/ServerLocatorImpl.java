@@ -689,7 +689,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private void removeFromConnecting(ClientSessionFactoryInternal factory)
    {
-      connectingFactories.remove(factory);
+      synchronized (connectingFactories)
+      {
+         connectingFactories.remove(factory);
+      }
    }
 
    private void addToConnecting(ClientSessionFactoryInternal factory)
