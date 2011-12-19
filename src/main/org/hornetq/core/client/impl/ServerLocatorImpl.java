@@ -1417,10 +1417,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
       {
-         for (ClientSessionFactory factory : factories)
+         synchronized (factories)
          {
-            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
-                                                                       actMember.getConnector().getB());
+            for (ClientSessionFactory factory : factories)
+            {
+               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
+                                                                          actMember.getConnector().getB());
+            }
          }
       }
 
@@ -1526,17 +1529,20 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
    }
 
-   public synchronized void factoryClosed(final ClientSessionFactory factory)
+   public void factoryClosed(final ClientSessionFactory factory)
    {
-      factories.remove(factory);
-
-      if (!clusterConnection && factories.isEmpty())
+      synchronized (factories)
       {
-         // Go back to using the broadcast or static list
-
-         receivedTopology = false;
-
-         topologyArray = null;
+         factories.remove(factory);
+   
+         if (!clusterConnection && factories.isEmpty())
+         {
+            // Go back to using the broadcast or static list
+   
+            receivedTopology = false;
+   
+            topologyArray = null;
+         }
       }
    }
 
@@ -1555,7 +1561,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       topology.removeClusterTopologyListener(listener);
    }
 
-   private synchronized void addFactory(ClientSessionFactoryInternal factory)
+   private void addFactory(ClientSessionFactoryInternal factory)
    {
       if (factory == null)
       {
