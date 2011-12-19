@@ -2203,7 +2203,8 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void postAcknowledge(final MessageReference ref)
+   // Protected as testcases may change this behaviour
+   protected void postAcknowledge(final MessageReference ref)
    {
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
@@ -2218,6 +2219,15 @@ public class QueueImpl implements Queue
       final ServerMessage message = ref.getMessage();
 
       boolean durableRef = message.isDurable() && queue.durable;
+
+      try
+      {
+         message.decrementRefCount();
+      }
+      catch (Exception e)
+      {
+         QueueImpl.log.warn("Unable to decrement reference counting", e);
+      }
 
       if (durableRef)
       {
@@ -2249,15 +2259,6 @@ public class QueueImpl implements Queue
                                   e);
             }
          }
-      }
-
-      try
-      {
-         message.decrementRefCount();
-      }
-      catch (Exception e)
-      {
-         QueueImpl.log.warn("Unable to decrement reference counting", e);
       }
    }
 

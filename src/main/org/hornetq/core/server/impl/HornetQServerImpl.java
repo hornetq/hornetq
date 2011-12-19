@@ -1187,6 +1187,15 @@ public class HornetQServerImpl implements HornetQServer
          return "HornetQServerImpl::" + (nodeManager != null ? "serverUUID=" + nodeManager.getUUID() : "");
       }
    }
+   
+   /**
+    * For tests only, don't use this method as it's not part of the API
+    * @param factory
+    */
+   public void replaceQueueFactory(QueueFactory factory)
+   {
+      this.queueFactory = factory;
+   }
 
    // Package protected
    // ----------------------------------------------------------------------------
@@ -1198,26 +1207,6 @@ public class HornetQServerImpl implements HornetQServer
     * Protected so tests can change this behaviour
     * @param backupConnector
     */
-   // protected FailoverManagerImpl createBackupConnectionFailoverManager(final TransportConfiguration backupConnector,
-   // final ExecutorService threadPool,
-   // final ScheduledExecutorService scheduledPool)
-   // {
-   // return new FailoverManagerImpl((ClientSessionFactory)null,
-   // backupConnector,
-   // null,
-   // false,
-   // HornetQClient.DEFAULT_CALL_TIMEOUT,
-   // HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-   // HornetQClient.DEFAULT_CONNECTION_TTL,
-   // 0,
-   // 1.0d,
-   // 0,
-   // 1,
-   // false,
-   // threadPool,
-   // scheduledPool,
-   // null);
-   // }
 
    protected PagingManager createPagingManager()
    {

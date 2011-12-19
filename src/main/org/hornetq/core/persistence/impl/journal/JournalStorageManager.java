@@ -1276,7 +1276,7 @@ public class JournalStorageManager implements StorageManager
       {
          if (msg.getRefCount() == 0)
          {
-            JournalStorageManager.log.debug("Large message: " + msg.getMessageID() +
+            JournalStorageManager.log.info("Large message: " + msg.getMessageID() +
                                             " didn't have any associated reference, file will be deleted");
             msg.decrementDelayDeletionCount();
          }
