@@ -562,12 +562,20 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
    public void onConnection(ClientSessionFactoryInternal sf)
    {
       TopologyMember localMember = getLocalMember();
-      sf.sendNodeAnnounce(localMember.getUniqueEventID(),
-                          manager.getNodeId(),
-                          false,
-                          localMember.getConnector().getA(),
-                          localMember.getConnector().getB());
+      if (localMember != null)
+      {
+         sf.sendNodeAnnounce(localMember.getUniqueEventID(),
+                             manager.getNodeId(),
+                             false,
+                             localMember.getConnector().getA(),
+                             localMember.getConnector().getB());
+      }
+      else
+      {
+         log.warn("LocalMember is not set at on ClusterConnection " + this);
+      }
 
+      // TODO: shouldn't we send the current time here? and change the current topology?
       // sf.sendNodeAnnounce(System.currentTimeMillis(),
       // manager.getNodeId(),
       // false,
