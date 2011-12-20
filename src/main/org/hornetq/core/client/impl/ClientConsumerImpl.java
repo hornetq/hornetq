@@ -335,7 +335,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                if (expired)
                {
                   m.discardBody();
-
+                  
                   session.expire(id, m.getMessageID());
 
                   if (clientWindowSize == 0)
@@ -596,9 +596,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Flow control for the first packet, we will have others
 
-      flowControl(packet.getPacketSize(), false);
-
       ClientLargeMessageInternal currentChunkMessage = (ClientLargeMessageInternal)packet.getLargeMessage();
+
+      currentChunkMessage.setFlowControlSize(packet.getPacketSize());
 
       currentChunkMessage.setDeliveryCount(packet.getDeliveryCount());
 
@@ -621,8 +621,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          currentChunkMessage.setLargeMessageController(currentLargeMessageController);
       }
-
-      currentChunkMessage.setFlowControlSize(0);
 
       handleMessage(currentChunkMessage);
    }
@@ -756,11 +754,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          creditsToSend += messageBytes;
          
-         if (log.isTraceEnabled())
-         {
-            log.trace(this + "::FlowControl::creditsToSend=" + creditsToSend + ", clientWindowSize = " + clientWindowSize + " messageBytes = " + messageBytes);
-         }
-
          if (creditsToSend >= clientWindowSize)
          {
             if (clientWindowSize == 0 && discountSlowConsumer)
@@ -783,9 +776,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             }
             else
             {
-               if (ClientConsumerImpl.trace)
+               if (log.isDebugEnabled())
                {
-                  ClientConsumerImpl.log.trace("Sending " + messageBytes + " from flow-control");
+                  ClientConsumerImpl.log.debug("Sending " + messageBytes + " from flow-control");
                }
 
                final int credits = creditsToSend;
@@ -1013,7 +1006,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Chunk messages will execute the flow control while receiving the chunks
       if (message.getFlowControlSize() != 0)
       {
-         flowControl(message.getFlowControlSize(), true);
+         // on large messages we should discount 1 on the first packets as we need continuity until the last packet
+         flowControl(message.getFlowControlSize(), !message.isLargeMessage());
       }
    }
 
