@@ -974,8 +974,18 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
+   
+   public void testSentWithDuplicateIDBridge() throws Exception
+   {
+      internalTestSentWithDuplicateID(true);
+   }
 
    public void testSentWithDuplicateID() throws Exception
+   {
+      internalTestSentWithDuplicateID(false);
+   }
+
+   private void internalTestSentWithDuplicateID(final boolean isSimulateBridge) throws Exception
    {
       final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
@@ -1001,7 +1011,14 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             Message clientFile = createLargeClientMessage(session, messageSize, true);
 
-            clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID,  someDuplicateInfo.getBytes());
+            if (isSimulateBridge)
+            {
+               clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID,  someDuplicateInfo.getBytes());
+            }
+            else
+            {
+               clientFile.putBytesProperty(Message.HDR_DUPLICATE_DETECTION_ID,  someDuplicateInfo.getBytes());
+            }
 
             producer.send(clientFile);
          }
