@@ -1029,6 +1029,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          
          ClientMessage msg = consumer.receive(10000);
          
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBodyBuffer().readByte());
+         }
+         
          assertNotNull(msg);
          
          msg.acknowledge();

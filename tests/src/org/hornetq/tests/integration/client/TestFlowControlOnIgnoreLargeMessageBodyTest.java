@@ -392,6 +392,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          }
 
          assertFalse(error);
+         assertNull(errorMessage);
       }
       catch (Exception e)
       {

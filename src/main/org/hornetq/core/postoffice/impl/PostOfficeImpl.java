@@ -1198,8 +1198,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          cacheBridge.addToCache(bridgeDupBytes, context.getTransaction());
 
          message.removeProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID);
-         
-         message.decrementRefCount();
 
       }
 
