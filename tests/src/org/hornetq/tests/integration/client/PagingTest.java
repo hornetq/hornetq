@@ -360,6 +360,108 @@ public class PagingTest extends ServiceTestBase
 
    }
 
+   public void testSendOverBlockingNoFlowControl() throws Exception
+   {
+      clearData();
+
+      Configuration config = createDefaultConfig();
+
+      config.setJournalSyncNonTransactional(false);
+
+      
+      HornetQServer server = createServer(true,
+                                          config,
+                                          PagingTest.PAGE_SIZE,
+                                          PagingTest.PAGE_MAX,
+                                          AddressFullMessagePolicy.BLOCK,
+                                          new HashMap<String, AddressSettings>());
+
+      server.start();
+
+      final int messageSize = 10 * 1024;
+
+      final int numberOfMessages = 500;
+
+      try
+      {
+         ServerLocator locator = createInVMNonHALocator();
+
+         locator.setBlockOnNonDurableSend(true);
+         locator.setBlockOnDurableSend(true);
+         locator.setBlockOnAcknowledge(true);
+         locator.setProducerWindowSize(-1);
+         locator.setMinLargeMessageSize(1024 * 1024);
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         ClientSession session = sf.createSession(false, false, false);
+
+         session.createQueue(PagingTest.ADDRESS, PagingTest.ADDRESS, null, true);
+
+         ClientProducer producer = session.createProducer(PagingTest.ADDRESS);
+
+         ClientMessage message = null;
+
+         byte[] body = new byte[messageSize];
+
+         ByteBuffer bb = ByteBuffer.wrap(body);
+
+         for (int j = 1; j <= messageSize; j++)
+         {
+            bb.put(getSamplebyte(j));
+         }
+
+         for (int i = 0; i < numberOfMessages; i++)
+         {
+            message = session.createMessage(true);
+
+            HornetQBuffer bodyLocal = message.getBodyBuffer();
+
+            bodyLocal.writeBytes(body);
+
+            message.putIntProperty(new SimpleString("id"), i);
+
+            producer.send(message);
+
+            if (i % 10 == 0)
+            {
+               session.commit();
+            }
+         }
+         session.commit();
+         
+         session.start();
+         
+         ClientConsumer cons = session.createConsumer(ADDRESS);
+         
+         for (int i = 0 ; i < numberOfMessages; i++)
+         {
+            message = cons.receive(5000);
+            assertNotNull(message);
+            message.acknowledge();
+            
+            if (i % 10 == 0)
+            {
+               session.commit();
+            }
+         }
+         
+         session.commit();
+         
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
    public void testReceiveImmediate() throws Exception
    {
       clearData();
