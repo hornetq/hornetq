@@ -303,17 +303,24 @@ public class QueueImpl implements Queue
 
       this.executor = executor;
 
-      checkQueueSizeFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable()
+      try
       {
-         public void run()
+         checkQueueSizeFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable()
          {
-            // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
-            // is empty
-            // We don't want to evaluate that on every delivery since that's too expensive
-
-            checkDirect = true;
-         }
-      }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
+            public void run()
+            {
+               // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
+               // is empty
+               // We don't want to evaluate that on every delivery since that's too expensive
+   
+               checkDirect = true;
+            }
+         }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
+      }
+      catch (RejectedExecutionException ignored)
+      {
+         // This could happen on a server shutdown
+      }
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
