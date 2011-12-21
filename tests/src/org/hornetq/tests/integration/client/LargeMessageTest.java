@@ -30,6 +30,7 @@ import org.hornetq.api.core.client.*;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.journal.LargeServerMessageImpl;
 import org.hornetq.core.server.HornetQServer;
@@ -73,7 +74,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       return false;
    }
-   
+
    /**
     * 
     */
@@ -92,34 +93,32 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testRollbackPartiallyConsumedBuffer() throws Exception
    {
-      for (int i = 0 ; i < 1; i++)
+      for (int i = 0; i < 1; i++)
       {
          log.info("#test " + i);
          internalTestRollbackPartiallyConsumedBuffer(false);
          tearDown();
          setUp();
-         
+
       }
-      
+
    }
-   
+
    public void testRollbackPartiallyConsumedBufferWithRedeliveryDelay() throws Exception
    {
       internalTestRollbackPartiallyConsumedBuffer(true);
    }
-   
-   
+
    private void internalTestRollbackPartiallyConsumedBuffer(final boolean redeliveryDelay) throws Exception
    {
       final int messageSize = 100 * 1024;
-      
 
       final ClientSession session;
 
       try
       {
          server = createServer(true, isNetty());
-         
+
          AddressSettings settings = new AddressSettings();
          if (redeliveryDelay)
          {
@@ -130,7 +129,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             }
          }
          settings.setMaxDeliveryAttempts(-1);
-         
+
          server.getAddressSettingsRepository().addMatch("#", settings);
 
          server.start();
@@ -143,35 +142,36 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
 
-         for (int i = 0 ; i < 20; i++)
+         for (int i = 0; i < 20; i++)
          {
             Message clientFile = createLargeClientMessage(session, messageSize, true);
-            
+
             clientFile.putIntProperty("value", i);
-   
+
             producer.send(clientFile);
          }
 
          session.commit();
 
          session.start();
-         
+
          final CountDownLatch latch = new CountDownLatch(1);
-         
+
          final AtomicInteger errors = new AtomicInteger(0);
 
          ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS);
-         
+
          consumer.setMessageHandler(new MessageHandler()
          {
             int counter = 0;
+
             public void onMessage(ClientMessage message)
             {
                message.getBodyBuffer().readByte();
                System.out.println("message:" + message);
                try
                {
-                  if (counter ++ <  20)
+                  if (counter++ < 20)
                   {
                      Thread.sleep(100);
                      System.out.println("Rollback");
@@ -183,7 +183,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                      message.acknowledge();
                      session.commit();
                   }
-                  
+
                   if (counter == 40)
                   {
                      latch.countDown();
@@ -197,7 +197,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                }
             }
          });
-         
+
          assertTrue(latch.await(40, TimeUnit.SECONDS));
 
          consumer.close();
@@ -975,6 +975,74 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   public void testSentWithDuplicateID() throws Exception
+   {
+      final int messageSize = 3 * HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true, isNetty());
+
+         server.start();
+
+         ClientSessionFactory sf = locator.createSessionFactory();
+
+         session = sf.createSession(true, true, 0);
+
+         session.createQueue(LargeMessageTest.ADDRESS, LargeMessageTest.ADDRESS, true);
+
+         ClientProducer producer = session.createProducer(LargeMessageTest.ADDRESS);
+
+         String someDuplicateInfo = "Anything";
+
+         for (int i = 0; i < 10; i++)
+         {
+            Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+            clientFile.putBytesProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID,  someDuplicateInfo.getBytes());
+
+            producer.send(clientFile);
+         }
+         
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         
+         session.start();
+         
+         ClientMessage msg = consumer.receive(10000);
+         
+         assertNotNull(msg);
+         
+         msg.acknowledge();
+         
+         assertNull(consumer.receiveImmediate());
+         
+         session.commit();
+         
+         validateNoFilesOnLargeDir();
+         
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
    public void testResendSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
@@ -1728,7 +1796,6 @@ public class LargeMessageTest extends LargeMessageTestBase
                  LargeMessageTest.RECEIVE_WAIT_TIME,
                  100);
    }
-
 
    public void testPageOnLargeMessage() throws Exception
    {
@@ -2600,7 +2667,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
-   
+
    // JBPAPP-6237
    public void testPageOnLargeMessageMultipleQueues() throws Exception
    {
@@ -2754,7 +2821,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
-
    // JBPAPP-6237
    public void testPageOnLargeMessageMultipleQueues2() throws Exception
    {
@@ -2796,7 +2862,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage message = session.createMessage(true);
-            
+
             message.putIntProperty("msgID", msgId++);
 
             message.putBooleanProperty("TestLarge", false);
@@ -2812,7 +2878,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(message);
          }
-
 
          for (int i = 0; i < 10; i++)
          {
@@ -2830,34 +2895,34 @@ public class LargeMessageTest extends LargeMessageTestBase
             ClientConsumer consumer = session.createConsumer(LargeMessageTest.ADDRESS.concat("-" + ad));
 
             session.start();
-            
-            for (int received = 0 ; received < 5; received++)
+
+            for (int received = 0; received < 5; received++)
             {
                for (int i = 0; i < 100; i++)
                {
                   ClientMessage message2 = consumer.receive(LargeMessageTest.RECEIVE_WAIT_TIME);
-   
+
                   Assert.assertNotNull(message2);
-                  
+
                   assertFalse(message2.getBooleanProperty("TestLarge"));
-   
+
                   message2.acknowledge();
-   
+
                   Assert.assertNotNull(message2);
                }
-   
+
                for (int i = 0; i < 10; i++)
                {
                   ClientMessage messageLarge = consumer.receive(RECEIVE_WAIT_TIME);
-   
+
                   Assert.assertNotNull(messageLarge);
-                  
+
                   assertTrue(messageLarge.getBooleanProperty("TestLarge"));
-   
+
                   ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                  
+
                   messageLarge.acknowledge();
-                  
+
                   messageLarge.saveToOutputStream(bout);
                   byte[] body = bout.toByteArray();
                   assertEquals(numberOfBytesBigMessage, body.length);
@@ -2866,7 +2931,7 @@ public class LargeMessageTest extends LargeMessageTestBase
                      assertEquals(getSamplebyte(bi), body[bi]);
                   }
                }
-               
+
                session.rollback();
             }
 
