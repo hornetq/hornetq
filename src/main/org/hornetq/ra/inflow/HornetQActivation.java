@@ -370,9 +370,10 @@ public class HornetQActivation
 
          result.addMetaData("resource-adapter", "inbound");
          result.addMetaData("jms-session", "");
-         if (spec.getClientID() != null)
+         String clientID = ra.getClientID() == null?spec.getClientID():ra.getClientID();
+         if (clientID != null)
          {
-            result.addMetaData("jms-client-id", spec.getClientID());
+            result.addMetaData("jms-client-id", clientID);
          }
 
          HornetQActivation.log.debug("Using queue connection " + result);
