@@ -52,7 +52,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
 
    private static final String ATTR_MSG_COUNTER = "msgIdex";
 
-   protected int receiveTimeout = 2000;
+   protected int receiveTimeout = 10000;
 
    private volatile boolean error = false;
 
@@ -146,6 +146,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          }
          catch (Exception e)
          {
+            error = true;
             e.printStackTrace();
          }
          finally
@@ -256,6 +257,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
                   {
                      if (invalidOrderCounter < 10)
                      {
+                        error = true;
                         System.out.println("Invalid messages order! expected: " + counter +
                                            ", received " +
                                            msg.getIntProperty(TestFlowControlOnIgnoreLargeMessageBodyTest.ATTR_MSG_COUNTER) +
@@ -366,7 +368,7 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
             {
                if (consumer.getReceivedMessages() != TestFlowControlOnIgnoreLargeMessageBodyTest.TOTAL_MESSAGES_COUNT)
                {
-                  errorMessage = "Producer did not send defined count of messages";
+                  errorMessage = "Consumer did not send defined count of messages";
                   break;
                }
             }
@@ -381,6 +383,8 @@ public class TestFlowControlOnIgnoreLargeMessageBodyTest extends JMSTestBase
          {
             System.out.println(" OK ");
          }
+         
+         assertFalse(error);
       }
       catch (Exception e)
       {
