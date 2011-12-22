@@ -89,21 +89,6 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#getLinkedMessage()
-    */
-   public LargeServerMessage getLinkedMessage()
-   {
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
-    */
-   public void setLinkedMessage(final LargeServerMessage message)
-   {
-   }
-
-   /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#isComplete()
     */
    public boolean isComplete()
