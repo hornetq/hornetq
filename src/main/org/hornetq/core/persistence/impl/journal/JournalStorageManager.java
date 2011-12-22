@@ -1746,6 +1746,26 @@ public class JournalStorageManager implements StorageManager
 
       messageEncoding.decode(buff);
 
+      if (largeMessage.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
+      {
+         // for compatibility: couple with old behaviour, copying the old file to avoid message loss
+         long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
+         
+         SequentialFile currentFile = createFileForLargeMessage(largeMessage.getMessageID(), true);
+         
+         if (!currentFile.exists())
+         {
+            SequentialFile linkedFile = createFileForLargeMessage(originalMessageID, true);
+            if (linkedFile.exists())
+            {
+               linkedFile.copyTo(currentFile);
+               linkedFile.close();
+            }
+         }
+         
+         currentFile.close();
+      }
+
       return largeMessage;
    }
 
