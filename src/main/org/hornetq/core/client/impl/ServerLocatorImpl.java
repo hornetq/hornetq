@@ -1289,23 +1289,24 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          connectingFactories.clear();
       }
 
+      Set<ClientSessionFactoryInternal> clonedFactory;
       synchronized (factories)
       {
-         Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
-
-         for (ClientSessionFactory factory : clonedFactory)
-         {
-            if (sendClose)
-            {
-               factory.close();
-            }
-            else
-            {
-               factory.cleanup();
-            }
-         }
+         clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
          factories.clear();
+      }
+
+      for (ClientSessionFactory factory : clonedFactory)
+      {
+         if (sendClose)
+         {
+            factory.close();
+         }
+         else
+         {
+            factory.cleanup();
+         }
       }
 
       if (shutdownPool)
@@ -1420,13 +1421,16 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
       {
+         HashSet<ClientSessionFactory> clonedFactories = new HashSet<ClientSessionFactory>();
          synchronized (factories)
          {
-            for (ClientSessionFactory factory : factories)
-            {
-               ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
-                                                                          actMember.getConnector().getB());
-            }
+            clonedFactories.addAll(factories);
+         }
+
+         for (ClientSessionFactory factory : clonedFactories)
+         {
+            ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
+                                                                       actMember.getConnector().getB());
          }
       }
 
@@ -1571,22 +1575,23 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          return;
       }
 
+      if (isClosed())
+      {
+         factory.close();
+         return;
+      }
+
+      TransportConfiguration backup = null;
+
+      if (ha)
+      {
+         backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+      }
+
+      factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
+
       synchronized (factories)
       {
-         if (isClosed())
-         {
-            factory.close();
-            return;
-         }
-
-         TransportConfiguration backup = null;
-
-         if (ha)
-         {
-            backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
-         }
-
-         factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
          factories.add(factory);
       }
    }
