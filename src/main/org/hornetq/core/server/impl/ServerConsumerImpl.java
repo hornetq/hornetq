@@ -930,7 +930,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
                int localChunkLen = 0;
 
                localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
-
+               
                HornetQBuffer bodyBuffer = HornetQBuffers.fixedBuffer(localChunkLen);
 
                context.encode(bodyBuffer, localChunkLen);

@@ -1746,25 +1746,6 @@ public class JournalStorageManager implements StorageManager
 
       messageEncoding.decode(buff);
 
-      if (largeMessage.containsProperty(Message.HDR_ORIG_MESSAGE_ID))
-      {
-         long originalMessageID = largeMessage.getLongProperty(Message.HDR_ORIG_MESSAGE_ID);
-
-         LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
-
-         if (originalMessage == null)
-         {
-            // this could happen if the message was deleted but the file still exists as the file still being used
-            originalMessage = createLargeMessage();
-            originalMessage.setDurable(true);
-            originalMessage.setMessageID(originalMessageID);
-            messages.put(originalMessageID, originalMessage);
-         }
-
-         originalMessage.incrementDelayDeletionCount();
-
-         largeMessage.setLinkedMessage(originalMessage);
-      }
       return largeMessage;
    }
 

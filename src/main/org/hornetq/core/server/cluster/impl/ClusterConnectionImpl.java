@@ -691,6 +691,9 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
          serverLocator.setBlockOnDurableSend(!useDuplicateDetection);
          serverLocator.setBlockOnNonDurableSend(!useDuplicateDetection);
          serverLocator.setCallTimeout(callTimeout);
+         
+         // No producer flow control on the bridges, as we don't want to lock the queues
+         serverLocator.setProducerWindowSize(-1);
 
          if (retryInterval > 0)
          {
@@ -929,6 +932,9 @@ public class ClusterConnectionImpl implements ClusterConnection, AfterConnectInt
       targetLocator.setMaxRetryInterval(maxRetryInterval);
       targetLocator.setRetryIntervalMultiplier(retryIntervalMultiplier);
       targetLocator.setMinLargeMessageSize(minLargeMessageSize);
+
+      // No producer flow control on the bridges, as we don't want to lock the queues
+      targetLocator.setProducerWindowSize(-1);
 
       targetLocator.setAfterConnectionInternalListener(this);
 
