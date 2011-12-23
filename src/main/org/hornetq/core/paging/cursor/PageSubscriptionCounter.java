@@ -44,5 +44,8 @@ public interface PageSubscriptionCounter
     * @param variance
     */
    void addInc(long id, int variance);
+   
+   // used when deleting the counter
+   void delete() throws Exception;
 
 }

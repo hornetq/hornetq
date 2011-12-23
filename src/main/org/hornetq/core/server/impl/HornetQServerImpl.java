@@ -977,11 +977,6 @@ public class HornetQServerImpl implements HornetQServer
 
       Queue queue = (Queue)binding.getBindable();
 
-      if (queue.getPageSubscription() != null)
-      {
-         queue.getPageSubscription().close();
-      }
-
       if (queue.getConsumerCount() != 0)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue " + queue.getName() +
@@ -1004,14 +999,27 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
+      postOffice.removeBinding(queueName);
+
       queue.deleteAllReferences();
 
       if (queue.isDurable())
       {
          storageManager.deleteQueueBinding(queue.getID());
       }
+      
 
-      postOffice.removeBinding(queueName);
+      if (queue.getPageSubscription() != null)
+      {
+         queue.getPageSubscription().close();
+      }
+      
+      PageSubscription subs = queue.getPageSubscription();
+      
+      if (subs != null)
+      {
+         subs.cleanupEntries(true);
+      }
    }
 
    public synchronized void registerActivateCallback(final ActivateCallback callback)

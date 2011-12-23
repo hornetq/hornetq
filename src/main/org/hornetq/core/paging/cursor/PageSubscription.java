@@ -58,7 +58,7 @@ public interface PageSubscription
 
    void scheduleCleanupCheck();
 
-   void cleanupEntries() throws Exception;
+   void cleanupEntries(boolean completeDelete) throws Exception;
 
    void disableAutoCleanup();
 
