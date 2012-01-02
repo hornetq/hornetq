@@ -35,7 +35,6 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.spi.core.security.HornetQSecurityManager;
 import org.hornetq.spi.core.security.HornetQSecurityManagerImpl;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -72,7 +71,8 @@ public class JMSServerStartStopTest extends UnitTestCase
 
          start();
 
-         HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+         HornetQConnectionFactory jbcf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                     new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
          jbcf.setBlockOnDurableSend(true);
          jbcf.setBlockOnNonDurableSend(true);
@@ -99,7 +99,8 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       start();
 
-      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                  new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
       jbcf.setBlockOnDurableSend(true);
       jbcf.setBlockOnNonDurableSend(true);
@@ -129,22 +130,25 @@ public class JMSServerStartStopTest extends UnitTestCase
 
       stop();
    }
-   
+
    // https://jira.jboss.org/jira/browse/HORNETQ-315
    public void testCloseConnectionAfterServerIsShutdown() throws Exception
    {
       start();
-      
-      HornetQConnectionFactory jbcf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
+
+      HornetQConnectionFactory jbcf = (HornetQConnectionFactory)HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF,
+                                                                                                                  new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
 
       jbcf.setBlockOnDurableSend(true);
       jbcf.setBlockOnNonDurableSend(true);
       jbcf.setReconnectAttempts(-1);
-      
+
       Connection conn = jbcf.createConnection();
-      
+
       stop();
       
+      Thread.sleep(1000);
+
       conn.close();
    }
 
@@ -161,7 +165,10 @@ public class JMSServerStartStopTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      liveJMSServer.stop();
+      if (liveJMSServer != null)
+      {
+         liveJMSServer.stop();
+      }
       liveJMSServer = null;
       super.tearDown();
    }
@@ -180,7 +187,7 @@ public class JMSServerStartStopTest extends UnitTestCase
       fc.setConfigurationUrl("server-start-stop-config1.xml");
 
       fc.start();
-      
+
       fc.setJournalDirectory(getJournalDir());
       fc.setBindingsDirectory(getBindingsDir());
       fc.setLargeMessagesDirectory(getLargeMessagesDir());
