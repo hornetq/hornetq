@@ -16,17 +16,8 @@ package org.hornetq.tests.unit.ra;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 
 import javax.jms.Connection;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.UnavailableException;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.ExecutionContext;
-import javax.resource.spi.work.Work;
-import javax.resource.spi.work.WorkException;
-import javax.resource.spi.work.WorkListener;
-import javax.resource.spi.work.WorkManager;
 
 import junit.framework.Assert;
 
