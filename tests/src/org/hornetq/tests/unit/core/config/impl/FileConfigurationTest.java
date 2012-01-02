@@ -70,6 +70,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       Assert.assertEquals("pagingdir", conf.getPagingDirectory());
       Assert.assertEquals("somedir", conf.getBindingsDirectory());
       Assert.assertEquals(false, conf.isCreateBindingsDir());
+      
+      Assert.assertEquals(17, conf.getPageMaxConcurrentIO());
       Assert.assertEquals("somedir2", conf.getJournalDirectory());
       Assert.assertEquals(false, conf.isCreateJournalDir());
       Assert.assertEquals(JournalType.NIO, conf.getJournalType());

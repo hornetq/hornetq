@@ -13,6 +13,7 @@
 
 package org.hornetq.core.server;
 
+
 /**
  * A LargeMessage
  *
@@ -26,9 +27,6 @@ public interface LargeServerMessage extends ServerMessage
 {
    void addBytes(byte[] bytes) throws Exception;
 
-   /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
-   void setLinkedMessage(LargeServerMessage message);
-   
    void setPendingRecordID(long pendingRecordID);
    
    long getPendingRecordID();

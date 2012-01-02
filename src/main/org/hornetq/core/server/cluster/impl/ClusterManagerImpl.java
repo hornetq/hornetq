@@ -471,6 +471,14 @@ public class ClusterManagerImpl implements ClusterManagerInternal
       serverLocator.setBlockOnDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setBlockOnNonDurableSend(!config.isUseDuplicateDetection());
       serverLocator.setMinLargeMessageSize(config.getMinLargeMessageSize());
+      //disable flow control
+      serverLocator.setProducerWindowSize(-1);
+
+      // This will be set to 30s unless it's changed from embedded / testing
+      // there is no reason to exception the config for this timeout 
+      // since the Bridge is supposed to be non-blocking and fast
+      // We may expose this if we find a good use case
+      serverLocator.setCallTimeout(config.getCallTimeout());
       if (!config.isUseDuplicateDetection())
       {
          log.debug("Bridge " + config.getName() +

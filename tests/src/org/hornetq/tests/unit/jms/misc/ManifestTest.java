@@ -75,7 +75,7 @@ public class ManifestTest extends UnitTestCase
          Attributes attrs = manifest.getMainAttributes();
 
          Assert.assertEquals(meta.getProviderVersion(), attrs.getValue("HornetQ-Version"));
-         Assert.assertEquals("https://svn.jboss.org/repos/hornetq/branches/Branch_2_2_EAP", attrs.getValue("HornetQ-SVN-URL"));
+         Assert.assertEquals("https://svn.jboss.org/repos/hornetq/branches/Branch_2_2_AS7", attrs.getValue("HornetQ-SVN-URL"));
       }
       finally
       {

@@ -85,7 +85,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          HornetQRAConnectionMetaData.log.trace("getJMSMinorVersion()");
       }
 
-      return 1;
+      return 2;
    }
 
    /**

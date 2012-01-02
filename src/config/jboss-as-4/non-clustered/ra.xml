@@ -271,7 +271,7 @@ Copyright 2009 Red Hat, Inc.
       <config-property>
          <description>whether to use jndi for looking up destinations etc</description>
          <config-property-name>UseJNDI</config-property-name>
-         <config-property-type>boolean</config-property-type>
+         <config-property-type>java.lang.Boolean</config-property-type>
          <config-property-value></config-property-value>
       </config-property>
       <config-property>

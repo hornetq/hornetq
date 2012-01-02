@@ -99,6 +99,17 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
    {
       return timedBuffer != null;
    }
+   
+   
+   public ByteBuffer allocateDirectBuffer(final int size)
+   {
+      return ByteBuffer.allocateDirect(size);
+   }
+   
+   public void releaseDirectBuffer(ByteBuffer buffer)
+   {
+      // nothing we can do on this case. we can just have good faith on GC
+   }
 
    public ByteBuffer newBuffer(final int size)
    {

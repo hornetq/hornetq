@@ -52,6 +52,7 @@
             ...
             
             &lt;paging-directory>/somewhere/paging-directory&lt;/paging-directory>
+            &lt;page-max-concurrent-io>/5&lt;/paging-directory>
             
             ...        </programlisting>
         <para>
@@ -74,6 +75,12 @@
                             <entry>Where page files are stored. HornetQ will create one folder for
                                 each address being paged under this configured location.</entry>
                             <entry>data/paging</entry>
+                        </row>
+                       <row>
+                            <entry><literal>page-max-concurrent-io</literal></entry>
+                            <entry>The maximum number of concurrent reads the system can make on paged files. You may increase this parameter depending on 
+                                   the expected number of paged destinations and the limits you have on your disk</entry>
+                            <entry>5</entry>
                         </row>
                     </tbody>
                 </tgroup>

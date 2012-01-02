@@ -19,7 +19,14 @@ import junit.framework.Assert;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.MessageHandler;
+import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -82,6 +89,108 @@ public class AcknowledgeTest extends ServiceTestBase
          }
       }
    }
+   
+   
+   /**
+    * This is validating a case where a consumer will try to ack a message right after failover, but the consumer at the target server didn't
+    * receive the message yet.
+    * on that case the system should rollback any acks done and redeliver any messages
+    */
+   public void testInvalidACK() throws Exception
+   {
+      HornetQServer server = createServer(false);
+      try
+      {
+         server.start();
+         
+         ServerLocator locator = createInVMNonHALocator();
+         
+         locator.setAckBatchSize(0);
+         
+         locator.setBlockOnAcknowledge(true);
+         
+         ClientSessionFactory cf = locator.createSessionFactory();
+         
+         
+         int numMessages = 100;
+         
+         ClientSession sessionConsumer = cf.createSession(true, true, 0); 
+         
+         sessionConsumer.start();
+         
+         sessionConsumer.createQueue(addressA, queueA, true);
+         
+         ClientConsumer consumer = sessionConsumer.createConsumer(queueA);
+
+         // sending message
+         {
+            ClientSession sendSession = cf.createSession(false, true, true);
+            
+            ClientProducer cp = sendSession.createProducer(addressA);
+            
+            for (int i = 0; i < numMessages; i++)
+            {
+               ClientMessage msg = sendSession.createMessage(true);
+               msg.putIntProperty("seq", i);
+               cp.send(msg);
+            }
+   
+            sendSession.close();
+         }
+         
+         {
+            
+            ClientMessage msg = consumer.receive(5000);
+
+            // need to way some time before all the possible references are sent to the consumer
+            // as we need to guarantee the order on cancellation on this test
+            Thread.sleep(1000);
+
+            try
+            {
+               // pretending to be an unbehaved client doing an invalid ack right after failover
+               ((ClientSessionInternal)sessionConsumer).acknowledge(0, 12343);
+               fail("supposed to throw an exception here");
+            }
+            catch (Exception e)
+            {
+            }
+
+            try
+            {
+               // pretending to be an unbehaved client doing an invalid ack right after failover
+               ((ClientSessionInternal)sessionConsumer).acknowledge(3, 12343);
+               fail("supposed to throw an exception here");
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+            
+            consumer.close();
+            
+            consumer = sessionConsumer.createConsumer(queueA);
+            
+            
+            for (int i = 0 ; i < numMessages; i++)
+            {
+               msg = consumer.receive(5000);
+               assertNotNull(msg);
+               assertEquals(i, msg.getIntProperty("seq").intValue());
+               msg.acknowledge();
+            }
+         }
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
+   
 
    public void testAsyncConsumerNoAck() throws Exception
    {

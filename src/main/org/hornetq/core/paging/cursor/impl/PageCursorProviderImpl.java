@@ -183,6 +183,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
             {
                page = pagingStore.createPage((int)pageId);
 
+               storageManager.beforePageRead();
                page.open();
 
                List<PagedMessage> pgdMessages = page.read(storageManager);
@@ -200,6 +201,7 @@ public class PageCursorProviderImpl implements PageCursorProvider
                catch (Throwable ignored)
                {
                }
+               storageManager.afterPageRead();
                cache.unlock();
             }
          }
@@ -455,8 +457,26 @@ public class PageCursorProviderImpl implements PageCursorProvider
                // The page is not on cache any more
                // We need to read the page-file before deleting it
                // to make sure we remove any large-messages pending
-               depagedPage.open();
-               List<PagedMessage> pgdMessagesList = depagedPage.read(storageManager);
+               storageManager.beforePageRead();
+               
+               List<PagedMessage> pgdMessagesList = null;
+               try
+               {
+                  depagedPage.open();
+                  pgdMessagesList = depagedPage.read(storageManager);
+               }
+               finally
+               {
+                  try
+                  {
+                     depagedPage.close();
+                  }
+                  catch (Exception e)
+                  {
+                  }
+                  
+                  storageManager.afterPageRead();
+               }
                depagedPage.close();
                pgdMessages = pgdMessagesList.toArray(new PagedMessage[pgdMessagesList.size()]);
             }

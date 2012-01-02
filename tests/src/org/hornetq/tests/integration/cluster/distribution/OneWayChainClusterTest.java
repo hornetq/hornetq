@@ -360,7 +360,16 @@ public class OneWayChainClusterTest extends ClusterTestBase
       assertEquals(1, connectionSet.size());
       ClusterConnectionImpl ccon = (ClusterConnectionImpl) connectionSet.iterator().next();
 
-      Map<String, MessageFlowRecord> records =  ccon.getRecords();
+      long timeout = System.currentTimeMillis() + 5000;
+      Map<String, MessageFlowRecord> records = null;
+      while (timeout > System.currentTimeMillis())
+      {
+         records =  ccon.getRecords();
+         if (records != null && records.size() == 1)
+         {
+            break;
+         }
+      }
       assertNotNull(records);
       assertEquals(records.size(), 1);
       getServer(1).getClusterManager().getClusterConnections();

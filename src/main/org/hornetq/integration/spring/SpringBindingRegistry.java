@@ -1,6 +1,7 @@
 package org.hornetq.integration.spring;
 
 import org.hornetq.spi.core.naming.BindingRegistry;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 
 /**
@@ -18,7 +19,14 @@ public class SpringBindingRegistry implements BindingRegistry
 
    public Object lookup(String name)
    {
-      return factory.getBean(name);
+      try
+      {
+         return factory.getBean(name);
+      }
+      catch (NoSuchBeanDefinitionException e)
+      {
+         return null;
+      }
    }
 
    public boolean bind(String name, Object obj)

@@ -1181,6 +1181,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage.toString()));
             }
+            
+            message.decrementRefCount();
 
             return false;
          }
@@ -1196,6 +1198,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          cacheBridge.addToCache(bridgeDupBytes, context.getTransaction());
 
          message.removeProperty(MessageImpl.HDR_BRIDGE_DUPLICATE_ID);
+
       }
 
       byte[] duplicateIDBytes = message.getDuplicateIDBytes();
@@ -1219,6 +1222,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                context.getTransaction().markAsRollbackOnly(new HornetQException(HornetQException.DUPLICATE_ID_REJECTED, warnMessage));
             }
+            
+            message.decrementRefCount();
 
             return false;
          }

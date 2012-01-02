@@ -43,6 +43,8 @@ public interface PagingStore extends HornetQComponent
    int getCurrentWritingPage();
 
    SimpleString getStoreName();
+   
+   String getFolder();
 
    AddressFullMessagePolicy getAddressFullMessagePolicy();
    

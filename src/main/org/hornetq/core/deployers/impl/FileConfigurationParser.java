@@ -424,6 +424,12 @@ public class FileConfigurationParser
                                                                 "journal-directory",
                                                                 config.getJournalDirectory(),
                                                                 Validators.NOT_NULL_OR_EMPTY));
+      
+      
+      config.setPageMaxConcurrentIO(XMLConfigurationUtil.getInteger(e,
+                                                                    "page-max-concurrent-io",
+                                                                    5,
+                                                                    Validators.MINUS_ONE_OR_GT_ZERO));
 
       config.setPagingDirectory(XMLConfigurationUtil.getString(e,
                                                                "paging-directory",

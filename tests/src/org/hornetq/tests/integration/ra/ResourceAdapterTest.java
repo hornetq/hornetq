@@ -12,16 +12,16 @@
  */
 package org.hornetq.tests.integration.ra;
 
-import org.hornetq.jms.client.HornetQConnectionFactory;
-import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.inflow.HornetQActivation;
-import org.hornetq.ra.inflow.HornetQActivationSpec;
-import org.hornetq.tests.util.UnitTestCase;
+import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
-import java.lang.reflect.Method;
-import java.util.concurrent.CountDownLatch;
+
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

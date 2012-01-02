@@ -143,7 +143,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    /**
     * @param value the useJNDI to set
     */
-   public void setUseJNDI(final boolean value)
+   public void setUseJNDI(final Boolean value)
    {
       useJNDI = value;
    }
@@ -216,7 +216,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       return setupAttempts;
    }
 
-   public void setSetupAttempts(int setupAttempts)
+   public void setSetupAttempts(Integer setupAttempts)
    {
       this.setupAttempts = setupAttempts;
    }
@@ -226,7 +226,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
       return setupInterval;
    }
 
-   public void setSetupInterval(long setupInterval)
+   public void setSetupInterval(Long setupInterval)
    {
       this.setupInterval = setupInterval;
    }

@@ -111,6 +111,11 @@ public abstract class AbstractSequentialFileFactory implements SequentialFileFac
          }
       }
    }
+   
+   public String getDirectory()
+   {
+      return journalDir;
+   }
 
    public void start()
    {

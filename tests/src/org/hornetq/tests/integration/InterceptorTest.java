@@ -19,6 +19,7 @@ import org.hornetq.api.core.Interceptor;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.*;
+import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
@@ -127,15 +128,37 @@ public class InterceptorTest extends ServiceTestBase
    {
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
+         if (isForceDeliveryResponse(packet))
+         {
+            return true;
+         }
+         
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             return false;
          }
-
+         
          return true;
       }
 
    }
+   /**
+    * @param packet
+    */
+   private boolean isForceDeliveryResponse(final Packet packet)
+   {
+      if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
+      {
+         SessionReceiveMessage msg = (SessionReceiveMessage) packet;
+         if (msg.getMessage().containsProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE))
+         {
+            return true;
+         }
+      }
+      
+      return false;
+   }
+
 
    private class MyInterceptor5 implements Interceptor
    {
@@ -224,6 +247,12 @@ public class InterceptorTest extends ServiceTestBase
 
       public boolean intercept(final Packet packet, final RemotingConnection connection) throws HornetQException
       {
+         
+         if (isForceDeliveryResponse(packet))
+         {
+            return true;
+         }
+         
          if (packet.getType() == PacketImpl.SESS_RECEIVE_MSG)
          {
             SessionReceiveMessage p = (SessionReceiveMessage)packet;
@@ -262,6 +291,8 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
+         
+         message.putIntProperty("count", i);
 
          message.putStringProperty(InterceptorTest.key, "apple");
 
@@ -275,7 +306,11 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
-
+         
+         assertNotNull(message);
+         
+         assertEquals(i, message.getIntProperty("count").intValue());
+         
          Assert.assertEquals("orange", message.getStringProperty(InterceptorTest.key));
       }
 
@@ -413,7 +448,7 @@ public class InterceptorTest extends ServiceTestBase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = session.createMessage(false);
-
+         
          producer.send(message);
       }
 
@@ -422,7 +457,7 @@ public class InterceptorTest extends ServiceTestBase
       session.start();
 
       ClientMessage message = consumer.receive(100);
-
+      
       Assert.assertNull(message);
 
       session.close();

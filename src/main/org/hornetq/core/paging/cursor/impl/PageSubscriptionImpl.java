@@ -201,7 +201,7 @@ public class PageSubscriptionImpl implements PageSubscription
             {
                try
                {
-                  cleanupEntries();
+                  cleanupEntries(false);
                }
                catch (Exception e)
                {
@@ -215,8 +215,12 @@ public class PageSubscriptionImpl implements PageSubscription
    /** 
     * It will cleanup all the records for completed pages
     * */
-   public void cleanupEntries() throws Exception
+   public void cleanupEntries(final boolean completeDelete) throws Exception
    {
+      if (completeDelete)
+      {
+         counter.delete();
+      }
       Transaction tx = new TransactionImpl(store);
 
       boolean persist = false;
@@ -292,7 +296,10 @@ public class PageSubscriptionImpl implements PageSubscription
                      }
                   }
 
-                  cursorProvider.scheduleCleanup();
+                  if (!completeDelete) 
+                  {
+                     cursorProvider.scheduleCleanup();
+                  }
                }
             });
          }
@@ -1290,7 +1297,11 @@ public class PageSubscriptionImpl implements PageSubscription
       public void remove()
       {
          deliveredCount.incrementAndGet();
-         PageSubscriptionImpl.this.getPageInfo(position).remove(position);
+         PageCursorInfo info =  PageSubscriptionImpl.this.getPageInfo(position);
+         if (info != null)
+         {
+            info.remove(position);
+         }
       }
 
       /* (non-Javadoc)

@@ -303,17 +303,24 @@ public class QueueImpl implements Queue
 
       this.executor = executor;
 
-      checkQueueSizeFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable()
+      try
       {
-         public void run()
+         checkQueueSizeFuture = scheduledExecutor.scheduleWithFixedDelay(new Runnable()
          {
-            // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
-            // is empty
-            // We don't want to evaluate that on every delivery since that's too expensive
-
-            checkDirect = true;
-         }
-      }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
+            public void run()
+            {
+               // This flag is periodically set to true. This enables the directDeliver flag to be set to true if the queue
+               // is empty
+               // We don't want to evaluate that on every delivery since that's too expensive
+   
+               checkDirect = true;
+            }
+         }, CHECK_QUEUE_SIZE_PERIOD, CHECK_QUEUE_SIZE_PERIOD, TimeUnit.MILLISECONDS);
+      }
+      catch (RejectedExecutionException ignored)
+      {
+         // This could happen on a server shutdown
+      }
    }
 
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -2203,7 +2210,8 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void postAcknowledge(final MessageReference ref)
+   // Protected as testcases may change this behaviour
+   protected void postAcknowledge(final MessageReference ref)
    {
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
@@ -2218,6 +2226,15 @@ public class QueueImpl implements Queue
       final ServerMessage message = ref.getMessage();
 
       boolean durableRef = message.isDurable() && queue.durable;
+
+      try
+      {
+         message.decrementRefCount();
+      }
+      catch (Exception e)
+      {
+         QueueImpl.log.warn("Unable to decrement reference counting", e);
+      }
 
       if (durableRef)
       {
@@ -2249,15 +2266,6 @@ public class QueueImpl implements Queue
                                   e);
             }
          }
-      }
-
-      try
-      {
-         message.decrementRefCount();
-      }
-      catch (Exception e)
-      {
-         QueueImpl.log.warn("Unable to decrement reference counting", e);
       }
    }
 
@@ -2328,6 +2336,10 @@ public class QueueImpl implements Queue
 
          for (MessageReference ref : refsToAck)
          {
+            if (log.isTraceEnabled())
+            {
+            	log.trace("rolling back " + ref);
+            }
             try
             {
                if (ref.getQueue().checkRedelivery(ref, timeBase))

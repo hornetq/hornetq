@@ -572,11 +572,19 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             producer.send(dest, message);
          }
-         catch (HornetQException e)
+         catch (final HornetQException e)
          {
             log.warn("Unable to send message " + ref + ", will try again once bridge reconnects", e);
 
             refs.remove(ref);
+            
+            executor.execute(new Runnable()
+            {
+               public void run()
+               {
+                  connectionFailed(e, false);
+               }
+            });
 
             return HandleStatus.BUSY;
          }

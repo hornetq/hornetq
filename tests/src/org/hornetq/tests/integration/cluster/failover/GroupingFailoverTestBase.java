@@ -47,6 +47,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       try
       {
          startServers(2, 0, 1);
+         waitForTopology(servers[0], 2);
+         waitForTopology(servers[1], 2);
+         waitForTopology(servers[2], 2);
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
 
@@ -124,6 +127,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       try
       {
          startServers(2, 0, 1);
+         waitForTopology(servers[0], 2);
+         waitForTopology(servers[1], 2);
+         waitForTopology(servers[2], 2);
 
          setupSessionFactory(0, isNetty());
 

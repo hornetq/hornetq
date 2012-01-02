@@ -59,6 +59,8 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception;
 
+   void preHandleFailover(CoreRemotingConnection connection);
+
    void handleFailover(CoreRemotingConnection backupConnection);
 
    RemotingConnection getConnection();
@@ -92,5 +94,4 @@ public interface ClientSessionInternal extends ClientSession
    void setPacketSize(int packetSize);
 
    void resetIfNeeded() throws HornetQException;
-
 }

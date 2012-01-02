@@ -33,13 +33,15 @@ import javax.jms.Topic;
 import junit.framework.Assert;
 
 import org.hornetq.api.core.TransportConfiguration;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.management.JMSConnectionInfo;
 import org.hornetq.api.jms.management.JMSConsumerInfo;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.api.jms.management.JMSSessionInfo;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -47,11 +49,17 @@ import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
+import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQMessage;
-import org.hornetq.jms.client.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
+import org.hornetq.jms.server.management.JMSManagementService;
+import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
 import org.hornetq.tests.integration.management.ManagementTestBase;
+import org.hornetq.tests.unit.ra.MessageEndpointFactory;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.RandomUtil;
 
@@ -455,6 +463,173 @@ public class JMSServerControl2Test extends ManagementTestBase
             if (serverManager != null)
             {
                serverManager.destroyQueue(queueName);
+               serverManager.stop();
+            }
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+
+
+   public void testStartActivationListConnections() throws Exception
+   {
+      try
+      {
+         startHornetQServer(InVMAcceptorFactory.class.getName());
+         HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+         serverManager.createQueue(false, "test", null, true, "test");
+
+         JMSServerControl control = createManagementControl();
+
+         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+
+         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+         ra.setUserName("userGlobal");
+         ra.setPassword("passwordGlobal");
+         ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
+         ra.setClientID("my-client-id");
+         ra.setUserName("user");
+         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
+
+         conn.close();
+
+         HornetQActivationSpec spec = new HornetQActivationSpec();
+
+         spec.setResourceAdapter(ra);
+
+         spec.setUseJNDI(false);
+
+         spec.setPassword("password");
+
+         spec.setDestinationType("Topic");
+         spec.setDestination("test");
+
+         spec.setMinSession(1);
+         spec.setMaxSession(1);
+
+         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+
+         activation.start();
+
+         String cons = control.listConnectionsAsJSON();
+
+         JMSConnectionInfo[] jmsConnectionInfos = JMSConnectionInfo.from(cons);
+
+         assertEquals(1, jmsConnectionInfos.length);
+
+         assertEquals("user", jmsConnectionInfos[0].getUsername());
+
+         assertEquals("my-client-id", jmsConnectionInfos[0].getClientID());
+
+         activation.stop();
+
+         ra.stop();
+
+      }
+      finally
+      {
+         try
+         {
+            /*if (connection != null)
+            {
+               connection.close();
+            }*/
+
+            if (serverManager != null)
+            {
+               //serverManager.destroyQueue(queueName);
+               serverManager.stop();
+            }
+         }
+         catch (Throwable ignored)
+         {
+            ignored.printStackTrace();
+         }
+
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+   }
+
+   public void testStartActivationOverrideListConnections() throws Exception
+   {
+      try
+      {
+         startHornetQServer(InVMAcceptorFactory.class.getName());
+         HornetQDestination queue = (HornetQDestination)HornetQJMSClient.createQueue("test");
+         serverManager.createQueue(false, "test", null, true, "test");
+
+         JMSServerControl control = createManagementControl();
+
+         HornetQResourceAdapter ra = new HornetQResourceAdapter();
+
+         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
+         ra.setUserName("userGlobal");
+         ra.setPassword("passwordGlobal");
+         ra.start(new org.hornetq.tests.unit.ra.BootstrapContext());
+
+         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
+
+         conn.close();
+
+         HornetQActivationSpec spec = new HornetQActivationSpec();
+
+         spec.setResourceAdapter(ra);
+
+         spec.setUseJNDI(false);
+
+         spec.setClientId("my-client-id");
+
+         spec.setUser("user");
+         spec.setPassword("password");
+
+         spec.setDestinationType("Topic");
+         spec.setDestination("test");
+
+         spec.setMinSession(1);
+         spec.setMaxSession(1);
+
+         HornetQActivation activation = new HornetQActivation(ra, new MessageEndpointFactory(), spec);
+
+         activation.start();
+
+         String cons = control.listConnectionsAsJSON();
+
+         JMSConnectionInfo[] jmsConnectionInfos = JMSConnectionInfo.from(cons);
+
+         assertEquals(1, jmsConnectionInfos.length);
+
+         assertEquals("user", jmsConnectionInfos[0].getUsername());
+
+         assertEquals("my-client-id", jmsConnectionInfos[0].getClientID());
+
+         activation.stop();
+
+         ra.stop();
+
+      }
+      finally
+      {
+         try
+         {
+            /*if (connection != null)
+            {
+               connection.close();
+            }*/
+
+            if (serverManager != null)
+            {
+               //serverManager.destroyQueue(queueName);
                serverManager.stop();
             }
          }

@@ -298,6 +298,12 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (String)proxy.invokeOperation("listConsumersAsJSON");
          }
+
+         public void removeJNDI(String jndi) throws Exception
+         {
+            // TODO Auto-generated method stub
+            
+         }
       };
    }
 

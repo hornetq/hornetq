@@ -271,19 +271,19 @@ Copyright 2009 Red Hat, Inc.
       <config-property>
          <description>whether to use jndi for looking up destinations etc</description>
          <config-property-name>UseJNDI</config-property-name>
-         <config-property-type>boolean</config-property-type>
+         <config-property-type>java.lang.Boolean</config-property-type>
          <config-property-value></config-property-value>
       </config-property>
       <config-property>
          <description>how long in milliseconds to wait before retry on failed MDB setup</description>
          <config-property-name>SetupInterval</config-property-name>
-         <config-property-type>long</config-property-type>
+         <config-property-type>java.lang.Long</config-property-type>
          <config-property-value></config-property-value>
       </config-property>
       <config-property>
          <description>How many attempts should be made when connecting the MDB</description>
          <config-property-name>SetupAttempts</config-property-name>
-         <config-property-type>int</config-property-type>
+         <config-property-type>java.lang.Integer</config-property-type>
          <config-property-value></config-property-value>
       </config-property>-->
 

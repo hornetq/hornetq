@@ -37,6 +37,8 @@ public class InVMNodeManager extends NodeManager
 
    public State state = NOT_STARTED;
 
+   public long failoverPause = 0l;
+
    public InVMNodeManager()
    {
       liveLock = new Semaphore(1);
@@ -73,6 +75,10 @@ public class InVMNodeManager extends NodeManager
          }
       }
       while (true);
+      if(failoverPause > 0l)
+      {
+         Thread.sleep(failoverPause);
+      }
    }
 
    @Override

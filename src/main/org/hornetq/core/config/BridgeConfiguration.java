@@ -68,6 +68,10 @@ public class BridgeConfiguration implements Serializable
    private final long maxRetryInterval;
 
    private final int minLargeMessageSize;
+   
+   // At this point this is only changed on testcases
+   // The bridge shouldn't be sending blocking anyways
+   private long callTimeout = HornetQClient.DEFAULT_CALL_TIMEOUT;
 
    /**
     *  For backward compatibility on the API... no MinLargeMessage on this constructor
@@ -445,4 +449,26 @@ public class BridgeConfiguration implements Serializable
    {
       this.password = password;
    }
+   
+
+   /**
+    * @return the callTimeout
+    */
+   public long getCallTimeout()
+   {
+      return callTimeout;
+   }
+
+   /**
+    * 
+    * At this point this is only changed on testcases
+    * The bridge shouldn't be sending blocking anyways
+    * @param callTimeout the callTimeout to set
+    */
+   public void setCallTimeout(long callTimeout)
+   {
+      this.callTimeout = callTimeout;
+   }
+
+
 }

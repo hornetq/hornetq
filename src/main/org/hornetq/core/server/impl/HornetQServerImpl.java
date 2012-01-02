@@ -318,6 +318,12 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         log.debug("Server already started!");
+         return;
+      }
+
       log.debug("Starting server " + this);
       OperationContextImpl.clearContext();
 
@@ -487,20 +493,32 @@ public class HornetQServerImpl implements HornetQServer
 
       }
 
+      remotingService.stop();
+
       // We close all the exception in an attempt to let any pending IO to finish
       // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client
       // It may still be possible to have this scenario on a real failure (without the use of XA)
       // But at least we will do our best to avoid it on regular shutdowns
       for (ServerSession session : sessions.values())
       {
-         session.close(true);
-         if (!criticalIOError)
+         try
          {
-            session.waitContextCompletion();
+            storageManager.setContext(session.getSessionContext());
+            session.close(true);
+            if (!criticalIOError)
+            {
+               session.waitContextCompletion();
+            }
+         }
+         catch (Exception e)
+         {
+            // If anything went wrong with closing sessions.. we should ignore it
+            // such as transactions.. etc.
+            log.warn(e.getMessage(), e);
          }
       }
-
-      remotingService.stop();
+      
+      storageManager.clearContext();
 
       synchronized (this)
       {
@@ -960,11 +978,6 @@ public class HornetQServerImpl implements HornetQServer
 
       Queue queue = (Queue)binding.getBindable();
 
-      if (queue.getPageSubscription() != null)
-      {
-         queue.getPageSubscription().close();
-      }
-
       if (queue.getConsumerCount() != 0)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue " + queue.getName() +
@@ -987,14 +1000,27 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
+      postOffice.removeBinding(queueName);
+
       queue.deleteAllReferences();
 
       if (queue.isDurable())
       {
          storageManager.deleteQueueBinding(queue.getID());
       }
+      
 
-      postOffice.removeBinding(queueName);
+      if (queue.getPageSubscription() != null)
+      {
+         queue.getPageSubscription().close();
+      }
+      
+      PageSubscription subs = queue.getPageSubscription();
+      
+      if (subs != null)
+      {
+         subs.cleanupEntries(true);
+      }
    }
 
    public synchronized void registerActivateCallback(final ActivateCallback callback)
@@ -1170,6 +1196,15 @@ public class HornetQServerImpl implements HornetQServer
          return "HornetQServerImpl::" + (nodeManager != null ? "serverUUID=" + nodeManager.getUUID() : "");
       }
    }
+   
+   /**
+    * For tests only, don't use this method as it's not part of the API
+    * @param factory
+    */
+   public void replaceQueueFactory(QueueFactory factory)
+   {
+      this.queueFactory = factory;
+   }
 
    // Package protected
    // ----------------------------------------------------------------------------
@@ -1181,26 +1216,6 @@ public class HornetQServerImpl implements HornetQServer
     * Protected so tests can change this behaviour
     * @param backupConnector
     */
-   // protected FailoverManagerImpl createBackupConnectionFailoverManager(final TransportConfiguration backupConnector,
-   // final ExecutorService threadPool,
-   // final ScheduledExecutorService scheduledPool)
-   // {
-   // return new FailoverManagerImpl((ClientSessionFactory)null,
-   // backupConnector,
-   // null,
-   // false,
-   // HornetQClient.DEFAULT_CALL_TIMEOUT,
-   // HornetQClient.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-   // HornetQClient.DEFAULT_CONNECTION_TTL,
-   // 0,
-   // 1.0d,
-   // 0,
-   // 1,
-   // false,
-   // threadPool,
-   // scheduledPool,
-   // null);
-   // }
 
    protected PagingManager createPagingManager()
    {
@@ -1607,7 +1622,7 @@ public class HornetQServerImpl implements HornetQServer
 
       for (Pair<Long, Long> msgToDelete : pendingLargeMessages)
       {
-         log.info("Deleting pending large message as it wasn't completed:" + msgToDelete);
+         log.info("Deleting pending large message as it wasn't completed: LargeMessageID:" + msgToDelete.getB());
          LargeServerMessage msg = storageManager.createLargeMessage();
          msg.setMessageID(msgToDelete.getB());
          msg.setPendingRecordID(msgToDelete.getA());

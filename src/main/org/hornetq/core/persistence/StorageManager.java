@@ -13,6 +13,7 @@
 
 package org.hornetq.core.persistence;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +97,34 @@ public interface StorageManager extends HornetQComponent
     *           in case of the pools are full
     * @throws Exception */
    void waitOnOperations() throws Exception;
+   
+   /**
+    * We need a safeguard in place to avoid too much concurrent IO happening on Paging,
+    * otherwise the system may become irrensponsive if too many destinations are reading all the same time.
+    * This is called before we read, so we can limit concurrent reads
+    * @throws Exception
+    */
+   void beforePageRead() throws Exception;
+   
+   /**
+    * We need a safeguard in place to avoid too much concurrent IO happening on Paging,
+    * otherwise the system may become irrensponsive if too many destinations are reading all the same time.
+    * This is called after we read, so we can limit concurrent reads
+    * @throws Exception
+    */
+   void afterPageRead() throws Exception;
+   
+   
+   /** AIO has an optimized buffer which has a method to release it
+       instead of the way NIO will release data based on GC.
+       These methods will use that buffer if the inner method supports it */
+   ByteBuffer allocateDirectBuffer(int size);
+   
+   /** AIO has an optimized buffer which has a method to release it
+       instead of the way NIO will release data based on GC.
+       These methods will use that buffer if the inner method supports it */
+   void freeDirectuffer(ByteBuffer buffer);
+   
 
    void clearContext();
    

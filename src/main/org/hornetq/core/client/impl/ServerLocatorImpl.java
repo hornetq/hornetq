@@ -59,6 +59,7 @@ import org.hornetq.utils.UUIDGenerator;
 public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListener, Serializable
 {
    /*needed for backward compatibility*/
+   @SuppressWarnings("unused")
    private final Set<ClusterTopologyListener> topologyListeners = new HashSet<ClusterTopologyListener>();
 
    /*end of compatibility fixes*/
@@ -83,7 +84,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private final Set<ClientSessionFactoryInternal> connectingFactories = new HashSet<ClientSessionFactoryInternal>();
 
-   private TransportConfiguration[] initialConnectors;
+   private volatile TransportConfiguration[] initialConnectors;
 
    private DiscoveryGroupConfiguration discoveryGroupConfiguration;
 
@@ -573,12 +574,15 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    public ClientSessionFactoryInternal connect() throws Exception
    {
-      // static list of initial connectors
-      if (initialConnectors != null && discoveryGroup == null)
+      synchronized (this)
       {
-         ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect();
-         addFactory(sf);
-         return sf;
+         // static list of initial connectors
+         if (initialConnectors != null && discoveryGroup == null)
+         {
+            ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)staticConnector.connect();
+            addFactory(sf);
+            return sf;
+         }
       }
       // wait for discovery group to get the list of initial connectors
       return (ClientSessionFactoryInternal)createSessionFactory();
@@ -675,7 +679,10 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
    private void removeFromConnecting(ClientSessionFactoryInternal factory)
    {
-      connectingFactories.remove(factory);
+      synchronized (connectingFactories)
+      {
+         connectingFactories.remove(factory);
+      }
    }
 
    private void addToConnecting(ClientSessionFactoryInternal factory)
@@ -1272,23 +1279,24 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
          connectingFactories.clear();
       }
 
+      Set<ClientSessionFactoryInternal> clonedFactory;
       synchronized (factories)
       {
-         Set<ClientSessionFactoryInternal> clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
-
-         for (ClientSessionFactory factory : clonedFactory)
-         {
-            if (sendClose)
-            {
-               factory.close();
-            }
-            else
-            {
-               factory.cleanup();
-            }
-         }
+         clonedFactory = new HashSet<ClientSessionFactoryInternal>(factories);
 
          factories.clear();
+      }
+
+      for (ClientSessionFactory factory : clonedFactory)
+      {
+         if (sendClose)
+         {
+            factory.close();
+         }
+         else
+         {
+            factory.cleanup();
+         }
       }
 
       if (shutdownPool)
@@ -1403,7 +1411,13 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
 
       if (actMember != null && actMember.getConnector().getA() != null && actMember.getConnector().getB() != null)
       {
-         for (ClientSessionFactory factory : factories)
+         HashSet<ClientSessionFactory> clonedFactories = new HashSet<ClientSessionFactory>();
+         synchronized (factories)
+         {
+            clonedFactories.addAll(factories);
+         }
+
+         for (ClientSessionFactory factory : clonedFactories)
          {
             ((ClientSessionFactoryInternal)factory).setBackupConnector(actMember.getConnector().getA(),
                                                                        actMember.getConnector().getB());
@@ -1444,6 +1458,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
              "]";
    }
 
+   @SuppressWarnings("unchecked")
    private synchronized void updateArraysAndPairs()
    {
       Collection<TopologyMember> membersCopy = topology.getMembers();
@@ -1462,13 +1477,14 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
    {
       List<DiscoveryEntry> newConnectors = discoveryGroup.getDiscoveryEntries();
 
-      this.initialConnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
+      
+      TransportConfiguration[] newInitialconnectors = (TransportConfiguration[])Array.newInstance(TransportConfiguration.class,
                                                                            newConnectors.size());
 
       int count = 0;
       for (DiscoveryEntry entry : newConnectors)
       {
-         this.initialConnectors[count++] = entry.getConnector();
+         newInitialconnectors[count++] = entry.getConnector();
 
          if (ha && topology.getMember(entry.getNodeID()) == null)
          {
@@ -1477,33 +1493,53 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
             topology.updateMember(0, entry.getNodeID(), member);
          }
       }
+      
+      this.initialConnectors = newInitialconnectors;
 
       if (clusterConnection && !receivedTopology && initialConnectors.length > 0)
       {
-         // FIXME the node is alone in the cluster. We create a connection to the new node
+         // The node is alone in the cluster. We create a connection to the new node
          // to trigger the node notification to form the cluster.
-         try
+         
+         Runnable connectRunnable = new Runnable()
          {
-            connect();
+            public void run()
+            {
+               try
+               {
+                  connect();
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+               }
+            }
+         };
+         if (startExecutor != null)
+         {
+            startExecutor.execute(connectRunnable);
          }
-         catch (Exception e)
+         else
          {
-            e.printStackTrace(); // To change body of catch statement use File | Settings | File Templates.
+            connectRunnable.run();
          }
       }
    }
 
-   public synchronized void factoryClosed(final ClientSessionFactory factory)
+   public void factoryClosed(final ClientSessionFactory factory)
    {
-      factories.remove(factory);
-
-      if (!clusterConnection && factories.isEmpty())
+      synchronized (factories)
       {
-         // Go back to using the broadcast or static list
-
-         receivedTopology = false;
-
-         topologyArray = null;
+         factories.remove(factory);
+   
+         if (!clusterConnection && factories.isEmpty())
+         {
+            // Go back to using the broadcast or static list
+   
+            receivedTopology = false;
+   
+            topologyArray = null;
+         }
       }
    }
 
@@ -1522,29 +1558,30 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       topology.removeClusterTopologyListener(listener);
    }
 
-   private synchronized void addFactory(ClientSessionFactoryInternal factory)
+   private void addFactory(ClientSessionFactoryInternal factory)
    {
       if (factory == null)
       {
          return;
       }
 
+      if (isClosed())
+      {
+         factory.close();
+         return;
+      }
+
+      TransportConfiguration backup = null;
+
+      if (ha)
+      {
+         backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
+      }
+
+      factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
+
       synchronized (factories)
       {
-         if (isClosed())
-         {
-            factory.close();
-            return;
-         }
-
-         TransportConfiguration backup = null;
-
-         if (ha)
-         {
-            backup = topology.getBackupForConnector(factory.getConnectorConfiguration());
-         }
-
-         factory.setBackupConnector(factory.getConnectorConfiguration(), backup);
          factories.add(factory);
       }
    }
