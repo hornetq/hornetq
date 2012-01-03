@@ -90,7 +90,14 @@ public class RecoveryManager
 
       for (int i = 0 ; i < locatorClasses.length; i++)
       {
-         registry = (RecoveryRegistry) safeInitNewInstance(locatorClasses[i]);
+         try
+         {
+            registry = (RecoveryRegistry) safeInitNewInstance(locatorClasses[i]);
+         }
+         catch (Throwable e)
+         {
+            log.debug("unable to load  recovery registry " + locatorClasses[i], e);
+         }
          if (registry != null)
          {
             break;

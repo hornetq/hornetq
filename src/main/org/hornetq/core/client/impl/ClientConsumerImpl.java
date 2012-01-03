@@ -17,7 +17,9 @@ import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
@@ -47,7 +49,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 {
    // Constants
    // ------------------------------------------------------------------------------------
-
+   
    private static final Logger log = Logger.getLogger(ClientConsumerImpl.class);
    
    private static final boolean isTrace = log.isTraceEnabled();
@@ -568,7 +570,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // consumed in, which means that acking all up to won't work
          ackIndividually = true;
       }
-
+      
       // Add it to the buffer
       buffer.addTail(messageToHandle, messageToHandle.getPriority());
 
@@ -823,6 +825,25 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize == 0)
       {
          sendCredits(0);
+
+         // If resetting a slow consumer, we need to wait the execution
+         final CountDownLatch latch = new CountDownLatch(1);
+         flowControlExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+         
+         try
+         {
+            latch.await(10, TimeUnit.SECONDS);
+         }
+         catch (InterruptedException ignored)
+         {
+            // no big deal
+         }
       }
    }
 
