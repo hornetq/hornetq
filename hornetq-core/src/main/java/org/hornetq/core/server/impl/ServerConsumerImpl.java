@@ -53,7 +53,7 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ *
  * @version <tt>$Revision: 3783 $</tt> $Id: ServerConsumerImpl.java 3783 2008-02-25 12:15:14Z timfox $
  */
 public class ServerConsumerImpl implements ServerConsumer, ReadyListener
@@ -92,7 +92,8 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
    }
 
    /**
-    * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
+    * if we are a browse only consumer we don't need to worry about acknowledgements or being
+    * started/stopped by the session.
     */
    private final boolean browseOnly;
 
@@ -118,9 +119,9 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    /* As well as consumer credit based flow control, we also tap into TCP flow control (assuming transport is using TCP)
     * This is useful in the case where consumer-window-size = -1, but we don't want to OOM by sending messages ad infinitum to the Netty
-    * write queue when the TCP buffer is full, e.g. the client is slow or has died.    
+    * write queue when the TCP buffer is full, e.g. the client is slow or has died.
     */
-   private AtomicBoolean writeReady = new AtomicBoolean(true);
+   private final AtomicBoolean writeReady = new AtomicBoolean(true);
 
    private final long creationTime;
 
@@ -689,7 +690,7 @@ public class ServerConsumerImpl implements ServerConsumer, ReadyListener
 
    private void promptDelivery()
    {
-      // largeMessageDeliverer is aways set inside a lock
+      // largeMessageDeliverer is always set inside a lock
       // if we don't acquire a lock, we will have NPE eventually
       if (largeMessageDeliverer != null)
       {
