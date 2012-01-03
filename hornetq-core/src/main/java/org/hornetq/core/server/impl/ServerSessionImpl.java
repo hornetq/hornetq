@@ -76,10 +76,10 @@ import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
 /*
- * Session implementation 
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a> 
+ * Session implementation
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  */
@@ -288,8 +288,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       if (tx != null && tx.getXid() == null)
       {
          // We only rollback local txs on close, not XA tx branches
-
-         rollback(failed);
+         rollback(failed, true);
       }
 
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -469,6 +468,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          run();
       }
 
+      @Override
       public String toString()
       {
          return "Temporary Cleaner for queue " + bindingName;
@@ -619,6 +619,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    public void rollback(final boolean considerLastMessageAsDelivered) throws Exception
    {
+      rollback(considerLastMessageAsDelivered, false);
+   }
+
+   private void rollback(final boolean considerLastMessageAsDelivered, final boolean closing) throws Exception
+   {
+
       if (tx == null)
       {
          // Might be null if XA
@@ -626,7 +632,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          tx = new TransactionImpl(storageManager, timeoutSeconds);
       }
 
-      doRollback(considerLastMessageAsDelivered, tx);
+      doRollback(considerLastMessageAsDelivered, tx, closing);
 
       if (xa)
       {
@@ -855,7 +861,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
             }
             else
             {
-               doRollback(false, theTx);
+               doRollback(false, theTx, false);
             }
          }
       }
@@ -1062,7 +1068,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
          return;
       }
-      
+
       consumer.receiveCredits(credits);
    }
 
@@ -1077,7 +1083,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       {
          log.trace("sendLarge::" + largeMsg);
       }
-      
+
       if (currentLargeMessage != null)
       {
          ServerSessionImpl.log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
@@ -1292,7 +1298,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
    // Public
    // ----------------------------------------------------------------------------
-   
+
    public void clearLargeMessage()
    {
       currentLargeMessage = null;
@@ -1345,7 +1351,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       }
    }
 
-   private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
+   private void
+            doRollback(final boolean lastMessageAsDelived, final Transaction theTx, final boolean closing)
+                                                                                                          throws Exception
    {
       boolean wasStarted = started;
 
@@ -1368,7 +1376,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
 
       theTx.rollback();
 
-      if (wasStarted)
+      if (wasStarted && !closing)
       {
          for (ServerConsumer consumer : consumers.values())
          {
