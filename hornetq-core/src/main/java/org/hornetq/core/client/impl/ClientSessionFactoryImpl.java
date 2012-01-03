@@ -1511,16 +1511,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    public class CloseRunnable implements Runnable
    {
       private final CoreRemotingConnection conn;
-      private int i = 0;
-      private boolean  removed = false;
-      private boolean  actuallRemoved = false;
+
       private CloseRunnable(CoreRemotingConnection conn)
       {
          this.conn = conn;
       }
 
-      // Must be executed on new thread since cannot block the netty thread for a long time and fail can
-      // cause reconnect loop
+      // Must be executed on new thread since cannot block the Netty thread for a long time and fail
+      // can cause reconnect loop
       public void run()
       {
          try
