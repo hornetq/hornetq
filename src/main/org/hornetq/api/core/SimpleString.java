@@ -25,7 +25,7 @@ import org.hornetq.utils.DataConstants;
  * this minimises expensive copying between String objects.
  *
  * This object is used heavily throughout HornetQ for performance reasons.
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -116,7 +116,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       }
       pos <<= 1;
 
-      return (char)(data[pos] | data[pos + 1] << 8);
+      return (char)((data[pos] & 0xFF) | (data[pos + 1] << 8) & 0xFF00);
    }
 
    public CharSequence subSequence(final int start, final int end)
@@ -215,7 +215,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       {
          return true;
       }
-      
+
       if (other instanceof SimpleString)
       {
          SimpleString s = (SimpleString)other;
@@ -258,9 +258,8 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    * splits this SimpleString into an array of SimpleString using the char param as the delimeter.
-    *
-    * i.e. "a.b" would return "a" and "b" if . was the delimeter
+    * Splits this SimpleString into an array of SimpleString using the char param as the delimiter.
+    * i.e. "a.b" would return "a" and "b" if . was the delimiter
     * @param delim
     */
    public SimpleString[] split(final char delim)
@@ -272,11 +271,13 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
       else
       {
          List<SimpleString> all = new ArrayList<SimpleString>();
+
+         byte low = (byte)(delim & 0xFF); // low byte
+         byte high = (byte)(delim >> 8 & 0xFF); // high byte
+
          int lasPos = 0;
          for (int i = 0; i < data.length; i += 2)
          {
-            byte low = (byte)(delim & 0xFF); // low byte
-            byte high = (byte)(delim >> 8 & 0xFF); // high byte
             if (data[i] == low && data[i + 1] == high)
             {
                byte[] bytes = new byte[i - lasPos];
@@ -301,10 +302,11 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
     */
    public boolean contains(final char c)
    {
+      final byte low = (byte)(c & 0xFF); // low byte
+      final byte high = (byte)(c >> 8 & 0xFF); // high byte
+
       for (int i = 0; i < data.length; i += 2)
       {
-         byte low = (byte)(c & 0xFF); // low byte
-         byte high = (byte)(c >> 8 & 0xFF); // high byte
          if (data[i] == low && data[i + 1] == high)
          {
             return true;
@@ -314,10 +316,9 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    * concatanates a SimpleString and a String
-    *
-    * @param toAdd the String to concate with.
-    * @return the concatanated SimpleString
+    * Concatenates a SimpleString and a String
+    * @param toAdd the String to concatenate with.
+    * @return the concatenated SimpleString
     */
    public SimpleString concat(final String toAdd)
    {
@@ -325,10 +326,9 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    * concatanates 2 SimpleString's
-    *
-    * @param toAdd the SimpleString to concate with.
-    * @return the concatanated SimpleString
+    * Concatenates 2 SimpleString's
+    * @param toAdd the SimpleString to concatenate with.
+    * @return the concatenated SimpleString
     */
    public SimpleString concat(final SimpleString toAdd)
    {
@@ -339,10 +339,9 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    * concatanates a SimpleString and a char
-    *
+    * Concatenates a SimpleString and a char
     * @param c the char to concate with.
-    * @return the concatanated SimpleString
+    * @return the concatenated SimpleString
     */
    public SimpleString concat(final char c)
    {
@@ -390,7 +389,7 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
    }
 
    /**
-    * 
+    *
     * @param srcBegin
     * @param srcEnd
     * @param dst
