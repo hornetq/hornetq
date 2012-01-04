@@ -14,6 +14,7 @@
 package org.hornetq.core.deployers.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -251,7 +252,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             deployed.remove(pair);
          }
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          FileDeploymentManager.log.warn("error scanning for URL's " + e);
       }
@@ -271,7 +272,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    /**
     * Checks if the URL is among the current thread context class loader's resources.
-    * 
+    *
     * We do not check that the corresponding file exists using File.exists() directly as it would fail
     * in the case the resource is loaded from inside an EAR file (see https://jira.jboss.org/jira/browse/HORNETQ-122)
     */
@@ -291,7 +292,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             }
          }
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          return false;
       }

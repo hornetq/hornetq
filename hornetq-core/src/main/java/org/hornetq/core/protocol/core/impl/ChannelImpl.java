@@ -524,10 +524,9 @@ public class ChannelImpl implements Channel
 
             lock.lock();
 
-            response = packet;
-
             try
             {
+               response = packet;
                sendCondition.signal();
             }
             finally

@@ -507,8 +507,14 @@ public class PagingStoreImpl implements PagingStore
    public void stopPaging()
    {
       lock.writeLock().lock();
-      paging = false;
-      lock.writeLock().unlock();
+      try
+      {
+         paging = false;
+      }
+      finally
+      {
+         lock.writeLock().unlock();
+      }
    }
 
    public boolean startPaging()
@@ -715,7 +721,7 @@ public class PagingStoreImpl implements PagingStore
 
    private final Runnable memoryFreedRunnablesExecutor = new MemoryFreedRunnablesExecutor();
 
-   class OurRunnable implements Runnable
+   static final class OurRunnable implements Runnable
    {
       boolean ran;
 

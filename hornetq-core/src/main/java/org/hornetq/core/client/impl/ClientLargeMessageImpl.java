@@ -210,7 +210,7 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
 
    // Inner classes -------------------------------------------------
 
-   protected class HornetQOutputStream extends OutputStream
+   protected static class HornetQOutputStream extends OutputStream
    {
       HornetQBuffer bufferOut;
 
@@ -219,9 +219,6 @@ public class ClientLargeMessageImpl extends ClientMessageImpl implements ClientL
          this.bufferOut = out;
       }
 
-      /* (non-Javadoc)
-       * @see java.io.OutputStream#write(int)
-       */
       @Override
       public void write(int b) throws IOException
       {

@@ -44,11 +44,11 @@ public class Topology implements Serializable
    private Executor executor = null;
 
    /** Used to debug operations.
-    * 
+    *
     *  Someone may argue this is not needed. But it's impossible to debg anything related to topology without knowing what node
     *  or what object missed a Topology update.
-    *  
-    *  Hence I added some information to locate debugging here. 
+    *
+    *  Hence I added some information to locate debugging here.
     *  */
    private volatile Object owner;
 
@@ -148,9 +148,9 @@ public class Topology implements Serializable
    }
 
    /**
-    * 
+    *
     * @param <p>uniqueIdentifier an unique identifier for when the change was made
-    *           We will use current time millis for starts, and a ++ of that number for shutdown. </p> 
+    *           We will use current time millis for starts, and a ++ of that number for shutdown. </p>
     * @param nodeId
     * @param memberInput
     * @return
@@ -207,7 +207,7 @@ public class Topology implements Serializable
                if (log.isDebugEnabled())
                {
                   log.debug(this + "::updated currentMember=nodeID=" +
-                            nodeId + 
+                            nodeId +
                             ", currentMember=" +
                             currentMember +
                             ", memberInput=" +
@@ -262,7 +262,7 @@ public class Topology implements Serializable
                                         " connector = " +
                                         memberToSend.getConnector());
                   }
-   
+
                   try
                   {
                      listener.nodeUP(uniqueEventID, nodeId, memberToSend.getConnector(), false);
@@ -481,18 +481,17 @@ public class Topology implements Serializable
 
    public synchronized String describe(final String text)
    {
-
-      String desc = text + "topology on " + this + ":\n";
+      StringBuilder desc = new StringBuilder(text + "topology on " + this + ":\n");
       for (Entry<String, TopologyMember> entry : new HashMap<String, TopologyMember>(mapTopology).entrySet())
       {
-         desc += "\t" + entry.getKey() + " => " + entry.getValue() + "\n";
+         desc.append("\t" + entry.getKey() + " => " + entry.getValue() + "\n");
       }
-      desc += "\t" + "nodes=" + nodes() + "\t" + "members=" + members();
+      desc.append("\t" + "nodes=" + nodes() + "\t" + "members=" + members());
       if (mapTopology.isEmpty())
       {
-         desc += "\tEmpty";
+         desc.append("\tEmpty");
       }
-      return desc;
+      return desc.toString();
    }
 
    public int members()
