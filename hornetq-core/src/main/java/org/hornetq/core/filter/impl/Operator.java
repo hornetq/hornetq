@@ -370,13 +370,13 @@ public class Operator
 
    /**
     * Operation 3
-    * 
+    *
     * | OR   |   T   |   F   |   U
     * +------+-------+-------+--------
     * |  T   |   T   |   T   |   T
     * |  F   |   T   |   F   |   U
     * |  U   |   T   |   U   |   U
-    * +------+-------+-------+------- 
+    * +------+-------+-------+-------
     */
    Object or() throws Exception
    {
@@ -697,9 +697,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
                case LONG:
-                  return new Double(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -707,9 +707,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() + ((Number)arg2).doubleValue());
                case LONG:
-                  return new Long(((Number)arg1).longValue() + ((Number)arg2).longValue());
+                  return Long.valueOf(((Number)arg1).longValue() + ((Number)arg2).longValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -735,9 +735,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
                case LONG:
-                  return new Double(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -745,9 +745,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() - ((Number)arg2).doubleValue());
                case LONG:
-                  return new Long(((Number)arg1).longValue() - ((Number)arg2).longValue());
+                  return Long.valueOf(((Number)arg1).longValue() - ((Number)arg2).longValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -768,9 +768,9 @@ public class Operator
       switch (class1)
       {
          case DOUBLE:
-            return new Double(-((Number)arg1).doubleValue());
+            return Double.valueOf(-((Number)arg1).doubleValue());
          case LONG:
-            return new Long(-((Number)arg1).longValue());
+            return Long.valueOf(-((Number)arg1).longValue());
          default:
             throwBadObjectException(class1);
       }
@@ -792,9 +792,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
                case LONG:
-                  return new Double(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -802,9 +802,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() * ((Number)arg2).doubleValue());
                case LONG:
-                  return new Long(((Number)arg1).longValue() * ((Number)arg2).longValue());
+                  return Long.valueOf(((Number)arg1).longValue() * ((Number)arg2).longValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -830,9 +830,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
                case LONG:
-                  return new Double(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -840,9 +840,9 @@ public class Operator
             switch (class2)
             {
                case DOUBLE:
-                  return new Double(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
+                  return Double.valueOf(((Number)arg1).doubleValue() / ((Number)arg2).doubleValue());
                case LONG:
-                  return new Long(((Number)arg1).longValue() / ((Number)arg2).longValue());
+                  return Long.valueOf(((Number)arg1).longValue() / ((Number)arg2).longValue());
                default:
                   throwBadObjectException(class2);
             }
@@ -1063,22 +1063,22 @@ public class Operator
       else if (className == Integer.class)
       {
          class1 = Operator.LONG;
-         arg1 = new Long(((Integer)arg1).longValue());
+         arg1 = Long.valueOf(((Integer)arg1).longValue());
       }
       else if (className == Short.class)
       {
          class1 = Operator.LONG;
-         arg1 = new Long(((Short)arg1).longValue());
+         arg1 = Long.valueOf(((Short)arg1).longValue());
       }
       else if (className == Byte.class)
       {
          class1 = Operator.LONG;
-         arg1 = new Long(((Byte)arg1).longValue());
+         arg1 = Long.valueOf(((Byte)arg1).longValue());
       }
       else if (className == Float.class)
       {
          class1 = Operator.DOUBLE;
-         arg1 = new Double(((Float)arg1).doubleValue());
+         arg1 = Double.valueOf(((Float)arg1).doubleValue());
       }
       else if (className == Boolean.class)
       {
@@ -1136,22 +1136,22 @@ public class Operator
       else if (className == Integer.class)
       {
          class2 = Operator.LONG;
-         arg2 = new Long(((Integer)arg2).longValue());
+         arg2 = Long.valueOf(((Integer)arg2).longValue());
       }
       else if (className == Short.class)
       {
          class2 = Operator.LONG;
-         arg2 = new Long(((Short)arg2).longValue());
+         arg2 = Long.valueOf(((Short)arg2).longValue());
       }
       else if (className == Byte.class)
       {
          class2 = Operator.LONG;
-         arg2 = new Long(((Byte)arg2).longValue());
+         arg2 = Long.valueOf(((Byte)arg2).longValue());
       }
       else if (className == Float.class)
       {
          class2 = Operator.DOUBLE;
-         arg2 = new Double(((Float)arg2).doubleValue());
+         arg2 = Double.valueOf(((Float)arg2).doubleValue());
       }
       else if (className == Boolean.class)
       {
@@ -1209,22 +1209,22 @@ public class Operator
       else if (className == Integer.class)
       {
          class3 = Operator.LONG;
-         arg3 = new Long(((Integer)arg3).longValue());
+         arg3 = Long.valueOf(((Integer)arg3).longValue());
       }
       else if (className == Short.class)
       {
          class3 = Operator.LONG;
-         arg3 = new Long(((Short)arg3).longValue());
+         arg3 = Long.valueOf(((Short)arg3).longValue());
       }
       else if (className == Byte.class)
       {
          class3 = Operator.LONG;
-         arg3 = new Long(((Byte)arg3).longValue());
+         arg3 = Long.valueOf(((Byte)arg3).longValue());
       }
       else if (className == Float.class)
       {
          class3 = Operator.DOUBLE;
-         arg3 = new Double(((Float)arg3).doubleValue());
+         arg3 = Double.valueOf(((Float)arg3).doubleValue());
       }
       else if (className == Boolean.class)
       {
