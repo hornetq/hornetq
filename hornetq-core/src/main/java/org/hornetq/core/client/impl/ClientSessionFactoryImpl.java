@@ -1507,7 +1507,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
 
    }
 
-   private static int size = 0;
    public class CloseRunnable implements Runnable
    {
       private final CoreRemotingConnection conn;

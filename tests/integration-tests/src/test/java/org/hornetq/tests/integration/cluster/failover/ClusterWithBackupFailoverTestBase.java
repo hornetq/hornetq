@@ -22,17 +22,14 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  *
@@ -259,19 +256,6 @@ public abstract class ClusterWithBackupFailoverTestBase extends ClusterTestBase
    protected void failNode(final int node) throws Exception
    {
       ClusterWithBackupFailoverTestBase.log.info("*** failing node " + node);
-
-      Map<String, Object> params = generateParams(node, isNetty());
-
-      TransportConfiguration serverTC;
-
-      if (isNetty())
-      {
-         serverTC = new TransportConfiguration(UnitTestCase.NETTY_CONNECTOR_FACTORY, params);
-      }
-      else
-      {
-         serverTC = new TransportConfiguration(UnitTestCase.INVM_CONNECTOR_FACTORY, params);
-      }
 
       HornetQServer server = getServer(node);
 
