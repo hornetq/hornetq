@@ -32,7 +32,6 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.jms.JMSFactoryType;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 
@@ -45,15 +44,7 @@ import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
  */
 public class HornetQConnectionFactory implements Serializable, Referenceable
 {
-   // Constants ------------------------------------------------------------------------------------
-
    private final static long serialVersionUID = -2810634789345348326L;
-
-   private static final Logger log = Logger.getLogger(HornetQConnectionFactory.class);
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
 
    private final ServerLocator serverLocator;
 
@@ -64,8 +55,6 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    private int transactionBatchSize = HornetQClient.DEFAULT_ACK_BATCH_SIZE;
 
    private boolean readOnly;
-
-   // Constructors ---------------------------------------------------------------------------------
 
    public HornetQConnectionFactory()
    {
@@ -681,7 +670,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
 
       if (connection == null)
       {
-         new JMSException("Failed to create connection: invalid type " + type);
+         throw new JMSException("Failed to create connection: invalid type " + type);
       }
       connection.setReference(this);
 
