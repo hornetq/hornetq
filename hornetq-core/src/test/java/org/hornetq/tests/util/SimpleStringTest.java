@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
+package org.hornetq.tests.util;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,7 +19,6 @@ import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -36,6 +35,7 @@ public class SimpleStringTest extends TestCase
     * @see SimpleString#getChars(int, int, char[], int)
     * @see SimpleString#charAt(int)
     * @see SimpleString#split(char)
+    * @see SimpleString#concat(char)
     */
    public void testGetChar()
    {
@@ -47,10 +47,15 @@ public class SimpleStringTest extends TestCase
          char c = (char)i;
          SimpleString s = new SimpleString(String.valueOf(c));
 
+         // test getChars(...)
          char[] c1 = new char[1];
          s.getChars(0, 1, c1, 0);
          assertEquals(msg, c, c1[0]);
+
+         // test charAt(int)
          assertEquals(msg, c, s.charAt(0));
+
+         // test concat(char)
          SimpleString s2 = s.concat(c);
          assertEquals(msg, c, s2.charAt(1));
 
@@ -60,8 +65,8 @@ public class SimpleStringTest extends TestCase
          SimpleString[] split1 = p1.split(c);
          SimpleString[] split2 = p2.split(c);
          assertEquals(split1.length + split2.length, chunks.length);
-         int j = 0;
 
+         int j = 0;
          for (SimpleString iS : split1)
          {
             assertEquals(iS.toString(), iS, chunks[j++]);

@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -33,8 +32,6 @@ import org.hornetq.utils.DataConstants;
 public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;
-
-   private static final Logger log = Logger.getLogger(SimpleString.class);
 
    // Attributes
    // ------------------------------------------------------------------------
@@ -264,12 +261,6 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
     */
    public SimpleString[] split(final char delim)
    {
-      if (!contains(delim))
-      {
-         return new SimpleString[] { this };
-      }
-      else
-      {
          List<SimpleString> all = new ArrayList<SimpleString>();
 
          byte low = (byte)(delim & 0xFF); // low byte
@@ -286,12 +277,16 @@ public class SimpleString implements CharSequence, Serializable, Comparable<Simp
                all.add(new SimpleString(bytes));
             }
          }
+
+      if (all.isEmpty())
+      {
+         return new SimpleString[] { this };
+      }
          byte[] bytes = new byte[data.length - lasPos];
          System.arraycopy(data, lasPos, bytes, 0, bytes.length);
          all.add(new SimpleString(bytes));
          SimpleString[] parts = new SimpleString[all.size()];
          return all.toArray(parts);
-      }
    }
 
    /**
