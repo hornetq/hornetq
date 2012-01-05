@@ -68,11 +68,21 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    protected void assertActiveConnections(final int expectedActiveConnections) throws Exception
    {
+      long timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis() && server.getHornetQServerControl().getConnectionCount() != expectedActiveConnections)
+      {
+         Thread.sleep(100);
+      }
       Assert.assertEquals(expectedActiveConnections, server.getHornetQServerControl().getConnectionCount());
    }
 
    protected void assertActiveSession(final int expectedActiveSession) throws Exception
    {
+      long timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis() && server.getSessions().size() != expectedActiveSession)
+      {
+         Thread.sleep(100);
+      }
       Assert.assertEquals(expectedActiveSession, server.getSessions().size());
    }
 
