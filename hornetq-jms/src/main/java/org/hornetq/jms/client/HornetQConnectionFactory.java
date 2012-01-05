@@ -704,7 +704,7 @@ public class HornetQConnectionFactory implements Serializable, Referenceable
    }
 
    @Override
-   public void finalize() throws Throwable
+   protected void finalize() throws Throwable
    {
       try
       {

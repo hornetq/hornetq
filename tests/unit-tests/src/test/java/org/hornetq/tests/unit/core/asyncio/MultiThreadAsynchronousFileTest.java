@@ -31,13 +31,13 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.HornetQThreadFactory;
 
 /**
- * 
+ *
  * you need to define -Djava.library.path=${project-root}/native/src/.libs when calling the JVM
  * If you are running this test in eclipse you should do:
  *   I - Run->Open Run Dialog
- *   II - Find the class on the list (you will find it if you already tried running this testcase before)  
+ *   II - Find the class on the list (you will find it if you already tried running this testcase before)
  *   III - Add -Djava.library.path=<your project place>/native/src/.libs
- *   
+ *
  *  @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>.
  *   */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
@@ -193,7 +193,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          try
          {
 
-            // I'm aways reusing the same buffer, as I don't want any noise from
+            // I'm always reusing the same buffer, as I don't want any noise from
             // malloc on the measurement
             // Encoding buffer
             MultiThreadAsynchronousFileTest.addString("Thread name=" + Thread.currentThread().getName() + ";" + "\n",
@@ -206,8 +206,6 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
             latchStart.countDown();
             latchStart.await();
-
-            long startTime = System.currentTimeMillis();
 
             CountDownLatch latchFinishThread = null;
 

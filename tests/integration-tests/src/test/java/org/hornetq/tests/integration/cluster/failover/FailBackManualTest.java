@@ -229,7 +229,7 @@ public class FailBackManualTest extends FailoverTestBase
       message.getBodyBuffer().writeString("message" + i);
    }
 
-   class ServerStarter implements Runnable
+   static class ServerStarter implements Runnable
    {
       private final TestableServer server;
 

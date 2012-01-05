@@ -1090,7 +1090,7 @@ public class JSONObject
     */
    public JSONObject put(final String key, final int value) throws JSONException
    {
-      put(key, new Integer(value));
+      put(key, Integer.valueOf(value));
       return this;
    }
 
@@ -1104,7 +1104,7 @@ public class JSONObject
     */
    public JSONObject put(final String key, final long value) throws JSONException
    {
-      put(key, new Long(value));
+      put(key, Long.valueOf(value));
       return this;
    }
 
@@ -1328,7 +1328,7 @@ public class JSONObject
             {
                try
                {
-                  return new Integer(Integer.parseInt(s.substring(2), 16));
+                  return Integer.valueOf(Integer.parseInt(s.substring(2), 16));
                }
                catch (Exception e)
                {
@@ -1339,7 +1339,7 @@ public class JSONObject
             {
                try
                {
-                  return new Integer(Integer.parseInt(s, 8));
+                  return Integer.valueOf(Integer.parseInt(s, 8));
                }
                catch (Exception e)
                {
@@ -1355,10 +1355,10 @@ public class JSONObject
             }
             else
             {
-               Long myLong = new Long(s);
+               Long myLong = Long.valueOf(s);
                if (myLong.longValue() == myLong.intValue())
                {
-                  return new Integer(myLong.intValue());
+                  return Integer.valueOf(myLong.intValue());
                }
                else
                {
@@ -1440,7 +1440,7 @@ public class JSONObject
       try
       {
          Iterator keys = keys();
-         StringBuffer sb = new StringBuffer("{");
+         StringBuilder sb = new StringBuilder("{");
 
          while (keys.hasNext())
          {

@@ -33,7 +33,7 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class RoutingContextImpl implements RoutingContext
 {
-   
+
    // The pair here is Durable and NonDurable
    private final Map<SimpleString, RouteContextList> map = new HashMap<SimpleString, RouteContextList>();
 
@@ -45,13 +45,13 @@ public class RoutingContextImpl implements RoutingContext
    {
       this.transaction = transaction;
    }
-   
+
    public void clear()
    {
       transaction = null;
 
       map.clear();
-      
+
       queueCount = 0;
    }
 
@@ -59,7 +59,7 @@ public class RoutingContextImpl implements RoutingContext
    {
 
       RouteContextList listing = getContextListing(address);
-      
+
       if (queue.isDurable())
       {
          listing.getDurableQueues().add(queue);
@@ -71,7 +71,7 @@ public class RoutingContextImpl implements RoutingContext
 
       queueCount++;
    }
-   
+
    public RouteContextList getContextListing(SimpleString address)
    {
       RouteContextList listing = map.get(address);
@@ -115,35 +115,31 @@ public class RoutingContextImpl implements RoutingContext
    {
       return this.map;
    }
-   
-   
-   private class ContextListing implements RouteContextList
+
+
+   private static class ContextListing implements RouteContextList
    {
       private final List<Queue> durableQueue = new ArrayList<Queue>(1);
-      
+
       private final List<Queue> nonDurableQueue = new ArrayList<Queue>(1);
-      
+
       public int getNumberOfDurableQueues()
       {
          return durableQueue.size();
       }
-      
+
       public int getNumberOfNonDurableQueues()
       {
          return nonDurableQueue.size();
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.RouteContextList#getDurableQueues()
-       */
+      @Override
       public List<Queue> getDurableQueues()
       {
          return durableQueue;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.server.RouteContextList#getNonDurableQueues()
-       */
+      @Override
       public List<Queue> getNonDurableQueues()
       {
          return nonDurableQueue;

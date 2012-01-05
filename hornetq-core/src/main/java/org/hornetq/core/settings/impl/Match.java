@@ -20,13 +20,13 @@ import java.util.regex.Pattern;
  */
 public class Match<T>
 {
-   public static String WORD_WILDCARD = "*";
+   public static final String WORD_WILDCARD = "*";
 
-   private static String WORD_WILDCARD_REPLACEMENT = "[^.]+";
+   private static final String WORD_WILDCARD_REPLACEMENT = "[^.]+";
 
-   public static String WILDCARD = "#";
+   public static final String WILDCARD = "#";
 
-   private static String WILDCARD_REPLACEMENT = ".+";
+   private static final String WILDCARD_REPLACEMENT = ".+";
 
    private static final String DOT = ".";
 

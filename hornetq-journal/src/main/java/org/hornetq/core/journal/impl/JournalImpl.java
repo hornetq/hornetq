@@ -1178,10 +1178,10 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
 
       journalLock.readLock().lock();
 
-      JournalTransaction tx = transactions.remove(txID);
-
       try
       {
+         JournalTransaction tx = transactions.remove(txID);
+
          if (tx == null)
          {
             throw new IllegalStateException("Cannot find tx with id " + txID);
@@ -2963,7 +2963,7 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       }
    }
 
-   private class PerfBlast extends Thread
+   private final class PerfBlast extends Thread
    {
       private final int pages;
 
@@ -2977,9 +2977,9 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
       @Override
       public void run()
       {
+         lockAppend.lock();
          try
          {
-            lockAppend.lock();
 
             final ByteArrayEncoding byteEncoder = new ByteArrayEncoding(new byte[128 * 1024]);
 
@@ -3002,12 +3002,14 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
             {
                appendRecord(blastRecord, false, false, null, null);
             }
-
-            lockAppend.unlock();
          }
          catch (Exception e)
          {
             JournalImpl.log.error("Failed to perf blast", e);
+         }
+         finally
+         {
+            lockAppend.unlock();
          }
       }
    }
