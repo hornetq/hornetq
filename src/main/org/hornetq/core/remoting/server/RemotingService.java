@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.server;
 import java.util.Set;
 
 import org.hornetq.api.core.Interceptor;
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
@@ -25,7 +24,7 @@ import org.hornetq.spi.core.protocol.RemotingConnection;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface RemotingService extends HornetQComponent
+public interface RemotingService
 {
    /**
     * Remove a connection from the connections held by the remoting service.
@@ -41,6 +40,12 @@ public interface RemotingService extends HornetQComponent
    void addInterceptor(Interceptor interceptor);
 
    boolean removeInterceptor(Interceptor interceptor);
+   
+   void stop(boolean criticalError) throws Exception;
+   
+   void start() throws Exception;
+
+   boolean isStarted();
 
    void freeze();
 
