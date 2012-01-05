@@ -1136,7 +1136,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          log.trace("send(message=" + message + ", direct=" + direct + ") being called");
       }
 
-      log.info("message " + message + " managementAddress = " + managementAddress);
       if (message.getAddress().equals(managementAddress))
       {
          // It's a management message
