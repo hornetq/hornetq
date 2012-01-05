@@ -1105,11 +1105,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener
    public void send(final ServerMessage message, final boolean direct) throws Exception
    {
       long id = storageManager.generateUniqueID();
-
+      
       SimpleString address = message.getAddress();
 
       message.setMessageID(id);
       message.encodeMessageIDToBuffer();
+
+      if (defaultAddress == null && address != null)
+      {
+         defaultAddress = address;
+      }
 
       if (address == null)
       {
@@ -1131,6 +1136,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          log.trace("send(message=" + message + ", direct=" + direct + ") being called");
       }
 
+      log.info("message " + message + " managementAddress = " + managementAddress);
       if (message.getAddress().equals(managementAddress))
       {
          // It's a management message
@@ -1140,11 +1146,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener
       else
       {
          doSend(message, direct);
-      }
-
-      if (defaultAddress == null)
-      {
-         defaultAddress = address;
       }
    }
 
