@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.unit.util;
 
+import java.lang.ref.WeakReference;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,27 +92,11 @@ public class LinkedListTest extends UnitTestCase
          if (i % 1000 == 0)
          {
             System.out.println("Checking on " + i);
-
-            for (int gcLoop = 0 ; gcLoop < 5; gcLoop++)
-            {
-               forceGC();
-               if (count.get() == 1000)
-               {
-                  break;
-               }
-               else
-               {
-                  System.out.println("Trying a GC again");
-               }
-            }
-   
-            assertEquals(1000, count.get());
+            assertCount(1000, count);
          }
       }
 
-      forceGC();
-
-      assertEquals(1000, count.get());
+      assertCount(1000, count);
 
       int removed = 0;
       while (iter.hasNext())
@@ -119,11 +105,44 @@ public class LinkedListTest extends UnitTestCase
          iter.next();
          iter.remove();
       }
+      
+      assertCount(0, count);
 
-      forceGC();
+   }
 
-      assertEquals(0, count.get());
+   /**
+    * @param count
+    */
+   private void assertCount(final int expected, final AtomicInteger count)
+   {
+      long timeout = System.currentTimeMillis() + 5000;
+      
+      int seqCount = 0;
+      while (timeout > System.currentTimeMillis() && count.get() != expected)
+      {
+         seqCount ++;
+         if (seqCount > 5)
+         {
+            LinkedList<String> toOME = new LinkedList<String>();
+            int someCount = 0;
+            try
+            {
+               WeakReference<Object> ref = new WeakReference<Object>(new Object());
+               while (ref.get() != null)
+               {
+                  toOME.add("sdlfkjshadlfkjhas dlfkjhas dlfkjhads lkjfhads lfkjhads flkjashdf " + someCount++);
+               }
+            }
+            catch (Throwable expectedThrowable)
+            {
+            }
+            
+            toOME.clear();
+         }
+         forceGC();
+      }
 
+      assertEquals(expected, count.get());
    }
 
    public void testAddTail()
