@@ -1136,6 +1136,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener
          log.trace("send(message=" + message + ", direct=" + direct + ") being called");
       }
 
+      if (message.getAddress() == null)
+      {
+         // This could happen with some tests that are ignoring messages
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "You don't have an address at the Server's Session");
+      }
+
       if (message.getAddress().equals(managementAddress))
       {
          // It's a management message
