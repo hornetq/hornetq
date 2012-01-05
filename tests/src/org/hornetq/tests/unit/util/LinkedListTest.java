@@ -115,7 +115,7 @@ public class LinkedListTest extends UnitTestCase
     */
    private void assertCount(final int expected, final AtomicInteger count)
    {
-      long timeout = System.currentTimeMillis() + 5000;
+      long timeout = System.currentTimeMillis() + 15000;
       
       int seqCount = 0;
       while (timeout > System.currentTimeMillis() && count.get() != expected)
