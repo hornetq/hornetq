@@ -226,7 +226,9 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       catch (Exception e)
       {
          ReplicationEndpoint.log.warn(e.getMessage(), e);
-         response = new HornetQExceptionMessage((HornetQException)e);
+         response =
+                  new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR,
+                                                                   "unhandled error during replication", e));
       }
 
       channel.send(response);
