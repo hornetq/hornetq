@@ -57,14 +57,17 @@ public class MessageTest extends JMSTestBase
 
    // Public --------------------------------------------------------
 
-   //https://jira.jboss.org/jira/browse/HORNETQ-242
+   /**
+    * @see https://jira.jboss.org/jira/browse/HORNETQ-242
+    */
    public void testStreamMessageReadsNull() throws Exception
    {
       Connection conn = cf.createConnection();
-
+      try
+      {
       Queue queue = createQueue("testQueue");
 
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
          MessageProducer prod = sess.createProducer(queue);
 
@@ -196,6 +199,11 @@ public class MessageTest extends JMSTestBase
          {
             //Ok
          }
+      }
+      finally
+      {
+      conn.close();
+      }
    }
 
    public void testNullProperties() throws Exception
