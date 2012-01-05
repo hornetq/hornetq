@@ -19,9 +19,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import junit.framework.Assert;
-
-import org.hornetq.core.version.impl.VersionImpl;
-import org.hornetq.tests.util.UnitTestCase;
+import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -29,7 +27,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @version <tt>$Revision$</tt>
  *
  */
-public class VersionImplTest extends UnitTestCase
+public class VersionImplTest extends TestCase
 {
    // Constants -----------------------------------------------------
 

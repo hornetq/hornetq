@@ -26,8 +26,7 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <!-- There are newer versions of the JUnit but thet break our tests -->
-         <version>3.8.2</version>
+         <scope>test</scope>
       </dependency>
    </dependencies>
 

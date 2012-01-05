@@ -16,8 +16,6 @@ package org.hornetq.utils;
 import java.lang.reflect.Array;
 import java.util.NoSuchElementException;
 
-import org.hornetq.core.logging.Logger;
-
 /**
  * A priority linked list implementation
  * 
@@ -31,8 +29,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
-   private static final Logger log = Logger.getLogger(PriorityLinkedListImpl.class);
-
    protected LinkedListImpl<T>[] levels;
 
    private int size;
