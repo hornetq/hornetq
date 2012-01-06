@@ -41,7 +41,7 @@ public class Topology implements Serializable
 
    private static final Logger log = Logger.getLogger(Topology.class);
 
-   private Executor executor = null;
+   private transient Executor executor = null;
 
    /**
     * Used to debug operations.
