@@ -31,5 +31,11 @@
       <Method name="getDoubleProperty"/>
     </Or>
     <Bug pattern="NP_NULL_PARAM_DEREF_NONVIRTUAL"/>
-</Match>
+  </Match>
+
+  <Match>
+    <!-- Code is meant to measure memory usage, so calling Garbage Collection is normal. -->
+    <Class name="org.hornetq.utils.MemorySize"/>
+    <bug pattern="DM_GC"/>
+  </Match>
 </FindBugsFilter>
