@@ -11,30 +11,19 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.config.impl;
+package org.hornetq.core.config.impl;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
-import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.RandomUtil;
 
 /**
- * A ValidatorsTest
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- *
  */
 public class ValidatorsTest extends TestCase
 {
-
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
 
    private static void success(final Validators.Validator validator, final Object value)
    {
@@ -117,6 +106,16 @@ public class ValidatorsTest extends TestCase
       ValidatorsTest.failure(Validators.JOURNAL_TYPE, null);
       ValidatorsTest.failure(Validators.JOURNAL_TYPE, "");
       ValidatorsTest.failure(Validators.JOURNAL_TYPE, RandomUtil.randomString());
+   }
+
+   public void testPERCENTAGE()
+   {
+      ValidatorsTest.success(Validators.PERCENTAGE, 99);
+      ValidatorsTest.success(Validators.PERCENTAGE, 100);
+      ValidatorsTest.success(Validators.PERCENTAGE, 0);
+      ValidatorsTest.failure(Validators.PERCENTAGE, -1);
+      ValidatorsTest.failure(Validators.PERCENTAGE, 101);
+      ValidatorsTest.failure(Validators.PERCENTAGE, null);
    }
 
    // Package protected ---------------------------------------------
