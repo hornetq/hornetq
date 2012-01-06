@@ -26,7 +26,9 @@
         <module name="RedundantModifier"/>
 
         <!-- Checks for blocks. You know, those {}'s         -->
-        <!-- <module name="LeftCurly"/> -->
+        <module name="LeftCurly">
+          <property name="option" value="nl"/>>
+        </module>
 
         <!-- Checks for common coding problems               -->
         <!-- Disabled until http://sourceforge.net/tracker/?func=detail&aid=2843447&group_id=29721&atid=397078 is fixed-->

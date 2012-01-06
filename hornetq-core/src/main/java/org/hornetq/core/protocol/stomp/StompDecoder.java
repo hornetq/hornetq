@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 
 /**
  * A StompDecoder
@@ -28,8 +27,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class StompDecoder
 {
-   private static final Logger log = Logger.getLogger(StompDecoder.class);
-
    public static final boolean TRIM_LEADING_HEADER_VALUE_WHITESPACE = true;
 
    public static final String COMMAND_ABORT = "ABORT";
@@ -80,7 +77,7 @@ public class StompDecoder
    public static final String COMMAND_CONNECTED = "CONNECTED";
 
    public static final int COMMAND_CONNECTED_LENGTH = COMMAND_CONNECTED.length();
-   
+
    public static final String COMMAND_MESSAGE = "MESSAGE";
 
    public static final int COMMAND_MESSAGE_LENGTH = COMMAND_MESSAGE.length();
@@ -109,13 +106,13 @@ public class StompDecoder
    public static final byte M = (byte)'M';
 
    public static final byte S = (byte)'S';
-   
+
    public static final byte R = (byte)'R';
 
    public static final byte U = (byte)'U';
 
    public static final byte N = (byte)'N';
-   
+
    public static final byte LN = (byte)'n';
 
    public static final byte HEADER_SEPARATOR = (byte)':';
@@ -128,7 +125,7 @@ public class StompDecoder
 
    public static final String CONTENT_TYPE_HEADER_NAME = "content-type";
 
-   public static String CONTENT_LENGTH_HEADER_NAME = "content-length";
+   public static final String CONTENT_LENGTH_HEADER_NAME = "content-length";
 
    public byte[] workingBuffer = new byte[1024];
 
@@ -153,11 +150,11 @@ public class StompDecoder
    public boolean whiteSpaceOnly;
 
    public int contentLength;
-   
+
    public String contentType;
 
    public int bodyStart;
-   
+
    public StompConnection connection;
 
    public StompDecoder(StompConnection stompConnection)
@@ -182,7 +179,7 @@ public class StompDecoder
     * followed by an empty line
     * followed by an optional message body
     * terminated with a null character
-    * 
+    *
     * Note: to support both 1.0 and 1.1, we just assemble a
     * standard StompFrame and let the versioned handler to do more
     * spec specific job (like trimming, escaping etc).
@@ -194,10 +191,10 @@ public class StompDecoder
          VersionedStompFrameHandler handler = connection.getFrameHandler();
          return handler.decode(this, buffer);
       }
-      
+
       return defaultDecode(buffer);
    }
-   
+
    public StompFrame defaultDecode(final HornetQBuffer buffer) throws HornetQStompException
    {
 
@@ -291,7 +288,7 @@ public class StompDecoder
                   command = COMMAND_COMMIT;
                }
                /**** added by meddy, 27 april 2011, handle header parser for reply to websocket protocol ****/
-               else if (workingBuffer[offset+7]==E) 
+               else if (workingBuffer[offset+7]==E)
                {
                   if (!tryIncrement(offset + COMMAND_CONNECTED_LENGTH + 1))
                   {
@@ -299,7 +296,7 @@ public class StompDecoder
                   }
 
                   // CONNECTED
-                  command = COMMAND_CONNECTED;                  
+                  command = COMMAND_CONNECTED;
                }
                /**** end ****/
                else
@@ -384,7 +381,7 @@ public class StompDecoder
                   }
 
                   // SEND
-                  command = COMMAND_STOMP;                  
+                  command = COMMAND_STOMP;
                }
                else
                {
@@ -569,7 +566,7 @@ public class StompDecoder
             }
          }
       }
-      
+
       if (content != null)
       {
          if (data > pos)
@@ -594,7 +591,7 @@ public class StompDecoder
       else
       {
          return null;
-      }      
+      }
    }
 
    public void throwInvalid() throws HornetQStompException
@@ -607,7 +604,7 @@ public class StompDecoder
       pos = 0;
 
       command = null;
-      
+
       headers = new HashMap<String, String>();
 
       this.headerBytesCopyStart = -1;
@@ -625,7 +622,7 @@ public class StompDecoder
       contentLength = -1;
 
       contentType = null;
-      
+
       bodyStart = -1;
    }
 
@@ -659,11 +656,11 @@ public class StompDecoder
       for (int i = 0; i < data; i++)
       {
          char b = (char)bytes[i];
-         
+
          if (b < 33 || b > 136)
          {
             //Unreadable characters
-            
+
             str.append(bytes[i]);
          }
          else

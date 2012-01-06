@@ -17,18 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ *
  * @author <a href="mailto:hgao@redhat.com">Howard Gao</a>
  */
 public class HornetQStompException extends Exception {
 
    private static final long serialVersionUID = -274452327574950068L;
-   
-   private List<Header> headers = new ArrayList<Header>(10);
+
+   private final List<Header> headers = new ArrayList<Header>(10);
    private String body;
    private VersionedStompFrameHandler handler;
    private boolean disconnect;
-   
+
    public HornetQStompException(StompConnection connection, String msg)
    {
       super(msg);
@@ -38,13 +38,13 @@ public class HornetQStompException extends Exception {
    {
       super(msg);
    }
-   
+
    public HornetQStompException(String msg, Throwable t)
    {
       super(msg, t);
       this.body = t.getMessage();
    }
-   
+
    public HornetQStompException(Throwable t)
    {
       super(t);
@@ -54,7 +54,7 @@ public class HornetQStompException extends Exception {
    {
       headers.add(new Header(header, value));
    }
-   
+
    public void setBody(String body)
    {
       this.body = body;
@@ -91,11 +91,11 @@ public class HornetQStompException extends Exception {
       return frame;
    }
 
-   private class Header
+   private static final class Header
    {
-      public String key;
-      public String val;
-      
+      public final String key;
+      public final String val;
+
       public Header(String key, String val)
       {
          this.key = key;

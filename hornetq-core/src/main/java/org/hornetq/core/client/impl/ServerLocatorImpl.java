@@ -1667,7 +1667,7 @@ public class ServerLocatorImpl implements ServerLocatorInternal, DiscoveryListen
       }
 
       @Override
-      public void finalize() throws Throwable
+      protected void finalize() throws Throwable
       {
          if (state != STATE.CLOSED && finalizeCheck)
          {

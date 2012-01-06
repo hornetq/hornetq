@@ -918,8 +918,7 @@ public class PagingStoreImpl implements PagingStore
             installPageTransaction(tx, listCtx);
             tx.setWaitBeforeCommit(true);
          }
-         else
-         if (sync && tx == null)
+         else if (sync)
          {
             sync();
          }

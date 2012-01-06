@@ -1316,7 +1316,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, C
    }
 
    @Override
-   public void finalize() throws Throwable
+   protected void finalize() throws Throwable
    {
       if (!closed && finalizeCheck)
       {

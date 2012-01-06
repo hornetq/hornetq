@@ -150,7 +150,7 @@ public class JSONArray
             case ')':
                if (q != c)
                {
-                  throw x.syntaxError("Expected a '" + new Character(q) + "'");
+                  throw x.syntaxError("Expected a '" + Character.valueOf(q) + "'");
                }
                return;
             default:
@@ -183,7 +183,7 @@ public class JSONArray
    /**
     * Construct a JSONArray from a collection of beans.
     * The collection should have Java Beans.
-    * 
+    *
     * @throws JSONException If not an array.
     */
 
@@ -236,7 +236,7 @@ public class JSONArray
    /**
     * Construct a JSONArray from an array with a bean.
     * The array should have Java Beans.
-    * 
+    *
     * @throws JSONException If not an array.
     */
    public JSONArray(final Object array, final boolean includeSuperClass) throws JSONException
@@ -688,7 +688,7 @@ public class JSONArray
     */
    public JSONArray put(final int value)
    {
-      put(new Integer(value));
+      put(Integer.valueOf(value));
       return this;
    }
 
@@ -700,7 +700,7 @@ public class JSONArray
     */
    public JSONArray put(final long value)
    {
-      put(new Long(value));
+      put(Long.valueOf(value));
       return this;
    }
 
@@ -786,7 +786,7 @@ public class JSONArray
     */
    public JSONArray put(final int index, final int value) throws JSONException
    {
-      put(index, new Integer(value));
+      put(index, Integer.valueOf(value));
       return this;
    }
 
@@ -801,7 +801,7 @@ public class JSONArray
     */
    public JSONArray put(final int index, final long value) throws JSONException
    {
-      put(index, new Long(value));
+      put(index, Long.valueOf(value));
       return this;
    }
 
@@ -910,19 +910,17 @@ public class JSONArray
       }
       catch (Exception e)
       {
-         return null;
+         return "";
       }
    }
 
    /**
-    * Make a prettyprinted JSON text of this JSONArray.
-    * Warning: This method assumes that the data structure is acyclical.
-    * @param indentFactor The number of spaces to add to each level of
-    *  indentation.
-    * @return a printable, displayable, transmittable
-    *  representation of the object, beginning
-    *  with <code>[</code>&nbsp;<small>(left bracket)</small> and ending
-    *  with <code>]</code>&nbsp;<small>(right bracket)</small>.
+    * Make a pretty-printed JSON text of this JSONArray. Warning: This method assumes that the data
+    * structure is acyclical.
+    * @param indentFactor The number of spaces to add to each level of indentation.
+    * @return a printable, displayable, transmittable representation of the object, beginning with
+    *         <code>[</code>&nbsp;<small>(left bracket)</small> and ending with <code>]</code>
+    *         &nbsp;<small>(right bracket)</small>.
     * @throws JSONException
     */
    public String toString(final int indentFactor) throws JSONException
@@ -931,13 +929,11 @@ public class JSONArray
    }
 
    /**
-    * Make a prettyprinted JSON text of this JSONArray.
-    * Warning: This method assumes that the data structure is acyclical.
-    * @param indentFactor The number of spaces to add to each level of
-    *  indentation.
+    * Make a pretty-printed JSON text of this JSONArray. Warning: This method assumes that the data
+    * structure is acyclical.
+    * @param indentFactor The number of spaces to add to each level of indentation.
     * @param indent The indention of the top level.
-    * @return a printable, displayable, transmittable
-    *  representation of the array.
+    * @return a printable, displayable, transmittable representation of the array.
     * @throws JSONException
     */
    String toString(final int indentFactor, final int indent) throws JSONException

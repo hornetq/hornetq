@@ -524,7 +524,7 @@ public class NettyConnector implements Connector
 
    // Inner classes -------------------------------------------------
 
-   private final class HornetQClientChannelHandler extends HornetQChannelHandler
+   private static final class HornetQClientChannelHandler extends HornetQChannelHandler
    {
       HornetQClientChannelHandler(final ChannelGroup group,
                                   final BufferHandler handler,

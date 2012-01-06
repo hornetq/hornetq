@@ -3258,7 +3258,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   private class FinishPageMessageOperation implements TransactionOperation
+   private static class FinishPageMessageOperation implements TransactionOperation
    {
 
        public void afterCommit(final Transaction tx)
@@ -3332,27 +3332,21 @@ public class JournalStorageManager implements StorageManager
 
        long value;
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#getEncodeSize()
-        */
+      @Override
        public int getEncodeSize()
        {
            return DataConstants.SIZE_LONG * 2;
        }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.api.core.HornetQBuffer)
-        */
+      @Override
        public void encode(HornetQBuffer buffer)
        {
            buffer.writeLong(queueID);
            buffer.writeLong(value);
        }
 
-       /* (non-Javadoc)
-        * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.api.core.HornetQBuffer)
-        */
-       public void decode(HornetQBuffer buffer)
+      @Override
+      public void decode(HornetQBuffer buffer)
        {
            queueID = buffer.readLong();
            value = buffer.readLong();

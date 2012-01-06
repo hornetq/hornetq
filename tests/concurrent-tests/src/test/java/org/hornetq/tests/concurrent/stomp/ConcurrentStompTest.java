@@ -27,7 +27,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.CoreQueueConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.stomp.Stomp;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
@@ -39,8 +38,6 @@ import org.hornetq.tests.util.UnitTestCase;
 
 public class ConcurrentStompTest extends UnitTestCase
 {
-   private static final transient Logger log = Logger.getLogger(ConcurrentStompTest.class);
-
    private final int port = 61613;
 
    private Socket stompSocket;

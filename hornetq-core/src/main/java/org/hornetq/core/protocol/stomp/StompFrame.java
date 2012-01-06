@@ -18,6 +18,7 @@
 package org.hornetq.core.protocol.stomp;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +32,7 @@ import org.hornetq.core.logging.Logger;
  *
  * @author <a href="http://hiramchirino.com">chirino</a>
  * @author Tim Fox
- * 
+ *
  */
 public class StompFrame
 {
@@ -46,17 +47,17 @@ public class StompFrame
    protected Map<String, String> headers;
 
    protected String body;
-   
+
    protected byte[] bytesBody;
 
    protected HornetQBuffer buffer = null;
 
    protected int size;
-   
+
    protected boolean disconnect;
-   
+
    protected boolean isPing;
-   
+
    public StompFrame(String command)
    {
       this(command, false);
@@ -94,31 +95,32 @@ public class StompFrame
    @Override
    public String toString()
    {
-      return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " + this.bytesBody;
+      return "StompFrame[command=" + command + ", headers=" + headers + ", content= " + this.body + " bytes " +
+               Arrays.toString(bytesBody);
    }
 
    public String asString()
    {
-      String out = command + '\n';
+      StringBuilder out = new StringBuilder(command + '\n');
       for (Entry<String, String> header : headers.entrySet())
       {
-         out += header.getKey() + ": " + header.getValue() + '\n';
+         out.append(header.getKey() + ": " + header.getValue() + '\n');
       }
-      out += '\n';
-      out += body;
-      return out;
+      out.append('\n');
+      out.append(body);
+      return out.toString();
    }
-   
+
    public boolean isPing()
    {
       return isPing;
    }
-   
+
    public void setPing(boolean ping)
    {
       isPing = ping;
    }
- 
+
    public HornetQBuffer toHornetQBuffer() throws Exception
    {
       if (buffer == null)
@@ -173,17 +175,17 @@ public class StompFrame
    {
       headers.put(key, val);
    }
-   
+
    public Map<String, String> getHeadersMap()
    {
       return headers;
    }
-   
+
    public static class Header
    {
       public String key;
       public String val;
-      
+
       public Header(String key, String val)
       {
          this.key = key;
@@ -199,11 +201,11 @@ public class StompFrame
       {
          return escape(val);
       }
-      
+
       public static String escape(String str)
       {
          int len = str.length();
-         
+
          char[] buffer = new char[2*len];
          int iBuffer = 0;
          for (int i = 0; i < len; i++)
@@ -230,10 +232,10 @@ public class StompFrame
             }
             iBuffer++;
          }
-         
+
          char[] total = new char[iBuffer];
          System.arraycopy(buffer, 0, total, 0, iBuffer);
-         
+
          return new String(total);
       }
    }
@@ -260,7 +262,7 @@ public class StompFrame
       }
       return body;
    }
-   
+
    //Since 1.1, there is a content-type header that needs to take care of
    public byte[] getBodyAsBytes() throws UnsupportedEncodingException
    {

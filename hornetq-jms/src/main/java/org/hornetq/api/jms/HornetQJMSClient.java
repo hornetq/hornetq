@@ -17,7 +17,6 @@ import javax.jms.Topic;
 
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQDestination;
 import org.hornetq.jms.client.HornetQJMSConnectionFactory;
@@ -34,14 +33,18 @@ import org.hornetq.jms.client.HornetQXATopicConnectionFactory;
  */
 public class HornetQJMSClient
 {
-   private static final Logger log = Logger.getLogger(HornetQJMSClient.class);
 
    /**
-    * Create a HornetQConnectionFactory which will receive cluster topology updates from the cluster as servers leave or join and new backups are appointed or removed.
-    * The discoveryAddress and discoveryPort parameters in this method are used to listen for UDP broadcasts which contain connection information for members of the cluster.
-    * The broadcasted connection information is simply used to make an initial connection to the cluster, once that connection is made, up to date
-    * cluster topology information is downloaded and automatically updated whenever the cluster topology changes. If the topology includes backup servers
-    * that information is also propagated to the client so that it can know which server to failover onto in case of live server failure.
+    * Creates a HornetQConnectionFactory that receives cluster topology updates from the cluster as
+    * servers leave or join and new backups are appointed or removed.
+    * <p>
+    * The discoveryAddress and discoveryPort parameters in this method are used to listen for UDP
+    * broadcasts which contain connection information for members of the cluster. The broadcasted
+    * connection information is simply used to make an initial connection to the cluster, once that
+    * connection is made, up to date cluster topology information is downloaded and automatically
+    * updated whenever the cluster topology changes. If the topology includes backup servers that
+    * information is also propagated to the client so that it can know which server to failover onto
+    * in case of live server failure.
     * @param discoveryAddress The UDP group address to listen for updates
     * @param discoveryPort the UDP port to listen for updates
     * @return the HornetQConnectionFactory
@@ -73,15 +76,15 @@ public class HornetQJMSClient
       {
          factory = new HornetQXATopicConnectionFactory(true, groupConfiguration);
       }
-      
+
       return factory;
    }
 
    /**
     * Create a HornetQConnectionFactory which creates session factories from a set of live servers, no HA backup information is propagated to the client
-    * 
+    *
     * The UDP address and port are used to listen for live servers in the cluster
-    * 
+    *
     * @param discoveryAddress The UDP group address to listen for updates
     * @param discoveryPort the UDP port to listen for updates
     * @return the HornetQConnectionFactory
@@ -113,10 +116,10 @@ public class HornetQJMSClient
       {
          factory = new HornetQXATopicConnectionFactory(false, groupConfiguration);
       }
-      
+
       return factory;
    }
-   
+
    /**
     * Create a HornetQConnectionFactory which will receive cluster topology updates from the cluster as servers leave or join and new backups are appointed or removed.
     * The initial list of servers supplied in this method is simply to make an initial connection to the cluster, once that connection is made, up to date
@@ -153,14 +156,14 @@ public class HornetQJMSClient
       {
          factory = new HornetQXATopicConnectionFactory(true, initialServers);
       }
-      
+
       return factory;
    }
 
    /**
     * Create a HornetQConnectionFactory which creates session factories using a static list of transportConfigurations, the HornetQConnectionFactory is not updated automatically
     * as the cluster topology changes, and no HA backup information is propagated to the client
-    * 
+    *
     * @param transportConfigurations
     * @return the HornetQConnectionFactory
     */
@@ -191,10 +194,10 @@ public class HornetQJMSClient
       {
          factory = new HornetQXATopicConnectionFactory(false, transportConfigurations);
       }
-      
+
       return factory;
    }
-   
+
    /**
     * Creates a client-side representation of a JMS Topic.
     *

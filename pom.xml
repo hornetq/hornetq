@@ -562,6 +562,7 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.3.3</version>
             <configuration>
+              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
               <findbugsXmlOutput>true</findbugsXmlOutput>
                <xmlOutput>true</xmlOutput>
                <effort>Max</effort>
@@ -621,6 +622,7 @@
             <artifactId>findbugs-maven-plugin</artifactId>
             <version>2.3.3</version>
             <configuration>
+              <excludeFilterFile>${user.dir}/etc/findbugs-exclude.xml</excludeFilterFile>
                <xmlOutput>true</xmlOutput>
                <effort>Max</effort>
             </configuration>

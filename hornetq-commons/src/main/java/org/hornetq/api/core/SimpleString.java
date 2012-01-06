@@ -29,7 +29,7 @@ import org.hornetq.utils.DataConstants;
  *
  */
 
-public class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
+public final class SimpleString implements CharSequence, Serializable, Comparable<SimpleString>
 {
    private static final long serialVersionUID = 4204223851422244307L;
 

@@ -61,47 +61,39 @@ public class ServerInfo
       double availableMemoryPercent = 100.0 * availableMemory / maxMemory;
       ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
-      String info = "\n**** Server Dump ****\n";
-      info += String.format("date:            %s\n", new Date());
-      info += String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory));
-      info += String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory));
-      info += String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory));
-      info += String.format("available memory: %.2f%%\n", availableMemoryPercent);
-      info += appendPagingInfos();
-      info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
-      info += String.format("# of conns:      %d\n", server.getConnectionCount());
-      info += "********************\n";
-      return info;
+      StringBuilder info = new StringBuilder("\n**** Server Dump ****\n");
+      info.append(String.format("date:            %s\n", new Date()));
+      info.append(String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory)));
+      info.append(String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory)));
+      info.append(String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory)));
+      info.append(String.format("available memory: %.2f%%\n", availableMemoryPercent));
+      info.append(appendPagingInfos());
+      info.append(String.format("# of thread:     %d\n", threadMXBean.getThreadCount()));
+      info.append(String.format("# of conns:      %d\n", server.getConnectionCount()));
+      info.append("********************\n");
+      return info.toString();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    private String appendPagingInfos()
    {
-      String info = "";
-      
+      StringBuilder info = new StringBuilder();
+
       for (SimpleString storeName : pagingManager.getStoreNames())
       {
          PagingStore pageStore;
          try
          {
             pageStore = pagingManager.getPageStore(storeName);
-            info += String.format("\t%s: %s\n",
+            info.append(String.format("\t%s: %s\n",
                                   storeName,
-                                  SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));
+                                      SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() *
+                                               pageStore.getNumberOfPages())));
          }
          catch (Exception e)
          {
-            info += String.format("\t%s: %s\n", storeName, e.getMessage());
+            info.append(String.format("\t%s: %s\n", storeName, e.getMessage()));
          }
       }
-      return info;
+      return info.toString();
    }
-
-   // Inner classes -------------------------------------------------
-
 }

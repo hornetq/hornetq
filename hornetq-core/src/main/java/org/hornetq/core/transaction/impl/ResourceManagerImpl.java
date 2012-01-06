@@ -251,7 +251,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    }
 
-   private class HeuristicCompletionHolder
+   private static final class HeuristicCompletionHolder
    {
       public final boolean isCommit;
 

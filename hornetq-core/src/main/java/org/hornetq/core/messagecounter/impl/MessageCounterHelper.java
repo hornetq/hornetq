@@ -61,7 +61,8 @@ public class MessageCounterHelper
          return null;
       }
 
-      String ret = "<table class=\"hornetq-message-counter\">\n" + "<tr>"
+      String ret0 =
+               "<table class=\"hornetq-message-counter\">\n" + "<tr>"
                    + "<th>Type</th>"
                    + "<th>Name</th>"
                    + "<th>Subscription</th>"
@@ -72,8 +73,8 @@ public class MessageCounterHelper
                    + "<th>DepthDelta</th>"
                    + "<th>Last Add</th>"
                    + "<th>Last Update</th>"
-                   + "</tr>\n";
-
+                        + "</tr>\n";
+      StringBuilder ret = new StringBuilder(ret0);
       for (int i = 0; i < counters.length; i++)
       {
          MessageCounter counter = counters[i];
@@ -88,25 +89,25 @@ public class MessageCounterHelper
          {
             durableStr = Boolean.toString(counter.isDestinationDurable());
          }
-         ret += "<tr bgcolor=\"#" + (i % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">";
+         ret.append("<tr bgcolor=\"#" + (i % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">");
 
-         ret += "<td>" + type + "</td>";
-         ret += "<td>" + counter.getDestinationName() + "</td>";
-         ret += "<td>" + subscription + "</td>";
-         ret += "<td>" + durableStr + "</td>";
-         ret += "<td>" + counter.getCount() + "</td>";
-         ret += "<td>" + MessageCounterHelper.prettify(counter.getCountDelta()) + "</td>";
-         ret += "<td>" + MessageCounterHelper.prettify(counter.getMessageCount()) + "</td>";
-         ret += "<td>" + MessageCounterHelper.prettify(counter.getMessageCountDelta()) + "</td>";
-         ret += "<td>" + MessageCounterHelper.asDate(counter.getLastAddedMessageTime()) + "</td>";
-         ret += "<td>" + MessageCounterHelper.asDate(counter.getLastUpdate()) + "</td>";
+         ret.append("<td>" + type + "</td>");
+         ret.append("<td>" + counter.getDestinationName() + "</td>");
+         ret.append("<td>" + subscription + "</td>");
+         ret.append("<td>" + durableStr + "</td>");
+         ret.append("<td>" + counter.getCount() + "</td>");
+         ret.append("<td>" + MessageCounterHelper.prettify(counter.getCountDelta()) + "</td>");
+         ret.append("<td>" + MessageCounterHelper.prettify(counter.getMessageCount()) + "</td>");
+         ret.append("<td>" + MessageCounterHelper.prettify(counter.getMessageCountDelta()) + "</td>");
+         ret.append("<td>" + MessageCounterHelper.asDate(counter.getLastAddedMessageTime()) + "</td>");
+         ret.append("<td>" + MessageCounterHelper.asDate(counter.getLastUpdate()) + "</td>");
 
-         ret += "</tr>\n";
+         ret.append("</tr>\n");
       }
 
-      ret += "</table>\n";
+      ret.append("</table>\n");
 
-      return ret;
+      return ret.toString();
    }
 
    public static String listMessageCounterHistoryAsHTML(final MessageCounter[] counters)
@@ -116,36 +117,36 @@ public class MessageCounterHelper
          return null;
       }
 
-      String ret = "<ul>\n";
+      StringBuilder ret = new StringBuilder("<ul>\n");
 
       for (MessageCounter counter : counters)
       {
-         ret += "<li>\n";
-         ret += "  <ul>\n";
+         ret.append("<li>\n");
+         ret.append("  <ul>\n");
 
-         ret += "    <li>";
+         ret.append("    <li>");
          // destination name
-         ret += (counter.isDestinationTopic() ? "Topic '" : "Queue '") + counter.getDestinationName() + "'";
-         ret += "</li>\n";
+         ret.append((counter.isDestinationTopic() ? "Topic '" : "Queue '") + counter.getDestinationName() + "'");
+         ret.append("</li>\n");
 
          if (counter.getDestinationSubscription() != null)
          {
-            ret += "    <li>";
-            ret += "Subscription '" + counter.getDestinationSubscription() + "'";
-            ret += "</li>\n";
+            ret.append("    <li>");
+            ret.append("Subscription '" + counter.getDestinationSubscription() + "'");
+            ret.append("</li>\n");
          }
 
-         ret += "    <li>";
+         ret.append("    <li>");
          // table header
-         ret += "<table class=\"hornetq-message-counter-history\">\n";
-         ret += "<tr><th>Date</th>";
+         ret.append("<table class=\"hornetq-message-counter-history\">\n");
+         ret.append("<tr><th>Date</th>");
 
          for (int j = 0; j < 24; j++)
          {
-            ret += "<th>" + j + "</th>";
+            ret.append("<th>" + j + "</th>");
          }
 
-         ret += "<th>Total</th></tr>\n";
+         ret.append("<th>Total</th></tr>\n");
 
          // get history data as CSV string
          StringTokenizer tokens = new StringTokenizer(counter.getHistoryAsString(), ",\n");
@@ -156,10 +157,10 @@ public class MessageCounterHelper
          for (int j = 0; j < days; j++)
          {
             // next day counter row
-            ret += "<tr bgcolor=\"#" + (j % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">";
+            ret.append("<tr bgcolor=\"#" + (j % 2 == 0 ? "FFFFFF" : "F0F0F0") + "\">");
 
             // date
-            ret += "<td>" + tokens.nextToken() + "</td>";
+            ret.append("<td>" + tokens.nextToken() + "</td>");
 
             // 24 hour counters
             int total = 0;
@@ -170,27 +171,27 @@ public class MessageCounterHelper
 
                if (value == -1)
                {
-                  ret += "<td></td>";
+                  ret.append("<td></td>");
                }
                else
                {
-                  ret += "<td>" + value + "</td>";
+                  ret.append("<td>" + value + "</td>");
 
                   total += value;
                }
             }
 
-            ret += "<td>" + total + "</td></tr>\n";
+            ret.append("<td>" + total + "</td></tr>\n");
          }
 
-         ret += "</table></li>\n";
-         ret += "  </ul>\n";
-         ret += "</li>\n";
+         ret.append("</table></li>\n");
+         ret.append("  </ul>\n");
+         ret.append("</li>\n");
       }
 
-      ret += "</ul>\n";
+      ret.append("</ul>\n");
 
-      return ret;
+      return ret.toString();
    }
 
    private static String prettify(final long value)

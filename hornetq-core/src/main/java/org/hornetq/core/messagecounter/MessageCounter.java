@@ -31,9 +31,9 @@ import org.hornetq.core.server.Queue;
 
 /**
  * This class stores message count informations for a given queue
- * 
+ *
  * At intervals this class samples the queue for message count data
- * 
+ *
  * Note that the underlying queue *does not* update statistics every time a message
  * is added since that would reall slow things down, instead we *sample* the queues at
  * regular intervals - this means we are less intrusive on the queue
@@ -114,8 +114,8 @@ public class MessageCounter
 
       setHistoryLimit(daycountmax);
    }
-   
-   private Runnable onTimeExecutor = new Runnable()
+
+   private final Runnable onTimeExecutor = new Runnable()
    {
       public void run()
       {
@@ -124,7 +124,7 @@ public class MessageCounter
          long newMessagesAdded = latestMessagesAdded - lastMessagesAdded;
 
          countTotal += newMessagesAdded;
-         
+
          lastMessagesAdded = latestMessagesAdded;
 
          if (newMessagesAdded > 0)
@@ -137,7 +137,7 @@ public class MessageCounter
 
          // update message history
          updateHistory(newMessagesAdded);
-         
+
       }
    };
 
@@ -150,7 +150,7 @@ public class MessageCounter
    {
       // Actor approach here: Instead of having the Counter locking the queue, we will use the Queue's executor
       // instead of possibly making an lock on the queue.
-      // This way the scheduled Threads will be free to keep doing their pings in case the server is busy with paging or 
+      // This way the scheduled Threads will be free to keep doing their pings in case the server is busy with paging or
       // any other deliveries
       serverQueue.getExecutor().execute(onTimeExecutor);
    }
@@ -301,8 +301,8 @@ public class MessageCounter
 
    /**
     * Get message counter history data as string in format
-    * 
-    * "day count\n  
+    *
+    * "day count\n
     *  Date 1, hour counter 0, hour counter 1, ..., hour counter 23\n
     *  Date 2, hour counter 0, hour counter 1, ..., hour counter 23\n
     *  .....
@@ -313,7 +313,7 @@ public class MessageCounter
     */
    public String getHistoryAsString()
    {
-      String ret = "";
+      StringBuilder ret = new StringBuilder();
 
       // ensure history counters are up to date
       updateHistory(0);
@@ -322,18 +322,18 @@ public class MessageCounter
       synchronized (dayCounters)
       {
          // first line: history day count
-         ret += dayCounters.size() + "\n";
+         ret.append(dayCounters.size() + "\n");
 
          // following lines: day counter data
          for (int i = 0; i < dayCounters.size(); i++)
          {
             DayCounter counter = dayCounters.get(i);
 
-            ret += counter.getDayCounterAsString() + "\n";
+            ret.append(counter.getDayCounterAsString() + "\n");
          }
       }
 
-      return ret;
+      return ret.toString();
    }
 
    @Override
@@ -359,7 +359,7 @@ public class MessageCounter
 
    /**
     * Update message counter history
-    * 
+    *
     * @param newMessages number of new messages to add to the latest day counter
     */
    private void updateHistory(final long newMessages)
@@ -437,7 +437,7 @@ public class MessageCounter
    /**
     * Internal day counter class for one day hour based counter history
     */
-   public static class DayCounter
+   public static final class DayCounter
    {
       static final int HOURS = 24;
 
@@ -500,7 +500,7 @@ public class MessageCounter
       }
 
       /**
-       * Update day counter hour array elements  
+       * Update day counter hour array elements
        *
        * @param newMessages number of new messages since the counter was last updated.
        */
@@ -539,7 +539,7 @@ public class MessageCounter
       }
 
       /**
-       * Finalize day counter hour array elements  
+       * Finalize day counter hour array elements
        */
       void finalizeDayCounter()
       {
@@ -568,25 +568,24 @@ public class MessageCounter
       }
 
       /**
-       * Return day counter data as string with format
-       * "Date, hour counter 0, hour counter 1, ..., hour counter 23"
-       * 
-       * @return  String   day counter data
+       * Return day counter data as string with format<br/>
+       * "Date, hour counter 0, hour counter 1, ..., hour counter 23".
+       * @return String day counter data
        */
       String getDayCounterAsString()
       {
          // first element day counter date
          DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
 
-         String strData = dateFormat.format(date.getTime());
+         StringBuilder strData = new StringBuilder(dateFormat.format(date.getTime()));
 
          // append 24 comma separated hour counter values
          for (int i = 0; i < DayCounter.HOURS; i++)
          {
-            strData += "," + counters[i];
+            strData.append("," + counters[i]);
          }
 
-         return strData;
+         return strData.toString();
       }
    }
 }

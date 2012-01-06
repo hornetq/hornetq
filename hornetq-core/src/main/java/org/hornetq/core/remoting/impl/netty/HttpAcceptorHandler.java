@@ -131,7 +131,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
    /**
     * this is prompted to delivery when a response is available in the response queue.
     */
-   class ResponseRunner implements Runnable
+   final class ResponseRunner implements Runnable
    {
       private final ChannelBuffer buffer;
 
@@ -211,8 +211,8 @@ class HttpAcceptorHandler extends SimpleChannelHandler
       }
 
    }
-   
-   
+
+
    public void shutdown()
    {
       executor.shutdown();
@@ -228,7 +228,7 @@ class HttpAcceptorHandler extends SimpleChannelHandler
    /**
     * a holder class so we know what time  the request first arrived
     */
-   private class ResponseHolder
+   private static final class ResponseHolder
    {
       final HttpResponse response;
 
