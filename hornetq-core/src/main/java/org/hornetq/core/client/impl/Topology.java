@@ -43,13 +43,13 @@ public class Topology implements Serializable
 
    private Executor executor = null;
 
-   /** Used to debug operations.
-    *
-    *  Someone may argue this is not needed. But it's impossible to debg anything related to topology without knowing what node
-    *  or what object missed a Topology update.
-    *
-    *  Hence I added some information to locate debugging here.
-    *  */
+   /**
+    * Used to debug operations.
+    * <p>
+    * Someone may argue this is not needed. But it's impossible to debug anything related to
+    * topology without knowing what node or what object missed a Topology update. Hence I added some
+    * information to locate debugging here.
+    */
    private volatile Object owner;
 
    /**
