@@ -4380,7 +4380,7 @@ public class PagingTest extends ServiceTestBase
          PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
 
          // It's async, so need to wait a bit for it happening
-         while (timeout < System.currentTimeMillis() && store.isPaging())
+         while (timeout > System.currentTimeMillis() && store.isPaging())
          {
             Thread.sleep(100);
          }
