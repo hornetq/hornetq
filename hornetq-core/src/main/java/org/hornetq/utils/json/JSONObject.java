@@ -57,11 +57,11 @@ import java.util.TreeSet;
  * do type checking and type coercion for you.
  * <p>
  * The <code>put</code> methods adds values to an object. For example,
- * 
+ *
  * <pre>
  * myString = new JSONObject().put(&quot;JSON&quot;, &quot;Hello, World!&quot;).toString();
  * </pre>
- * 
+ *
  * produces the string <code>{"JSON": "Hello, World"}</code>.
  * <p>
  * The texts produced by the <code>toString</code> methods strictly conform to the JSON syntax
@@ -1571,20 +1571,18 @@ public class JSONObject
       }
       if (value instanceof JSONString)
       {
-         Object o;
+         String o;
          try
          {
             o = ((JSONString)value).toJSONString();
          }
-         catch (Exception e)
+         catch (RuntimeException e)
          {
             throw new JSONException(e);
          }
-         if (o instanceof String)
-         {
-            return (String)o;
-         }
-         throw new JSONException("Bad value from toJSONString: " + o);
+         if (o == null)
+            throw new JSONException("Bad value from toJSONString: " + o);
+         return o;
       }
       if (value instanceof Number)
       {
@@ -1633,14 +1631,12 @@ public class JSONObject
       {
          if (value instanceof JSONString)
          {
-            Object o = ((JSONString)value).toJSONString();
-            if (o instanceof String)
-            {
-               return (String)o;
-            }
+            String o = ((JSONString)value).toJSONString();
+            if (o != null)
+               return o;
          }
       }
-      catch (Exception e)
+      catch (RuntimeException e)
       {
          /* forget about it */
       }
