@@ -1000,7 +1000,6 @@ public class Base64
 
       // Isolate options
       int gzip = options & Base64.GZIP;
-      int dontBreakLines = options & Base64.DONT_BREAK_LINES;
 
       try
       {
