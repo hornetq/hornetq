@@ -92,7 +92,6 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       {
          if (i % 1000 == 0)
          {
-            System.out.println("lastId = " + lastId);
             // interchanging closes and simulated crashes
             if (close)
             {
