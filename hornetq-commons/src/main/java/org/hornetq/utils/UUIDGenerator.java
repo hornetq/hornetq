@@ -282,12 +282,13 @@ public final class UUIDGenerator
          return null;
       }
 
-      String s = "";
+      StringBuilder s = new StringBuilder();
       for (int i = 0; i < bytes.length - 1; i++)
       {
-         s += Integer.toHexString(bytes[i]) + ":";
+         s.append(Integer.toHexString(bytes[i]));
+         s.append(":");
       }
-      s += bytes[bytes.length - 1];
-      return s;
+      s.append(bytes[bytes.length - 1]);
+      return s.toString();
    }
 }
