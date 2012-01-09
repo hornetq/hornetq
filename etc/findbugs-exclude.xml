@@ -38,4 +38,10 @@
     <Class name="org.hornetq.utils.MemorySize"/>
     <bug pattern="DM_GC"/>
   </Match>
+
+  <match>
+    <!-- Ignore naming convention violations in generated code -->
+    <class name="org.hornetq.core.filter.impl.FilterParser"/>
+    <bug pattern="NM_METHOD_NAMING_CONVENTION"/>
+  </match>
 </FindBugsFilter>

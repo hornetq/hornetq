@@ -570,7 +570,7 @@ Object numericLiteral() :
 {
    literal=<FLOATING_POINT_LITERAL>
    {
-      return new Double(literal.image);
+      return Double.valueOf(literal.image);
    }
  |
    literal=<INTEGER_LITERAL>
@@ -581,7 +581,7 @@ Object numericLiteral() :
       if (number.endsWith(LOFFER_L) || number.endsWith(UPPER_L))
       {
          // chop off the suffix
-         return new Long(number.substring(0, number.length() - 1));
+         return Long.valueOf(number.substring(0, number.length() - 1));
       }
 
       // hex
@@ -596,7 +596,7 @@ Object numericLiteral() :
             if (first >= 8)
             {
                number = Ox + (first - 8) + number.substring(3);
-               return new Long(Long.decode(number).longValue() - Long.MAX_VALUE - 1);
+               return Long.valueOf(Long.decode(number).longValue() - Long.MAX_VALUE - 1);
             }
          }
       }
@@ -612,7 +612,7 @@ Object numericLiteral() :
             if (number.charAt(1) == '1')
             {
                number = ZERRO + number.substring(2);
-               return new Long(Long.decode(number).longValue() - Long.MAX_VALUE - 1);
+               return Long.valueOf(Long.decode(number).longValue() - Long.MAX_VALUE - 1);
             }
          }
       }
