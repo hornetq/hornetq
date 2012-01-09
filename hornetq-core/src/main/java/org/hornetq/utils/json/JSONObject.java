@@ -1453,7 +1453,7 @@ public class JSONObject
          sb.append('}');
          return sb.toString();
       }
-      catch (Exception e)
+      catch (JSONException e)
       {
          return null;
       }

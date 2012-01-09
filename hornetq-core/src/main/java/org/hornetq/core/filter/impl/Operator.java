@@ -25,7 +25,6 @@ package org.hornetq.core.filter.impl;
 import java.util.HashSet;
 
 import org.hornetq.api.core.SimpleString;
-import org.hornetq.core.logging.Logger;
 
 /**
 * Implementations of the operators used in HornetQ filter expressions
@@ -39,8 +38,6 @@ import org.hornetq.core.logging.Logger;
 */
 public class Operator
 {
-   private static final Logger log = Logger.getLogger(Operator.class);
-
    int operation;
 
    Object oper1;
@@ -703,6 +700,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          case LONG:
             switch (class2)
             {
@@ -713,6 +711,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          default:
             throwBadObjectException(class1);
       }
@@ -741,6 +740,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          case LONG:
             switch (class2)
             {
@@ -751,6 +751,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          default:
             throwBadObjectException(class1);
       }
@@ -798,6 +799,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          case LONG:
             switch (class2)
             {
@@ -808,6 +810,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          default:
             throwBadObjectException(class1);
       }
@@ -836,6 +839,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          case LONG:
             switch (class2)
             {
@@ -846,6 +850,7 @@ public class Operator
                default:
                   throwBadObjectException(class2);
             }
+            break;
          default:
             throwBadObjectException(class1);
       }
@@ -949,7 +954,7 @@ public class Operator
             throw new Exception("LIKE ESCAPE: Bad escape character " + escapeString.toString());
          }
 
-         escapeChar = new Character(escapeString.charAt(0));
+         escapeChar = Character.valueOf(escapeString.charAt(0));
       }
 
       if (re == null)
