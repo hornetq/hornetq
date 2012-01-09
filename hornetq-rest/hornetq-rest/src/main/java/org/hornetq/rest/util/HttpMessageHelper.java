@@ -1,16 +1,18 @@
 package org.hornetq.rest.util;
 
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientMessage;
-import org.jboss.resteasy.client.ClientRequest;
-import org.hornetq.rest.HttpHeaderProperty;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.util.List;
+
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.rest.HttpHeaderProperty;
+import org.jboss.resteasy.client.ClientRequest;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -116,11 +118,12 @@ public class HttpMessageHelper
    {
 
       MultivaluedMap<String, String> hdrs = headers.getRequestHeaders();
-      for (String key : hdrs.keySet())
+      for (Entry<String, List<String>> entry : hdrs.entrySet())
       {
+         String key = entry.getKey();
          if (isTransferableHttpHeader(key))
          {
-            List<String> vals = hdrs.get(key);
+            List<String> vals = entry.getValue();
             String value = concatenateHeaderValue(vals);
             message.putStringProperty(HttpHeaderProperty.toPropertyName(key), value);
          }
@@ -132,21 +135,12 @@ public class HttpMessageHelper
    public static String concatenateHeaderValue(List<String> vals)
    {
       if (vals == null) return "";
-      StringBuffer val = null;
+      StringBuilder val = new StringBuilder();
       for (String v : vals)
       {
-         if (val == null)
-         {
-            val = new StringBuffer(v);
-         }
-         else
-         {
             val.append(",").append(v);
-         }
       }
-      String value = "";
-      if (val != null) value = val.toString();
-      return value;
+      return val.toString();
    }
 
 }

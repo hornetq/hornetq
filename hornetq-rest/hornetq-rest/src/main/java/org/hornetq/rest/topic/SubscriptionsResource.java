@@ -1,15 +1,7 @@
 package org.hornetq.rest.topic;
 
-import org.hornetq.api.core.HornetQException;
-import org.hornetq.api.core.SimpleString;
-import org.hornetq.api.core.client.ClientSession;
-import org.hornetq.api.core.client.ClientSessionFactory;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.rest.queue.AcknowledgedQueueConsumer;
-import org.hornetq.rest.queue.Acknowledgement;
-import org.hornetq.rest.queue.DestinationServiceManager;
-import org.hornetq.rest.queue.QueueConsumer;
-import org.hornetq.rest.util.TimeoutTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -24,8 +16,17 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+
+import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.SimpleString;
+import org.hornetq.api.core.client.ClientSession;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.rest.queue.AcknowledgedQueueConsumer;
+import org.hornetq.rest.queue.Acknowledgement;
+import org.hornetq.rest.queue.DestinationServiceManager;
+import org.hornetq.rest.queue.QueueConsumer;
+import org.hornetq.rest.util.TimeoutTask;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -131,7 +132,8 @@ public class SubscriptionsResource implements TimeoutTask.Callback
                                       @Context UriInfo uriInfo)
    {
 
-      if (timeout == null) timeout = new Long(consumerTimeoutSeconds * 1000);
+      if (timeout == null)
+         timeout = Long.valueOf(consumerTimeoutSeconds * 1000);
       boolean deleteWhenIdle = !durable; // default is true if non-durable
       if (destroyWhenIdle != null) deleteWhenIdle = destroyWhenIdle.booleanValue();
 
@@ -202,11 +204,11 @@ public class SubscriptionsResource implements TimeoutTask.Callback
          Response.ResponseBuilder builder = Response.created(location.build());
          if (autoAck)
          {
-            SubscriptionResource.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/auto-ack/" + consumer.getId(), "-1");
+            QueueConsumer.setConsumeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/auto-ack/" + consumer.getId(), "-1");
          }
          else
          {
-            AcknowledgedSubscriptionResource.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId(), "-1");
+            AcknowledgedQueueConsumer.setAcknowledgeNextLink(serviceManager.getLinkStrategy(), builder, uriInfo, uriInfo.getMatchedURIs().get(1) + "/acknowledged/" + consumer.getId(), "-1");
 
          }
          return builder.build();
@@ -425,7 +427,6 @@ public class SubscriptionsResource implements TimeoutTask.Callback
       if (consumer == null)
       {
          String msg = "Failed to match a subscription to URL " + consumerId;
-         //System.out.println(msg);
          throw new WebApplicationException(Response.status(Response.Status.NOT_FOUND)
                  .entity(msg)
                  .type("text/plain").build());
