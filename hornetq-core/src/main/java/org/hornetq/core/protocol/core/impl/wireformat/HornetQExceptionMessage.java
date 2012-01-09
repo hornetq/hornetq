@@ -15,23 +15,14 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
 public class HornetQExceptionMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(HornetQExceptionMessage.class);
-
-   // Attributes ----------------------------------------------------
 
    private HornetQException exception;
 
@@ -87,23 +78,41 @@ public class HornetQExceptionMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof HornetQExceptionMessage == false)
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((exception == null) ? 0 : exception.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
       {
          return false;
       }
-
-      HornetQExceptionMessage r = (HornetQExceptionMessage)other;
-
-      return super.equals(other) && exception.equals(r.exception);
+      if (!(obj instanceof HornetQExceptionMessage))
+      {
+         return false;
+      }
+      HornetQExceptionMessage other = (HornetQExceptionMessage)obj;
+      if (exception == null)
+      {
+         if (other.exception != null)
+         {
+            return false;
+         }
+      }
+      else if (!exception.equals(other.exception))
+      {
+         return false;
+      }
+      return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

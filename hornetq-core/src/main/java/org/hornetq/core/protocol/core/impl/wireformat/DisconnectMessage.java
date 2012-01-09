@@ -17,13 +17,6 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
-/**
- * 
- * A Ping
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- */
 public class DisconnectMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
@@ -31,7 +24,7 @@ public class DisconnectMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private SimpleString nodeID;
-   
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -77,29 +70,47 @@ public class DisconnectMessage extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof DisconnectMessage == false)
-      {
-         return false;
-      }
-
-      DisconnectMessage r = (DisconnectMessage)other;
-
-      return super.equals(other) && nodeID.equals(r.nodeID);
-   }
-
-   @Override
    public final boolean isRequiresConfirmations()
    {
       return false;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      return result;
+   }
 
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof DisconnectMessage))
+      {
+         return false;
+      }
+      DisconnectMessage other = (DisconnectMessage)obj;
+      if (nodeID == null)
+      {
+         if (other.nodeID != null)
+         {
+            return false;
+         }
+      }
+      else if (!nodeID.equals(other.nodeID))
+      {
+         return false;
+      }
+      return true;
+   }
 }

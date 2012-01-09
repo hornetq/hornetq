@@ -79,4 +79,41 @@ public final class BackupRegistrationFailedMessage extends PacketImpl
          errorCode = buffer.readInt();
       }
    }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + errorCode;
+      result = prime * result + ((problem == null) ? 0 : problem.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof BackupRegistrationFailedMessage))
+      {
+         return false;
+      }
+      BackupRegistrationFailedMessage other = (BackupRegistrationFailedMessage)obj;
+      if (errorCode != other.errorCode)
+      {
+         return false;
+      }
+      if (problem != other.problem)
+      {
+         return false;
+      }
+      return true;
+   }
 }

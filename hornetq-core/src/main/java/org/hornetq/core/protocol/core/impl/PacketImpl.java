@@ -14,7 +14,6 @@
 package org.hornetq.core.protocol.core.impl;
 
 import org.hornetq.api.core.HornetQBuffer;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.Packet;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 import org.hornetq.utils.DataConstants;
@@ -28,9 +27,8 @@ public class PacketImpl implements Packet
 {
    // Constants -------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(PacketImpl.class);
-
-   // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
+   // The minimal size for all the packets, Common data for all the packets (look at
+   // PacketImpl.encode)
    public static final int PACKET_HEADERS_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
                                                  DataConstants.SIZE_LONG;
 
@@ -302,19 +300,30 @@ public class PacketImpl implements Packet
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof PacketImpl == false)
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (int)(channelID ^ (channelID >>> 32));
+      result = prime * result + size;
+      result = prime * result + type;
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!(obj instanceof PacketImpl))
       {
          return false;
       }
-
-      PacketImpl r = (PacketImpl)other;
-
-      return r.type == type && r.channelID == channelID;
+      PacketImpl other = (PacketImpl)obj;
+      return (channelID == other.channelID) && (size == other.size) && (type != other.type);
    }
-
-   // Package protected ---------------------------------------------
 
    protected String getParentString()
    {

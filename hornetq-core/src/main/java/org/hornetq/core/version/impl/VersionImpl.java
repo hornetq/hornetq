@@ -14,8 +14,8 @@
 package org.hornetq.core.version.impl;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.version.Version;
 
 /**
@@ -25,15 +25,7 @@ import org.hornetq.core.version.Version;
  */
 public class VersionImpl implements Version, Serializable
 {
-   // Constants -----------------------------------------------------
-
    private static final long serialVersionUID = -5271227256591080403L;
-
-   private static final Logger log = Logger.getLogger(VersionImpl.class);
-
-   // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
 
    private final String versionName;
 
@@ -46,7 +38,7 @@ public class VersionImpl implements Version, Serializable
    private final int incrementingVersion;
 
    private final String versionSuffix;
-   
+
    private final String nettyVersion;
 
    private final int[] compatibleVersionList;
@@ -75,7 +67,7 @@ public class VersionImpl implements Version, Serializable
       this.versionSuffix = versionSuffix;
 
       this.nettyVersion = nettyVersion;
-      
+
       this.compatibleVersionList = compatibleVersionList;
    }
 
@@ -136,33 +128,91 @@ public class VersionImpl implements Version, Serializable
       return compatibleVersionList;
    }
 
-   // Public -------------------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + Arrays.hashCode(compatibleVersionList);
+      result = prime * result + incrementingVersion;
+      result = prime * result + majorVersion;
+      result = prime * result + microVersion;
+      result = prime * result + minorVersion;
+      result = prime * result + ((nettyVersion == null) ? 0 : nettyVersion.hashCode());
+      result = prime * result + ((versionName == null) ? 0 : versionName.hashCode());
+      result = prime * result + ((versionSuffix == null) ? 0 : versionSuffix.hashCode());
+      return result;
+   }
 
    @Override
-   public boolean equals(final Object other)
+   public boolean equals(Object obj)
    {
-      if (other == this)
+      if (this == obj)
       {
          return true;
       }
-      if (other instanceof Version == false)
+      if (obj == null)
       {
          return false;
       }
-      Version v = (Version)other;
-
-      return versionName.equals(v.getVersionName()) && majorVersion == v.getMajorVersion() &&
-             minorVersion == v.getMinorVersion() &&
-             microVersion == v.getMicroVersion() &&
-             versionSuffix.equals(v.getVersionSuffix()) &&
-             incrementingVersion == v.getIncrementingVersion();
+      if (!(obj instanceof VersionImpl))
+      {
+         return false;
+      }
+      VersionImpl other = (VersionImpl)obj;
+      if (!Arrays.equals(compatibleVersionList, other.compatibleVersionList))
+      {
+         return false;
+      }
+      if (incrementingVersion != other.incrementingVersion)
+      {
+         return false;
+      }
+      if (majorVersion != other.majorVersion)
+      {
+         return false;
+      }
+      if (microVersion != other.microVersion)
+      {
+         return false;
+      }
+      if (minorVersion != other.minorVersion)
+      {
+         return false;
+      }
+      if (nettyVersion == null)
+      {
+         if (other.nettyVersion != null)
+         {
+            return false;
+         }
+      }
+      else if (!nettyVersion.equals(other.nettyVersion))
+      {
+         return false;
+      }
+      if (versionName == null)
+      {
+         if (other.versionName != null)
+         {
+            return false;
+         }
+      }
+      else if (!versionName.equals(other.versionName))
+      {
+         return false;
+      }
+      if (versionSuffix == null)
+      {
+         if (other.versionSuffix != null)
+         {
+            return false;
+         }
+      }
+      else if (!versionSuffix.equals(other.versionSuffix))
+      {
+         return false;
+      }
+      return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

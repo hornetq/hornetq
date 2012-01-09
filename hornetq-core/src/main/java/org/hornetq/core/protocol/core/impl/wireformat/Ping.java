@@ -20,12 +20,12 @@ import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.spi.core.protocol.RemotingConnection;
 
 /**
- * 
+ *
  * Ping is sent on the client side at {@link ClientSessionFactoryImpl}
  * At the server's side is treated at {@link RemotingServiceImpl}
- * 
+ *
  * @See {@link RemotingConnection#checkDataReceived()}
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -73,6 +73,12 @@ public class Ping extends PacketImpl
    }
 
    @Override
+   public final boolean isRequiresConfirmations()
+   {
+      return false;
+   }
+
+   @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
@@ -82,29 +88,34 @@ public class Ping extends PacketImpl
    }
 
    @Override
-   public boolean equals(final Object other)
+   public int hashCode()
    {
-      if (other instanceof Ping == false)
-      {
-         return false;
-      }
-
-      Ping r = (Ping)other;
-
-      return super.equals(other) && connectionTTL == r.connectionTTL;
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (int)(connectionTTL ^ (connectionTTL >>> 32));
+      return result;
    }
 
    @Override
-   public final boolean isRequiresConfirmations()
+   public boolean equals(Object obj)
    {
-      return false;
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof Ping))
+      {
+         return false;
+      }
+      Ping other = (Ping)obj;
+      if (connectionTTL != other.connectionTTL)
+      {
+         return false;
+      }
+      return true;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

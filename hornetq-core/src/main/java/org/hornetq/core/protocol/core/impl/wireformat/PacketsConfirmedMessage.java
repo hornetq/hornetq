@@ -17,9 +17,9 @@ import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
- * 
+ *
  * A PacketsConfirmedMessage
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -66,24 +66,6 @@ public class PacketsConfirmedMessage extends PacketImpl
       commandID = buffer.readInt();
    }
 
-   @Override
-   public String toString()
-   {
-      return getParentString() + ", commandID=" + commandID + "]";
-   }
-
-   @Override
-   public boolean equals(final Object other)
-   {
-      if (other instanceof PacketsConfirmedMessage == false)
-      {
-         return false;
-      }
-
-      PacketsConfirmedMessage r = (PacketsConfirmedMessage)other;
-
-      return super.equals(other) && commandID == r.commandID;
-   }
 
    @Override
    public final boolean isRequiresConfirmations()
@@ -91,11 +73,41 @@ public class PacketsConfirmedMessage extends PacketImpl
       return false;
    }
 
-   // Package protected ---------------------------------------------
+   @Override
+   public String toString()
+   {
+      return getParentString() + ", commandID=" + commandID + "]";
+   }
 
-   // Protected -----------------------------------------------------
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + commandID;
+      return result;
+   }
 
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof PacketsConfirmedMessage))
+      {
+         return false;
+      }
+      PacketsConfirmedMessage other = (PacketsConfirmedMessage)obj;
+      if (commandID != other.commandID)
+      {
+         return false;
+      }
+      return true;
+   }
 }
