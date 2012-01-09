@@ -2012,7 +2012,7 @@ public class HornetQServerImpl implements HornetQServer
                      log.warn(e.getMessage(), e);
                   }
                }
-            }.run();
+            }.start();
          }
       }
    }
