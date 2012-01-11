@@ -306,7 +306,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.trace("Sending connection.disconnection packet to " + conn);
          }
 
-         conn.disconnect();
+         conn.disconnect(criticalError);
       }
 
       for (Acceptor acceptor : acceptors)
