@@ -291,6 +291,12 @@ public class QueueControlTest extends ManagementTestBase
       ClientMessage message = session.createMessage(false);
       message.putLongProperty(Message.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
       producer.send(message);
+      
+      long timeout = System.currentTimeMillis() + 5000;
+      while (timeout > System.currentTimeMillis() && queueControl.getScheduledCount() != 1)
+      {
+         Thread.sleep(100);
+      }
 
       Assert.assertEquals(1, queueControl.getScheduledCount());
       ManagementTestBase.consumeMessages(0, session, queue);
