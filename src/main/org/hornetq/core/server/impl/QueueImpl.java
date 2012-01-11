@@ -1222,6 +1222,7 @@ public class QueueImpl implements Queue
    
                try
                {
+                  boolean expired = false;
                   while (iter.hasNext())
                   {
                      MessageReference ref = iter.next();
@@ -1230,6 +1231,7 @@ public class QueueImpl implements Queue
                         if (ref.getMessage().isExpired())
                         {
                            deliveringCount.incrementAndGet();
+                           expired = true;
                            expire(ref);
                            iter.remove();
                            refRemoved(ref);
@@ -1239,6 +1241,11 @@ public class QueueImpl implements Queue
                      {
                         log.warn("Error expiring reference " + ref, e);
                      }
+                  }
+                  
+                  if (expired && pageIterator != null && pageIterator.hasNext())
+                  {
+                     scheduleDepage();
                   }
                }
                finally

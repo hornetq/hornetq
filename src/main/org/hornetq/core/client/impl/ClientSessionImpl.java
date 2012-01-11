@@ -1146,8 +1146,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
       }
 
+      HashMap<String, String> metaDataToSend;
+      
+      synchronized (metadata)
+      {
+         metaDataToSend = new HashMap<String, String>(metadata);
+      }
+      
       // Resetting the metadata after failover
-      for (Map.Entry<String, String> entries : metadata.entrySet())
+      for (Map.Entry<String, String> entries : metaDataToSend.entrySet())
       {
          sendPacketWithoutLock(new SessionAddMetaDataMessageV2(entries.getKey(), entries.getValue(), false));
       }

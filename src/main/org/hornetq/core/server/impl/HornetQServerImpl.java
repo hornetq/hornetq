@@ -493,7 +493,7 @@ public class HornetQServerImpl implements HornetQServer
 
       }
 
-      remotingService.stop();
+      remotingService.stop(criticalIOError);
 
       // We close all the exception in an attempt to let any pending IO to finish
       // to avoid scenarios where the send or ACK got to disk but the response didn't get to the client

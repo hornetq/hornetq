@@ -23,7 +23,9 @@ import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.ServerLocator;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -37,6 +39,8 @@ import org.hornetq.tests.util.ServiceTestBase;
  */
 public class ExpiryLargeMessageTest extends ServiceTestBase
 {
+
+   private static final Logger log = Logger.getLogger(ExpiryLargeMessageTest.class);
 
    // Constants -----------------------------------------------------
    final SimpleString EXPIRY = new SimpleString("my-expiry");
@@ -129,25 +133,32 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
 
             producer.send(message);
          }
+         
+         session.close();
 
          server.stop();
          server.start();
+         
+         Queue queueExpiry = server.locateQueue(EXPIRY);
+         Queue myQueue = server.locateQueue(MY_QUEUE);
 
          sf = locator.createSessionFactory();
-
-         session = sf.createSession(true, true, 0);
-
+         
          Thread.sleep(1500);
 
-         // just to try expiring
-         ClientConsumer cons = session.createConsumer(MY_QUEUE);
-         assertNull(cons.receive(1000));
-
-         session.close();
+         long timeout = System.currentTimeMillis() + 5000;
+         while (timeout > System.currentTimeMillis() && queueExpiry.getMessageCount() != numberOfMessages)
+         {
+            // What the Expiry Scan would be doing
+            myQueue.expireReferences();
+            Thread.sleep(50);
+         }
+         
+         assertEquals(50, queueExpiry.getMessageCount());
 
          session = sf.createSession(false, false);
 
-         cons = session.createConsumer(EXPIRY);
+         ClientConsumer cons = session.createConsumer(EXPIRY);
          session.start();
 
          // Consume half of the messages to make sure all the messages are paging (on the second try)
@@ -167,7 +178,7 @@ public class ExpiryLargeMessageTest extends ServiceTestBase
             cons = session.createConsumer(EXPIRY);
             session.start();
 
-            System.out.println("Trying " + rep);
+            log.info("Trying " + rep);
             for (int i = 0; i < numberOfMessages / 2; i++)
             {
                ClientMessage message = cons.receive(5000);

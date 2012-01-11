@@ -4350,26 +4350,7 @@ public class PagingTest extends ServiceTestBase
 
          session.start();
 
-         // ClientConsumer consumer = session.createConsumer(PagingTest.ADDRESS.concat("=1"));
-         //
-         // for (int i = 0; i < numberOfMessages; i++)
-         // {
-         // message = consumer.receive(500000);
-         // assertNotNull(message);
-         // message.acknowledge();
-         //
-         // // assertEquals(msg, message.getIntProperty("propTest").intValue());
-         //
-         // System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
-         // }
-         //
-         // session.commit();
-
-         // consumer.close();
-
          session.deleteQueue(PagingTest.ADDRESS.concat("=1"));
-         // server.stop();
-         // server.start();
 
          sf = locator.createSessionFactory();
 
@@ -4385,8 +4366,6 @@ public class PagingTest extends ServiceTestBase
             assertNotNull(message);
             message.acknowledge();
 
-            // assertEquals(msg, message.getIntProperty("propTest").intValue());
-
             System.out.println("i = " + i + " msg = " + message.getIntProperty("propTest"));
          }
 
@@ -4395,8 +4374,17 @@ public class PagingTest extends ServiceTestBase
          assertNull(consumer.receiveImmediate());
 
          consumer.close();
+         
+         long timeout = System.currentTimeMillis() + 10000;
+         
+         PagingStore store = server.getPagingManager().getPageStore(ADDRESS);
 
          // It's async, so need to wait a bit for it happening
+         while (timeout > System.currentTimeMillis() && store.isPaging())
+         {
+            Thread.sleep(100);
+         }
+
          assertFalse(server.getPagingManager().getPageStore(ADDRESS).isPaging());
 
          server.stop();

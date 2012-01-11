@@ -23,14 +23,56 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
 
 /**
- * 
+ *
  * A SimpleStringTest
- * 
+ *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class SimpleStringTest extends UnitTestCase
 {
+   /**
+    * Converting back and forth between char and byte requires care as char is unsigned.
+    * @see SimpleString#getChars(int, int, char[], int)
+    * @see SimpleString#charAt(int)
+    * @see SimpleString#split(char)
+    */
+   public void testGetChar()
+   {
+      SimpleString p1 = new SimpleString("foo");
+      SimpleString p2 = new SimpleString("bar");
+      for (int i = 0; i < 1 << 16; i++)
+      {
+         String msg = "expecting " + i;
+         char c = (char)i;
+         SimpleString s = new SimpleString(String.valueOf(c));
+
+         char[] c1 = new char[1];
+         s.getChars(0, 1, c1, 0);
+         assertEquals(msg, c, c1[0]);
+         assertEquals(msg, c, s.charAt(0));
+         SimpleString s2 = s.concat(c);
+         assertEquals(msg, c, s2.charAt(1));
+
+         // test splitting with chars
+         SimpleString sSplit = new SimpleString("foo" + String.valueOf(c) + "bar");
+         SimpleString[] chunks = sSplit.split(c);
+         SimpleString[] split1 = p1.split(c);
+         SimpleString[] split2 = p2.split(c);
+         assertEquals(split1.length + split2.length, chunks.length);
+         int j = 0;
+
+         for (SimpleString iS : split1)
+         {
+            assertEquals(iS.toString(), iS, chunks[j++]);
+         }
+         for (SimpleString iS : split2)
+         {
+            assertEquals(iS.toString(), iS, chunks[j++]);
+         }
+      }
+   }
+
    public void testString() throws Exception
    {
       final String str = "hello123ABC__524`16254`6125!%^$!%$!%$!%$!%!$%!$$!\uA324";
