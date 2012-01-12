@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.jms.Connection;
+import javax.jms.JMSException;
 import javax.jms.Session;
 
 import junit.framework.Assert;
@@ -30,7 +31,6 @@ import org.hornetq.api.jms.HornetQJMSClient;
 import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.core.config.BroadcastGroupConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.HornetQServers;
@@ -39,7 +39,7 @@ import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
- * 
+ *
  * A HornetQConnectionFactoryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -60,7 +60,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testDefaultConstructor() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
                           null,
@@ -98,9 +98,8 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
          Assert.fail("Should throw exception");
       }
-      catch (Exception e)
+      catch (JMSException e)
       {
-         e.printStackTrace();
          // Ok
       }
       if (conn != null)
@@ -115,7 +114,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testDefaultConstructorAndSetConnectorPairs() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
 
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
@@ -157,7 +156,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
    public void testDiscoveryConstructor() throws Exception
    {
       DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(groupAddress, groupPort);
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.CF);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.CF);
       assertFactoryParams(cf,
                           null,
                           groupConfiguration,
@@ -196,7 +195,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testStaticConnectorListConstructor() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
                           null,
@@ -236,7 +235,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testStaticConnectorLiveConstructor() throws Exception
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
       assertFactoryParams(cf,
                           new TransportConfiguration[]{liveTC},
                           null,
@@ -278,7 +277,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testGettersAndSetters()
    {
-      HornetQConnectionFactory cf = (HornetQConnectionFactory) HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
+      HornetQConnectionFactory cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.CF, liveTC);
 
       long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
