@@ -151,7 +151,7 @@ public interface RemotingConnection extends BufferHandler
    /**
     * Disconnect the connection, closing all channels
     */
-   void disconnect();
+   void disconnect(boolean criticalError);
    
    /**
     * returns true if any data has been received since the last time this method was called.

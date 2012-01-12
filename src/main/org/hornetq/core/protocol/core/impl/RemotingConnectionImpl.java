@@ -361,7 +361,7 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       callClosingListeners();
    }
    
-   public void disconnect()
+   public void disconnect(final boolean criticalError)
    {
       Channel channel0 = getChannel(0, -1);
 
@@ -371,13 +371,25 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       
       Set<Channel> allChannels = new HashSet<Channel>(channels.values());
 
-      removeAllChannels();
+      if (!criticalError)
+      {
+         removeAllChannels();
+      }
+      else
+      {
+         // We can't hold a lock if a critical error is happening...
+         // as other threads will be holding the lock while hanging on IO
+         channels.clear();
+      }
 
       // Now we are 100% sure that no more packets will be processed we can flush then send the disconnect
       
-      for (Channel channel: allChannels)
+      if (!criticalError)
       {
-         channel.flushConfirmations();
+         for (Channel channel: allChannels)
+         {
+            channel.flushConfirmations();
+         }
       }
 
       Packet disconnect = new DisconnectMessage(nodeID);
