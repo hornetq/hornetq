@@ -11,26 +11,26 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.filter.impl;
+package org.hornetq.core.filter.impl;
 
 import java.util.HashSet;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.impl.Operator;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A OperatorTest
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
+ *
  * Created 3 nov. 2008 17:22:22
  *
  *
  */
-public class OperatorTest extends UnitTestCase
+public class OperatorTest extends TestCase
 {
 
    // Constants -----------------------------------------------------
@@ -376,7 +376,7 @@ public class OperatorTest extends UnitTestCase
 
    public void test_IN() throws Exception
    {
-      HashSet set = new HashSet();
+      HashSet<SimpleString> set = new HashSet<SimpleString>();
       set.add(new SimpleString("foo"));
       set.add(new SimpleString("bar"));
       set.add(new SimpleString("baz"));
@@ -384,7 +384,7 @@ public class OperatorTest extends UnitTestCase
       SimpleString foo = new SimpleString("foo");
 
       OperatorTest.assertSuccess(Operator.IN, foo, set, true);
-      OperatorTest.assertSuccess(Operator.IN, foo, new HashSet(), false);
+      OperatorTest.assertSuccess(Operator.IN, foo, new HashSet<SimpleString>(), false);
 
       // incompatible types
       OperatorTest.assertFailure(Operator.IN, true, set);
@@ -392,7 +392,7 @@ public class OperatorTest extends UnitTestCase
 
    public void test_NOT_IN() throws Exception
    {
-      HashSet set = new HashSet();
+      HashSet<SimpleString> set = new HashSet<SimpleString>();
       set.add(new SimpleString("foo"));
       set.add(new SimpleString("bar"));
       set.add(new SimpleString("baz"));
@@ -400,7 +400,7 @@ public class OperatorTest extends UnitTestCase
       SimpleString foo = new SimpleString("foo");
 
       OperatorTest.assertSuccess(Operator.NOT_IN, foo, set, false);
-      OperatorTest.assertSuccess(Operator.NOT_IN, foo, new HashSet(), true);
+      OperatorTest.assertSuccess(Operator.NOT_IN, foo, new HashSet<SimpleString>(), true);
 
       // incompatible types
       OperatorTest.assertFailure(Operator.NOT_IN, true, set);
@@ -456,13 +456,4 @@ public class OperatorTest extends UnitTestCase
                                  pattern,
                                  new SimpleString("must be a single char"));
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

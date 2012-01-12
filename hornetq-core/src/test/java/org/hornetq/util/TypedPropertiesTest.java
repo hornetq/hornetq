@@ -11,11 +11,11 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
-
+package org.hornetq.util;
 import java.util.Iterator;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQBuffers;
@@ -26,17 +26,9 @@ import org.hornetq.utils.TypedProperties;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
  */
-public class TypedPropertiesTest extends UnitTestCase
+public class TypedPropertiesTest extends TestCase
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   // Static --------------------------------------------------------
 
    private static void assertEqualsTypeProperties(final TypedProperties expected, final TypedProperties actual)
    {
@@ -253,12 +245,4 @@ public class TypedPropertiesTest extends UnitTestCase
 
       super.tearDown();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

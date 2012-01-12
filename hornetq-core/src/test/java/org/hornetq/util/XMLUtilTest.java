@@ -11,11 +11,11 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
+package org.hornetq.util;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
-import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,7 +25,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class XMLUtilTest extends UnitTestCase
+public class XMLUtilTest extends TestCase
 {
    // Constructors --------------------------------------------------
 
@@ -131,7 +131,6 @@ public class XMLUtilTest extends UnitTestCase
       catch (IllegalArgumentException e)
       {
          // OK
-         e.printStackTrace();
       }
    }
 
@@ -176,7 +175,6 @@ public class XMLUtilTest extends UnitTestCase
       catch (IllegalArgumentException e)
       {
          // OK
-         e.printStackTrace();
       }
    }
 

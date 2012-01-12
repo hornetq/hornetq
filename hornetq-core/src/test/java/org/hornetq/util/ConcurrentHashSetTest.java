@@ -11,14 +11,14 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
+package org.hornetq.util;
 
 import java.util.Iterator;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ConcurrentSet;
 
@@ -28,7 +28,7 @@ import org.hornetq.utils.ConcurrentSet;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ConcurrentHashSetTest extends UnitTestCase
+public class ConcurrentHashSetTest extends TestCase
 {
    // Constants -----------------------------------------------------
 

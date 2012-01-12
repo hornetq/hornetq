@@ -11,22 +11,22 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
+package org.hornetq.util;
 
 import java.util.concurrent.CountDownLatch;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
-import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.TimeAndCounterIDGenerator;
 
 /**
  * A TimeAndCounterIDGeneratorTest
- * 
+ *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> Created 24-Sep-08 3:42:25 PM
  */
-public class TimeAndCounterIDGeneratorTest extends UnitTestCase
+public class TimeAndCounterIDGeneratorTest extends TestCase
 {
 
    // Constants -----------------------------------------------------

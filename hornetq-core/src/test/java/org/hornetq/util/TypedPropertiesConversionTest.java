@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.util;
+package org.hornetq.util;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;

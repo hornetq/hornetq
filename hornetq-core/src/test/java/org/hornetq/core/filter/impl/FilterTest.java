@@ -11,35 +11,31 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.unit.core.filter.impl;
+package org.hornetq.core.filter.impl;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.filter.impl.FilterImpl;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.RandomUtil;
-import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * Tests the compliance with the HornetQ Filter syntax.
  *
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version $Revision: 3514 $
  */
-public class FilterTest extends UnitTestCase
+public class FilterTest extends TestCase
 {
-   private static final Logger log = Logger.getLogger(FilterTest.class);
-
    private Filter filter;
 
    private ServerMessage message;
 
+   @Override
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -164,7 +160,7 @@ public class FilterTest extends UnitTestCase
 
       testBoolean("MyBoolean", true);
    }
-   
+
    public void testDifferentNullString() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
@@ -236,31 +232,31 @@ public class FilterTest extends UnitTestCase
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT IN ('foo','jms','test')"));
 
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testNOT_LIKEWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp NOT LIKE '1_3'"));
 
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testIS_NOT_NULLWithNullProperty() throws Exception
    {
       filter = FilterImpl.createFilter(new SimpleString("myNullProp IS NOT NULL"));
-      
+
       assertFalse(filter.match(message));
-      
+
       message.putStringProperty("myNullProp", "JMS");
       assertTrue(filter.match(message));
    }
-   
+
    public void testStringLike() throws Exception
    {
       // test LIKE operator with no wildcards
