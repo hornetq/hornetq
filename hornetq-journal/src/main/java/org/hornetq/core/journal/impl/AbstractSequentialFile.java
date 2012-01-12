@@ -103,7 +103,10 @@ abstract class AbstractSequentialFile implements SequentialFile
          close();
       }
 
-      file.delete();
+      if (!file.delete())
+      {
+         log.error("Failed to delete file " + this);
+      }
    }
 
    public void copyTo(SequentialFile newFileName) throws Exception

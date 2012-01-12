@@ -32,9 +32,8 @@ import org.jboss.kernel.spi.config.KernelConfig;
 import org.jboss.kernel.spi.deployment.KernelDeployment;
 
 /**
- * This is the method in which the HornetQ server can be deployed externall outside of jBoss. Alternatively a user can embed
- * by using the same code as in main
- *
+ * This is the method in which the HornetQ server can be deployed externally outside of jBoss.
+ * Alternatively a user can embed by using the same code as in main
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class HornetQBootstrapServer extends BasicBootstrap
@@ -84,7 +83,10 @@ public class HornetQBootstrapServer extends BasicBootstrap
       final File file = new File(dirName + "/STOP_ME");
       if (file.exists())
       {
-         file.delete();
+         if (!file.delete())
+         {
+            log.error("Failed to delete " + file.getAbsolutePath());
+         }
       }
       final Timer timer = new Timer("HornetQ Server Shutdown Timer", true);
       timer.scheduleAtFixedRate(new TimerTask()
