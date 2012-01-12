@@ -40,9 +40,24 @@ public class BackupSyncLargeMessageTest extends BackupSyncJournalTest
                    getAllMessageFileIds(dir).size());
       createProducerSendSomeMessages();
       startBackupFinishSyncing();
-      // File dir = new
-      // File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
       receiveMsgsInRange(0, n_msgs / 2);
+      assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
+   }
+
+   public void testDeleteLargeMessagesDuringSync() throws Exception
+   {
+      File dir = new File(backupServer.getServer().getConfiguration().getLargeMessagesDirectory());
+      assertEquals("Should not have any large messages... previous test failed to clean up?", 0,
+                   getAllMessageFileIds(dir).size());
+      createProducerSendSomeMessages();
+
+      backupServer.start();
+      waitForComponent(backupServer.getServer(), 5);
+      receiveMsgsInRange(0, n_msgs / 2);
+
+      startBackupFinishSyncing();
+      backupServer.stop();
+
       assertEquals("we really ought to delete these after delivery", n_msgs / 2, getAllMessageFileIds(dir).size());
    }
 

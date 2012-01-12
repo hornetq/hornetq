@@ -13,6 +13,7 @@
 
 package org.hornetq.core.replication;
 
+import java.util.List;
 import java.util.Set;
 
 import org.hornetq.api.core.HornetQException;
@@ -125,4 +126,13 @@ public interface ReplicationManager extends HornetQComponent
     * @throws Exception
     */
    void syncPages(SequentialFile file, long id, SimpleString pageStore) throws Exception;
+
+   /**
+    * Reserves several LargeMessage IDs in the backup.
+    * <p>
+    * Doing this before hand removes the need of synchronizing large-message deletes with the
+    * largeMessageSyncList.
+    * @param largeMessageIDs
+    */
+   void sendLargeMessageIdListMessage(List<Long> largeMessageIDs);
 }

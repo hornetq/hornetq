@@ -138,9 +138,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#incrementDelayDeletionCount()
-    */
+   @Override
    public void incrementDelayDeletionCount()
    {
 
@@ -158,37 +156,20 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return "LargeServerMessage[messageID=" + messageID + ", durable=" + durable + ", address=" + getAddress()  + ",properties=" + properties.toString() + "]";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setPaged()
-    */
+   @Override
    public void setPaged()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setPendingRecordID(long)
-    */
+   @Override
    public void setPendingRecordID(long pendingRecordID)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#getPendingRecordID()
-    */
+   @Override
    public long getPendingRecordID()
    {
       return -1;
-   }
-
-   /*
-    * (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setReplicationSync(boolean)
-    */
-   @Override
-   public void setReplicationSync(boolean sync)
-   {
-      // TODO Auto-generated method stub
-
    }
 
    @Override
@@ -196,13 +177,4 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
       return null;
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
 }

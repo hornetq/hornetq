@@ -26,6 +26,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -161,6 +162,8 @@ public interface StorageManager extends HornetQComponent
     */
    LargeServerMessage createLargeMessage(long id, MessageInternal message) throws Exception;
 
+   SequentialFile createFileForLargeMessage(final long messageID, String extension);
+
    void prepare(long txID, Xid xid) throws Exception;
 
    void commit(long txID) throws Exception;
@@ -274,4 +277,11 @@ public interface StorageManager extends HornetQComponent
     * Typical scenario is a broken connection.
     */
    void stopReplication();
+
+   /**
+    * @param appendFile
+    * @param messageID
+    * @param bytes
+    */
+   void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception;
 }

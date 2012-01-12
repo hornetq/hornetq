@@ -15,21 +15,22 @@ package org.hornetq.core.server;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.replication.ReplicatedLargeMessage;
 
 /**
  * A LargeMessage
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public interface LargeServerMessage extends ServerMessage
+public interface LargeServerMessage extends ServerMessage, ReplicatedLargeMessage
 {
    void addBytes(byte[] bytes) throws Exception;
 
    /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
    void setLinkedMessage(LargeServerMessage message);
-   
+
    void setPendingRecordID(long pendingRecordID);
-   
+
    long getPendingRecordID();
 
    boolean isFileExists() throws Exception;
@@ -48,13 +49,6 @@ public interface LargeServerMessage extends ServerMessage
    void incrementDelayDeletionCount();
 
    void decrementDelayDeletionCount() throws Exception;
-
-   /**
-    * This method only has relevance in a backup server.
-    * @param sync {@code true} if this file is meant for appends of a message that needs to be
-    *           sync'ed with the live.
-    */
-   void setReplicationSync(boolean sync);
 
    /**
     * @return

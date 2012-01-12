@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -251,9 +252,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#largeMessageBegin(byte[])
-    */
+   @Override
    public void largeMessageBegin(final long messageId)
    {
       if (enabled)
@@ -270,9 +269,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#largeMessageWrite(long, byte[])
-    */
+   @Override
    public void largeMessageWrite(final long messageId, final byte[] body)
    {
       if (enabled)
@@ -595,5 +592,13 @@ public class ReplicationManagerImpl implements ReplicationManager
    {
       if (enabled)
          sendReplicatePacket(new ReplicationStartSyncMessage(nodeID));
+   }
+
+   @Override
+   public void sendLargeMessageIdListMessage(List<Long> largeMessageIDs)
+   {
+      if (enabled)
+         sendReplicatePacket(new ReplicationStartSyncMessage(largeMessageIDs));
+
    }
 }

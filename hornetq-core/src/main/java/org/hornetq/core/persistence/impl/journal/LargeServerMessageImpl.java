@@ -54,7 +54,6 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
    private long pendingRecordID = -1;
 
    private boolean paged;
-   private boolean replicationSync;
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
 
@@ -107,9 +106,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       paged = true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#addBytes(byte[])
-    */
+   @Override
    public synchronized void addBytes(final byte[] bytes) throws Exception
    {
       validateFile();
@@ -239,6 +236,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
       return true;
    }
 
+   @Override
    public synchronized void deleteFile() throws Exception
    {
       validateFile();
@@ -430,14 +428,10 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    private String getExtension()
    {
-      if (replicationSync)
-         return ".sync";
       return durable ? ".msg" : ".tmp";
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
-    */
+   @Override
    public void setLinkedMessage(final LargeServerMessage message)
    {
       if (file != null)
@@ -521,18 +515,10 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
          return bytesRead;
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.message.BodyEncoder#getLargeBodySize()
-       */
+      @Override
       public long getLargeBodySize()
       {
          return bodySize;
       }
-   }
-
-   @Override
-   public void setReplicationSync(boolean sync)
-   {
-      replicationSync = sync;
    }
 }

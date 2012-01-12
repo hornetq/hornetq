@@ -2725,12 +2725,13 @@ public class JournalImpl extends JournalBase implements TestableJournal, Journal
    /**
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should
     *           update the number of pendingTransactions on the current file
+    * @throws Exception
     */
    private JournalFile appendRecord(final JournalInternalRecord encoder,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
-                                    final IOAsyncTask parameterCallback) throws Exception
+ final IOAsyncTask parameterCallback) throws Exception
    {
       checkJournalIsLoaded();
 

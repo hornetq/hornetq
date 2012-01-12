@@ -44,6 +44,7 @@ import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager.JournalContent;
+import org.hornetq.core.persistence.impl.journal.LargeServerMessageInSync;
 import org.hornetq.core.protocol.core.Channel;
 import org.hornetq.core.protocol.core.ChannelHandler;
 import org.hornetq.core.protocol.core.Packet;
@@ -64,9 +65,9 @@ import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPageWriteMessag
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage;
+import org.hornetq.core.protocol.core.impl.wireformat.ReplicationStartSyncMessage.SyncDataType;
 import org.hornetq.core.protocol.core.impl.wireformat.ReplicationSyncFileMessage;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.server.impl.QuorumManager;
@@ -97,7 +98,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
    /** Files reserved in each journal for synchronization of existing data from the 'live' server. */
    private final Map<JournalContent, Map<Long, JournalSyncFile>> filesReservedForSync =
             new HashMap<JournalContent, Map<Long, JournalSyncFile>>();
-   private final Map<Long, LargeServerMessage> largeMessagesOnSync = new HashMap<Long, LargeServerMessage>();
 
    /**
     * Used to hold the real Journals before the backup is synchronized. This field should be
@@ -111,8 +111,8 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex =
             new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
-   private final ConcurrentMap<Long, LargeServerMessage> largeMessages =
-            new ConcurrentHashMap<Long, LargeServerMessage>();
+   private final ConcurrentMap<Long, ReplicatedLargeMessage> largeMessages =
+            new ConcurrentHashMap<Long, ReplicatedLargeMessage>();
 
    // Used on tests, to simulate failures on delete pages
    private boolean deletePages = true;
@@ -285,8 +285,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
           return;
       }
 
-      // This could be null if the backup server is being
-      // shut down without any live server connecting here
+      // Channel may be null if there isn't a connection to a live server
       if (channel != null)
       {
          channel.close();
@@ -309,17 +308,11 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
       pageIndex.clear();
 
-      for (LargeServerMessage largeMessage : largeMessages.values())
+      for (ReplicatedLargeMessage largeMessage : largeMessages.values())
       {
          largeMessage.releaseResources();
       }
       largeMessages.clear();
-
-      for (LargeServerMessage largeMessage : largeMessagesOnSync.values())
-      {
-         largeMessage.releaseResources();
-      }
-      largeMessagesOnSync.clear();
 
       for (Entry<JournalContent, Map<Long, JournalSyncFile>> entry : filesReservedForSync.entrySet())
       {
@@ -444,42 +437,17 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
             journal.synchronizationUnlock();
          }
       }
-      synchronized (largeMessagesOnSync)
+      ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+      for (Entry<Long, ReplicatedLargeMessage> entry : largeMessages.entrySet())
       {
-         synchronized (largeMessages)
+         ReplicatedLargeMessage lm = entry.getValue();
+         if (lm instanceof LargeServerMessageInSync)
          {
-            ByteBuffer buffer = ByteBuffer.allocate(10 * 1024);
-            for (Entry<Long, LargeServerMessage> entry : largeMessages.entrySet())
-            {
-               Long id = entry.getKey();
-               LargeServerMessage lm = entry.getValue();
-               if (largeMessagesOnSync.containsKey(id))
-               {
-                  SequentialFile sq = lm.getFile();
-                  LargeServerMessage mainLM = largeMessagesOnSync.get(id);
-                  SequentialFile mainSeqFile = mainLM.getFile();
-                  for (;;)
-                  {
-                     buffer.rewind();
-                     int size = sq.read(buffer);
-                     mainSeqFile.writeInternal(buffer);
-                     if (size < buffer.capacity())
-                     {
-                        break;
-                     }
-                  }
-               }
-               else
-               {
-                  // these are large-messages created after sync started
-                  largeMessagesOnSync.put(id, lm);
-               }
-            }
-            largeMessages.clear();
-            largeMessages.putAll(largeMessagesOnSync);
-            largeMessagesOnSync.clear();
+            LargeServerMessageInSync lmSync = (LargeServerMessageInSync)lm;
+            lmSync.joinSyncedData(buffer);
          }
       }
+
       journalsHolder = null;
       quorumManager.setLiveID(liveID);
       server.setRemoteBackupUpToDate(liveID);
@@ -487,7 +455,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       return;
    }
 
-   private void handleReplicationSynchronization(ReplicationSyncFileMessage msg) throws Exception
+   private synchronized void handleReplicationSynchronization(ReplicationSyncFileMessage msg) throws Exception
    {
       Long id = Long.valueOf(msg.getId());
       byte[] data = msg.getData();
@@ -496,24 +464,19 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       {
          case LARGE_MESSAGE:
          {
-            synchronized (largeMessagesOnSync)
+            ReplicatedLargeMessage largeMessage = lookupLargeMessage(id, false);
+            if (!(largeMessage instanceof LargeServerMessageInSync))
             {
-               LargeServerMessage largeMessage = largeMessagesOnSync.get(id);
-               if (largeMessage == null)
-               {
-                  largeMessage = storage.createLargeMessage();
-                  largeMessage.setDurable(true);
-                  largeMessage.setMessageID(id);
-                  largeMessagesOnSync.put(id, largeMessage);
-               }
-               channel = largeMessage.getFile();
+               log.error("large message sync: largeMessage instance is incompatible with it, ignoring data");
+               return;
             }
+            LargeServerMessageInSync largeMessageInSync=(LargeServerMessageInSync)largeMessage;
+            channel = largeMessageInSync.getSyncFile();
             break;
          }
          case PAGE:
          {
             Page page = getPage(msg.getPageStore(), (int)msg.getId());
-
             channel = page.getFile();
             break;
          }
@@ -565,31 +528,51 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
          return;
       }
 
-      final Journal journal = journalsHolder.get(packet.getJournalContentType());
+
       synchronized (this)
       {
          if (!started)
             return;
-         if (packet.getNodeID() != null)
+         switch (packet.getDataType())
          {
-            quorumManager.setLiveID(packet.getNodeID());
-         }
-         Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(packet.getJournalContentType());
-         log.info("Journal " + packet.getJournalContentType() + ". Reserving fileIDs for synchronization: " +
-                  Arrays.toString(packet.getFileIds()));
+            case LargeMessages:
+               for (long msgID : packet.getFileIds())
+               {
+                  createLargeMessage(msgID, true);
+               }
+               break;
+            case JournalBindings:
+            case JournalMessages:
 
-         for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
-         {
-            mapToFill.put(entry.getKey(), new JournalSyncFile(entry.getValue()));
+               final JournalContent journalContent = SyncDataType.getJournalContentType(packet.getDataType());
+               final Journal journal = journalsHolder.get(journalContent);
+
+               if (packet.getNodeID() != null)
+               {
+                  // At the start of replication, we still do not know which is the nodeID that the live uses.
+                  // This is the point where the backup gets this information.
+                  quorumManager.setLiveID(packet.getNodeID());
+               }
+               Map<Long, JournalSyncFile> mapToFill = filesReservedForSync.get(journalContent);
+               log.info("Journal " + journalContent + ". Reserving fileIDs for synchronization: " +
+                        Arrays.toString(packet.getFileIds()));
+
+               for (Entry<Long, JournalFile> entry : journal.createFilesForBackupSync(packet.getFileIds()).entrySet())
+               {
+                  mapToFill.put(entry.getKey(), new JournalSyncFile(entry.getValue()));
+               }
+               FileWrapperJournal syncJournal = new FileWrapperJournal(journal);
+               registerJournal(journalContent.typeByte, syncJournal);
+               break;
+            default:
+               throw new HornetQException(HornetQException.INTERNAL_ERROR, "unhandled data type!");
          }
-         FileWrapperJournal syncJournal = new FileWrapperJournal(journal);
-         registerJournal(packet.getJournalContentType().typeByte, syncJournal);
       }
    }
 
    private void handleLargeMessageEnd(final ReplicationLargeMessageEndMessage packet)
    {
-      LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), true);
+      ReplicatedLargeMessage message = lookupLargeMessage(packet.getMessageId(), true);
 
       if (message != null)
       {
@@ -609,7 +592,7 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
     */
    private void handleLargeMessageWrite(final ReplicationLargeMessageWriteMessage packet) throws Exception
    {
-      LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), false);
+      ReplicatedLargeMessage message = lookupLargeMessage(packet.getMessageId(), false);
       if (message != null)
       {
          message.addBytes(packet.getBody());
@@ -624,9 +607,9 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       compareJournalInformation(request.getJournalInformation());
    }
 
-   private LargeServerMessage lookupLargeMessage(final long messageId, final boolean delete)
+   private ReplicatedLargeMessage lookupLargeMessage(final long messageId, final boolean delete)
    {
-      LargeServerMessage message;
+      ReplicatedLargeMessage message;
 
       if (delete)
       {
@@ -635,18 +618,6 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
       else
       {
          message = largeMessages.get(messageId);
-         if (message == null)
-         {
-            synchronized (largeMessages)
-            {
-               if (!server.isRemoteBackupUpToDate())
-               {
-                  // in case we need to append data to a file while still sync'ing the backup
-                  createLargeMessage(messageId, true);
-                  message = largeMessages.get(messageId);
-               }
-            }
-         }
       }
 
       if (message == null)
@@ -671,10 +642,14 @@ public class ReplicationEndpoint implements ChannelHandler, HornetQComponent
 
    private void createLargeMessage(final long id, boolean sync)
    {
-      LargeServerMessage msg = storage.createLargeMessage();
+      ReplicatedLargeMessage msg;
+      if (sync)
+         msg = new LargeServerMessageInSync(storage);
+      else
+         msg = storage.createLargeMessage();
+
       msg.setDurable(true);
       msg.setMessageID(id);
-      msg.setReplicationSync(sync);
       largeMessages.put(id, msg);
    }
 

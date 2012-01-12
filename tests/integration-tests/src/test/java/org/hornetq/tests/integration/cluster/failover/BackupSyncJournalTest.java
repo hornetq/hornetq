@@ -24,7 +24,7 @@ public class BackupSyncJournalTest extends FailoverTestBase
 
    private static final int BACKUP_WAIT_TIME = 20;
    private ServerLocatorInternal locator;
-   private ClientSessionFactoryInternal sessionFactory;
+   protected ClientSessionFactoryInternal sessionFactory;
    private ClientSession session;
    private ClientProducer producer;
    private BackupSyncDelay syncDelay;

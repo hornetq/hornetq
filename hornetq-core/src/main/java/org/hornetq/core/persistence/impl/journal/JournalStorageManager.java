@@ -381,7 +381,7 @@ public class JournalStorageManager implements StorageManager
                messageFiles = prepareJournalForCopy(originalMessageJournal, JournalContent.MESSAGES, nodeID);
                bindingsFiles = prepareJournalForCopy(originalBindingsJournal, JournalContent.BINDINGS, nodeID);
                pageFilesToSync = getPageInformationForSync(pagingManager);
-               largeMessageFilesToSync = getLargeMessageInformation();
+                  largeMessageFilesToSync = getLargeMessageInformation();
             }
             finally
             {
@@ -469,14 +469,14 @@ public class JournalStorageManager implements StorageManager
     private Map<SimpleString, Collection<Integer>> getPageInformationForSync(PagingManager pagingManager)
             throws Exception
     {
-        Map<SimpleString, Collection<Integer>> info = new HashMap<SimpleString, Collection<Integer>>();
-        for (SimpleString storeName : pagingManager.getStoreNames())
-            {
-                PagingStore store = pagingManager.getPageStore(storeName);
-                info.put(storeName, store.getCurrentIds());
-                store.forceAnotherPage();
-            }
-        return info;
+      Map<SimpleString, Collection<Integer>> info = new HashMap<SimpleString, Collection<Integer>>();
+      for (SimpleString storeName : pagingManager.getStoreNames())
+      {
+         PagingStore store = pagingManager.getPageStore(storeName);
+         info.put(storeName, store.getCurrentIds());
+         store.forceAnotherPage();
+      }
+      return info;
     }
 
     private void sendLargeMessageFiles(Map<String, Long> largeMessageFilesToSync) throws Exception
@@ -509,30 +509,35 @@ public class JournalStorageManager implements StorageManager
      */
     private Map<String, Long> getLargeMessageInformation() throws Exception
     {
-        Map<String, Long> largeMessages = new HashMap<String, Long>();
-        List<String> filenames = largeMessagesFactory.listFiles("msg");
-        for (String filename : filenames)
-            {
-                SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
-                long size = seqFile.size();
-                largeMessages.put(filename, size);
-            }
-        return largeMessages;
+       final String prefix = "msg";
+      Map<String, Long> largeMessages = new HashMap<String, Long>();
+      List<String> filenames = largeMessagesFactory.listFiles(prefix);
+
+      List<Long> idList = new ArrayList<Long>();
+      for (String filename : filenames)
+      {
+         idList.add(Long.valueOf(filename.substring(0, filename.length() - (prefix.length() + 1))));
+         SequentialFile seqFile = largeMessagesFactory.createSequentialFile(filename, 1);
+         long size = seqFile.size();
+         largeMessages.put(filename, size);
+      }
+      replicator.sendLargeMessageIdListMessage(idList);
+      return largeMessages;
     }
 
     /**
      * Send an entire journal file to a replicating backup server.
      */
    private void sendJournalFile(JournalFile[] journalFiles, JournalContent type) throws Exception
-    {
-        for (JournalFile jf : journalFiles)
-            {
-                if (!started)
-                    return;
-                replicator.syncJournalFile(jf, type);
-                jf.setCanReclaim(true);
-            }
-    }
+   {
+      for (JournalFile jf : journalFiles)
+      {
+         if (!started)
+            return;
+         replicator.syncJournalFile(jf, type);
+         jf.setCanReclaim(true);
+      }
+   }
 
    private JournalFile[]
             prepareJournalForCopy(Journal journal, JournalContent contentType, String nodeID) throws Exception
@@ -546,23 +551,23 @@ public class JournalStorageManager implements StorageManager
    @Override
    public void waitOnOperations() throws Exception
     {
-        if (!started)
-            {
-                JournalStorageManager.log.warn("Server is stopped");
-                throw new IllegalStateException("Server is stopped");
-            }
-        waitOnOperations(0);
+      if (!started)
+      {
+         JournalStorageManager.log.warn("Server is stopped");
+         throw new IllegalStateException("Server is stopped");
+      }
+      waitOnOperations(0);
     }
 
    @Override
     public boolean waitOnOperations(final long timeout) throws Exception
     {
-        if (!started)
-            {
-                JournalStorageManager.log.warn("Server is stopped");
-                throw new IllegalStateException("Server is stopped");
-            }
-        return getContext().waitCompletion(timeout);
+      if (!started)
+      {
+         JournalStorageManager.log.warn("Server is stopped");
+         throw new IllegalStateException("Server is stopped");
+      }
+      return getContext().waitCompletion(timeout);
     }
 
    @Override
@@ -665,7 +670,8 @@ public class JournalStorageManager implements StorageManager
         return new LargeServerMessageImpl(this);
     }
 
-   protected final void addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
+   public final void
+            addBytesToLargeMessage(final SequentialFile file, final long messageId, final byte[] bytes)
       throws Exception
    {
       readLock();
@@ -2241,7 +2247,7 @@ public class JournalStorageManager implements StorageManager
      * @param messageID
      * @return
      */
-   SequentialFile createFileForLargeMessage(final long messageID, String extension)
+   public SequentialFile createFileForLargeMessage(final long messageID, String extension)
     {
       return largeMessagesFactory.createSequentialFile(messageID + extension, -1);
     }

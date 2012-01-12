@@ -101,14 +101,4 @@ public class DeleteMessagesOnStartupTest extends StorageManagerTestBase
 
       };
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-
 }

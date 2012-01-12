@@ -28,6 +28,7 @@ import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.message.impl.MessageInternal;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -351,92 +352,67 @@ public class NullStorageManager implements StorageManager
       return true;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
-    */
    public void setReplicator(final ReplicationManager replicator)
    {
       throw new IllegalStateException("Null Persistence should never be used as replicated");
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
-    */
    public void afterCompleteOperations(final IOAsyncTask run)
    {
       run.done();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#waitOnOperations()
-    */
+   @Override
    public void waitOnOperations() throws Exception
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#getContext()
-    */
+   @Override
    public OperationContext getContext()
    {
       return dummyContext;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#newContext()
-    */
+   @Override
    public OperationContext newContext(final Executor executor)
    {
       return dummyContext;
    }
 
-
+   @Override
    public OperationContext newSingleThreadContext()
    {
       return dummyContext;
    }
 
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
-    */
+   @Override
    public void setContext(final OperationContext context)
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#clearContext()
-    */
+   @Override
    public void clearContext()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#recoverAddressSettings()
-    */
+   @Override
    public List<PersistedAddressSetting> recoverAddressSettings() throws Exception
    {
       return Collections.emptyList();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storeAddressSetting(org.hornetq.core.persistconfig.PersistedAddressSetting)
-    */
+   @Override
    public void storeAddressSetting(PersistedAddressSetting addressSetting) throws Exception
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#recoverPersistedRoles()
-    */
+   @Override
    public List<PersistedRoles> recoverPersistedRoles() throws Exception
    {
       return Collections.emptyList();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storeSecurityRoles(org.hornetq.core.persistconfig.PersistedRoles)
-    */
+   @Override
    public void storeSecurityRoles(PersistedRoles persistedRoles) throws Exception
    {
    }
@@ -512,54 +488,44 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#deletePageCounter(long, long)
-    */
+   @Override
    public void deletePageCounter(long txID, long recordID) throws Exception
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, long, int)
-    */
+   @Override
    public long storePageCounterInc(long txID, long queueID, int add) throws Exception
    {
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#storePageCounterInc(long, int)
-    */
+   @Override
    public long storePageCounterInc(long queueID, int add) throws Exception
    {
       return 0;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#commit(long, boolean)
-    */
+   @Override
    public void commit(long txID, boolean lineUpContext) throws Exception
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#lineUpContext()
-    */
+   @Override
    public void lineUpContext()
    {
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#confirmPendingLargeMessageTX(org.hornetq.core.transaction.Transaction, long, long)
-    */
+   @Override
    public void confirmPendingLargeMessageTX(Transaction transaction, long messageID, long recordID) throws Exception
    {
    }
 
+   @Override
    public void confirmPendingLargeMessage(long recordID) throws Exception
    {
    }
 
+   @Override
    public void stop(boolean ioCriticalError) throws Exception
    {
    }
@@ -595,6 +561,18 @@ public class NullStorageManager implements StorageManager
 
    @Override
    public void stopReplication()
+   {
+      // no-op
+   }
+
+   @Override
+   public SequentialFile createFileForLargeMessage(long messageID, String extension)
+   {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
+   public void addBytesToLargeMessage(SequentialFile appendFile, long messageID, byte[] bytes) throws Exception
    {
       // no-op
    }
