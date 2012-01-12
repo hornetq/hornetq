@@ -1,3 +1,4 @@
+*~
 target
 tests/jms-tests/data
 org.eclipse.jdt.core.prefs
@@ -638,37 +639,6 @@ tests/**/server.lock
 # /examples/soak/tx-restarts/
 /examples/soak/tx-restarts/build
 
-# /hornetq-bootstrap/
-/hornetq-bootstrap/target
-/hornetq-bootstrap/.project
-
-# /hornetq-core/
-/hornetq-core/target
-/hornetq-core/.project
-
-# /hornetq-core-client/
-/hornetq-core-client/target
-/hornetq-core-client/.project
-
-# /hornetq-jboss-as-integration/
-/hornetq-jboss-as-integration/target
-/hornetq-jboss-as-integration/.project
-
-# /hornetq-jms/
-/hornetq-jms/target
-/hornetq-jms/.project
-
-# /hornetq-jms-client/
-/hornetq-jms-client/target
-/hornetq-jms-client/.project
-
-# /hornetq-logging/
-/hornetq-logging/target
-/hornetq-logging/.project
-
-# /hornetq-ra/
-/hornetq-ra/.project
-
 # /hornetq-ra/hornetq-ra-jar/
 /hornetq-ra/hornetq-ra-jar/target
 /hornetq-ra/hornetq-ra-jar/.project
@@ -677,9 +647,6 @@ tests/**/server.lock
 /hornetq-ra/hornetq-ra-rar/target
 /hornetq-ra/hornetq-ra-rar/.project
 
-# /hornetq-rest/
-/hornetq-rest/.project
-
 # /hornetq-rest/docbook/
 /hornetq-rest/docbook/target
 
@@ -687,26 +654,14 @@ tests/**/server.lock
 /hornetq-rest/hornetq-rest/target
 /hornetq-rest/hornetq-rest/.project
 
-# /hornetq-service-sar/
-/hornetq-service-sar/target
-/hornetq-service-sar/.project
+# /hornetq-rest/
+/hornetq-*/.project
+/hornetq-*/target
 
-# /hornetq-spring-integration/
-/hornetq-spring-integration/target
-/hornetq-spring-integration/.project
-
-# /hornetq-twitter-integration/
-/hornetq-twitter-integration/target
-/hornetq-twitter-integration/.project
-/tests/concurrent-tests/.project
-/tests/integration-tests/.project
-/tests/jms-tests/.project
-/tests/joram-tests/.project
-/tests/performance-tests/.project
 /tests/.project
-/tests/soak-tests/.project
-/tests/stress-tests/.project
-/tests/timing-tests/.project
-/tests/unit-tests/.project
+/tests/*-tests/.project
+
 /docs/rest-manual/.project
 /docs/quickstart-guide/.project
+
+native/autom4te.cache
