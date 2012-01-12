@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.unit.core.deployers.impl;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -55,13 +55,13 @@ public class XMLDeployerTest extends UnitTestCase
                                        + "   <test name=\"test6\">content6</test>\n"
                                        + "</configuration>";
 
-   private URL url;
+   private URI url;
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      url = new URL("http://localhost");
+      url = new URI("http://localhost");
    }
 
    public void testDeploy() throws Exception
@@ -248,7 +248,7 @@ public class XMLDeployerTest extends UnitTestCase
       }
 
       @Override
-      protected Element getRootElement(final URL url)
+      protected Element getRootElement(final URI url)
       {
          return element;
       }

@@ -29,7 +29,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    private static final Logger log = Logger.getLogger(AddressSettingsDeployer.class);
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
-   
+
    private final FileConfigurationParser parser = new FileConfigurationParser();
 
    public AddressSettingsDeployer(final DeploymentManager deploymentManager,
@@ -41,7 +41,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    /**
     * the names of the elements to deploy
-    * @return the names of the elements todeploy
+    * @return the names of the elements to deploy
     */
    @Override
    public String[] getElementTagName()
@@ -63,7 +63,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    @Override
    public void deploy(final Node node) throws Exception
    {
-      
+
       Pair<String, AddressSettings> setting = parser.parseAddressSettings(node);
 
       addressSettingsRepository.addMatch(setting.getA(), setting.getB());
@@ -76,7 +76,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    }
 
    /**
-    * undeploys an element
+    * Undeploys an element.
     * @param node the element to undeploy
     * @throws Exception .
     */
@@ -89,7 +89,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    }
 
    /**
-    * the key attribute for theelement, usually 'name' but can be overridden
+    * the key attribute for the element, usually 'name' but can be overridden
     * @return the key attribute
     */
    @Override

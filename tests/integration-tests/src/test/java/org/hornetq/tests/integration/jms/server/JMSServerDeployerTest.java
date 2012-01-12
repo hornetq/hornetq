@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.jms.server;
 
-import java.net.URL;
+import java.net.URI;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
@@ -24,7 +24,6 @@ import junit.framework.Assert;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.logging.Logger;
@@ -161,7 +160,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
-      URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
+      URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
       String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
                                                          "/acme/fullConfigurationConnectionFactory",
@@ -240,13 +239,13 @@ public class JMSServerDeployerTest extends ServiceTestBase
          Assert.assertEquals("fullConfigurationTopic", topic.getTopicName());
       }
    }
-   
+
    public void testDeployFullConfiguration2() throws Exception
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager);
 
       String conf = "hornetq-jms-for-JMSServerDeployerTest2.xml";
-      URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
+      URI confURL = Thread.currentThread().getContextClassLoader().getResource(conf).toURI();
 
       String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",
                                                          "/acme/fullConfigurationConnectionFactory",
@@ -338,7 +337,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       config = createBasicConfig();
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      
+
       DiscoveryGroupConfiguration dcg = new DiscoveryGroupConfiguration("mygroup", "172.16.8.10",
                                                                         "243.7.7.7", 12345,
                                                                         5432, 5432);

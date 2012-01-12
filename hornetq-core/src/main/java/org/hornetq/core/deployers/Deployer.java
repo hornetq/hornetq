@@ -13,7 +13,7 @@
 
 package org.hornetq.core.deployers;
 
-import java.net.URL;
+import java.net.URI;
 
 import org.hornetq.core.server.HornetQComponent;
 
@@ -33,24 +33,22 @@ public interface Deployer extends HornetQComponent
 
    /**
     * Deploy the URL for the first time
-    *
-    * @param url The resource todeploy
+    * @param uri The resource todeploy
     * @throws Exception .
     */
-   void deploy(URL url) throws Exception;
+   void deploy(URI uri) throws Exception;
 
    /**
     * Redeploys a URL if changed
-    *
-    * @param url The resource to redeploy
+    * @param uri The resource to redeploy
     * @throws Exception .
     */
-   void redeploy(URL url) throws Exception;
+   void redeploy(URI uri) throws Exception;
 
    /**
     * Undeploys a resource that has been removed
-    * @param url The Resource that was deleted
+    * @param uri The Resource that was deleted
     * @throws Exception .
     */
-   void undeploy(URL url) throws Exception;
+   void undeploy(URI uri) throws Exception;
 }

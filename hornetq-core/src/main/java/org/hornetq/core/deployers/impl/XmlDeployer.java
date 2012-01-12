@@ -15,7 +15,7 @@ package org.hornetq.core.deployers.impl;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,7 +40,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
 
    protected static final String NAME_ATTR = "name";
 
-   private final Map<URL, Map<String, Node>> configuration = new HashMap<URL, Map<String, Node>>();
+   private final Map<URI, Map<String, Node>> configuration = new HashMap<URI, Map<String, Node>>();
 
    private final DeploymentManager deploymentManager;
 
@@ -60,7 +60,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     * @param name the name of the element
     * @param e .
     */
-   public synchronized void addToConfiguration(final URL url, final String name, final Node e)
+   public synchronized void addToConfiguration(final URI url, final String name, final Node e)
    {
       Map<String, Node> map = configuration.get(url);
       if (map == null)
@@ -77,7 +77,8 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     * @param url The resource to redeploy
     * @throws Exception .
     */
-   public synchronized void redeploy(final URL url) throws Exception
+   @Override
+   public synchronized void redeploy(final URI url) throws Exception
    {
       Element e = getRootElement(url);
       List<String> added = new ArrayList<String>();
@@ -129,26 +130,27 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
 
    /**
     * Undeploys a resource that has been removed
-    * @param url The Resource that was deleted
+    * @param uri The Resource that was deleted
     * @throws Exception .
     */
-   public synchronized void undeploy(final URL url) throws Exception
+   @Override
+   public synchronized void undeploy(final URI uri) throws Exception
    {
-      Set<String> keys = configuration.get(url).keySet();
+      Set<String> keys = configuration.get(uri).keySet();
       for (String key : keys)
       {
-         undeploy(configuration.get(url).get(key));
+         undeploy(configuration.get(uri).get(key));
       }
-      configuration.remove(url);
+      configuration.remove(uri);
    }
 
    /**
     * Deploy the URL for the first time
-    *
-    * @param url The resource todeploy
+    * @param url The resource to deploy
     * @throws Exception .
     */
-   public synchronized void deploy(final URL url) throws Exception
+   @Override
+   public synchronized void deploy(final URI url) throws Exception
    {
       Element e = getRootElement(url);
 
@@ -271,7 +273,7 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
    public abstract void deploy(final Node node) throws Exception;
 
    /**
-    * Validate the DOM 
+    * Validate the DOM
     */
    public abstract void validate(final Node rootNode) throws Exception;
 
@@ -282,15 +284,15 @@ public abstract class XmlDeployer implements Deployer, HornetQComponent
     */
    public abstract void undeploy(final Node node) throws Exception;
 
-   protected Element getRootElement(final URL url) throws Exception
+   protected Element getRootElement(final URI url) throws Exception
    {
-      Reader reader = new InputStreamReader(url.openStream());
+      Reader reader = new InputStreamReader(url.toURL().openStream());
       String xml = org.hornetq.utils.XMLUtil.readerToString(reader);
       xml = org.hornetq.utils.XMLUtil.replaceSystemProps(xml);
       return org.hornetq.utils.XMLUtil.stringToElement(xml);
    }
 
-   private boolean hasNodeChanged(final URL url, final Node child, final String name)
+   private boolean hasNodeChanged(final URI url, final Node child, final String name)
    {
       String newTextContent = child.getTextContent();
       String origTextContent = configuration.get(url).get(name).getTextContent();

@@ -16,6 +16,9 @@ package org.hornetq.core.deployers.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
    private final List<Deployer> deployers = new ArrayList<Deployer>();
 
-   private final Map<Pair<URL, Deployer>, DeployInfo> deployed = new HashMap<Pair<URL, Deployer>, DeployInfo>();
+   private final Map<Pair<URI, Deployer>, DeployInfo> deployed = new HashMap<Pair<URI, Deployer>, DeployInfo>();
 
    private ScheduledExecutorService scheduler;
 
@@ -122,28 +125,29 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
             while (urls.hasMoreElements())
             {
-               URL url = urls.nextElement();
+               URI uri = urls.nextElement().toURI();
 
-               FileDeploymentManager.log.debug("Got url " + url);
+               FileDeploymentManager.log.debug("Got URI " + uri);
 
                try
                {
-                  FileDeploymentManager.log.debug("Deploying " + url + " for " + deployer.getClass().getSimpleName());
-                  deployer.deploy(url);
+                  FileDeploymentManager.log.debug("Deploying " + uri + " for " + deployer.getClass().getSimpleName());
+                  deployer.deploy(uri);
                }
                catch (Exception e)
                {
-                  FileDeploymentManager.log.error("Error deploying " + url, e);
+                  FileDeploymentManager.log.error("Error deploying " + uri, e);
                }
 
-               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+               Pair<URI, Deployer> pair = new Pair<URI, Deployer>(uri, deployer);
 
-               deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
+               deployed.put(pair, new DeployInfo(deployer, getFileFromURI(uri).lastModified()));
             }
          }
       }
    }
 
+   @Override
    public synchronized void unregisterDeployer(final Deployer deployer) throws Exception
    {
       if (deployers.remove(deployer))
@@ -154,9 +158,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
             Enumeration<URL> urls = Thread.currentThread().getContextClassLoader().getResources(filename);
             while (urls.hasMoreElements())
             {
-               URL url = urls.nextElement();
+               URI url = urls.nextElement().toURI();
 
-               Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+               Pair<URI, Deployer> pair = new Pair<URI, Deployer>(url, deployer);
 
                deployed.remove(pair);
             }
@@ -164,9 +168,9 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
    }
 
-   private File getFileFromURL(final URL url) throws UnsupportedEncodingException
+   private File getFileFromURI(final URI uri) throws MalformedURLException, UnsupportedEncodingException
    {
-      return new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+      return new File(URLDecoder.decode(uri.toURL().getFile(), "UTF-8"));
    }
 
    /**
@@ -192,62 +196,74 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                while (urls.hasMoreElements())
                {
                   URL url = urls.nextElement();
+                  URI uri;
+                  try
+                  {
+                     uri = url.toURI();
+                  } catch (URISyntaxException e) {
+                     log.error("Error deploying " + url + ": " + e.getMessage(), e);
+                     continue;
+                  }
 
-                  Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
+                  Pair<URI, Deployer> pair = new Pair<URI, Deployer>(uri, deployer);
 
                   DeployInfo info = deployed.get(pair);
 
-                  long newLastModified = getFileFromURL(url).lastModified();
+                  long newLastModified = getFileFromURI(uri).lastModified();
 
                   if (info == null)
                   {
                      try
                      {
-                        deployer.deploy(url);
+                        deployer.deploy(uri);
 
-                        deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, getFileFromURI(uri).lastModified()));
                      }
                      catch (Exception e)
                      {
-                        FileDeploymentManager.log.error("Error deploying " + url, e);
+                        FileDeploymentManager.log.error("Error deploying " + uri, e);
                      }
                   }
                   else if (newLastModified > info.lastModified)
                   {
                      try
                      {
-                        deployer.redeploy(url);
+                        deployer.redeploy(uri);
 
-                        deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, getFileFromURI(uri).lastModified()));
                      }
                      catch (Exception e)
                      {
-                        FileDeploymentManager.log.error("Error redeploying " + url, e);
+                        FileDeploymentManager.log.error("Error redeploying " + uri, e);
                      }
                   }
                }
             }
          }
-         List<Pair<URL, Deployer>> toRemove = new ArrayList<Pair<URL, Deployer>>();
-         for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
+         List<Pair<URI, Deployer>> toRemove = new ArrayList<Pair<URI, Deployer>>();
+         for (Map.Entry<Pair<URI, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
-            Pair<URL, Deployer> pair = entry.getKey();
-            if (!fileExists(pair.getA()))
+            Pair<URI, Deployer> pair = entry.getKey();
+            try
             {
-               try
+               if (!fileExists(pair.getA()))
                {
                   Deployer deployer = entry.getValue().deployer;
                   FileDeploymentManager.log.debug("Undeploying " + deployer + " with url " + pair.getA());
                   deployer.undeploy(pair.getA());
                   toRemove.add(pair);
                }
-               catch (Exception e)
-               {
-                  FileDeploymentManager.log.error("Error undeploying " + pair.getA(), e);
-               }
+            }
+            catch (URISyntaxException e)
+            {
+               FileDeploymentManager.log.error("Error undeploying " + pair.getA() + ": " + e.getMessage(), e);
+            }
+            catch (Exception e)
+            {
+               FileDeploymentManager.log.error("Error undeploying " + pair.getA(), e);
             }
          }
-         for (Pair<URL, Deployer> pair : toRemove)
+         for (Pair<URI, Deployer> pair : toRemove)
          {
             deployed.remove(pair);
          }
@@ -263,7 +279,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       return deployers;
    }
 
-   public synchronized Map<Pair<URL, Deployer>, DeployInfo> getDeployed()
+   public synchronized Map<Pair<URI, Deployer>, DeployInfo> getDeployed()
    {
       return deployed;
    }
@@ -271,22 +287,25 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    // Private -------------------------------------------------------
 
    /**
-    * Checks if the URL is among the current thread context class loader's resources.
-    *
-    * We do not check that the corresponding file exists using File.exists() directly as it would fail
-    * in the case the resource is loaded from inside an EAR file (see https://jira.jboss.org/jira/browse/HORNETQ-122)
+    * Checks if the URI is among the current thread context class loader's resources.
+    * <p>
+    * We do not check that the corresponding file exists using File.exists() directly as it would
+    * fail in the case the resource is loaded from inside an EAR file (see
+    * https://jira.jboss.org/jira/browse/HORNETQ-122)
+    * @throws URISyntaxException
     */
-   private boolean fileExists(final URL resourceURL)
+   private boolean fileExists(final URI resourceURI) throws URISyntaxException
    {
       try
       {
-         File f = getFileFromURL(resourceURL); // this was the orginal line, which doesnt work for File-URLs with white
-         // spaces: File f = new File(resourceURL.getPath());
+         File f = getFileFromURI(resourceURI); // this was the original line, which doesn't work for
+                                               // File-URLs with white spaces: File f = new
+                                               // File(resourceURL.getPath());
          Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(f.getName());
          while (resources.hasMoreElements())
          {
-            URL url = resources.nextElement();
-            if (url.equals(resourceURL))
+            URI url = resources.nextElement().toURI();
+            if (url.equals(resourceURI))
             {
                return true;
             }
