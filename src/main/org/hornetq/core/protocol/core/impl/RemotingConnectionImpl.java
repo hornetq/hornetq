@@ -377,6 +377,8 @@ public class RemotingConnectionImpl implements BufferHandler, CoreRemotingConnec
       }
       else
       {
+         // We can't hold a lock if a critical error is happening...
+         // as other threads will be holding the lock while hanging on IO
          channels.clear();
       }
 
