@@ -24,16 +24,12 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class ClusterTopologyChangeMessage_V2 extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
    private boolean exit;
-   
+
    private String nodeID;
-   
+
    private Pair<TransportConfiguration, TransportConfiguration> pair;
-   
+
    private long uniqueEventID;
 
    private boolean last;
@@ -47,24 +43,24 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
 
       this.nodeID = nodeID;
-      
+
       this.pair = pair;
-      
+
       this.last = last;
-      
+
       this.exit = false;
-      
+
       this.uniqueEventID = uniqueEventID;
    }
-   
+
    public ClusterTopologyChangeMessage_V2(final long uniqueEventID, final String nodeID)
    {
       super(PacketImpl.CLUSTER_TOPOLOGY_V2);
-      
+
       this.exit = true;
-      
+
       this.nodeID = nodeID;
-      
+
       this.uniqueEventID = uniqueEventID;
    }
 
@@ -84,12 +80,12 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
    {
       return pair;
    }
-   
+
    public boolean isLast()
    {
       return last;
    }
-   
+
    /**
     * @return the uniqueEventID
     */
@@ -97,13 +93,13 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
    {
       return uniqueEventID;
    }
- 
+
    public boolean isExit()
    {
       return exit;
    }
-   
-   
+
+
 
    @Override
    public void encodeRest(final HornetQBuffer buffer)
@@ -170,13 +166,69 @@ public class ClusterTopologyChangeMessage_V2 extends PacketImpl
       }
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (exit ? 1231 : 1237);
+      result = prime * result + (last ? 1231 : 1237);
+      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      result = prime * result + ((pair == null) ? 0 : pair.hashCode());
+      result = prime * result + (int)(uniqueEventID ^ (uniqueEventID >>> 32));
+      return result;
+   }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof ClusterTopologyChangeMessage_V2))
+      {
+         return false;
+      }
+      ClusterTopologyChangeMessage_V2 other = (ClusterTopologyChangeMessage_V2)obj;
+      if (exit != other.exit)
+      {
+         return false;
+      }
+      if (last != other.last)
+      {
+         return false;
+      }
+      if (nodeID == null)
+      {
+         if (other.nodeID != null)
+         {
+            return false;
+         }
+      }
+      else if (!nodeID.equals(other.nodeID))
+      {
+         return false;
+      }
+      if (pair == null)
+      {
+         if (other.pair != null)
+         {
+            return false;
+         }
+      }
+      else if (!pair.equals(other.pair))
+      {
+         return false;
+      }
+      if (uniqueEventID != other.uniqueEventID)
+      {
+         return false;
+      }
+      return true;
+   }
 }

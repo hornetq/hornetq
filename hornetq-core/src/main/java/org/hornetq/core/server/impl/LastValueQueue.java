@@ -21,6 +21,7 @@ import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.cursor.PageSubscription;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -32,12 +33,12 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 
 /**
- * A queue that will discard messages if a newer message with the same MessageImpl.HDR_LAST_VALUE_NAME property value.
- * In other words it only retains the last value
- * 
+ * A queue that will discard messages if a newer message with the same
+ * {@link MessageImpl#HDR_LAST_VALUE_NAME} property value. In other words it only retains the last
+ * value
+ * <p>
  * This is useful for example, for stock prices, where you're only interested in the latest value
  * for a particular stock
- * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> rewrite
  */
@@ -229,17 +230,17 @@ public class LastValueQueue extends QueueImpl
       {
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
-      
+
       public void setPersistedCount(int count)
       {
          ref.setPersistedCount(count);
       }
-      
+
       public int getPersistedCount()
       {
          return ref.getPersistedCount();
       }
-      
+
       public boolean isPaged()
       {
          return false;
@@ -268,5 +269,44 @@ public class LastValueQueue extends QueueImpl
       {
          return ref.getMessage().getMemoryEstimate();
       }
+   }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + ((map == null) ? 0 : map.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof LastValueQueue))
+      {
+         return false;
+      }
+      LastValueQueue other = (LastValueQueue)obj;
+      if (map == null)
+      {
+         if (other.map != null)
+         {
+            return false;
+         }
+      }
+      else if (!map.equals(other.map))
+      {
+         return false;
+      }
+      return true;
    }
 }

@@ -15,7 +15,6 @@ package org.hornetq.core.protocol.core.impl.wireformat;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.protocol.core.impl.PacketImpl;
 
 /**
@@ -24,18 +23,12 @@ import org.hornetq.core.protocol.core.impl.PacketImpl;
  */
 public class NodeAnnounceMessage extends PacketImpl
 {
-   // Constants -----------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(NodeAnnounceMessage.class);
-
-   // Attributes ----------------------------------------------------
-
    private String nodeID;
-   
+
    private boolean backup;
-   
+
    private long currentEventID;
-   
+
    private TransportConfiguration connector;
 
    private TransportConfiguration backupConnector;
@@ -49,16 +42,16 @@ public class NodeAnnounceMessage extends PacketImpl
       super(PacketImpl.NODE_ANNOUNCE);
 
       this.currentEventID = currentEventID;
-      
+
       this.nodeID = nodeID;
-      
+
       this.backup = backup;
-      
+
       this.connector = tc;
-      
+
       this.backupConnector = backupConnector;
    }
-   
+
    public NodeAnnounceMessage()
    {
       super(PacketImpl.NODE_ANNOUNCE);
@@ -71,17 +64,17 @@ public class NodeAnnounceMessage extends PacketImpl
    {
       return nodeID;
    }
-   
+
    public boolean isBackup()
    {
       return backup;
    }
-   
+
    public TransportConfiguration getConnector()
    {
       return connector;
    }
-   
+
    public TransportConfiguration getBackupConnector()
    {
       return backupConnector;
@@ -139,9 +132,6 @@ public class NodeAnnounceMessage extends PacketImpl
       }
    }
 
-   /* (non-Javadoc)
-    * @see java.lang.Object#toString()
-    */
    @Override
    public String toString()
    {
@@ -155,13 +145,76 @@ public class NodeAnnounceMessage extends PacketImpl
              "]";
    }
 
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = super.hashCode();
+      result = prime * result + (backup ? 1231 : 1237);
+      result = prime * result + ((backupConnector == null) ? 0 : backupConnector.hashCode());
+      result = prime * result + ((connector == null) ? 0 : connector.hashCode());
+      result = prime * result + (int)(currentEventID ^ (currentEventID >>> 32));
+      result = prime * result + ((nodeID == null) ? 0 : nodeID.hashCode());
+      return result;
+   }
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+      {
+         return true;
+      }
+      if (!super.equals(obj))
+      {
+         return false;
+      }
+      if (!(obj instanceof NodeAnnounceMessage))
+      {
+         return false;
+      }
+      NodeAnnounceMessage other = (NodeAnnounceMessage)obj;
+      if (backup != other.backup)
+      {
+         return false;
+      }
+      if (backupConnector == null)
+      {
+         if (other.backupConnector != null)
+         {
+            return false;
+         }
+      }
+      else if (!backupConnector.equals(other.backupConnector))
+      {
+         return false;
+      }
+      if (connector == null)
+      {
+         if (other.connector != null)
+         {
+            return false;
+         }
+      }
+      else if (!connector.equals(other.connector))
+      {
+         return false;
+      }
+      if (currentEventID != other.currentEventID)
+      {
+         return false;
+      }
+      if (nodeID == null)
+      {
+         if (other.nodeID != null)
+         {
+            return false;
+         }
+      }
+      else if (!nodeID.equals(other.nodeID))
+      {
+         return false;
+      }
+      return true;
+   }
 }
