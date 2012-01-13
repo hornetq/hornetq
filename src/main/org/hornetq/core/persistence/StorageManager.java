@@ -123,7 +123,7 @@ public interface StorageManager extends HornetQComponent
    /** AIO has an optimized buffer which has a method to release it
        instead of the way NIO will release data based on GC.
        These methods will use that buffer if the inner method supports it */
-   void freeDirectuffer(ByteBuffer buffer);
+   void freeDirectBuffer(ByteBuffer buffer);
    
 
    void clearContext();
