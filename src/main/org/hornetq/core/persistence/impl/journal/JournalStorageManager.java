@@ -1648,7 +1648,7 @@ public class JournalStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
     */
-   public void freeDirectuffer(ByteBuffer buffer)
+   public void freeDirectBuffer(ByteBuffer buffer)
    {
       journalFF.releaseBuffer(buffer);
    }

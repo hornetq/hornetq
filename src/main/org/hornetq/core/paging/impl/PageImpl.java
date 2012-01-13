@@ -107,67 +107,76 @@ public class PageImpl implements Page, Comparable<Page>
 
    public List<PagedMessage> read(StorageManager storage) throws Exception
    {
-	  if (isDebug)
-	  {
-	     log.debug("reading page " + this.pageId + " on address = " + storeName);
-	  }
-      
+      if (isDebug)
+      {
+         log.debug("reading page " + this.pageId + " on address = " + storeName);
+      }
+
       ArrayList<PagedMessage> messages = new ArrayList<PagedMessage>();
 
       size.set((int)file.size());
       // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
-      ByteBuffer buffer2 = ByteBuffer.allocateDirect(size.get());
-      
-      file.position(0);
-      file.read(buffer2);
+      ByteBuffer directBuffer = storage.allocateDirectBuffer((int)file.size());
 
-      buffer2.rewind();
-
-      HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(buffer2);
-      fileBuffer.writerIndex(fileBuffer.capacity());
-
-      while (fileBuffer.readable())
+      try
       {
-         final int position = fileBuffer.readerIndex();
 
-         byte byteRead = fileBuffer.readByte();
+         file.position(0);
+         file.read(directBuffer);
 
-         if (byteRead == PageImpl.START_BYTE)
+         directBuffer.rewind();
+
+         HornetQBuffer fileBuffer = HornetQBuffers.wrappedBuffer(directBuffer);
+         fileBuffer.writerIndex(fileBuffer.capacity());
+
+         while (fileBuffer.readable())
          {
-            if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
+            final int position = fileBuffer.readerIndex();
+
+            byte byteRead = fileBuffer.readByte();
+
+            if (byteRead == PageImpl.START_BYTE)
             {
-               int messageSize = fileBuffer.readInt();
-               int oldPos = fileBuffer.readerIndex();
-               if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
+               if (fileBuffer.readerIndex() + DataConstants.SIZE_INT < fileBuffer.capacity())
                {
-                  PagedMessage msg = new PagedMessageImpl();
-                  msg.decode(fileBuffer);
-                  byte b = fileBuffer.readByte();
-                  if (b != PageImpl.END_BYTE)
+                  int messageSize = fileBuffer.readInt();
+                  int oldPos = fileBuffer.readerIndex();
+                  if (fileBuffer.readerIndex() + messageSize < fileBuffer.capacity() && fileBuffer.getByte(oldPos + messageSize) == PageImpl.END_BYTE)
                   {
-                     // Sanity Check: This would only happen if there is a bug on decode or any internal code, as this
-                     // constraint was already checked
-                     throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
+                     PagedMessage msg = new PagedMessageImpl();
+                     msg.decode(fileBuffer);
+                     byte b = fileBuffer.readByte();
+                     if (b != PageImpl.END_BYTE)
+                     {
+                        // Sanity Check: This would only happen if there is a bug on decode or any internal code, as
+                        // this
+                        // constraint was already checked
+                        throw new IllegalStateException("Internal error, it wasn't possible to locate END_BYTE " + b);
+                     }
+                     msg.initMessage(storage);
+                     if (isTrace)
+                     {
+                        log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                     }
+                     messages.add(msg);
                   }
-                  msg.initMessage(storage);
-                  if (isTrace)
+                  else
                   {
-                     log.trace("Reading message " + msg + " on pageId=" + this.pageId + " for address=" + storeName);
+                     markFileAsSuspect(position, messages.size());
+                     break;
                   }
-                  messages.add(msg);
-               }
-               else
-               {
-                  markFileAsSuspect(position, messages.size());
-                  break;
                }
             }
+            else
+            {
+               markFileAsSuspect(position, messages.size());
+               break;
+            }
          }
-         else
-         {
-            markFileAsSuspect(position, messages.size());
-            break;
-         }
+      }
+      finally
+      {
+         storage.freeDirectBuffer(directBuffer);
       }
 
       numberOfMessages.set(messages.size());

@@ -617,7 +617,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#freeDirectuffer(java.nio.ByteBuffer)
     */
-   public void freeDirectuffer(ByteBuffer buffer)
+   public void freeDirectBuffer(ByteBuffer buffer)
    {
       // We can just have hope on GC here :-)
    }

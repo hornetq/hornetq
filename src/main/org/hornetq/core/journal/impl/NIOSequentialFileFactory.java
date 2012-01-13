@@ -13,13 +13,13 @@
 
 package org.hornetq.core.journal.impl;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 
 /**
  * 
@@ -31,8 +31,6 @@ import org.hornetq.core.logging.Logger;
  */
 public class NIOSequentialFileFactory extends AbstractSequentialFileFactory implements SequentialFileFactory
 {
-   private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
-
    public NIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir, null);
@@ -103,7 +101,36 @@ public class NIOSequentialFileFactory extends AbstractSequentialFileFactory impl
    
    public ByteBuffer allocateDirectBuffer(final int size)
    {
-      return ByteBuffer.allocateDirect(size);
+      // Using direct buffer, as described on https://jira.jboss.org/browse/HORNETQ-467
+      ByteBuffer buffer2 = null;
+      try
+      {
+         buffer2 = ByteBuffer.allocateDirect(size);
+      }
+      catch (OutOfMemoryError error)
+      {
+         // This is a workaround for the way the JDK will deal with native buffers.
+         // the main portion is outside of the VM heap
+         // and the JDK will not have any reference about it to take GC into account
+         // so we force a GC and try again.
+         WeakReference<Object> obj = new WeakReference<Object>(new Object());
+         try
+         {
+            long timeout = System.currentTimeMillis() + 5000;
+            while (System.currentTimeMillis() > timeout && obj.get() != null)
+            {
+               System.gc();
+               Thread.sleep(100);
+            }
+         }
+         catch (InterruptedException e)
+         {
+         }
+         
+         buffer2 = ByteBuffer.allocateDirect(size);
+         
+      }
+      return buffer2;
    }
    
    public void releaseDirectBuffer(ByteBuffer buffer)
