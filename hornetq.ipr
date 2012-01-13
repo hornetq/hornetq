@@ -273,6 +273,7 @@
           <option name="SMART_TABS" value="false" />
           <option name="LABEL_INDENT_SIZE" value="0" />
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+          <option name="USE_RELATIVE_INDENTS" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="jsp">
           <option name="INDENT_SIZE" value="4" />
@@ -282,6 +283,7 @@
           <option name="SMART_TABS" value="false" />
           <option name="LABEL_INDENT_SIZE" value="0" />
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+          <option name="USE_RELATIVE_INDENTS" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="xml">
           <option name="INDENT_SIZE" value="4" />
@@ -291,6 +293,7 @@
           <option name="SMART_TABS" value="false" />
           <option name="LABEL_INDENT_SIZE" value="0" />
           <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+          <option name="USE_RELATIVE_INDENTS" value="false" />
         </ADDITIONAL_INDENT_OPTIONS>
       </value>
     </option>
@@ -365,22 +368,22 @@
       </facet-type>
       <facet-type id="javaeeApplication">
         <modules>
-          <module name="messaging" />
           <module name="hornetq-javaee-examples">
             <files>
               <file url="file://$PROJECT_DIR$/examples/javaee/servlet-transport/config/META-INF/application.xml" />
             </files>
           </module>
+          <module name="messaging" />
         </modules>
       </facet-type>
       <facet-type id="web">
         <modules>
-          <module name="messaging" />
           <module name="hornetq-javaee-examples">
             <files>
               <file url="file://$PROJECT_DIR$/examples/javaee/servlet-transport/config/WEB-INF/web.xml" />
             </files>
           </module>
+          <module name="messaging" />
         </modules>
       </facet-type>
     </autodetection-disabled>
@@ -631,6 +634,9 @@
       <module fileurl="file://$PROJECT_DIR$/tests/hornetq-tests.iml" filepath="$PROJECT_DIR$/tests/hornetq-tests.iml" />
     </modules>
   </component>
+  <component name="ProjectResources">
+    <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
@@ -701,6 +707,52 @@
     </option>
   </component>
   <component name="libraryTable">
+    <library name="ant 1.7.1">
+      <CLASSES>
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib/lib/commons-logging-1.0.4.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-commons-logging.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib/ant-contrib-1.0b3.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-jai.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-log4j.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-javamail.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-trax.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-antlr.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-jmf.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-resolver.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-jdepend.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-nodeps.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-starteam.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-bsf.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-stylebook.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-oro.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib/lib/commons-httpclient-3.0.1.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-jsch.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-commons-net.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/xml-apis.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-junit.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib/lib/ivy-1.3.1.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-swing.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-launcher.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-testutil.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-contrib/lib/bcel-5.1.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-regexp.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-weblogic.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/xercesImpl.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-apache-bcel.jar!/" />
+        <root url="jar://$USER_HOME$/devtools/apache-ant-1.7.1/lib/ant-netrexx.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="etc">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/../etc" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
     <library name="messaging">
       <CLASSES>
         <root url="file://$PROJECT_DIR$/src/config/common" />
@@ -711,6 +763,42 @@
       <jarDirectory url="file://$PROJECT_DIR$/src/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/etc" recursive="false" />
       <jarDirectory url="file://$PROJECT_DIR$/tests/jms-tests/etc" recursive="false" />
+    </library>
+    <library name="messaging-javaee-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-examples">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
+        <root url="file://$PROJECT_DIR$/src/config/common" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-jms-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-joram-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/joram-tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
+    <library name="messaging-tests">
+      <CLASSES>
+        <root url="file://$PROJECT_DIR$/tests/config" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
     </library>
     <library name="messaging_jars">
       <CLASSES>
@@ -742,88 +830,6 @@
         <root url="jar://$PROJECT_DIR$/thirdparty/jboss/jbossts/lib/jbossts-common.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/apache-logging/lib/commons-logging.jar!/" />
         <root url="jar://$PROJECT_DIR$/thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-joram-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/joram-tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-jms-tests">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/tests/jms-tests/config" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-jms-examples">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/examples/jms/common/config" />
-        <root url="file://$PROJECT_DIR$/src/config/common" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="messaging-javaee-examples">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/src/config/common" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="ant 1.7.1">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/lib/commons-logging-1.0.4.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-commons-logging.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/ant-contrib-1.0b3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-jai.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-log4j.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-javamail.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-trax.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-antlr.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-jmf.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-resolver.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-jdepend.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-nodeps.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-starteam.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-bsf.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-stylebook.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-oro.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/lib/commons-httpclient-3.0.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-jsch.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-commons-net.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/xml-apis.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-junit.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/lib/ivy-1.3.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-swing.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-launcher.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-testutil.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-contrib/lib/bcel-5.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-regexp.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-weblogic.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/xercesImpl.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-apache-bcel.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../../devtools/apache-ant-1.7.1/lib/ant-netrexx.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="etc">
-      <CLASSES>
-        <root url="file://$PROJECT_DIR$/../etc" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
