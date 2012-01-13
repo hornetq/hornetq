@@ -46,7 +46,7 @@ public class RecoveryManager
 
    private RecoveryRegistry registry;
 
-   private String resourceRecoveryClassNames = "org.hornetq.integration.jboss.recovery.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
+   private String resourceRecoveryClassNames = "org.jboss.as.messaging.jms.AS7RecoveryRegistry;org.jboss.as.integration.hornetq.recovery.AS5RecoveryRegistry";
 
    private Map<XARecoveryConfig, HornetQResourceRecovery> configMap = new HashMap<XARecoveryConfig, HornetQResourceRecovery>();
 
