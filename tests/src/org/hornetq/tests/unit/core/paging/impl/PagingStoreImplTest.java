@@ -1730,8 +1730,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public ByteBuffer allocateDirectBuffer(int size)
       {
-         // TODO Auto-generated method stub
-         return null;
+         return ByteBuffer.allocateDirect(size);
       }
 
       /* (non-Javadoc)
