@@ -30,7 +30,8 @@
     here's a simple example of posting an order to an order processing queue
     express as an HTTP message:</para>
 
-    <para><programlisting>POST /queue/orders/create HTTP/1.1
+    <para><programlisting>
+POST /queue/orders/create HTTP/1.1
 Host: example.com
 Content-Type: application/xml
 
@@ -38,8 +39,7 @@ Content-Type: application/xml
    &lt;name&gt;Bill&lt;/name&gt;
    &lt;item&gt;iPhone 4&lt;/item&gt;
    &lt;cost&gt;$199.99&lt;/cost&gt;
-&lt;/order&gt;
-</programlisting>As you can see, we're just posting some arbitrary XML
+&lt;/order&gt;</programlisting>As you can see, we're just posting some arbitrary XML
     document to a URL. When the XML is received on the server is it processed
     within HornetQ as a JMS message and distributed through core HornetQ.
     Simple and easy. Consuming messages from a queue or topic looks very
@@ -101,19 +101,21 @@ Content-Type: application/xml
     depends on the <ulink url="http://jboss.org/resteasy">RESTEasy</ulink>
     project and can currently only run within a servlet container. Installing
     the HornetQ REST interface is a little bit different depending whether
-    HornetQ is already installed and configured for your environment (i.e.
-    you're deploying within JBoss 6 AppServer) or you want the HornetQ REST
-    WAR to startup and manage the HornetQ server.</para>
+    HornetQ is already installed and configured for your environment (e.g.
+    you're deploying within JBoss AS 7) or you want the HornetQ REST
+    WAR to startup and manage the HornetQ server (e.g. you're deploying
+    within Tomcat).</para>
 
     <sect1>
       <title>Installing Within Pre-configured Environment</title>
 
       <para>The section should be used when you want to use the HornetQ REST
       interface in an environment that already has HornetQ installed and
-      running, i.e. JBoss 6 Application Server. You must create a Web archive
+      running, e.g. JBoss AS 7. You must create a Web archive
       (.WAR) file with the following web.xml settings:</para>
 
-      <programlisting>&lt;web-app&gt;
+      <programlisting>
+&lt;web-app&gt;
     &lt;listener&gt;
         &lt;listener-class&gt;org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap&lt;/listener-class&gt;
     &lt;/listener&gt;
@@ -133,22 +135,27 @@ Content-Type: application/xml
         &lt;filter-name&gt;Rest-Messaging&lt;/filter-name&gt;
         &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
     &lt;/filter-mapping&gt;
-
-&lt;/web-app</programlisting>
+&lt;/web-app&gt;</programlisting>
 
       <para>Within your WEB-INF/lib directory you must have the
       hornetq-rest.jar file. If RESTEasy is not installed within your
       environment, you must add the RESTEasy jar files within the lib
-      directory as well. Here's a sample Maven pom.xml that can build your WAR
-      for this case.</para>
+      directory as well (note: RESTEasy is available in most JBoss AS
+      7 profiles). Here's a sample Maven pom.xml that can build your
+      WAR for this case. If you are unfamiliar with the Maven WAR 
+      plugin please reference the <ulink 
+      url="http://maven.apache.org/plugins/maven-war-plugin/usage.html">
+      Maven documentation</ulink>.</para>
 
-      <programlisting>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <programlisting>
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
     &lt;groupId&gt;org.somebody&lt;/groupId&gt;
     &lt;artifactId&gt;myapp&lt;/artifactId&gt;
     &lt;packaging&gt;war&lt;/packaging&gt;
     &lt;name&gt;My App&lt;/name&gt;
+    &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
     &lt;repositories&gt;
         &lt;repository&gt;
             &lt;id&gt;jboss&lt;/id&gt;
@@ -156,8 +163,8 @@ Content-Type: application/xml
         &lt;/repository&gt;
     &lt;/repositories&gt;
 
-
-     &lt;build&gt;
+    &lt;build&gt;
+        &lt;plugins&gt;
             &lt;plugin&gt;
                 &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
                 &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
@@ -175,10 +182,26 @@ Content-Type: application/xml
             &lt;version&gt;2.2.6.Final&lt;/version&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
-&lt;/project&gt;
-</programlisting>
+&lt;/project&gt;</programlisting>
 
-      <para></para>
+      <note><para>JBoss AS 7 loads classes differently than previous versions.
+      To work properly in AS 7 the the WAR will need this in its MANIFEST.MF:</para>
+      <programlisting>Dependencies: org.hornetq, org.jboss.netty</programlisting>
+      <para>You can add this to the <literal>&lt;plugins&gt;</literal> section of the
+       pom.xml to create this entry automatically:</para><programlisting>
+&lt;plugin&gt;
+    &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-war-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;archive&gt;
+            &lt;manifestEntries&gt;
+                &lt;Dependencies&gt;org.hornetq, org.jboss.netty&lt;/Dependencies&gt;
+            &lt;/manifestEntries&gt;
+        &lt;/archive&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</programlisting>
+      </note>
+
     </sect1>
 
     <sect1>
@@ -192,11 +215,11 @@ Content-Type: application/xml
       REST distribution show how to do this. You must also add an additional
       listener to your web.xml file. Here's an example:</para>
 
-      <programlisting>&lt;web-app&gt;
+      <programlisting>
+&lt;web-app&gt;
     &lt;listener&gt;
         &lt;listener-class&gt;org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap&lt;/listener-class&gt;
     &lt;/listener&gt;
-
 
     &lt;listener&gt;
         &lt;listener-class&gt;org.hornetq.rest.integration.HornetqBootstrapListener&lt;/listener-class&gt;
@@ -217,7 +240,6 @@ Content-Type: application/xml
         &lt;filter-name&gt;Rest-Messaging&lt;/filter-name&gt;
         &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
     &lt;/filter-mapping&gt;
-
 &lt;/web-app&gt;</programlisting>
 
       <para>Here's a Maven pom.xml file for creating a WAR for this
@@ -225,13 +247,15 @@ Content-Type: application/xml
       src/main/resources directory so that they are stuffed within the WAR's
       WEB-INF/classes directory!</para>
 
-      <programlisting>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      <programlisting>
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
     &lt;groupId&gt;org.somebody&lt;/groupId&gt;
     &lt;artifactId&gt;myapp&lt;/artifactId&gt;
     &lt;packaging&gt;war&lt;/packaging&gt;
     &lt;name&gt;My App&lt;/name&gt;
+    &lt;version&gt;0.1-SNAPSHOT&lt;/version&gt;
     &lt;repositories&gt;
         &lt;repository&gt;
             &lt;id&gt;jboss&lt;/id&gt;
@@ -239,6 +263,7 @@ Content-Type: application/xml
         &lt;/repository&gt;
     &lt;/repositories&gt;
     &lt;build&gt;
+        &lt;plugins&gt;
             &lt;plugin&gt;
                 &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
                 &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
@@ -253,16 +278,17 @@ Content-Type: application/xml
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
-            &lt;version&gt;2.1.1.GA&lt;/version&gt;
+            &lt;version&gt;2.2.9.AS7.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
             &lt;artifactId&gt;netty&lt;/artifactId&gt;
+            &lt;version&gt;3.2.7.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
             &lt;artifactId&gt;hornetq-jms&lt;/artifactId&gt;
-            &lt;version&gt;2.1.1.GA&lt;/version&gt;
+            &lt;version&gt;2.2.9.AS7.Final&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.spec.javax.jms&lt;/groupId&gt;
@@ -277,12 +303,12 @@ Content-Type: application/xml
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.resteasy&lt;/groupId&gt;
             &lt;artifactId&gt;resteasy-jaxrs&lt;/artifactId&gt;
-            &lt;version&gt;2.0.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.0.GA&lt;/version&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.jboss.resteasy&lt;/groupId&gt;
             &lt;artifactId&gt;resteasy-jaxb-provider&lt;/artifactId&gt;
-            &lt;version&gt;2.0.1.GA&lt;/version&gt;
+            &lt;version&gt;2.3.0.GA&lt;/version&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
 &lt;/project&gt;</programlisting>
@@ -300,7 +326,8 @@ Content-Type: application/xml
       configuration file. Below is the format of the XML configuration file
       and the default values for each.</para>
 
-      <programlisting>&lt;rest-messaging&gt;
+      <programlisting>
+&lt;rest-messaging&gt;
    &lt;server-in-vm-id&gt;0&lt;/server-in-vm-id&gt;
    &lt;use-link-headers&gt;false&lt;/use-link-headers&gt;
    &lt;default-durable-send&gt;false&lt;/default-durable-send&gt;
@@ -311,8 +338,7 @@ Content-Type: application/xml
    &lt;session-timeout-task-interval&gt;1&lt;/session-timeout-task-interval&gt;
    &lt;consumer-session-timeout-seconds&gt;300&lt;/consumer-session-timeout-seconds&gt;
    &lt;consumer-window-size&gt;-1&lt;/consumer-window-size&gt;
-&lt;/rest-messaging
-</programlisting>
+&lt;/rest-messaging</programlisting>
 
       <para>Let's give an explanation of each config option.</para>
 
@@ -435,9 +461,9 @@ Content-Type: application/xml
       <para>To interact with a queue or topic you do a HEAD or GET request on
       the following relative URI pattern:</para>
 
-      <programlisting>/queues/{name}
-/topics/{name}
-</programlisting>
+      <programlisting>
+/queues/{name}
+/topics/{name}</programlisting>
 
       <para>The base of the URI is the base URL of the WAR you deployed the
       HornetQ REST server within as defined in the Installation and
@@ -453,15 +479,15 @@ Content-Type: application/xml
       perform your HEAD or GET request on this URI. Here's what a
       request/response would look like.</para>
 
-      <programlisting>HEAD /queues/jms.queue.bar HTTP/1.1
+      <programlisting>
+HEAD /queues/jms.queue.bar HTTP/1.1
 Host: example.com
 
 --- Response ---
 HTTP/1.1 200 Ok
 msg-create: http://example.com/queues/jms.queue.bar/create
 msg-pull-consumers: http://example.com/queues/jms.queue.bar/pull-consumers
-msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers
-</programlisting>
+msg-push-consumers: http://example.com/queues/jms.queue.bar/push-consumers</programlisting>
 
       <para>The HEAD or GET response contains a number of custom response
       headers that are URLs to additional REST resources that allow you to
@@ -644,7 +670,7 @@ msg-create-next: http://example.com/queues/jms.queue.bar/create/003
       </listitem>
     </orderedlist>
 
-    <para>It is <emphasis>VERY IMPORTENT</emphasis> that you never re-use
+    <para>It is <emphasis>VERY IMPORTANT</emphasis> that you never re-use
     returned <literal>msg-create-next</literal> headers to post new messages.
     This URL may be uniquely generated for each message and used for duplicate
     detection. If you lose the URL within the
