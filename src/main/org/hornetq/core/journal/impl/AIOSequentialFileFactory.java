@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.IOCriticalErrorListener;
 import org.hornetq.core.journal.SequentialFile;
@@ -345,7 +344,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFileFactory
       {
          public ClassLoader run()
          {
-            return ClientSessionFactoryImpl.class.getClassLoader();
+            return AIOSequentialFileFactory.class.getClassLoader();
          }
       });
 
