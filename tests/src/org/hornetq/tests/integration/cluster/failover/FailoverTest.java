@@ -41,6 +41,8 @@ import org.hornetq.api.core.client.MessageHandler;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
+import org.hornetq.core.client.impl.ClientSessionImpl;
+import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -128,6 +130,73 @@ public class FailoverTest extends FailoverTestBase
                                          boolean autoCommitAcks) throws Exception
    {
       return sf.createSession(xa, autoCommitSends, autoCommitAcks);
+   }
+
+   //https://issues.jboss.org/browse/HORNETQ-828
+   public void _testSessionClosedOnFailover() throws Exception
+   {
+      this.backupServer.stop();
+      locator.setBlockOnNonDurableSend(true);
+      locator.setBlockOnDurableSend(true);
+      locator.setAckBatchSize(0);
+      locator.setReconnectAttempts(-1);
+
+      final ClientSessionFactoryInternal sf = (ClientSessionFactoryInternal)locator.createSessionFactory();
+
+      final ClientSession session = createSession(sf, true, true);
+
+      try
+      {
+         final ClientProducer producer = session.createProducer(FailoverTestBase.ADDRESS);
+
+         final CountDownLatch latch = new CountDownLatch(1);
+         sf.addFailureListener(new SessionFailureListener()
+         {
+            public void beforeReconnect(HornetQException exception)
+            {
+               latch.countDown();
+            }
+
+            public void connectionFailed(HornetQException exception, boolean failedOver)
+            {
+               //To change body of implemented methods use File | Settings | File Templates.
+            }
+         });
+         crash(false, session);
+
+         latch.await(5000, TimeUnit.MILLISECONDS);
+
+         final CountDownLatch unblocked = new CountDownLatch(1);
+
+         Thread t = new Thread(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  producer.send(session.createMessage(true));
+                  System.out.println("FailoverTest.run");
+                  unblocked.countDown();
+               }
+               catch (HornetQException e)
+               {
+                  //
+               }
+            }
+         });
+
+         t.start();
+
+         Thread.sleep(1000);
+
+         sf.close();
+
+         assertTrue(unblocked.await(10000, TimeUnit.MILLISECONDS));
+      }
+      finally
+      {
+         ((DelegatingSession)session).getChannel().unlock();
+      }
    }
 
    // https://issues.jboss.org/browse/HORNETQ-685
