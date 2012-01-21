@@ -106,6 +106,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    private final Map<ActivationSpec, HornetQActivation> activations;
 
    private HornetQConnectionFactory defaultHornetQConnectionFactory;
+
+   private HornetQConnectionFactory recoveryHornetQConnectionFactory;
    
    private TransactionManager tm;
 
@@ -241,10 +243,10 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
     */
    public void stop()
    {
-      if (HornetQResourceAdapter.trace)
-      {
-         HornetQResourceAdapter.log.trace("stop()");
-      }
+      //if (HornetQResourceAdapter.trace)
+     // {
+         HornetQResourceAdapter.log.info("stop()*******************************************************************");
+     // }
 
       for (Map.Entry<ActivationSpec, HornetQActivation> entry : activations.entrySet())
       {
@@ -263,8 +265,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       if (defaultHornetQConnectionFactory != null)
       {
          defaultHornetQConnectionFactory.close();
+      }
 
-         XARecoveryConfig xaRecoveryConfig = new XARecoveryConfig(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
+      if(recoveryHornetQConnectionFactory != null)
+      {
+         recoveryHornetQConnectionFactory.close();
       }
 
       recoveryManager.stop();
@@ -1371,7 +1376,8 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    protected void setup() throws HornetQException
    {
       defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
-      recoveryManager.register(defaultHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
+      recoveryHornetQConnectionFactory = createRecoveryHornetQConnectionFactory(raProperties);
+      recoveryManager.register(recoveryHornetQConnectionFactory, raProperties.getUserName(), raProperties.getPassword());
    }
 
    public Map<ActivationSpec, HornetQActivation> getActivations()
@@ -1542,6 +1548,106 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
          throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
       }
       setParams(cf, overrideProperties);
+      return cf;
+   }
+
+   public HornetQConnectionFactory createRecoveryHornetQConnectionFactory(final ConnectionFactoryProperties overrideProperties)
+   {
+      HornetQConnectionFactory cf;
+      List<String> connectorClassName = overrideProperties.getParsedConnectorClassNames() != null ? overrideProperties.getParsedConnectorClassNames()
+                                                                                    : raProperties.getParsedConnectorClassNames();
+
+      String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
+                                                                                : getDiscoveryAddress();
+
+      if (discoveryAddress != null)
+      {
+         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                              : getDiscoveryPort();
+
+         if(discoveryPort == null)
+         {
+            discoveryPort = HornetQClient.DEFAULT_DISCOVERY_PORT;
+         }
+
+         DiscoveryGroupConfiguration groupConfiguration = new DiscoveryGroupConfiguration(discoveryAddress, discoveryPort);
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Recovery Connection Factory on the resource adapter for discovery=" + groupConfiguration);
+         }
+
+         Long refreshTimeout = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
+         if (refreshTimeout == null)
+         {
+            refreshTimeout = HornetQClient.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+         }
+
+         Long initialTimeout = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
+
+         if(initialTimeout == null)
+         {
+            initialTimeout = HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+         }
+
+         groupConfiguration.setDiscoveryInitialWaitTimeout(initialTimeout);
+
+         groupConfiguration.setRefreshTimeout(refreshTimeout);
+
+         cf = HornetQJMSClient.createConnectionFactoryWithoutHA(groupConfiguration, JMSFactoryType.XA_CF);
+      }
+      else
+      if (connectorClassName != null)
+      {
+         TransportConfiguration[] transportConfigurations = new TransportConfiguration[connectorClassName.size()];
+
+         List<Map<String, Object>> connectionParams;
+         if(overrideProperties.getParsedConnectorClassNames() != null)
+         {
+            connectionParams = overrideProperties.getParsedConnectionParameters();
+         }
+         else
+         {
+            connectionParams = raProperties.getParsedConnectionParameters();
+         }
+
+         for (int i = 0; i < connectorClassName.size(); i++)
+         {
+            TransportConfiguration tc;
+            if(connectionParams == null || i >= connectionParams.size())
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i));
+               log.debug("No connector params provided using default");
+            }
+            else
+            {
+               tc = new TransportConfiguration(connectorClassName.get(i), connectionParams.get(i));
+            }
+
+            transportConfigurations[i] = tc;
+         }
+
+
+         if (log.isDebugEnabled())
+         {
+            log.debug("Creating Recovery Connection Factory on the resource adapter for transport=" + transportConfigurations);
+         }
+
+         cf = HornetQJMSClient.createConnectionFactoryWithoutHA(JMSFactoryType.XA_CF, transportConfigurations);
+
+      }
+      else
+      {
+         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
+      }
+      setParams(cf, overrideProperties);
+
+      //now make sure we are HA in any way
+
+      cf.setReconnectAttempts(0);
+      cf.setInitialConnectAttempts(0);
       return cf;
    }
 
