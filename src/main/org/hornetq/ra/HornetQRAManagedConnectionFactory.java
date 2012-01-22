@@ -823,11 +823,13 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       if(connectionFactory != null)
       {
          connectionFactory.close();
+         connectionFactory = null;
       }
 
       if(recoveryConnectionFactory != null)
       {
          recoveryConnectionFactory.close();
+         recoveryConnectionFactory = null;
       }
    }
 }
