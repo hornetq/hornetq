@@ -457,7 +457,7 @@ public class LargeServerMessageImpl extends ServerMessageImpl implements LargeSe
 
    // Inner classes -------------------------------------------------
 
-   class DecodingContext implements BodyEncoder
+   private class DecodingContext implements BodyEncoder
    {
       private SequentialFile cFile;
 

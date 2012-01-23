@@ -300,7 +300,7 @@ class PageSubscriptionImpl implements PageSubscription
       tx.commit();
 
    }
-   
+
    /* (non-Javadoc)
     * @see java.lang.Object#toString()
     */
@@ -496,9 +496,7 @@ class PageSubscriptionImpl implements PageSubscription
       getPageInfo(position).incrementPendingTX();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCursor#returnElement(org.hornetq.core.paging.cursor.PagePosition)
-    */
+   @Override
    public void redeliver(final PagePosition position)
    {
       synchronized (redeliveries)
@@ -647,14 +645,14 @@ class PageSubscriptionImpl implements PageSubscription
          Collections.sort(recoveredACK);
 
          boolean first = true;
-         
+
          long txDeleteCursorOnReload = -1;
 
          for (PagePosition pos : recoveredACK)
          {
             lastAckedPosition = pos;
             PageCursorInfo pageInfo = getPageInfo(pos);
-            
+
             if (pageInfo == null)
             {
                log.warn("Couldn't find page cache for page " + pos + ", removing it from the journal");
@@ -674,11 +672,11 @@ class PageSubscriptionImpl implements PageSubscription
                      pageInfo.confirmed.addAndGet(pos.getMessageNr());
                   }
                }
-   
+
                pageInfo.addACK(pos);
             }
          }
-         
+
          if (txDeleteCursorOnReload >= 0)
          {
             store.commit(txDeleteCursorOnReload);
@@ -1104,9 +1102,7 @@ class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      /* (non-Javadoc)
-       * @see java.util.Iterator#next()
-       */
+      @Override
       public synchronized PagedReference next()
       {
 
@@ -1132,10 +1128,7 @@ class PageSubscriptionImpl implements PageSubscription
          }
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.paging.cursor.PageCursor#moveNext()
-       */
-      public PagedReference moveNext() throws Exception
+      private PagedReference moveNext() throws Exception
       {
          synchronized (PageSubscriptionImpl.this)
          {

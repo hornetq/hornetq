@@ -27,7 +27,7 @@ import org.hornetq.core.paging.cursor.PageCache;
  *
  *
  */
-public class PageCacheImpl implements PageCache
+class PageCacheImpl implements PageCache
 {
 
    // Constants -----------------------------------------------------
@@ -81,7 +81,7 @@ public class PageCacheImpl implements PageCache
          lock.readLock().unlock();
       }
    }
-   
+
    public long getPageId()
    {
       return page.getPageId();
