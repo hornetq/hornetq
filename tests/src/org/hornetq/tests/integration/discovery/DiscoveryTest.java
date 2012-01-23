@@ -124,12 +124,16 @@ public class DiscoveryTest extends UnitTestCase
 
       InetAddress localAddress = null;
 
+      String ignoreInterfaces = System.getProperty("ignoreInterfaces", "");
+
+
       outer: while (networkInterfaces.hasMoreElements())
       {
          NetworkInterface networkInterface = networkInterfaces.nextElement();
          if (networkInterface.isLoopback() || networkInterface.isVirtual() ||
              !networkInterface.isUp() ||
-             !networkInterface.supportsMulticast())
+             !networkInterface.supportsMulticast() ||
+             ignoreInterfaces.contains(networkInterface.getDisplayName())  )
          {
             continue;
          }
