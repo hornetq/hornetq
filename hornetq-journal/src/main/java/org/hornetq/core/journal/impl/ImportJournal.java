@@ -28,15 +28,22 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.utils.Base64;
 
 /**
- * Use this class to import the journal data from a listed file. You can use it as a main class or through its native method {@link ImportJournal#importJournal(String, String, String, int, int, String)}
- * 
- * If you use the main method, use it as  <JournalDirectory> <JournalPrefix> <FileExtension> <MinFiles> <FileSize> <FileOutput>
- * 
- * Example: java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal /journalDir hornetq-data hq 2 10485760 /tmp/export.dat
+ * Use this class to import the journal data from a listed file. You can use it as a main class or
+ * through its native method
+ * {@link ImportJournal#importJournal(String, String, String, int, int, String)}
+ * <p>
+ * If you use the main method, use its arguments as:
  *
+ * <pre>
+ * JournalDirectory JournalPrefix FileExtension MinFiles FileSize FileOutput
+ * </pre>
+ * <p>
+ * Example:
+ *
+ * <pre>
+ * java -cp hornetq-core.jar org.hornetq.core.journal.impl.ExportJournal /journalDir hornetq-data hq 2 10485760 /tmp/export.dat
+ * </pre>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
- *
  */
 public class ImportJournal
 {
@@ -103,7 +110,11 @@ public class ImportJournal
 
       File journalDir = new File(directory);
 
-      journalDir.mkdirs();
+      if (!journalDir.exists())
+      {
+         if (!journalDir.mkdirs())
+            System.err.println("Could not create directory " + directory);
+      }
 
       NIOSequentialFileFactory nio = new NIOSequentialFileFactory(directory, null);
 
