@@ -58,7 +58,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    /**
     * deploy an element
     * @param node the element to deploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public void deploy(final Node node) throws Exception
@@ -78,7 +78,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    /**
     * Undeploys an element.
     * @param node the element to undeploy
-    * @throws Exception .
+    * @throws Exception
     */
    @Override
    public void undeploy(final Node node) throws Exception

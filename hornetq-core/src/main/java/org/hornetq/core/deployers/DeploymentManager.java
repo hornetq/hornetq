@@ -24,17 +24,15 @@ public interface DeploymentManager extends HornetQComponent
 {
    /**
     * registers a deployable object which will handle the deployment of URL's
-    *
     * @param deployer The deployable object
-    * @throws Exception .
+    * @throws Exception
     */
    void registerDeployer(Deployer deployer) throws Exception;
 
    /**
     * unregisters a deployable object which will handle the deployment of URL's
-    *
     * @param deployer The deployable object
-    * @throws Exception .
+    * @throws Exception
     */
    void unregisterDeployer(Deployer deployer) throws Exception;
 }

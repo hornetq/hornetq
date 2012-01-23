@@ -36,7 +36,7 @@ public interface ClusterManager extends HornetQComponent
 
    /**
     * Return the default ClusterConnection to be used case it's not defined by the acceptor
-    * @return
+    * @return default connection
     */
    ClusterConnection getDefaultConnection();
 
@@ -60,7 +60,7 @@ public interface ClusterManager extends HornetQComponent
    void destroyBridge(String name) throws Exception;
 
    /**
-    * @return
+    * @return description
     */
    String describe();
 }

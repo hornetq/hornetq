@@ -42,7 +42,6 @@ public class PersistedConnectionFactory implements EncodingSupport
    }
 
    /**
-    * @param id
     * @param config
     */
    public PersistedConnectionFactory(final ConnectionFactoryConfiguration config)

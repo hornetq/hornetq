@@ -122,7 +122,8 @@ public interface PagingStore extends HornetQComponent
    boolean lock(long timeout);
 
    /**
-    * Call this method using the same thread used by the last call of {@link PagingStore#lock()}.
+    * Call this method using the same thread used by the last call of {@link PagingStore#lock(long)}
+    * .
     */
     void unlock();
 

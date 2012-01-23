@@ -46,8 +46,6 @@ public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueu
    /**
     * @param address
     * @param name
-    * @param temporary
-    * @param queue
     * @param session
     */
    public HornetQTemporaryQueue(String address, String name, HornetQSession session)

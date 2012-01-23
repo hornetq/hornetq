@@ -41,7 +41,7 @@ public class HornetQQueue extends HornetQDestination implements Queue
 
    public static SimpleString createAddressFromName(final String name)
    {
-      return new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name);
+      return new SimpleString(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + name);
    }
 
    // Attributes ----------------------------------------------------
@@ -50,7 +50,7 @@ public class HornetQQueue extends HornetQDestination implements Queue
 
    public HornetQQueue(final String name)
    {
-      super(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + name, name, false, true, null);
+      super(HornetQDestination.JMS_QUEUE_ADDRESS_PREFIX + name, name, false, true, null);
    }
    
    
@@ -59,7 +59,6 @@ public class HornetQQueue extends HornetQDestination implements Queue
     * @param address
     * @param name
     * @param temporary
-    * @param queue
     * @param session
     */
    public HornetQQueue(String address, String name, boolean temporary, HornetQSession session)

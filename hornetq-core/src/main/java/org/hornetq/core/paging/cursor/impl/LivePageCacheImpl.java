@@ -71,17 +71,13 @@ public class LivePageCacheImpl implements LivePageCache
       return page.getPageId();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getNumberOfMessages()
-    */
+   @Override
    public synchronized int getNumberOfMessages()
    {
       return messages.size();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#setMessages(org.hornetq.core.server.ServerMessage[])
-    */
+   @Override
    public synchronized void setMessages(PagedMessage[] messages)
    {
       // This method shouldn't be called on liveCache, but we will provide the implementation for it anyway
@@ -91,9 +87,7 @@ public class LivePageCacheImpl implements LivePageCache
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.paging.cursor.PageCache#getMessage(int)
-    */
+   @Override
    public synchronized PagedMessage getMessage(int messageNumber)
    {
       if (messageNumber < messages.size())

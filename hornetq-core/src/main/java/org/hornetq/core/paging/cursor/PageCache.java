@@ -27,23 +27,22 @@ import org.hornetq.utils.SoftValueHashMap;
 public interface PageCache extends SoftValueHashMap.ValueCache
 {
    Page getPage();
-   
+
    long getPageId();
 
    int getNumberOfMessages();
-   
+
    void setMessages(PagedMessage[] messages);
-   
+
    PagedMessage[] getMessages();
-   
+
    /**
-    * If this cache is still being updated
-    * @return
+    * @return whether this cache is still being updated
     */
    boolean isLive();
 
    /**
-    * 
+    *
     * @param messageNumber The order of the message on the page
     * @return
     */
@@ -59,7 +58,7 @@ public interface PageCache extends SoftValueHashMap.ValueCache
     * You have to call this method within the same thread you called lock
     */
    void unlock();
-   
+
    void close();
 
 }

@@ -40,10 +40,6 @@ public class PagePositionImpl implements PagePosition
       this.messageNr = messageNr;
    }
 
-   /**
-    * @param pageNr
-    * @param messageNr
-    */
    public PagePositionImpl()
    {
       
