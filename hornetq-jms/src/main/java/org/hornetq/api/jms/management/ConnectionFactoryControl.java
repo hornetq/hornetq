@@ -16,18 +16,17 @@ package org.hornetq.api.jms.management;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.Operation;
 import org.hornetq.api.core.management.Parameter;
 
 /**
- * A ConnectionFactoryControl is used to manage a JMS ConnectionFactory.
- * <br>
- * HornetQ JMS ConnectionFactory uses an underlying ClientSessionFactory to connect to HornetQ servers.
- * Please refer to the ClientSessionFactory for a detailed description.
- * 
+ * A ConnectionFactoryControl is used to manage a JMS ConnectionFactory. <br>
+ * HornetQ JMS ConnectionFactory uses an underlying ClientSessionFactory to connect to HornetQ
+ * servers. Please refer to the ClientSessionFactory for a detailed description.
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:fox@redhat.com">Tim Fox</a>
- * 
+ * @see ServerLocator
  * @see ClientSessionFactory
  */
 public interface ConnectionFactoryControl
@@ -63,290 +62,289 @@ public interface ConnectionFactoryControl
    * Sets the Client ID for this connection factory.
    */
    void setClientID(String clientID);
-   
+
    boolean isCompressLargeMessages();
-   
+
    void setCompressLargeMessages(boolean compress);
 
    /**
-    * @see ClientSessionFactory#getClientFailureCheckPeriod()
+    * @see ServerLocator#getClientFailureCheckPeriod()
     */
    long getClientFailureCheckPeriod();
 
    /**
-    * @see ClientSessionFactory#setClientFailureCheckPeriod
+    * @see ServerLocator#setClientFailureCheckPeriod
     */
    void setClientFailureCheckPeriod(long clientFailureCheckPeriod);
 
    /**
-    * @see ClientSessionFactory#getCallTimeout()
+    * @see ServerLocator#getCallTimeout()
     */
    long getCallTimeout();
 
    /**
-    * @see ClientSessionFactory#setCallTimeout(long)
+    * @see ServerLocator#setCallTimeout(long)
     */
    void setCallTimeout(long callTimeout);
 
    /**
-    * Returns the batch size (in bytes) between acknowledgements when using DUPS_OK_ACKNOWLEDGE mode.
-    * 
-    * @see ClientSessionFactory#getAckBatchSize()
+    * Returns the batch size (in bytes) between acknowledgements when using DUPS_OK_ACKNOWLEDGE
+    * mode.
+    * @see ServerLocator#getAckBatchSize()
     * @see javax.jms.Session#DUPS_OK_ACKNOWLEDGE
     */
    int getDupsOKBatchSize();
 
    /**
-    * @see ClientSessionFactory#setAckBatchSize(int)
+    * @see ServerLocator#setAckBatchSize(int)
     */
    void setDupsOKBatchSize(int dupsOKBatchSize);
 
    /**
-    * @see ClientSessionFactory#getConsumerMaxRate()
+    * @see ServerLocator#getConsumerMaxRate()
     */
    int getConsumerMaxRate();
 
    /**
-    * @see ClientSessionFactory#setConsumerMaxRate(int)
+    * @see ServerLocator#setConsumerMaxRate(int)
     */
    void setConsumerMaxRate(int consumerMaxRate);
 
    /**
-    * @see ClientSessionFactory#getConsumerWindowSize()
+    * @see ServerLocator#getConsumerWindowSize()
     */
    int getConsumerWindowSize();
 
    /**
-    * @see ClientSessionFactory#setConfirmationWindowSize(int)
+    * @see ServerLocator#setConfirmationWindowSize(int)
     */
    void setConsumerWindowSize(int consumerWindowSize);
 
    /**
-    * @see ClientSessionFactory#getProducerMaxRate()
+    * @see ServerLocator#getProducerMaxRate()
     */
    int getProducerMaxRate();
 
    /**
-    * @see ClientSessionFactory#setProducerMaxRate(int)
+    * @see ServerLocator#setProducerMaxRate(int)
     */
    void setProducerMaxRate(int producerMaxRate);
 
    /**
-    * @see ClientSessionFactory#getConfirmationWindowSize()
+    * @see ServerLocator#getConfirmationWindowSize()
     */
    int getConfirmationWindowSize();
 
     /**
-    * @see ClientSessionFactory#setConfirmationWindowSize(int)
+    * @see ServerLocator#setConfirmationWindowSize(int)
     */
    void setConfirmationWindowSize(int confirmationWindowSize);
 
    /**
-    * @see ClientSessionFactory#isBlockOnAcknowledge()
+    * @see ServerLocator#isBlockOnAcknowledge()
     */
    boolean isBlockOnAcknowledge();
 
     /**
-    * @see ClientSessionFactory#setBlockOnAcknowledge(boolean)
+    * @see ServerLocator#setBlockOnAcknowledge(boolean)
     */
    void setBlockOnAcknowledge(boolean blockOnAcknowledge);
 
    /**
-    * @see ClientSessionFactory#isBlockOnDurableSend()
+    * @see ServerLocator#isBlockOnDurableSend()
     */
    boolean isBlockOnDurableSend();
 
     /**
-    * @see ClientSessionFactory#setBlockOnDurableSend(boolean)
+    * @see ServerLocator#setBlockOnDurableSend(boolean)
     */
    void setBlockOnDurableSend(boolean blockOnDurableSend);
 
    /**
-    * @see ClientSessionFactory#isBlockOnNonDurableSend()
+    * @see ServerLocator#isBlockOnNonDurableSend()
     */
    boolean isBlockOnNonDurableSend();
 
     /**
-    * @see ClientSessionFactory#setBlockOnNonDurableSend(boolean)
+    * @see ServerLocator#setBlockOnNonDurableSend(boolean)
     */
    void setBlockOnNonDurableSend(boolean blockOnNonDurableSend);
 
    /**
-    * @see ClientSessionFactory#isPreAcknowledge()
+    * @see ServerLocator#isPreAcknowledge()
     */
    boolean isPreAcknowledge();
 
     /**
-    * @see ClientSessionFactory#setPreAcknowledge(boolean)
+    * @see ServerLocator#setPreAcknowledge(boolean)
     */
    void setPreAcknowledge(boolean preAcknowledge);
 
 
    /**
-    * @see ClientSessionFactory#getConnectionTTL()
+    * @see ServerLocator#getConnectionTTL()
     */
    long getConnectionTTL();
 
     /**
-    * @see ClientSessionFactory#setConnectionTTL(long)
+    * @see ServerLocator#setConnectionTTL(long)
     */
    void setConnectionTTL(long connectionTTL);
 
    /**
     * Returns the batch size (in bytes) between acknowledgements when using a transacted session.
-    * 
-    * @see ClientSessionFactory#getAckBatchSize()
+    * @see ServerLocator#getAckBatchSize()
     */
    int getTransactionBatchSize();
 
     /**
-    * @see ClientSessionFactory#setAckBatchSize(int)
+    * @see ServerLocator#setAckBatchSize(int)
     */
    void setTransactionBatchSize(int transactionBatchSize);
 
    /**
-    * @see ClientSessionFactory#getMinLargeMessageSize()
+    * @see ServerLocator#getMinLargeMessageSize()
     */
    int getMinLargeMessageSize();
 
     /**
-    * @see ClientSessionFactory#setMinLargeMessageSize(int)
+    * @see ServerLocator#setMinLargeMessageSize(int)
     */
    void setMinLargeMessageSize(int minLargeMessageSize);
 
    /**
-    * @see ClientSessionFactory#isAutoGroup()
+    * @see ServerLocator#isAutoGroup()
     */
    boolean isAutoGroup();
 
     /**
-    * @see ClientSessionFactory#setAutoGroup(boolean)
+    * @see ServerLocator#setAutoGroup(boolean)
     */
    void setAutoGroup(boolean autoGroup);
 
    /**
-    * @see ClientSessionFactory#getRetryInterval()
+    * @see ServerLocator#getRetryInterval()
     */
    long getRetryInterval();
 
     /**
-    * @see ClientSessionFactory#setRetryInterval(long)
+    * @see ServerLocator#setRetryInterval(long)
     */
    void setRetryInterval(long retryInterval);
 
    /**
-    * @see ClientSessionFactory#getRetryIntervalMultiplier()
+    * @see ServerLocator#getRetryIntervalMultiplier()
     */
    double getRetryIntervalMultiplier();
 
     /**
-    * @see ClientSessionFactory#setRetryIntervalMultiplier(double)
+    * @see ServerLocator#setRetryIntervalMultiplier(double)
     */
    void setRetryIntervalMultiplier(double retryIntervalMultiplier);
 
    /**
-    * @see ClientSessionFactory#getReconnectAttempts()
+    * @see ServerLocator#getReconnectAttempts()
     */
    int getReconnectAttempts();
 
     /**
-    * @see ClientSessionFactory#setReconnectAttempts(int)
+    * @see ServerLocator#setReconnectAttempts(int)
     */
    void setReconnectAttempts(int reconnectAttempts);
-   
+
    /**
-    * @see ClientSessionFactory#isFailoverOnInitialConnection()
+    * @see ServerLocator#isFailoverOnInitialConnection()
     */
    boolean isFailoverOnInitialConnection();
 
     /**
-    * @see ClientSessionFactory#setFailoverOnInitialConnection(boolean)
+    * @see ServerLocator#setFailoverOnInitialConnection(boolean)
     */
    void setFailoverOnInitialConnection(boolean failoverOnInitialConnection);
 
 
     /**
-    * @see org.hornetq.api.core.client.ClientSessionFactory#getProducerWindowSize()
+    * @see org.hornetq.api.core.client.ServerLocator#getProducerWindowSize()
     */
    int getProducerWindowSize();
 
     /**
-    * @see ClientSessionFactory#setProducerWindowSize(int)
+    * @see ServerLocator#setProducerWindowSize(int)
     */
    void setProducerWindowSize(int producerWindowSize);
 
     /**
-    * @see ClientSessionFactory#isCacheLargeMessagesClient()
+    * @see ServerLocator#isCacheLargeMessagesClient()
     */
    boolean isCacheLargeMessagesClient();
 
     /**
-    * @see ClientSessionFactory#setCacheLargeMessagesClient(boolean)
+    * @see ServerLocator#setCacheLargeMessagesClient(boolean)
     */
    void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient);
 
     /**
-    * @see ClientSessionFactory#getMaxRetryInterval()
+    * @see ServerLocator#getMaxRetryInterval()
     */
    long getMaxRetryInterval();
 
     /**
-    * @see ClientSessionFactory#setMaxRetryInterval(long)
+    * @see ServerLocator#setMaxRetryInterval(long)
     */
    void setMaxRetryInterval(long retryInterval);
 
     /**
-    * @see ClientSessionFactory#getScheduledThreadPoolMaxSize()
+    * @see ServerLocator#getScheduledThreadPoolMaxSize()
     */
    int getScheduledThreadPoolMaxSize();
 
     /**
-    * @see ClientSessionFactory#setScheduledThreadPoolMaxSize(int)
+    * @see ServerLocator#setScheduledThreadPoolMaxSize(int)
     */
    void setScheduledThreadPoolMaxSize(int scheduledThreadPoolMaxSize);
 
     /**
-    * @see ClientSessionFactory#getThreadPoolMaxSize()
+    * @see ServerLocator#getThreadPoolMaxSize()
     */
    int getThreadPoolMaxSize();
 
     /**
-    * @see ClientSessionFactory#setThreadPoolMaxSize(int)
+    * @see ServerLocator#setThreadPoolMaxSize(int)
     */
    void setThreadPoolMaxSize(int threadPoolMaxSize);
 
     /**
-    * @see ClientSessionFactory#getGroupID()
+    * @see ServerLocator#getGroupID()
     */
    String getGroupID();
 
     /**
-    * @see ClientSessionFactory#setGroupID(String)
+    * @see ServerLocator#setGroupID(String)
     */
    void setGroupID(String groupID);
 
     /**
-    * @see ClientSessionFactory#getInitialMessagePacketSize()
+    * @see ServerLocator#getInitialMessagePacketSize()
     */
    int getInitialMessagePacketSize();
 
     /**
-    * @see ClientSessionFactory#isUseGlobalPools()
+    * @see ServerLocator#isUseGlobalPools()
     */
    boolean isUseGlobalPools();
 
     /**
-    * @see ClientSessionFactory#setUseGlobalPools(boolean)
+    * @see ServerLocator#setUseGlobalPools(boolean)
     */
    void setUseGlobalPools(boolean useGlobalPools);
 
     /**
-    * @see ClientSessionFactory#getConnectionLoadBalancingPolicyClassName()
+    * @see ServerLocator#getConnectionLoadBalancingPolicyClassName()
     */
    String getConnectionLoadBalancingPolicyClassName();
 
     /**
-    * @see ClientSessionFactory#setConnectionLoadBalancingPolicyClassName(String)
+    * @see ServerLocator#setConnectionLoadBalancingPolicyClassName(String)
     */
    void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName);
 

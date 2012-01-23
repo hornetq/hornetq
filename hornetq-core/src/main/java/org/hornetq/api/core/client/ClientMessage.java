@@ -92,8 +92,6 @@ public interface ClientMessage extends Message
     * Sets the body's IntputStream. 
     * <br> 
     * This method is used when sending large messages
-    * 
-    * @throws HornetQException
     */
    void setBodyInputStream(InputStream bodyInputStream);
 

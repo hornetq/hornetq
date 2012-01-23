@@ -29,7 +29,7 @@ public interface ServerLocator
 
    /**
     * Returns true if close was already called
-    * @return
+    * @return {@code true} if closed, {@code false} otherwise.
     */
    boolean isClosed();
 
