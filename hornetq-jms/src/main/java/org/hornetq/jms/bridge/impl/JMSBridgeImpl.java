@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +59,7 @@ import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
 
 /**
- * 
+ *
  * A JMSBridge
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -565,7 +566,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       targetDestinationFactory = dest;
    }
 
-   public String getSourceUsername()
+   public synchronized String getSourceUsername()
    {
       return sourceUsername;
    }
@@ -801,7 +802,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    /**
     * Check the object is not null
-    * 
+    *
     * @throws IllegalArgumentException if the object is null
     */
    private static void checkNotNull(final Object obj, final String name)
@@ -814,7 +815,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    /**
     * Check the bridge is not started
-    * 
+    *
     * @throws IllegalStateException if the bridge is started
     */
    private void checkBridgeNotStarted()
@@ -827,7 +828,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    /**
     * Check that value is either equals to -1 or greater than 0
-    * 
+    *
     * @throws IllegalArgumentException if the value is not valid
     */
    private static void checkValidValue(final long value, final String name)
@@ -1024,32 +1025,32 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
     * If the source and target destinations are on the same server (same resource manager) then,
     * in order to get ONCE_AND_ONLY_ONCE, we simply need to consuming and send in a single
     * local JMS transaction.
-    * 
+    *
     * We actually use a single local transacted session for the other QoS modes too since this
     * is more performant than using DUPS_OK_ACKNOWLEDGE or AUTO_ACKNOWLEDGE session ack modes, so effectively
     * the QoS is upgraded.
-    * 
+    *
     * Source and target on different server
     * -------------------------------------
     * If the source and target destinations are on a different servers (different resource managers) then:
-    * 
+    *
     * If desired QoS is ONCE_AND_ONLY_ONCE, then we start a JTA transaction and enlist the consuming and sending
     * XAResources in that.
-    * 
+    *
     * If desired QoS is DUPLICATES_OK then, we use CLIENT_ACKNOWLEDGE for the consuming session and
     * AUTO_ACKNOWLEDGE (this is ignored) for the sending session if the maxBatchSize == 1, otherwise we
     * use a local transacted session for the sending session where maxBatchSize > 1, since this is more performant
     * When bridging a batch, we make sure to manually acknowledge the consuming session, if it is CLIENT_ACKNOWLEDGE
     * *after* the batch has been sent
-    * 
+    *
     * If desired QoS is AT_MOST_ONCE then, if maxBatchSize == 1, we use AUTO_ACKNOWLEDGE for the consuming session,
     * and AUTO_ACKNOWLEDGE for the sending session.
     * If maxBatchSize > 1, we use CLIENT_ACKNOWLEDGE for the consuming session and a local transacted session for the
     * sending session.
-    * 
+    *
     * When bridging a batch, we make sure to manually acknowledge the consuming session, if it is CLIENT_ACKNOWLEDGE
     * *before* the batch has been sent
-    * 
+    *
     */
    private boolean setupJMSObjects()
    {
@@ -1406,7 +1407,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                JMSBridgeImpl.log.trace("Client acking source session");
             }
 
-            ((Message)messages.getLast()).acknowledge();
+            messages.getLast().acknowledge();
 
             if (JMSBridgeImpl.trace)
             {
@@ -1532,13 +1533,13 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private void sendMessages() throws Exception
    {
-      Iterator iter = messages.iterator();
+      Iterator<Message> iter = messages.iterator();
 
       Message msg = null;
 
       while (iter.hasNext())
       {
-         msg = (Message)iter.next();
+         msg = iter.next();
 
          if (addMessageIDInHeader)
          {
@@ -1636,13 +1637,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
     */
    private static void copyProperties(final Message msg) throws JMSException
    {
-      Enumeration en = msg.getPropertyNames();
+      @SuppressWarnings("unchecked")
+      Enumeration<String> en = msg.getPropertyNames();
 
       Map<String, Object> oldProps = null;
 
       while (en.hasMoreElements())
       {
-         String propName = (String)en.nextElement();
+         String propName = en.nextElement();
 
          if (oldProps == null)
          {
@@ -1656,13 +1658,13 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
       if (oldProps != null)
       {
-         Iterator oldPropsIter = oldProps.entrySet().iterator();
+         Iterator<Entry<String, Object>> oldPropsIter = oldProps.entrySet().iterator();
 
          while (oldPropsIter.hasNext())
          {
-            Map.Entry entry = (Map.Entry)oldPropsIter.next();
+            Entry<String, Object> entry = oldPropsIter.next();
 
-            String propName = (String)entry.getKey();
+            String propName = entry.getKey();
 
             Object val = entry.getValue();
 
@@ -1680,7 +1682,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    }
 
    /**
-    * Creates a 3-sized thred pool executor (1 thread for the sourceReceiver, 1 for the timeChecker
+    * Creates a 3-sized thread pool executor (1 thread for the sourceReceiver, 1 for the timeChecker
     * and 1 for the eventual failureHandler)
     */
    private ExecutorService createExecutor()
@@ -1730,7 +1732,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                try
                {
                   msg = sourceConsumer.receive(1000);
-                  
+
                   if (msg instanceof HornetQMessage)
                   {
                      // We need to check the buffer mainly in the case of LargeMessages
@@ -1876,12 +1878,14 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 
    private class StartupFailureHandler extends FailureHandler
    {
+      @Override
       protected void failed()
       {
          // Don't call super
          JMSBridgeImpl.log.warn("Unable to set up connections, bridge will not be started");
       }
 
+      @Override
       protected void succeeded()
       {
          // Don't call super - a bit ugly in this case but better than taking the lock twice.
