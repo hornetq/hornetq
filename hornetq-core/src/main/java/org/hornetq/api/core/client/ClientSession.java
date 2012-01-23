@@ -298,11 +298,14 @@ public interface ClientSession extends XAResource
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
@@ -312,11 +315,14 @@ public interface ClientSession extends XAResource
 
    /**
     * Creates a ClientConsumer to consume or browse messages from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
     * @return a ClientConsumer
@@ -325,12 +331,16 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException;
 
    /**
-    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
+    * the given name.
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param filter only messages which match this filter will be consumed
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
@@ -340,12 +350,16 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(String queueName, String filter, boolean browseOnly) throws HornetQException;
 
    /**
-    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
+    * the given name.
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param filter only messages which match this filter will be consumed
     * @param browseOnly whether the ClientConsumer will only browse the queue or consume messages.
@@ -355,12 +369,16 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filter, boolean browseOnly) throws HornetQException;
 
    /**
-    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
+    * the given name.
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param filter only messages which match this filter will be consumed
     * @param windowSize the consumer window size
@@ -376,12 +394,16 @@ public interface ClientSession extends XAResource
                                  boolean browseOnly) throws HornetQException;
 
    /**
-    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with the given name.
-    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages from the queue
-    * but they will not be consumed (the messages will remain in the queue).
-    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume the messages from the queue and
-    * the messages will effectively be removed from the queue.
-    *
+    * Creates a ClientConsumer to consume or browse messages matching the filter from the queue with
+    * the given name.
+    * <p>
+    * If <code>browseOnly</code> is <code>true</code>, the ClientConsumer will receive the messages
+    * from the queue but they will not be consumed (the messages will remain in the queue). Note
+    * that paged messages will not be in the queue, and will therefore not be visible if
+    * {@code browseOnly} is {@code true}.
+    * <p>
+    * If <code>browseOnly</code> is <code>false</code>, the ClientConsumer will behave like consume
+    * the messages from the queue and the messages will effectively be removed from the queue.
     * @param queueName name of the queue to consume messages from
     * @param filter only messages which match this filter will be consumed
     * @param windowSize the consumer window size
@@ -571,8 +593,8 @@ public interface ClientSession extends XAResource
     * Attach any metadata to the session. Throws an exception if there's already a metadata available.
     * You can use this metadata to ensure that there is no other session with the same meta-data you are passing as an argument.
     * This is useful to simulate unique client-ids, where you may want to avoid multiple instances of your client application connected.
-    * 
-    * @throws HornetQException 
+    *
+    * @throws HornetQException
     */
    void addUniqueMetaData(String key, String data) throws HornetQException;
 
@@ -582,5 +604,6 @@ public interface ClientSession extends XAResource
     * @deprecated Use {@link ClientSession#addMetaData(String, String)}
     * @throws HornetQException
     */
+   @Deprecated
    void addMetaDataV1(String key, String data) throws HornetQException;
 }
