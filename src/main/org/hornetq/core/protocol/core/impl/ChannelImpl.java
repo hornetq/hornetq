@@ -351,8 +351,7 @@ public class ChannelImpl implements Channel
 
       if(failingOver)
       {
-         failingOver = false;
-         failoverCondition.signalAll();
+         unlock();
       }
       closed = true;
    }
