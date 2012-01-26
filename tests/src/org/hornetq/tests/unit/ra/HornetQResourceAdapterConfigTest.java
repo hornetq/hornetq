@@ -101,6 +101,12 @@ public class HornetQResourceAdapterConfigTest extends UnitTestCase
          "      </config-property>\n" +
          "      <config-property>\n" +
          "        <description>The discovery group address</description>\n" +
+         "        <config-property-name>DiscoveryLocalBindAddress</config-property-name>\n" +
+         "        <config-property-type>java.lang.String</config-property-type>\n" +
+         "        <config-property-value></config-property-value>\n" +
+         "      </config-property>\n" +
+         "      <config-property>\n" +
+         "        <description>The discovery group local bind address</description>\n" +
          "        <config-property-name>DiscoveryAddress</config-property-name>\n" +
          "        <config-property-type>java.lang.String</config-property-type>\n" +
          "        <config-property-value></config-property-value>\n" +
