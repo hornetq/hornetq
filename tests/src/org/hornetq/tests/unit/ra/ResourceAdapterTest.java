@@ -263,9 +263,13 @@ public class ResourceAdapterTest extends ServiceTestBase
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setDiscoveryAddress("myhost");
       connectionFactoryProperties.setDiscoveryPort(5678);
+      connectionFactoryProperties.setDiscoveryLocalBindAddress("newAddress");
       HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       Assert.assertNotSame(factory, defaultFactory);
+      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getLocalBindAddress(), "newAddress");
+      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getGroupAddress(), "myhost");
+      Assert.assertEquals(factory.getDiscoveryGroupConfiguration().getGroupPort(), 5678);
    }
 
    public void testCreateConnectionFactoryMultipleConnectors()
